@@ -5,12 +5,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.octosign.whitelabel.communication.Document;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -25,12 +27,6 @@ import javafx.concurrent.Worker;
 public class MainController {
 
     @FXML
-    private Label certificateLabel;
-
-    @FXML
-    private Button certificateButton;
-
-    @FXML
     private Label documentLabel;
 
     @FXML
@@ -39,8 +35,11 @@ public class MainController {
     @FXML
     private Label signLabel;
 
+    /**
+     * Bottom-right button used to load/pick certificate and sign
+     */
     @FXML
-    private Button signButton;
+    private Button mainButton;
 
     @FXML
     private ResourceBundle resources;
@@ -56,9 +55,9 @@ public class MainController {
     private Document document;
 
     /**
-     * Consumer of the signed document on success
+     * Consumer of the signed document content on success
      */
-    private Consumer<Document> onSigned;
+    private Consumer<String> onSigned;
 
     public void initialize() {
         webView.setContextMenuEnabled(false);
@@ -67,73 +66,117 @@ public class MainController {
 
     public void setCertificateManager(CertificateManager certificateManager) {
         this.certificateManager = certificateManager;
-        String certificateName = certificateManager.getCertificate().getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-
-        certificateLabel.setText(String.format(certificateLabel.getText(), certificateName));
     }
 
     public void setDocument(Document document) {
-        String transformedContent;
-        try {
-            transformedContent = document.getTransformed();
-        } catch (Exception e) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                "Chyba zobrazenia",
-                "Získanie zobraziteľnej podoby zlyhalo",
-                "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
-            );
-            return;
-        }
-
         this.document = document;
 
-        documentLabel.setText(String.format(documentLabel.getText(), document.getTitle()));
+        if (document.getTitle() != null && !document.getTitle().equals("")) {
+            documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
+        } else {
+            documentLabel.setManaged(false);
+        }
 
-        var webEngine = webView.getEngine();
-        webEngine.getLoadWorker().stateProperty().addListener(
-            (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
-                if (newState == Worker.State.SUCCEEDED) {
-                    webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", transformedContent);
-                }
-            } 
-        );
-        webEngine.loadContent(this.getResourceAsString("visualization.html"));
+        if (document.getLegalEffect() != null && !document.getLegalEffect().equals("")) {
+            signLabel.setText(document.getLegalEffect());
+            signLabel.setVisible(true);
+        }
+
+        if (certificateManager.getCertificate() != null) {
+            String name = certificateManager
+                .getCertificate()
+                .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
+            mainButton.setText(String.format(Main.getProperty("text.sign"), name));
+        }
+
+        CompletableFuture.runAsync(() -> {
+            String transformedContent;
+            try {
+                transformedContent = document.getTransformed();
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    Main.displayAlert(
+                        AlertType.ERROR,
+                        "Chyba zobrazenia",
+                        "Získanie zobraziteľnej podoby zlyhalo",
+                        "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
+                    );
+                });
+                return;
+            }
+
+            Platform.runLater(() -> {
+                var webEngine = webView.getEngine();
+                webEngine.getLoadWorker().stateProperty().addListener(
+                    (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
+                        if (newState == Worker.State.SUCCEEDED) {
+                            webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", transformedContent);
+                        }
+                    } 
+                );
+                webEngine.loadContent(getResourceAsString("visualization.html"));
+            });
+        });
     }
 
-    public void setOnSigned(Consumer<Document> onSigned) {
+    public void setOnSigned(Consumer<String> onSigned) {
         this.onSigned = onSigned;
     }
 
     @FXML
-    private void pickCertificate() {
-        System.out.println("Picking certificate");
-        // TODO: Implement
+    private void onMainButtonAction() {
+        if (certificateManager.getCertificate() == null) {
+            // No certificate means this is loading of certificates
+            mainButton.setDisable(true);
+            mainButton.setText(Main.getProperty("text.loading"));
+
+            CompletableFuture.runAsync(() -> {
+                String mainButtonText;
+                if (certificateManager.useDefault() != null) {
+                    String name = certificateManager
+                        .getCertificate()
+                        .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
+                    mainButtonText = String.format(Main.getProperty("text.sign"), name);
+                } else {
+                    mainButtonText = Main.getProperty("text.loadSigners");
+                }
+                Platform.runLater(() -> {
+                    mainButton.setText(mainButtonText);
+                    mainButton.setDisable(false);
+                });
+            });
+        } else {
+            // Otherwise this is signing
+            String previousButtonText = mainButton.getText();
+            mainButton.setDisable(true);
+            mainButton.setText(Main.getProperty("text.signing"));
+
+            CompletableFuture.runAsync(() -> {
+                try {
+                    String signedContent = certificateManager.getCertificate().sign(document.getContent());
+                    Platform.runLater(() -> onSigned.accept(signedContent));
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        Main.displayAlert(
+                            AlertType.ERROR,
+                            "Nepodpísané",
+                            "Súbor nebol podpísaný",
+                            "Podpísanie zlyhalo alebo bolo zrušené. Detail chyby: " + e
+                        );
+                    });
+                } finally {
+                    Platform.runLater(() -> {
+                        mainButton.setText(previousButtonText);
+                        mainButton.setDisable(false);
+                    });
+                }
+            });
+        }
     }
 
     @FXML
-    private void sign() {
-        try {
-            String signedContent = certificateManager.getCertificate().sign(document.getContent());
-            Document signedDocument = document.clone();
-            signedDocument.setContent(signedContent);
-            onSigned.accept(signedDocument);
-        } catch (Exception e) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                "Nepodpísané",
-                "Súbor nebol podpísaný",
-                "Podpísanie zlyhalo alebo bolo zrušené. Detail chyby: " + e
-            );
-            throw e;
-        }
-
-        Main.displayAlert(
-            AlertType.CONFIRMATION,
-            "Podpísané",
-            "Súbor bol podpísaný",
-            "Súbor bol úspešne podpísaný. Môžete sa vrátiť."
-        );
+    private void onCertSettingsButtonAction() {
+        certificateManager.useDialogPicker();
     }
 
     /**

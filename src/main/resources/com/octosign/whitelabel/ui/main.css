@@ -3,27 +3,6 @@
     -fx-background-color: -bg-color;
 }
 
-.p1 {
-    -fx-padding: 8px;
-}
-
-.card {
-    -fx-background-radius: 4;
-    -fx-font-size: 1.25em;
-}
-.card.secondary {
-    -fx-background-color: -secondary-color;
-    -fx-background-radius: 4;
-}
-.card.secondary Label {
-    -fx-text-fill: -light-text-color;
-}
-.card Button {
-    -fx-text-fill: -light-text-color;
-    -fx-background-color: -primary-color;
-    -fx-background-radius: 4px;
-}
-.card Button:hover {
-    -fx-cursor: hand;
-    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.15), 127, 0.1, 0, 0);
+.footer {
+    -fx-padding: 16px 0 8px 0;
 }

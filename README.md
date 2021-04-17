@@ -1,6 +1,6 @@
 # White Label Signer
 
-Customizable, simple, cross-platform (Windows, macOS, Linux) eIDAS desktop app that can be integrated with your web application.
+Customizable, simple, cross-platform (Windows, macOS, Linux) eIDAS signature desktop app that can be integrated with your (web) application.
 
 ![Screenshot](https://github.com/octosign/branding/blob/main/screenshots/White%20Label.png?raw=true)
 

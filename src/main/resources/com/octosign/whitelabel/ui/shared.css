@@ -1,12 +1,83 @@
 /*
-    Shared styled for different stylesheets
+ * Shared styled for different stylesheets
+ *
+ * Do not modify directly in your fork, use overrides.css.
+ */
 
-    Do not modify directly in your fork, use overrides.css.
-*/
-
+/**
+ * Color variables
+ */
 * {
-    -bg-color: #f9f9f9;
+    -bg-color: #ebeef4;
     -primary-color: #0066ff;
     -secondary-color: #1a1f33;
-    -light-text-color: #ebeef4;
+    -light-text-color: #ffffff;
+    -dark-text-color: #0a0d14;
+}
+
+/**
+ * Panel
+ */
+.panel {
+    -fx-background-radius: 4;
+    -fx-font-size: 1.25em;
+}
+.panel.secondary {
+    -fx-background-color: -secondary-color;
+    -fx-background-radius: 4;
+}
+.panel.secondary Label {
+    -fx-text-fill: -light-text-color;
+}
+
+/**
+ * Button
+ */
+Button {
+    -fx-background-radius: 4px;
+    -fx-font-size: 1.25em;
+}
+Button.primary {
+    -fx-text-fill: -light-text-color;
+    -fx-background-color: -primary-color;
+}
+Button.secondary {
+    -fx-text-fill: -light-text-color;
+    -fx-background-color: -primary-color;
+}
+Button.white {
+    -fx-text-fill: -dark-text-color;
+    -fx-background-color: -bg-color;
+}
+Button:hover {
+    -fx-cursor: hand;
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.15), 127, 0.1, 0, 0);
+}
+.buttonGroup Button.leftButton {
+    -fx-background-radius: 4px 0 0 4px;
+}
+.buttonGroup Button.innerButton {
+    -fx-background-radius: 0;
+    -fx-border-width: 0 0 0 1px;
+    -fx-border-color: rgba(0, 0, 0, 0.5);
+}
+.buttonGroup Button.rightButton {
+    -fx-background-radius: 0 4px 4px 0;
+    -fx-border-width: 0 0 0 1px;
+    -fx-border-color: rgba(0, 0, 0, 0.5);
+}
+
+/**
+ * Padding
+ */
+.p1 {
+    -fx-padding: 2px;
+}
+
+.p2 {
+    -fx-padding: 4px;
+}
+
+.p3 {
+    -fx-padding: 8px;
 }

@@ -14,23 +14,26 @@ import javax.xml.transform.stream.StreamSource;
  */
 public class Document implements Cloneable {
     private String id;
-    private String name;
     private String title;
     private String content;
     private String transformation;
+    private String legalEffect;
+
+    public Document() {
+    }
 
     public Document(
         String id,
-        String name,
         String title,
         String content,
-        String transformation
+        String transformation,
+        String legalEffect
     ) {
         this.id = id;
-        this.name = name;
         this.title = title;
         this.content = content;
         this.transformation = transformation;
+        this.legalEffect = legalEffect;
     }
 
     public String getId() {
@@ -39,14 +42,6 @@ public class Document implements Cloneable {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getTitle() {
@@ -73,6 +68,14 @@ public class Document implements Cloneable {
         this.transformation = transformation;
     }
 
+    public String getLegalEffect() {
+        return this.legalEffect;
+    }
+
+    public void setLegalEffect(String legalEffect) {
+        this.legalEffect = legalEffect;
+    }
+
     /**
      * Apply defined transformation on the document and get it
      *
@@ -97,6 +100,6 @@ public class Document implements Cloneable {
     }
 
     public Document clone() {
-        return new Document(id, name, title, content, transformation);
+        return new Document(id, title, content, transformation, legalEffect);
     }
 }

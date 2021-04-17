@@ -26,8 +26,9 @@ public class Main extends Application {
         READY
     };
 
-    private final String bundlePath = getClass().getCanonicalName().toLowerCase();
-    private final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
+    private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
+
     private final String version;
 
     private final CertificateManager certificateManager = new CertificateManager();
@@ -39,21 +40,24 @@ public class Main extends Application {
         version = packageVersion != null ? packageVersion : "dev";
 
         // TODO: Use passed CLI arguments including launch URI
-        var port = Integer.parseInt(bundle.getString("server.defaultPort"));
+        var port = Integer.parseInt(getProperty("server.defaultPort"));
         server = new Server(port);
         server.setInfo(new ServerInfo(version, Status.LOADING));
+        // Prevent exiting in server mode on last window close
+        Platform.setImplicitExit(false);
     }
 
     @Override
     public void start(Stage stage) throws IOException {
-        // TODO: Add loader here using the default stage as loading takes some time
-        certificateManager.useDefault();
-
         server.setOnSign((Document document) -> {
             var future = new CompletableFuture<Document>();
 
             Platform.runLater(() -> {
-                openWindow(document, (Document signed) -> future.complete(signed));
+                openWindow(document, (String signedContent) -> {
+                    Document signedDocument = document.clone();
+                    signedDocument.setContent(signedContent);
+                    future.complete(signedDocument);
+                });
             });
 
             return future;
@@ -63,7 +67,7 @@ public class Main extends Application {
         // TODO: We can hide loader here
     }
 
-    private void openWindow(Document document, Consumer<Document> onSigned) {
+    private void openWindow(Document document, Consumer<String> onSigned) {
         var windowStage = new Stage();
 
         var fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"), bundle);
@@ -83,7 +87,10 @@ public class Main extends Application {
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setDocument(document);
-        controller.setOnSigned(onSigned);
+        controller.setOnSigned((String signedContent) -> { 
+            onSigned.accept(signedContent);
+            windowStage.close();
+        });
 
         var scene = new Scene(root, 640, 480);
         windowStage.setTitle(bundle.getString("application.name"));
@@ -93,6 +100,8 @@ public class Main extends Application {
 
     /**
      * Display alert
+     *
+     * TODO: Add errorAlert with stacktrace
      */
     public static void displayAlert(AlertType type, String title, String header, String description) {
         var alert = new Alert(type);
@@ -108,5 +117,12 @@ public class Main extends Application {
         alert.setContentText(description);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.showAndWait();
+    }
+
+    /**
+     * Get string property from the bundle
+     */
+    public static String getProperty(String path) {
+        return bundle.getString(path);
     }
 }
