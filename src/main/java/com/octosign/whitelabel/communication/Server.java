@@ -63,10 +63,10 @@ public class Server {
         }
     }
 
-    public Server(int port) {
+    public Server(String hostname, int port) {
         HttpServer server;
         try {
-            server = HttpServer.create(new InetSocketAddress("localhost", port), 0);
+            server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
         } catch (Exception e) {
             throw new RuntimeException("Could not start server", e);
         }

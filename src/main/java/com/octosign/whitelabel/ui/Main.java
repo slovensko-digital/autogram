@@ -40,8 +40,9 @@ public class Main extends Application {
         version = packageVersion != null ? packageVersion : "dev";
 
         // TODO: Use passed CLI arguments including launch URI
+        var hostname = getProperty("server.hostname");
         var port = Integer.parseInt(getProperty("server.defaultPort"));
-        server = new Server(port);
+        server = new Server(hostname, port);
         server.setInfo(new ServerInfo(version, Status.LOADING));
         // Prevent exiting in server mode on last window close
         Platform.setImplicitExit(false);
