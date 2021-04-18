@@ -36,8 +36,7 @@ public class Main extends Application {
     private final Server server;
 
     public Main() {
-        String packageVersion = Launcher.class.getPackage().getImplementationVersion();
-        version = packageVersion != null ? packageVersion : "dev";
+        version = getVersion();
 
         // TODO: Use passed CLI arguments including launch URI
         var hostname = getProperty("server.hostname");
@@ -125,5 +124,13 @@ public class Main extends Application {
      */
     public static String getProperty(String path) {
         return bundle.getString(path);
+    }
+
+    /**
+     * Application version as defined in pom if packged or dev otherwise
+     */
+    public static String getVersion() {
+        String packageVersion = Launcher.class.getPackage().getImplementationVersion();
+        return packageVersion != null ? packageVersion : "dev";
     }
 }
