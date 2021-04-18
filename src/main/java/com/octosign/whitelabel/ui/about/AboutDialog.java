@@ -55,15 +55,15 @@ public class AboutDialog extends Dialog<Boolean> {
             Main.getProperty("text.aboutHelp.usedOSS"),
             Main.getProperty("text.aboutHelp.javaInfo"),
             Main.getProperty("text.aboutHelp.depsInfo"),
-            usedOSS
+            usedOSS,
+            Main.getProperty("text.aboutHelp.moreLegalInfo")
         );
     }
 
     private List<String> getUsedOSS() {
         return Arrays.asList(new String[]{
-            "OpenJDK 11 & OpenJFX 16 - github.com/openjdk - GPLv2+Classpath Exception",
-            "Digital Signature Service 5.8 - github.com/esig/dss - LGPL-2.1",
-            "Gson 2 - github.com/google/gson - Apache 2"
+            "Digital Signature Service 5.8 - github.com/esig/dss - CEF Digital - LGPL-2.1",
+            "Gson 2 - github.com/google/gson - Google Inc. - Apache 2"
         });
     }
 }
