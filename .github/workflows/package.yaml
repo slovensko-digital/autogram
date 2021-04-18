@@ -30,6 +30,9 @@ jobs:
         with:
           draft: true
           prerelease: true
-          files: target/*.zip
+          files: |
+            target/*-win.zip
+            target/*-linux.tar.xz
+            target/*-mac.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

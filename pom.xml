@@ -227,7 +227,7 @@
                     <descriptors>
                         <descriptor>src/assembly/bin.xml</descriptor>
                     </descriptors>
-                    <finalName>${artifactId}-${version}-${os.name}</finalName>
+                    <finalName>${artifactId}-${version}-${platform}</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
@@ -252,18 +252,35 @@
                 </os>
             </activation>
             <properties>
+                <platform>win</platform>
                 <crypto.modules>jdk.crypto.cryptoki,jdk.crypto.mscapi</crypto.modules>
             </properties>
         </profile>
 
         <profile>
-            <id>unix</id>
+            <id>linux</id>
             <activation>
                 <os>
+                    <name>Linux</name>
                     <family>unix</family>
                 </os>
             </activation>
             <properties>
+                <platform>linux</platform>
+                <crypto.modules>jdk.crypto.cryptoki</crypto.modules>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>macos</id>
+            <activation>
+                <os>
+                    <name>Mac OS X</name>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <properties>
+                <platform>mac</platform>
                 <crypto.modules>jdk.crypto.cryptoki</crypto.modules>
             </properties>
         </profile>

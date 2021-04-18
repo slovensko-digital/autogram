@@ -3,6 +3,7 @@
     <id>bin</id>
     <formats>
         <format>zip</format>
+        <format>tar.xz</format>
         <!-- You can add format dir here if you want to use it for further packaging -->
     </formats>
     <fileSets>
