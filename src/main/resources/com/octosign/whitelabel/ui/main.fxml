@@ -23,6 +23,17 @@
     </VBox>
 
     <HBox styleClass="footer" alignment="CENTER" spacing="8">
+        <Button fx:id="aboutButton" onAction="#onAboutButtonAction" styleClass="white">
+            <tooltip><Tooltip text="%text.aboutHelp" showDelay="300ms" /></tooltip>
+            <graphic>
+                <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                <image>
+                    <Image url="@icons/info-black.png" />
+                </image>
+                </ImageView>
+            </graphic>
+        </Button>
+
         <Label fx:id="signLabel" visible="false" />
 
         <Region HBox.hgrow="ALWAYS" />

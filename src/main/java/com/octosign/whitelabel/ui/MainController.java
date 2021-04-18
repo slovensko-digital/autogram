@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import com.octosign.whitelabel.communication.Document;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.ui.about.AboutDialog;
 
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
@@ -172,6 +173,11 @@ public class MainController {
                 }
             });
         }
+    }
+
+    @FXML
+    private void onAboutButtonAction() {
+        new AboutDialog().show();
     }
 
     @FXML
