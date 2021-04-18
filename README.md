@@ -29,9 +29,9 @@ You can also override various messages and defaults by editing [src/main/resourc
 
 - JDK 11+
 - Maven
-- Optional: Visual Studio Code as IDE as you can utilize the versioned settings.
+- Optional: Visual Studio Code as IDE as you can utilize the versioned settings (launch config).
 
-### Scripts
+### Goals
 
 #### `mvn package`
 
@@ -39,7 +39,9 @@ Prepares all essential application artifacts in `./target`:
 
 - `dependency-jars/`
 - `preparedJDK/` - JLink-ed JDK (JRE) prepared for bundling with the application.
-- `whitelabel-*.jar` - Executable JAR with the application itself.
+- `whitelabel-*.jar` - JAR with the application itself.
+
+Assembles a .zip and .tar.xz with the content mention above and launch.sh/.bat which can be used to run it.
 
 ## License
 

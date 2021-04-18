@@ -203,9 +203,11 @@
                                 <module>java.datatransfer</module>
                                 <module>java.net.http</module>
                                 <module>java.logging</module>
+                                <module>java.sql</module>
                                 <module>java.scripting</module>
                                 <!-- Needed for sun.misc.Unsafe used by JavaFX, shouldn't be used in our code -->
                                 <module>jdk.unsupported</module>
+                                <module>jdk.httpserver</module>
                             </addModules>
                             <options>
                                 <option>--compress=2</option>
@@ -227,7 +229,7 @@
                     <descriptors>
                         <descriptor>src/assembly/bin.xml</descriptor>
                     </descriptors>
-                    <finalName>${artifactId}-${version}-${platform}</finalName>
+                    <finalName>${project.artifactId}-${project.version}-${platform}</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>

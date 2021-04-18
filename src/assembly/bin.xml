@@ -17,19 +17,26 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}</directory>
-            <outputDirectory>/</outputDirectory>
-            <includes>
-                <include>*.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
             <directory>${project.build.directory}/dependency-jars</directory>
             <outputDirectory>/dependency-jars</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}/preparedJDK</directory>
-            <outputDirectory>/preparedJDK</outputDirectory>
+            <outputDirectory>/jre</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/src/assembly</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>launch.*</include>
+            </includes>
         </fileSet>
     </fileSets>
+    <files>
+        <file>
+            <source>${project.build.directory}/${project.artifactId}-${project.version}.${packaging}</source>
+            <outputDirectory>/</outputDirectory>
+            <destName>${project.artifactId}.${packaging}</destName>
+        </file>
+    </files>
 </assembly>

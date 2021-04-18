@@ -1,0 +1,1 @@
+.\jre\bin\java -add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED -jar ./whitelabel.jar
