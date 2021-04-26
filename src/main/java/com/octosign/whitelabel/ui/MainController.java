@@ -9,7 +9,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.octosign.whitelabel.communication.Document;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 
@@ -89,11 +90,17 @@ public class MainController {
                 .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
-
+      
         CompletableFuture.runAsync(() -> {
-            String transformedContent;
+            String content;
+            boolean plaintextContent = false;
             try {
-                transformedContent = document.getTransformed();
+                if (document instanceof XMLDocument) {
+                    content = ((XMLDocument) document).getTransformed();
+                } else {
+                    content = document.getContent();
+                    plaintextContent = true;
+                }
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     Main.displayAlert(
@@ -111,7 +118,8 @@ public class MainController {
                 webEngine.getLoadWorker().stateProperty().addListener(
                     (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
                         if (newState == Worker.State.SUCCEEDED) {
-                            webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", transformedContent);
+                            // TODO: Add showing of content in preformatted div if plaintextContent == true
+                            webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", content);
                         }
                     } 
                 );

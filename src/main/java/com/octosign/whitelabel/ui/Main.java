@@ -6,9 +6,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import com.octosign.whitelabel.Launcher;
-import com.octosign.whitelabel.communication.Document;
-import com.octosign.whitelabel.communication.Server;
-import com.octosign.whitelabel.communication.ServerInfo;
+import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.server.Server;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -41,8 +41,9 @@ public class Main extends Application {
         // TODO: Use passed CLI arguments including launch URI
         var hostname = getProperty("server.hostname");
         var port = Integer.parseInt(getProperty("server.defaultPort"));
-        server = new Server(hostname, port);
-        server.setInfo(new ServerInfo(version, Status.LOADING));
+        // TODO: Catch the exception and display alert before rethrowing
+        server = new Server(hostname, port, version == "dev");
+        server.setInfo(new Info(version, Status.LOADING));
         // Prevent exiting in server mode on last window close
         Platform.setImplicitExit(false);
     }
@@ -62,7 +63,7 @@ public class Main extends Application {
 
             return future;
         });
-        server.setInfo(new ServerInfo(version, Status.READY));
+        server.setInfo(new Info(version, Status.READY));
 
         // TODO: We can hide loader here
     }

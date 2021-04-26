@@ -1,4 +1,4 @@
-package com.octosign.whitelabel.communication;
+package com.octosign.whitelabel.communication.document;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -9,55 +9,24 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-/**
- * Document to be signed
- */
-public class Document implements Cloneable {
-    private String id;
-    private String title;
-    private String content;
-    private String transformation;
-    private String legalEffect;
+public class XMLDocument extends Document {
 
-    public Document() {
-    }
+    protected String transformation;
 
-    public Document(
+    public XMLDocument() { }
+
+    public XMLDocument(
         String id,
         String title,
         String content,
-        String transformation,
-        String legalEffect
+        String legalEffect,
+        String transformation
     ) {
         this.id = id;
         this.title = title;
         this.content = content;
-        this.transformation = transformation;
         this.legalEffect = legalEffect;
-    }
-
-    public String getId() {
-        return this.id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return this.title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getContent() {
-        return this.content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
+        this.transformation = transformation;
     }
 
     public String getTransformation() {
@@ -66,14 +35,6 @@ public class Document implements Cloneable {
 
     public void setTransformation(String transformation) {
         this.transformation = transformation;
-    }
-
-    public String getLegalEffect() {
-        return this.legalEffect;
-    }
-
-    public void setLegalEffect(String legalEffect) {
-        this.legalEffect = legalEffect;
     }
 
     /**
@@ -99,7 +60,4 @@ public class Document implements Cloneable {
         return xmlOutWriter.toString();
     }
 
-    public Document clone() {
-        return new Document(id, title, content, transformation, legalEffect);
-    }
 }
