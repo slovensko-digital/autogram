@@ -8,11 +8,11 @@ import com.sun.net.httpserver.HttpExchange;
 
 public class DocumentationEndpoint extends Endpoint {
 
-    private final String docsPath = "./docs";
+    private final String docsPath = "./docs/static/api";
 
-    private final String htmlName = "server-api.html";
+    private final String htmlName = "index.html";
 
-    private final String yamlName = "server-api.yml";
+    private final String yamlName = "server.yml";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
