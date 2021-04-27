@@ -1,0 +1,288 @@
+openapi: 3.0.3
+info:
+  title: Octosign White Label Server
+  description: 'This documentation describes Octosign White Label running in the server mode. If you have the custom protocol configured, you can launch it using the link [signer://launch/37200/*/key](signer://launch/37200/*/key).'
+  termsOfService: https://whitelabel.octosign.com/legal/
+  contact:
+    name: Octosign White Label
+    url: https://whitelabel.octosign.com/
+    email: jakub@duras.me
+  license:
+    name: MIT
+    url: https://github.com/octosign/white-label/blob/main/LICENSE
+  version: 0.1.0
+servers:
+- url: http://127.0.0.1:37200
+tags:
+- name: Info
+  description: Information and status of the server
+- name: Sign
+  description: Document signing
+paths:
+  /info:
+    get:
+      tags:
+      - Info
+      summary: Retrieve info and the current server status
+      operationId: getInfo
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Info'
+        405:
+          description: 'Incorrect HTTP method.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+      x-code-samples:
+        - lang: JavaScript
+          source: |
+            // TODO: Add code sample
+  /sign:
+    post:
+      tags:
+      - Sign
+      summary: Sign a single document
+      operationId: signDocument
+      parameters:
+      - name: template
+        in: query
+        description: Prefill parameters using a template
+        required: false
+        schema:
+          type: string
+          enum:
+          - slovakia
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/SignRequestBody'
+        required: true
+      responses:
+        200:
+          description: The document was successfully signed and its content is available in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        405:
+          description: 'Incorrect HTTP method.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        415:
+          description: 'Unsupported request body MIME type.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        400:
+          description: 'The request body cannot be processed.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        409:
+          description: 'Server is not ready to process the request.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        500:
+          description: 'Request failed due to some unexpected error.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+
+components:
+  schemas:
+    Info:
+      type: object
+      properties:
+        version:
+          type: string
+          example: '1.2.3'
+        status:
+          type: string
+          enum:
+          - LOADING
+          - READY
+
+    SignRequestBody:
+      type: object
+      properties:
+        document:
+          $ref: '#/components/schemas/Document'
+        parameters:
+          $ref: '#/components/schemas/SignatureParameters'
+        payloadMimeType:
+          type: string
+          example: application/xml
+          description: |
+            MIME type for document content and signature parameters like transformation and schema.
+            Binary files should be encoded using base64, e.g., `application/pdf;base64`.
+            Text formats like XML can be optionally encoded using base64 but can be supplied as plain text as seen in the examples, in which case the type is `application/xml`.
+        hmac:
+          type: string
+          description: |
+            Base64 encoded HMAC-SHA512 of the nonce and body that is required if the server was launched with the optional secret key.
+            You should encode the body prepared for sending and create its HMAC-SHA512 before encoding it again with this property.
+
+            Example:
+
+            0. Serialize the request body `body = serialize(payload)`.
+            1. Calculate the SHA256 of the concatenated nonce and body `hash = sha256(nonce + body)`.
+            2. Calculate the HMAC of the URI path and query and the prepared hash using the agreed on secret key `hmac = hmac-512(/sign?template=lorem + hash, key)`.
+            3. Serialize the request body again, but this time with the calculated additional `hmac` property.
+            4. Increase the nonce if the request succeeded.
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '123'
+          description: Optional id you can use to identify the document yourself.
+        title:
+          type: string
+          example: 'Contract 2021-14532'
+          description: Optional title shown to the user when signing.
+        content:
+          type: string
+          example: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>'
+          description: 'Content of the document to sign, format is dictated by `payloadMimeType`.'
+        legalEffect:
+          type: string
+          example: 'By signing this document...'
+          description: 'Optional legal effect of signing the document shown to the user when signing.'
+      required:
+      - content
+
+    SignatureParameters:
+      type: object
+      properties:
+        format:
+          type: string
+          enum:
+          - PADES
+          - XADES
+          example: XADES
+          description: 'Signature format PAdES is usable only with documents of type `application/pdf`. Format XAdES is usable with XML or with any file type if using an ASiC container.'
+
+        level:
+          type: string
+          enum:
+          - PADES_BASELINE_B
+          - XADES_BASELINE_B
+          example: XADES_BASELINE_B
+          description: 'Optional signature level, defaults to BASELINE_B relevant for the signature format.'
+
+        fileMimeType:
+          type: string
+          example: application/lor.ip.xmldatacontainer+xml
+          description: Optional MIME type set on the output file. Useful with ASiC data container that can have a custom mime type.
+
+        container:
+          type: string
+          enum:
+          - ASICS
+          - ASICE
+          example: ASICE
+          description: Optional container type that should be used to place the file with signature to. Defaults to ASICE.
+
+        packaging:
+          type: string
+          enum:
+          - ENVELOPED
+          - ENVELOPING
+          example: ENVELOPED
+          description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Defaults to ENVELOPED.
+
+        digestAlgorithm:
+          type: string
+          enum:
+          - SHA256
+          - SHA384
+          - SHA512
+          example: SHA256
+          description: Optional algorithm used to calculate digests. Defaults to SHA256.
+
+        en319132:
+          type: boolean
+          example: false
+          description: Optional flag to control whether the signature should be made according to EN 319132. Defaults to true.
+
+        infoCanonicalization:
+          type: string
+          enum:
+          - INCLUSIVE
+          - EXCLUSIVE
+          example: INCLUSIVE
+          description: Optional info canonicalization method.
+
+        propertiesCanonicalization:
+          type: string
+          enum:
+          - INCLUSIVE
+          - EXCLUSIVE
+          example: INCLUSIVE
+          description: Optional properties canonicalization method.
+
+        keyInfoCanonicalization:
+          type: string
+          enum:
+          - INCLUSIVE
+          - EXCLUSIVE
+          example: INCLUSIVE
+          description: Optional key info canonicalization method.
+
+        signaturePolicyId:
+          type: string
+          example: http://www.example.com/policy.txt
+          description: Optional signature policy id, usually a URI.
+
+        signaturePolicyContent:
+          type: string
+          example: Don't be evil.
+          description: Optional signature policy content.
+
+        transformation:
+          type: string
+          example: '<?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>'
+          description: 'Optional XML transformation, format is dictated by `payloadMimeType`.'
+
+        schema:
+          type: string
+          example: '<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="Document"><xs:complexType><xs:sequence><xs:element name="Title" type="xs:string" /></xs:sequence></xs:complexType></xs:element></xs:schema>'
+          description: 'Optional XML schema, format is dictated by `payloadMimeType`.'
+      required:
+      - format
+
+    ErrorBody:
+      type: object
+      properties:
+        code:
+          type: string
+          enum:
+          - NOT_READY
+          - UNSUPPORTED_OPERATION
+          - MALFORMED_INPUT
+          - UNSUPPORTED_FORMAT
+          - SIGNING_FAILED
+          example: MALFORMED_INPUT
+          description: Code that can be used to identify the error.
+        message:
+          type: string
+          example: Malformed input body.
+          description: Mostly human readable error message.
+        details:
+          type: string
+          example: 'Unable to switch to fourth dimension: java.lang.NullPointerException'
+          description: Optional details, likely not human readable, like raw exception message.
