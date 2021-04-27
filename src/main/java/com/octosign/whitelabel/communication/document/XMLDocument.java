@@ -3,30 +3,29 @@ package com.octosign.whitelabel.communication.document;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+/**
+ * XML document for signing
+ */
 public class XMLDocument extends Document {
+
+    public static final String MIME_TYPE = "application/xml";
 
     protected String transformation;
 
     public XMLDocument() { }
 
-    public XMLDocument(
-        String id,
-        String title,
-        String content,
-        String legalEffect,
-        String transformation
-    ) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.legalEffect = legalEffect;
-        this.transformation = transformation;
+    public XMLDocument(Document document) {
+        setId(document.getId());
+        setTitle(document.getTitle());
+        setContent(document.getContent());
+        setLegalEffect(document.getLegalEffect());
     }
 
     public String getTransformation() {
@@ -52,10 +51,13 @@ public class XMLDocument extends Document {
         var xslSource = new StreamSource(new StringReader(transformation));
         var xmlInSource = new StreamSource(new StringReader(content));
 
-        var tf = TransformerFactory.newInstance().newTransformer(xslSource);
+        var transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+        var transformer = transformerFactory.newTransformer(xslSource);
 
         var xmlOutWriter = new StringWriter();
-        tf.transform(xmlInSource, new StreamResult(xmlOutWriter));
+        transformer.transform(xmlInSource, new StreamResult(xmlOutWriter));
 
         return xmlOutWriter.toString();
     }

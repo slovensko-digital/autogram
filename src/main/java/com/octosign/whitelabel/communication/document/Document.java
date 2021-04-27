@@ -1,7 +1,7 @@
 package com.octosign.whitelabel.communication.document;
 
 /**
- * Document to be signed
+ * Generic document exchanged during communication
  */
 public class Document implements Cloneable {
     protected String id;

@@ -19,6 +19,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.web.WebView;
 import javafx.concurrent.Worker;
@@ -33,6 +34,9 @@ public class MainController {
 
     @FXML
     private WebView webView;
+
+    @FXML
+    private TextArea textArea;
 
     @FXML
     private Label signLabel;
@@ -90,42 +94,47 @@ public class MainController {
                 .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
-      
-        CompletableFuture.runAsync(() -> {
-            String content;
-            boolean plaintextContent = false;
-            try {
-                if (document instanceof XMLDocument) {
-                    content = ((XMLDocument) document).getTransformed();
-                } else {
-                    content = document.getContent();
-                    plaintextContent = true;
-                }
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    Main.displayAlert(
-                        AlertType.ERROR,
-                        "Chyba zobrazenia",
-                        "Získanie zobraziteľnej podoby zlyhalo",
-                        "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
-                    );
-                });
-                return;
-            }
 
-            Platform.runLater(() -> {
-                var webEngine = webView.getEngine();
-                webEngine.getLoadWorker().stateProperty().addListener(
-                    (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
-                        if (newState == Worker.State.SUCCEEDED) {
-                            // TODO: Add showing of content in preformatted div if plaintextContent == true
-                            webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", content);
-                        }
-                    } 
-                );
-                webEngine.loadContent(getResourceAsString("visualization.html"));
+        boolean isXml = document instanceof XMLDocument;
+        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+
+        if (hasTransformation) {
+            textArea.setManaged(false);
+
+            CompletableFuture.runAsync(() -> {
+                String visualisation;
+                try {
+                    var xmlDocument = (XMLDocument) document;
+                    visualisation = xmlDocument.getTransformed();
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        Main.displayAlert(
+                            AlertType.ERROR,
+                            "Chyba zobrazenia",
+                            "Získanie zobraziteľnej podoby zlyhalo",
+                            "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
+                        );
+                    });
+                    return;
+                }
+    
+                Platform.runLater(() -> {
+                    var webEngine = webView.getEngine();
+                    webEngine.getLoadWorker().stateProperty().addListener(
+                        (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
+                            if (newState == Worker.State.SUCCEEDED) {
+                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
+                            }
+                        } 
+                    );
+                    webEngine.loadContent(getResourceAsString("visualization.html"));
+                });
             });
-        });
+        } else {
+            webView.setManaged(false);
+
+            textArea.setText(document.getContent());
+        }
     }
 
     public void setOnSigned(Consumer<String> onSigned) {
