@@ -6,7 +6,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon-32x32.png',
   organizationName: 'octosign',
   projectName: 'white-label',
   themeConfig: {
@@ -27,6 +27,11 @@ module.exports = {
           to: 'server-api',
           position: 'left',
           label: 'Server API',
+        },
+        {
+          to: 'server-api-client',
+          position: 'left',
+          label: 'Server API Client',
         },
         {
           href: 'https://github.com/octosign/white-label',
