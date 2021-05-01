@@ -27,12 +27,14 @@ public class Request<BodyT> {
 
         bodyFormats = Map.of(
             JsonFormat.MIME_TYPE, new JsonFormat(),
+            "text/plain", new JsonFormat(), // Considered JSON so clients can prevent CORS preflight
             "*/*", new JsonFormat() // Implicit default format
         );
 
         var contentType = exchange.getRequestHeaders().get("Content-Type");
         if (contentType != null) {
             bodyFormat = contentType.stream()
+                .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
                 .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
                 .findFirst()
                 .map((mimeType) -> bodyFormats.get(mimeType))

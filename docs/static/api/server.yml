@@ -32,8 +32,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Info'
+        403:
+          description: 'Request came from an unexpected origin.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
         405:
           description: 'Incorrect HTTP method.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        500:
+          description: 'Request failed due to some unexpected error.'
           content:
             application/json:
               schema:
@@ -70,6 +82,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Document'
+        403:
+          description: 'Request came from an unexpected origin.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
         405:
           description: 'Incorrect HTTP method.'
           content:
@@ -276,6 +294,8 @@ components:
           - MALFORMED_INPUT
           - UNSUPPORTED_FORMAT
           - SIGNING_FAILED
+          - UNEXPECTED_ORIGIN
+          - UNEXPECTED_ERROR
           example: MALFORMED_INPUT
           description: Code that can be used to identify the error.
         message:

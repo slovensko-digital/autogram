@@ -2,31 +2,42 @@ package com.octosign.whitelabel.communication.server.endpoint;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.octosign.whitelabel.communication.CommunicationError;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
+import com.octosign.whitelabel.communication.server.Server;
 import com.sun.net.httpserver.HttpExchange;
 
 /**
  * Server API endpoint
  *
- * TODO: Split this into ReadEnpoint and WriteEndpoint without (GET) and with (POST) request body
  * TODO: Handle IOException in the handle - it means the request was aborted from the client
  * @param <Req> Expected request body
  * @param <Res> Response body
  */
 abstract class WriteEndpoint<Req, Res> extends Endpoint {
 
-    @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        // TODO: Add checking of origin
-        // TODO: Add checking of remote address (if listening on localhost only)
-        // TODO: Add checking of HMAC
-        if (verifyHTTPMethod(exchange) == false) return;
+    /**
+     * This endpoint's current nonce
+     *
+     * Incremented on each successful request.
+     */
+    private AtomicInteger nonce;
 
+    public WriteEndpoint(Server server, int initialNonce) {
+        super(server);
+
+        nonce = new AtomicInteger(initialNonce);
+    }
+
+    @Override
+    protected void handleRequest(HttpExchange exchange) throws IOException {
         var request = new Request<Req>(exchange);
+
+        // TODO: Add verifying of HMAC if server has secretKey specified
 
         var requestClass = getRequestClass();
         if (requestClass != null) {
@@ -48,25 +59,10 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
             }
         }
 
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
         var response = handleRequest(request, new Response<Res>(exchange));
         useResponse(response);
-    }
-
-    /**
-     * Use response produced by the endpoint handler
-     *
-     * @param response
-     * @throws IOException
-     */
-    protected void useResponse(Response<Res> response) throws IOException {
-        if (response != null) {
-            // TODO: Add bumping of nonce
-
-            response.send();
-        } else {
-            // The request failed and the enpoint sent its own error response
-            // TODO: Check response stream to make sure this is the case
-        }
     }
 
     /**
@@ -88,5 +84,21 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
      * Class of the response body object
      */
     protected abstract Class<Res> getResponseClass();
+
+    /**
+     * Use response produced by the endpoint handler
+     *
+     * @param response
+     * @throws IOException
+     */
+    protected void useResponse(Response<Res> response) throws IOException {
+        if (response != null) {
+            response.send();
+            // TODO: Add bumping of nonce
+        } else {
+            // The request failed and the endpoint sent its own error response
+            // TODO: Check response stream to make sure this is the case
+        }
+    }
 
 }

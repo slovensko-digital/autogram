@@ -3,10 +3,15 @@ package com.octosign.whitelabel.communication.server.endpoint;
 import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
+import com.octosign.whitelabel.communication.server.Server;
 
 public class InfoEndpoint extends ReadEndpoint<Info> {
 
     private Info info;
+
+    public InfoEndpoint(Server server) {
+        super(server);
+    }
 
     public void setInfo(Info info) {
         this.info = info;

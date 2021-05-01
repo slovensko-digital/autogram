@@ -14,20 +14,42 @@ import com.sun.net.httpserver.HttpServer;
 
 public class Server {
 
-    private InfoEndpoint infoEndpoint = new InfoEndpoint();
+    private final InfoEndpoint infoEndpoint;
 
-    private SignEndpoint signEndpoint = new SignEndpoint();
+    private final SignEndpoint signEndpoint;
 
-    private DocumentationEndpoint documentationEndpoint = new DocumentationEndpoint();
+    private final DocumentationEndpoint documentationEndpoint;
 
-    public Server(String hostname, int port, boolean devMode) {
-        HttpServer server;
+    private final HttpServer server;
+
+    /**
+     * Local development mode
+     */
+    private boolean devMode;
+
+    /**
+     * HTTP allowed origin
+     */
+    private String allowedOrigin = "*";
+
+    /**
+     * HMAC hex secret key
+     */
+    private String secretKey;
+
+    public Server(String hostname, int port, int initialNonce) {
         try {
             server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
         } catch (Exception e) {
-            throw new RuntimeException("Could not start server", e);
+            throw new RuntimeException("Could not create server", e);
         }
 
+        documentationEndpoint = new DocumentationEndpoint(this);
+        infoEndpoint = new InfoEndpoint(this);
+        signEndpoint = new SignEndpoint(this, initialNonce);
+    }
+
+    public void start() {
         server.createContext("/", infoEndpoint);
         server.createContext("/sign", signEndpoint);
         if (devMode) {
@@ -37,13 +59,30 @@ public class Server {
         // Run requests in separate threads
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
+    }
 
-        // TODO: Add exiting based on the requested timeout
-        System.out.println("Running in server mode on " + server.getAddress().toString());
-        if (devMode) {
-            var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
-            System.out.println("Documentation is available in dev mode at " + docsAddress);
-        }
+    public void setDevMode(boolean devMode) {
+        this.devMode = devMode;
+    }
+
+    public boolean isDevMode() {
+        return devMode;
+    }
+
+    public String getAllowedOrigin() {
+        return allowedOrigin;
+    }
+
+    public void setAllowedOrigin(String allowedOrigin) {
+        this.allowedOrigin = allowedOrigin;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public void setInfo(Info info) {
@@ -52,6 +91,10 @@ public class Server {
 
     public void setOnSign(Function<Document, CompletableFuture<Document>> onSign) {
         signEndpoint.setOnSign(onSign);
+    }
+
+    public InetSocketAddress getAddress() {
+        return server.getAddress();
     }
 
 }

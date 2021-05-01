@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 
+import com.octosign.whitelabel.communication.server.Server;
 import com.sun.net.httpserver.HttpExchange;
 
 public class DocumentationEndpoint extends Endpoint {
@@ -14,8 +15,12 @@ public class DocumentationEndpoint extends Endpoint {
 
     private final String yamlName = "server.yml";
 
+    public DocumentationEndpoint(Server server) {
+        super(server);
+    }
+
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    protected void handleRequest(HttpExchange exchange) throws IOException {
         String cwd = System.getProperty("user.dir");
         boolean isYaml = exchange.getRequestURI().getPath().endsWith(".yml");
 

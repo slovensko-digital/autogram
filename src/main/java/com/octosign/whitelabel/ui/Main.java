@@ -1,11 +1,15 @@
 package com.octosign.whitelabel.ui;
 
-import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import com.octosign.whitelabel.Launcher;
+import com.octosign.whitelabel.cli.command.Command;
+import com.octosign.whitelabel.cli.command.CommandFactory;
+import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
@@ -15,12 +19,16 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class Main extends Application {
+
     public enum Status {
         LOADING,
         READY
@@ -29,27 +37,83 @@ public class Main extends Application {
     private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
     private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
 
-    private final String version;
-
     private final CertificateManager certificateManager = new CertificateManager();
 
-    private final Server server;
-
-    public Main() {
-        version = getVersion();
-
-        // TODO: Use passed CLI arguments including launch URI
-        var hostname = getProperty("server.hostname");
-        var port = Integer.parseInt(getProperty("server.defaultPort"));
-        // TODO: Catch the exception and display alert before rethrowing
-        server = new Server(hostname, port, version == "dev");
-        server.setInfo(new Info(version, Status.LOADING));
-        // Prevent exiting in server mode on last window close
-        Platform.setImplicitExit(false);
-    }
+    private Server server;
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage primaryStage) throws Exception {
+        Command cliCommand;
+        try {
+            cliCommand = CommandFactory.fromParameters(getParameters());
+        } catch (Throwable e) {
+            displayError(
+                getProperty("text.error.openingFailed"),
+                getProperty("text.error.cannotUseParameters"),
+                e
+            );
+            return;
+        }
+
+        if (cliCommand instanceof ListenCommand) {
+            startServer((ListenCommand) cliCommand);
+
+            // Prevent exiting in server mode on last window close
+            Platform.setImplicitExit(false);
+            return;
+        }
+
+        // No CLI command means standalone GUI mode
+        // TODO: Show something more useful, this should be either:
+        // 1. Standalone mode once it gets implemented
+        // 2. Info about the app and how it is launched from the web
+        displayAlert(
+            AlertType.INFORMATION,
+            getProperty("application.name"),
+            "Application is installed",
+            "Start signing from the web."
+        );
+    }
+
+    private void startServer(ListenCommand command) {
+        var version = getVersion();
+        var hostname = getProperty("server.hostname");
+        var port = command.getPort() > 0
+            ? command.getPort()
+            : Integer.parseInt(getProperty("server.defaultPort"));
+
+        try {
+            server = new Server(hostname, port, command.getInitialNonce());
+        } catch (Throwable e) {
+            displayError(
+                getProperty("text.error.openingFailed"),
+                getProperty("text.error.cannotListen"),
+                e
+            );
+            return;
+        }
+
+        server.setDevMode(version == "dev");
+        server.setInfo(new Info(version, Status.LOADING));
+        if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
+        if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());
+
+        try {
+            server.start();
+        } catch (Throwable e) {
+            displayError(
+                getProperty("text.error.openingFailed"),
+                getProperty("text.error.cannotListen"),
+                e
+            );
+            return;
+        }
+        System.out.println("Running in server mode on " + server.getAddress().toString());
+        if (server.isDevMode()) {
+            var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
+            System.out.println("Documentation is available in dev mode at " + docsAddress);
+        }
+
         server.setOnSign((Document document) -> {
             var future = new CompletableFuture<Document>();
 
@@ -63,9 +127,8 @@ public class Main extends Application {
 
             return future;
         });
-        server.setInfo(new Info(version, Status.READY));
 
-        // TODO: We can hide loader here
+        server.setInfo(new Info(version, Status.READY));
     }
 
     private void openWindow(Document document, Consumer<String> onSigned) {
@@ -76,11 +139,10 @@ public class Main extends Application {
         try {
             root = fxmlLoader.load();
         } catch (Exception e) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                "Otvorenie zlyhalo",
-                "Nepodarilo sa otvoriť okno",
-                "Okno so súborom sa nepodarilo otvoriť. Detail chyby: " + e
+            displayError(
+                getProperty("text.error.openingFailed"),
+                getProperty("text.error.cannotOpenWindow"),
+                e
             );
             return;
         }
@@ -94,17 +156,60 @@ public class Main extends Application {
         });
 
         var scene = new Scene(root, 640, 480);
-        windowStage.setTitle(bundle.getString("application.name"));
+        windowStage.setTitle(getProperty("application.name"));
         windowStage.setScene(scene);
         windowStage.show();
     }
 
     /**
      * Display alert
-     *
-     * TODO: Add errorAlert with stacktrace
      */
     public static void displayAlert(AlertType type, String title, String header, String description) {
+        getAlert(type, title, header, description).showAndWait();
+    }
+
+    /**
+     * Display error alert
+     */
+    public static void displayError(String header, String description) {
+        var alert = getAlert(AlertType.ERROR, getProperty("text.error"), header, description);
+
+        alert.showAndWait();
+    }
+
+    /**
+     * Display error alert with exception details
+     */
+    public static void displayError(String header, String description, Throwable e) {
+        var alert = getAlert(AlertType.ERROR, getProperty("text.error"), header, description);
+
+        if (e != null) {
+            e.printStackTrace();
+            var stringWriter = new StringWriter();
+            e.printStackTrace(new PrintWriter(stringWriter));
+            var stackTrace = stringWriter.toString();
+
+            var details = new GridPane();
+            details.setMaxWidth(Double.MAX_VALUE);
+
+            var label = new Label(getProperty("text.error.details"));
+            details.add(label, 0, 0);
+
+            var textArea = new TextArea(stackTrace);
+            textArea.setEditable(false);
+            textArea.setWrapText(true);
+            details.add(textArea, 0, 1);
+
+            alert.getDialogPane().setExpandableContent(details);
+        }
+
+        alert.showAndWait();
+    }
+
+    /**
+     * Create unified Alert
+     */
+    public static Alert getAlert(AlertType type, String title, String header, String description) {
         var alert = new Alert(type);
 
         var dialogPane = alert.getDialogPane();
@@ -113,11 +218,12 @@ public class Main extends Application {
         stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
         stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
 
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(description);
+        if (title != null) alert.setTitle(title);
+        if (header != null) alert.setHeaderText(header);
+        if (description != null) alert.setContentText(description);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-        alert.showAndWait();
+
+        return alert;
     }
 
     /**
@@ -128,10 +234,11 @@ public class Main extends Application {
     }
 
     /**
-     * Application version as defined in pom if packged or dev otherwise
+     * Application version as defined in pom if packaged or dev otherwise
      */
     public static String getVersion() {
         String packageVersion = Launcher.class.getPackage().getImplementationVersion();
         return packageVersion != null ? packageVersion : "dev";
     }
+
 }

@@ -6,7 +6,9 @@ public class CommunicationError {
         UNSUPPORTED_OPERATION,
         MALFORMED_INPUT,
         UNSUPPORTED_FORMAT,
-        SIGNING_FAILED
+        SIGNING_FAILED,
+        UNEXPECTED_ORIGIN,
+        UNEXPECTED_ERROR
     };
 
     public final Code code;

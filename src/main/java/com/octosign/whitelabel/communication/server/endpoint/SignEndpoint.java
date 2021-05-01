@@ -13,10 +13,15 @@ import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
+import com.octosign.whitelabel.communication.server.Server;
 
 public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
     private Function<Document, CompletableFuture<Document>> onSign;
+
+    public SignEndpoint(Server server, int initialNonce) {
+        super(server, initialNonce);
+    }
 
     public void setOnSign(Function<Document, CompletableFuture<Document>> onSign) {
         this.onSign = onSign;

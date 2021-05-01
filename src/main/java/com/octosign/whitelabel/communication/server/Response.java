@@ -34,6 +34,7 @@ public class Response<T> {
 
         var contentType = exchange.getRequestHeaders().get("Accept");
         bodyFormat = contentType.stream()
+            .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
             .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
             .findFirst()
             .map((mimeType) -> bodyFormats.get(mimeType))
