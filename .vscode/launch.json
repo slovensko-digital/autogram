@@ -10,8 +10,7 @@
             "request": "launch",
             "mainClass": "com.octosign.whitelabel.Launcher",
             "projectName": "whitelabel",
-            // "args": "--url=\"signer://listen/37200/*\""
-            "args": "listen --port=\"31200\" --origin=\"asd.com\" --secretKey=\"asssw\" --initialNonce=\"123\""
+            "args": "--url=\"signer://listen/37200/*\""
         }
     ]
 }
