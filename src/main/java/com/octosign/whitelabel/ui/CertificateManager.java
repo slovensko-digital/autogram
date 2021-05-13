@@ -6,8 +6,14 @@ import java.util.Locale;
 import com.octosign.whitelabel.signing.SigningCertificate;
 import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
 import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
+import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeTableColumn;
+import javafx.scene.control.TreeTableView;
 import javafx.scene.control.Alert.AlertType;
 
 /**
@@ -22,8 +28,38 @@ public class CertificateManager {
     /**
      * Loads and sets default signing certificate
      */
-    public void useDefault() {
+    public SigningCertificate useDefault() {
         certificate = getDefaulCertificate();
+        return certificate;
+    }
+
+    /**
+     * Use dialog picker to choose the certificate
+     */
+    public SigningCertificate useDialogPicker() {
+        // TODO: Move out and implement actual logic
+
+        Dialog<SigningCertificate> dialog = new Dialog<>();
+        dialog.setTitle(Main.getProperty("text.certificateSettings"));
+        var dialogPane = dialog.getDialogPane();
+
+        var stylesheets = dialogPane.getStylesheets();
+        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
+        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
+        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
+
+        var treeTableView = new TreeTableView<SigningCertificate>();
+        var nameColumn = new TreeTableColumn<SigningCertificate, String>(Main.getProperty("text.subjectName"));
+        nameColumn.setCellValueFactory((cert) ->
+            new SimpleStringProperty(
+                cert.getValue().getValue().getNicePrivateKeyDescription(KeyDescriptionVerbosity.LONG)
+            )
+        );
+        treeTableView.getColumns().add(nameColumn);
+        treeTableView.setRoot(new TreeItem<SigningCertificate>(certificate));
+        dialogPane.setContent(treeTableView);
+
+        return dialog.showAndWait().orElse(null);
     }
 
     /**
@@ -35,8 +71,6 @@ public class CertificateManager {
 
     /**
      * Tries to automatically choose the most appropriate token and private key
-     *
-     * Exits the application if the token or private key is not found
      *
      * TODO: All strings here should come from the properties
      */
@@ -56,7 +90,6 @@ public class CertificateManager {
                 "Podpisovací token nenájdený",
                 "Nepodarilo sa nájsť žiaden podporovaný token vhodný na podpisovanie. Uistite sa, že máte nainštalovaný softvér dodávaný s tokenom a skúste to znova."
             );
-            System.exit(1);
             return null;
         }
     
@@ -70,7 +103,6 @@ public class CertificateManager {
                 "Podpisovací token nedostupný",
                 "Použitie podpisovacieho tokenu zlyhalo. Uistite sa, že máte správne pripavené podpisovacie zariadenie a skúste to znova. Detail chyby: " + e
             );
-            System.exit(1);
             return null;
         }
     
@@ -81,7 +113,6 @@ public class CertificateManager {
                 "Podpisovací token prázdny",
                 "Podporovaný podpisovací token neobsahuje použiteľný certifikát. Uistite sa, že máte správne nastavený token a skúste to znova."
             );
-            System.exit(1);
             return null;
         }
     
