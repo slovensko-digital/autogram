@@ -1,6 +1,6 @@
 # White Label Signer
 
-Customizable, simple, cross-platform (Windows, macOS, Linux) eIDAS signature desktop app that can be integrated with your (web) application.
+Customizable, simple, cross-platform (Windows, macOS, Linux) desktop app that can be used to create signatures compliant with the eIDAS Regulation and be integrated with your (web) application.
 
 ![Screenshot](https://github.com/octosign/branding/blob/main/screenshots/White%20Label.png?raw=true)
 
@@ -45,9 +45,12 @@ Assembles a .zip and .tar.xz with the content mention above and launch.sh/.bat w
 
 ## License
 
-This software is licensed under MIT License.
+This software is licensed under the MIT License.
 In short, you are free to do whatever you want with this code, including forking and bundling as a commercial proprietary application, as long as you include the original copyright, license notice, and accept that you cannot hold any of the authors liable.
 
-This project uses exclusively Open Source Sofware (OSS) that is safe to bundle with permissive and proprietary software.
+This project uses exclusively Open Source Sofware (OSS) that is safe to bundle with permissive and proprietary software provided you comply with the license requirements.
 To comply with the requirements, make sure not to remove any copyright notices and info about used OSS.
-Specifically, this project uses OpenJDK and OpenJFX that are licensed under [GPLv2+Classpath Exception license](https://openjdk.java.net/legal/gplv2+ce.html), and EU Digital Signature Service under [LGPL-2.1](https://github.com/esig/dss/blob/4b82afb014f0836eb282e1e3498ab4bb843ef321/LICENSE) that allow mentioned use under given conditions.
+
+Specifically, this project uses OpenJDK and OpenJFX that are licensed under [GPLv2+Classpath Exception license](https://openjdk.java.net/legal/gplv2+ce.html), and EU Digital Signature Service under [LGPL-2.1](https://github.com/esig/dss/blob/4b82afb014f0836eb282e1e3498ab4bb843ef321/LICENSE).
+
+See [Octosign White Label Legal](https://whitelabel.octosign.com/legal) for more information.

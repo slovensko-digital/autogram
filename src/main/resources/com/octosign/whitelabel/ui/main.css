@@ -3,6 +3,11 @@
     -fx-background-color: -bg-color;
 }
 
+.content {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: -dark-text-color;
+}
+
 .footer {
     -fx-padding: 16px 0 8px 0;
 }

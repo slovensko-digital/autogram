@@ -24,7 +24,6 @@
 }
 .panel.secondary {
     -fx-background-color: -secondary-color;
-    -fx-background-radius: 4;
 }
 .panel.secondary Label {
     -fx-text-fill: -light-text-color;

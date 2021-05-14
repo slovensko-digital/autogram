@@ -9,7 +9,8 @@
             "name": "Debug (Launch)-App<whitelabel>",
             "request": "launch",
             "mainClass": "com.octosign.whitelabel.Launcher",
-            "projectName": "whitelabel"
+            "projectName": "whitelabel",
+            "args": "--url=\"signer://listen/37200/*\""
         }
     ]
 }

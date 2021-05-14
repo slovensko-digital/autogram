@@ -9,14 +9,17 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.octosign.whitelabel.communication.Document;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.ui.about.AboutDialog;
 
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.web.WebView;
 import javafx.concurrent.Worker;
@@ -31,6 +34,9 @@ public class MainController {
 
     @FXML
     private WebView webView;
+
+    @FXML
+    private TextArea textArea;
 
     @FXML
     private Label signLabel;
@@ -89,34 +95,46 @@ public class MainController {
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
 
-        CompletableFuture.runAsync(() -> {
-            String transformedContent;
-            try {
-                transformedContent = document.getTransformed();
-            } catch (Exception e) {
-                Platform.runLater(() -> {
-                    Main.displayAlert(
-                        AlertType.ERROR,
-                        "Chyba zobrazenia",
-                        "Získanie zobraziteľnej podoby zlyhalo",
-                        "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
-                    );
-                });
-                return;
-            }
+        boolean isXml = document instanceof XMLDocument;
+        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
 
-            Platform.runLater(() -> {
-                var webEngine = webView.getEngine();
-                webEngine.getLoadWorker().stateProperty().addListener(
-                    (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
-                        if (newState == Worker.State.SUCCEEDED) {
-                            webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", transformedContent);
-                        }
-                    } 
-                );
-                webEngine.loadContent(getResourceAsString("visualization.html"));
+        if (hasTransformation) {
+            textArea.setManaged(false);
+
+            CompletableFuture.runAsync(() -> {
+                String visualisation;
+                try {
+                    var xmlDocument = (XMLDocument) document;
+                    visualisation = xmlDocument.getTransformed();
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        Main.displayAlert(
+                            AlertType.ERROR,
+                            "Chyba zobrazenia",
+                            "Získanie zobraziteľnej podoby zlyhalo",
+                            "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
+                        );
+                    });
+                    return;
+                }
+    
+                Platform.runLater(() -> {
+                    var webEngine = webView.getEngine();
+                    webEngine.getLoadWorker().stateProperty().addListener(
+                        (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
+                            if (newState == Worker.State.SUCCEEDED) {
+                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
+                            }
+                        } 
+                    );
+                    webEngine.loadContent(getResourceAsString("visualization.html"));
+                });
             });
-        });
+        } else {
+            webView.setManaged(false);
+
+            textArea.setText(document.getContent());
+        }
     }
 
     public void setOnSigned(Consumer<String> onSigned) {
@@ -172,6 +190,11 @@ public class MainController {
                 }
             });
         }
+    }
+
+    @FXML
+    private void onAboutButtonAction() {
+        new AboutDialog().show();
     }
 
     @FXML
