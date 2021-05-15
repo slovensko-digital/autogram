@@ -8,7 +8,8 @@ do
     fi
 
     safekey=$(echo "$key" | tr . _)
-    declare "properties_$safekey=$value"
+    trimmedvalue=$(echo "$value" | sed 's/[[:space:]]*$//g' | sed 's/^[[:space:]]*//g')
+    declare "properties_$safekey=$trimmedvalue"
 done < "./build.properties"
 unset IFS
 
