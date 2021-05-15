@@ -1,5 +1,5 @@
 .iframe {
+    flex: 1;
     border: none;
     width: 100%;
-    height: calc(100vh - var(--ifm-navbar-height) - 5.625rem);
 }
