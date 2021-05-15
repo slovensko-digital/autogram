@@ -6,7 +6,7 @@
 
     <groupId>com.octosign.whitelabel</groupId>
     <artifactId>whitelabel</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>Octosign White Label Signer</name>
@@ -237,7 +237,9 @@
                         <argument>${jlink.jdk.path}${file.separator}bin${file.separator}jpackage</argument>
                         <argument>${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}</argument>
                         <argument>${project.build.directory}${file.separator}preparedJDK</argument>
+                        <argument>${project.build.scriptSourceDirectory}${file.separator}resources</argument>
                         <argument>${platform}</argument>
+                        <argument>${project.version}</argument>
                         <argument>${project.build.directory}</argument>
                     </arguments>
                 </configuration>
