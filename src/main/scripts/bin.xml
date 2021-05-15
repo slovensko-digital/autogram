@@ -1,11 +1,11 @@
+<!-- Assembly for maven assembly plugin -->
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.0 http://maven.apache.org/xsd/assembly-2.1.0.xsd">
     <id>bin</id>
     <formats>
-        <format>zip</format>
-        <format>tar.xz</format>
-        <!-- You can add format dir here if you want to use it for further packaging -->
+        <format>dir</format>
     </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
             <directory>${project.basedir}</directory>
@@ -19,17 +19,6 @@
         <fileSet>
             <directory>${project.build.directory}/dependency-jars</directory>
             <outputDirectory>/dependency-jars</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>${project.build.directory}/preparedJDK</directory>
-            <outputDirectory>/jre</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>${project.basedir}/src/assembly</directory>
-            <outputDirectory>/</outputDirectory>
-            <includes>
-                <include>launch.*</include>
-            </includes>
         </fileSet>
     </fileSets>
     <files>
