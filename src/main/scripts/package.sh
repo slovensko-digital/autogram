@@ -1,6 +1,4 @@
 #!/bin/bash
-
-declare -A properties
 IFS="="
 while read -r key value
 do
@@ -9,7 +7,8 @@ do
         continue
     fi
 
-    properties[$key]=$value
+    safekey=$(echo "$key" | tr . _)
+    declare "properties_$safekey=$value"
 done < "./build.properties"
 unset IFS
 
@@ -23,17 +22,17 @@ appDirectory=$2
 jdkDirectory=$3
 platform=$4
 output=$5
-jvmoptions="--illegal-access=warn --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED"
+jvmOptions="--illegal-access=warn --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED"
 
 $jpackage\
     --input "$appDirectory"\
     --runtime-image "$jdkDirectory"\
     --main-jar ./whitelabel.jar\
-    --name "${properties[name]}"\
-    --app-version "${properties[version]}"\
-    --copyright "${properties[copyright]}"\
-    --vendor "${properties[vendor]}"\
-    --java-options "$jvmoptions"\
+    --name "$properties_name"\
+    --app-version "$properties_version"\
+    --copyright "$properties_copyright"\
+    --vendor "$properties_vendor"\
+    --java-options "$jvmOptions"\
     --icon ./icon.png\
     --license-file "$appDirectory/LICENSE"\
     --dest "$output"
