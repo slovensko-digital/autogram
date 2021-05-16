@@ -58,7 +58,7 @@ If you want to create installers, you additionally need:
 
 - Window: [WiX Toolset](https://wixtoolset.org/).
 - macOS: Xcode.
-- Linux: Distribution-specific tools for building rpm or deb packages, e.g., `fedora-packager` on Fedora.
+- Linux: Distribution-specific tools for building rpm or deb packages, e.g., `rpm-build` on Fedora. This script expects to create both `rpm` and `deb` on distributions derived from Debian, which should be possible if you install `rpm`.
 
 ## License
 

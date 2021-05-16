@@ -34,7 +34,6 @@ arguments=(
     "--license-file" "$appDirectory/LICENSE"
     "--resource-dir" "$resourcesDir"
     "--dest" "$output"
-    "--verbose"
 )
 
 if [[ "$platform" == "win" ]]; then
@@ -72,11 +71,54 @@ if [[ "$platform" == "win" ]]; then
         )
     fi
 
+    $jpackage "${arguments[@]}"
 fi
 
-# TODO: Use platform-specific Linux properties
+if [[ "$platform" == "linux" ]]; then
+    cp "$resourcesDir/Octosign.template.desktop" "$resourcesDir/Octosign.desktop"
+    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "$resourcesDir/Octosign.desktop"
+
+    if [[ ! -z "$properties_linux_debMaintainer"  ]]; then
+        arguments+=(
+            "--linux-deb-maintainer" "$properties_linux_debMaintainer"
+        )
+    fi
+
+    if [[ ! -z "$properties_linux_appCategory"  ]]; then
+        arguments+=(
+            "--linux-app-category" "$properties_linux_appCategory"
+        )
+    fi
+
+    if [[ ! -z "$properties_linux_packageDeps"  ]]; then
+        arguments+=(
+            "--linux-package-deps" "$properties_linux_packageDeps"
+        )
+    fi
+
+    arguments+=(
+        "--linux-rpm-license-type" "${properties_linux_rpmLicenseType:-MIT}"
+        "--linux-menu-group" "${properties_linux_menuGroup:-Office}"
+    )
+
+    if [[ "$properties_linux_shortcut" == "1" ]]; then
+        arguments+=(
+            "--linux-shortcut"
+        )
+    fi
+
+    # Build both .rpm and .deb from Linux - should work from Debian-like distro but not the other way around
+    arguments+=(
+        "--type" "rpm"
+    )
+    $jpackage "${arguments[@]}"
+
+    if [[ -f "/etc/lsb-release" ]]; then
+        arguments+=(
+            "--type" "deb"
+        )
+        $jpackage "${arguments[@]}"
+    fi
+fi
 
 # TODO: Use platform-specific macOS properties
-
-$jpackage "${arguments[@]}"
-# TODO: Use --resource-dir for resource overrides
