@@ -30,8 +30,7 @@ public class AboutDialog extends Dialog<Boolean> {
         stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
     }
 
-    private String getContent() {
-        // This should be properly styled FXML with clickable links
+    private static String getContent() {
 
         String appDescription = String.format(
             Main.getProperty("text.aboutHelp.description"),
@@ -60,7 +59,7 @@ public class AboutDialog extends Dialog<Boolean> {
         );
     }
 
-    private List<String> getUsedOSS() {
+    private static List<String> getUsedOSS() {
         return Arrays.asList(new String[]{
             "Digital Signature Service 5.8 - github.com/esig/dss - CEF Digital - LGPL-2.1",
             "Gson 2 - github.com/google/gson - Google Inc. - Apache 2"
