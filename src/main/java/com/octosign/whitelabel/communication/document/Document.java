@@ -19,7 +19,7 @@ public class Document implements Cloneable {
     }
 
     public String getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(String id) {
@@ -27,7 +27,7 @@ public class Document implements Cloneable {
     }
 
     public String getTitle() {
-        return this.title;
+        return title;
     }
 
     public void setTitle(String title) {
@@ -35,7 +35,7 @@ public class Document implements Cloneable {
     }
 
     public String getContent() {
-        return this.content;
+        return content;
     }
 
     public void setContent(String content) {
@@ -43,7 +43,7 @@ public class Document implements Cloneable {
     }
 
     public String getLegalEffect() {
-        return this.legalEffect;
+        return legalEffect;
     }
 
     public void setLegalEffect(String legalEffect) {
@@ -52,6 +52,6 @@ public class Document implements Cloneable {
 
     @Override
     public Document clone() {
-        return new Document(this.id, this.title, this.content, this.legalEffect);
+        return new Document(id, title, content, legalEffect);
     }
 }

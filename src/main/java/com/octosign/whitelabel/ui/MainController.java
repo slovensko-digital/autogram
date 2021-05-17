@@ -116,7 +116,7 @@ public class MainController {
                     });
                     return;
                 }
-    
+
                 Platform.runLater(() -> {
                     var webEngine = webView.getEngine();
                     webEngine.getLoadWorker().stateProperty().addListener(
@@ -124,7 +124,7 @@ public class MainController {
                             if (newState == Worker.State.SUCCEEDED) {
                                 webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
                             }
-                        } 
+                        }
                     );
                     webEngine.loadContent(getResourceAsString("visualization.html"));
                 });

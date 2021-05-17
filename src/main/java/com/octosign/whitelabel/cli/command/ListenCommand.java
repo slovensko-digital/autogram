@@ -71,19 +71,19 @@ public class ListenCommand extends Command {
     }
 
     public int getPort() {
-        return this.port;
+        return port;
     }
 
     public String getOrigin() {
-        return this.origin;
+        return origin;
     }
 
     public String getSecretKey() {
-        return this.secretKey;
+        return secretKey;
     }
 
     public int getInitialNonce() {
-        return this.initialNonce;
+        return initialNonce;
     }
 
     private void setPort(String port) {

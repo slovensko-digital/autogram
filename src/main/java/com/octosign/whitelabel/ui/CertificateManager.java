@@ -55,7 +55,7 @@ public class CertificateManager {
             )
         );
         treeTableView.getColumns().add(nameColumn);
-        treeTableView.setRoot(new TreeItem<>(this.certificate));
+        treeTableView.setRoot(new TreeItem<>(certificate));
         dialogPane.setContent(treeTableView);
 
         return dialog.showAndWait().orElse(null);
@@ -81,7 +81,7 @@ public class CertificateManager {
         if (certificate == null && osName.indexOf("win") >= 0) {
             certificate = new SigningCertificateMSCAPI();
         }
-    
+
         if (certificate == null) {
             Main.displayAlert(
                 AlertType.ERROR,
@@ -91,7 +91,7 @@ public class CertificateManager {
             );
             return null;
         }
-    
+
         List<DSSPrivateKeyEntry> keys;
         try {
             keys = certificate.getAvailablePrivateKeys();
@@ -104,7 +104,7 @@ public class CertificateManager {
             );
             return null;
         }
-    
+
         if (keys.size() == 0) {
             Main.displayAlert(
                 AlertType.ERROR,
@@ -114,7 +114,7 @@ public class CertificateManager {
             );
             return null;
         }
-    
+
         // Use the first available key
         certificate.setPrivateKey(keys.get(0));
 

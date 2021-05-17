@@ -29,11 +29,11 @@ public class XmlDocument extends Document {
     }
 
     public String getTransformation() {
-        return this.transformation;
+        return transformation;
     }
 
     public void setTransformation(String transformation) {
-        this.transformation = transformation;
+        transformation = transformation;
     }
 
     /**
@@ -44,12 +44,12 @@ public class XmlDocument extends Document {
      * @throws TransformerException
      */
     public String getTransformed() throws TransformerFactoryConfigurationError, TransformerException {
-        if (this.content == null || this.transformation == null) {
+        if (content == null || transformation == null) {
             throw new RuntimeException("Document has no content or transformation defined");
         }
 
-        var xslSource = new StreamSource(new StringReader(this.transformation));
-        var xmlInSource = new StreamSource(new StringReader(this.content));
+        var xslSource = new StreamSource(new StringReader(transformation));
+        var xmlInSource = new StreamSource(new StringReader(content));
 
         var transformerFactory = TransformerFactory.newInstance();
         transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);

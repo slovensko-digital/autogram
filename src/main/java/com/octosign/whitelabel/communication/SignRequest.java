@@ -25,19 +25,19 @@ public class SignRequest {
     }
 
     public Document getDocument() {
-        return this.document;
+        return document;
     }
 
     public SignatureParameters getParameters() {
-        return this.parameters;
+        return parameters;
     }
 
     public String getPayloadMimeType() {
-        return this.payloadMimeType;
+        return payloadMimeType;
     }
 
     public String getHmac() {
-        return this.hmac;
+        return hmac;
     }
 
 }

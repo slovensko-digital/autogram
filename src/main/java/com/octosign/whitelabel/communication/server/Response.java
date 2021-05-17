@@ -27,36 +27,36 @@ public class Response<U> {
     public Response(HttpExchange exchange) {
         this.exchange = exchange;
 
-        this.bodyFormats = Map.of(
+        bodyFormats = Map.of(
             JsonFormat.MIME_TYPE, new JsonFormat(),
             "*/*", new JsonFormat() // Default format
         );
 
         var contentType = exchange.getRequestHeaders().get("Accept");
-        this.bodyFormat = contentType.stream()
+        bodyFormat = contentType.stream()
             .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-            .filter((String mimeType) -> this.bodyFormats.containsKey(mimeType))
+            .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
             .findFirst()
-            .map((mimeType) -> this.bodyFormats.get(mimeType))
+            .map((mimeType) -> bodyFormats.get(mimeType))
             // We would rather return something in unaccepted type than nothing
-            .orElseGet(() -> this.bodyFormats.get("*/*"));
+            .orElseGet(() -> bodyFormats.get("*/*"));
     }
 
     public int getStatusCode() {
-        return this.statusCode;
+        return statusCode;
     }
 
     public Response<U> setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
+        statusCode = statusCode;
         return this;
     }
 
     public U getBody() {
-        return this.body;
+        return body;
     }
 
     public Response<U> setBody(U body) {
-        this.body = body;
+        body = body;
         return this;
     }
 
@@ -67,15 +67,15 @@ public class Response<U> {
     }
 
     public void send() throws IOException {
-        var stream = this.exchange.getResponseBody();
-        var headers = this.exchange.getResponseHeaders();
+        var stream = exchange.getResponseBody();
+        var headers = exchange.getResponseHeaders();
 
-        var body = this.bodyFormat.to(getBody());
+        var body = bodyFormat.to(getBody());
         // TODO: Check Accept header instead of hardcoding UTF-8
         var bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 
         headers.set("Content-Type", "application/json; charset=UTF-8");
-        this.exchange.sendResponseHeaders(this.statusCode, bodyBytes.length);
+        exchange.sendResponseHeaders(statusCode, bodyBytes.length);
         stream.write(bodyBytes);
         stream.close();
     }

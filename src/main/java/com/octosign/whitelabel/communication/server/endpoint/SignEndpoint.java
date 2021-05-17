@@ -29,7 +29,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
     @Override
     protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) throws IOException {
-        if (this.onSign == null) {
+        if (onSign == null) {
             var error = new CommunicationError(Code.NOT_READY, "Server is not ready yet");
             new Response<CommunicationError>(request.getExchange())
             .asError(HttpURLConnection.HTTP_CONFLICT, error)
@@ -42,7 +42,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
         try {
             // TODO: Add using of SignatureParameters
-            var signedDocument = this.onSign.apply(document).get();
+            var signedDocument = onSign.apply(document).get();
             return response.setBody(signedDocument);
         } catch (Exception e) {
             // TODO: We should do a better job with the error response here:

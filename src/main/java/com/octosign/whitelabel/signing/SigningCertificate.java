@@ -115,7 +115,7 @@ public abstract class SigningCertificate {
     }
 
     /**
-     * Constructs human readable description for the current private key 
+     * Constructs human readable description for the current private key
      */
     public String getNicePrivateKeyDescription(KeyDescriptionVerbosity verbosity) {
         return SigningCertificate.getNicePrivateKeyDescription(privateKey, verbosity);
@@ -127,7 +127,7 @@ public abstract class SigningCertificate {
     public String sign(String content) {
         InMemoryDocument document = new InMemoryDocument(content.getBytes(StandardCharsets.UTF_8));
 
-        DSSDocument signedDocument = this.sign(document);
+        DSSDocument signedDocument = sign(document);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {

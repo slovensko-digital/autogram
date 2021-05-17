@@ -19,7 +19,7 @@ public class InfoEndpoint extends ReadEndpoint<Info> {
 
     @Override
     protected Response<Info> handleRequest(Request<?> request, Response<Info> response) {
-        return response.setBody(this.info);
+        return response.setBody(info);
     }
 
     @Override

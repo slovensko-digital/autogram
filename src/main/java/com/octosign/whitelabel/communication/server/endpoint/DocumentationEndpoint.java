@@ -24,7 +24,7 @@ public class DocumentationEndpoint extends Endpoint {
         String cwd = System.getProperty("user.dir");
         boolean isYaml = exchange.getRequestURI().getPath().endsWith(".yml");
 
-        var file = Paths.get(cwd, this.docsPath, isYaml ? this.yamlName : this.htmlName);
+        var file = Paths.get(cwd, docsPath, isYaml ? yamlName : htmlName);
         var mimeType = isYaml ? "text/yaml" : "text/html";
 
         var headers = exchange.getResponseHeaders();

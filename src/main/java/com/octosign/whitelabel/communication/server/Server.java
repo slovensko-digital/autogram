@@ -33,63 +33,63 @@ public class Server {
 
     public Server(String hostname, int port, int initialNonce) {
         try {
-            this.server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
+            server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
         } catch (Exception e) {
             throw new RuntimeException("Could not create server", e);
         }
 
-        this.documentationEndpoint = new DocumentationEndpoint(this);
-        this.infoEndpoint = new InfoEndpoint(this);
-        this.signEndpoint = new SignEndpoint(this, initialNonce);
+        documentationEndpoint = new DocumentationEndpoint(this);
+        infoEndpoint = new InfoEndpoint(this);
+        signEndpoint = new SignEndpoint(this, initialNonce);
     }
 
     public void start() {
-        this.server.createContext("/", this.infoEndpoint);
-        this.server.createContext("/sign", this.signEndpoint);
+        server.createContext("/", infoEndpoint);
+        server.createContext("/sign", signEndpoint);
 
-        if (this.devMode) {
-            this.server.createContext("/documentation", this.documentationEndpoint);
+        if (devMode) {
+            server.createContext("/documentation", documentationEndpoint);
         }
 
         // Run requests in separate threads
-        this.server.setExecutor(Executors.newCachedThreadPool());
-        this.server.start();
+        server.setExecutor(Executors.newCachedThreadPool());
+        server.start();
     }
 
     public void setDevMode(boolean devMode) {
-        this.devMode = devMode;
+        devMode = devMode;
     }
 
     public boolean isDevMode() {
-        return this.devMode;
+        return devMode;
     }
 
     public String getAllowedOrigin() {
-        return this.allowedOrigin;
+        return allowedOrigin;
     }
 
     public void setAllowedOrigin(String allowedOrigin) {
-        this.allowedOrigin = allowedOrigin;
+        allowedOrigin = allowedOrigin;
     }
 
     public String getSecretKey() {
-        return this.secretKey;
+        return secretKey;
     }
 
     public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
+        secretKey = secretKey;
     }
 
     public void setInfo(Info info) {
-        this.infoEndpoint.setInfo(info);
+        infoEndpoint.setInfo(info);
     }
 
     public void setOnSign(Function<Document, CompletableFuture<Document>> onSign) {
-        this.signEndpoint.setOnSign(onSign);
+        signEndpoint.setOnSign(onSign);
     }
 
     public InetSocketAddress getAddress() {
-        return this.server.getAddress();
+        return server.getAddress();
     }
 
 }
