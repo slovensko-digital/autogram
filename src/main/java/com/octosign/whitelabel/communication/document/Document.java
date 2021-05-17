@@ -11,12 +11,7 @@ public class Document implements Cloneable {
 
     public Document() {}
 
-    public Document(
-        String id,
-        String title,
-        String content,
-        String legalEffect
-    ) {
+    public Document(String id, String title, String content, String legalEffect) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -55,7 +50,8 @@ public class Document implements Cloneable {
         this.legalEffect = legalEffect;
     }
 
+    @Override
     public Document clone() {
-        return new Document(id, title, content, legalEffect);
+        return new Document(this.id, this.title, this.content, this.legalEffect);
     }
 }

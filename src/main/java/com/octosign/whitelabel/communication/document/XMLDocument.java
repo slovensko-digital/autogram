@@ -44,12 +44,12 @@ public class XmlDocument extends Document {
      * @throws TransformerException
      */
     public String getTransformed() throws TransformerFactoryConfigurationError, TransformerException {
-        if (content == null || transformation == null) {
+        if (this.content == null || this.transformation == null) {
             throw new RuntimeException("Document has no content or transformation defined");
         }
 
-        var xslSource = new StreamSource(new StringReader(transformation));
-        var xmlInSource = new StreamSource(new StringReader(content));
+        var xslSource = new StreamSource(new StringReader(this.transformation));
+        var xmlInSource = new StreamSource(new StringReader(this.content));
 
         var transformerFactory = TransformerFactory.newInstance();
         transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
