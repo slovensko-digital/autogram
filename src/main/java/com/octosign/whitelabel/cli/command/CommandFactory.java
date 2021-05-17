@@ -33,7 +33,7 @@ public class CommandFactory {
     }
 
     /**
-     * Create command using its name and CLI params
+     * Create command using its name and CLI parameters
      *
      * @param name      Name, e.g. "listen"
      * @param params    Launch URL

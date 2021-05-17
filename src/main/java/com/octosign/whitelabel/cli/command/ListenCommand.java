@@ -32,12 +32,15 @@ public class ListenCommand extends Command {
         if (params.length > 1 && !params[1].isEmpty()) {
             setPort(params[1]);
         }
+
         if (params.length > 2 && !params[2].isEmpty()) {
             setOrigin(params[2]);
         }
+
         if (params.length > 3 && !params[3].isEmpty()) {
             setSecretKey(params[3]);
         }
+
         if (params.length > 4 && !params[4].isEmpty()) {
             setInitialNonce(params[4]);
         }
