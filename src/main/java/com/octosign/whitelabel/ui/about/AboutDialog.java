@@ -31,6 +31,7 @@ public class AboutDialog extends Dialog<Boolean> {
     }
 
     private static String getContent() {
+        // TODO This should be properly styled FXML with clickable links
 
         String appDescription = String.format(
             Main.getProperty("text.aboutHelp.description"),
