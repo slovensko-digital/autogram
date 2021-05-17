@@ -109,6 +109,9 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
                 specificDocument = xmlDocument;
                 break;
+
+            default:
+                throw new AssertionError();
         }
 
         return specificDocument;
