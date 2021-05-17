@@ -17,9 +17,6 @@ public class Request<T> {
 
     private final BodyFormat bodyFormat;
 
-    /**
-     * Body singleton
-     */
     private T body;
 
     public Request(HttpExchange exchange) {
