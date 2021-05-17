@@ -1,7 +1,7 @@
 package com.octosign.whitelabel.communication.server.format;
 
 /**
- * Format used in the HTTP exchange request or reponse body
+ * Format used in the HTTP exchange request or response body
  */
 public abstract class BodyFormat {
 
