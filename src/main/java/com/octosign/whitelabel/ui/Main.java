@@ -32,7 +32,7 @@ public class Main extends Application {
     public enum Status {
         LOADING,
         READY
-    };
+    }
 
     private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
     private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
