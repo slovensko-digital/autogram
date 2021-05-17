@@ -9,7 +9,7 @@ import com.octosign.whitelabel.communication.server.format.BodyFormat;
 import com.octosign.whitelabel.communication.server.format.JsonFormat;
 import com.sun.net.httpserver.HttpExchange;
 
-public class Request<BodyT> {
+public class Request<T> {
 
     private final HttpExchange exchange;
 
@@ -20,7 +20,7 @@ public class Request<BodyT> {
     /**
      * Body singleton
      */
-    private BodyT body;
+    private T body;
 
     public Request(HttpExchange exchange) {
         this.exchange = exchange;
@@ -59,7 +59,7 @@ public class Request<BodyT> {
         return new ArrayList<String>(bodyFormats.keySet());
     }
 
-    public BodyT getBody() {
+    public T getBody() {
         return this.body;
     }
 
@@ -71,7 +71,7 @@ public class Request<BodyT> {
      * @param <T>       Expected object in the body
      * @param bodyClass Class of the expected object in the body
      */
-    public BodyT processBody(Class<BodyT> bodyClass) {
+    public T processBody(Class<T> bodyClass) {
         var stream = exchange.getRequestBody();
 
         try {
