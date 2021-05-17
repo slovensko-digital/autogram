@@ -15,16 +15,12 @@ import com.sun.net.httpserver.HttpExchange;
  * Server API endpoint
  *
  * TODO: Handle IOException in the handle - it means the request was aborted from the client
- * @param <Req> Expected request body
- * @param <Res> Response body
+ * @param <T> Expected request body
+ * @param <U> Response body
  */
-abstract class WriteEndpoint<Req, Res> extends Endpoint {
+abstract class WriteEndpoint<T, U> extends Endpoint {
 
-    /**
-     * This endpoint's current nonce
-     *
-     * Incremented on each successful request.
-     */
+    // Endpoint's current nonce, incremented on each successful request.
     private AtomicInteger nonce;
 
     public WriteEndpoint(Server server, int initialNonce) {
@@ -35,7 +31,7 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
 
     @Override
     protected void handleRequest(HttpExchange exchange) throws IOException {
-        var request = new Request<Req>(exchange);
+        var request = new Request<T>(exchange);
 
         // TODO: Add verifying of HMAC if server has secretKey specified
 
@@ -61,7 +57,7 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
 
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-        var response = handleRequest(request, new Response<Res>(exchange));
+        var response = handleRequest(request, new Response<U>(exchange));
         useResponse(response);
     }
 
@@ -73,17 +69,17 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
      * @return Modified response if the request succeeded or null if not and custom response was sent.
      * @throws IOException
      */
-    protected abstract Response<Res> handleRequest(Request<Req> request, Response<Res> response) throws IOException;
+    protected abstract Response<U> handleRequest(Request<T> request, Response<U> response) throws IOException;
 
     /**
      * Class of the request body object, should be null if request does not have body
      */
-    protected abstract Class<Req> getRequestClass();
+    protected abstract Class<T> getRequestClass();
 
     /**
      * Class of the response body object
      */
-    protected abstract Class<Res> getResponseClass();
+    protected abstract Class<U> getResponseClass();
 
     /**
      * Use response produced by the endpoint handler
@@ -91,7 +87,7 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
      * @param response
      * @throws IOException
      */
-    protected void useResponse(Response<Res> response) throws IOException {
+    protected void useResponse(Response<U> response) throws IOException {
         if (response != null) {
             response.send();
             // TODO: Add bumping of nonce

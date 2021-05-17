@@ -10,9 +10,9 @@ import com.sun.net.httpserver.HttpExchange;
 /**
  * Server API endpoint without request body like GET or HEAD
  *
- * @param <Res> Response body
+ * @param <U> Response body
  */
-abstract class ReadEndpoint<Res> extends Endpoint {
+abstract class ReadEndpoint<U> extends Endpoint {
 
     public ReadEndpoint(Server server) {
         super(server);
@@ -22,7 +22,7 @@ abstract class ReadEndpoint<Res> extends Endpoint {
     protected void handleRequest(HttpExchange exchange) throws IOException {
         var request = new Request<>(exchange);
 
-        var response = handleRequest(request, new Response<Res>(exchange));
+        var response = handleRequest(request, new Response<U>(exchange));
         useResponse(response);
     }
 
@@ -34,12 +34,12 @@ abstract class ReadEndpoint<Res> extends Endpoint {
      * @return Modified response if the request succeeded or null if not and custom response was sent.
      * @throws IOException
      */
-    protected abstract Response<Res> handleRequest(Request<?> request, Response<Res> response) throws IOException;
+    protected abstract Response<U> handleRequest(Request<?> request, Response<U> response) throws IOException;
 
     /**
      * Class of the response body object
      */
-    protected abstract Class<Res> getResponseClass();
+    protected abstract Class<U> getResponseClass();
 
     /**
      * Use response produced by the endpoint handler
@@ -47,7 +47,7 @@ abstract class ReadEndpoint<Res> extends Endpoint {
      * @param response
      * @throws IOException
      */
-    protected void useResponse(Response<Res> response) throws IOException {
+    protected void useResponse(Response<U> response) throws IOException {
         if (response != null) {
             response.send();
         } else {
