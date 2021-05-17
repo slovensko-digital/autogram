@@ -9,7 +9,7 @@ public class CommunicationError {
         SIGNING_FAILED,
         UNEXPECTED_ORIGIN,
         UNEXPECTED_ERROR
-    };
+    }
 
     public final Code code;
     public final String message;
