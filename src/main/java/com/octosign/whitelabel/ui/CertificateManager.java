@@ -74,7 +74,7 @@ public class CertificateManager {
      *
      * TODO: All strings here should come from the properties
      */
-    private SigningCertificate getDefaulCertificate() {
+    private static SigningCertificate getDefaulCertificate() {
         SigningCertificate certificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback());
 
         // Try to fallback to MSCAPI on Windows
