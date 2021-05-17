@@ -9,6 +9,7 @@ import java.util.List;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.CommonDocument;
@@ -16,12 +17,11 @@ import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.model.ToBeSigned;
-import eu.europa.esig.dss.xades.XAdESSignatureParameters;
-import eu.europa.esig.dss.xades.signature.XAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.xades.XAdESSignatureParameters;
+import eu.europa.esig.dss.xades.signature.XAdESService;
 
 /**
  * Represents a combination of Token and PrivateKey within that token

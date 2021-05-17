@@ -13,15 +13,14 @@ import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;

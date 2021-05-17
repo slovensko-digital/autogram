@@ -5,10 +5,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.octosign.whitelabel.ui.Main;
-
+import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.layout.Region;
 
 public class AboutDialog extends Dialog<Boolean> {
