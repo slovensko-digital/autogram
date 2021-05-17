@@ -8,32 +8,32 @@ public class SignatureParameters {
     public enum Format {
         XADES,
         PADES
-    };
+    }
 
     public enum Level {
         BASELINE_B
-    };
+    }
 
     public enum Container {
         ASICS,
         ASICE
-    };
+    }
 
     public enum Packaging {
         ENVELOPED,
         ENVELOPING
-    };
+    }
 
     public enum DigestAlgorithm {
         SHA256,
         SHA384,
         SHA512
-    };
+    }
 
     public enum CanonicalizationMethod {
         INCLUSIVE,
         EXCLUSIVE
-    };
+    }
 
     private Format format;
 
