@@ -56,7 +56,7 @@ public class CertificateManager {
             )
         );
         treeTableView.getColumns().add(nameColumn);
-        treeTableView.setRoot(new TreeItem<SigningCertificate>(certificate));
+        treeTableView.setRoot(new TreeItem<>(this.certificate));
         dialogPane.setContent(treeTableView);
 
         return dialog.showAndWait().orElse(null);
