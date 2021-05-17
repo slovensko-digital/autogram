@@ -22,7 +22,7 @@ public class Request<T> {
     public Request(HttpExchange exchange) {
         this.exchange = exchange;
 
-        bodyFormats = Map.of(
+        this.bodyFormats = Map.of(
             JsonFormat.MIME_TYPE, new JsonFormat(),
             "text/plain", new JsonFormat(), // Considered JSON so clients can prevent CORS preflight
             "*/*", new JsonFormat() // Implicit default format
@@ -30,14 +30,14 @@ public class Request<T> {
 
         var contentType = exchange.getRequestHeaders().get("Content-Type");
         if (contentType != null) {
-            bodyFormat = contentType.stream()
+            this.bodyFormat = contentType.stream()
                 .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-                .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
+                .filter((String mimeType) -> this.bodyFormats.containsKey(mimeType))
                 .findFirst()
-                .map((mimeType) -> bodyFormats.get(mimeType))
-                .orElseGet(() -> contentType.isEmpty() ? bodyFormats.get("*/*") : null);
+                .map((mimeType) -> this.bodyFormats.get(mimeType))
+                .orElseGet(() -> contentType.isEmpty() ? this.bodyFormats.get("*/*") : null);
         } else {
-            bodyFormat = null;
+            this.bodyFormat = null;
         }
     }
 
@@ -53,7 +53,7 @@ public class Request<T> {
      * List of supported body MIME types
      */
     public List<String> getSupportedBodyFormats() {
-        return new ArrayList<String>(bodyFormats.keySet());
+        return new ArrayList<>(this.bodyFormats.keySet());
     }
 
     public T getBody() {
@@ -69,13 +69,13 @@ public class Request<T> {
      * @param bodyClass Class of the expected object in the body
      */
     public T processBody(Class<T> bodyClass) {
-        var stream = exchange.getRequestBody();
+        var stream = this.exchange.getRequestBody();
 
         try {
             // TODO: Get charset from the Content-Type header - don't assume it's UTF-8
             var bodyString = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-            body = bodyFormat.from(bodyString, bodyClass);
-            return body;
+            this.body = this.bodyFormat.from(bodyString, bodyClass);
+            return this.body;
         } catch (Exception e) {
             return null;
         }

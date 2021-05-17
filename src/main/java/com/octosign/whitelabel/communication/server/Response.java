@@ -27,19 +27,19 @@ public class Response<T> {
     public Response(HttpExchange exchange) {
         this.exchange = exchange;
 
-        bodyFormats = Map.of(
+        this.bodyFormats = Map.of(
             JsonFormat.MIME_TYPE, new JsonFormat(),
             "*/*", new JsonFormat() // Default format
         );
 
         var contentType = exchange.getRequestHeaders().get("Accept");
-        bodyFormat = contentType.stream()
+        this.bodyFormat = contentType.stream()
             .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-            .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
+            .filter((String mimeType) -> this.bodyFormats.containsKey(mimeType))
             .findFirst()
-            .map((mimeType) -> bodyFormats.get(mimeType))
+            .map((mimeType) -> this.bodyFormats.get(mimeType))
             // We would rather return something in unaccepted type than nothing
-            .orElseGet(() -> bodyFormats.get("*/*"));
+            .orElseGet(() -> this.bodyFormats.get("*/*"));
     }
 
     public int getStatusCode() {
@@ -67,15 +67,15 @@ public class Response<T> {
     }
 
     public void send() throws IOException {
-        var stream = exchange.getResponseBody();
-        var headers = exchange.getResponseHeaders();
+        var stream = this.exchange.getResponseBody();
+        var headers = this.exchange.getResponseHeaders();
 
-        var body = bodyFormat.to(getBody());
+        var body = this.bodyFormat.to(getBody());
         // TODO: Check Accept header instead of hardcoding UTF-8
         var bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 
         headers.set("Content-Type", "application/json; charset=UTF-8");
-        exchange.sendResponseHeaders(statusCode, bodyBytes.length);
+        this.exchange.sendResponseHeaders(this.statusCode, bodyBytes.length);
         stream.write(bodyBytes);
         stream.close();
     }
