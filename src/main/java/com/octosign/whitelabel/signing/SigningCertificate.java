@@ -36,11 +36,8 @@ public abstract class SigningCertificate {
      */
     protected AbstractKeyStoreTokenConnection token;
 
-    /**
-     * Private key that has to be set using .setPrivateKey() before signing
-     *
-     * List of available private keys can be retrieved using .getAvailablePrivateKeys()
-     */
+    // Private key that has to be set using .setPrivateKey() before signing
+    // List of available private keys can be retrieved using .getAvailablePrivateKeys()
     private DSSPrivateKeyEntry privateKey;
 
     /**
