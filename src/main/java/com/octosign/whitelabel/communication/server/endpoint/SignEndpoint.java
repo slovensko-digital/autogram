@@ -79,7 +79,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
      * @param signRequest
      * @return Specific document like XMLDocument type-widened to Document
      */
-    private Document getSpecificDocument(SignRequest signRequest) {
+    private static Document getSpecificDocument(SignRequest signRequest) {
         var mimeType = signRequest.getPayloadMimeType();
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
