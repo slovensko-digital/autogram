@@ -41,7 +41,7 @@ public class CommandFactory {
      */
     public static Command fromParameters(String name, Parameters parameters) {
         switch (name) {
-            case "listen":
+            case ListenCommand.NAME:
                 return new ListenCommand(parameters);
 
             default:
@@ -58,7 +58,7 @@ public class CommandFactory {
      */
     public static Command fromUrl(String name, URI url) {
         switch (name) {
-            case "listen":
+            case ListenCommand.NAME:
                 return new ListenCommand(url);
 
             default:
