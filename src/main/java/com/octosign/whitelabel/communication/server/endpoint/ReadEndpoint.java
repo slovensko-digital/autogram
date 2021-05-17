@@ -51,7 +51,7 @@ abstract class ReadEndpoint<Res> extends Endpoint {
         if (response != null) {
             response.send();
         } else {
-            // The request failed and the enpoint sent its own error response
+            // The request failed and the endpoint sent its own error response
             // TODO: Check response stream to make sure this is the case
         }
     }
