@@ -33,26 +33,27 @@ public class Server {
 
     public Server(String hostname, int port, int initialNonce) {
         try {
-            server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
+            this.server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
         } catch (Exception e) {
             throw new RuntimeException("Could not create server", e);
         }
 
-        documentationEndpoint = new DocumentationEndpoint(this);
-        infoEndpoint = new InfoEndpoint(this);
-        signEndpoint = new SignEndpoint(this, initialNonce);
+        this.documentationEndpoint = new DocumentationEndpoint(this);
+        this.infoEndpoint = new InfoEndpoint(this);
+        this.signEndpoint = new SignEndpoint(this, initialNonce);
     }
 
     public void start() {
-        server.createContext("/", infoEndpoint);
-        server.createContext("/sign", signEndpoint);
-        if (devMode) {
-            server.createContext("/documentation", documentationEndpoint);
+        this.server.createContext("/", this.infoEndpoint);
+        this.server.createContext("/sign", this.signEndpoint);
+
+        if (this.devMode) {
+            this.server.createContext("/documentation", this.documentationEndpoint);
         }
 
         // Run requests in separate threads
-        server.setExecutor(Executors.newCachedThreadPool());
-        server.start();
+        this.server.setExecutor(Executors.newCachedThreadPool());
+        this.server.start();
     }
 
     public void setDevMode(boolean devMode) {
@@ -60,11 +61,11 @@ public class Server {
     }
 
     public boolean isDevMode() {
-        return devMode;
+        return this.devMode;
     }
 
     public String getAllowedOrigin() {
-        return allowedOrigin;
+        return this.allowedOrigin;
     }
 
     public void setAllowedOrigin(String allowedOrigin) {
@@ -72,7 +73,7 @@ public class Server {
     }
 
     public String getSecretKey() {
-        return secretKey;
+        return this.secretKey;
     }
 
     public void setSecretKey(String secretKey) {
@@ -80,15 +81,15 @@ public class Server {
     }
 
     public void setInfo(Info info) {
-        infoEndpoint.setInfo(info);
+        this.infoEndpoint.setInfo(info);
     }
 
     public void setOnSign(Function<Document, CompletableFuture<Document>> onSign) {
-        signEndpoint.setOnSign(onSign);
+        this.signEndpoint.setOnSign(onSign);
     }
 
     public InetSocketAddress getAddress() {
-        return server.getAddress();
+        return this.server.getAddress();
     }
 
 }

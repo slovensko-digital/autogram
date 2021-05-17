@@ -7,8 +7,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import com.octosign.whitelabel.communication.CommunicationError;
-import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
+import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.XmlDocument;
 import com.octosign.whitelabel.communication.server.Request;
@@ -29,11 +29,11 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
     @Override
     protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) throws IOException {
-        if (onSign == null) {
+        if (this.onSign == null) {
             var error = new CommunicationError(Code.NOT_READY, "Server is not ready yet");
             new Response<CommunicationError>(request.getExchange())
-                .asError(HttpURLConnection.HTTP_CONFLICT, error)
-                .send();
+            .asError(HttpURLConnection.HTTP_CONFLICT, error)
+            .send();
             return null;
         }
 
@@ -43,7 +43,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
         try {
             // TODO: Add using of SignatureParameters
-            var signedDocument = onSign.apply(document).get();
+            var signedDocument = this.onSign.apply(document).get();
             return response.setBody(signedDocument);
         } catch (Exception e) {
             // TODO: We should do a better job with the error response here:
@@ -51,8 +51,8 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
             var error = new CommunicationError(Code.SIGNING_FAILED, "Signing failed.", e.getMessage());
             new Response<CommunicationError>(request.getExchange())
-                .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error)
-                .send();
+            .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error)
+            .send();
             return null;
         }
     }

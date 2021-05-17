@@ -30,7 +30,7 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
     public WriteEndpoint(Server server, int initialNonce) {
         super(server);
 
-        nonce = new AtomicInteger(initialNonce);
+        this.nonce = new AtomicInteger(initialNonce);
     }
 
     @Override
