@@ -38,7 +38,6 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         }
 
         var signRequest = request.getBody();
-        var parameters = signRequest.getParameters();
         var document = getSpecificDocument(signRequest);
 
         try {
