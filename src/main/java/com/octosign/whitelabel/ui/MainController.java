@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.communication.document.XmlDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 
@@ -95,8 +95,8 @@ public class MainController {
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
 
-        boolean isXml = document instanceof XMLDocument;
-        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+        boolean isXml = document instanceof XmlDocument;
+        final boolean hasTransformation = isXml && ((XmlDocument) document).getTransformation() != null;
 
         if (hasTransformation) {
             textArea.setManaged(false);
@@ -104,7 +104,7 @@ public class MainController {
             CompletableFuture.runAsync(() -> {
                 String visualisation;
                 try {
-                    var xmlDocument = (XMLDocument) document;
+                    var xmlDocument = (XmlDocument) document;
                     visualisation = xmlDocument.getTransformed();
                 } catch (Exception e) {
                     Platform.runLater(() -> {
