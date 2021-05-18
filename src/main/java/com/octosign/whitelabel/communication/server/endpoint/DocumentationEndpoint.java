@@ -31,11 +31,10 @@ public class DocumentationEndpoint extends Endpoint {
         headers.set("Content-Type", mimeType);
         exchange.sendResponseHeaders(200, 0);
 
-        var fileStream = new FileInputStream(file.toString());
-        var responseStream = exchange.getResponseBody();
-        fileStream.transferTo(responseStream);
-        fileStream.close();
-        responseStream.close();
+        // automatically closes both streams
+        try (var fileStream = new FileInputStream(file.toString()); var responseStream = exchange.getResponseBody()) {
+            fileStream.transferTo(responseStream);
+        }
     }
 
     @Override

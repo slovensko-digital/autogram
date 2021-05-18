@@ -67,17 +67,18 @@ public class Response<T> {
     }
 
     public void send() throws IOException {
-        var stream = exchange.getResponseBody();
         var headers = exchange.getResponseHeaders();
-
         var body = bodyFormat.to(getBody());
         // TODO: Check Accept header instead of hardcoding UTF-8
         var bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 
         headers.set("Content-Type", "application/json; charset=UTF-8");
         exchange.sendResponseHeaders(statusCode, bodyBytes.length);
-        stream.write(bodyBytes);
-        stream.close();
+
+        // automatically closes stream
+        try (var stream = exchange.getResponseBody()) {
+            stream.write(bodyBytes);
+        }
     }
 
 }
