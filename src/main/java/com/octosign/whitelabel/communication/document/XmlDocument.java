@@ -33,7 +33,7 @@ public class XmlDocument extends Document {
     }
 
     public void setTransformation(String transformation) {
-        transformation = transformation;
+        this.transformation = transformation;
     }
 
     /**

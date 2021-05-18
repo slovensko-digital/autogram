@@ -47,7 +47,7 @@ public class Response<U> {
     }
 
     public Response<U> setStatusCode(int statusCode) {
-        statusCode = statusCode;
+        this.statusCode = statusCode;
         return this;
     }
 
@@ -56,7 +56,7 @@ public class Response<U> {
     }
 
     public Response<U> setBody(U body) {
-        body = body;
+        this.body = body;
         return this;
     }
 
