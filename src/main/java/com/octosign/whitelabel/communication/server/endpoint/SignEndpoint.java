@@ -32,8 +32,8 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         if (onSign == null) {
             var error = new CommunicationError(Code.NOT_READY, "Server is not ready yet");
             new Response<CommunicationError>(request.getExchange())
-            .asError(HttpURLConnection.HTTP_CONFLICT, error)
-            .send();
+                .asError(HttpURLConnection.HTTP_CONFLICT, error)
+                .send();
             return null;
         }
 
@@ -50,8 +50,8 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
             var error = new CommunicationError(Code.SIGNING_FAILED, "Signing failed.", e.getMessage());
             new Response<CommunicationError>(request.getExchange())
-            .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error)
-            .send();
+                .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error)
+                .send();
             return null;
         }
     }
