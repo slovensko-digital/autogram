@@ -29,19 +29,19 @@ public class ListenCommand extends Command {
 
         var params = url.getPath().split("/");
 
-        if (params.length > 1 && !params[1].isEmpty()) {
+        if (params.length > 1 && !params[1].isBlank()) {
             setPort(params[1]);
         }
 
-        if (params.length > 2 && !params[2].isEmpty()) {
+        if (params.length > 2 && !params[2].isBlank()) {
             setOrigin(params[2]);
         }
 
-        if (params.length > 3 && !params[3].isEmpty()) {
+        if (params.length > 3 && !params[3].isBlank()) {
             setSecretKey(params[3]);
         }
 
-        if (params.length > 4 && !params[4].isEmpty()) {
+        if (params.length > 4 && !params[4].isBlank()) {
             setInitialNonce(params[4]);
         }
     }
@@ -59,12 +59,15 @@ public class ListenCommand extends Command {
         if (named.containsKey("port")) {
             setPort(named.get("port"));
         }
+
         if (named.containsKey("origin")) {
             setOrigin(named.get("origin"));
         }
+
         if (named.containsKey("key")) {
             setSecretKey(named.get("key"));
         }
+
         if (named.containsKey("nonce")) {
             setInitialNonce(named.get("nonce"));
         }
