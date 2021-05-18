@@ -6,13 +6,6 @@ import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import com.octosign.whitelabel.Launcher;
-import com.octosign.whitelabel.cli.command.Command;
-import com.octosign.whitelabel.cli.command.CommandFactory;
-import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.Info;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Server;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -25,6 +18,14 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
+import com.octosign.whitelabel.Launcher;
+import com.octosign.whitelabel.cli.command.Command;
+import com.octosign.whitelabel.cli.command.CommandFactory;
+import com.octosign.whitelabel.cli.command.ListenCommand;
+import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.server.Server;
 
 public class Main extends Application {
 

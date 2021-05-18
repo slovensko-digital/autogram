@@ -9,10 +9,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.document.XmlDocument;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
-import com.octosign.whitelabel.ui.about.AboutDialog;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
@@ -22,6 +18,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
+
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.document.XmlDocument;
+import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.ui.about.AboutDialog;
 
 /**
  * Controller for the signing window

@@ -3,17 +3,19 @@ package com.octosign.whitelabel.ui;
 import java.util.List;
 import java.util.Locale;
 
-import com.octosign.whitelabel.signing.SigningCertificate;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
-import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
-import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
+
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+
+import com.octosign.whitelabel.signing.SigningCertificate;
+import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
+import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
 
 /**
  * Holds currently used certificate and takes care of picking
