@@ -6,7 +6,19 @@ import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import com.octosign.whitelabel.Launcher;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
 import com.octosign.whitelabel.cli.command.Command;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
@@ -14,18 +26,7 @@ import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
 
@@ -150,7 +151,7 @@ public class Main extends Application {
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setDocument(document);
-        controller.setOnSigned((String signedContent) -> { 
+        controller.setOnSigned((String signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });
@@ -237,8 +238,7 @@ public class Main extends Application {
      * Application version as defined in pom if packaged or dev otherwise
      */
     public static String getVersion() {
-        String packageVersion = Launcher.class.getPackage().getImplementationVersion();
-        return packageVersion != null ? packageVersion : "dev";
+        return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
     }
 
 }
