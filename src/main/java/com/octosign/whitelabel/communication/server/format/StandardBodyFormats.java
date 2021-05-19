@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 
 public enum StandardBodyFormats implements BodyFormat {
     JSON {
-        static final String MIME_TYPE = "application/json;charset=utf-8";
+        static final String MIME_TYPE = "application/json";
 
         private final Gson gson = new Gson();
 
