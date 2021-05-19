@@ -93,7 +93,7 @@ public class Main extends Application {
             return;
         }
 
-        server.setDevMode(version == "dev");
+        server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
         if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
         if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());
