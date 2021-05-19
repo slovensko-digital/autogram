@@ -70,7 +70,7 @@ public abstract class SigningCertificate {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             String notBefore = dateFormat.format(key.getCertificate().getNotBefore());
             String notAfter = dateFormat.format(key.getCertificate().getNotAfter());
-            for (Rdn rdn : ldapDN.getRdns()) {
+            for (Rdn rdn: ldapDN.getRdns()) {
                 if (rdn.getType().equalsIgnoreCase("CN"))
                     dnName = rdn.getValue().toString();
                 if (rdn.getType().equalsIgnoreCase("C"))
@@ -118,7 +118,7 @@ public abstract class SigningCertificate {
     }
 
     /**
-     * Constructs human readable description for the current private key 
+     * Constructs human readable description for the current private key
      */
     public String getNicePrivateKeyDescription(KeyDescriptionVerbosity verbosity) {
         return SigningCertificate.getNicePrivateKeyDescription(privateKey, verbosity);
