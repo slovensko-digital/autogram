@@ -37,7 +37,7 @@ public class SigningCertificatePKCS11 extends SigningCertificate {
             return null;
         }
 
-        for (String path : paths) {
+        for (String path: paths) {
             if ((new File(path)).exists()) {
                 return new SigningCertificatePKCS11(path, passwordCallback);
             }
