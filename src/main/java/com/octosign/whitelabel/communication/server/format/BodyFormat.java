@@ -3,7 +3,7 @@ package com.octosign.whitelabel.communication.server.format;
 /**
  * Format used in the HTTP exchange request or reponse body
  */
-public abstract class BodyFormat {
+public interface BodyFormat {
 
     /**
      * Convert string body to required object
@@ -13,7 +13,7 @@ public abstract class BodyFormat {
      * @param inputClass    Class of the expected body
      * @return Object from the body
      */
-    abstract public <T> T from(String input, Class<T> inputClass);
+    public <T> T from(String input, Class<T> inputClass);
 
     /**
      * Convert object to string body
@@ -22,13 +22,13 @@ public abstract class BodyFormat {
      * @param input Object T that should be represented as string
      * @return String for the body
      */
-    abstract public <T> String to(T input);
+    public <T> String to(T input);
 
     /**
      * MIME type this body format produces and accepts
      *
      * @return MIME type, e.g. application/json
      */
-    abstract public String getMimeType();
+    public String getMimeType();
 
 }
