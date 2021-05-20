@@ -9,20 +9,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.document.XMLDocument;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
-import com.octosign.whitelabel.ui.about.AboutDialog;
-
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.web.WebView;
-import javafx.concurrent.Worker;
+
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.document.XmlDocument;
+import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.ui.about.AboutDialog;
 
 /**
  * Controller for the signing window
@@ -95,8 +95,8 @@ public class MainController {
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
 
-        boolean isXml = document instanceof XMLDocument;
-        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+        boolean isXml = document instanceof XmlDocument;
+        final boolean hasTransformation = isXml && ((XmlDocument) document).getTransformation() != null;
 
         if (hasTransformation) {
             textArea.setManaged(false);
@@ -104,7 +104,7 @@ public class MainController {
             CompletableFuture.runAsync(() -> {
                 String visualisation;
                 try {
-                    var xmlDocument = (XMLDocument) document;
+                    var xmlDocument = (XmlDocument) document;
                     visualisation = xmlDocument.getTransformed();
                 } catch (Exception e) {
                     Platform.runLater(() -> {
@@ -117,7 +117,7 @@ public class MainController {
                     });
                     return;
                 }
-    
+
                 Platform.runLater(() -> {
                     var webEngine = webView.getEngine();
                     webEngine.getLoadWorker().stateProperty().addListener(
@@ -125,7 +125,7 @@ public class MainController {
                             if (newState == Worker.State.SUCCEEDED) {
                                 webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
                             }
-                        } 
+                        }
                     );
                     webEngine.loadContent(getResourceAsString("visualization.html"));
                 });
@@ -205,7 +205,7 @@ public class MainController {
     /**
      * Get resource from the ui resources as string using name
      */
-    private String getResourceAsString(String resourceName) {
+    private static String getResourceAsString(String resourceName) {
         try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
             if (inputStream == null) throw new Exception("Resource not found");
             try (

@@ -7,10 +7,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import com.octosign.whitelabel.communication.CommunicationError;
-import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
+import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.communication.document.XmlDocument;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
@@ -38,7 +38,6 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         }
 
         var signRequest = request.getBody();
-        var parameters = signRequest.getParameters();
         var document = getSpecificDocument(signRequest);
 
         try {
@@ -80,7 +79,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
      * @param signRequest
      * @return Specific document like XMLDocument type-widened to Document
      */
-    private Document getSpecificDocument(SignRequest signRequest) {
+    private static Document getSpecificDocument(SignRequest signRequest) {
         var mimeType = signRequest.getPayloadMimeType();
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
@@ -92,8 +91,8 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
         Document specificDocument = null;
         switch (baseMimeType) {
-            case XMLDocument.MIME_TYPE:
-                var xmlDocument = new XMLDocument(document);
+            case XmlDocument.MIME_TYPE:
+                var xmlDocument = new XmlDocument(document);
                 if (isBase64) {
                     var decoder = Base64.getDecoder();
                     var binaryContent = decoder.decode(xmlDocument.getContent());
@@ -110,6 +109,9 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
                 specificDocument = xmlDocument;
                 break;
+
+            default:
+                throw new AssertionError();
         }
 
         return specificDocument;

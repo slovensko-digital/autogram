@@ -13,7 +13,7 @@ import static com.octosign.whitelabel.communication.server.format.StandardBodyFo
 /**
  * Server response that conforms to request headers
  */
-public class Response<T> {
+public class Response<U> {
 
     private final HttpExchange exchange;
 
@@ -23,7 +23,7 @@ public class Response<T> {
 
     private int statusCode = HttpURLConnection.HTTP_OK;
 
-    private T body;
+    private U body;
 
     public Response(HttpExchange exchange) {
         this.exchange = exchange;
@@ -44,24 +44,24 @@ public class Response<T> {
     }
 
     public int getStatusCode() {
-        return this.statusCode;
+        return statusCode;
     }
 
-    public Response<T> setStatusCode(int statusCode) {
+    public Response<U> setStatusCode(int statusCode) {
         this.statusCode = statusCode;
         return this;
     }
 
-    public T getBody() {
-        return this.body;
+    public U getBody() {
+        return body;
     }
 
-    public Response<T> setBody(T body) {
+    public Response<U> setBody(U body) {
         this.body = body;
         return this;
     }
 
-    public Response<T> asError(int httpCode, T error) {
+    public Response<U> asError(int httpCode, U error) {
         setStatusCode(httpCode);
         setBody(error);
         return this;

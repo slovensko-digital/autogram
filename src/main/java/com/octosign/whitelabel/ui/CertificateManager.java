@@ -3,18 +3,19 @@ package com.octosign.whitelabel.ui;
 import java.util.List;
 import java.util.Locale;
 
-import com.octosign.whitelabel.signing.SigningCertificate;
-import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
-import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
-
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
-import javafx.scene.control.Alert.AlertType;
+
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+
+import com.octosign.whitelabel.signing.SigningCertificate;
+import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
+import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
 
 /**
  * Holds currently used certificate and takes care of picking
@@ -56,7 +57,7 @@ public class CertificateManager {
             )
         );
         treeTableView.getColumns().add(nameColumn);
-        treeTableView.setRoot(new TreeItem<SigningCertificate>(certificate));
+        treeTableView.setRoot(new TreeItem<>(certificate));
         dialogPane.setContent(treeTableView);
 
         return dialog.showAndWait().orElse(null);
@@ -74,7 +75,7 @@ public class CertificateManager {
      *
      * TODO: All strings here should come from the properties
      */
-    private SigningCertificate getDefaulCertificate() {
+    private static SigningCertificate getDefaulCertificate() {
         SigningCertificate certificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback());
 
         // Try to fallback to MSCAPI on Windows
@@ -82,7 +83,7 @@ public class CertificateManager {
         if (certificate == null && osName.indexOf("win") >= 0) {
             certificate = new SigningCertificateMSCAPI();
         }
-    
+
         if (certificate == null) {
             Main.displayAlert(
                 AlertType.ERROR,
@@ -92,7 +93,7 @@ public class CertificateManager {
             );
             return null;
         }
-    
+
         List<DSSPrivateKeyEntry> keys;
         try {
             keys = certificate.getAvailablePrivateKeys();
@@ -105,7 +106,7 @@ public class CertificateManager {
             );
             return null;
         }
-    
+
         if (keys.size() == 0) {
             Main.displayAlert(
                 AlertType.ERROR,
@@ -115,7 +116,7 @@ public class CertificateManager {
             );
             return null;
         }
-    
+
         // Use the first available key
         certificate.setPrivateKey(keys.get(0));
 

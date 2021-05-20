@@ -8,32 +8,32 @@ public class SignatureParameters {
     public enum Format {
         XADES,
         PADES
-    };
+    }
 
     public enum Level {
         BASELINE_B
-    };
+    }
 
     public enum Container {
         ASICS,
         ASICE
-    };
+    }
 
     public enum Packaging {
         ENVELOPED,
         ENVELOPING
-    };
+    }
 
     public enum DigestAlgorithm {
         SHA256,
         SHA384,
         SHA512
-    };
+    }
 
     public enum CanonicalizationMethod {
         INCLUSIVE,
         EXCLUSIVE
-    };
+    }
 
     private Format format;
 
@@ -81,63 +81,63 @@ public class SignatureParameters {
     }
 
     public Format getFormat() {
-        return this.format;
+        return format;
     }
 
     public Level getLevel() {
-        return this.level != null ? this.level : Level.BASELINE_B;
+        return level != null ? level : Level.BASELINE_B;
     }
 
     public String getFileMimeType() {
-        return this.fileMimeType;
+        return fileMimeType;
     }
 
     public Container getContainer() {
-        return this.container;
+        return container;
     }
 
     public Packaging getPackaging() {
-        return this.packaging != null ? this.packaging : Packaging.ENVELOPED;
+        return packaging != null ? packaging : Packaging.ENVELOPED;
     }
 
     public DigestAlgorithm getDigestAlgorithm() {
-        return this.digestAlgorithm != null ? this.digestAlgorithm : DigestAlgorithm.SHA256;
+        return digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
     }
 
     public boolean isEn319132() {
-        return this.en319132;
+        return en319132;
     }
 
     public boolean getEn319132() {
-        return this.en319132;
+        return en319132;
     }
 
     public CanonicalizationMethod getInfoCanonicalization() {
-        return this.infoCanonicalization;
+        return infoCanonicalization;
     }
 
     public CanonicalizationMethod getPropertiesCanonicalization() {
-        return this.propertiesCanonicalization;
+        return propertiesCanonicalization;
     }
 
     public CanonicalizationMethod getKeyInfoCanonicalization() {
-        return this.keyInfoCanonicalization;
+        return keyInfoCanonicalization;
     }
 
     public String getSignaturePolicyId() {
-        return this.signaturePolicyId;
+        return signaturePolicyId;
     }
 
     public String getSignaturePolicyContent() {
-        return this.signaturePolicyContent;
+        return signaturePolicyContent;
     }
 
     public String getTransformation() {
-        return this.transformation;
+        return transformation;
     }
 
     public String getSchema() {
-        return this.schema;
+        return schema;
     }
 
 }
