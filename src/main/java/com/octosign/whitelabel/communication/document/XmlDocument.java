@@ -13,15 +13,15 @@ import javax.xml.transform.stream.StreamSource;
 /**
  * XML document for signing
  */
-public class XMLDocument extends Document {
+public class XmlDocument extends Document {
 
     public static final String MIME_TYPE = "application/xml";
 
     protected String transformation;
 
-    public XMLDocument() { }
+    public XmlDocument() { }
 
-    public XMLDocument(Document document) {
+    public XmlDocument(Document document) {
         setId(document.getId());
         setTitle(document.getTitle());
         setContent(document.getContent());
@@ -29,7 +29,7 @@ public class XMLDocument extends Document {
     }
 
     public String getTransformation() {
-        return this.transformation;
+        return transformation;
     }
 
     public void setTransformation(String transformation) {

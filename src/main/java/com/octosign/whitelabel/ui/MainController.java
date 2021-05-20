@@ -19,7 +19,7 @@ import javafx.scene.web.WebView;
 
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.PdfDocument;
-import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.communication.document.XmlDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 
@@ -94,7 +94,7 @@ public class MainController {
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
 
-        if (document instanceof XMLDocument && ((XMLDocument) document).getTransformation() != null) {
+        if (document instanceof XmlDocument && ((XmlDocument) document).getTransformation() != null) {
             webView.setManaged(true);
             textArea.setManaged(false);
             textArea.setVisible(false);
@@ -102,7 +102,7 @@ public class MainController {
             CompletableFuture.runAsync(() -> {
                 String visualization;
                 try {
-                    var xmlDocument = (XMLDocument) document;
+                    var xmlDocument = (XmlDocument) document;
                     visualization = xmlDocument.getTransformed();
                 } catch (Exception e) {
                     Platform.runLater(() -> {
@@ -239,4 +239,5 @@ public class MainController {
     private void onCertSettingsButtonAction() {
         certificateManager.useDialogPicker();
     }
+
 }

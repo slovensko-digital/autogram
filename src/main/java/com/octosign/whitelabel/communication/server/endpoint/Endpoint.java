@@ -16,10 +16,10 @@ import com.sun.net.httpserver.HttpHandler;
  * Server API endpoint with no request or response abstraction
  *
  * When writing a new endpoint, consider using high-level ReadEndpoint or WriteEndpoint.
- *
- * TODO: Think about handling of IOException-s
  */
 abstract class Endpoint implements HttpHandler {
+
+    // TODO Think about handling of IOException-s
 
     protected final Server server;
 
