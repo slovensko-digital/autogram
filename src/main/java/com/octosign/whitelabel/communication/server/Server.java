@@ -57,7 +57,7 @@ public class Server {
     }
 
     public void setDevMode(boolean devMode) {
-        devMode = devMode;
+        this.devMode = devMode;
     }
 
     public boolean isDevMode() {
@@ -69,7 +69,7 @@ public class Server {
     }
 
     public void setAllowedOrigin(String allowedOrigin) {
-        allowedOrigin = allowedOrigin;
+        this.allowedOrigin = allowedOrigin;
     }
 
     public String getSecretKey() {
@@ -77,7 +77,7 @@ public class Server {
     }
 
     public void setSecretKey(String secretKey) {
-        secretKey = secretKey;
+        this.secretKey = secretKey;
     }
 
     public void setInfo(Info info) {

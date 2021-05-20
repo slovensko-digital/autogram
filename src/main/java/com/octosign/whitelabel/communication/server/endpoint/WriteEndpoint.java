@@ -26,7 +26,7 @@ abstract class WriteEndpoint<T, U> extends Endpoint {
     public WriteEndpoint(Server server, int initialNonce) {
         super(server);
 
-        this.nonce = new AtomicInteger(initialNonce);
+        nonce = new AtomicInteger(initialNonce);
     }
 
     @Override
