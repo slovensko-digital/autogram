@@ -59,8 +59,6 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
             }
         }
 
-        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-
         var response = handleRequest(request, new Response<Res>(exchange));
         useResponse(response);
     }
