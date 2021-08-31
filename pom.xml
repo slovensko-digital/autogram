@@ -192,7 +192,6 @@
                             <output>${project.build.directory}${file.separator}preparedJDK</output>
                             <modulePaths>
                                 <path>${jlink.jdk.path}${file.separator}jmods</path>
-                                <path>${jlink.jdk.path}${file.separator}jmods</path>
                             </modulePaths>
                             <addModules>
                                 <module>java.compiler</module>
