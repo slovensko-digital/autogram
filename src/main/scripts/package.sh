@@ -97,6 +97,7 @@ if [[ "$platform" == "linux" ]]; then
     fi
 
     arguments+=(
+        "--java-options" "$jvmOptions"
         "--linux-rpm-license-type" "${properties_linux_rpmLicenseType:-MIT}"
         "--linux-menu-group" "${properties_linux_menuGroup:-Office}"
     )
