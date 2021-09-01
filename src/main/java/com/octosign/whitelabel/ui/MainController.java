@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
@@ -56,9 +56,9 @@ public class MainController {
     private CertificateManager certificateManager;
 
     /**
-     * Document signed in this window
+     * Wrapper for document in this window (to be signed) and parameters
      */
-    private Document document;
+    private SignatureUnit signatureUnit;
 
     /**
      * Consumer of the signed document content on success
@@ -74,8 +74,9 @@ public class MainController {
         this.certificateManager = certificateManager;
     }
 
-    public void setDocument(Document document) {
-        this.document = document;
+    public void setSignatureUnit(SignatureUnit signatureUnit) {
+        this.signatureUnit = signatureUnit;
+        var document = signatureUnit.getDocument();
 
         if (document.getTitle() != null && !document.getTitle().isEmpty()) {
             documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
@@ -189,7 +190,7 @@ public class MainController {
 
             CompletableFuture.runAsync(() -> {
                 try {
-                    String signedContent = certificateManager.getCertificate().sign(document.getContent());
+                    String signedContent = certificateManager.getCertificate().sign(signatureUnit);
                     Platform.runLater(() -> onSigned.accept(signedContent));
                 } catch (Exception e) {
                     Platform.runLater(() -> {

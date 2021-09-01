@@ -10,6 +10,7 @@ import com.octosign.whitelabel.cli.command.Command;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 
@@ -117,12 +118,12 @@ public class Main extends Application {
             System.out.println("Documentation is available in dev mode at " + docsAddress);
         }
 
-        server.setOnSign((Document document) -> {
+        server.setOnSign((SignatureUnit signatureUnit) -> {
             var future = new CompletableFuture<Document>();
 
             Platform.runLater(() -> {
-                openWindow(document, (String signedContent) -> {
-                    Document signedDocument = document.clone();
+                openWindow(signatureUnit, (String signedContent) -> {
+                    Document signedDocument = signatureUnit.getDocument().clone();
                     signedDocument.setContent(signedContent);
                     future.complete(signedDocument);
                 });
@@ -134,7 +135,7 @@ public class Main extends Application {
         server.setInfo(new Info(version, Status.READY));
     }
 
-    private void openWindow(Document document, Consumer<String> onSigned) {
+    private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) {
         var windowStage = new Stage();
 
         var fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"), bundle);
@@ -152,7 +153,7 @@ public class Main extends Application {
 
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
-        controller.setDocument(document);
+        controller.setSignatureUnit(signatureUnit);
         controller.setOnSigned((String signedContent) -> { 
             onSigned.accept(signedContent);
             windowStage.close();

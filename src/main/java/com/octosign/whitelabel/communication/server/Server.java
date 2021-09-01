@@ -1,11 +1,12 @@
 package com.octosign.whitelabel.communication.server;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.endpoint.DocumentationEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.InfoEndpoint;
@@ -89,7 +90,7 @@ public class Server {
         infoEndpoint.setInfo(info);
     }
 
-    public void setOnSign(Function<Document, CompletableFuture<Document>> onSign) {
+    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
         signEndpoint.setOnSign(onSign);
     }
 

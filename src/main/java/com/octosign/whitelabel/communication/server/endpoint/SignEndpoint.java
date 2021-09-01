@@ -3,7 +3,7 @@ package com.octosign.whitelabel.communication.server.endpoint;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Base64;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import com.octosign.whitelabel.communication.CommunicationError;
@@ -19,13 +19,13 @@ import com.octosign.whitelabel.communication.server.Server;
 
 public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
-    private Function<Document, CompletableFuture<Document>> onSign;
+    private Function<SignatureUnit, Future<Document>> onSign;
 
     public SignEndpoint(Server server, int initialNonce) {
         super(server, initialNonce);
     }
 
-    public void setOnSign(Function<Document, CompletableFuture<Document>> onSign) {
+    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
         this.onSign = onSign;
     }
 
@@ -40,12 +40,11 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         }
 
         var signRequest = request.getBody();
-        var parameters = signRequest.getParameters();
         var document = getSpecificDocument(signRequest);
+        var signatureUnit = new SignatureUnit(document, signRequest.getParameters());
 
         try {
-            // TODO: Add using of SignatureParameters
-            var signedDocument = onSign.apply(document).get();
+            var signedDocument = onSign.apply(signatureUnit).get();
             return response.setBody(signedDocument);
         } catch (Exception e) {
             // TODO: We should do a better job with the error response here:
