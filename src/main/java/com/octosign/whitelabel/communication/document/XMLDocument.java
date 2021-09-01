@@ -21,6 +21,7 @@ public class XMLDocument extends Document {
     public static final String MIME_TYPE = "application/xml";
 
     protected String transformation;
+    protected String schema;
 
     public XMLDocument() { }
 
