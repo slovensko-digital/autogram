@@ -95,8 +95,26 @@ public class MainController {
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
 
+        //TODO consider simplifying this part to avoid tedious casting
         boolean isXml = document instanceof XMLDocument;
+        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
         final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+
+        if (hasSchema) {
+            try {
+                ((XMLDocument) document).validate();
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    Main.displayAlert(
+                        AlertType.ERROR,
+                        "Neplatný formát",
+                        "XML súbor nie je validný",
+                        "Dokument na podpísanie nevyhovel požiadavkám validácie podľa XSD schémy. Detail chyby: " + e
+                    );
+                });
+                return;
+            }
+        }
 
         if (hasTransformation) {
             textArea.setManaged(false);
