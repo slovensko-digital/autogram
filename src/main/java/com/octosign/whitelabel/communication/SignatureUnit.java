@@ -1,6 +1,7 @@
 package com.octosign.whitelabel.communication;
 
 import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.preprocessing.XDCTransformer;
 
 public class SignatureUnit {
     private Document document;
@@ -25,4 +26,10 @@ public class SignatureUnit {
 
     public void setSignatureParameters(SignatureParameters signatureParameters) { this.signatureParameters = signatureParameters; }
 
+    public void standardizeAsXDC() {
+        var transformer = XDCTransformer.newInstance(signatureParameters);
+        var transformedContent = transformer.transform(document.getContent(), XDCTransformer.Mode.IDEMPOTENT);
+
+        document.setContent(transformedContent);
+    }
 }
