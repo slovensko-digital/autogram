@@ -16,10 +16,10 @@ import com.sun.net.httpserver.HttpHandler;
  * Server API endpoint with no request or response abstraction
  *
  * When writing a new endpoint, consider using high-level ReadEndpoint or WriteEndpoint.
- *
- * TODO: Think about handling of IOException-s
  */
 abstract class Endpoint implements HttpHandler {
+
+    // TODO Think about handling of IOException-s
 
     protected final Server server;
 
@@ -37,6 +37,7 @@ abstract class Endpoint implements HttpHandler {
         } catch (Throwable e) {
             var message = "An unexpected internal error occurred";
             var error = new CommunicationError(Code.UNEXPECTED_ERROR, message, e.getMessage());
+            e.printStackTrace();//TODO rm
             new Response<CommunicationError>(exchange)
                 .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error)
                 .send();

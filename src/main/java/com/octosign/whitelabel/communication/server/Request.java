@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
-import com.octosign.whitelabel.communication.server.format.JsonFormat;
 import com.sun.net.httpserver.HttpExchange;
 
-public class Request<BodyT> {
+import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
+
+public class Request<T> {
 
     private final HttpExchange exchange;
 
@@ -17,18 +18,15 @@ public class Request<BodyT> {
 
     private final BodyFormat bodyFormat;
 
-    /**
-     * Body singleton
-     */
-    private BodyT body;
+    private T body;
 
     public Request(HttpExchange exchange) {
         this.exchange = exchange;
 
         bodyFormats = Map.of(
-            JsonFormat.MIME_TYPE, new JsonFormat(),
-            "text/plain", new JsonFormat(), // Considered JSON so clients can prevent CORS preflight
-            "*/*", new JsonFormat() // Implicit default format
+            JSON.getMimeType(), JSON,
+            "text/plain", JSON, // Considered JSON so clients can prevent CORS preflight
+            "*/*", JSON // Implicit default format
         );
 
         var contentType = exchange.getRequestHeaders().get("Content-Type");
@@ -45,22 +43,22 @@ public class Request<BodyT> {
     }
 
     public HttpExchange getExchange() {
-        return this.exchange;
+        return exchange;
     }
 
     public BodyFormat getBodyFormat() {
-        return this.bodyFormat;
+        return bodyFormat;
     }
 
     /**
      * List of supported body MIME types
      */
     public List<String> getSupportedBodyFormats() {
-        return new ArrayList<String>(bodyFormats.keySet());
+        return new ArrayList<>(bodyFormats.keySet());
     }
 
-    public BodyT getBody() {
-        return this.body;
+    public T getBody() {
+        return body;
     }
 
     /**
@@ -71,7 +69,7 @@ public class Request<BodyT> {
      * @param <T>       Expected object in the body
      * @param bodyClass Class of the expected object in the body
      */
-    public BodyT processBody(Class<BodyT> bodyClass) {
+    public T processBody(Class<T> bodyClass) {
         var stream = exchange.getRequestBody();
 
         try {

@@ -12,6 +12,7 @@ import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
@@ -81,7 +82,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
      * @param signRequest
      * @return Specific document like XMLDocument type-widened to Document
      */
-    private Document getSpecificDocument(SignRequest signRequest) {
+    private static Document getSpecificDocument(SignRequest signRequest) {
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
         var mimeType = MimeType.parse(signRequest.getPayloadMimeType());
@@ -99,11 +100,17 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
                 yield new XMLDocument(document, schema, transformation);
             }
+
+            case PDFDocument.MIME_TYPE -> {
+                document.setContent(decode(document.getContent()));
+                yield new PDFDocument(document);
+            }
+
             default -> throw new IllegalArgumentException("Unsupported MIME type");
         };
     }
 
-    private String decode(String input) {
+    private static String decode(String input) {
         if (input == null || input.isBlank()) return null;
 
         var decoder = Base64.getDecoder();

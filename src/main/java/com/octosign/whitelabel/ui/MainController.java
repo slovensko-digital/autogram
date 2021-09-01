@@ -1,28 +1,32 @@
 package com.octosign.whitelabel.ui;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 
 import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.web.WebView;
-import javafx.concurrent.Worker;
 
 /**
  * Controller for the signing window
@@ -78,13 +82,13 @@ public class MainController {
         this.signatureUnit = signatureUnit;
         var document = signatureUnit.getDocument();
 
-        if (document.getTitle() != null && !document.getTitle().isEmpty()) {
+        if (document.getTitle() != null && !document.getTitle().isBlank()) {
             documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
         } else {
             documentLabel.setManaged(false);
         }
 
-        if (document.getLegalEffect() != null && !document.getLegalEffect().isEmpty()) {
+        if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }
@@ -118,13 +122,15 @@ public class MainController {
         }
 
         if (hasTransformation) {
+            webView.setManaged(true);
             textArea.setManaged(false);
+            textArea.setVisible(false);
 
             CompletableFuture.runAsync(() -> {
-                String visualisation;
+                String visualization;
                 try {
                     var xmlDocument = (XMLDocument) document;
-                    visualisation = xmlDocument.getTransformed();
+                    visualization = xmlDocument.getTransformed();
                 } catch (Exception e) {
                     Platform.runLater(() -> {
                         Main.displayAlert(
@@ -140,19 +146,59 @@ public class MainController {
                 Platform.runLater(() -> {
                     var webEngine = webView.getEngine();
                     webEngine.getLoadWorker().stateProperty().addListener(
-                        (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
+                        (observable, oldState, newState) -> {
                             if (newState == Worker.State.SUCCEEDED) {
-                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
+                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualization);
                             }
                         }
                     );
-                    webEngine.loadContent(getResourceAsString("visualization.html"));
+                    webEngine.load(Main.class.getResource("visualization.html").toExternalForm());
                 });
             });
-        } else {
-            webView.setManaged(false);
+        } else if (document instanceof PDFDocument) {
 
-            textArea.setText(document.getContent());
+            // TODO move pdf handler here
+
+        } else {
+// TODO keep
+//            webView.setManaged(false);
+//            textArea.setManaged(true);
+//            textArea.setVisible(true);
+//            textArea.setText(document.getContent());
+
+            webView.setManaged(true);
+            textArea.setManaged(false);
+            textArea.setVisible(false);
+
+            Platform.runLater(() -> {
+                var engine = webView.getEngine();
+                engine.setJavaScriptEnabled(true);
+
+                // TODO
+                //engine.setUserStyleSheetLocation(Main.class.getResource("pdfjs/web/viewer.css").toExternalForm());
+                engine.setUserStyleSheetLocation(Main.class.getResource("pdf.viewer.css").toExternalForm());
+
+                engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
+                    if (newState == Worker.State.SUCCEEDED) {
+                        engine.executeScript("openFileFromBase64('" + pdf_data + "')");
+                    }
+                });
+
+                // TODO
+                //engine.load(Main.class.getResource("pdfjs/web/viewer.html").toExternalForm());
+                engine.load(Main.class.getResource("pdf.viewer.html").toExternalForm());
+            });
+
+        }
+    }
+
+    // TODO rm
+    static final String pdf_data;
+    static {
+        try {
+            pdf_data = Base64.getEncoder().encodeToString(Files.readAllBytes(Path.of("tmp/MED_DeliveryReportAuthorization_Definition.pdf")));
+        } catch (IOException e) {
+            throw new AssertionError();
         }
     }
 

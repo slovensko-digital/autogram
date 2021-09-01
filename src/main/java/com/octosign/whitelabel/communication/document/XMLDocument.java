@@ -45,7 +45,7 @@ public class XMLDocument extends Document {
     }
 
     public String getTransformation() {
-        return this.transformation;
+        return transformation;
     }
 
     public void setTransformation(String transformation) {
