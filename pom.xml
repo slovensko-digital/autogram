@@ -15,6 +15,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>16</maven.compiler.release>
         <maven.target.release>16</maven.target.release>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
+        <java.version>16</java.version>
+        <javafx.version>16</javafx.version>
         <dss.version>5.8</dss.version>
         <gson.version>2.8.6</gson.version>
         <main.class>com.octosign.whitelabel.ui.Main</main.class>
@@ -42,6 +46,11 @@
         <dependency>
             <groupId>eu.europa.ec.joinup.sd-dss</groupId>
             <artifactId>dss-crl-parser-stream</artifactId>
+            <version>${dss.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-asic-xades</artifactId>
             <version>${dss.version}</version>
         </dependency>
         <dependency>
@@ -78,6 +87,8 @@
                     <release>${maven.compiler.release}</release>
                     <fork>true</fork>
                     <executable>${jlink.jdk.path}/bin/javac</executable>
+                    <source>16</source>
+                    <target>16</target>
                 </configuration>
             </plugin>
 
@@ -184,7 +195,6 @@
                                 <module>javafx.base</module>
                                 <module>javafx.controls</module>
                                 <module>javafx.fxml</module>
-                                <module>javafx.graphics</module>
                                 <module>javafx.web</module>
                                 <!-- Needed for sun.misc.Unsafe used by JavaFX, shouldn't be used in our code -->
                                 <module>jdk.unsupported</module>
