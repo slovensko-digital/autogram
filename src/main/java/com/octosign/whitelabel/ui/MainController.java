@@ -77,13 +77,13 @@ public class MainController {
     public void setDocument(Document document) {
         this.document = document;
 
-        if (document.getTitle() != null && !document.getTitle().equals("")) {
+        if (document.getTitle() != null && !document.getTitle().isEmpty()) {
             documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
         } else {
             documentLabel.setManaged(false);
         }
 
-        if (document.getLegalEffect() != null && !document.getLegalEffect().equals("")) {
+        if (document.getLegalEffect() != null && !document.getLegalEffect().isEmpty()) {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }

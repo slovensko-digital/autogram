@@ -27,11 +27,11 @@ public class SigningCertificatePKCS11 extends SigningCertificate {
         String osName = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
 
         String[] paths;
-        if ((osName.indexOf("mac") >= 0) || (osName.indexOf("darwin") >= 0)) {
+        if ((osName.contains("mac")) || (osName.contains("darwin"))) {
             paths = darwinPkcsDlls;
-        } else if (osName.indexOf("win") >= 0) {
+        } else if (osName.contains("win")) {
             paths = windowsPkcsDlls;
-        } else if (osName.indexOf("nux") >= 0) {
+        } else if (osName.contains("nux")) {
             paths = linuxPkcsDlls;
         } else {
             return null;
