@@ -224,7 +224,7 @@ public class MainController {
     /**
      * Get resource from the ui resources as string using name
      */
-    private String getResourceAsString(String resourceName) {
+    private static String getResourceAsString(String resourceName) {
         try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
             if (inputStream == null) throw new Exception("Resource not found");
             try (

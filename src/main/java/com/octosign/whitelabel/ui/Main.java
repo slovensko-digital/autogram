@@ -32,7 +32,7 @@ public class Main extends Application {
     public enum Status {
         LOADING,
         READY
-    };
+    }
 
     private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
     private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
@@ -97,7 +97,7 @@ public class Main extends Application {
             return;
         }
 
-        server.setDevMode(version == "dev");
+        server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
         if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
         if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());

@@ -23,19 +23,13 @@ public class Server {
 
     private final HttpServer server;
 
-    /**
-     * Local development mode
-     */
+    // Local development mode
     private boolean devMode;
 
-    /**
-     * HTTP allowed origin
-     */
+    // HTTP allowed origin
     private String allowedOrigin = "*";
 
-    /**
-     * HMAC hex secret key
-     */
+    // HMAC hex secret key
     private String secretKey;
 
     public Server(String hostname, int port, int initialNonce) {
@@ -53,6 +47,7 @@ public class Server {
     public void start() {
         server.createContext("/", infoEndpoint);
         server.createContext("/sign", signEndpoint);
+
         if (devMode) {
             server.createContext("/documentation", documentationEndpoint);
         }
