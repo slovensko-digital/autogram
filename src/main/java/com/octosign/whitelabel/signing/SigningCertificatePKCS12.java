@@ -23,7 +23,7 @@ public class SigningCertificatePKCS12 extends SigningCertificate {
             // We probably have to use reflection (.getClass().getMethod())
             // using method C_GetSlotList with true as parameter to get slots with tokens
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
-            this.token = new Pkcs12SignatureToken(pkcsPath, password);
+            token = new Pkcs12SignatureToken(pkcsPath, password);
         } catch (Exception e) {
             throw new RuntimeException("Cannot initialize PKCS12", e);
         }

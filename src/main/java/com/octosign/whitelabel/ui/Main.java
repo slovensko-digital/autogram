@@ -6,6 +6,19 @@ import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
 import com.octosign.whitelabel.cli.command.Command;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
@@ -13,25 +26,12 @@ import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-
 public class Main extends Application {
 
     public enum Status {
         LOADING,
         READY
-    };
+    }
 
     private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
     private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
@@ -96,7 +96,7 @@ public class Main extends Application {
             return;
         }
 
-        server.setDevMode(version == "dev");
+        server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
         if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
         if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());

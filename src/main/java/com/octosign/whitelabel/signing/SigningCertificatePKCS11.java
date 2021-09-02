@@ -37,7 +37,7 @@ public class SigningCertificatePKCS11 extends SigningCertificate {
             return null;
         }
 
-        for (String path : paths) {
+        for (String path: paths) {
             if ((new File(path)).exists()) {
                 return new SigningCertificatePKCS11(path, passwordCallback);
             }
@@ -56,7 +56,7 @@ public class SigningCertificatePKCS11 extends SigningCertificate {
             // We probably have to use reflection (.getClass().getMethod())
             // using method C_GetSlotList with true as parameter to get slots with tokens
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
-            this.token = new Pkcs11SignatureToken(pkcsPath, passwordCallback, -1);
+            token = new Pkcs11SignatureToken(pkcsPath, passwordCallback, -1);
         } catch (Exception e) {
             throw new RuntimeException("Cannot initialize PKCS11", e);
         }
