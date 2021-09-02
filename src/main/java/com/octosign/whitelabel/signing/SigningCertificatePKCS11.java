@@ -58,7 +58,7 @@ public class SigningCertificatePKCS11 extends SigningCertificate {
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
             token = new Pkcs11SignatureToken(pkcsPath, passwordCallback, -1);
         } catch (Exception e) {
-            throw new RuntimeException("Cannot initialize MSCAPI", e);
+            throw new RuntimeException("Cannot initialize PKCS11", e);
         }
     }
 }
