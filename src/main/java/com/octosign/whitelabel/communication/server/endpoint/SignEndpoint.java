@@ -16,6 +16,9 @@ import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
+import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
+
 public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
     private Function<SignatureUnit, Future<Document>> onSign;
@@ -41,10 +44,11 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         var signRequest = request.getBody();
 
         var document = getSpecificDocument(signRequest);
-        var parameters = resolveParameters(signRequest);
+        var template = extractTemplateFrom(request);
+        var parameters = resolveParameters(signRequest, template);
 
         var signatureUnit = new SignatureUnit(document, parameters);
-
+//        onRequestReceived.apply(signatureUnit, template);
         try {
             var signedDocument = onSign.apply(signatureUnit).get();
             return response.setBody(signedDocument);
@@ -113,7 +117,23 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         return new String(decoder.decode(input));
     }
 
-    private static SignatureParameters resolveParameters(SignRequest signRequest) {
-        return signRequest.getParameters();
+    private static Configuration extractTemplateFrom(Request<?> request) {
+        var templateId = request.getQueryParams().get("template");
+        if (templateId == null || templateId.isEmpty()) return null;
+
+        var templateName = LOWER_HYPHEN.to(UPPER_UNDERSCORE, templateId);
+        return Configuration.from(templateName);
     }
+
+    private static SignatureParameters resolveParameters(SignRequest signRequest, Configuration template) {
+        var sourceParams = (template != null) ? template.parameters() : signRequest.getParameters();
+
+        return new SignatureParameters.Builder(sourceParams)
+                .schema(sourceParams.getSchema())
+                .transformation(sourceParams.getTransformation())
+                .signaturePolicyId(sourceParams.getSignaturePolicyId())
+                .signaturePolicyContent(sourceParams.getSignaturePolicyContent())
+                .build();
+    }
+
 }
