@@ -18,6 +18,8 @@ public class Request<T> {
 
     private final BodyFormat bodyFormat;
 
+    private final QueryParams queryParams;
+
     private T body;
 
     public Request(HttpExchange exchange) {
@@ -40,15 +42,17 @@ public class Request<T> {
         } else {
             bodyFormat = null;
         }
+
+        this.queryParams = QueryParams.parse(getExchange().getRequestURI().getQuery());
     }
 
     public HttpExchange getExchange() {
         return exchange;
     }
 
-    public BodyFormat getBodyFormat() {
-        return bodyFormat;
-    }
+    public BodyFormat getBodyFormat() { return bodyFormat; }
+
+    public QueryParams getQueryParams() { return queryParams; }
 
     /**
      * List of supported body MIME types
@@ -81,4 +85,48 @@ public class Request<T> {
         }
     }
 
+
+    /**
+     *
+     * Inner class encapsulating logic for reading and handling query params
+     *
+     */
+    public static class QueryParams {
+        private final List<Param> params;
+
+        static QueryParams parse(final String query) {
+            return new QueryParams(query);
+        }
+
+        private QueryParams(final String query) {
+            if (query == null || query.isEmpty()) {
+                params = Collections.emptyList();
+            } else {
+                params = Stream.of(query.split("&"))
+                        .filter(entry -> !entry.isEmpty())
+                        .map(param -> new Param(param.split("=")))
+                        .collect(Collectors.toList());
+            }
+        }
+
+        public boolean isDefined(String name) {
+            return params.stream().anyMatch(param -> param.name.equalsIgnoreCase(name));
+        }
+
+        public String get(String name) {
+            Optional<Param> found = params.stream().filter(param -> param.name.equalsIgnoreCase(name)).findFirst();
+            String result = null;
+
+            if (found.isPresent())
+                result = found.get().value;
+
+            return result;
+        }
+
+        private record Param(String name, String value) {
+            public Param(String[] pairOrSingle) {
+                this(pairOrSingle[0], (pairOrSingle.length == 1) ? "" : pairOrSingle[1]);
+            }
+        }
+    }
 }
