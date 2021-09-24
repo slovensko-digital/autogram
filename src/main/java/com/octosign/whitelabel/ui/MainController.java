@@ -1,24 +1,10 @@
 package com.octosign.whitelabel.ui;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
-import java.util.ResourceBundle;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
-
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
@@ -27,6 +13,15 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Controller for the signing window
@@ -100,10 +95,10 @@ public class MainController {
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
 
-        //TODO consider simplifying this part to avoid tedious casting
-        boolean isXml = document instanceof XMLDocument;
-        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
-        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+        boolean isXML = document instanceof XMLDocument;
+        boolean isPDF = document instanceof PDFDocument;
+        final boolean hasSchema = isXML && ((XMLDocument) document).getSchema() != null;
+        final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
             try {
@@ -130,7 +125,8 @@ public class MainController {
                 String visualization;
                 try {
                     var xmlDocument = (XMLDocument) document;
-                    visualization = xmlDocument.getTransformed();
+                    visualization = "<pre>" + xmlDocument.getTransformed() + "</pre>";
+                    System.out.println(visualization);
                 } catch (Exception e) {
                     Platform.runLater(() -> {
                         Main.displayAlert(
@@ -155,12 +151,10 @@ public class MainController {
                     webEngine.load(Main.class.getResource("visualization.html").toExternalForm());
                 });
             });
-        } else if (document instanceof PDFDocument) {
+        }
 
-            // TODO move pdf handler here
-
-        } else {
-// TODO keep
+        if (isPDF) {
+//            // TODO keep - ???
 //            webView.setManaged(false);
 //            textArea.setManaged(true);
 //            textArea.setVisible(true);
@@ -174,32 +168,24 @@ public class MainController {
                 var engine = webView.getEngine();
                 engine.setJavaScriptEnabled(true);
 
-                // TODO
+                // TODO - ???
                 //engine.setUserStyleSheetLocation(Main.class.getResource("pdfjs/web/viewer.css").toExternalForm());
                 engine.setUserStyleSheetLocation(Main.class.getResource("pdf.viewer.css").toExternalForm());
 
                 engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
                     if (newState == Worker.State.SUCCEEDED) {
-                        engine.executeScript("openFileFromBase64('" + pdf_data + "')");
+                        engine.executeScript("openFileFromBase64('" + document.getContent() + "')");
                     }
                 });
 
-                // TODO
+                // TODO - ???
                 //engine.load(Main.class.getResource("pdfjs/web/viewer.html").toExternalForm());
                 engine.load(Main.class.getResource("pdf.viewer.html").toExternalForm());
             });
-
         }
-    }
 
-    // TODO rm
-    static final String pdf_data;
-    static {
-        try {
-            pdf_data = Base64.getEncoder().encodeToString(Files.readAllBytes(Path.of("tmp/MED_DeliveryReportAuthorization_Definition.pdf")));
-        } catch (IOException e) {
-            throw new AssertionError();
-        }
+        if (!isXML && !isPDF) throw new RuntimeException("Unsupported document format");
+
     }
 
     public void setOnSigned(Consumer<String> onSigned) {
