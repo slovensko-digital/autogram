@@ -19,7 +19,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import com.octosign.whitelabel.Launcher;
 import com.octosign.whitelabel.cli.command.Command;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
@@ -40,6 +39,10 @@ public class Main extends Application {
     private final CertificateManager certificateManager = new CertificateManager();
 
     private Server server;
+
+    public static void main(String[] args) {
+        Application.launch(Main.class, args);
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -237,7 +240,7 @@ public class Main extends Application {
      * Application version as defined in pom if packaged or dev otherwise
      */
     public static String getVersion() {
-        String packageVersion = Launcher.class.getPackage().getImplementationVersion();
+        String packageVersion = Main.class.getPackage().getImplementationVersion();
         return packageVersion != null ? packageVersion : "dev";
     }
 

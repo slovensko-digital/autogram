@@ -6,7 +6,7 @@ module.exports = {
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon-32x32.png',
+  favicon: 'img/icon.png',
   organizationName: 'octosign',
   projectName: 'white-label',
   themeConfig: {

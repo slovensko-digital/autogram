@@ -1,0 +1,3 @@
+# Created dynamically during build from *.template.*
+main.wxs
+Octosign.desktop
