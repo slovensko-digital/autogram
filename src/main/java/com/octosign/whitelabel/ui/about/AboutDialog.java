@@ -1,15 +1,14 @@
 package com.octosign.whitelabel.ui.about;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.octosign.whitelabel.ui.Main;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.Region;
 
-import com.octosign.whitelabel.ui.Main;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AboutDialog extends Dialog<Boolean> {
     public AboutDialog() {
@@ -61,9 +60,7 @@ public class AboutDialog extends Dialog<Boolean> {
     }
 
     private static List<String> getUsedOSS() {
-        return Arrays.asList(new String[]{
-            "Digital Signature Service 5.8 - github.com/esig/dss - CEF Digital - LGPL-2.1",
-            "Gson 2 - github.com/google/gson - Google Inc. - Apache 2"
-        });
+        return Arrays.asList("Digital Signature Service 5.8 - github.com/esig/dss - CEF Digital - LGPL-2.1",
+                "Gson 2 - github.com/google/gson - Google Inc. - Apache 2");
     }
 }
