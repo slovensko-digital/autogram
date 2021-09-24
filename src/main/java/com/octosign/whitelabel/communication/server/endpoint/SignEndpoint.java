@@ -1,22 +1,20 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.Base64;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-
-import com.octosign.whitelabel.communication.CommunicationError;
-import com.octosign.whitelabel.communication.SignRequest;
+import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.Base64;
+import java.util.concurrent.Future;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
@@ -41,8 +39,11 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         }
 
         var signRequest = request.getBody();
+
         var document = getSpecificDocument(signRequest);
-        var signatureUnit = new SignatureUnit(document, signRequest.getParameters());
+        var parameters = resolveParameters(signRequest);
+
+        var signatureUnit = new SignatureUnit(document, parameters);
 
         try {
             var signedDocument = onSign.apply(signatureUnit).get();
@@ -70,9 +71,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     }
 
     @Override
-    protected String[] getAllowedMethods() {
-        return new String[]{ "POST" };
-    }
+    protected String[] getAllowedMethods() { return new String[]{"POST"}; }
 
     /**
      * Creates and prepares payload type specific document
@@ -88,26 +87,23 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         var mimeType = MimeType.parse(signRequest.getPayloadMimeType());
 
         return switch (mimeType.getType()) {
-            case XMLDocument.MIME_TYPE -> {
-                var schema = parameters.getSchema();
-                var transformation = parameters.getTransformation();
-
-                if (mimeType.isBase64()) {
-                    document.setContent(decode(document.getContent()));
-                    schema = decode(schema);
-                    transformation = decode(transformation);
-                }
-
-                yield new XMLDocument(document, schema, transformation);
-            }
-
-            case PDFDocument.MIME_TYPE -> {
-                document.setContent(decode(document.getContent()));
-                yield new PDFDocument(document);
-            }
-
+            case XMLDocument.MIME_TYPE -> buildXMLDocument(document, parameters, mimeType);
+            case PDFDocument.MIME_TYPE -> new PDFDocument(document);
             default -> throw new IllegalArgumentException("Unsupported MIME type");
         };
+    }
+
+    private static XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) {
+        var schema = parameters.getSchema();
+        var transformation = parameters.getTransformation();
+
+        if (mimeType.isBase64()) {
+            document.setContent(decode(document.getContent()));
+            schema = decode(schema);
+            transformation = decode(transformation);
+        }
+
+        return new XMLDocument(document, schema, transformation);
     }
 
     private static String decode(String input) {
@@ -115,5 +111,9 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
         var decoder = Base64.getDecoder();
         return new String(decoder.decode(input));
+    }
+
+    private static SignatureParameters resolveParameters(SignRequest signRequest) {
+        return signRequest.getParameters();
     }
 }

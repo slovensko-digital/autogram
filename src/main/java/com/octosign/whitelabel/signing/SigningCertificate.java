@@ -1,33 +1,27 @@
 package com.octosign.whitelabel.signing;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.List;
-
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.model.CommonDocument;
-import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.model.SignatureValue;
-import eu.europa.esig.dss.model.ToBeSigned;
-import eu.europa.esig.dss.utils.Utils;
-import eu.europa.esig.dss.xades.signature.XAdESService;
+import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
+import eu.europa.esig.dss.model.*;
+import eu.europa.esig.dss.pades.PAdESSignatureParameters;
+import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Base64;
+import java.util.List;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -134,10 +128,22 @@ public abstract class SigningCertificate {
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
     public String sign(SignatureUnit unit) throws IOException {
-        unit.standardizeAsXDC();
+        if (unit.getSignatureParameters().getFormat().equals(SignatureParameters.Format.XADES))
+            unit.standardizeAsXDC();
 
         var content = unit.getDocument().getContent();
-        var document = new InMemoryDocument(content.getBytes(StandardCharsets.UTF_8));
+
+        byte[] binaryContent;
+        if (unit.getSignatureParameters().getFormat().equals(SignatureParameters.Format.PADES)) {
+            binaryContent = Base64.getDecoder().decode(content);
+        } else {
+            binaryContent = content.getBytes(StandardCharsets.UTF_8);
+        }
+
+        var document = new InMemoryDocument(binaryContent);
+        // TODO!
+        document.setName("Vseobecna_agenda.xml");
+        document.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8"));
 
         var signedDocument = sign(document, unit.getSignatureParameters());
 
@@ -155,13 +161,19 @@ public abstract class SigningCertificate {
         // TODO: Add trust for -LT/-LTA - requires use of qualified services
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
 
-        ASiCWithXAdESSignatureParameters parameters = SignatureParameterMapper.map(inputParameters);
+        var parameters = SignatureParameterMapper.map(inputParameters);
         parameters.setSigningCertificate(privateKey.getCertificate());
         parameters.setCertificateChain(privateKey.getCertificateChain());
 
-        XAdESService service = new XAdESService(commonCertificateVerifier);
+        DSSDocument signedDocument = null;
 
-        // TODO: Add support for TSP
+        if (inputParameters.getFormat().equals(SignatureParameters.Format.PADES)) {
+            var service = new PAdESService(commonCertificateVerifier);
+
+            // only if signature image is set!
+            // service.setPdfObjFactory(new PdfBoxNativeObjectFactory());
+
+            // TODO: Add support for TSP
         /*
         boolean useTsp = false;
         // We choose the level of the signature (-B, -T, -LT, -LTA).
@@ -172,14 +184,53 @@ public abstract class SigningCertificate {
             service.setTspSource(tspSource);
         }*/
 
-        // Get the SignedInfo segment that needs to be signed.
-        ToBeSigned dataToSign = service.getDataToSign(document, parameters);
+            var padesParameters = (PAdESSignatureParameters) parameters;
+            // Get the SignedInfo segment that needs to be signed.
+            ToBeSigned dataToSign = service.getDataToSign(document, padesParameters);
 
-        // Create signature - digest - for the signed data
-        SignatureValue signatureValue = token.sign(dataToSign, DigestAlgorithm.SHA256, privateKey);
+            // Create signature - digest - for the signed data
+            SignatureValue signatureValue = token.sign(dataToSign, padesParameters.getDigestAlgorithm(), privateKey);
 
-        // Use the signature to sign the document
-        DSSDocument signedDocument = service.signDocument(document, parameters, signatureValue);
+            // Use the signature to sign t  he document
+            signedDocument = service.signDocument(document, padesParameters, signatureValue);
+
+            System.out.println(signedDocument.getName());
+            try {
+                signedDocument.writeTo(System.out);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return signedDocument;
+        }
+
+        if (inputParameters.getFormat().equals(SignatureParameters.Format.XADES)) {
+            var service = new ASiCWithXAdESService(commonCertificateVerifier);
+
+            // TODO: Add support for TSP
+        /*
+        boolean useTsp = false;
+        // We choose the level of the signature (-B, -T, -LT, -LTA).
+        parameters.setSignatureLevel(useTsp ? SignatureLevel.XAdES_BASELINE_T : SignatureLevel.XAdES_BASELINE_B);
+        if (useTsp) {
+            // Create and set the TSP source
+            OnlineTSPSource tspSource = new OnlineTSPSource(tspUrl);
+            service.setTspSource(tspSource);
+        }*/
+
+            var xadesParameters = (ASiCWithXAdESSignatureParameters) parameters;
+
+            // Get the SignedInfo segment that needs to be signed.
+            ToBeSigned dataToSign = service.getDataToSign(document, xadesParameters);
+
+            // Create signature - digest - for the signed data
+            SignatureValue signatureValue = token.sign(dataToSign, xadesParameters.getDigestAlgorithm(), privateKey);
+
+            // TODO optional validation - delete
+            assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
+
+            // Use the signature to sign the document
+            signedDocument = service.signDocument(document, xadesParameters, signatureValue);
+        }
 
         return signedDocument;
     }
