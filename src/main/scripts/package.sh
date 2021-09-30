@@ -1,4 +1,12 @@
 #!/bin/bash
+jpackage=$1
+appDirectory=$2
+jdkDirectory=$3
+resourcesDir=$4
+platform=$5
+version=$6
+output=$7
+
 IFS="="
 while read -r key value
 do
@@ -10,16 +18,8 @@ do
     safekey=$(echo "$key" | tr . _)
     trimmedvalue=$(echo "$value" | sed 's/[[:space:]]*$//g' | sed 's/^[[:space:]]*//g')
     declare "properties_$safekey=$trimmedvalue"
-done < "./build.properties"
+done < "$resourcesDir/build.properties"
 unset IFS
-
-jpackage=$1
-appDirectory=$2
-jdkDirectory=$3
-resourcesDir=$4
-platform=$5
-version=$6
-output=$7
 
 jvmOptions="--add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED"
 arguments=(
@@ -30,19 +30,19 @@ arguments=(
     "--app-version" "${properties_version:-$version}"
     "--copyright" "$properties_copyright"
     "--vendor" "$properties_vendor"
-    "--icon" "$resourcesDir/Octosign.png"
+    "--icon" "./Octosign.png"
     "--license-file" "$appDirectory/LICENSE"
-    "--resource-dir" "$resourcesDir"
+    "--resource-dir" "./"
     "--dest" "$output"
 )
 
 if [[ "$platform" == "win" ]]; then
-    cp "$resourcesDir/main.template.wxs" "$resourcesDir/main.wxs"
-    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "$resourcesDir/main.wxs"
+    cp "./main.template.wxs" "./main.wxs"
+    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./main.wxs"
 
     arguments+=(
         "--type" "msi"
-        "--icon" "$resourcesDir/Octosign.ico"
+        "--icon" "./Octosign.ico"
         "--java-options" "$jvmOptions --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED"
     )
 
@@ -75,8 +75,8 @@ if [[ "$platform" == "win" ]]; then
 fi
 
 if [[ "$platform" == "linux" ]]; then
-    cp "$resourcesDir/Octosign.template.desktop" "$resourcesDir/Octosign.desktop"
-    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "$resourcesDir/Octosign.desktop"
+    cp "./Octosign.template.desktop" "./Octosign.desktop"
+    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./Octosign.desktop"
 
     if [[ ! -z "$properties_linux_debMaintainer"  ]]; then
         arguments+=(
@@ -122,4 +122,42 @@ if [[ "$platform" == "linux" ]]; then
     fi
 fi
 
-# TODO: Use platform-specific macOS properties
+if [[ "$platform" == "mac" ]]; then
+    cp "./Info.plist.template" "./Info.plist"
+    sed -i.bak "s/PROTOCOL_NAME/$properties_protocol/g" "./Info.plist" && rm "./Info.plist.bak"
+
+    arguments+=(
+        "--type" "pkg"
+        "--icon" "./Octosign.icns"
+        "--java-options" "$jvmOptions"
+        "--mac-app-category" "${properties_mac_appCategory:-business}"
+        # Building on mac requires modifying of image files
+        # So the temp files have to be on relative path
+        "--temp" "./DTempFiles"
+    )
+
+    if [[ ! -z "$properties_mac_identifier"  ]]; then
+        arguments+=(
+            "--mac-package-identifier" "$properties_mac_identifier"
+        )
+    fi
+
+    if [[ ! -z "$properties_mac_name"  ]]; then
+        arguments+=(
+            "--mac-package-name" "$properties_mac_name"
+        )
+    fi
+
+    if [[ "$properties_mac_sign" == "1" ]]; then
+        arguments+=(
+            "--mac-sign"
+            "--mac-signing-keychain" "$properties_mac_signingKeychain"
+            "--mac-signing-key-user-name" "$properties_mac_signingKeyUserName"
+        )
+    fi
+
+    $jpackage "${arguments[@]}"
+
+    # See --temp argument above
+    rm -rf ./DTempFiles
+fi
