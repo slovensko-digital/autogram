@@ -11,7 +11,7 @@
             "mainClass": "com.octosign.whitelabel.ui.Main",
             "projectName": "whitelabel",
             // Windows requires additional argument if using MSCAPI --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED
-            "vmArgs": "--illegal-access=warn --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED",
+            "vmArgs": "--add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED",
             "args": "--url=\"signer://listen/37200/*\""
         }
     ]

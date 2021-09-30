@@ -21,7 +21,7 @@ platform=$5
 version=$6
 output=$7
 
-jvmOptions="--illegal-access=warn --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED"
+jvmOptions="--add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED"
 arguments=(
     "--input" "$appDirectory"
     "--runtime-image" "$jdkDirectory"
