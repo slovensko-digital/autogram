@@ -21,7 +21,7 @@ do
 done < "$resourcesDir/build.properties"
 unset IFS
 
-jvmOptions="--add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED"
+jvmOptions=""
 arguments=(
     "--input" "$appDirectory"
     "--runtime-image" "$jdkDirectory"
