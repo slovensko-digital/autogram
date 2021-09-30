@@ -33,6 +33,8 @@ jobs:
 
       - name: Package with Maven
         run: mvn -B -C -V package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release if on Main
         uses: softprops/action-gh-release@v1
