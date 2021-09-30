@@ -131,6 +131,8 @@
                             <jdkPathProperty>jlink.jdk.path</jdkPathProperty>
                             <jdkCachePath>${project.build.directory}${file.separator}jdkCache</jdkCachePath>
 
+                            <authorization>${github.auth}</authorization>
+
                             <provider>BELLSOFT</provider>
                             <providerConfig>
                                 <type>jdk</type>
@@ -295,6 +297,18 @@
             <properties>
                 <platform>mac</platform>
                 <crypto.modules>jdk.crypto.cryptoki</crypto.modules>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>github_authenticated</id>
+            <activation>
+                <property>
+                    <name>env.GITHUB_TOKEN</name>
+                </property>
+            </activation>
+            <properties>
+                <github.auth>Bearer ${env.GITHUB_TOKEN}</github.auth>
             </properties>
         </profile>
     </profiles>
