@@ -54,4 +54,14 @@ public class Document implements Cloneable {
     public Document clone() {
         return new Document(id, title, content, legalEffect);
     }
+
+    @Override
+    public String toString() {
+        return "Document{" +
+                "id='" + id + '\'' +
+                ", title='" + title + '\'' +
+                ", content='" + content + '\'' +
+                ", legalEffect='" + legalEffect + '\'' +
+                '}';
+    }
 }
