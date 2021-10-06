@@ -13,14 +13,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>16</maven.compiler.release>
-        <maven.target.release>16</maven.target.release>
-        <maven.compiler.source>16</maven.compiler.source>
-        <maven.compiler.target>16</maven.compiler.target>
-        <java.version>16</java.version>
-        <javafx.version>16</javafx.version>
-        <dss.version>5.8</dss.version>
-        <gson.version>2.8.6</gson.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <maven.target.release>17</maven.target.release>
+        <dss.version>5.9</dss.version>
+        <gson.version>2.8.8</gson.version>
         <main.class>com.octosign.whitelabel.ui.Main</main.class>
     </properties>
 
@@ -87,8 +83,6 @@
                     <release>${maven.compiler.release}</release>
                     <fork>true</fork>
                     <executable>${jlink.jdk.path}/bin/javac</executable>
-                    <source>16</source>
-                    <target>16</target>
                 </configuration>
             </plugin>
 
@@ -111,7 +105,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -142,10 +136,12 @@
                             <jdkPathProperty>jlink.jdk.path</jdkPathProperty>
                             <jdkCachePath>${project.build.directory}${file.separator}jdkCache</jdkCachePath>
 
+                            <authorization>${github.auth}</authorization>
+
                             <provider>BELLSOFT</provider>
                             <providerConfig>
                                 <type>jdk</type>
-                                <version>16.0.1+9</version>
+                                <version>17+35</version>
                                 <arch>amd64-full</arch>
                             </providerConfig>
                         </configuration>
@@ -163,7 +159,7 @@
                                 <option>./target/dependency-jars/*</option>
                                 <option>-R</option>
                                 <option>--multi-release</option>
-                                <option>16</option>
+                                <option>17</option>
                                 <option>-f</option>
                                 <option>.*jar</option>
                                 <option>${project.build.directory}${file.separator}${project.build.finalName}.jar</option>
@@ -195,6 +191,7 @@
                                 <module>javafx.base</module>
                                 <module>javafx.controls</module>
                                 <module>javafx.fxml</module>
+                                <module>javafx.graphics</module>
                                 <module>javafx.web</module>
                                 <!-- Needed for sun.misc.Unsafe used by JavaFX, shouldn't be used in our code -->
                                 <module>jdk.unsupported</module>
@@ -241,13 +238,13 @@
                 <version>3.0.0</version>
                 <configuration>
                     <executable>bash</executable>
-                    <workingDirectory>${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}com${file.separator}octosign${file.separator}whitelabel</workingDirectory>
+                    <workingDirectory>${project.build.scriptSourceDirectory}${file.separator}resources</workingDirectory>
                     <arguments>
                         <argument>${project.build.scriptSourceDirectory}${file.separator}package.sh</argument>
                         <argument>${jlink.jdk.path}${file.separator}bin${file.separator}jpackage</argument>
                         <argument>${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}</argument>
                         <argument>${project.build.directory}${file.separator}preparedJDK</argument>
-                        <argument>${project.build.scriptSourceDirectory}${file.separator}resources</argument>
+                        <argument>${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}com${file.separator}octosign${file.separator}whitelabel</argument>
                         <argument>${platform}</argument>
                         <argument>${project.version}</argument>
                         <argument>${project.build.directory}</argument>
@@ -305,6 +302,18 @@
             <properties>
                 <platform>mac</platform>
                 <crypto.modules>jdk.crypto.cryptoki</crypto.modules>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>github_authenticated</id>
+            <activation>
+                <property>
+                    <name>env.GITHUB_TOKEN</name>
+                </property>
+            </activation>
+            <properties>
+                <github.auth>Bearer ${env.GITHUB_TOKEN}</github.auth>
             </properties>
         </profile>
     </profiles>
