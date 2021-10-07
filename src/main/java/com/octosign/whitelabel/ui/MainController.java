@@ -7,12 +7,6 @@ import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosit
 import com.octosign.whitelabel.ui.about.AboutDialog;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
-import javafx.fxml.FXML;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.web.WebView;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -22,6 +16,22 @@ import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.ui.about.AboutDialog;
+
+import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.web.WebView;
+
 
 /**
  * Controller for the signing window
@@ -97,7 +107,7 @@ public class MainController {
 
         boolean isXML = document instanceof XMLDocument;
         boolean isPDF = document instanceof PDFDocument;
-        final boolean hasSchema = isXML && ((XMLDocument) document).getSchema() != null;
+        final boolean hasSchema = false; //isXML && ((XMLDocument) document).getSchema() != null;
         final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
@@ -126,7 +136,6 @@ public class MainController {
                 try {
                     var xmlDocument = (XMLDocument) document;
                     visualization = "<pre>" + xmlDocument.getTransformed() + "</pre>";
-                    System.out.println(visualization);
                 } catch (Exception e) {
                     Platform.runLater(() -> {
                         Main.displayAlert(

@@ -16,3 +16,5 @@ whitelabel.iml
 .settings
 .vscode/*
 !/.vscode/launch.json
+.idea/
+whitelabel.iml

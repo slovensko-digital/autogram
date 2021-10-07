@@ -27,7 +27,7 @@ You can also override various messages and defaults by editing [src/main/resourc
 
 ### Requirements
 
-- JDK 16+ with JavaFX (see below)
+- JDK 17 with JavaFX (see below)
 - Maven
 - Optional: Visual Studio Code as IDE as you can utilize the versioned settings (launch config).
 
@@ -35,8 +35,8 @@ Development can be done only using JDK with bundled JavaFX. It is highly recomme
 
 ```
 {
-    "name": "JavaSE-16",
-    "path": "/home/jakub/octosign/white-label/target/jdkCache/LIBERICA_jdk16.0.1+9_linux_amd64-full"
+    "name": "JavaSE-17",
+    "path": "/home/jakub/octosign/white-label/target/jdkCache/LIBERICA_jdk17+35_linux_amd64-full"
 }
 ```
 
