@@ -91,7 +91,7 @@
                     <fork>true</fork>
                     <executable>${jlink.jdk.path}/bin/javac</executable>
                     <source>${java.version}</source>
-                    <target>${java.versio                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       n}</target>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 
@@ -254,7 +254,7 @@
                         <argument>${jlink.jdk.path}${file.separator}bin${file.separator}jpackage</argument>
                         <argument>${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}</argument>
                         <argument>${project.build.directory}${file.separator}preparedJDK</argument>
-                        <argument>${project.build.scriptSourceDirectory}${file.separator}resources</argument>
+                        <argument>${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}com${file.separator}octosign${file.separator}whitelabel</argument>
                         <argument>${platform}</argument>
                         <argument>${project.version}</argument>
                         <argument>${project.build.directory}</argument>
