@@ -91,7 +91,7 @@
                     <fork>true</fork>
                     <executable>${jlink.jdk.path}/bin/javac</executable>
                     <source>${java.version}</source>
-                    <target>${java.versio                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       n}</target>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 
