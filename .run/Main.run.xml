@@ -4,8 +4,8 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="com.octosign.whitelabel.ui.Main" />
     <module name="whitelabel" />
-    <option name="PROGRAM_PARAMETERS" value="--verbose --win-console --url=signer://listen/37200/*" />
     <option name="VM_PARAMETERS" value="--add-opens=jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED" />
+    <option name="PROGRAM_PARAMETERS" value="--url=signer://listen/37200/*" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="com.octosign.whitelabel.ui.*" />

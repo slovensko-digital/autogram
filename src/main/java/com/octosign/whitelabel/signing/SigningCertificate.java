@@ -23,6 +23,25 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.List;
 
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+
+import com.octosign.whitelabel.communication.SignatureParameterMapper;
+import com.octosign.whitelabel.communication.SignatureParameters;
+import com.octosign.whitelabel.communication.SignatureUnit;
+import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
+import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.SignatureValue;
+import eu.europa.esig.dss.model.ToBeSigned;
+import eu.europa.esig.dss.utils.Utils;
+import eu.europa.esig.dss.xades.signature.XAdESService;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+
 /**
  * Represents a combination of Token and PrivateKey within that token
  *
@@ -191,7 +210,7 @@ public abstract class SigningCertificate {
             // Create signature - digest - for the signed data
             SignatureValue signatureValue = token.sign(dataToSign, padesParameters.getDigestAlgorithm(), privateKey);
 
-            // Use the signature to sign t  he document
+            // Use the signature to sign the document
             signedDocument = service.signDocument(document, padesParameters, signatureValue);
 
             System.out.println(signedDocument.getName());
@@ -206,7 +225,7 @@ public abstract class SigningCertificate {
         if (inputParameters.getFormat().equals(SignatureParameters.Format.XADES)) {
             var service = new ASiCWithXAdESService(commonCertificateVerifier);
 
-            // TODO: Add support for TSP
+        // TODO: Add support for TSP
         /*
         boolean useTsp = false;
         // We choose the level of the signature (-B, -T, -LT, -LTA).

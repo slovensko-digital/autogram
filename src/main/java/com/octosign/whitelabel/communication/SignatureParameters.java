@@ -318,26 +318,8 @@ public class SignatureParameters {
             return new SignatureParameters(this.format, this.level, this.fileMimeType, this.container, this.packaging, this.digestAlgorithm, this.en319132, this.infoCanonicalization, this.propertiesCanonicalization, this.keyInfoCanonicalization, this.signaturePolicyId, this.signaturePolicyContent, this.transformation, this.schema, this.identifier, this.version);
         }
     }
-//    public class PrefilledBuilder extends Builder {
-//        public PrefilledBuilder basedOn(SignatureParameterTemplate spt) {
-//            var sp = spt.getParameters();
-//
-//            SignatureParameters.this.fileMimeType = sp.fileMimeType;
-//            Container.this.container = sp.container;
-//            this.packaging = sp.packaging;
-//            this.digestAlgorithm = sp.digestAlgorithm;
-//            this.en319132 = sp.en319132;
-//            this.infoCanonicalization = sp.infoCanonicalization;
-//            this.propertiesCanonicalization = sp.propertiesCanonicalization;
-//            this.keyInfoCanonicalization = sp.keyInfoCanonicalization;
-//            this.signaturePolicyId = sp.signaturePolicyId;
-//            this.signaturePolicyContent = sp.signaturePolicyContent;
-//            this.transformation = sp.transformation;
-//            this.schema = sp.schema;
-//            this.identifier = sp.identifier;
-//            this.version = sp.version;
-//
-//            return this;
-//        }
-//    }
+
+    public String getIdentifier() { return identifier; }
+
+    public String getVersion() { return version; }
 }
