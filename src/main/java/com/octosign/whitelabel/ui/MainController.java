@@ -1,5 +1,13 @@
 package com.octosign.whitelabel.ui;
 
+import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.document.PDFDocument;
+import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.ui.about.AboutDialog;
+import javafx.application.Platform;
+import javafx.concurrent.Worker;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,13 +24,14 @@ import com.octosign.whitelabel.ui.about.AboutDialog;
 
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.web.WebView;
-import javafx.concurrent.Worker;
+
 
 /**
  * Controller for the signing window
@@ -78,13 +87,13 @@ public class MainController {
         this.signatureUnit = signatureUnit;
         var document = signatureUnit.getDocument();
 
-        if (document.getTitle() != null && !document.getTitle().isEmpty()) {
+        if (document.getTitle() != null && !document.getTitle().isBlank()) {
             documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
         } else {
             documentLabel.setManaged(false);
         }
 
-        if (document.getLegalEffect() != null && !document.getLegalEffect().isEmpty()) {
+        if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }
@@ -96,10 +105,10 @@ public class MainController {
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
 
-        //TODO consider simplifying this part to avoid tedious casting
-        boolean isXml = document instanceof XMLDocument;
-        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
-        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+        boolean isXML = document instanceof XMLDocument;
+        boolean isPDF = document instanceof PDFDocument;
+        final boolean hasSchema = false; //isXML && ((XMLDocument) document).getSchema() != null;
+        final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
             try {
@@ -118,13 +127,15 @@ public class MainController {
         }
 
         if (hasTransformation) {
+            webView.setManaged(true);
             textArea.setManaged(false);
+            textArea.setVisible(false);
 
             CompletableFuture.runAsync(() -> {
-                String visualisation;
+                String visualization;
                 try {
                     var xmlDocument = (XMLDocument) document;
-                    visualisation = xmlDocument.getTransformed();
+                    visualization = "<pre>" + xmlDocument.getTransformed() + "</pre>";
                 } catch (Exception e) {
                     Platform.runLater(() -> {
                         Main.displayAlert(
@@ -140,20 +151,50 @@ public class MainController {
                 Platform.runLater(() -> {
                     var webEngine = webView.getEngine();
                     webEngine.getLoadWorker().stateProperty().addListener(
-                        (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
+                        (observable, oldState, newState) -> {
                             if (newState == Worker.State.SUCCEEDED) {
-                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
+                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualization);
                             }
                         }
                     );
-                    webEngine.loadContent(getResourceAsString("visualization.html"));
+                    webEngine.load(Main.class.getResource("visualization.html").toExternalForm());
                 });
             });
-        } else {
-            webView.setManaged(false);
-
-            textArea.setText(document.getContent());
         }
+
+        if (isPDF) {
+//            // TODO keep - ???
+//            webView.setManaged(false);
+//            textArea.setManaged(true);
+//            textArea.setVisible(true);
+//            textArea.setText(document.getContent());
+
+            webView.setManaged(true);
+            textArea.setManaged(false);
+            textArea.setVisible(false);
+
+            Platform.runLater(() -> {
+                var engine = webView.getEngine();
+                engine.setJavaScriptEnabled(true);
+
+                // TODO - ???
+                //engine.setUserStyleSheetLocation(Main.class.getResource("pdfjs/web/viewer.css").toExternalForm());
+                engine.setUserStyleSheetLocation(Main.class.getResource("pdf.viewer.css").toExternalForm());
+
+                engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
+                    if (newState == Worker.State.SUCCEEDED) {
+                        engine.executeScript("openFileFromBase64('" + document.getContent() + "')");
+                    }
+                });
+
+                // TODO - ???
+                //engine.load(Main.class.getResource("pdfjs/web/viewer.html").toExternalForm());
+                engine.load(Main.class.getResource("pdf.viewer.html").toExternalForm());
+            });
+        }
+
+        if (!isXML && !isPDF) throw new RuntimeException("Unsupported document format");
+
     }
 
     public void setOnSigned(Consumer<String> onSigned) {
@@ -224,7 +265,7 @@ public class MainController {
     /**
      * Get resource from the ui resources as string using name
      */
-    private static String getResourceAsString(String resourceName) {
+    private String getResourceAsString(String resourceName) {
         try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
             if (inputStream == null) throw new Exception("Resource not found");
             try (

@@ -1,12 +1,12 @@
 package com.octosign.whitelabel.communication.server;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
 import com.sun.net.httpserver.HttpExchange;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
 
@@ -66,7 +66,6 @@ public class Request<T> {
      *
      * Must be called only once
      *
-     * @param <T>       Expected object in the body
      * @param bodyClass Class of the expected object in the body
      */
     public T processBody(Class<T> bodyClass) {

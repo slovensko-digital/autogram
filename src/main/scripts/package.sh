@@ -22,6 +22,7 @@ done < "$resourcesDir/build.properties"
 unset IFS
 
 jvmOptions=""
+
 arguments=(
     "--input" "$appDirectory"
     "--runtime-image" "$jdkDirectory"
