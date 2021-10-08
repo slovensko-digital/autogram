@@ -60,8 +60,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
         var template = extractTemplateFrom(request);
         var parameters = resolveParameters(signRequest, template);
-        var parameters = resolveParameters(signRequest);
-      
+
         var signatureUnit = new SignatureUnit(document, parameters);
 //        onRequestReceived.apply(signatureUnit, template);
         try {
