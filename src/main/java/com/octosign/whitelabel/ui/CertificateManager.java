@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.LONG;
+import static com.octosign.whitelabel.ui.Main.getProperty;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -89,9 +90,9 @@ public class CertificateManager {
         if (certificate == null) {
             Main.displayAlert(
                 AlertType.ERROR,
-                "Zlyhanie načítania",
-                "Podpisovací token nenájdený",
-                "Nepodarilo sa nájsť žiaden podporovaný token vhodný na podpisovanie. Uistite sa, že máte nainštalovaný softvér dodávaný s tokenom a skúste to znova."
+                    getProperty("exc.tokenNotFound.title"),
+                    getProperty("exc.tokenNotFound.header"),
+                    getProperty("exc.tokenNotFound.description")
             );
             return null;
         }
@@ -102,9 +103,9 @@ public class CertificateManager {
         } catch (Exception e) {
             Main.displayAlert(
                 AlertType.ERROR,
-                "Zlyhanie načítania",
-                "Podpisovací token nedostupný",
-                "Použitie podpisovacieho tokenu zlyhalo. Uistite sa, že máte správne pripavené podpisovacie zariadenie a skúste to znova. Detail chyby: " + e
+                    getProperty("exc.tokenNotAvailable.title"),
+                    getProperty("exc.tokenNotAvailable.header"),
+                    getProperty("exc.tokenNotAvailable.description", e)
             );
             return null;
         }
@@ -112,9 +113,9 @@ public class CertificateManager {
         if (keys.size() == 0) {
             Main.displayAlert(
                 AlertType.ERROR,
-                "Zlyhanie načítania",
-                "Podpisovací token prázdny",
-                "Podporovaný podpisovací token neobsahuje použiteľný certifikát. Uistite sa, že máte správne nastavený token a skúste to znova."
+                    getProperty("exc.tokenEmpty.title"),
+                    getProperty("exc.tokenEmpty.header"),
+                    getProperty("exc.tokenEmpty.description")
             );
             return null;
         }

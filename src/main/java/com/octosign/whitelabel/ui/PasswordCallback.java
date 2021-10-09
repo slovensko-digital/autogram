@@ -9,12 +9,14 @@ import javafx.scene.layout.HBox;
 
 import java.util.Optional;
 
+import static com.octosign.whitelabel.ui.Main.getProperty;
+
 public class PasswordCallback implements PasswordInputCallback {
     @Override
     public char[] getPassword() {
         Dialog<String> dialog = new Dialog<>();
         // TODO: Replace with message from .properties
-        dialog.setTitle("Zadajte heslo");
+        dialog.setTitle(getProperty("text.enterPassword"));
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
     
         PasswordField pwd = new PasswordField();
