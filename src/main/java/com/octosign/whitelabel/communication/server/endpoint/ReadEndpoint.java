@@ -1,11 +1,11 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import java.io.IOException;
-
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
 import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
 
 /**
  * Server API endpoint without request body like GET or HEAD
@@ -22,7 +22,7 @@ abstract class ReadEndpoint<U> extends Endpoint {
     protected void handleRequest(HttpExchange exchange) throws IOException {
         var request = new Request<>(exchange);
 
-        var response = handleRequest(request, new Response<U>(exchange));
+        var response = handleRequest(request, new Response<>(exchange));
         useResponse(response);
     }
 

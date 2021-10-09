@@ -1,10 +1,10 @@
 package com.octosign.whitelabel.signing;
 
-import java.io.File;
-import java.util.Locale;
-
 import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
+
+import java.io.File;
+import java.util.Locale;
 
 public class SigningCertificatePKCS11 extends SigningCertificate {
     /**

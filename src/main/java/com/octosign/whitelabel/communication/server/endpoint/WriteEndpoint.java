@@ -12,6 +12,10 @@ import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Server API endpoint
  *

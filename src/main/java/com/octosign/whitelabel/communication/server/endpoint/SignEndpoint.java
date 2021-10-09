@@ -77,7 +77,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
      *
      * TODO: Consider extracting this out as this shouldn't be specific to server mode
      *
-     * @param signRequest
+     * @param signRequest object representing particular signing request data and params
      * @return Specific document like XMLDocument type-widened to Document
      */
     private Document getSpecificDocument(SignRequest signRequest) {

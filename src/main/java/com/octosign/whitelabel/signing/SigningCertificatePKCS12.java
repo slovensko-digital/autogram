@@ -1,9 +1,9 @@
 package com.octosign.whitelabel.signing;
 
-import java.security.KeyStore.PasswordProtection;
-
 import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+
+import java.security.KeyStore.PasswordProtection;
 
 public class SigningCertificatePKCS12 extends SigningCertificate {
     /**

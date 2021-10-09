@@ -1,10 +1,5 @@
 package com.octosign.whitelabel.communication.server;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-
 import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
@@ -12,6 +7,11 @@ import com.octosign.whitelabel.communication.server.endpoint.DocumentationEndpoi
 import com.octosign.whitelabel.communication.server.endpoint.InfoEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.SignEndpoint;
 import com.sun.net.httpserver.HttpServer;
+
+import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Function;
 
 public class Server {
 
