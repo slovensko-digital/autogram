@@ -1,11 +1,11 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
+import com.octosign.whitelabel.communication.server.Server;
+import com.sun.net.httpserver.HttpExchange;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
-
-import com.octosign.whitelabel.communication.server.Server;
-import com.sun.net.httpserver.HttpExchange;
 
 public class DocumentationEndpoint extends Endpoint {
 

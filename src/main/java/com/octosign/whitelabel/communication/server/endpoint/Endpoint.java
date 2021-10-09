@@ -1,9 +1,5 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.Arrays;
-
 import com.octosign.whitelabel.communication.CommunicationError;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.server.Response;
@@ -11,6 +7,10 @@ import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.ui.Main;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.Arrays;
 
 /**
  * Server API endpoint with no request or response abstraction

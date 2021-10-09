@@ -1,14 +1,13 @@
 package com.octosign.whitelabel.ui;
 
-import java.util.Optional;
-
+import eu.europa.esig.dss.token.PasswordInputCallback;
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.HBox;
 
-import eu.europa.esig.dss.token.PasswordInputCallback;
+import java.util.Optional;
 
 public class PasswordCallback implements PasswordInputCallback {
     @Override

@@ -1,9 +1,9 @@
 package com.octosign.whitelabel.cli.command;
 
+import javafx.application.Application.Parameters;
+
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import javafx.application.Application.Parameters;
 
 public class CommandFactory {
 
@@ -36,17 +36,14 @@ public class CommandFactory {
      * Create command using its name and CLI parameters
      *
      * @param name      Name, e.g. "listen"
-     * @param params    Launch URL
+     * @param parameters    Launch URL
      * @return Command if it exists or null if not
      */
     public static Command fromParameters(String name, Parameters parameters) {
-        switch (name) {
-            case ListenCommand.NAME:
-                return new ListenCommand(parameters);
-
-            default:
-                return null;
-        }
+        return switch (name) {
+            case ListenCommand.NAME -> new ListenCommand(parameters);
+            default -> null;
+        };
     }
 
     /**
@@ -57,13 +54,10 @@ public class CommandFactory {
      * @return Command if it exists or null if not
      */
     public static Command fromUrl(String name, URI url) {
-        switch (name) {
-            case ListenCommand.NAME:
-                return new ListenCommand(url);
-
-            default:
-                return null;
-        }
+        return switch (name) {
+            case ListenCommand.NAME -> new ListenCommand(url);
+            default -> null;
+        };
     }
 
 }

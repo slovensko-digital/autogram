@@ -1,12 +1,12 @@
 package com.octosign.whitelabel.communication.server;
 
+import com.octosign.whitelabel.communication.server.format.BodyFormat;
+import com.sun.net.httpserver.HttpExchange;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import com.octosign.whitelabel.communication.server.format.BodyFormat;
-import com.sun.net.httpserver.HttpExchange;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
 

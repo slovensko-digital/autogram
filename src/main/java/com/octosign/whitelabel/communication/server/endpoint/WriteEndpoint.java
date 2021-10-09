@@ -1,15 +1,15 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.octosign.whitelabel.communication.CommunicationError;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
 import com.sun.net.httpserver.HttpExchange;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Server API endpoint

@@ -1,11 +1,5 @@
 package com.octosign.whitelabel.ui;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ResourceBundle;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-
 import com.octosign.whitelabel.cli.command.Command;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
@@ -13,26 +7,24 @@ import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import com.octosign.whitelabel.cli.command.Command;
-import com.octosign.whitelabel.cli.command.CommandFactory;
-import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.Info;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Server;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import static java.util.Objects.requireNonNullElse;
 
