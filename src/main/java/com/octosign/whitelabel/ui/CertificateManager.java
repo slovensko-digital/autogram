@@ -1,8 +1,9 @@
 package com.octosign.whitelabel.ui;
 
-import java.util.List;
-import java.util.Locale;
-
+import com.octosign.whitelabel.signing.SigningCertificate;
+import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
+import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Dialog;
@@ -10,12 +11,11 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
 
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import java.util.List;
+import java.util.Locale;
 
-import com.octosign.whitelabel.signing.SigningCertificate;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
-import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
-import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
+import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.LONG;
+import static java.util.Optional.ofNullable;
 
 /**
  * Holds currently used certificate and takes care of picking
@@ -51,10 +51,12 @@ public class CertificateManager {
 
         var treeTableView = new TreeTableView<SigningCertificate>();
         var nameColumn = new TreeTableColumn<SigningCertificate, String>(Main.getProperty("text.subjectName"));
-        nameColumn.setCellValueFactory((cert) ->
-            new SimpleStringProperty(
-                cert.getValue().getValue().getNicePrivateKeyDescription(KeyDescriptionVerbosity.LONG)
-            )
+        nameColumn.setCellValueFactory(input ->
+                ofNullable(input.getValue())
+                        .map(TreeItem::getValue)
+                        .map(certificate -> certificate.getNicePrivateKeyDescription(LONG))
+                        .map(SimpleStringProperty::new)
+                        .orElse(null)
         );
         treeTableView.getColumns().add(nameColumn);
         treeTableView.setRoot(new TreeItem<>(certificate));
@@ -80,7 +82,7 @@ public class CertificateManager {
 
         // Try to fallback to MSCAPI on Windows
         String osName = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
-        if (certificate == null && osName.indexOf("win") >= 0) {
+        if (certificate == null && osName.contains("win")) {
             certificate = new SigningCertificateMSCAPI();
         }
 

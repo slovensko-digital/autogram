@@ -52,6 +52,15 @@ public class XMLDocument extends Document {
         this.transformation = transformation;
     }
 
+    @Override
+    public String toString() {
+        return "XMLDocument{" +
+                "transformation='" + transformation + '\'' +
+                ", schema='" + schema + '\'' +
+                ", super='" + super.toString() + '\'' +
+                '}';
+    }
+
     /**
      * Apply defined transformation on the document and get it
      *
