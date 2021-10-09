@@ -23,6 +23,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static com.octosign.whitelabel.ui.Main.getProperty;
+
 
 /**
  * Controller for the signing window
@@ -79,7 +81,7 @@ public class MainController {
         var document = signatureUnit.getDocument();
 
         if (document.getTitle() != null && !document.getTitle().isBlank()) {
-            documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
+            documentLabel.setText(String.format(getProperty("text.document"), document.getTitle()));
         } else {
             documentLabel.setManaged(false);
         }
@@ -93,7 +95,7 @@ public class MainController {
             String name = certificateManager
                 .getCertificate()
                 .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-            mainButton.setText(String.format(Main.getProperty("text.sign"), name));
+            mainButton.setText(String.format(getProperty("text.sign"), name));
         }
 
         boolean isXML = document instanceof XMLDocument;
@@ -108,9 +110,9 @@ public class MainController {
                 Platform.runLater(() -> {
                     Main.displayAlert(
                         AlertType.ERROR,
-                        "Neplatný formát",
-                        "XML súbor nie je validný",
-                        "Dokument na podpísanie nevyhovel požiadavkám validácie podľa XSD schémy. Detail chyby: " + e
+                        getProperty("exc.invalidFormat.title"),
+                        getProperty("exc.invalidFormat.header"),
+                        getProperty("exc.invalidFormat.description" + e)
                     );
                 });
                 return;
@@ -131,9 +133,10 @@ public class MainController {
                     Platform.runLater(() -> {
                         Main.displayAlert(
                             AlertType.ERROR,
-                            "Chyba zobrazenia",
-                            "Získanie zobraziteľnej podoby zlyhalo",
-                            "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
+                                getProperty("exc.visualizationError.title"),
+                                getProperty("exc.visualizationError.header"),
+                                getProperty("exc.visualizationError.description", e)
+
                         );
                     });
                     return;
@@ -184,7 +187,7 @@ public class MainController {
             });
         }
 
-        if (!isXML && !isPDF) throw new RuntimeException("Unsupported document format");
+        if (!isXML && !isPDF) throw new RuntimeException("exc.unsupportedDocumentFormat");
 
     }
 
@@ -197,7 +200,7 @@ public class MainController {
         if (certificateManager.getCertificate() == null) {
             // No certificate means this is loading of certificates
             mainButton.setDisable(true);
-            mainButton.setText(Main.getProperty("text.loading"));
+            mainButton.setText(getProperty("text.loading"));
 
             CompletableFuture.runAsync(() -> {
                 String mainButtonText;
@@ -205,9 +208,9 @@ public class MainController {
                     String name = certificateManager
                         .getCertificate()
                         .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-                    mainButtonText = String.format(Main.getProperty("text.sign"), name);
+                    mainButtonText = String.format(getProperty("text.sign"), name);
                 } else {
-                    mainButtonText = Main.getProperty("text.loadSigners");
+                    mainButtonText = getProperty("text.loadSigners");
                 }
                 Platform.runLater(() -> {
                     mainButton.setText(mainButtonText);
@@ -218,7 +221,7 @@ public class MainController {
             // Otherwise this is signing
             String previousButtonText = mainButton.getText();
             mainButton.setDisable(true);
-            mainButton.setText(Main.getProperty("text.signing"));
+            mainButton.setText(getProperty("text.signing"));
 
             CompletableFuture.runAsync(() -> {
                 try {
@@ -228,9 +231,9 @@ public class MainController {
                     Platform.runLater(() -> {
                         Main.displayAlert(
                             AlertType.ERROR,
-                            "Nepodpísané",
-                            "Súbor nebol podpísaný",
-                            "Podpísanie zlyhalo alebo bolo zrušené. Detail chyby: " + e
+                            getProperty("exc.notSigned.title"),
+                            getProperty("exc.notSigned.header"),
+                            getProperty("exc.notSigned.description", e)
                         );
                     });
                 } finally {
@@ -258,7 +261,7 @@ public class MainController {
      */
     private String getResourceAsString(String resourceName) {
         try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
-            if (inputStream == null) throw new Exception("Resource not found");
+            if (inputStream == null) throw new Exception(getProperty("exc.resourceNotFound"));
             try (
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                 BufferedReader reader = new BufferedReader(inputStreamReader);
@@ -266,7 +269,7 @@ public class MainController {
                 return reader.lines().collect(Collectors.joining(System.lineSeparator()));
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to load resource " + resourceName, e);
+            throw new RuntimeException(getProperty("exc.resourceLoadingFailed", resourceName), e);
         }
     }
 }

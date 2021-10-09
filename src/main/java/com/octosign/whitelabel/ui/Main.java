@@ -75,8 +75,8 @@ public class Main extends Application {
         displayAlert(
             AlertType.INFORMATION,
             getProperty("application.name"),
-            "Application is installed",
-            "Start signing from the web."
+            getProperty("alert.appLaunched.header"),
+            getProperty("alert.appLaunched.description")
         );
     }
 
@@ -116,7 +116,7 @@ public class Main extends Application {
         System.out.println("Running in server mode on " + server.getAddress().toString());
         if (server.isDevMode()) {
             var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
-            System.out.println("Documentation is available in dev mode at " + docsAddress);
+            System.out.println(getProperty("text.documentationAvailableAt", docsAddress));
         }
 
         server.setOnSign((SignatureUnit signatureUnit) -> {
@@ -236,6 +236,20 @@ public class Main extends Application {
      */
     public static String getProperty(String path) {
         return bundle.getString(path);
+    }
+
+    public static String getProperty(String path, Object... args) {
+        return String.format(bundle.getString(path), args);
+
+    }
+
+    public static String[] getExceptionProperties(String exceptionType) {
+        String base = "exc." + exceptionType;
+        String titleProp = base + ".title";
+        String headerProp = base + ".header";
+        String descriptionProp = base + ".description";
+
+        return new String[] { getProperty(titleProp), getProperty(headerProp), getProperty(descriptionProp) };
     }
 
     /**
