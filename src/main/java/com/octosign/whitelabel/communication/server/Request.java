@@ -35,9 +35,9 @@ public class Request<T> {
         if (contentType != null) {
             bodyFormat = contentType.stream()
                 .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-                .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
+                .filter(bodyFormats::containsKey)
                 .findFirst()
-                .map((mimeType) -> bodyFormats.get(mimeType))
+                .map(bodyFormats::get)
                 .orElseGet(() -> contentType.isEmpty() ? bodyFormats.get("*/*") : null);
         } else {
             bodyFormat = null;

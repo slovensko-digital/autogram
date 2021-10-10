@@ -36,9 +36,9 @@ public class Response<U> {
         var contentType = exchange.getRequestHeaders().get("Accept");
         bodyFormat = contentType.stream()
             .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-            .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
+            .filter(bodyFormats::containsKey)
             .findFirst()
-            .map((mimeType) -> bodyFormats.get(mimeType))
+            .map(bodyFormats::get)
             // We would rather return something in unaccepted type than nothing
             .orElseGet(() -> bodyFormats.get("*/*"));
     }
