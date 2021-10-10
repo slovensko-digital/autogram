@@ -90,8 +90,8 @@
                     <release>${maven.compiler.release}</release>
                     <fork>true</fork>
                     <executable>${jlink.jdk.path}/bin/javac</executable>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
+                    <source>16</source>
+                    <target>16</target>
                 </configuration>
             </plugin>
 
