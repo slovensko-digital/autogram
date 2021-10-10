@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static com.octosign.whitelabel.ui.Main.getProperty;
 import static java.util.Objects.requireNonNull;
 
 
@@ -71,9 +72,9 @@ public class XDCTransformer {
             var documentBuilder = builderFactory.newDocumentBuilder();
             this.document = documentBuilder.parse(new InputSource(new StringReader(xmlContent)));
         } catch (SAXException | IOException e) {
-            throw new RuntimeException("XML parsing failed.", e);
+            throw new RuntimeException(getProperty("exc.xmlParsingFailure", e));
         } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Unable to create XML DocumentBuilder: invalid configuration", e);
+            throw new RuntimeException(getProperty("exc.builderConfigInvalid", e));
         }
     }
 
@@ -106,7 +107,7 @@ public class XDCTransformer {
             var transformer = TransformerFactory.newInstance().newTransformer();
             transformer.transform(source, new StreamResult(writer));
         } catch (TransformerException e) {
-            throw new RuntimeException("XML transformation processing error.", e);
+            throw new RuntimeException("exc.transformationError", e);
         }
 
         return writer.toString();

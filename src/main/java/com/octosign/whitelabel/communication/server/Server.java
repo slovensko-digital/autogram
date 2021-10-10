@@ -36,7 +36,7 @@ public class Server {
         try {
             server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
         } catch (Exception e) {
-            throw new RuntimeException("Could not create server", e);
+            throw new RuntimeException("exc.serverNotCreated", e);
         }
 
         documentationEndpoint = new DocumentationEndpoint(this);

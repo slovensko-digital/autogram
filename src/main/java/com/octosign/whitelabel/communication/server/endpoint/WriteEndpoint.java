@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.octosign.whitelabel.ui.Main.getProperty;
+
 /**
  * Server API endpoint
  *
@@ -58,7 +60,7 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
                     .send();
                 return;
             } else if (request.processBody(requestClass) == null) {
-                var error = new CommunicationError(Code.MALFORMED_INPUT, "Malformed input body.");
+                var error = new CommunicationError(Code.MALFORMED_INPUT, getProperty("exc.malformedInput"));
                 new Response<CommunicationError>(exchange)
                     .asError(HttpURLConnection.HTTP_BAD_REQUEST, error)
                     .send();

@@ -5,6 +5,8 @@ import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 import java.security.KeyStore.PasswordProtection;
 
+import static com.octosign.whitelabel.ui.Main.getProperty;
+
 public class SigningCertificatePKCS12 extends SigningCertificate {
     /**
      * Creates signing certificate that will use given PKCS12 file
@@ -25,7 +27,7 @@ public class SigningCertificatePKCS12 extends SigningCertificate {
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
             token = new Pkcs12SignatureToken(pkcsPath, password);
         } catch (Exception e) {
-            throw new RuntimeException("Cannot initialize PKCS12", e);
+            throw new RuntimeException(getProperty("exc.pkcs12InitFailed", e));
         }
     }
 }

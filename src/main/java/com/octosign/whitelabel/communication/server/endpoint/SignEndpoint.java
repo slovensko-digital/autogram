@@ -33,7 +33,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     @Override
     protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) throws IOException {
         if (onSign == null) {
-            var error = new CommunicationError(Code.NOT_READY, "Server is not ready yet");
+            var error = new CommunicationError(Code.NOT_READY, getProperty("exc.serverNotReady"));
             new Response<CommunicationError>(request.getExchange())
                 .asError(HttpURLConnection.HTTP_CONFLICT, error)
                 .send();
@@ -51,7 +51,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
             // TODO: We should do a better job with the error response here:
             // We can differentiate between application errors (500), user errors (502), missing certificate/UI closed (503)
 
-            var error = new CommunicationError(Code.SIGNING_FAILED, "Signing failed.", e.getMessage());
+            var error = new CommunicationError(Code.SIGNING_FAILED, getProperty("exc.signingFailed"), e.getMessage());
             new Response<CommunicationError>(request.getExchange())
                 .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error)
                 .send();
