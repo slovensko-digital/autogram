@@ -26,6 +26,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static com.octosign.whitelabel.ui.Main.getProperty;
+
 /**
  * Controller for the signing window
  */

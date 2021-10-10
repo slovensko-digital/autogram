@@ -8,8 +8,7 @@ import static com.octosign.whitelabel.communication.SignatureParameters.Containe
 import static com.octosign.whitelabel.communication.SignatureParameters.DigestAlgorithm.SHA256;
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
-import static com.octosign.whitelabel.communication.SignatureParameters.Level.PADES_BASELINE_B;
-import static com.octosign.whitelabel.communication.SignatureParameters.Level.XADES_BASELINE_B;
+import static com.octosign.whitelabel.communication.SignatureParameters.Level.*;
 import static com.octosign.whitelabel.communication.SignatureParameters.Packaging.ENVELOPED;
 import static java.util.Arrays.stream;
 
@@ -21,26 +20,8 @@ public enum Configuration {
 
     static {
         mapping = new HashMap<>();
-
-        mapping.put(XADES_SK, new SignatureParameters.Builder()
-                .format(XADES)
-                .level(XADES_BASELINE_B)
-                .fileMimeType("application/lor.ip.xmldatacontainer+xml")
-                .container(ASICE)
-                .packaging(ENVELOPED)
-                .digestAlgorithm(SHA256)
-                .en319132(false)
-                .infoCanonicalization(INCLUSIVE)
-                .propertiesCanonicalization(INCLUSIVE)
-                .keyInfoCanonicalization(INCLUSIVE)
-                .build());
-
-        mapping.put(PADES_SK, new SignatureParameters.Builder()
-                .format(PADES)
-                .level(PADES_BASELINE_B)
-                .packaging(ENVELOPED)
-                .digestAlgorithm(SHA256)
-                .build());
+        mapping.put(XADES_SK, new SignatureParameters(null, XADES, BASELINE_B, "application/lor.ip.xmldatacontainer+xml", ASICE, ENVELOPED, SHA256, false, INCLUSIVE, INCLUSIVE, INCLUSIVE, null,null,null, null,null, null, null));
+        mapping.put(PADES_SK, new SignatureParameters(null, PADES, BASELINE_B, null, null, ENVELOPED, SHA256, false, null, null, null, null, null, null, null, null, null, null));
     }
 
     public static Configuration from(String templateId) {
