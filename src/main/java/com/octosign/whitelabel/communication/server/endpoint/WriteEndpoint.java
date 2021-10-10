@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.octosign.whitelabel.ui.Main.getProperty;
+
 /**
  * Server API endpoint
  *
@@ -44,14 +46,13 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
             // If request class is not null, the body must contain correct object
             if (request.getBodyFormat() == null) {
                 var supportedTypes = String.join(", ", request.getSupportedBodyFormats());
-                var message = "Unsupported request body MIME type. Supported: " + supportedTypes;
-                var error = new CommunicationError(Code.UNSUPPORTED_FORMAT, message);
+                var error = new CommunicationError(Code.UNSUPPORTED_FORMAT, getProperty("exc.invalidMimeType", supportedTypes));
                 new Response<CommunicationError>(exchange)
                     .asError(HttpURLConnection.HTTP_UNSUPPORTED_TYPE, error)
                     .send();
                 return;
             } else if (request.processBody(requestClass) == null) {
-                var error = new CommunicationError(Code.MALFORMED_INPUT, "Malformed input body.");
+                var error = new CommunicationError(Code.MALFORMED_INPUT, getProperty("exc.malformedInput"));
                 new Response<CommunicationError>(exchange)
                     .asError(HttpURLConnection.HTTP_BAD_REQUEST, error)
                     .send();

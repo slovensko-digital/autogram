@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import static com.octosign.whitelabel.ui.Main.getProperty;
+
 /**
  * XML document for signing
  */
@@ -68,7 +70,7 @@ public class XMLDocument extends Document {
      */
     public String getTransformed() {
         if (content == null || transformation == null)
-            throw new RuntimeException("Document has no content or transformation defined");
+            throw new RuntimeException(getProperty("exc.missingContent"));
 
         var xslSource = new StreamSource(new StringReader(transformation));
         var xmlInSource = new StreamSource(new StringReader(content));
@@ -80,9 +82,9 @@ public class XMLDocument extends Document {
             var transformer = transformerFactory.newTransformer(xslSource);
             transformer.transform(xmlInSource, new StreamResult(xmlOutWriter));
         } catch (TransformerConfigurationException e) {
-            throw new RuntimeException("Transformation initialization error: Unable to set requested feature | Unable to parse XML source or perform initialization", e);
+            throw new RuntimeException(getProperty("exc.transformationInitFailed", e));
         } catch (TransformerException e) {
-            throw new RuntimeException("Transformation aborted: unknown transformation error.", e);
+            throw new RuntimeException(getProperty("exc.transformationAborted", e));
         }
 
         return xmlOutWriter.toString();
@@ -90,7 +92,7 @@ public class XMLDocument extends Document {
 
     public void validate() {
         if (content == null || schema == null)
-            throw new RuntimeException("Document has no content or schema defined");
+            throw new RuntimeException(getProperty("exc.missingContent"));
 
         var xsdSource = new StreamSource(new StringReader(schema));
         var xmlInSource = new StreamSource(new StringReader(content));
@@ -99,9 +101,9 @@ public class XMLDocument extends Document {
             var schema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource);
             schema.newValidator().validate(xmlInSource);
         } catch (SAXException e) {
-            throw new RuntimeException("Corrupted or invalid XSD schema", e);
+            throw new RuntimeException(getProperty("exc.corruptedSchemaFile", e));
         } catch (IOException e) {
-            throw new RuntimeException("Validation failed - incorrect XML format", e);
+            throw new RuntimeException(getProperty("exc.invalidSchemaXmlFormat", e));
         }
     }
 }

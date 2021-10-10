@@ -110,7 +110,7 @@ public abstract class SigningCertificate {
         try {
             keys = token.getKeys();
         } catch (Exception e) {
-            throw new RuntimeException("Private keys could not be retrieved", e);
+            throw new RuntimeException("exc.keysNotRetrieved", e);
         }
 
         return keys;
@@ -154,7 +154,7 @@ public abstract class SigningCertificate {
     // TODO update these 2 sign methods appropriately to emerging needs after adding new signature types
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
         if (privateKey == null) {
-            throw new RuntimeException("Missing private key");
+            throw new RuntimeException("exc.missingPrivateKey");
         }
 
         // TODO: Add trust for -LT/-LTA - requires use of qualified services
