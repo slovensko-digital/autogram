@@ -11,15 +11,10 @@ public class SignatureParameters {
     }
 
     public enum Level {
-        XADES_BASELINE_B,
-        XADES_BASELINE_T,
-        XADES_BASELINE_LT,
-        XADES_BASELINE_LTA,
-
-        PADES_BASELINE_B,
-        PADES_BASELINE_T,
-        PADES_BASELINE_LT,
-        PADES_BASELINE_LTA,
+        BASELINE_B,
+        BASELINE_T,
+        BASELINE_LT,
+        BASELINE_LTA
     }
 
     public enum Container {
