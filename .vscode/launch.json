@@ -10,13 +10,9 @@
             "request": "launch",
             "mainClass": "com.octosign.whitelabel.ui.Main",
             "projectName": "whitelabel",
-            // TODO check - not required anymore?
-            //"vmArgs": "--illegal-access=warn --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED",
-                      
+
             // Windows requires additional argument if using MSCAPI
             // "vmArgs": "--add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED",
-            //// archived version:
-            ////"vmArgs": "--illegal-access=warn --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED",
 
             "args": "--url=\"signer://listen/37200/*\""
         }
