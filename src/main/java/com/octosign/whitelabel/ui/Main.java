@@ -86,7 +86,6 @@ public class Main extends Application {
     }
 
     private void addAppToTray() {
-        SystemTray.DEBUG = true; // for test apps, we always want to run in debug mode
         systemTray = SystemTray.get();
         if (systemTray != null) {
             systemTray.setImage(iconURL);
