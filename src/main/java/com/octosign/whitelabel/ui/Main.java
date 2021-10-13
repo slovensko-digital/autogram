@@ -2,6 +2,7 @@ package com.octosign.whitelabel.ui;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -14,6 +15,8 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 
+import dorkbox.systemTray.MenuItem;
+import dorkbox.systemTray.SystemTray;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -28,6 +31,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class Main extends Application {
+    private static final URL iconURL = Main.class.getResource("icon.png");
+    private SystemTray systemTray;
 
     public enum Status {
         LOADING,
@@ -61,6 +66,7 @@ public class Main extends Application {
 
         if (cliCommand instanceof ListenCommand) {
             startServer((ListenCommand) cliCommand);
+            addAppToTray();
 
             // Prevent exiting in server mode on last window close
             Platform.setImplicitExit(false);
@@ -77,6 +83,16 @@ public class Main extends Application {
             "Application is installed",
             "Start signing from the web."
         );
+    }
+
+    private void addAppToTray() {
+        SystemTray.DEBUG = true; // for test apps, we always want to run in debug mode
+        systemTray = SystemTray.get();
+        if (systemTray != null) {
+            systemTray.setImage(iconURL);
+            systemTray.setStatus("Octosign (server mode)");
+            systemTray.getMenu().add(new MenuItem("Quit", e-> Platform.runLater(this::exit)));
+        }
     }
 
     private void startServer(ListenCommand command) {
@@ -163,6 +179,12 @@ public class Main extends Application {
         windowStage.setTitle(getProperty("application.name"));
         windowStage.setScene(scene);
         windowStage.show();
+    }
+
+    private void exit() {
+        systemTray.shutdown();
+        Platform.exit();
+        System.exit(0);
     }
 
     /**
