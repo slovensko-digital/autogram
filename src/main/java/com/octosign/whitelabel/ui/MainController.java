@@ -9,20 +9,20 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.ui.about.AboutDialog;
+
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.web.WebView;
-
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.document.XmlDocument;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
-import com.octosign.whitelabel.ui.about.AboutDialog;
+import javafx.concurrent.Worker;
 
 /**
  * Controller for the signing window
@@ -56,9 +56,9 @@ public class MainController {
     private CertificateManager certificateManager;
 
     /**
-     * Document signed in this window
+     * Wrapper for document in this window (to be signed) and parameters
      */
-    private Document document;
+    private SignatureUnit signatureUnit;
 
     /**
      * Consumer of the signed document content on success
@@ -74,16 +74,17 @@ public class MainController {
         this.certificateManager = certificateManager;
     }
 
-    public void setDocument(Document document) {
-        this.document = document;
+    public void setSignatureUnit(SignatureUnit signatureUnit) {
+        this.signatureUnit = signatureUnit;
+        var document = signatureUnit.getDocument();
 
-        if (document.getTitle() != null && !document.getTitle().equals("")) {
+        if (document.getTitle() != null && !document.getTitle().isEmpty()) {
             documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
         } else {
             documentLabel.setManaged(false);
         }
 
-        if (document.getLegalEffect() != null && !document.getLegalEffect().equals("")) {
+        if (document.getLegalEffect() != null && !document.getLegalEffect().isEmpty()) {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }
@@ -95,8 +96,26 @@ public class MainController {
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
 
-        boolean isXml = document instanceof XmlDocument;
-        final boolean hasTransformation = isXml && ((XmlDocument) document).getTransformation() != null;
+        //TODO consider simplifying this part to avoid tedious casting
+        boolean isXml = document instanceof XMLDocument;
+        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
+        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+
+        if (hasSchema) {
+            try {
+                ((XMLDocument) document).validate();
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    Main.displayAlert(
+                        AlertType.ERROR,
+                        "Neplatný formát",
+                        "XML súbor nie je validný",
+                        "Dokument na podpísanie nevyhovel požiadavkám validácie podľa XSD schémy. Detail chyby: " + e
+                    );
+                });
+                return;
+            }
+        }
 
         if (hasTransformation) {
             textArea.setManaged(false);
@@ -104,7 +123,7 @@ public class MainController {
             CompletableFuture.runAsync(() -> {
                 String visualisation;
                 try {
-                    var xmlDocument = (XmlDocument) document;
+                    var xmlDocument = (XMLDocument) document;
                     visualisation = xmlDocument.getTransformed();
                 } catch (Exception e) {
                     Platform.runLater(() -> {
@@ -171,7 +190,7 @@ public class MainController {
 
             CompletableFuture.runAsync(() -> {
                 try {
-                    String signedContent = certificateManager.getCertificate().sign(document.getContent());
+                    String signedContent = certificateManager.getCertificate().sign(signatureUnit);
                     Platform.runLater(() -> onSigned.accept(signedContent));
                 } catch (Exception e) {
                     Platform.runLater(() -> {

@@ -11,7 +11,10 @@ public class SignatureParameters {
     }
 
     public enum Level {
-        BASELINE_B
+        BASELINE_B,
+        BASELINE_T,
+        BASELINE_LT,
+        BASELINE_LTA
     }
 
     public enum Container {
@@ -21,7 +24,9 @@ public class SignatureParameters {
 
     public enum Packaging {
         ENVELOPED,
-        ENVELOPING
+        ENVELOPING,
+        DETACHED,
+        INTERNALLY_DETACHED
     }
 
     public enum DigestAlgorithm {
@@ -63,7 +68,11 @@ public class SignatureParameters {
 
     private String schema;
 
-    public SignatureParameters(Format format, Level level, String fileMimeType, Container container, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String schema) {
+    private String identifier;
+
+    private String version;
+
+    public SignatureParameters(Format format, Level level, String fileMimeType, Container container, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String schema, String identifier, String version) {
         this.format = format;
         this.level = level;
         this.fileMimeType = fileMimeType;
@@ -78,6 +87,8 @@ public class SignatureParameters {
         this.signaturePolicyContent = signaturePolicyContent;
         this.transformation = transformation;
         this.schema = schema;
+        this.identifier = identifier;
+        this.version = version;
     }
 
     public Format getFormat() {
@@ -105,10 +116,6 @@ public class SignatureParameters {
     }
 
     public boolean isEn319132() {
-        return en319132;
-    }
-
-    public boolean getEn319132() {
         return en319132;
     }
 
@@ -140,4 +147,7 @@ public class SignatureParameters {
         return schema;
     }
 
+    public String getIdentifier() { return identifier; }
+
+    public String getVersion() { return version; }
 }

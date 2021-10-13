@@ -9,19 +9,21 @@ import java.util.List;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import com.octosign.whitelabel.communication.SignatureParameterMapper;
+import com.octosign.whitelabel.communication.SignatureParameters;
+import com.octosign.whitelabel.communication.SignatureUnit;
+import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.model.ToBeSigned;
+import eu.europa.esig.dss.utils.Utils;
+import eu.europa.esig.dss.xades.signature.XAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.xades.XAdESSignatureParameters;
-import eu.europa.esig.dss.xades.signature.XAdESService;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -36,8 +38,11 @@ public abstract class SigningCertificate {
      */
     protected AbstractKeyStoreTokenConnection token;
 
-    // Private key that has to be set using .setPrivateKey() before signing
-    // List of available private keys can be retrieved using .getAvailablePrivateKeys()
+    /**
+     * Private key that has to be set using .setPrivateKey() before signing
+     *
+     * List of available private keys can be retrieved using .getAvailablePrivateKeys()
+     */
     private DSSPrivateKeyEntry privateKey;
 
     /**
@@ -124,45 +129,40 @@ public abstract class SigningCertificate {
     /**
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
-    public String sign(String content) {
-        InMemoryDocument document = new InMemoryDocument(content.getBytes(StandardCharsets.UTF_8));
+    public String sign(SignatureUnit unit) throws IOException {
+        unit.standardizeAsXDC();
 
-        DSSDocument signedDocument = sign(document);
+        var content = unit.getDocument().getContent();
+        var document = new InMemoryDocument(content.getBytes(StandardCharsets.UTF_8));
+
+        var signedDocument = sign(document, unit.getSignatureParameters());
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try {
-            signedDocument.writeTo(output);
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot write signed document to memory", e);
-        }
+        signedDocument.writeTo(output);
 
-        return output.toString(StandardCharsets.UTF_8);
+        return Utils.toBase64(output.toByteArray());
     }
-
-    private DSSDocument sign(CommonDocument document) {
+    // TODO update these 2 sign methods appropriately to emerging needs after adding new signature types
+    private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
         if (privateKey == null) {
             throw new RuntimeException("Missing private key");
         }
 
-        // TODO: Add support for TSP
-        boolean useTsp = false;
-
-        // Create common certificate verifier
         // TODO: Add trust for -LT/-LTA - requires use of qualified services
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
 
-        XAdESSignatureParameters parameters = new XAdESSignatureParameters();
-        // We choose the level of the signature (-B, -T, -LT, -LTA).
-        parameters.setSignatureLevel(useTsp ? SignatureLevel.XAdES_BASELINE_T : SignatureLevel.XAdES_BASELINE_B);
-        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPED);
-        parameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
+        ASiCWithXAdESSignatureParameters parameters = SignatureParameterMapper.map(inputParameters);
         parameters.setSigningCertificate(privateKey.getCertificate());
         parameters.setCertificateChain(privateKey.getCertificateChain());
 
         XAdESService service = new XAdESService(commonCertificateVerifier);
 
         // TODO: Add support for TSP
-        /*if (useTsp) {
+        /*
+        boolean useTsp = false;
+        // We choose the level of the signature (-B, -T, -LT, -LTA).
+        parameters.setSignatureLevel(useTsp ? SignatureLevel.XAdES_BASELINE_T : SignatureLevel.XAdES_BASELINE_B);
+        if (useTsp) {
             // Create and set the TSP source
             OnlineTSPSource tspSource = new OnlineTSPSource(tspUrl);
             service.setTspSource(tspSource);
