@@ -65,8 +65,8 @@ public class Main extends Application {
         }
 
         if (cliCommand instanceof ListenCommand) {
-            startServer((ListenCommand) cliCommand);
             addAppToTray();
+            startServer((ListenCommand) cliCommand);
 
             // Prevent exiting in server mode on last window close
             Platform.setImplicitExit(false);
