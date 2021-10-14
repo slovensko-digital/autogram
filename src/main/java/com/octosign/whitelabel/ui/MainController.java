@@ -1,29 +1,17 @@
 package com.octosign.whitelabel.ui;
 
+import javafx.application.Platform;
+import javafx.concurrent.Worker;
+
+import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
-import javafx.application.Platform;
-import javafx.concurrent.Worker;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ResourceBundle;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.document.XMLDocument;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
-import com.octosign.whitelabel.ui.about.AboutDialog;
-
-import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -31,7 +19,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.web.WebView;
-
 
 /**
  * Controller for the signing window
@@ -173,6 +160,7 @@ public class MainController {
 
                 engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
                     if (newState == Worker.State.SUCCEEDED) {
+                        WebViewLogger.register(engine);
                         engine.executeScript("displayPdf('" + document.getContent() + "')");
                     }
                 });
@@ -248,22 +236,5 @@ public class MainController {
     @FXML
     private void onCertSettingsButtonAction() {
         certificateManager.useDialogPicker();
-    }
-
-    /**
-     * Get resource from the ui resources as string using name
-     */
-    private String getResourceAsString(String resourceName) {
-        try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
-            if (inputStream == null) throw new Exception("Resource not found");
-            try (
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                BufferedReader reader = new BufferedReader(inputStreamReader);
-            ) {
-                return reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load resource " + resourceName, e);
-        }
     }
 }
