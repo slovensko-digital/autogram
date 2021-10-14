@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.LONG;
+import static com.octosign.whitelabel.ui.FX.displayError;
+import static com.octosign.whitelabel.ui.I18n.getProperty;
 import static com.octosign.whitelabel.ui.Main.getProperty;
 import static java.util.Optional.ofNullable;
 
@@ -42,16 +44,11 @@ public class CertificateManager {
         // TODO: Move out and implement actual logic
 
         Dialog<SigningCertificate> dialog = new Dialog<>();
-        dialog.setTitle(Main.getProperty("text.certificateSettings"));
-        var dialogPane = dialog.getDialogPane();
+        dialog.setTitle(getProperty("text.certificateSettings"));
 
-        var stylesheets = dialogPane.getStylesheets();
-        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
-
+        FX.addStylesheets(dialog);
         var treeTableView = new TreeTableView<SigningCertificate>();
-        var nameColumn = new TreeTableColumn<SigningCertificate, String>(Main.getProperty("text.subjectName"));
+        var nameColumn = new TreeTableColumn<SigningCertificate, String>(getProperty("text.subjectName"));
         nameColumn.setCellValueFactory(input ->
                 ofNullable(input.getValue())
                         .map(TreeItem::getValue)
@@ -88,12 +85,7 @@ public class CertificateManager {
         }
 
         if (certificate == null) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                    getProperty("exc.tokenNotFound.title"),
-                    getProperty("exc.tokenNotFound.header"),
-                    getProperty("exc.tokenNotFound.description")
-            );
+            displayError("tokenNotFound");
             return null;
         }
 
@@ -101,22 +93,12 @@ public class CertificateManager {
         try {
             keys = certificate.getAvailablePrivateKeys();
         } catch (Exception e) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                    getProperty("exc.tokenNotAvailable.title"),
-                    getProperty("exc.tokenNotAvailable.header"),
-                    getProperty("exc.tokenNotAvailable.description", e)
-            );
+            displayError("tokenNotAvailable", e);
             return null;
         }
 
         if (keys.size() == 0) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                    getProperty("exc.tokenEmpty.title"),
-                    getProperty("exc.tokenEmpty.header"),
-                    getProperty("exc.tokenEmpty.description")
-            );
+            displayError("tokenEmpty");
             return null;
         }
 

@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static com.octosign.whitelabel.ui.FX.displayError;
 import static com.octosign.whitelabel.ui.Main.getProperty;
 
 /**
@@ -84,7 +85,7 @@ public class MainController {
         var parameters = signatureUnit.getSignatureParameters();
 
         if (document.getTitle() != null && !document.getTitle().isBlank()) {
-            documentLabel.setText(String.format(getProperty("text.document"), document.getTitle()));
+            documentLabel.setText(getProperty("text.document", document.getTitle()));
         } else {
             documentLabel.setManaged(false);
         }
@@ -98,7 +99,7 @@ public class MainController {
             String name = certificateManager
                 .getCertificate()
                 .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-            mainButton.setText(String.format(getProperty("text.sign"), name));
+            mainButton.setText(getProperty("text.sign", name));
         }
 
         //TODO consider simplifying this part to avoid tedious casting
@@ -216,7 +217,7 @@ public class MainController {
                     String name = certificateManager
                         .getCertificate()
                         .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-                    mainButtonText = String.format(getProperty("text.sign"), name);
+                    mainButtonText = getProperty("text.sign", name);
                 } else {
                     mainButtonText = getProperty("text.loadSigners");
                 }
