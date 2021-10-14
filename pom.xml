@@ -142,7 +142,7 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.min.js</url>
+                            <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.min.js</url>
                             <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs</toDir>
                             <skipIfExists>true</skipIfExists>
                         </configuration>
@@ -154,8 +154,21 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js</url>
+                            <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js</url>
                             <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs</toDir>
+                            <skipIfExists>true</skipIfExists>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-pdfjs-cmaps</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>download</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
+                            <fromDir>cmaps</fromDir>
+                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs/cmaps</toDir>
                             <skipIfExists>true</skipIfExists>
                         </configuration>
                     </execution>

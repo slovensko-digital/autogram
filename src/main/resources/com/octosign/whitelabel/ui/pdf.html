@@ -1,11 +1,12 @@
 <!-- Doesn't allow loading any external or inline scripts, styles, etc. -->
+<!-- The only exception are the following scripts allowed using hash -->
+<!-- You can update the hash by looking at the exception message in the browser that mentions the new hash -->
+<!-- If you don't want to be bothered during the dev, just comment it out  -->
+<!-- TODO: Make this more strict so the whole file:// is not accessible - wors-case scenario using custom URL handler -->
 <meta
     http-equiv="Content-Security-Policy"
-    content="default-src 'none'; script-src 'self' 'sha256-UeQoPVlCFc7FrwUk14FnWxcDXFxPXL5b2kBwESRQ3wM=' 'sha256-7gyngiqBAH6gNYBJPCOnLQGHK3qEEQfPPu1rqrRRfOQ=' 'sha256-2YlqcnIZORBvmDkvcqYjWkMPUxb0gze2OwQrfZz5vX4='; style-src 'sha256-5yOa8ntqRFw4901BkVfeQcHq+Bqzz+1D5iwSWu4GtlE='"
+    content="default-src 'self'; script-src 'self' 'sha256-Q1uUkcGxgkocQF1ZAdmQJmes+M0b1qLgnC9n+izZ52U='; style-src 'sha256-5yOa8ntqRFw4901BkVfeQcHq+Bqzz+1D5iwSWu4GtlE='"
 >
-<!-- The only exception are the following scripts allowed using hash -->
-<!-- You can update the first two hashes for pdf.js files using the CDN and the exception for the inline script should mention the new hash -->
-<!-- If you don't want to be bothered during the dev, just comment it out  -->
 <script src="./vendor/pdfjs/pdf.min.js"></script>
 
 <style>
@@ -37,7 +38,12 @@
 
         let currentResizeListener;
         window.displayPdf = async function (data) {
-            const pdf = await pdfjsLib.getDocument({ data: atob(data) }).promise;
+            const pdf = await pdfjsLib.getDocument({
+                data: atob(data),
+                cMapUrl: './vendor/pdfjs/cmaps/',
+                cMapPacked: true,
+                isEvalSupported: false,
+            }).promise;
             renderPdf(pdf);
 
             if (currentResizeListener) {
