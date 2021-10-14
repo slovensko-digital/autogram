@@ -16,6 +16,7 @@
         <java.version>17</java.version>
         <dss.version>5.9</dss.version>
         <gson.version>2.8.8</gson.version>
+        <systemtray.version>4.1</systemtray.version>
         <main.class>com.octosign.whitelabel.ui.Main</main.class>
     </properties>
 
@@ -73,7 +74,7 @@
         <dependency>
             <groupId>com.dorkbox</groupId>
             <artifactId>SystemTray</artifactId>
-            <version>4.1</version>
+            <version>${systemtray.version}</version>
         </dependency>
     </dependencies>
 
