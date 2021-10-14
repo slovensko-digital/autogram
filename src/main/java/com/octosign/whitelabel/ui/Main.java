@@ -11,21 +11,15 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import static com.octosign.whitelabel.ui.FX.displayError;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
@@ -35,12 +29,7 @@ public class Main extends Application {
         READY
     }
 
-    private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
-
     private final CertificateManager certificateManager = new CertificateManager();
-
-    private Server server;
 
     public static void main(String[] args) {
         Application.launch(Main.class, args);
@@ -51,12 +40,8 @@ public class Main extends Application {
         Command cliCommand;
         try {
             cliCommand = CommandFactory.fromParameters(getParameters());
-        } catch (Throwable e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotUseParameters"),
-                e
-            );
+        } catch (Exception e) {
+            displayError("openingFailed", e);
             return;
         }
 
@@ -73,10 +58,10 @@ public class Main extends Application {
         // 1. Standalone mode once it gets implemented
         // 2. Info about the app and how it is launched from the web
         displayAlert(
-            AlertType.INFORMATION,
-            getProperty("application.name"),
-            getProperty("alert.appLaunched.header"),
-            getProperty("alert.appLaunched.description")
+                AlertType.INFORMATION,
+                getProperty("application.name"),
+                getProperty("alert.appLaunched.header"),
+                getProperty("alert.appLaunched.description")
         );
     }
 
@@ -84,17 +69,14 @@ public class Main extends Application {
         var version = getVersion();
         var hostname = getProperty("server.hostname");
         var port = command.getPort() > 0
-            ? command.getPort()
-            : Integer.parseInt(getProperty("server.defaultPort"));
+                ? command.getPort()
+                : Integer.parseInt(getProperty("server.defaultPort"));
 
+        Server server;
         try {
             server = new Server(hostname, port, command.getInitialNonce());
         } catch (Throwable e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotListen"),
-                e
-            );
+            displayError("cannotListen", e);
             return;
         }
 
@@ -106,13 +88,10 @@ public class Main extends Application {
         try {
             server.start();
         } catch (Throwable e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotListen"),
-                e
-            );
+            displayError("cannotOpenWindow", e);
             return;
         }
+
         System.out.println("Running in server mode on " + server.getAddress().toString());
         if (server.isDevMode()) {
             var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
@@ -139,23 +118,19 @@ public class Main extends Application {
     private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) {
         var windowStage = new Stage();
 
-        var fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"), bundle);
+        var fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"), I18n.bundle);
         VBox root;
         try {
             root = fxmlLoader.load();
         } catch (Exception e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotOpenWindow"),
-                e
-            );
+            displayError("openingFailed", e);
             return;
         }
 
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setSignatureUnit(signatureUnit);
-        controller.setOnSigned((String signedContent) -> { 
+        controller.setOnSigned((String signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });
@@ -166,91 +141,6 @@ public class Main extends Application {
         windowStage.show();
     }
 
-    /**
-     * Display alert
-     */
-    public static void displayAlert(AlertType type, String title, String header, String description) {
-        getAlert(type, title, header, description).showAndWait();
-    }
-
-    /**
-     * Display error alert
-     */
-    public static void displayError(String header, String description) {
-        var alert = getAlert(AlertType.ERROR, getProperty("text.error"), header, description);
-
-        alert.showAndWait();
-    }
-
-    /**
-     * Display error alert with exception details
-     */
-    public static void displayError(String header, String description, Throwable e) {
-        var alert = getAlert(AlertType.ERROR, getProperty("text.error"), header, description);
-
-        if (e != null) {
-            e.printStackTrace();
-            var stringWriter = new StringWriter();
-            e.printStackTrace(new PrintWriter(stringWriter));
-            var stackTrace = stringWriter.toString();
-
-            var details = new GridPane();
-            details.setMaxWidth(Double.MAX_VALUE);
-
-            var label = new Label(getProperty("text.error.details"));
-            details.add(label, 0, 0);
-
-            var textArea = new TextArea(stackTrace);
-            textArea.setEditable(false);
-            textArea.setWrapText(true);
-            details.add(textArea, 0, 1);
-
-            alert.getDialogPane().setExpandableContent(details);
-        }
-
-        alert.showAndWait();
-    }
-
-    /**
-     * Create unified Alert
-     */
-    public static Alert getAlert(AlertType type, String title, String header, String description) {
-        var alert = new Alert(type);
-
-        var dialogPane = alert.getDialogPane();
-        var stylesheets = dialogPane.getStylesheets();
-        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
-
-        if (title != null) alert.setTitle(title);
-        if (header != null) alert.setHeaderText(header);
-        if (description != null) alert.setContentText(description);
-        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-
-        return alert;
-    }
-
-    /**
-     * Get string property from the bundle
-     */
-    public static String getProperty(String path) {
-        return bundle.getString(path);
-    }
-
-    public static String getProperty(String path, Object... args) {
-        return String.format(bundle.getString(path), args);
-
-    }
-
-    public static String[] getExceptionProperties(String exceptionType) {
-        String base = "exc." + exceptionType;
-        String titleProp = base + ".title";
-        String headerProp = base + ".header";
-        String descriptionProp = base + ".description";
-
-        return new String[] { getProperty(titleProp), getProperty(headerProp), getProperty(descriptionProp) };
-    }
 
     /**
      * Application version as defined in pom if packaged or dev otherwise
@@ -259,4 +149,16 @@ public class Main extends Application {
         return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
     }
 
+
+    // TODO decide about moving this elsewhere
+    private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
+
+    public static String getProperty(String path) {
+        return bundle.getString(path);
+    }
+
+    public static String getProperty(String path, Object... args) {
+        return String.format(bundle.getString(path), args);
+    }
 }

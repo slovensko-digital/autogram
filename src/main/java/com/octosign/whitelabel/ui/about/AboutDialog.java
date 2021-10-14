@@ -1,5 +1,6 @@
 package com.octosign.whitelabel.ui.about;
 
+import com.octosign.whitelabel.ui.FX;
 import com.octosign.whitelabel.ui.Main;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
@@ -13,20 +14,13 @@ import java.util.stream.Collectors;
 public class AboutDialog extends Dialog<Boolean> {
     public AboutDialog() {
         super();
-
         setTitle(Main.getProperty("text.aboutHelp"));
-        addStylesheets();
         setContentText(getContent());
+
+        FX.addStylesheets(this);
         getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         getDialogPane().setMinWidth(520);
         getDialogPane().getButtonTypes().add(new ButtonType("OK", ButtonData.OK_DONE));
-    }
-
-    private void addStylesheets() {
-        var stylesheets = getDialogPane().getStylesheets();
-        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
     }
 
     private static String getContent() {

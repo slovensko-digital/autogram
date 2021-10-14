@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static com.octosign.whitelabel.ui.FX.displayError;
 import static com.octosign.whitelabel.ui.Main.getProperty;
 
 
@@ -81,7 +82,7 @@ public class MainController {
         var document = signatureUnit.getDocument();
 
         if (document.getTitle() != null && !document.getTitle().isBlank()) {
-            documentLabel.setText(String.format(getProperty("text.document"), document.getTitle()));
+            documentLabel.setText(getProperty("text.document", document.getTitle()));
         } else {
             documentLabel.setManaged(false);
         }
@@ -95,7 +96,7 @@ public class MainController {
             String name = certificateManager
                 .getCertificate()
                 .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-            mainButton.setText(String.format(getProperty("text.sign"), name));
+            mainButton.setText(getProperty("text.sign", name));
         }
 
         boolean isXML = document instanceof XMLDocument;
@@ -107,14 +108,7 @@ public class MainController {
             try {
                 ((XMLDocument) document).validate();
             } catch (Exception e) {
-                Platform.runLater(() -> {
-                    Main.displayAlert(
-                        AlertType.ERROR,
-                        getProperty("exc.invalidFormat.title"),
-                        getProperty("exc.invalidFormat.header"),
-                        getProperty("exc.invalidFormat.description" + e)
-                    );
-                });
+                Platform.runLater(() -> displayError("invalidFormat", e));
                 return;
             }
         }
@@ -130,15 +124,7 @@ public class MainController {
                     var xmlDocument = (XMLDocument) document;
                     visualization = "<pre>" + xmlDocument.getTransformed() + "</pre>";
                 } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        Main.displayAlert(
-                            AlertType.ERROR,
-                                getProperty("exc.visualizationError.title"),
-                                getProperty("exc.visualizationError.header"),
-                                getProperty("exc.visualizationError.description", e)
-
-                        );
-                    });
+                    Platform.runLater(() -> displayError("visualizationError", e));
                     return;
                 }
 
@@ -208,7 +194,7 @@ public class MainController {
                     String name = certificateManager
                         .getCertificate()
                         .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-                    mainButtonText = String.format(getProperty("text.sign"), name);
+                    mainButtonText = getProperty("text.sign", name);
                 } else {
                     mainButtonText = getProperty("text.loadSigners");
                 }
@@ -228,14 +214,7 @@ public class MainController {
                     String signedContent = certificateManager.getCertificate().sign(signatureUnit);
                     Platform.runLater(() -> onSigned.accept(signedContent));
                 } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        Main.displayAlert(
-                            AlertType.ERROR,
-                            getProperty("exc.notSigned.title"),
-                            getProperty("exc.notSigned.header"),
-                            getProperty("exc.notSigned.description", e)
-                        );
-                    });
+                    Platform.runLater(() -> displayError("notSigned", e));
                 } finally {
                     Platform.runLater(() -> {
                         mainButton.setText(previousButtonText);
