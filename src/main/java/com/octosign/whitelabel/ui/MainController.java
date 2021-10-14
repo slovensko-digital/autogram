@@ -163,12 +163,6 @@ public class MainController {
         }
 
         if (isPDF) {
-//            // TODO keep - ???
-//            webView.setManaged(false);
-//            textArea.setManaged(true);
-//            textArea.setVisible(true);
-//            textArea.setText(document.getContent());
-
             webView.setManaged(true);
             textArea.setManaged(false);
             textArea.setVisible(false);
@@ -177,19 +171,13 @@ public class MainController {
                 var engine = webView.getEngine();
                 engine.setJavaScriptEnabled(true);
 
-                // TODO - ???
-                //engine.setUserStyleSheetLocation(Main.class.getResource("pdfjs/web/viewer.css").toExternalForm());
-                engine.setUserStyleSheetLocation(Main.class.getResource("pdf.viewer.css").toExternalForm());
-
                 engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
                     if (newState == Worker.State.SUCCEEDED) {
-                        engine.executeScript("openFileFromBase64('" + document.getContent() + "')");
+                        engine.executeScript("displayPdf('" + document.getContent() + "')");
                     }
                 });
 
-                // TODO - ???
-                //engine.load(Main.class.getResource("pdfjs/web/viewer.html").toExternalForm());
-                engine.load(Main.class.getResource("pdf.viewer.html").toExternalForm());
+                engine.load(Main.class.getResource("pdf.html").toExternalForm());
             });
         }
 

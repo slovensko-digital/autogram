@@ -16,6 +16,7 @@
         <java.version>17</java.version>
         <dss.version>5.9</dss.version>
         <gson.version>2.8.8</gson.version>
+        <pdfjs.version>2.10.377</pdfjs.version>
         <main.class>com.octosign.whitelabel.ui.Main</main.class>
     </properties>
 
@@ -124,6 +125,38 @@
                             <!-- exclude e.g. junit as we need runtime dependencies only -->
                             <includeScope>runtime</includeScope>
                             <outputDirectory>${project.build.directory}/dependency-jars/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <version>2.0.2</version>
+                <executions>
+                    <execution>
+                        <id>download-pdfjs-main</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.min.js</url>
+                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs</toDir>
+                            <skipIfExists>true</skipIfExists>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-pdfjs-worker</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js</url>
+                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs</toDir>
+                            <skipIfExists>true</skipIfExists>
                         </configuration>
                     </execution>
                 </executions>

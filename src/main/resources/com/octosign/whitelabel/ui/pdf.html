@@ -1,0 +1,85 @@
+<!-- Doesn't allow loading any external or inline scripts, styles, etc. -->
+<meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'none'; script-src 'self' 'sha256-UeQoPVlCFc7FrwUk14FnWxcDXFxPXL5b2kBwESRQ3wM=' 'sha256-7gyngiqBAH6gNYBJPCOnLQGHK3qEEQfPPu1rqrRRfOQ=' 'sha256-2YlqcnIZORBvmDkvcqYjWkMPUxb0gze2OwQrfZz5vX4='; style-src 'sha256-5yOa8ntqRFw4901BkVfeQcHq+Bqzz+1D5iwSWu4GtlE='"
+>
+<!-- The only exception are the following scripts allowed using hash -->
+<!-- You can update the first two hashes for pdf.js files using the CDN and the exception for the inline script should mention the new hash -->
+<!-- If you don't want to be bothered during the dev, just comment it out  -->
+<script src="./vendor/pdfjs/pdf.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        width: 100%;
+    }
+
+    #container {
+        width: 100%;
+
+        display: flex;
+        flex-direction: column;
+    }
+
+    #container > * {
+        margin: 16px;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    }
+</style>
+
+<body>
+    <!-- Contains a <canvas> for each page -->
+    <div id="container"></div>
+
+    <script>
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.js';
+
+        let currentResizeListener;
+        window.displayPdf = async function (data) {
+            const pdf = await pdfjsLib.getDocument({ data: atob(data) }).promise;
+            renderPdf(pdf);
+
+            if (currentResizeListener) {
+                window.removeEventListener('resize', currentResizeListener);
+            }
+            currentResizeListener = debounce(() => renderPdf(pdf), 500);
+            window.addEventListener('resize', currentResizeListener);
+        };
+
+        const renderPdf = async function (pdf) {
+            const container = document.querySelector('#container');
+            container.innerHTML = '';
+
+            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                const page = await pdf.getPage(pageNumber)
+
+                const viewport = page.getViewport({
+                    scale: (document.body.clientWidth - 32) / page.getViewport({ scale: 1 }).width
+                });
+
+                // Prepare canvas using PDF page dimensions
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                });
+
+                container.appendChild(canvas);
+            }
+        }
+
+        function debounce(callback, time) {
+            let timer;
+            return () => {
+              if (timer) clearTimeout(timer);
+
+              timer = setTimeout(callback, time, event);
+            };
+        }
+    </script>
+</body>
