@@ -182,8 +182,8 @@ public class Main extends Application {
 
     private void exit() {
         systemTray.shutdown();
+        server.stop();
         Platform.exit();
-        System.exit(0);
     }
 
     /**
