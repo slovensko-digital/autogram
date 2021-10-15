@@ -89,30 +89,24 @@ Button:hover {
     -fx-pref-width: 1em;
     -fx-padding: 4;
 }
-.scroll-bar:horizontal .track,
-.scroll-bar:vertical .track {
+.track {
     -fx-background-color: rgba(0, 0, 0, 0.1);
     -fx-border-color: transparent;
     -fx-background-radius: 2em;
 }
-.scroll-bar:horizontal .thumb,
-.scroll-bar:vertical .thumb {
+.thumb {
     -fx-background-color: rgba(0, 0, 0, 0.5);
     -fx-background-insets: 0 0 0 0;
     -fx-background-radius: 2em;
 }
-.scroll-bar:horizontal .thumb:hover,
-.scroll-bar:vertical .thumb:hover {
+.thumb:hover {
     -fx-background-color: rgba(0, 0, 0, 0.7);
 }
-.scroll-bar:horizontal .thumb:pressed,
-.scroll-bar:vertical .thumb:pressed {
-    -fx-background-color: rgba(0, 0, 0, 1);
+.thumb:pressed {
+    -fx-background-color: -primary-color;
 }
-.scroll-bar:vertical .increment-button,
-.scroll-bar:vertical .decrement-button,
-.scroll-bar:horizontal .increment-button,
-.scroll-bar:horizontal .decrement-button  {
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
     -fx-background-color: transparent;
     -fx-background-radius: 2em;
     -fx-padding: 5;
@@ -138,4 +132,3 @@ Button:hover {
 .scroll-bar:horizontal:focused {
     -fx-background-color: transparent, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5);
 }
-
