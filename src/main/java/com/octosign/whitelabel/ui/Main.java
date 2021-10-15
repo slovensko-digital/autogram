@@ -89,8 +89,8 @@ public class Main extends Application {
         systemTray = SystemTray.get();
         if (systemTray != null) {
             systemTray.setImage(iconURL);
-            systemTray.setStatus("Octosign (server mode)");
-            systemTray.getMenu().add(new MenuItem("Quit", e-> Platform.runLater(this::exit)));
+            systemTray.setStatus(getProperty("application.name"));
+            systemTray.getMenu().add(new MenuItem(getProperty("text.tray.quit"), e-> Platform.runLater(this::exit)));
         }
     }
 
