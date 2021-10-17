@@ -15,7 +15,11 @@ public class Request<T> {
 
     private final HttpExchange exchange;
 
-    private final Map<MimeType, BodyFormat> bodyFormats;
+    private final Map<MimeType, BodyFormat> bodyFormats = Map.of(
+        MimeType.JSON, JSON,
+        MimeType.PLAIN, JSON, // Plain is considered JSON so clients can prevent CORS preflight
+        MimeType.ANY, JSON // Implicit default format
+    );
 
     private final BodyFormat bodyFormat;
 
@@ -24,12 +28,6 @@ public class Request<T> {
     public Request(HttpExchange exchange) {
         this.exchange = exchange;
 
-        bodyFormats = Map.of(
-            MimeType.JSON, JSON,
-            MimeType.PLAIN, JSON, // Plain is considered JSON so clients can prevent CORS preflight
-            MimeType.ANY, JSON // Implicit default format
-        );
-
         var contentType = exchange.getRequestHeaders().get("Content-Type");
         if (contentType != null) {
             var contentMimeType = MimeType.parse(contentType.get(0));
@@ -37,7 +35,7 @@ public class Request<T> {
                 .filter(m -> m.equalsTypeSubtype(contentMimeType))
                 .findFirst()
                 .map(m -> bodyFormats.get(m))
-                .get();
+                .orElse(bodyFormats.get(MimeType.ANY));
         } else {
             bodyFormat = null;
         }

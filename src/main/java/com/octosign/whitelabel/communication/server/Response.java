@@ -19,7 +19,10 @@ public class Response<U> {
 
     private final HttpExchange exchange;
 
-    private final Map<MimeType, BodyFormat> bodyFormats;
+    private final Map<MimeType, BodyFormat> bodyFormats = Map.of(
+        MimeType.JSON_UTF8, JSON,
+        MimeType.ANY, JSON // Default format
+    );
 
     private final BodyFormat bodyFormat;
 
@@ -29,11 +32,6 @@ public class Response<U> {
 
     public Response(HttpExchange exchange) {
         this.exchange = exchange;
-
-        bodyFormats = Map.of(
-            MimeType.JSON_UTF8, JSON,
-            MimeType.ANY, JSON // Default format
-        );
 
         var accept = exchange.getRequestHeaders().get("Accept");
 
@@ -48,7 +46,7 @@ public class Response<U> {
                 .filter(m -> m.equalsTypeSubtype(contentMimeType))
                 .findFirst()
                 .map(m -> bodyFormats.get(m))
-                .get();
+                .orElse(bodyFormats.get(MimeType.ANY));
         } else {
             bodyFormat = bodyFormats.get(MimeType.ANY);
         }

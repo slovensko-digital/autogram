@@ -12,28 +12,21 @@ import java.util.stream.Collectors;
  *
  * Inspired by Spring Framework's https://docs.spring.io/spring-framework/docs/3.0.x/javadoc-api/org/springframework/http/MediaType.html
  */
-public class MimeType {
+public record MimeType(String type, String subType, Map<String, String> parameters) {
     public final static MimeType ANY = new MimeType("*", "*");
     public final static MimeType JSON = new MimeType("application", "json");
-    public final static MimeType JSON_UTF8 = new MimeType("application", "json", Map.of("charset", "UTF-*"));
+    public final static MimeType JSON_UTF8 = new MimeType("application", "json", Map.of("charset", "UTF-8"));
     public final static MimeType HTML = new MimeType("text", "html");
     public final static MimeType PLAIN = new MimeType("text", "plain");
     public final static MimeType PDF = new MimeType("application", "pdf");
     public final static MimeType YAML = new MimeType("text", "yaml");
     public final static MimeType XML = new MimeType("application", "xml");
 
-    private String type;
-
-    private String subType;
-
-    private Map<String, String> parameters = new HashMap<>();
-
-    private MimeType(String type, String subType) {
-        this.type = type;
-        this.subType = subType;
+    public MimeType(String type, String subType) {
+        this(type, subType, new HashMap<>());
     }
 
-    private MimeType(String type, String subType, Map<String, String> parameters) {
+    public MimeType(String type, String subType, Map<String, String> parameters) {
         this.type = type;
         this.subType = subType;
         this.parameters = parameters;
@@ -62,29 +55,20 @@ public class MimeType {
         return new MimeType(types[0], types[1], parameters);
     }
 
-    public String getType() { return type; }
-    public String getSubType() { return subType; }
-    public Map<String, String> getParameters() { return parameters; }
-    public boolean isBase64() { return parameters.containsKey("base64"); }
+    public boolean isBase64() {
+        return parameters.containsKey("base64");
+    }
 
     public boolean equalsTypeSubtype(MimeType other) {
         if (this == other) {
             return true;
         }
 
-        if (
-            !this.type.equalsIgnoreCase(other.type) &&
-            !type.equals("*") &&
-            !other.type.equals("*")
-        ) {
+        if (!this.type.equalsIgnoreCase(other.type)) {
             return false;
         }
 
-        if (
-            !this.subType.equalsIgnoreCase(other.subType) &&
-            !subType.equals("*") &&
-            !other.subType.equals("*")
-        ) {
+        if (!this.subType.equalsIgnoreCase(other.subType)) {
             return false;
         }
 
