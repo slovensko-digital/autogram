@@ -4,7 +4,6 @@ package com.octosign.whitelabel.communication;
  * Immutable parameters for signature creation
  */
 public class SignatureParameters {
-
     public enum Format {
         XADES,
         PADES
@@ -66,13 +65,15 @@ public class SignatureParameters {
 
     private String transformation;
 
+    private String transformationOutputMimeType;
+
     private String schema;
 
     private String identifier;
 
     private String version;
 
-    public SignatureParameters(Format format, Level level, String fileMimeType, Container container, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String schema, String identifier, String version) {
+    public SignatureParameters(Format format, Level level, String fileMimeType, Container container, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String transformationOutputMimeType, String schema, String identifier, String version) {
         this.format = format;
         this.level = level;
         this.fileMimeType = fileMimeType;
@@ -86,6 +87,7 @@ public class SignatureParameters {
         this.signaturePolicyId = signaturePolicyId;
         this.signaturePolicyContent = signaturePolicyContent;
         this.transformation = transformation;
+        this.transformationOutputMimeType = transformationOutputMimeType;
         this.schema = schema;
         this.identifier = identifier;
         this.version = version;
@@ -141,6 +143,10 @@ public class SignatureParameters {
 
     public String getTransformation() {
         return transformation;
+    }
+
+    public String getTransformationOutputMimeType() {
+        return transformationOutputMimeType;
     }
 
     public String getSchema() {
