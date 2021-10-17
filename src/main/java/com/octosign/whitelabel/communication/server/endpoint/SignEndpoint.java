@@ -86,21 +86,20 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         var parameters = signRequest.getParameters();
         var mimeType = MimeType.parse(signRequest.getPayloadMimeType());
 
-        return switch (mimeType.getType()) {
-            case XMLDocument.MIME_TYPE -> {
-                var schema = parameters.getSchema();
-                var transformation = parameters.getTransformation();
+        if (mimeType.equalsTypeSubtype(MimeType.XML)) {
+            var schema = parameters.getSchema();
+            var transformation = parameters.getTransformation();
 
-                if (mimeType.isBase64()) {
-                    document.setContent(decode(document.getContent()));
-                    schema = decode(schema);
-                    transformation = decode(transformation);
-                }
-
-                yield new XMLDocument(document, schema, transformation);
+            if (mimeType.isBase64()) {
+                document.setContent(decode(document.getContent()));
+                schema = decode(schema);
+                transformation = decode(transformation);
             }
-            default -> throw new IllegalArgumentException("Unsupported MIME type");
-        };
+
+            return new XMLDocument(document, schema, transformation);
+        } else {
+            throw new IllegalArgumentException("Unsupported MIME type");
+        }
     }
 
     private String decode(String input) {

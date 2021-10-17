@@ -8,6 +8,7 @@ public class CommunicationError {
         UNSUPPORTED_FORMAT,
         SIGNING_FAILED,
         UNEXPECTED_ORIGIN,
+        MALFORMED_MIMETYPE,
         UNEXPECTED_ERROR
     }
 
