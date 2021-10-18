@@ -2,7 +2,6 @@ package com.octosign.whitelabel.ui;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -15,9 +14,6 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 
-import dorkbox.os.OSUtil;
-import dorkbox.systemTray.MenuItem;
-import dorkbox.systemTray.SystemTray;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -32,9 +28,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-    private static final URL iconURL = Main.class.getResource("icon.png");
-    private SystemTray systemTray;
-
+    
     public enum Status {
         LOADING,
         READY
@@ -44,6 +38,8 @@ public class Main extends Application {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
 
     private final CertificateManager certificateManager = new CertificateManager();
+
+    private StatusIndication statusIndication;
 
     private Server server;
 
@@ -66,8 +62,9 @@ public class Main extends Application {
         }
 
         if (cliCommand instanceof ListenCommand) {
-            addAppToTrayIfSupported();
             startServer((ListenCommand) cliCommand);
+
+            statusIndication = new StatusIndication(() -> this.exit());
 
             // Prevent exiting in server mode on last window close
             Platform.setImplicitExit(false);
@@ -84,25 +81,6 @@ public class Main extends Application {
             "Application is installed",
             "Start signing from the web."
         );
-    }
-
-    private void addAppToTrayIfSupported() {
-        if (!isSystemTrayEnabled()) return;
-
-        systemTray = SystemTray.get();
-        if (systemTray != null) {
-            systemTray.setImage(iconURL);
-            systemTray.setStatus(getProperty("application.name"));
-            systemTray.getMenu().add(new MenuItem(getProperty("text.tray.quit"), e-> Platform.runLater(this::exit)));
-        }
-    }
-
-    private boolean isSystemTrayEnabled() {
-        String os = System.getProperty("os.name");
-        if (os.startsWith("Mac")) return false;
-        if (os.startsWith("Linux") && OSUtil.Linux.isUbuntu()) return true;
-        if (os.startsWith("Windows")) return true;
-        return false;
     }
 
     private void startServer(ListenCommand command) {
@@ -161,21 +139,17 @@ public class Main extends Application {
         server.setInfo(new Info(version, Status.READY));
     }
 
+    private void exit() {
+        if (statusIndication != null) statusIndication.dispose();
+        if (server != null) server.stop();
+        Platform.exit();
+    }
+
     private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) {
         var windowStage = new Stage();
 
-        var fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"), bundle);
-        VBox root;
-        try {
-            root = fxmlLoader.load();
-        } catch (Exception e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotOpenWindow"),
-                e
-            );
-            return;
-        }
+        var fxmlLoader = loadWindow("main");
+        VBox root = fxmlLoader.getRoot();
 
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
@@ -191,10 +165,20 @@ public class Main extends Application {
         windowStage.show();
     }
 
-    private void exit() {
-        if (systemTray != null) systemTray.shutdown();
-        server.stop();
-        Platform.exit();
+    public static FXMLLoader loadWindow(String name) {
+        var fxmlLoader = new FXMLLoader(Main.class.getResource(name + ".fxml"), bundle);
+        try {
+            fxmlLoader.load();
+        } catch (Exception e) {
+            displayError(
+                getProperty("text.error.openingFailed"),
+                getProperty("text.error.cannotOpenWindow"),
+                e
+            );
+            return null;
+        }
+
+        return fxmlLoader;
     }
 
     /**
