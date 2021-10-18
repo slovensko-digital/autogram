@@ -154,38 +154,4 @@ public class SignatureParameters {
     public String getVersion() {
         return version;
     }
-
-    public static class Builder {
-        private Format format;
-
-        private Level level;
-
-        private String fileMimeType;
-
-        private Container container;
-
-        private Packaging packaging;
-
-        private DigestAlgorithm digestAlgorithm;
-
-        private boolean en319132;
-
-        private CanonicalizationMethod infoCanonicalization;
-
-        private CanonicalizationMethod propertiesCanonicalization;
-
-        private CanonicalizationMethod keyInfoCanonicalization;
-
-        private String signaturePolicyId;
-
-        private String signaturePolicyContent;
-
-        private String transformation;
-
-        private String schema;
-
-        private String identifier;
-
-        private String version;
-    }
 }
