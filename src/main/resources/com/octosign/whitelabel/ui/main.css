@@ -5,6 +5,8 @@
 #textArea {
     -fx-background-color: #ffffff;
     -fx-text-fill: -dark-text-color;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .footer {
