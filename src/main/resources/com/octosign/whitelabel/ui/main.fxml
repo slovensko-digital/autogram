@@ -21,7 +21,7 @@
     <VBox styleClass="panel, secondary" VBox.vgrow="ALWAYS">
         <Label fx:id="documentLabel" text="%text.document" styleClass="p3" />
         <WebView fx:id="webView" VBox.vgrow="ALWAYS" />
-        <TextArea fx:id="textArea" editable="false" VBox.vgrow="ALWAYS" styleClass="content" wrapText="true" focusTraversable="false" />
+        <TextArea fx:id="textArea" editable="false" VBox.vgrow="ALWAYS" styleClass="content" wrapText="true" />
     </VBox>
 
     <HBox styleClass="footer" alignment="CENTER" spacing="8">
