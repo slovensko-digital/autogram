@@ -15,6 +15,7 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 
+import dorkbox.os.OSUtil;
 import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.SystemTray;
 import javafx.application.Application;
@@ -65,7 +66,7 @@ public class Main extends Application {
         }
 
         if (cliCommand instanceof ListenCommand) {
-            addAppToTray();
+            addAppToTrayIfSupported();
             startServer((ListenCommand) cliCommand);
 
             // Prevent exiting in server mode on last window close
@@ -85,13 +86,23 @@ public class Main extends Application {
         );
     }
 
-    private void addAppToTray() {
+    private void addAppToTrayIfSupported() {
+        if (!isSystemTrayEnabled()) return;
+
         systemTray = SystemTray.get();
         if (systemTray != null) {
             systemTray.setImage(iconURL);
             systemTray.setStatus(getProperty("application.name"));
             systemTray.getMenu().add(new MenuItem(getProperty("text.tray.quit"), e-> Platform.runLater(this::exit)));
         }
+    }
+
+    private boolean isSystemTrayEnabled() {
+        String os = System.getProperty("os.name");
+        if (os.startsWith("Mac")) return false;
+        if (os.startsWith("Linux") && OSUtil.Linux.isUbuntu()) return true;
+        if (os.startsWith("Windows")) return true;
+        return false;
     }
 
     private void startServer(ListenCommand command) {
@@ -169,7 +180,7 @@ public class Main extends Application {
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setSignatureUnit(signatureUnit);
-        controller.setOnSigned((String signedContent) -> { 
+        controller.setOnSigned((String signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });
@@ -181,7 +192,7 @@ public class Main extends Application {
     }
 
     private void exit() {
-        systemTray.shutdown();
+        if (systemTray != null) systemTray.shutdown();
         server.stop();
         Platform.exit();
     }

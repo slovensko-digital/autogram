@@ -76,6 +76,11 @@
             <artifactId>SystemTray</artifactId>
             <version>${systemtray.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.dorkbox</groupId>
+            <artifactId>Utilities</artifactId>
+            <version>1.9</version>
+        </dependency>
     </dependencies>
 
     <build>
