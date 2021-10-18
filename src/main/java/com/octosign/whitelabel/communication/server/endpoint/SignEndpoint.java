@@ -94,7 +94,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
      * @param signRequest
      * @return Specific document like XMLDocument type-widened to Document
      */
-    private static Document getSpecificDocument(SignRequest signRequest) {
+    private Document getSpecificDocument(SignRequest signRequest) {
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
         var mimeType = MimeType.parse(signRequest.getPayloadMimeType());
@@ -106,7 +106,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         };
     }
 
-    private static XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) {
+    private XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) {
         var schema = parameters.getSchema();
         var transformation = parameters.getTransformation();
 
@@ -119,14 +119,14 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         return new XMLDocument(document, schema, transformation);
     }
 
-    private static String decode(String input) {
+    private String decode(String input) {
         if (input == null || input.isBlank()) return null;
 
         var decoder = Base64.getDecoder();
         return new String(decoder.decode(input));
     }
 
-    private static SignatureParameters resolveParameters(SignRequest signRequest) {
+    private SignatureParameters resolveParameters(SignRequest signRequest) {
         return signRequest.getParameters();
     }
 }

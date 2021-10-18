@@ -94,7 +94,7 @@ public class MainController {
 
         boolean isXML = document instanceof XMLDocument;
         boolean isPDF = document instanceof PDFDocument;
-        final boolean hasSchema = false; //isXML && ((XMLDocument) document).getSchema() != null;
+        final boolean hasSchema = isXML && ((XMLDocument) document).getSchema() != null;
         final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
@@ -119,10 +119,10 @@ public class MainController {
             textArea.setVisible(false);
 
             CompletableFuture.runAsync(() -> {
-                String visualization;
+                String visualisation;
                 try {
                     var xmlDocument = (XMLDocument) document;
-                    visualization = "<pre>" + xmlDocument.getTransformed() + "</pre>";
+                    visualisation = xmlDocument.getTransformed();
                 } catch (Exception e) {
                     Platform.runLater(() -> {
                         Main.displayAlert(
@@ -140,7 +140,7 @@ public class MainController {
                     webEngine.getLoadWorker().stateProperty().addListener(
                         (observable, oldState, newState) -> {
                             if (newState == Worker.State.SUCCEEDED) {
-                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualization);
+                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
                             }
                         }
                     );
