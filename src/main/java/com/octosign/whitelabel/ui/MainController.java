@@ -1,24 +1,30 @@
 package com.octosign.whitelabel.ui;
 
-import javafx.application.Platform;
-import javafx.concurrent.Worker;
-
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 
+import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.web.WebView;
+import javafx.concurrent.Worker;
 
 /**
  * Controller for the signing window
@@ -73,6 +79,7 @@ public class MainController {
     public void setSignatureUnit(SignatureUnit signatureUnit) {
         this.signatureUnit = signatureUnit;
         var document = signatureUnit.getDocument();
+        var parameters = signatureUnit.getSignatureParameters();
 
         if (document.getTitle() != null && !document.getTitle().isBlank()) {
             documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
@@ -92,10 +99,11 @@ public class MainController {
             mainButton.setText(String.format(Main.getProperty("text.sign"), name));
         }
 
-        boolean isXML = document instanceof XMLDocument;
+        //TODO consider simplifying this part to avoid tedious casting
+        boolean isXml = document instanceof XMLDocument;
         boolean isPDF = document instanceof PDFDocument;
-        final boolean hasSchema = isXML && ((XMLDocument) document).getSchema() != null;
-        final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
+        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
+        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
             try {
@@ -114,42 +122,48 @@ public class MainController {
         }
 
         if (hasTransformation) {
-            webView.setManaged(true);
-            textArea.setManaged(false);
-            textArea.setVisible(false);
-
-            CompletableFuture.runAsync(() -> {
-                String visualisation;
-                try {
-                    var xmlDocument = (XMLDocument) document;
-                    visualisation = xmlDocument.getTransformed();
-                } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        Main.displayAlert(
-                            AlertType.ERROR,
-                            "Chyba zobrazenia",
-                            "Získanie zobraziteľnej podoby zlyhalo",
-                            "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
-                        );
-                    });
-                    return;
-                }
-
+            String visualisation;
+            try {
+                var xmlDocument = (XMLDocument) document;
+                visualisation = xmlDocument.getTransformed();
+            } catch (Exception e) {
                 Platform.runLater(() -> {
-                    var webEngine = webView.getEngine();
-                    webEngine.getLoadWorker().stateProperty().addListener(
-                        (observable, oldState, newState) -> {
-                            if (newState == Worker.State.SUCCEEDED) {
-                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
-                            }
-                        }
+                    Main.displayAlert(
+                        AlertType.ERROR,
+                        "Chyba zobrazenia",
+                        "Získanie zobraziteľnej podoby zlyhalo",
+                        "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
                     );
-                    webEngine.load(Main.class.getResource("visualization.html").toExternalForm());
                 });
-            });
-        }
+                return;
+            }
 
-        if (isPDF) {
+            var transformationOutputType = parameters.getTransformationOutputMimeType() == null
+                ? MimeType.HTML
+                : MimeType.parse(parameters.getTransformationOutputMimeType());
+
+            if (transformationOutputType.equalsTypeSubtype(MimeType.HTML)) {
+                textArea.setManaged(false);
+
+                var webEngine = webView.getEngine();
+                webEngine.getLoadWorker().stateProperty().addListener(
+                    (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
+                        if (newState == Worker.State.SUCCEEDED) {
+                            webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
+                        }
+                    }
+                );
+                webEngine.loadContent(getResourceAsString("visualization.html"));
+            } else {
+                webView.setManaged(false);
+
+                textArea.setText(visualisation);
+            }
+        } else {
+            webView.setManaged(false);
+
+            textArea.setText(document.getContent());
+        } else if(isPDF) {
             webView.setManaged(true);
             textArea.setManaged(false);
             textArea.setVisible(false);
@@ -167,10 +181,9 @@ public class MainController {
 
                 engine.load(Main.class.getResource("pdf.html").toExternalForm());
             });
+        } else {
+            throw new RuntimeException("Unsupported document format");
         }
-
-        if (!isXML && !isPDF) throw new RuntimeException("Unsupported document format");
-
     }
 
     public void setOnSigned(Consumer<String> onSigned) {
@@ -236,5 +249,22 @@ public class MainController {
     @FXML
     private void onCertSettingsButtonAction() {
         certificateManager.useDialogPicker();
+    }
+
+    /**
+     * Get resource from the ui resources as string using name
+     */
+    private static String getResourceAsString(String resourceName) {
+        try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
+            if (inputStream == null) throw new Exception("Resource not found");
+            try (
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                BufferedReader reader = new BufferedReader(inputStreamReader);
+            ) {
+                return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load resource " + resourceName, e);
+        }
     }
 }

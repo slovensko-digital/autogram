@@ -19,7 +19,6 @@
  * Panel
  */
 .panel {
-    -fx-background-radius: 4;
     -fx-font-size: 1.25em;
 }
 .panel.secondary {

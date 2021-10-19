@@ -3,6 +3,7 @@ package com.octosign.whitelabel.communication.server.endpoint;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import com.octosign.whitelabel.communication.CommunicationError;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
@@ -43,7 +44,9 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
         if (requestClass != null) {
             // If request class is not null, the body must contain correct object
             if (request.getBodyFormat() == null) {
-                var supportedTypes = String.join(", ", request.getSupportedBodyFormats());
+                var supportedTypes = request.getSupportedBodyFormats().stream()
+                    .map(m -> m.toString())
+                    .collect(Collectors.joining(", "));
                 var message = "Unsupported request body MIME type. Supported: " + supportedTypes;
                 var error = new CommunicationError(Code.UNSUPPORTED_FORMAT, message);
                 new Response<CommunicationError>(exchange)
