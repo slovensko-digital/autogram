@@ -3,8 +3,10 @@ package com.octosign.whitelabel.communication.server;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -17,7 +19,10 @@ public class Response<U> {
 
     private final HttpExchange exchange;
 
-    private final Map<String, BodyFormat> bodyFormats;
+    private final Map<MimeType, BodyFormat> bodyFormats = Map.of(
+        MimeType.JSON_UTF8, JSON,
+        MimeType.ANY, JSON // Default format
+    );
 
     private final BodyFormat bodyFormat;
 
@@ -28,19 +33,23 @@ public class Response<U> {
     public Response(HttpExchange exchange) {
         this.exchange = exchange;
 
-        bodyFormats = Map.of(
-            JSON.getMimeType(), JSON,
-            "*/*", JSON // Default format
-        );
+        var accept = exchange.getRequestHeaders().get("Accept");
 
-        var contentType = exchange.getRequestHeaders().get("Accept");
-        bodyFormat = contentType.stream()
-            .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-            .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
-            .findFirst()
-            .map((mimeType) -> bodyFormats.get(mimeType))
-            // We would rather return something in unaccepted type than nothing
-            .orElseGet(() -> bodyFormats.get("*/*"));
+        if (accept != null) {
+            // TODO: Consider all mime types
+            var contentMimeType = Arrays.asList(accept.get(0).split(",")).stream()
+                .map(raw -> MimeType.parse(raw))
+                .findFirst()
+                .get();
+
+            bodyFormat = bodyFormats.keySet().stream()
+                .filter(m -> m.equalsTypeSubtype(contentMimeType))
+                .findFirst()
+                .map(m -> bodyFormats.get(m))
+                .orElse(bodyFormats.get(MimeType.ANY));
+        } else {
+            bodyFormat = bodyFormats.get(MimeType.ANY);
+        }
     }
 
     public int getStatusCode() {
@@ -73,7 +82,7 @@ public class Response<U> {
         // TODO: Check Accept header instead of hardcoding UTF-8
         var bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 
-        headers.set("Content-Type", "application/json; charset=UTF-8");
+        headers.set("Content-Type", bodyFormat.getMimeType().toString());
         exchange.sendResponseHeaders(statusCode, bodyBytes.length);
 
         // automatically closes stream

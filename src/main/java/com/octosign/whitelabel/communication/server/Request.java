@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -14,7 +15,11 @@ public class Request<T> {
 
     private final HttpExchange exchange;
 
-    private final Map<String, BodyFormat> bodyFormats;
+    private final Map<MimeType, BodyFormat> bodyFormats = Map.of(
+        MimeType.JSON, JSON,
+        MimeType.PLAIN, JSON, // Plain is considered JSON so clients can prevent CORS preflight
+        MimeType.ANY, JSON // Implicit default format
+    );
 
     private final BodyFormat bodyFormat;
 
@@ -23,20 +28,14 @@ public class Request<T> {
     public Request(HttpExchange exchange) {
         this.exchange = exchange;
 
-        bodyFormats = Map.of(
-            JSON.getMimeType(), JSON,
-            "text/plain", JSON, // Considered JSON so clients can prevent CORS preflight
-            "*/*", JSON // Implicit default format
-        );
-
         var contentType = exchange.getRequestHeaders().get("Content-Type");
         if (contentType != null) {
-            bodyFormat = contentType.stream()
-                .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-                .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
+            var contentMimeType = MimeType.parse(contentType.get(0));
+            bodyFormat = bodyFormats.keySet().stream()
+                .filter(m -> m.equalsTypeSubtype(contentMimeType))
                 .findFirst()
-                .map((mimeType) -> bodyFormats.get(mimeType))
-                .orElseGet(() -> contentType.isEmpty() ? bodyFormats.get("*/*") : null);
+                .map(m -> bodyFormats.get(m))
+                .orElse(bodyFormats.get(MimeType.ANY));
         } else {
             bodyFormat = null;
         }
@@ -53,7 +52,7 @@ public class Request<T> {
     /**
      * List of supported body MIME types
      */
-    public List<String> getSupportedBodyFormats() {
+    public List<MimeType> getSupportedBodyFormats() {
         return new ArrayList<>(bodyFormats.keySet());
     }
 
