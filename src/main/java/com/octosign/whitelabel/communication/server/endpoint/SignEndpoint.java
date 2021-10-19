@@ -1,23 +1,22 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.Base64;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-
 import com.octosign.whitelabel.communication.CommunicationError;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.SignRequest;
+import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import eu.europa.esig.dss.model.MimeType;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.Base64;
+import java.util.concurrent.Future;
+import java.util.function.Function;
 
 public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
