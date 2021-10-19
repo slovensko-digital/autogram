@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
@@ -77,6 +78,7 @@ public class MainController {
     public void setSignatureUnit(SignatureUnit signatureUnit) {
         this.signatureUnit = signatureUnit;
         var document = signatureUnit.getDocument();
+        var parameters = signatureUnit.getSignatureParameters();
 
         if (document.getTitle() != null && !document.getTitle().isEmpty()) {
             documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
@@ -118,37 +120,43 @@ public class MainController {
         }
 
         if (hasTransformation) {
-            textArea.setManaged(false);
-
-            CompletableFuture.runAsync(() -> {
-                String visualisation;
-                try {
-                    var xmlDocument = (XMLDocument) document;
-                    visualisation = xmlDocument.getTransformed();
-                } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        Main.displayAlert(
-                            AlertType.ERROR,
-                            "Chyba zobrazenia",
-                            "Získanie zobraziteľnej podoby zlyhalo",
-                            "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
-                        );
-                    });
-                    return;
-                }
-
+            String visualisation;
+            try {
+                var xmlDocument = (XMLDocument) document;
+                visualisation = xmlDocument.getTransformed();
+            } catch (Exception e) {
                 Platform.runLater(() -> {
-                    var webEngine = webView.getEngine();
-                    webEngine.getLoadWorker().stateProperty().addListener(
-                        (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
-                            if (newState == Worker.State.SUCCEEDED) {
-                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
-                            }
-                        }
+                    Main.displayAlert(
+                        AlertType.ERROR,
+                        "Chyba zobrazenia",
+                        "Získanie zobraziteľnej podoby zlyhalo",
+                        "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
                     );
-                    webEngine.loadContent(getResourceAsString("visualization.html"));
                 });
-            });
+                return;
+            }
+
+            var transformationOutputType = parameters.getTransformationOutputMimeType() == null
+                ? MimeType.HTML
+                : MimeType.parse(parameters.getTransformationOutputMimeType());
+
+            if (transformationOutputType.equalsTypeSubtype(MimeType.HTML)) {
+                textArea.setManaged(false);
+
+                var webEngine = webView.getEngine();
+                webEngine.getLoadWorker().stateProperty().addListener(
+                    (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
+                        if (newState == Worker.State.SUCCEEDED) {
+                            webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
+                        }
+                    }
+                );
+                webEngine.loadContent(getResourceAsString("visualization.html"));
+            } else {
+                webView.setManaged(false);
+
+                textArea.setText(visualisation);
+            }
         } else {
             webView.setManaged(false);
 
