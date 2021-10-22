@@ -128,7 +128,6 @@ public abstract class SigningCertificate {
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
     public String sign(SignatureUnit unit) throws IOException {
-        var filename = unit.getDocument().getFilename();
         var content = unit.getDocument().getContent();
         var parameters = unit.getSignatureParameters();
 
@@ -141,7 +140,7 @@ public abstract class SigningCertificate {
         }
 
         var document = new InMemoryDocument(binaryContent);
-        document.setName(filename);
+        document.setName(parameters.getFilename());
 
         var output = new ByteArrayOutputStream();
         var signedDocument = sign(document, parameters);
@@ -163,7 +162,6 @@ public abstract class SigningCertificate {
                 parameters.setCertificateChain(privateKey.getCertificateChain());
 
                 var service = new ASiCWithXAdESService(commonCertificateVerifier);
-
                 var dataToSign = service.getDataToSign(document, parameters);
                 var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
                 assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));

@@ -6,47 +6,29 @@ package com.octosign.whitelabel.communication.document;
 public class Document implements Cloneable {
     protected String id;
     protected String title;
-    protected String filename;
     protected String content;
     protected String legalEffect;
 
     public Document() {}
 
-    public Document(String id, String title, String filename, String content, String legalEffect) {
+    public Document(String id, String title, String content, String legalEffect) {
         this.id = id;
         this.title = title;
-        this.filename = filename;
         this.content = content;
         this.legalEffect = legalEffect;
     }
 
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public void setId(String id) { this.id = id; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getTitle() { return title; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getFilename() { return filename; }
+    public String getContent() { return content; }
 
-    public void setFilename(String filename) { this.filename = filename; }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
+    public void setContent(String content) { this.content = content; }
 
     public String getLegalEffect() { return legalEffect; }
 
@@ -54,6 +36,6 @@ public class Document implements Cloneable {
 
     @Override
     public Document clone() {
-        return new Document(id, title, filename, content, legalEffect);
+        return new Document(id, title, content, legalEffect);
     }
 }
