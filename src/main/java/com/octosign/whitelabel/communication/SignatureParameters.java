@@ -39,6 +39,8 @@ public class SignatureParameters {
         EXCLUSIVE
     }
 
+    private String filename;
+
     private Format format;
 
     private Level level;
@@ -73,7 +75,8 @@ public class SignatureParameters {
 
     private String version;
 
-    public SignatureParameters(Format format, Level level, String fileMimeType, Container container, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String transformationOutputMimeType, String schema, String identifier, String version) {
+    public SignatureParameters(String filename, Format format, Level level, String fileMimeType, Container container, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String transformationOutputMimeType, String schema, String identifier, String version) {
+        this.filename = filename;
         this.format = format;
         this.level = level;
         this.fileMimeType = fileMimeType;
@@ -93,9 +96,10 @@ public class SignatureParameters {
         this.version = version;
     }
 
-    public Format getFormat() {
-        return format;
-    }
+
+    public String getFilename() { return filename; }
+
+    public Format getFormat() { return format; }
 
     public Level getLevel() {
         return level != null ? level : Level.BASELINE_B;
@@ -153,7 +157,11 @@ public class SignatureParameters {
         return schema;
     }
 
-    public String getIdentifier() { return identifier; }
+    public String getIdentifier() {
+        return identifier;
+    }
 
-    public String getVersion() { return version; }
+    public String getVersion() {
+        return version;
+    }
 }

@@ -160,6 +160,10 @@ components:
             2. Calculate the HMAC of the URI path and query and the prepared hash using the agreed on secret key `hmac = hmac-512(/sign?template=lorem + hash, key)`.
             3. Serialize the request body again, but this time with the calculated additional `hmac` property.
             4. Increase the nonce if the request succeeded.
+      required:
+      - document
+      - parameters
+      - payloadMimeType
 
     Document:
       type: object

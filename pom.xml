@@ -18,6 +18,7 @@
         <gson.version>2.8.8</gson.version>
         <dorkbox.systemtray.version>4.1</dorkbox.systemtray.version>
         <dorkbox.utilities.version>1.9</dorkbox.utilities.version>
+        <pdfjs.version>2.10.377</pdfjs.version>
         <main.class>com.octosign.whitelabel.ui.Main</main.class>
     </properties>
 
@@ -65,13 +66,11 @@
             <artifactId>dss-utils-google-guava</artifactId>
             <version>${dss.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>${gson.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.dorkbox</groupId>
             <artifactId>SystemTray</artifactId>
@@ -131,6 +130,51 @@
                             <!-- exclude e.g. junit as we need runtime dependencies only -->
                             <includeScope>runtime</includeScope>
                             <outputDirectory>${project.build.directory}/dependency-jars/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <version>2.0.2</version>
+                <executions>
+                    <execution>
+                        <id>download-pdfjs-main</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.min.js</url>
+                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs</toDir>
+                            <skipIfExists>true</skipIfExists>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-pdfjs-worker</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>download-single</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js</url>
+                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs</toDir>
+                            <skipIfExists>true</skipIfExists>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-pdfjs-cmaps</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>download</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
+                            <fromDir>cmaps</fromDir>
+                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs/cmaps</toDir>
+                            <skipIfExists>true</skipIfExists>
                         </configuration>
                     </execution>
                 </executions>
@@ -205,6 +249,7 @@
                                 <module>javafx.base</module>
                                 <module>javafx.controls</module>
                                 <module>javafx.fxml</module>
+                                <module>javafx.graphics</module>
                                 <module>javafx.web</module>
                                 <!-- Needed for sun.misc.Unsafe used by JavaFX, shouldn't be used in our code -->
                                 <module>jdk.unsupported</module>

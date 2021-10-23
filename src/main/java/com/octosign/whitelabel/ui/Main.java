@@ -27,6 +27,15 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import com.octosign.whitelabel.cli.command.Command;
+import com.octosign.whitelabel.cli.command.CommandFactory;
+import com.octosign.whitelabel.cli.command.ListenCommand;
+import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.server.Server;
+
+import static java.util.Objects.requireNonNullElse;
+
 public class Main extends Application {
     
     public enum Status {
@@ -257,8 +266,7 @@ public class Main extends Application {
      * Application version as defined in pom if packaged or dev otherwise
      */
     public static String getVersion() {
-        String packageVersion = Main.class.getPackage().getImplementationVersion();
-        return packageVersion != null ? packageVersion : "dev";
+        return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
     }
 
 }

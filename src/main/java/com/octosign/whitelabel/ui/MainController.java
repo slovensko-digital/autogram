@@ -1,5 +1,22 @@
 package com.octosign.whitelabel.ui;
 
+import com.octosign.whitelabel.communication.MimeType;
+import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.document.PDFDocument;
+import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.ui.about.AboutDialog;
+import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.web.WebView;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -8,22 +25,6 @@ import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.document.XMLDocument;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
-import com.octosign.whitelabel.ui.about.AboutDialog;
-
-import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
-import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.web.WebView;
-import javafx.concurrent.Worker;
 
 /**
  * Controller for the signing window
@@ -80,13 +81,13 @@ public class MainController {
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
 
-        if (document.getTitle() != null && !document.getTitle().isEmpty()) {
+        if (document.getTitle() != null && !document.getTitle().isBlank()) {
             documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
         } else {
             documentLabel.setManaged(false);
         }
 
-        if (document.getLegalEffect() != null && !document.getLegalEffect().isEmpty()) {
+        if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }
@@ -100,6 +101,7 @@ public class MainController {
 
         //TODO consider simplifying this part to avoid tedious casting
         boolean isXml = document instanceof XMLDocument;
+        boolean isPDF = document instanceof PDFDocument;
         final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
         final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
 
@@ -107,14 +109,11 @@ public class MainController {
             try {
                 ((XMLDocument) document).validate();
             } catch (Exception e) {
-                Platform.runLater(() -> {
-                    Main.displayAlert(
-                        AlertType.ERROR,
+                displayAlert(
                         "Neplatný formát",
                         "XML súbor nie je validný",
                         "Dokument na podpísanie nevyhovel požiadavkám validácie podľa XSD schémy. Detail chyby: " + e
-                    );
-                });
+                );
                 return;
             }
         }
@@ -125,14 +124,11 @@ public class MainController {
                 var xmlDocument = (XMLDocument) document;
                 visualisation = xmlDocument.getTransformed();
             } catch (Exception e) {
-                Platform.runLater(() -> {
-                    Main.displayAlert(
-                        AlertType.ERROR,
+                displayAlert(
                         "Chyba zobrazenia",
                         "Získanie zobraziteľnej podoby zlyhalo",
                         "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
-                    );
-                });
+                );
                 return;
             }
 
@@ -141,27 +137,66 @@ public class MainController {
                 : MimeType.parse(parameters.getTransformationOutputMimeType());
 
             if (transformationOutputType.equalsTypeSubtype(MimeType.HTML)) {
-                textArea.setManaged(false);
-
-                var webEngine = webView.getEngine();
-                webEngine.getLoadWorker().stateProperty().addListener(
-                    (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
-                        if (newState == Worker.State.SUCCEEDED) {
-                            webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
-                        }
-                    }
-                );
-                webEngine.loadContent(getResourceAsString("visualization.html"));
+                displayHTMLVisualisation(visualisation);
             } else {
-                webView.setManaged(false);
-
-                textArea.setText(visualisation);
+                displayPlainTextVisualisation(visualisation);
             }
+        } else if(!isPDF) {
+            displayPlainTextVisualisation(document.getContent());
+        } else if(isPDF) {
+            displayPDFVisualisation(document);
         } else {
-            webView.setManaged(false);
-
-            textArea.setText(document.getContent());
+            throw new RuntimeException("Unsupported document format");
         }
+    }
+
+    private void displayPlainTextVisualisation(String visualisation) {
+        webView.setManaged(false);
+        textArea.setText(visualisation);
+    }
+
+    private void displayHTMLVisualisation(String visualisation) {
+        textArea.setManaged(false);
+
+        var webEngine = webView.getEngine();
+        webEngine.getLoadWorker().stateProperty().addListener(
+            (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
+                }
+            }
+        );
+        webEngine.loadContent(getResourceAsString("visualization.html"));
+    }
+
+    private void displayPDFVisualisation(Document document) {
+        textArea.setManaged(false);
+        textArea.setVisible(false);
+
+        Platform.runLater(() -> {
+            var engine = webView.getEngine();
+            engine.setJavaScriptEnabled(true);
+
+            engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    WebViewLogger.register(engine);
+                    engine.executeScript("displayPdf('" + document.getContent() + "')");
+                }
+            });
+
+            engine.load(Main.class.getResource("pdf.html").toExternalForm());
+        });
+    }
+
+    private void displayAlert(String title, String header, String description) {
+        Platform.runLater(() -> {
+            Main.displayAlert(
+                    AlertType.ERROR,
+                    title,
+                    header,
+                    description
+            );
+        });
     }
 
     public void setOnSigned(Consumer<String> onSigned) {
@@ -201,14 +236,11 @@ public class MainController {
                     String signedContent = certificateManager.getCertificate().sign(signatureUnit);
                     Platform.runLater(() -> onSigned.accept(signedContent));
                 } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        Main.displayAlert(
-                            AlertType.ERROR,
+                    displayAlert(
                             "Nepodpísané",
                             "Súbor nebol podpísaný",
                             "Podpísanie zlyhalo alebo bolo zrušené. Detail chyby: " + e
-                        );
-                    });
+                    );
                 } finally {
                     Platform.runLater(() -> {
                         mainButton.setText(previousButtonText);
