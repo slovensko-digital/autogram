@@ -1,7 +1,4 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -10,14 +7,9 @@
             "request": "launch",
             "mainClass": "com.octosign.whitelabel.ui.Main",
             "projectName": "whitelabel",
-            // TODO check - not required anymore?
-            //"vmArgs": "--illegal-access=warn --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED",
-                      
             // Windows requires additional argument if using MSCAPI
             // "vmArgs": "--add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED",
-            //// archived version:
-            ////"vmArgs": "--illegal-access=warn --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED",
-
+            "vmArgs": "--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED",
             "args": "--url=\"signer://listen/37200/*\""
         }
     ]

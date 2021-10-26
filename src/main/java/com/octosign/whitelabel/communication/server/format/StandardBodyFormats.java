@@ -1,10 +1,11 @@
 package com.octosign.whitelabel.communication.server.format;
 
 import com.google.gson.Gson;
+import com.octosign.whitelabel.communication.MimeType;
 
 public enum StandardBodyFormats implements BodyFormat {
     JSON {
-        static final String MIME_TYPE = "application/json";
+        static final MimeType mimeType = MimeType.JSON_UTF8;
 
         private final Gson gson = new Gson();
 
@@ -19,8 +20,8 @@ public enum StandardBodyFormats implements BodyFormat {
         }
 
         @Override
-        public String getMimeType() {
-            return MIME_TYPE;
+        public MimeType getMimeType() {
+            return mimeType;
         }
     }
 }

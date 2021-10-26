@@ -57,6 +57,10 @@ public class Server {
         server.start();
     }
 
+    public void stop() {
+        server.stop(0);
+    }
+
     public void setDevMode(boolean devMode) {
         this.devMode = devMode;
     }
