@@ -37,7 +37,7 @@ import com.octosign.whitelabel.communication.server.Server;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
-
+    
     public enum Status {
         LOADING,
         READY
@@ -47,6 +47,8 @@ public class Main extends Application {
     private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
 
     private final CertificateManager certificateManager = new CertificateManager();
+
+    private StatusIndication statusIndication;
 
     private Server server;
 
@@ -70,6 +72,8 @@ public class Main extends Application {
 
         if (cliCommand instanceof ListenCommand) {
             startServer((ListenCommand) cliCommand);
+
+            statusIndication = new StatusIndication(() -> this.exit());
 
             // Prevent exiting in server mode on last window close
             Platform.setImplicitExit(false);
@@ -144,26 +148,22 @@ public class Main extends Application {
         server.setInfo(new Info(version, Status.READY));
     }
 
+    private void exit() {
+        if (statusIndication != null) statusIndication.dispose();
+        if (server != null) server.stop();
+        Platform.exit();
+    }
+
     private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) {
         var windowStage = new Stage();
 
-        var fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"), bundle);
-        VBox root;
-        try {
-            root = fxmlLoader.load();
-        } catch (Exception e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotOpenWindow"),
-                e
-            );
-            return;
-        }
+        var fxmlLoader = loadWindow("main");
+        VBox root = fxmlLoader.getRoot();
 
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setSignatureUnit(signatureUnit);
-        controller.setOnSigned((String signedContent) -> { 
+        controller.setOnSigned((String signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });
@@ -172,6 +172,22 @@ public class Main extends Application {
         windowStage.setTitle(getProperty("application.name"));
         windowStage.setScene(scene);
         windowStage.show();
+    }
+
+    public static FXMLLoader loadWindow(String name) {
+        var fxmlLoader = new FXMLLoader(Main.class.getResource(name + ".fxml"), bundle);
+        try {
+            fxmlLoader.load();
+        } catch (Exception e) {
+            displayError(
+                getProperty("text.error.openingFailed"),
+                getProperty("text.error.cannotOpenWindow"),
+                e
+            );
+            return null;
+        }
+
+        return fxmlLoader;
     }
 
     /**

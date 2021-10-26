@@ -21,8 +21,7 @@ do
 done < "$resourcesDir/build.properties"
 unset IFS
 
-jvmOptions=""
-
+jvmOptions="--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
 arguments=(
     "--input" "$appDirectory"
     "--runtime-image" "$jdkDirectory"

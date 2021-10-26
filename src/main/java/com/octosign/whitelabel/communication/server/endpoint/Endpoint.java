@@ -37,7 +37,6 @@ abstract class Endpoint implements HttpHandler {
         } catch (Throwable e) {
             var message = "An unexpected internal error occurred";
             var error = new CommunicationError(Code.UNEXPECTED_ERROR, message, e.getMessage());
-            e.printStackTrace();//TODO rm
             new Response<CommunicationError>(exchange)
                 .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error)
                 .send();

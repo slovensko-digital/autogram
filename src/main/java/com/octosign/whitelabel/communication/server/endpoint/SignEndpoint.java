@@ -1,22 +1,12 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import com.octosign.whitelabel.communication.*;
-import com.octosign.whitelabel.communication.CommunicationError.Code;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.document.PDFDocument;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.Base64;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-
 import com.octosign.whitelabel.communication.CommunicationError;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.SignRequest;
+import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
-
+import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
@@ -26,11 +16,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Base64;
 import java.util.concurrent.Future;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-
-import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
-import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
 
 public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
@@ -55,14 +41,9 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         }
 
         var signRequest = request.getBody();
-        
         var document = getSpecificDocument(signRequest);
+        var signatureUnit = new SignatureUnit(document, signRequest.getParameters());
 
-        var template = extractTemplateFrom(request);
-        var parameters = resolveParameters(signRequest, template);
-
-        var signatureUnit = new SignatureUnit(document, parameters);
-//        onRequestReceived.apply(signatureUnit, template);
         try {
             var signedDocument = onSign.apply(signatureUnit).get();
             return response.setBody(signedDocument);
@@ -89,7 +70,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     }
 
     @Override
-    protected String[] getAllowedMethods() { return new String[]{"POST"}; }
+    protected String[] getAllowedMethods() { return new String[]{ "POST" }; }
 
     /**
      * Creates and prepares payload type specific document
@@ -99,55 +80,33 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
      * @param signRequest
      * @return Specific document like XMLDocument type-widened to Document
      */
-    private static Document getSpecificDocument(SignRequest signRequest) {
+    private Document getSpecificDocument(SignRequest signRequest) {
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
         var mimeType = MimeType.parse(signRequest.getPayloadMimeType());
 
-        return switch (mimeType.getType()) {
-            case XMLDocument.MIME_TYPE -> buildXMLDocument(document, parameters, mimeType);
-            case PDFDocument.MIME_TYPE -> new PDFDocument(document);
-            default -> throw new IllegalArgumentException("Unsupported MIME type");
-        };
-    }
+        if (mimeType.equalsTypeSubtype(MimeType.XML)) {
+            var schema = parameters.getSchema();
+            var transformation = parameters.getTransformation();
 
-    private static XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) {
-        var schema = parameters.getSchema();
-        var transformation = parameters.getTransformation();
+            if (mimeType.isBase64()) {
+                document.setContent(decode(document.getContent()));
+                schema = decode(schema);
+                transformation = decode(transformation);
+            }
 
-        if (mimeType.isBase64()) {
-            document.setContent(decode(document.getContent()));
-            schema = decode(schema);
-            transformation = decode(transformation);
+            return new XMLDocument(document, schema, transformation);
+        } else if(mimeType.equalsTypeSubtype(MimeType.PDF)) {
+            return new PDFDocument(document);
+        } else {
+            throw new IllegalArgumentException("Unsupported MIME type");
         }
-
-        return new XMLDocument(document, schema, transformation);
     }
 
-    private static String decode(String input) {
+    private String decode(String input) {
         if (input == null || input.isBlank()) return null;
 
         var decoder = Base64.getDecoder();
         return new String(decoder.decode(input));
     }
-
-    private static Configuration extractTemplateFrom(Request<?> request) {
-        var templateId = request.getQueryParams().get("template");
-        if (templateId == null || templateId.isEmpty()) return null;
-
-        var templateName = LOWER_HYPHEN.to(UPPER_UNDERSCORE, templateId);
-        return Configuration.from(templateName);
-    }
-
-    private static SignatureParameters resolveParameters(SignRequest signRequest, Configuration template) {
-        var sourceParams = (template != null) ? template.parameters() : signRequest.getParameters();
-
-        return new SignatureParameters.Builder(sourceParams)
-                .schema(sourceParams.getSchema())
-                .transformation(sourceParams.getTransformation())
-                .signaturePolicyId(sourceParams.getSignaturePolicyId())
-                .signaturePolicyContent(sourceParams.getSignaturePolicyContent())
-                .build();
-    }
-
 }

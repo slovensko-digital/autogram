@@ -1,5 +1,7 @@
 package com.octosign.whitelabel.communication.server.format;
 
+import com.octosign.whitelabel.communication.MimeType;
+
 /**
  * Format used in the HTTP exchange request or response body
  */
@@ -27,8 +29,8 @@ public interface BodyFormat {
     /**
      * MIME type this body format produces and accepts
      *
-     * @return MIME type, e.g. application/json
+     * @return MIME type
      */
-    public String getMimeType();
+    public MimeType getMimeType();
 
 }
