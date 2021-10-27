@@ -15,9 +15,4 @@ public class PDFDocument extends Document {
         setContent(document.getContent());
         setLegalEffect(document.getLegalEffect());
     }
-
-    @Override
-    public String toString() {
-        return "PDFDocument{" + super.toString() + "}";
-    }
 }

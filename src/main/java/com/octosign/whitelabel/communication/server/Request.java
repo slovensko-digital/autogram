@@ -1,6 +1,7 @@
 package com.octosign.whitelabel.communication.server;
 
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
+import com.octosign.whitelabel.ui.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.nio.charset.StandardCharsets;
@@ -22,28 +23,32 @@ public class Request<T> {
 
     private T body;
 
-    public Request(HttpExchange exchange) {
+    public Request(HttpExchange exchange) throws IntegrationException {
         this.exchange = exchange;
 
-        bodyFormats = Map.of(
-            JSON.getMimeType(), JSON,
-            "text/plain", JSON, // Considered JSON so clients can prevent CORS preflight
-            "*/*", JSON // Implicit default format
-        );
+        try {
+            bodyFormats = Map.of(
+                    JSON.getMimeType(), JSON,
+                    "text/plain", JSON, // Considered JSON so clients can prevent CORS preflight
+                    "*/*", JSON // Implicit default format
+            );
 
-        var contentType = exchange.getRequestHeaders().get("Content-Type");
-        if (contentType != null) {
-            bodyFormat = contentType.stream()
-                .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-                .filter(bodyFormats::containsKey)
-                .findFirst()
-                .map(bodyFormats::get)
-                .orElseGet(() -> contentType.isEmpty() ? bodyFormats.get("*/*") : null);
-        } else {
-            bodyFormat = null;
+            var contentType = exchange.getRequestHeaders().get("Content-Type");
+            if (contentType != null) {
+                bodyFormat = contentType.stream()
+                        .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
+                        .filter(bodyFormats::containsKey)
+                        .findFirst()
+                        .map(bodyFormats::get)
+                        .orElseGet(() -> contentType.isEmpty() ? bodyFormats.get("*/*") : null);
+            } else {
+                bodyFormat = null;
+            }
+
+            this.queryParams = QueryParams.parse(getExchange().getRequestURI().getQuery());
+        } catch (Exception ex) {
+            throw new IntegrationException(String.format("Invalid request - parsing error: %s", ex));
         }
-
-        this.queryParams = QueryParams.parse(getExchange().getRequestURI().getQuery());
     }
 
     public HttpExchange getExchange() {

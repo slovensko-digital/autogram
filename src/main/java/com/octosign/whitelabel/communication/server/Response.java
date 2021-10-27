@@ -1,6 +1,7 @@
 package com.octosign.whitelabel.communication.server;
 
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
+import com.octosign.whitelabel.ui.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -25,22 +26,26 @@ public class Response<U> {
 
     private U body;
 
-    public Response(HttpExchange exchange) {
+    public Response(HttpExchange exchange) throws IntegrationException {
         this.exchange = exchange;
 
-        bodyFormats = Map.of(
-            JSON.getMimeType(), JSON,
-            "*/*", JSON // Default format
-        );
+        try {
+            bodyFormats = Map.of(
+                    JSON.getMimeType(), JSON,
+                    "*/*", JSON // Default format
+            );
 
-        var contentType = exchange.getRequestHeaders().get("Accept");
-        bodyFormat = contentType.stream()
-            .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-            .filter(bodyFormats::containsKey)
-            .findFirst()
-            .map(bodyFormats::get)
-            // We would rather return something in unaccepted type than nothing
-            .orElseGet(() -> bodyFormats.get("*/*"));
+            var contentType = exchange.getRequestHeaders().get("Accept");
+            bodyFormat = contentType.stream()
+                    .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
+                    .filter(bodyFormats::containsKey)
+                    .findFirst()
+                    .map(bodyFormats::get)
+                    // We would rather return something in unaccepted type than nothing
+                    .orElseGet(() -> bodyFormats.get("*/*"));
+        } catch (Exception ex) {
+            throw new IntegrationException(String.format("Invalid response - parsing error: %s", ex));
+        }
     }
 
     public int getStatusCode() {
@@ -81,5 +86,4 @@ public class Response<U> {
             stream.write(bodyBytes);
         }
     }
-
 }

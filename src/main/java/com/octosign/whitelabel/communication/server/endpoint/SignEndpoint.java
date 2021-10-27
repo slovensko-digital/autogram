@@ -8,6 +8,7 @@ import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.ui.IntegrationException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -32,35 +33,47 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     }
 
     @Override
-    protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) throws IOException {
+    protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) throws IntegrationException {
         if (onSign == null) {
-            var error = new CommunicationError(Code.NOT_READY, getProperty("exc.serverNotReady"));
-            new Response<CommunicationError>(request.getExchange())
-                .asError(HttpURLConnection.HTTP_CONFLICT, error)
-                .send();
+            var error = new CommunicationError(Code.NOT_READY, getProperty("error.serverNotReady"));
+            var errorResponse = new Response<CommunicationError>(request.getExchange()).asError(HttpURLConnection.HTTP_CONFLICT, error);
+
+            try {
+                errorResponse.send();
+            } catch (IOException ex) {
+                throw new IntegrationException(String.format("Unable to send error response: %s", errorResponse.getBody()));
+            }
             return null;
         }
 
         var signRequest = request.getBody();
-        
-        var document = getSpecificDocument(signRequest);
+
+        Document document = null;
+        try {
+            document = getSpecificDocument(signRequest);
+        } catch (IntegrationException e) {
+            e.printStackTrace();
+        }
 
         var template = extractTemplateFrom(request);
         var parameters = resolveParameters(signRequest, template);
 
         var signatureUnit = new SignatureUnit(document, parameters);
-//        onRequestReceived.apply(signatureUnit, template);
+
         try {
             var signedDocument = onSign.apply(signatureUnit).get();
             return response.setBody(signedDocument);
         } catch (Exception e) {
             // TODO: We should do a better job with the error response here:
             // We can differentiate between application errors (500), user errors (502), missing certificate/UI closed (503)
+            var error = new CommunicationError(Code.SIGNING_FAILED, getProperty("error.signingFailed"), e.getMessage());
+            var errorResponse = new Response<CommunicationError>(request.getExchange()).asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error);
 
-            var error = new CommunicationError(Code.SIGNING_FAILED, getProperty("exc.signingFailed"), e.getMessage());
-            new Response<CommunicationError>(request.getExchange())
-                .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error)
-                .send();
+            try {
+                errorResponse.send();
+            } catch (IOException ex) {
+                throw new IntegrationException(String.format("Unable to send error response: %s", errorResponse.getBody()));
+            }
             return null;
         }
     }
@@ -76,7 +89,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     }
 
     @Override
-    protected String[] getAllowedMethods() { return new String[]{"POST"}; }
+    protected String[] getAllowedMethods() { return new String[] { "POST" }; }
 
     /**
      * Creates and prepares payload type specific document
@@ -86,7 +99,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
      * @param signRequest object representing particular signing request data and params
      * @return Specific document like XMLDocument type-widened to Document
      */
-    private static Document getSpecificDocument(SignRequest signRequest) {
+    private static Document getSpecificDocument(SignRequest signRequest) throws IntegrationException {
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
         var mimeType = MimeType.parse(signRequest.getPayloadMimeType());
@@ -94,24 +107,28 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         return switch (mimeType.getType()) {
             case XMLDocument.MIME_TYPE -> buildXMLDocument(document, parameters, mimeType);
             case PDFDocument.MIME_TYPE -> new PDFDocument(document);
-            default -> throw new IllegalArgumentException("Unsupported MIME type");
+            default -> throw new IllegalArgumentException(String.format("Unsupported MIME type: %s", mimeType.getType()));
         };
     }
 
-    private static XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) {
+    private static XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) throws IntegrationException {
         var schema = parameters.getSchema();
         var transformation = parameters.getTransformation();
 
         if (mimeType.isBase64()) {
-            document.setContent(decode(document.getContent()));
-            schema = decode(schema);
-            transformation = decode(transformation);
+            try {
+                document.setContent(decode(document.getContent()));
+                schema = decode(schema);
+                transformation = decode(transformation);
+            } catch (Exception e) {
+                throw new IntegrationException(getProperty("error.decodingFailed", e.getMessage()));
+            }
         }
 
         return new XMLDocument(document, schema, transformation);
     }
 
-    private static String decode(String input) {
+    private static String decode(String input) throws IntegrationException {
         if (input == null || input.isBlank()) return null;
 
         var decoder = Base64.getDecoder();
@@ -136,5 +153,4 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
                 .signaturePolicyContent(sourceParams.getSignaturePolicyContent())
                 .build();
     }
-
 }

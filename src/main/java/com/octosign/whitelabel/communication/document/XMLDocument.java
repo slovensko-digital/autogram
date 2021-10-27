@@ -1,5 +1,6 @@
 package com.octosign.whitelabel.communication.document;
 
+import com.octosign.whitelabel.ui.IntegrationException;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -54,56 +55,51 @@ public class XMLDocument extends Document {
         this.transformation = transformation;
     }
 
-    @Override
-    public String toString() {
-        return "XMLDocument{" +
-                "transformation='" + transformation + '\'' +
-                ", schema='" + schema + '\'' +
-                ", super='" + super.toString() + '\'' +
-                '}';
-    }
-
     /**
      * Apply defined transformation on the document and get it
      *
      * @return String with the transformed XML document - for example its HTML representation
      */
-    public String getTransformed() {
-        if (content == null || transformation == null)
-            throw new RuntimeException(getProperty("exc.missingContent"));
+    public String getTransformed() throws IntegrationException {
+        if (content == null || transformation == null) {
+            var missing = (content == null) ? "content" : "transformation";
+            throw new IntegrationException(getProperty("error.missingContent", missing));
+        }
 
         var xslSource = new StreamSource(new StringReader(transformation));
         var xmlInSource = new StreamSource(new StringReader(content));
         var xmlOutWriter = new StringWriter();
 
         var transformerFactory = TransformerFactory.newInstance();
+
         try {
             transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             var transformer = transformerFactory.newTransformer(xslSource);
             transformer.transform(xmlInSource, new StreamResult(xmlOutWriter));
         } catch (TransformerConfigurationException e) {
-            throw new RuntimeException(getProperty("exc.transformationInitFailed", e));
+            throw new IntegrationException(getProperty("error.transformationInitFailed", e));
         } catch (TransformerException e) {
-            throw new RuntimeException(getProperty("exc.transformationAborted", e));
+            throw new IntegrationException(getProperty("error.transformationAborted", e));
         }
 
         return xmlOutWriter.toString();
     }
 
-    public void validate() {
-        if (content == null || schema == null)
-            throw new RuntimeException(getProperty("exc.missingContent"));
-
+    public void validate() throws IntegrationException {
+        if (content == null || schema == null) {
+            var missing = (content == null) ? "content" : "schema";
+            throw new IntegrationException(getProperty("error.missingContent", missing));
+        }
         var xsdSource = new StreamSource(new StringReader(schema));
         var xmlInSource = new StreamSource(new StringReader(content));
 
         try {
-            var schema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource);
-            schema.newValidator().validate(xmlInSource);
+            var schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            schemaFactory.newSchema(xsdSource).newValidator().validate(xmlInSource);
         } catch (SAXException e) {
-            throw new RuntimeException(getProperty("exc.corruptedSchemaFile", e));
+            throw new IntegrationException(getProperty("error.corruptedSchemaFile", e));
         } catch (IOException e) {
-            throw new RuntimeException(getProperty("exc.invalidSchemaXmlFormat", e));
+            throw new IntegrationException(getProperty("error.invalidSchemaXmlFormat", e));
         }
     }
 }

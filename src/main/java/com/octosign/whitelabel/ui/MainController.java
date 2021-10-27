@@ -25,15 +25,13 @@ import java.util.stream.Collectors;
 
 import static com.octosign.whitelabel.ui.FX.displayError;
 import static com.octosign.whitelabel.ui.Main.getProperty;
+import static com.octosign.whitelabel.ui.Main.getResourceString;
 
 
 /**
  * Controller for the signing window
  */
 public class MainController {
-
-    @FXML
-    private Label documentLabel;
 
     @FXML
     private WebView webView;
@@ -79,13 +77,10 @@ public class MainController {
 
     public void setSignatureUnit(SignatureUnit signatureUnit) {
         this.signatureUnit = signatureUnit;
-        var document = signatureUnit.getDocument();
+    }
 
-        if (document.getTitle() != null && !document.getTitle().isBlank()) {
-            documentLabel.setText(getProperty("text.document", document.getTitle()));
-        } else {
-            documentLabel.setManaged(false);
-        }
+    public void loadDocument() {
+        var document = signatureUnit.getDocument();
 
         if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
@@ -105,9 +100,8 @@ public class MainController {
         final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
-            try {
-                ((XMLDocument) document).validate();
-            } catch (Exception e) {
+            try { ((XMLDocument) document).validate(); }
+            catch (Exception e) {
                 Platform.runLater(() -> displayError("invalidFormat", e));
                 return;
             }
@@ -123,21 +117,20 @@ public class MainController {
                 try {
                     var xmlDocument = (XMLDocument) document;
                     visualization = "<pre>" + xmlDocument.getTransformed() + "</pre>";
-                } catch (Exception e) {
+                } catch (SignerException e) {
                     Platform.runLater(() -> displayError("visualizationError", e));
                     return;
                 }
 
                 Platform.runLater(() -> {
                     var webEngine = webView.getEngine();
-                    webEngine.getLoadWorker().stateProperty().addListener(
-                        (observable, oldState, newState) -> {
+                    webEngine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
                             if (newState == Worker.State.SUCCEEDED) {
                                 webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualization);
                             }
                         }
                     );
-                    webEngine.load(Main.class.getResource("visualization.html").toExternalForm());
+                    webEngine.load(getResourceString("visualization.html"));
                 });
             });
         }
@@ -159,7 +152,7 @@ public class MainController {
 
                 // TODO - ???
                 //engine.setUserStyleSheetLocation(Main.class.getResource("pdfjs/web/viewer.css").toExternalForm());
-                engine.setUserStyleSheetLocation(Main.class.getResource("pdf.viewer.css").toExternalForm());
+                engine.setUserStyleSheetLocation(getResourceString("pdf.viewer.css"));
 
                 engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
                     if (newState == Worker.State.SUCCEEDED) {
@@ -167,13 +160,11 @@ public class MainController {
                     }
                 });
 
-                // TODO - ???
-                //engine.load(Main.class.getResource("pdfjs/web/viewer.html").toExternalForm());
-                engine.load(Main.class.getResource("pdf.viewer.html").toExternalForm());
+                engine.load(getResourceString("pdfjs/web/viewer.html"));
             });
         }
 
-        if (!isXML && !isPDF) throw new RuntimeException("exc.unsupportedDocumentFormat");
+        if (!isXML && !isPDF) throw new RuntimeException("error.unsupportedDocumentFormat");
 
     }
 
@@ -235,20 +226,4 @@ public class MainController {
         certificateManager.useDialogPicker();
     }
 
-    /**
-     * Get resource from the ui resources as string using name
-     */
-    private String getResourceAsString(String resourceName) {
-        try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
-            if (inputStream == null) throw new Exception(getProperty("exc.resourceNotFound"));
-            try (
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                BufferedReader reader = new BufferedReader(inputStreamReader);
-            ) {
-                return reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(getProperty("exc.resourceLoadingFailed", resourceName), e);
-        }
-    }
 }
