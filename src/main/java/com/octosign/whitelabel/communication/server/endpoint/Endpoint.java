@@ -4,6 +4,7 @@ import com.octosign.whitelabel.communication.CommunicationError;
 import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.ui.IntegrationException;
 import com.octosign.whitelabel.ui.Main;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -28,11 +29,10 @@ abstract class Endpoint implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        if (verifyHTTPMethod(exchange) == false) return;
-        if (verifyOrigin(exchange) == false) return;
-
+    public void handle(HttpExchange exchange) {
         try {
+            verifyHTTPMethod(exchange);
+            verifyOrigin(exchange);
             handleRequest(exchange);
         } catch (Throwable e) {
             var message = "An unexpected internal error occurred";
@@ -45,10 +45,10 @@ abstract class Endpoint implements HttpHandler {
 
     /**
      * Handle request on this endpoint
-     *
+     * <p>
      * When writing a new endpoint, consider high-level Response<Res> handleRequest(request, response).
      */
-    protected abstract void handleRequest(HttpExchange exchange) throws IOException;
+    protected abstract void handleRequest(HttpExchange exchange) throws IntegrationException;
 
     /**
      * List of allowed HTTP methods
@@ -61,18 +61,21 @@ abstract class Endpoint implements HttpHandler {
      * @return True if valid, false if not
      * @throws IOException
      */
-    protected boolean verifyOrigin(HttpExchange exchange) throws IOException {
-        var message = "The request comes from an unexpected origin";
-        var error = new CommunicationError(Code.UNEXPECTED_ORIGIN, message);
-        var errorResponse = new Response<CommunicationError>(exchange)
-            .asError(HttpURLConnection.HTTP_FORBIDDEN, error);
+    protected void verifyOrigin(HttpExchange exchange) throws IntegrationException {
+        var error = new CommunicationError(Code.UNEXPECTED_ORIGIN, Main.getProperty("error.unexpectedOrigin"));
+        var errorResponse =
+                new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_FORBIDDEN, error);
 
         // Don't allow remote address != localhost when listening on localhost
         var hostname = Main.getProperty("server.hostname");
         var listeningOnLocalhost = hostname.equals("localhost") || hostname.equals("127.0.0.1");
         if (listeningOnLocalhost && !exchange.getRemoteAddress().getAddress().isLoopbackAddress()) {
-            errorResponse.send();
-            return false;
+            try {
+                errorResponse.send();
+            } catch (IOException e) {
+                throw new IntegrationException(String.format("Unable to send error response: %s", Main.getProperty("error.unexpectedOrigin")));
+            }
+            return;
         }
 
         var allowedOrigin = server.getAllowedOrigin();
@@ -80,37 +83,76 @@ abstract class Endpoint implements HttpHandler {
         if (originHeader != null && !allowedOrigin.equals("*")) {
             var origin = originHeader.get(0);
             if (!origin.equals(allowedOrigin)) {
-                errorResponse.send();
-                return false;
+                try {
+                    errorResponse.send();
+                } catch (IOException e) {
+                    throw new IntegrationException(String.format("Unable to send error response: %s", Main.getProperty("error.unexpectedOrigin")));
+                }
+                return;
             }
         }
 
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
-
-        return true;
     }
 
     /**
      * Verify the HTTP methods allowed
-     *
+     * <p>
      * Sends error response if not
      *
      * @param exchange
      * @return True if valid, false if not
      * @throws IOException
      */
-    protected boolean verifyHTTPMethod(HttpExchange exchange) throws IOException {
+    protected void verifyHTTPMethod(HttpExchange exchange) throws IntegrationException {
         var allowedMethodsList = Arrays.asList(getAllowedMethods());
-        if (!allowedMethodsList.contains(exchange.getRequestMethod())) {
-            var supportedMethods = String.join(", ", allowedMethodsList);
-            var message = "Unsupported HTTP method. Supported: " + supportedMethods;
+        var requestMethod = exchange.getRequestMethod();
+
+        if (!allowedMethodsList.contains(requestMethod)) {
+            var message = Main.getProperty("error.unsupportedOperation", String.join(", ", allowedMethodsList));
             var error = new CommunicationError(Code.UNSUPPORTED_OPERATION, message);
-            new Response<CommunicationError>(exchange)
-                .asError(HttpURLConnection.HTTP_BAD_METHOD, error)
-                .send();
-            return false;
+            var response = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_BAD_METHOD, error);
+            try {
+                response.send();
+            } catch (IOException e) {
+                throw new IntegrationException(String.format("Unable to send error response: %s", requestMethod, message));
+            }
         }
-        return true;
     }
 
+    /**
+     * Use response produced by the endpoint handler
+     *
+     * @param response
+     * @throws IOException
+     */
+    protected <U> void useResponse(Response<U> response) throws IntegrationException {
+        if (response != null) {
+            try {
+                response.send();
+            } catch (IOException e) {
+                throw new IntegrationException(String.format("Unable to send error response: %s",
+                        Main.getProperty(String.format("error.unexpectedOrigin", response.getBody()))));
+            }
+        } else {
+            throw new IntegrationException("Unable to send error response: response is null");
+        }
+    }
+
+    public <U> void rethrow(Response<U> response, TConsumer<Response<U>> consumer) throws IntegrationException {
+        var description = response.getBody();
+
+        if (description == null)
+            throw new IllegalStateException("Error with empty body");
+
+        try {
+            consumer.accept(response);
+        } catch (IOException e) {
+            throw new IntegrationException(String.format("Unable to send error response \"%s\". Cause: %s", description, e));
+        }
+    }
+
+    public interface TConsumer<T> {
+        void accept(T t) throws IOException;
+    }
 }

@@ -1,6 +1,7 @@
 package com.octosign.whitelabel.communication.server;
 
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
+import com.octosign.whitelabel.ui.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class Response<U> {
 
     private U body;
 
-    public Response(HttpExchange exchange) {
+    public Response(HttpExchange exchange) throws IntegrationException {
         this.exchange = exchange;
 
         var accept = exchange.getRequestHeaders().get("Accept");
@@ -93,5 +94,4 @@ public class Response<U> {
             stream.write(bodyBytes);
         }
     }
-
 }

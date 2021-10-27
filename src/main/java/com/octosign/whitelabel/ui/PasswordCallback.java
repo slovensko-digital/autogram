@@ -15,7 +15,6 @@ public class PasswordCallback implements PasswordInputCallback {
     @Override
     public char[] getPassword() {
         Dialog<String> dialog = new Dialog<>();
-        // TODO: Replace with message from .properties
         dialog.setTitle(getProperty("text.enterPassword"));
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
     

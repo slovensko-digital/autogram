@@ -2,9 +2,11 @@ package com.octosign.whitelabel.preprocessing;
 
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
+import com.octosign.whitelabel.ui.IntegrationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.xades.DSSXMLUtils;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -57,25 +59,34 @@ public class XDCTransformer {
         this.digestAlgorithm = requireNonNull(digestAlgorithm, "digestAlgorithm");
     }
 
-    public String transform(String xmlInput, Mode mode) {
-        parseDOMDocument(xmlInput);
-        transformDocument(mode);
+    public String transform(String xmlInput, Mode mode) throws IntegrationException {
+        try {
+            parseDOMDocument(xmlInput);
+        } catch (SAXException | IOException e) {
+            throw new IntegrationException(getProperty("error.xmlParsingFailure", e));
+        } catch (ParserConfigurationException e) {
+            throw new IntegrationException(getProperty("error.builderConfigInvalid", e));
+        }
 
-        return getDocumentContent();
+        try {
+            transformDocument(mode);
+        } catch (DOMException e) {
+            throw new IntegrationException(String.format("XML DOM related error: %s", e));
+        }
+
+        try {
+            return getDocumentContent();
+        } catch (TransformerException e) {
+            throw new IntegrationException(String.format("Pre-final transformation failed: %s", e));
+        }
     }
 
-    private void parseDOMDocument(String xmlContent) {
+    private void parseDOMDocument(String xmlContent) throws ParserConfigurationException, IOException, SAXException {
         var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
 
-        try {
-            var documentBuilder = builderFactory.newDocumentBuilder();
-            this.document = documentBuilder.parse(new InputSource(new StringReader(xmlContent)));
-        } catch (SAXException | IOException e) {
-            throw new RuntimeException(getProperty("exc.xmlParsingFailure", e));
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(getProperty("exc.builderConfigInvalid", e));
-        }
+        var source = new InputSource(new StringReader(xmlContent));
+        this.document = builderFactory.newDocumentBuilder().parse(source);
     }
 
     private void transformDocument(Mode mode) {
@@ -99,18 +110,14 @@ public class XDCTransformer {
         return document.getFirstChild().getNodeName().equalsIgnoreCase("XMLDataContainer");
     }
 
-    private String getDocumentContent() {
-        var source = new DOMSource(document);
-        var writer = new StringWriter();
+    private String getDocumentContent() throws TransformerException {
+        var xmlSource = new DOMSource(document);
+        var outputTarget = new StreamResult(new StringWriter());
 
-        try {
-            var transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.transform(source, new StreamResult(writer));
-        } catch (TransformerException e) {
-            throw new RuntimeException("exc.transformationError", e);
-        }
+        var transformerFactory= TransformerFactory.newInstance();
+        transformerFactory.newTransformer().transform(xmlSource, outputTarget);
 
-        return writer.toString();
+        return outputTarget.toString();
     }
 
     private Element createXMLDataContainer() {

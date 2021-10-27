@@ -27,7 +27,7 @@ public class Request<T> {
 
     private T body;
 
-    public Request(HttpExchange exchange) {
+    public Request(HttpExchange exchange) throws IntegrationException {
         this.exchange = exchange;
 
         var contentType = exchange.getRequestHeaders().get("Content-Type");
@@ -42,7 +42,10 @@ public class Request<T> {
             bodyFormat = null;
         }
 
-        this.queryParams = QueryParams.parse(getExchange().getRequestURI().getQuery());
+            this.queryParams = QueryParams.parse(getExchange().getRequestURI().getQuery());
+        } catch (Exception ex) {
+            throw new IntegrationException(String.format("Invalid request - parsing error: %s", ex));
+        }
     }
 
     public HttpExchange getExchange() {

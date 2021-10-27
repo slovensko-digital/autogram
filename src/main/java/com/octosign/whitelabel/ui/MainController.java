@@ -28,14 +28,12 @@ import java.util.stream.Collectors;
 
 import static com.octosign.whitelabel.ui.FX.displayError;
 import static com.octosign.whitelabel.ui.Main.getProperty;
+import static com.octosign.whitelabel.ui.Main.getResourceString;
 
 /**
  * Controller for the signing window
  */
 public class MainController {
-
-    @FXML
-    private Label documentLabel;
 
     @FXML
     private WebView webView;
@@ -84,11 +82,8 @@ public class MainController {
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
 
-        if (document.getTitle() != null && !document.getTitle().isBlank()) {
-            documentLabel.setText(getProperty("text.document", document.getTitle()));
-        } else {
-            documentLabel.setManaged(false);
-        }
+    public void loadDocument() {
+        var document = signatureUnit.getDocument();
 
         if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());

@@ -44,11 +44,11 @@ public class CertificateManager {
         // TODO: Move out and implement actual logic
 
         Dialog<SigningCertificate> dialog = new Dialog<>();
-        dialog.setTitle(getProperty("text.certificateSettings"));
+        dialog.setTitle(Main.getProperty("text.certificateSettings"));
 
         FX.addStylesheets(dialog);
         var treeTableView = new TreeTableView<SigningCertificate>();
-        var nameColumn = new TreeTableColumn<SigningCertificate, String>(getProperty("text.subjectName"));
+        var nameColumn = new TreeTableColumn<SigningCertificate, String>(Main.getProperty("text.subjectName"));
         nameColumn.setCellValueFactory(input ->
                 ofNullable(input.getValue())
                         .map(TreeItem::getValue)
@@ -58,7 +58,7 @@ public class CertificateManager {
         );
         treeTableView.getColumns().add(nameColumn);
         treeTableView.setRoot(new TreeItem<>(certificate));
-        dialogPane.setContent(treeTableView);
+//        dialogPane.setContent(treeTableView);
 
         return dialog.showAndWait().orElse(null);
     }
