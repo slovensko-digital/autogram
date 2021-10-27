@@ -11,9 +11,9 @@ import javafx.scene.layout.Region;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import static com.octosign.whitelabel.ui.I18n.getProperty;
+import static java.util.Objects.requireNonNull;
 
 public class FX {
 
@@ -40,9 +40,6 @@ public class FX {
                 getProperty("info." + base + ".header"),
                 getProperty("info." + base + ".description")
         );
-
-        if(e != null)
-            alert.getDialogPane().setExpandableContent(getErrorDetails(e));
 
         alert.showAndWait();
     }
@@ -94,9 +91,9 @@ public class FX {
     public static <U, T extends Dialog<U>> void addStylesheets(T dialog) {
         var stylesheets = dialog.getDialogPane().getStylesheets();
 
-        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
+        stylesheets.add(requireNonNull(Main.class.getResource("shared.css")).toExternalForm());
+        stylesheets.add(requireNonNull(Main.class.getResource("dialog.css")).toExternalForm());
+        stylesheets.add(requireNonNull(Main.class.getResource("overrides.css")).toExternalForm());
     }
 
 
@@ -110,6 +107,8 @@ public class FX {
 
         alert.showAndWait();
     }
+
+
 
 //    /**
 //     * Display error alert with exception details
