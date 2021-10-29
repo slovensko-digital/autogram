@@ -12,6 +12,6 @@
     -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.15), 127, 0.1, 0, 0);
 }
 
-.dialog-pane:header *.header-panel {
+.dialog-pane *.header-panel {
     -fx-background-color: -bg-color;
 }

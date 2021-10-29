@@ -12,6 +12,7 @@ public class CommunicationError {
         UNEXPECTED_ERROR
     }
 
+public class CommunicationError {
     public final Code code;
     public final String message;
     public String details;

@@ -11,7 +11,8 @@ import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -40,7 +41,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
             try {
                 errorResponse.send();
             } catch (IOException ex) {
-                throw new IntegrationException(String.format("Unable to send error response: %s", errorResponse.getBody()));
+                throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", errorResponse.getBody()));
             }
             return null;
         }
@@ -61,7 +62,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
             try {
                 errorResponse.send();
             } catch (IOException ex) {
-                throw new IntegrationException(String.format("Unable to send error response: %s", errorResponse.getBody()));
+                throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", errorResponse.getBody()));
             }
             return null;
         }

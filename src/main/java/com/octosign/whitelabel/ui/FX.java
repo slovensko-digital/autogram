@@ -96,7 +96,6 @@ public class FX {
         stylesheets.add(requireNonNull(Main.class.getResource("overrides.css")).toExternalForm());
     }
 
-
     /**
      * Display error alert with exception details
      */
@@ -107,17 +106,4 @@ public class FX {
 
         alert.showAndWait();
     }
-
-
-
-//    /**
-//     * Display error alert with exception details
-//     */
-//    public static void displayError(String header, String description, Throwable e) {
-//        var alert = buildAlert(Alert.AlertType.ERROR, getProperty(DEFAULT_ERROR_TITLE_KEY), header, description);
-//        if (e != null) alert.getDialogPane().setExpandableContent(getErrorDetails(e));
-//
-//        alert.showAndWait();
-//    }
-//
 }

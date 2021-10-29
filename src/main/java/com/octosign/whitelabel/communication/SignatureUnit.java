@@ -2,7 +2,7 @@ package com.octosign.whitelabel.communication;
 
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.preprocessing.XDCTransformer;
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 
 public class SignatureUnit {
     private Document document;

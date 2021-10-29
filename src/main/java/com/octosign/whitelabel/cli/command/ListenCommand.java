@@ -71,7 +71,7 @@ public class ListenCommand extends Command {
             setInitialNonce(named.get("nonce"));
     }
 
-    private String nullifyBlank(String value) { return value != null && value.isBlank() ? null : value; }
+    private String nullifyBlank(String value) { return (value != null && value.isBlank()) ? null : value; }
 
     public int getPort() { return port; }
     public String getOrigin() { return origin; }

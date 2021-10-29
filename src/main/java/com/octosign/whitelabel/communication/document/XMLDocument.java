@@ -1,14 +1,15 @@
 package com.octosign.whitelabel.communication.document;
 
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
 import com.octosign.whitelabel.communication.MimeType;
@@ -17,7 +18,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import static com.octosign.whitelabel.ui.Main.getProperty;
+import static com.octosign.whitelabel.ui.Main.translate;
 
 /**
  * XML document for signing
@@ -65,24 +66,21 @@ public class XMLDocument extends Document {
      */
     public String getTransformed() throws IntegrationException {
         if (content == null || transformation == null) {
-            var missing = (content == null) ? "content" : "transformation";
-            throw new IntegrationException(getProperty("error.missingContent", missing));
+            var missingAttribute = (content == null) ? "content" : "transformation";
+            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent", missingAttribute));
         }
 
         var xslSource = new StreamSource(new StringReader(transformation));
         var xmlInSource = new StreamSource(new StringReader(content));
         var xmlOutWriter = new StringWriter();
-
         var transformerFactory = TransformerFactory.newInstance();
 
         try {
             transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             var transformer = transformerFactory.newTransformer(xslSource);
             transformer.transform(xmlInSource, new StreamResult(xmlOutWriter));
-        } catch (TransformerConfigurationException e) {
-            throw new IntegrationException(getProperty("error.transformationInitFailed", e));
         } catch (TransformerException e) {
-            throw new IntegrationException(getProperty("error.transformationAborted", e));
+            throw new IntegrationException(Code.TRANSFORMATION_ERROR, translate("error.transformationFailed", e));
         }
 
         return xmlOutWriter.toString();
@@ -90,19 +88,24 @@ public class XMLDocument extends Document {
 
     public void validate() throws IntegrationException {
         if (content == null || schema == null) {
-            var missing = (content == null) ? "content" : "schema";
-            throw new IntegrationException(getProperty("error.missingContent", missing));
+            var missingAttribute = (content == null) ? "content" : "schema";
+            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent", missingAttribute));
         }
         var xsdSource = new StreamSource(new StringReader(schema));
+        Schema xsdSchema;
+
+        try {
+            xsdSchema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource);
+        } catch (SAXException e) {
+            throw new IntegrationException(Code.INVALID_SCHEMA, translate("error.xsdSchemaInvalid", e));
+        }
+
         var xmlInSource = new StreamSource(new StringReader(content));
 
         try {
-            var schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            schemaFactory.newSchema(xsdSource).newValidator().validate(xmlInSource);
-        } catch (SAXException e) {
-            throw new IntegrationException(getProperty("error.corruptedSchemaFile", e));
-        } catch (IOException e) {
-            throw new IntegrationException(getProperty("error.invalidSchemaXmlFormat", e));
+            xsdSchema.newValidator().validate(xmlInSource);
+        } catch (SAXException | IOException e) {
+            throw new IntegrationException(Code.VALIDATION_FAILED, translate("error.invalidXmlContent", e));
         }
     }
 }

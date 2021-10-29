@@ -6,11 +6,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.octosign.whitelabel.communication.CommunicationError;
-import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -18,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.octosign.whitelabel.ui.Main.getProperty;
+import static com.octosign.whitelabel.ui.Main.translate;
 
 /**
  * Server API endpoint
@@ -67,15 +68,22 @@ abstract class WriteEndpoint<Q,S> extends Endpoint {
                 errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_BAD_REQUEST, error);
             } else
                 return;
+            }
 
-            try {
-                errorResponse.send();
-            } catch(IOException e) {
-                throw new IntegrationException(String.format("Unable to send response: %s", e.getMessage()));
+            if (request.processBody(requestClass) == null) {
+                var error = new CommunicationError(Code.MALFORMED_INPUT, getProperty("error.malformedInput"));
+                errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_BAD_REQUEST, error);
+
+                try {
+                    errorResponse.send();
+                } catch (IOException e) {
+                    throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", e));
+                }
+                return;
             }
         }
 
-        var response = handleRequest(request, new Response<S>(exchange));
+        var response = handleRequest(request, new Response<>(exchange));
         useResponse(response);
     }
 
@@ -98,21 +106,4 @@ abstract class WriteEndpoint<Q,S> extends Endpoint {
      * Class of the response body object
      */
     protected abstract Class<S> getResponseClass();
-
-//    /**
-//     * Use response produced by the endpoint handler
-//     *
-//     * @param response
-//     * @throws IOException
-//     */
-//    protected void useResponse(Response<S> response) throws IOException {
-//        if (response != null) {
-//            response.send();
-//            // TODO: Add bumping of nonce
-//        } else {
-//            // The request failed and the endpoint sent its own error response
-//            // TODO: Check response stream to make sure this is the case
-//        }
-//    }
-
 }

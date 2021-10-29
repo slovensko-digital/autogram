@@ -10,6 +10,7 @@ import com.octosign.whitelabel.communication.server.format.BodyFormat;
 import com.sun.net.httpserver.HttpExchange;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
+import static com.octosign.whitelabel.ui.Main.translate;
 
 public class Request<T> {
 
@@ -44,7 +45,7 @@ public class Request<T> {
 
             this.queryParams = QueryParams.parse(getExchange().getRequestURI().getQuery());
         } catch (Exception ex) {
-            throw new IntegrationException(String.format("Invalid request - parsing error: %s", ex));
+            throw new IntegrationException(Code.MALFORMED_INPUT, translate("Invalid request/parsing error", ex));
         }
     }
 

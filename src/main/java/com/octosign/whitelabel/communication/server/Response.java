@@ -1,7 +1,8 @@
 package com.octosign.whitelabel.communication.server;
 
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -15,6 +16,7 @@ import com.octosign.whitelabel.communication.server.format.BodyFormat;
 import com.sun.net.httpserver.HttpExchange;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
+import static com.octosign.whitelabel.ui.Main.translate;
 
 /**
  * Server response that conforms to request headers
@@ -91,7 +93,11 @@ public class Response<U> {
 
         // automatically closes stream
         try (var stream = exchange.getResponseBody()) {
+            exchange.sendResponseHeaders(statusCode, bodyBytes.length);
             stream.write(bodyBytes);
         }
+//        catch (IOException e) {
+//            throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", body));
+//        }
     }
 }

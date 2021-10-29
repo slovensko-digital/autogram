@@ -111,7 +111,7 @@ public abstract class SigningCertificate {
         try {
             keys = token.getKeys();
         } catch (Exception e) {
-            throw new RuntimeException("exc.keysNotRetrieved", e);
+            throw new RuntimeException(translate("error.keysNotRetrieved", e));
         }
 
         return keys;

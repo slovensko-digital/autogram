@@ -11,10 +11,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.octosign.whitelabel.ui.Main.translate;
+
 public class AboutDialog extends Dialog<Boolean> {
     public AboutDialog() {
         super();
-        setTitle(Main.getProperty("text.aboutHelp"));
+        setTitle(translate("txt.aboutHelp"));
         setContentText(getContent());
 
         FX.addStylesheets(this);
@@ -27,9 +29,9 @@ public class AboutDialog extends Dialog<Boolean> {
         // TODO This should be properly styled FXML with clickable links
 
         String appDescription = String.format(
-                Main.getProperty("text.aboutHelp.description"),
+                translate("txt.aboutHelp.description"),
                 Main.getVersion(),
-                Main.getProperty("application.author")
+                translate("app.author")
         );
 
         String usedOSS = getUsedOSS()
@@ -39,17 +41,17 @@ public class AboutDialog extends Dialog<Boolean> {
 
         return String.join(
                 "\n",
-                Main.getProperty("application.name"),
+                translate("app.name"),
                 appDescription,
-                "Help: " + Main.getProperty("application.website"),
+                "Help: " + translate("app.website"),
                 "",
-                Main.getProperty("text.aboutHelp.license"),
+                translate("txt.aboutHelp.license"),
                 "",
-                Main.getProperty("text.aboutHelp.usedOSS"),
-                Main.getProperty("text.aboutHelp.javaInfo"),
-                Main.getProperty("text.aboutHelp.depsInfo"),
+                translate("txt.aboutHelp.usedOSS"),
+                translate("txt.aboutHelp.javaInfo"),
+                translate("txt.aboutHelp.depsInfo"),
                 usedOSS,
-                Main.getProperty("text.aboutHelp.moreLegalInfo")
+                translate("txt.aboutHelp.moreLegalInfo")
         );
     }
 
