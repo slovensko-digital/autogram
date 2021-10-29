@@ -16,7 +16,7 @@ import static com.octosign.whitelabel.ui.Main.translate;
 public class AboutDialog extends Dialog<Boolean> {
     public AboutDialog() {
         super();
-        setTitle(translate("txt.aboutHelp"));
+        setTitle(translate("text.aboutHelp"));
         setContentText(getContent());
 
         FX.addStylesheets(this);
@@ -29,7 +29,7 @@ public class AboutDialog extends Dialog<Boolean> {
         // TODO This should be properly styled FXML with clickable links
 
         String appDescription = String.format(
-                translate("txt.aboutHelp.description"),
+                translate("text.aboutHelp.description"),
                 Main.getVersion(),
                 translate("app.author")
         );
@@ -45,13 +45,13 @@ public class AboutDialog extends Dialog<Boolean> {
                 appDescription,
                 "Help: " + translate("app.website"),
                 "",
-                translate("txt.aboutHelp.license"),
+                translate("text.aboutHelp.license"),
                 "",
-                translate("txt.aboutHelp.usedOSS"),
-                translate("txt.aboutHelp.javaInfo"),
-                translate("txt.aboutHelp.depsInfo"),
+                translate("text.aboutHelp.usedOSS"),
+                translate("text.aboutHelp.javaInfo"),
+                translate("text.aboutHelp.depsInfo"),
                 usedOSS,
-                translate("txt.aboutHelp.moreLegalInfo")
+                translate("text.aboutHelp.moreLegalInfo")
         );
     }
 

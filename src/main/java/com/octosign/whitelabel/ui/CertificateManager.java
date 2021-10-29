@@ -82,7 +82,7 @@ public class CertificateManager {
         }
 
         if (certificate == null) {
-            displayError("tokenNotFound");
+            displayError("error.tokenNotFound.header", "error.tokenNotFound.description");
             return null;
         }
 
@@ -90,12 +90,12 @@ public class CertificateManager {
         try {
             keys = certificate.getAvailablePrivateKeys();
         } catch (Exception e) {
-            displayError("tokenNotAvailable", e);
+            displayError("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
             return null;
         }
 
         if (keys.size() == 0) {
-            displayError("tokenEmpty");
+            displayError("error.tokenEmpty.header", "error.tokenEmpty.description");
             return null;
         }
 

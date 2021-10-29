@@ -17,28 +17,38 @@ import static java.util.Objects.requireNonNull;
 
 public class FX {
 
-    public static void displayError(String base) { displayError(base, null); }
+    public static void displayIntegrationError(String description) {
+        displayIntegrationError(description, null);
+    }
 
-    public static void displayError(String base, Throwable e) {
+    public static void displayIntegrationError(String description, Throwable cause) {
+        displayError("error.integration.header", description, cause);
+    }
+
+    public static void displayError(String header, String description) {
+        displayError(header, description, null);
+    }
+
+    public static void displayError(String header, String description, Throwable cause) {
         var alert = buildAlert(
                 Alert.AlertType.ERROR,
                 getProperty("error.title"),
-                getProperty("error." + base + ".header"),
-                getProperty("error." + base + ".description")
+                getProperty(header),
+                getProperty(description)
         );
 
-        if(e != null)
-            alert.getDialogPane().setExpandableContent(getErrorDetails(e));
+        if(cause != null)
+            alert.getDialogPane().setExpandableContent(getErrorDetails(cause));
 
         alert.showAndWait();
     }
 
-    public static void displayInfo(String base) {
+    public static void displayInfo(String header, String description) {
         var alert = buildAlert(
                 Alert.AlertType.INFORMATION,
                 getProperty("info.title"),
-                getProperty("info." + base + ".header"),
-                getProperty("info." + base + ".description")
+                getProperty(header),
+                getProperty(description)
         );
 
         alert.showAndWait();
@@ -99,10 +109,10 @@ public class FX {
     /**
      * Display error alert with exception details
      */
-    public static void displayError(String title, String header, String description, Throwable e) {
+    public static void displayError(String title, String header, String description, Throwable cause) {
         var alert = buildAlert(Alert.AlertType.ERROR, title, header, description);
-        if (e != null)
-            alert.getDialogPane().setExpandableContent(getErrorDetails(e));
+        if (cause != null)
+            alert.getDialogPane().setExpandableContent(getErrorDetails(cause));
 
         alert.showAndWait();
     }
