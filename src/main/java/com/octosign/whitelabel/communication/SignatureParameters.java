@@ -156,28 +156,6 @@ public class SignatureParameters {
         return version;
     }
 
-    @Override
-    public String toString() {
-        return "SignatureParameters{" +
-                "format=" + format +
-                ", level=" + level +
-                ", fileMimeType='" + fileMimeType + '\'' +
-                ", container=" + container +
-                ", packaging=" + packaging +
-                ", digestAlgorithm=" + digestAlgorithm +
-                ", en319132=" + en319132 +
-                ", infoCanonicalization=" + infoCanonicalization +
-                ", propertiesCanonicalization=" + propertiesCanonicalization +
-                ", keyInfoCanonicalization=" + keyInfoCanonicalization +
-                ", signaturePolicyId='" + signaturePolicyId + '\'' +
-                ", signaturePolicyContent='" + signaturePolicyContent + '\'' +
-                ", transformation='" + transformation + '\'' +
-                ", schema='" + schema + '\'' +
-                ", identifier='" + identifier + '\'' +
-                ", version='" + version + '\'' +
-                '}';
-    }
-
     public static class Builder {
         private Format format;
 

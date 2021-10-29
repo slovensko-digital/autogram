@@ -1,6 +1,6 @@
 package com.octosign.whitelabel.cli.command;
 
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import javafx.application.Application.Parameters;
 
 import java.net.URI;

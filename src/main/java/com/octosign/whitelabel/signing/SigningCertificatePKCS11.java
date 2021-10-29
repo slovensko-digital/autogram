@@ -6,7 +6,7 @@ import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import java.io.File;
 import java.util.Locale;
 
-import static com.octosign.whitelabel.ui.Main.getProperty;
+import static com.octosign.whitelabel.ui.Main.translate;
 
 public class SigningCertificatePKCS11 extends SigningCertificate {
     /**
@@ -60,7 +60,7 @@ public class SigningCertificatePKCS11 extends SigningCertificate {
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
             token = new Pkcs11SignatureToken(pkcsPath, passwordCallback, -1);
         } catch (Exception e) {
-            throw new RuntimeException(getProperty("exc.pkcs11InitFailed", e));
+            throw new RuntimeException(translate("error.pkcs11InitFailed", e));
         }
     }
 }

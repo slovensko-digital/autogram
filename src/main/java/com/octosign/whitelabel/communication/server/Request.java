@@ -1,7 +1,8 @@
 package com.octosign.whitelabel.communication.server;
 
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.nio.charset.StandardCharsets;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
+import static com.octosign.whitelabel.ui.Main.translate;
 
 public class Request<T> {
 
@@ -47,7 +49,7 @@ public class Request<T> {
 
             this.queryParams = QueryParams.parse(getExchange().getRequestURI().getQuery());
         } catch (Exception ex) {
-            throw new IntegrationException(String.format("Invalid request - parsing error: %s", ex));
+            throw new IntegrationException(Code.MALFORMED_INPUT, translate("Invalid request/parsing error", ex));
         }
     }
 

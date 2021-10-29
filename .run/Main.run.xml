@@ -8,7 +8,7 @@
     <option name="VM_PARAMETERS" value="--add-opens=jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="com.octosign.whitelabel.ui.*" />
+        <option name="PATTERN" value="com.octosign.whitelabel.error_handling.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

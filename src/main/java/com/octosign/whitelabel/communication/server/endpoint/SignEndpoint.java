@@ -1,14 +1,14 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
 import com.octosign.whitelabel.communication.*;
-import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -18,6 +18,7 @@ import java.util.function.Function;
 
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
+import static com.octosign.whitelabel.ui.Main.translate;
 import static com.octosign.whitelabel.ui.Main.getProperty;
 
 public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
@@ -41,22 +42,16 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
             try {
                 errorResponse.send();
             } catch (IOException ex) {
-                throw new IntegrationException(String.format("Unable to send error response: %s", errorResponse.getBody()));
+                throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", errorResponse.getBody()));
             }
             return null;
         }
 
         var signRequest = request.getBody();
 
-        Document document = null;
-        try {
-            document = getSpecificDocument(signRequest);
-        } catch (IntegrationException e) {
-            e.printStackTrace();
-        }
-
-        var template = extractTemplateFrom(request);
-        var parameters = resolveParameters(signRequest, template);
+        var document = getSpecificDocument(signRequest);
+//        var template = extractTemplateFrom(request);
+        var parameters = resolveParameters(signRequest, null);
 
         var signatureUnit = new SignatureUnit(document, parameters);
 
@@ -72,7 +67,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
             try {
                 errorResponse.send();
             } catch (IOException ex) {
-                throw new IntegrationException(String.format("Unable to send error response: %s", errorResponse.getBody()));
+                throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", errorResponse.getBody()));
             }
             return null;
         }
@@ -120,15 +115,15 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
                 document.setContent(decode(document.getContent()));
                 schema = decode(schema);
                 transformation = decode(transformation);
-            } catch (Exception e) {
-                throw new IntegrationException(getProperty("error.decodingFailed", e.getMessage()));
+            } catch (IllegalArgumentException e) {
+                throw new IntegrationException(Code.DECODING_FAILED, translate("error.decodingFailed", e));
             }
         }
 
         return new XMLDocument(document, schema, transformation);
     }
 
-    private static String decode(String input) throws IntegrationException {
+    private static String decode(String input) {
         if (input == null || input.isBlank()) return null;
 
         var decoder = Base64.getDecoder();
@@ -144,13 +139,16 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     }
 
     private static SignatureParameters resolveParameters(SignRequest signRequest, Configuration template) {
-        var sourceParams = (template != null) ? template.parameters() : signRequest.getParameters();
 
-        return new SignatureParameters.Builder(sourceParams)
-                .schema(sourceParams.getSchema())
-                .transformation(sourceParams.getTransformation())
-                .signaturePolicyId(sourceParams.getSignaturePolicyId())
-                .signaturePolicyContent(sourceParams.getSignaturePolicyContent())
-                .build();
+        return signRequest.getParameters();
+
+//        var sourceParams = (template != null) ? template.parameters() : signRequest.getParameters();
+//
+//        return new SignatureParameters.Builder(sourceParams)
+//                .schema(sourceParams.getSchema())
+//                .transformation(sourceParams.getTransformation())
+//                .signaturePolicyId(sourceParams.getSignaturePolicyId())
+//                .signaturePolicyContent(sourceParams.getSignaturePolicyContent())
+//                .build();
     }
 }

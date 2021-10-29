@@ -3,8 +3,7 @@ package com.octosign.whitelabel.communication.server.endpoint;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.ui.IntegrationException;
-import com.octosign.whitelabel.ui.Main;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;

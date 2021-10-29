@@ -1,11 +1,10 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
 import com.octosign.whitelabel.communication.CommunicationError;
-import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.ui.IntegrationException;
-import com.octosign.whitelabel.ui.Main;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -13,9 +12,11 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 
+import static com.octosign.whitelabel.ui.Main.translate;
+
 /**
  * Server API endpoint with no request or response abstraction
- *
+ * <p>
  * When writing a new endpoint, consider using high-level ReadEndpoint or WriteEndpoint.
  */
 abstract class Endpoint implements HttpHandler {
@@ -35,13 +36,14 @@ abstract class Endpoint implements HttpHandler {
             verifyOrigin(exchange);
             handleRequest(exchange);
         } catch (IntegrationException e) {
-            var error = new CommunicationError(Code.UNEXPECTED_ERROR, Main.getProperty("error.requestHandlingFailed"), e.getMessage());
+            var error = new CommunicationError(Code.UNEXPECTED_ERROR, translate("error.requestHandlingFailed"), e.getMessage());
             Response<CommunicationError> errorResponse = null;
+
             try {
                 errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error);
                 errorResponse.send();
-            } catch (Exception ex) {
-                throw new RuntimeException(String.format("Unable to send error response: %s", errorResponse.getBody()));
+            } catch (Throwable t) {
+                throw new RuntimeException(translate("error.responseFailed", errorResponse.getBody()));
             }
         }
     }
@@ -65,31 +67,35 @@ abstract class Endpoint implements HttpHandler {
      * @throws IOException
      */
     protected void verifyOrigin(HttpExchange exchange) throws IntegrationException {
-        var error = new CommunicationError(Code.UNEXPECTED_ORIGIN, Main.getProperty("error.unexpectedOrigin"));
+        var error = new CommunicationError(Code.UNEXPECTED_ORIGIN, translate("error.unexpectedOrigin"));
         var errorResponse =
                 new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_FORBIDDEN, error);
 
         // Don't allow remote address != localhost when listening on localhost
-        var hostname = Main.getProperty("server.hostname");
+        var hostname = server.getDefaultHostname();
         var listeningOnLocalhost = hostname.equals("localhost") || hostname.equals("127.0.0.1");
-        if (listeningOnLocalhost && !exchange.getRemoteAddress().getAddress().isLoopbackAddress()) {
+        var isLoopbackAddress = exchange.getRemoteAddress().getAddress().isLoopbackAddress();
+
+        if (listeningOnLocalhost && !isLoopbackAddress) {
             try {
                 errorResponse.send();
             } catch (IOException e) {
-                throw new IntegrationException(String.format("Unable to send error response: %s", Main.getProperty("error.unexpectedOrigin")));
+                throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed"), e);
             }
             return;
         }
 
         var allowedOrigin = server.getAllowedOrigin();
         var originHeader = exchange.getRequestHeaders().get("Origin");
+
         if (originHeader != null && !allowedOrigin.equals("*")) {
             var origin = originHeader.get(0);
+
             if (!origin.equals(allowedOrigin)) {
                 try {
                     errorResponse.send();
                 } catch (IOException e) {
-                    throw new IntegrationException(String.format("Unable to send error response: %s", Main.getProperty("error.unexpectedOrigin")));
+                    throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed"), e);
                 }
                 return;
             }
@@ -112,13 +118,14 @@ abstract class Endpoint implements HttpHandler {
         var requestMethod = exchange.getRequestMethod();
 
         if (!allowedMethodsList.contains(requestMethod)) {
-            var message = Main.getProperty("error.unsupportedOperation", String.join(", ", allowedMethodsList));
+            var message = translate("error.unsupportedOperation", String.join(", ", allowedMethodsList));
             var error = new CommunicationError(Code.UNSUPPORTED_OPERATION, message);
-            var response = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_BAD_METHOD, error);
+            var errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_BAD_METHOD, error);
+
             try {
-                response.send();
+                errorResponse.send();
             } catch (IOException e) {
-                throw new IntegrationException(String.format("Unable to send error response: %s", requestMethod, message));
+                throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed", message), e);
             }
         }
     }
@@ -130,28 +137,27 @@ abstract class Endpoint implements HttpHandler {
      * @throws IOException
      */
     protected <U> void useResponse(Response<U> response) throws IntegrationException {
-        if (response != null) {
-            try {
-                response.send();
-            } catch (IOException e) {
-                throw new IntegrationException(String.format("Unable to send error response: %s",
-                        Main.getProperty(String.format("error.unexpectedOrigin", response.getBody()))));
-            }
-        } else {
-            throw new IntegrationException("Unable to send error response: response is null");
+        if (response == null)
+            throw new IntegrationException(Code.NULL_ARGUMENT, "Unable to send error response: response is null");
+
+        try {
+            response.send();
+        } catch (IOException e) {
+            throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed"), e);
         }
     }
 
-    public <U> void rethrow(Response<U> response, TConsumer<Response<U>> consumer) throws IntegrationException {
+
+    public <U> void rethrow(Response<U> response, TConsumer<Response<U>> responseProcessor) throws IntegrationException {
         var description = response.getBody();
 
         if (description == null)
-            throw new IllegalStateException("Error with empty body");
+            throw new IntegrationException(Code.MALFORMED_INPUT, "error.responseInvalid");
 
         try {
-            consumer.accept(response);
+            responseProcessor.accept(response);
         } catch (IOException e) {
-            throw new IntegrationException(String.format("Unable to send error response \"%s\". Cause: %s", description, e));
+            throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", description), e);
         }
     }
 

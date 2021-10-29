@@ -1,12 +1,12 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.cli.command.Command;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -32,6 +32,11 @@ public class Main extends Application {
         READY
     }
 
+    private static final Locale skLocale = new Locale( "sk");
+    private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
+
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath, skLocale);
+
     private final CertificateManager certificateManager = new CertificateManager();
 
     public static void main(String[] args) {
@@ -45,7 +50,6 @@ public class Main extends Application {
 
             if (cliCommand instanceof ListenCommand) {
                 startServer((ListenCommand) cliCommand);
-
                 // Prevent exiting in server mode on last window close
                 Platform.setImplicitExit(false);
                 return;
@@ -83,7 +87,7 @@ public class Main extends Application {
         System.out.println("Running in server mode on " + server.getAddress().toString());
         if (server.isDevMode()) {
             var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
-            System.out.println(getProperty("text.documentationAvailableAt", docsAddress));
+            System.out.println(getProperty("txt.docsAvailableAt", docsAddress));
         }
 
         server.setOnSign((SignatureUnit signatureUnit) -> {
@@ -109,8 +113,8 @@ public class Main extends Application {
 
     private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) throws IntegrationException {
         var windowStage = new Stage();
+        var fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"), bundle);
 
-        var fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"), I18n.bundle);
         VBox root;
         try {
             root = fxmlLoader.load();
@@ -118,18 +122,18 @@ public class Main extends Application {
             throw new IntegrationException("Unable to load FXMLLoader", e);
         }
 
+        System.setProperty("javafx.sg.warn", "true");
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setSignatureUnit(signatureUnit);
+        controller.loadDocument();
         controller.setOnSigned((String signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });
 
-        controller.loadDocument();
-
         var scene = new Scene(root, 640, 480);
-        windowStage.setTitle(getProperty("application.name"));
+        windowStage.setTitle(getProperty("app.name"));
         windowStage.setScene(scene);
         windowStage.show();
     }
@@ -146,11 +150,6 @@ public class Main extends Application {
         return Objects.requireNonNull(Main.class.getResource(filename)).toExternalForm();
     }
 
-    private static final Locale skLocale = new Locale( "sk");
-    private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
-
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath, skLocale);
-
     public static String getProperty(String path) {
         return bundle.getString(path);
     }
@@ -159,7 +158,8 @@ public class Main extends Application {
         return String.format(bundle.getString(path), args);
     }
 
-    public static void logError(String s, Throwable t) {
-        // TODO implement this
+    public static String translate(String path, Object... args) {
+        if (args.length == 0) return getProperty(path);
+        else return getProperty(path, args);
     }
 }

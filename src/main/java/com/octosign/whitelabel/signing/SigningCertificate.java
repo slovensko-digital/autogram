@@ -3,7 +3,7 @@ package com.octosign.whitelabel.signing;
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.*;
@@ -22,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.List;
+
+import static com.octosign.whitelabel.ui.Main.translate;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -111,7 +113,7 @@ public abstract class SigningCertificate {
         try {
             keys = token.getKeys();
         } catch (Exception e) {
-            throw new RuntimeException("exc.keysNotRetrieved", e);
+            throw new RuntimeException(translate("error.keysNotRetrieved", e));
         }
 
         return keys;
@@ -157,10 +159,9 @@ public abstract class SigningCertificate {
 
         return Utils.toBase64(output.toByteArray());
     }
-    // TODO update these 2 sign methods appropriately to emerging needs after adding new signature types
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) throws IntegrationException {
         if (privateKey == null) {
-            throw new RuntimeException("exc.missingPrivateKey");
+            throw new RuntimeException(translate("error.missingPrivateKey"));
         }
 
         // TODO: Add trust for -LT/-LTA - requires use of qualified services
@@ -191,7 +192,7 @@ public abstract class SigningCertificate {
             signedDocument = service.signDocument(document, xadesParameters, signatureValue);
 
         } else
-            throw new IllegalArgumentException(String.format("Unknown document format: %s", format));
+            throw new IllegalArgumentException(translate("Unknown document format ", format));
 
         return signedDocument;
     }

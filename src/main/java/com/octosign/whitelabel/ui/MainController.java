@@ -3,25 +3,20 @@ package com.octosign.whitelabel.ui;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.error_handling.SignerException;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static com.octosign.whitelabel.ui.FX.displayError;
 import static com.octosign.whitelabel.ui.Main.getProperty;
@@ -32,6 +27,12 @@ import static com.octosign.whitelabel.ui.Main.getResourceString;
  * Controller for the signing window
  */
 public class MainController {
+
+    @FXML
+    public Button aboutButton;
+
+    @FXML
+    public Button certSettingsButton;
 
     @FXML
     private WebView webView;
@@ -91,7 +92,7 @@ public class MainController {
             String name = certificateManager
                 .getCertificate()
                 .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-            mainButton.setText(getProperty("text.sign", name));
+            mainButton.setText(getProperty("btn.signAs", name));
         }
 
         boolean isXML = document instanceof XMLDocument;
@@ -177,7 +178,7 @@ public class MainController {
         if (certificateManager.getCertificate() == null) {
             // No certificate means this is loading of certificates
             mainButton.setDisable(true);
-            mainButton.setText(getProperty("text.loading"));
+            mainButton.setText(getProperty("btn.loading"));
 
             CompletableFuture.runAsync(() -> {
                 String mainButtonText;
@@ -185,9 +186,9 @@ public class MainController {
                     String name = certificateManager
                         .getCertificate()
                         .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-                    mainButtonText = getProperty("text.sign", name);
+                    mainButtonText = getProperty("btn.signAs", name);
                 } else {
-                    mainButtonText = getProperty("text.loadSigners");
+                    mainButtonText = getProperty("btn.loadSigners");
                 }
                 Platform.runLater(() -> {
                     mainButton.setText(mainButtonText);
@@ -198,7 +199,7 @@ public class MainController {
             // Otherwise this is signing
             String previousButtonText = mainButton.getText();
             mainButton.setDisable(true);
-            mainButton.setText(getProperty("text.signing"));
+            mainButton.setText(getProperty("btn.signing"));
 
             CompletableFuture.runAsync(() -> {
                 try {

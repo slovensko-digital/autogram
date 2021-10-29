@@ -5,7 +5,7 @@ import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 import java.security.KeyStore.PasswordProtection;
 
-import static com.octosign.whitelabel.ui.Main.getProperty;
+import static com.octosign.whitelabel.ui.Main.translate;
 
 public class SigningCertificatePKCS12 extends SigningCertificate {
     /**
@@ -27,7 +27,7 @@ public class SigningCertificatePKCS12 extends SigningCertificate {
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
             token = new Pkcs12SignatureToken(pkcsPath, password);
         } catch (Exception e) {
-            throw new RuntimeException(getProperty("exc.pkcs12InitFailed", e));
+            throw new RuntimeException(translate("error.pkcs12InitFailed", e));
         }
     }
 }

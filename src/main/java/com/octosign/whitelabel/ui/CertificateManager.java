@@ -4,21 +4,13 @@ import com.octosign.whitelabel.signing.SigningCertificate;
 import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
 import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableView;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 
 import java.util.List;
 import java.util.Locale;
 
-import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.LONG;
 import static com.octosign.whitelabel.ui.FX.displayError;
-import static com.octosign.whitelabel.ui.I18n.getProperty;
-import static com.octosign.whitelabel.ui.Main.getProperty;
-import static java.util.Optional.ofNullable;
 
 /**
  * Holds currently used certificate and takes care of picking
@@ -41,24 +33,29 @@ public class CertificateManager {
      * Use dialog picker to choose the certificate
      */
     public SigningCertificate useDialogPicker() {
-        // TODO: Move out and implement actual logic
-
         Dialog<SigningCertificate> dialog = new Dialog<>();
-        dialog.setTitle(Main.getProperty("text.certificateSettings"));
-
+        dialog.setTitle(Main.getProperty("txt.certSettings"));
         FX.addStylesheets(dialog);
+
         var treeTableView = new TreeTableView<SigningCertificate>();
-        var nameColumn = new TreeTableColumn<SigningCertificate, String>(Main.getProperty("text.subjectName"));
-        nameColumn.setCellValueFactory(input ->
+        var nameColumn = new TreeTableColumn<SigningCertificate, String>(Main.getProperty("txt.subjectName"));
+
+    /*    nameColumn.setCellValueFactory(input ->
                 ofNullable(input.getValue())
                         .map(TreeItem::getValue)
                         .map(certificate -> certificate.getNicePrivateKeyDescription(LONG))
                         .map(SimpleStringProperty::new)
                         .orElse(null)
-        );
+        );*/
+
+        nameColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("olala "));
+        nameColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("olbla "));
+        nameColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("olcla "));
         treeTableView.getColumns().add(nameColumn);
         treeTableView.setRoot(new TreeItem<>(certificate));
 //        dialogPane.setContent(treeTableView);
+        ButtonType t = new ButtonType("cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().add(t);
 
         return dialog.showAndWait().orElse(null);
     }

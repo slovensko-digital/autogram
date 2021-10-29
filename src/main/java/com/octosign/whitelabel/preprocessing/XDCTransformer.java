@@ -2,7 +2,8 @@ package com.octosign.whitelabel.preprocessing;
 
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
-import com.octosign.whitelabel.ui.IntegrationException;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.xades.DSSXMLUtils;
@@ -24,7 +25,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static com.octosign.whitelabel.ui.Main.getProperty;
+import static com.octosign.whitelabel.ui.Main.translate;
 import static java.util.Objects.requireNonNull;
 
 
@@ -63,9 +64,9 @@ public class XDCTransformer {
         try {
             parseDOMDocument(xmlInput);
         } catch (SAXException | IOException e) {
-            throw new IntegrationException(getProperty("error.xmlParsingFailure", e));
+            throw new IntegrationException(Code.MALFORMED_INPUT, translate("error.xmlParsingFailure", e));
         } catch (ParserConfigurationException e) {
-            throw new IntegrationException(getProperty("error.builderConfigInvalid", e));
+            throw new IntegrationException(Code.UNEXPECTED_ERROR, translate("error.builderConfigInvalid", e));
         }
 
         try {
