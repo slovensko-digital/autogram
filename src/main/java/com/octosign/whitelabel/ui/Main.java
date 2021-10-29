@@ -62,11 +62,11 @@ public class Main extends Application {
                 return;
             }
         } catch (IntegrationException e) {
-            displayError("launchFailed", e);
+            displayError("error.launchFailed.header", "error.launchFailed.description", e);
             return;
         }
 
-        displayInfo("appLaunched");
+        displayInfo("info.appLaunched.header", "info.appLaunched.description");
     }
 
     private void startServer(ListenCommand command) {
@@ -75,7 +75,7 @@ public class Main extends Application {
         try {
             server = new Server(command.getInitialNonce());
         } catch (Throwable e) {
-            displayError("cannotListen");
+            displayError("error.cannotListen.header", "error.cannotListen.description", e);
             return;
         }
 
@@ -87,14 +87,14 @@ public class Main extends Application {
         try {
             server.start();
         } catch (Throwable e) {
-            displayError("cannotOpenWindow", e);
+            displayError("error.cannotOpenWindow.header", "error.cannotOpenWindow.description", e);
             return;
         }
 
-        System.out.println("Running in server mode on " + server.getAddress().toString());
+        System.out.println(translate("app.runningOn", server.getAddress()));
         if (server.isDevMode()) {
             var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
-            System.out.println(getProperty("txt.docsAvailableAt", docsAddress));
+            System.out.println(translate("text.docsAvailableAt", docsAddress));
         }
 
         server.setOnSign((SignatureUnit signatureUnit) -> {
@@ -108,7 +108,7 @@ public class Main extends Application {
                         future.complete(signedDocument);
                     });
                     } catch (IntegrationException e) {
-                        displayError("openingFailed", e);
+                        displayError("error.openingFailed.header", "error.openingFailed.description", e);
                     }
                 });
 
@@ -151,7 +151,7 @@ public class Main extends Application {
         try {
             fxmlLoader.load();
         } catch (IOException e) {
-            throw new IntegrationException("Unable to load FXMLLoader", e);
+            throw new IntegrationException("error.fxmlLoaderLoadingFailed", e);
         }
 
         return fxmlLoader;

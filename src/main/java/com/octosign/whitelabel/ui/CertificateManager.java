@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.octosign.whitelabel.ui.FX.displayError;
+import static com.octosign.whitelabel.ui.FX.displayIntegrationError;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
@@ -35,11 +36,11 @@ public class CertificateManager {
      */
     public SigningCertificate useDialogPicker() {
         Dialog<SigningCertificate> dialog = new Dialog<>();
-        dialog.setTitle(translate("txt.certSettings"));
+        dialog.setTitle(translate("text.certSettings"));
         FX.addStylesheets(dialog);
 
         var treeTableView = new TreeTableView<SigningCertificate>();
-        var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("txt.subjectName"));
+        var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("text.subjectName"));
 
     /*    nameColumn.setCellValueFactory(input ->
                 ofNullable(input.getValue())
@@ -83,7 +84,7 @@ public class CertificateManager {
         }
 
         if (certificate == null) {
-            displayError("tokenNotFound");
+            displayError("error.tokenNotFound.header", "error.tokenNotFound.description");
             return null;
         }
 
@@ -91,12 +92,12 @@ public class CertificateManager {
         try {
             keys = certificate.getAvailablePrivateKeys();
         } catch (Exception e) {
-            displayError("tokenNotAvailable", e);
+            displayError("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
             return null;
         }
 
         if (keys.size() == 0) {
-            displayError("tokenEmpty");
+            displayError("error.tokenEmpty.header", "error.tokenEmpty.description");
             return null;
         }
 

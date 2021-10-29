@@ -19,7 +19,7 @@
 
     <HBox styleClass="footer" alignment="CENTER" spacing="8">
         <Button fx:id="aboutButton" onAction="#onAboutButtonAction" styleClass="white">
-            <tooltip><Tooltip text="%txt.aboutHelp.header" showDelay="300ms" /></tooltip>
+            <tooltip><Tooltip text="%text.aboutHelp.header" showDelay="300ms" /></tooltip>
             <graphic>
                 <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                 <image>
@@ -37,7 +37,7 @@
             <Button fx:id="mainButton" onAction="#onMainButtonAction" text="%btn.loadSigners" styleClass="leftButton, primary" />
 
             <Button fx:id="certSettingsButton" onAction="#onCertSettingsButtonAction" styleClass="rightButton, primary">
-                <tooltip><Tooltip text="%txt.certSettings" showDelay="300ms" /></tooltip>
+                <tooltip><Tooltip text="%text.certSettings" showDelay="300ms" /></tooltip>
                 <graphic>
                     <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                     <image>

@@ -47,7 +47,7 @@ public class StatusIndication {
         VBox root = fxmlLoader.getRoot();
 
         var scene = new Scene(root, 320, 160);
-        windowStage.setTitle(getProperty("application.name"));
+        windowStage.setTitle(getProperty("app.name"));
         windowStage.setScene(scene);
         windowStage.setIconified(true);
         windowStage.setOnHidden((event) -> this.onExit.run());
@@ -61,7 +61,7 @@ public class StatusIndication {
         systemTray = SystemTray.get();
         if (systemTray != null) {
             systemTray.setImage(iconUrl);
-            systemTray.setStatus(getProperty("application.name"));
+            systemTray.setStatus(getProperty("app.name"));
             systemTray.getMenu().add(
                 new MenuItem(getProperty("text.quit"),
                 e-> Platform.runLater(onExit))

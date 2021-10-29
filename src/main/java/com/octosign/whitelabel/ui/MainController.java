@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.octosign.whitelabel.ui.FX.displayError;
+import static com.octosign.whitelabel.ui.FX.displayIntegrationError;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
@@ -109,7 +109,7 @@ public class MainController {
         if (hasSchema) {
             try { ((XMLDocument) document).validate(); }
             catch (Exception e) {
-                Platform.runLater(() -> displayError("invalidFormat", e));
+                Platform.runLater(() -> displayIntegrationError("invalidFormat", e));
                 return;
             }
         }
@@ -120,7 +120,7 @@ public class MainController {
                 var xmlDocument = (XMLDocument) document;
                 visualisation = xmlDocument.getTransformed();
             } catch (Exception e) {
-                Platform.runLater(() -> displayError("error.transformationFailed", e));
+                Platform.runLater(() -> displayIntegrationError("error.transformationFailed", e));
                 return;
             }
 
@@ -215,7 +215,7 @@ public class MainController {
                     String signedContent = certificateManager.getCertificate().sign(signatureUnit);
                     Platform.runLater(() -> onSigned.accept(signedContent));
                 } catch (Exception e) {
-                    Platform.runLater(() -> displayError("notSigned", e));
+                    Platform.runLater(() -> displayIntegrationError("notSigned", e));
                 } finally {
                     Platform.runLater(() -> {
                         mainButton.setText(previousButtonText);

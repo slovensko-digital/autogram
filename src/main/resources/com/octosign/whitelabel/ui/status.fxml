@@ -11,7 +11,7 @@
 
     alignment="CENTER"
 >
-    <Label fx:id="statusLabel" text="%txt.serverWaiting" styleClass="p3" />
+    <Label fx:id="statusLabel" text="%text.serverWaiting" styleClass="p3" />
 
-    <Button fx:id="exitButton" onAction="#onExitButtonAction" text="%txt.quit" styleClass="primary" />
+    <Button fx:id="exitButton" onAction="#onExitButtonAction" text="%text.quit" styleClass="primary" />
 </VBox>
