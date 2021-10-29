@@ -84,25 +84,25 @@ public class XMLDocument extends Document {
     }
 
     public void validate() throws IntegrationException {
-        if (content == null || schema == null) {
-            var missingAttribute = (content == null) ? "content" : "schema";
-            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent", missingAttribute));
-        }
-        var xsdSource = new StreamSource(new StringReader(schema));
-        Schema xsdSchema;
-
-        try {
-            xsdSchema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource);
-        } catch (SAXException e) {
-            throw new IntegrationException(Code.INVALID_SCHEMA, translate("error.xsdSchemaInvalid", e));
-        }
-
-        var xmlInSource = new StreamSource(new StringReader(content));
-
-        try {
-            xsdSchema.newValidator().validate(xmlInSource);
-        } catch (SAXException | IOException e) {
-            throw new IntegrationException(Code.VALIDATION_FAILED, translate("error.invalidXmlContent", e));
-        }
+//        if (content == null || schema == null) {
+//            var missingAttribute = (content == null) ? "content" : "schema";
+//            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent", missingAttribute));
+//        }
+//        var xsdSource = new StreamSource(new StringReader(schema));
+//        Schema xsdSchema;
+//
+//        try {
+//            xsdSchema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource);
+//        } catch (SAXException e) {
+//            throw new IntegrationException(Code.INVALID_SCHEMA, translate("error.xsdSchemaInvalid", e));
+//        }
+//
+//        var xmlInSource = new StreamSource(new StringReader(content));
+//
+//        try {
+//            xsdSchema.newValidator().validate(xmlInSource);
+//        } catch (SAXException | IOException e) {
+//            throw new IntegrationException(Code.VALIDATION_FAILED, translate("error.invalidXmlContent", e));
+//        }
     }
 }
