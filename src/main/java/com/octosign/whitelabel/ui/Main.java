@@ -30,7 +30,8 @@ public class Main extends Application {
 
     public enum Status {
         LOADING,
-        READY
+        READY,
+        ERROR
     }
 
     private static final Locale skLocale = new Locale( "sk");
