@@ -15,5 +15,6 @@ public enum Code {
         DECODING_FAILED,
         TRANSFORMATION_ERROR,
         UNEXPECTED_ORIGIN,
-        UNEXPECTED_ERROR
-    }
+        UNEXPECTED_ERROR,
+        MALFORMED_MIMETYPE
+}

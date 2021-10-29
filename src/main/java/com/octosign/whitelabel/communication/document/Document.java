@@ -18,37 +18,21 @@ public class Document implements Cloneable {
         this.legalEffect = legalEffect;
     }
 
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public void setId(String id) { this.id = id; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getTitle() { return title; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getContent() {
-        return content;
-    }
+    public String getContent() { return content; }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+    public void setContent(String content) { this.content = content; }
 
-    public String getLegalEffect() {
-        return legalEffect;
-    }
+    public String getLegalEffect() { return legalEffect; }
 
-    public void setLegalEffect(String legalEffect) {
-        this.legalEffect = legalEffect;
-    }
+    public void setLegalEffect(String legalEffect) { this.legalEffect = legalEffect; }
 
     @Override
     public Document clone() {

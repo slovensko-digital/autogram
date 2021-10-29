@@ -7,7 +7,9 @@
             "request": "launch",
             "mainClass": "com.octosign.whitelabel.ui.Main",
             "projectName": "whitelabel",
-            "vmArgs": "--illegal-access=warn --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED",
+            // Windows requires additional argument if using MSCAPI
+            // "vmArgs": "--add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED",
+            "vmArgs": "--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED",
             "args": "--url=\"signer://listen/37200/*\""
         }
     ]

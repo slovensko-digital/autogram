@@ -1,13 +1,16 @@
 .root {
-    -fx-padding: 8px;
     -fx-background-color: -bg-color;
 }
 
-.content {
+#textArea {
     -fx-background-color: #ffffff;
     -fx-text-fill: -dark-text-color;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .footer {
-    -fx-padding: 16px 0 8px 0;
+    -fx-padding: 16px;
 }

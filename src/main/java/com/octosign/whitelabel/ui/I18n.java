@@ -31,6 +31,11 @@ public class I18n {
         return String.format(path, args);
     }
 
+    public static String translate(String path, Object... args) {
+        if (args.length == 0) return getProperty(path);
+        else return getProperty(path, args);
+    }
+
 //    public static boolean isSupported(Locale locale) { return asList(Locale.getAvailableLocales()).contains(locale); }
 //    public static void setLocale(Locale locale) { Locale.setDefault(locale); }
 //    public static Locale getLocale() { return Locale.getDefault(); }

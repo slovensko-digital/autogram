@@ -1,6 +1,7 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
 import com.octosign.whitelabel.communication.CommunicationError;
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
@@ -12,8 +13,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.octosign.whitelabel.ui.Main.getProperty;
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Server API endpoint
@@ -49,8 +49,8 @@ abstract class WriteEndpoint<Q,S> extends Endpoint {
             Response<CommunicationError> errorResponse;
 
             if (request.getBodyFormat() == null) {
-                var supportedTypes = String.join(", ", request.getSupportedBodyFormats());
-                var error = new CommunicationError(Code.UNSUPPORTED_FORMAT, getProperty("error.invalidMimeType", supportedTypes));
+                var supportedTypes = String.join(", ", request.getSupportedBodyFormats().stream().map(MimeType::toString).toArray(String[]::new));
+                var error = new CommunicationError(Code.UNSUPPORTED_FORMAT, translate("error.invalidMimeType", supportedTypes));
                 errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_UNSUPPORTED_TYPE, error);
 
                 try {
@@ -62,7 +62,7 @@ abstract class WriteEndpoint<Q,S> extends Endpoint {
             }
 
             if (request.processBody(requestClass) == null) {
-                var error = new CommunicationError(Code.MALFORMED_INPUT, getProperty("error.malformedInput"));
+                var error = new CommunicationError(Code.MALFORMED_INPUT, translate("error.malformedInput"));
                 errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_BAD_REQUEST, error);
 
                 try {

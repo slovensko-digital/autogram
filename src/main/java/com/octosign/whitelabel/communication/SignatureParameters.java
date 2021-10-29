@@ -4,22 +4,16 @@ package com.octosign.whitelabel.communication;
  * Immutable parameters for signature creation
  */
 public class SignatureParameters {
-
     public enum Format {
         XADES,
         PADES
     }
 
     public enum Level {
-        XADES_BASELINE_B,
-        XADES_BASELINE_T,
-        XADES_BASELINE_LT,
-        XADES_BASELINE_LTA,
-
-        PADES_BASELINE_B,
-        PADES_BASELINE_T,
-        PADES_BASELINE_LT,
-        PADES_BASELINE_LTA,
+        BASELINE_B,
+        BASELINE_T,
+        BASELINE_LT,
+        BASELINE_LTA
     }
 
     public enum Container {
@@ -44,6 +38,8 @@ public class SignatureParameters {
         INCLUSIVE,
         EXCLUSIVE
     }
+
+    private String filename;
 
     private Format format;
 
@@ -71,13 +67,16 @@ public class SignatureParameters {
 
     private String transformation;
 
+    private String transformationOutputMimeType;
+
     private String schema;
 
     private String identifier;
 
     private String version;
 
-    public SignatureParameters(Format format, Level level, String fileMimeType, Container container, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String schema, String identifier, String version) {
+    public SignatureParameters(String filename, Format format, Level level, String fileMimeType, Container container, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String transformationOutputMimeType, String schema, String identifier, String version) {
+        this.filename = filename;
         this.format = format;
         this.level = level;
         this.fileMimeType = fileMimeType;
@@ -91,17 +90,19 @@ public class SignatureParameters {
         this.signaturePolicyId = signaturePolicyId;
         this.signaturePolicyContent = signaturePolicyContent;
         this.transformation = transformation;
+        this.transformationOutputMimeType = transformationOutputMimeType;
         this.schema = schema;
         this.identifier = identifier;
         this.version = version;
     }
 
-    public Format getFormat() {
-        return format;
-    }
+
+    public String getFilename() { return filename; }
+
+    public Format getFormat() { return format; }
 
     public Level getLevel() {
-        return level;
+        return level != null ? level : Level.BASELINE_B;
     }
 
     public String getFileMimeType() {
@@ -112,9 +113,13 @@ public class SignatureParameters {
         return container;
     }
 
-    public Packaging getPackaging() { return packaging; }
+    public Packaging getPackaging() {
+        return packaging != null ? packaging : Packaging.ENVELOPED;
+    }
 
-    public DigestAlgorithm getDigestAlgorithm() { return digestAlgorithm; }
+    public DigestAlgorithm getDigestAlgorithm() {
+        return digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
+    }
 
     public boolean isEn319132() {
         return en319132;
@@ -144,6 +149,10 @@ public class SignatureParameters {
         return transformation;
     }
 
+    public String getTransformationOutputMimeType() {
+        return transformationOutputMimeType;
+    }
+
     public String getSchema() {
         return schema;
     }
@@ -157,6 +166,8 @@ public class SignatureParameters {
     }
 
     public static class Builder {
+        private String filename;
+
         private Format format;
 
         private Level level;
@@ -183,6 +194,8 @@ public class SignatureParameters {
 
         private String transformation;
 
+        private String transformationOutputMimeType;
+
         private String schema;
 
         private String identifier;
@@ -194,6 +207,7 @@ public class SignatureParameters {
         public Builder(SignatureParameters tp) {
             if (tp == null) return;
 
+            this.filename = tp.filename;
             this.format = tp.format;
             this.level = tp.level;
             this.fileMimeType = tp.fileMimeType;
@@ -207,9 +221,15 @@ public class SignatureParameters {
             this.signaturePolicyId = tp.signaturePolicyId;
             this.signaturePolicyContent = tp.signaturePolicyContent;
             this.transformation = tp.transformation;
+            this.transformationOutputMimeType = tp.transformationOutputMimeType;
             this.schema = tp.schema;
             this.identifier = tp.identifier;
             this.version = tp.version;
+        }
+
+        public Builder filename(String filename) {
+            this.filename = filename;
+            return this;
         }
 
         public Builder format(Format format) {
@@ -277,6 +297,11 @@ public class SignatureParameters {
             return this;
         }
 
+        public Builder transformationOutputMimeType(String transformationOutputMimeType) {
+            this.transformationOutputMimeType = transformationOutputMimeType;
+            return this;
+        }
+
         public Builder schema(String schema) {
             this.schema = schema;
             return this;
@@ -293,7 +318,7 @@ public class SignatureParameters {
         }
 
         public SignatureParameters build() {
-            return new SignatureParameters(this.format, this.level, this.fileMimeType, this.container, this.packaging, this.digestAlgorithm, this.en319132, this.infoCanonicalization, this.propertiesCanonicalization, this.keyInfoCanonicalization, this.signaturePolicyId, this.signaturePolicyContent, this.transformation, this.schema, this.identifier, this.version);
+            return new SignatureParameters(this.filename, this.format, this.level, this.fileMimeType, this.container, this.packaging, this.digestAlgorithm, this.en319132, this.infoCanonicalization, this.propertiesCanonicalization, this.keyInfoCanonicalization, this.signaturePolicyId, this.signaturePolicyContent, this.transformation, this.transformationOutputMimeType, this.schema, this.identifier, this.version);
         }
     }
 }

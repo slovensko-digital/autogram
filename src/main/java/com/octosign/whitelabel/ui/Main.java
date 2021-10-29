@@ -16,13 +16,14 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static com.octosign.whitelabel.ui.FX.displayError;
 import static com.octosign.whitelabel.ui.FX.displayInfo;
+import static com.octosign.whitelabel.ui.I18n.getProperty;
+import static com.octosign.whitelabel.ui.I18n.translate;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
@@ -39,6 +40,10 @@ public class Main extends Application {
 
     private final CertificateManager certificateManager = new CertificateManager();
 
+    private StatusIndication statusIndication;
+
+    private Server server;
+
     public static void main(String[] args) {
         Application.launch(Main.class, args);
     }
@@ -50,7 +55,8 @@ public class Main extends Application {
 
             if (cliCommand instanceof ListenCommand) {
                 startServer((ListenCommand) cliCommand);
-                // Prevent exiting in server mode on last window close
+
+                statusIndication = new StatusIndication(this::exit);
                 Platform.setImplicitExit(false);
                 return;
             }
@@ -111,16 +117,17 @@ public class Main extends Application {
         server.setInfo(new Info(version, Status.READY));
     }
 
+    private void exit() {
+        if (statusIndication != null) statusIndication.dispose();
+        if (server != null) server.stop();
+        Platform.exit();
+    }
+
     private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) throws IntegrationException {
         var windowStage = new Stage();
-        var fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"), bundle);
 
-        VBox root;
-        try {
-            root = fxmlLoader.load();
-        } catch (IOException e) {
-            throw new IntegrationException("Unable to load FXMLLoader", e);
-        }
+        var fxmlLoader = loadWindow("main");
+        VBox root = fxmlLoader.getRoot();
 
         System.setProperty("javafx.sg.warn", "true");
         MainController controller = fxmlLoader.getController();
@@ -133,33 +140,26 @@ public class Main extends Application {
         });
 
         var scene = new Scene(root, 640, 480);
-        windowStage.setTitle(getProperty("app.name"));
+        windowStage.setTitle(translate("app.name"));
         windowStage.setScene(scene);
         windowStage.show();
     }
 
+    public static FXMLLoader loadWindow(String name) throws IntegrationException {
+        var fxmlLoader = new FXMLLoader(Main.class.getResource(name + ".fxml"), bundle);
+        try {
+            fxmlLoader.load();
+        } catch (IOException e) {
+            throw new IntegrationException("Unable to load FXMLLoader", e);
+        }
+
+        return fxmlLoader;
+    }
 
     /**
      * Application version as defined in pom if packaged or dev otherwise
      */
     public static String getVersion() {
         return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
-    }
-
-    public static String getResourceString(String filename) {
-        return Objects.requireNonNull(Main.class.getResource(filename)).toExternalForm();
-    }
-
-    public static String getProperty(String path) {
-        return bundle.getString(path);
-    }
-
-    public static String getProperty(String path, Object... args) {
-        return String.format(bundle.getString(path), args);
-    }
-
-    public static String translate(String path, Object... args) {
-        if (args.length == 0) return getProperty(path);
-        else return getProperty(path, args);
     }
 }

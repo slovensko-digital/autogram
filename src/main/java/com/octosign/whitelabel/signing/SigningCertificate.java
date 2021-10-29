@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.List;
 
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -163,33 +163,32 @@ public abstract class SigningCertificate {
         if (privateKey == null) {
             throw new RuntimeException(translate("error.missingPrivateKey"));
         }
-
-        // TODO: Add trust for -LT/-LTA - requires use of qualified services
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
-
-        var parameters = SignatureParameterMapper.map(inputParameters);
-        parameters.setSigningCertificate(privateKey.getCertificate());
-        parameters.setCertificateChain(privateKey.getCertificateChain());
-
         DSSDocument signedDocument;
         var format = inputParameters.getFormat();
 
         if (format.equals(SignatureParameters.Format.PADES)) {
-            var service = new PAdESService(commonCertificateVerifier);
-            var padesParameters = (PAdESSignatureParameters) parameters;
+            var parameters = SignatureParameterMapper.mapPAdESParameters(inputParameters);
+            parameters.setSigningCertificate(privateKey.getCertificate());
+            parameters.setCertificateChain(privateKey.getCertificateChain());
 
-            ToBeSigned dataToSign = service.getDataToSign(document, padesParameters);
-            SignatureValue signatureValue = token.sign(dataToSign, padesParameters.getDigestAlgorithm(), privateKey);
-            signedDocument = service.signDocument(document, padesParameters, signatureValue);
+            var service = new PAdESService(commonCertificateVerifier);
+            var dataToSign = service.getDataToSign(document,parameters);
+            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
+
+            signedDocument = service.signDocument(document, parameters, signatureValue);
 
         } else if (format.equals(SignatureParameters.Format.XADES)) {
-            var service = new ASiCWithXAdESService(commonCertificateVerifier);
-            var xadesParameters = (ASiCWithXAdESSignatureParameters) parameters;
+            var parameters = SignatureParameterMapper.mapXAdESParameters(inputParameters);
+            parameters.setSigningCertificate(privateKey.getCertificate());
+            parameters.setCertificateChain(privateKey.getCertificateChain());
 
-            ToBeSigned dataToSign = service.getDataToSign(document, xadesParameters);
-            SignatureValue signatureValue = token.sign(dataToSign, xadesParameters.getDigestAlgorithm(), privateKey);
+            var service = new ASiCWithXAdESService(commonCertificateVerifier);
+            var dataToSign = service.getDataToSign(document, parameters);
+            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
             assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
-            signedDocument = service.signDocument(document, xadesParameters, signatureValue);
+
+            signedDocument = service.signDocument(document, parameters, signatureValue);
 
         } else
             throw new IllegalArgumentException(translate("Unknown document format ", format));

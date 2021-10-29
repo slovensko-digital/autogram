@@ -8,10 +8,15 @@ import com.sun.net.httpserver.HttpExchange;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 
+import com.octosign.whitelabel.communication.MimeType;
+import com.octosign.whitelabel.communication.server.format.BodyFormat;
+import com.sun.net.httpserver.HttpExchange;
+
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Server response that conforms to request headers
@@ -20,7 +25,10 @@ public class Response<U> {
 
     private final HttpExchange exchange;
 
-    private final Map<String, BodyFormat> bodyFormats;
+    private final Map<MimeType, BodyFormat> bodyFormats = Map.of(
+        MimeType.JSON_UTF8, JSON,
+        MimeType.ANY, JSON // Default format
+    );
 
     private final BodyFormat bodyFormat;
 
@@ -31,22 +39,22 @@ public class Response<U> {
     public Response(HttpExchange exchange) throws IntegrationException {
         this.exchange = exchange;
 
-        try {
-            bodyFormats = Map.of(
-                    JSON.getMimeType(), JSON,
-                    "*/*", JSON // Default format
-            );
+        var accept = exchange.getRequestHeaders().get("Accept");
 
-            var contentType = exchange.getRequestHeaders().get("Accept");
-            bodyFormat = contentType.stream()
-                    .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-                    .filter(bodyFormats::containsKey)
-                    .findFirst()
-                    .map(bodyFormats::get)
-                    // We would rather return something in unaccepted type than nothing
-                    .orElseGet(() -> bodyFormats.get("*/*"));
-        } catch (Exception ex) {
-            throw new IntegrationException(Code.MALFORMED_INPUT, translate("Invalid request/parsing error", ex));
+        if (accept != null) {
+            // TODO: Consider all mime types
+            var contentMimeType = Arrays.asList(accept.get(0).split(",")).stream()
+                .map(raw -> MimeType.parse(raw))
+                .findFirst()
+                .get();
+
+            bodyFormat = bodyFormats.keySet().stream()
+                .filter(m -> m.equalsTypeSubtype(contentMimeType))
+                .findFirst()
+                .map(m -> bodyFormats.get(m))
+                .orElse(bodyFormats.get(MimeType.ANY));
+        } else {
+            bodyFormat = bodyFormats.get(MimeType.ANY);
         }
     }
 
@@ -80,9 +88,8 @@ public class Response<U> {
         // TODO: Check Accept header instead of hardcoding UTF-8
         var bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 
-        headers.set("Content-Type", "application/json; charset=UTF-8");
+        headers.set("Content-Type", bodyFormat.getMimeType().toString());
 
-        // automatically closes stream
         try (var stream = exchange.getResponseBody()) {
             exchange.sendResponseHeaders(statusCode, bodyBytes.length);
             stream.write(bodyBytes);

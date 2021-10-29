@@ -6,7 +6,7 @@ import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import java.io.File;
 import java.util.Locale;
 
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class SigningCertificatePKCS11 extends SigningCertificate {
     /**

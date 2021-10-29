@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.octosign.whitelabel.ui.FX.displayError;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Holds currently used certificate and takes care of picking
@@ -34,11 +35,11 @@ public class CertificateManager {
      */
     public SigningCertificate useDialogPicker() {
         Dialog<SigningCertificate> dialog = new Dialog<>();
-        dialog.setTitle(Main.getProperty("txt.certSettings"));
+        dialog.setTitle(translate("txt.certSettings"));
         FX.addStylesheets(dialog);
 
         var treeTableView = new TreeTableView<SigningCertificate>();
-        var nameColumn = new TreeTableColumn<SigningCertificate, String>(Main.getProperty("txt.subjectName"));
+        var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("txt.subjectName"));
 
     /*    nameColumn.setCellValueFactory(input ->
                 ofNullable(input.getValue())

@@ -1,7 +1,6 @@
 package com.octosign.whitelabel.communication;
 
 import com.google.common.collect.ImmutableMap;
-import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -12,26 +11,25 @@ import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.util.Map;
 
-import static com.octosign.whitelabel.communication.SignatureParameters.CanonicalizationMethod.EXCLUSIVE;
 import static com.octosign.whitelabel.communication.SignatureParameters.CanonicalizationMethod.INCLUSIVE;
 import static com.octosign.whitelabel.communication.SignatureParameters.Container.ASICE;
 import static com.octosign.whitelabel.communication.SignatureParameters.Container.ASICS;
 import static com.octosign.whitelabel.communication.SignatureParameters.DigestAlgorithm.*;
-import static com.octosign.whitelabel.communication.SignatureParameters.Level.*;
-import static com.octosign.whitelabel.communication.SignatureParameters.Packaging.*;
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
+import static com.octosign.whitelabel.communication.SignatureParameters.Level.BASELINE_B;
+import static com.octosign.whitelabel.communication.SignatureParameters.Packaging.ENVELOPED;
+import static com.octosign.whitelabel.communication.SignatureParameters.Packaging.ENVELOPING;
+import static eu.europa.esig.dss.enumerations.SignatureLevel.PAdES_BASELINE_B;
+import static eu.europa.esig.dss.enumerations.SignatureLevel.XAdES_BASELINE_B;
 
 public class SignatureParameterMapper {
-    private static final Map<SignatureParameters.Level, SignatureLevel> signatureLevelMapping =
-        Map.of(
-            XADES_BASELINE_B, SignatureLevel.XAdES_BASELINE_B,
-            XADES_BASELINE_T, SignatureLevel.XAdES_BASELINE_T,
-            XADES_BASELINE_LT, SignatureLevel.XAdES_BASELINE_LT,
-            XADES_BASELINE_LTA, SignatureLevel.XAdES_BASELINE_LTA,
-
-            PADES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B,
-            PADES_BASELINE_T, SignatureLevel.PAdES_BASELINE_T,
-            PADES_BASELINE_LT, SignatureLevel.PAdES_BASELINE_LT,
-            PADES_BASELINE_LTA, SignatureLevel.PAdES_BASELINE_LTA
+    private static final Map<SignatureParameters.Level, Map<SignatureParameters.Format, SignatureLevel>> signatureLevelMapping =
+        ImmutableMap.of(
+            BASELINE_B, ImmutableMap.of(
+                            XADES, XAdES_BASELINE_B,
+                            PADES, PAdES_BASELINE_B
+                        )
         );
 
     private static final Map<SignatureParameters.Container, ASiCContainerType> asicContainerTypeMapping =
@@ -50,33 +48,21 @@ public class SignatureParameterMapper {
     private static final Map<SignatureParameters.Packaging, SignaturePackaging> signaturePackagingMapping =
         ImmutableMap.of(
             ENVELOPED, SignaturePackaging.ENVELOPED,
-            ENVELOPING, SignaturePackaging.ENVELOPING,
-            DETACHED, SignaturePackaging.DETACHED,
-            INTERNALLY_DETACHED, SignaturePackaging.INTERNALLY_DETACHED
+            ENVELOPING, SignaturePackaging.ENVELOPING
         );
 
     private static final Map<SignatureParameters.CanonicalizationMethod, String> canonicalizationMethodMapping =
         ImmutableMap.of(
-            EXCLUSIVE, CanonicalizationMethod.EXCLUSIVE,
             INCLUSIVE, CanonicalizationMethod.INCLUSIVE
         );
 
-    public static SignatureLevel map(SignatureParameters.Level level) { return signatureLevelMapping.get(level); }
+    public static SignatureLevel map(SignatureParameters.Level level) { return signatureLevelMapping.get(level).get(XADES); }
     public static ASiCContainerType map(SignatureParameters.Container container) { return asicContainerTypeMapping.get(container); }
     public static DigestAlgorithm map(SignatureParameters.DigestAlgorithm digestAlgorithm) { return digestAlgorithMapping.get(digestAlgorithm); }
     public static SignaturePackaging map(SignatureParameters.Packaging packaging) { return signaturePackagingMapping.get(packaging); }
     public static String map(SignatureParameters.CanonicalizationMethod canonicalizationMethod) { return canonicalizationMethodMapping.get(canonicalizationMethod); }
 
-    public static AbstractSignatureParameters<?> map(SignatureParameters source) {
-        return switch (source.getFormat()) {
-            case XADES: yield buildXAdESParameters(source);
-            case PADES: yield buildPAdESParameters(source);
-
-            default: throw new AssertionError();
-        };
-    }
-
-    private static ASiCWithXAdESSignatureParameters buildXAdESParameters(SignatureParameters sp) {
+    public static ASiCWithXAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) {
         var parameters = new ASiCWithXAdESSignatureParameters();
 
         parameters.aSiC().setContainerType(map(sp.getContainer()));
@@ -91,7 +77,7 @@ public class SignatureParameterMapper {
         return parameters;
     }
 
-    private static PAdESSignatureParameters buildPAdESParameters(SignatureParameters sp) {
+    public static PAdESSignatureParameters mapPAdESParameters(SignatureParameters sp) {
         var parameters = new PAdESSignatureParameters();
 
         parameters.setSignatureLevel(map(sp.getLevel()));

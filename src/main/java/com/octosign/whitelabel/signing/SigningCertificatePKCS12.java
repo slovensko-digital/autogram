@@ -5,7 +5,7 @@ import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 import java.security.KeyStore.PasswordProtection;
 
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class SigningCertificatePKCS12 extends SigningCertificate {
     /**

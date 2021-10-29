@@ -1,12 +1,14 @@
 package com.octosign.whitelabel.ui;
 
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
-import com.octosign.whitelabel.error_handling.SignerException;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -14,14 +16,17 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.octosign.whitelabel.ui.FX.displayError;
-import static com.octosign.whitelabel.ui.Main.getProperty;
-import static com.octosign.whitelabel.ui.Main.getResourceString;
-
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Controller for the signing window
@@ -82,6 +87,7 @@ public class MainController {
 
     public void loadDocument() {
         var document = signatureUnit.getDocument();
+        var parameters = signatureUnit.getSignatureParameters();
 
         if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
@@ -92,7 +98,7 @@ public class MainController {
             String name = certificateManager
                 .getCertificate()
                 .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-            mainButton.setText(getProperty("btn.signAs", name));
+            mainButton.setText(translate("btn.signAs", name));
         }
 
         boolean isXML = document instanceof XMLDocument;
@@ -109,64 +115,67 @@ public class MainController {
         }
 
         if (hasTransformation) {
-            webView.setManaged(true);
-            textArea.setManaged(false);
-            textArea.setVisible(false);
+            String visualisation;
+            try {
+                var xmlDocument = (XMLDocument) document;
+                visualisation = xmlDocument.getTransformed();
+            } catch (Exception e) {
+                Platform.runLater(() -> displayError("error.transformationFailed", e));
+                return;
+            }
 
-            CompletableFuture.runAsync(() -> {
-                String visualization;
-                try {
-                    var xmlDocument = (XMLDocument) document;
-                    visualization = "<pre>" + xmlDocument.getTransformed() + "</pre>";
-                } catch (SignerException e) {
-                    Platform.runLater(() -> displayError("visualizationError", e));
-                    return;
+            var transformationOutputType = parameters.getTransformationOutputMimeType() == null
+                ? MimeType.HTML
+                : MimeType.parse(parameters.getTransformationOutputMimeType());
+
+            if (transformationOutputType.equalsTypeSubtype(MimeType.HTML)) {
+                displayHTMLVisualisation(visualisation);
+            } else {
+                displayPlainTextVisualisation(visualisation);
+            }
+        } else if(isPDF) {
+            displayPDFVisualisation(document);
+        } else {
+            displayPlainTextVisualisation(document.getContent());
+        }
+    }
+
+    private void displayPlainTextVisualisation(String visualisation) {
+        webView.setManaged(false);
+        textArea.setText(visualisation);
+    }
+
+    private void displayHTMLVisualisation(String visualisation) {
+        textArea.setManaged(false);
+
+        var webEngine = webView.getEngine();
+        webEngine.getLoadWorker().stateProperty().addListener(
+            (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
                 }
+            }
+        );
+        webEngine.loadContent(getResourceAsString("visualization.html"));
+    }
 
-                Platform.runLater(() -> {
-                    var webEngine = webView.getEngine();
-                    webEngine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
-                            if (newState == Worker.State.SUCCEEDED) {
-                                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualization);
-                            }
-                        }
-                    );
-                    webEngine.load(getResourceString("visualization.html"));
-                });
+    private void displayPDFVisualisation(Document document) {
+        textArea.setManaged(false);
+        textArea.setVisible(false);
+
+        Platform.runLater(() -> {
+            var engine = webView.getEngine();
+            engine.setJavaScriptEnabled(true);
+
+            engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    WebViewLogger.register(engine);
+                    engine.executeScript("displayPdf('" + document.getContent() + "')");
+                }
             });
-        }
 
-        if (isPDF) {
-//            // TODO keep - ???
-//            webView.setManaged(false);
-//            textArea.setManaged(true);
-//            textArea.setVisible(true);
-//            textArea.setText(document.getContent());
-
-            webView.setManaged(true);
-            textArea.setManaged(false);
-            textArea.setVisible(false);
-
-            Platform.runLater(() -> {
-                var engine = webView.getEngine();
-                engine.setJavaScriptEnabled(true);
-
-                // TODO - ???
-                //engine.setUserStyleSheetLocation(Main.class.getResource("pdfjs/web/viewer.css").toExternalForm());
-                engine.setUserStyleSheetLocation(getResourceString("pdf.viewer.css"));
-
-                engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
-                    if (newState == Worker.State.SUCCEEDED) {
-                        engine.executeScript("openFileFromBase64('" + document.getContent() + "')");
-                    }
-                });
-
-                engine.load(getResourceString("pdfjs/web/viewer.html"));
-            });
-        }
-
-        if (!isXML && !isPDF) throw new RuntimeException("error.unsupportedDocumentFormat");
-
+            engine.load(Main.class.getResource("pdf.html").toExternalForm());
+        });
     }
 
     public void setOnSigned(Consumer<String> onSigned) {
@@ -178,7 +187,7 @@ public class MainController {
         if (certificateManager.getCertificate() == null) {
             // No certificate means this is loading of certificates
             mainButton.setDisable(true);
-            mainButton.setText(getProperty("btn.loading"));
+            mainButton.setText(translate("btn.loading"));
 
             CompletableFuture.runAsync(() -> {
                 String mainButtonText;
@@ -186,9 +195,9 @@ public class MainController {
                     String name = certificateManager
                         .getCertificate()
                         .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-                    mainButtonText = getProperty("btn.signAs", name);
+                    mainButtonText = translate("btn.signAs", name);
                 } else {
-                    mainButtonText = getProperty("btn.loadSigners");
+                    mainButtonText = translate("btn.loadSigners");
                 }
                 Platform.runLater(() -> {
                     mainButton.setText(mainButtonText);
@@ -199,7 +208,7 @@ public class MainController {
             // Otherwise this is signing
             String previousButtonText = mainButton.getText();
             mainButton.setDisable(true);
-            mainButton.setText(getProperty("btn.signing"));
+            mainButton.setText(translate("btn.signing"));
 
             CompletableFuture.runAsync(() -> {
                 try {
@@ -227,4 +236,20 @@ public class MainController {
         certificateManager.useDialogPicker();
     }
 
+    /**
+     * Get resource from the ui resources as string using name
+     */
+    private static String getResourceAsString(String resourceName) {
+        try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
+            if (inputStream == null) throw new Exception("Resource not found");
+            try (
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                BufferedReader reader = new BufferedReader(inputStreamReader)
+            ) {
+                return reader.lines().collect(Collectors.joining(System.lineSeparator()));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load resource " + resourceName, e);
+        }
+    }
 }

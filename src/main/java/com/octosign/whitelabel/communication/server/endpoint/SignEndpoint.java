@@ -18,8 +18,7 @@ import java.util.function.Function;
 
 import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
 import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
-import static com.octosign.whitelabel.ui.Main.translate;
-import static com.octosign.whitelabel.ui.Main.getProperty;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
@@ -36,7 +35,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     @Override
     protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) throws IntegrationException {
         if (onSign == null) {
-            var error = new CommunicationError(Code.NOT_READY, getProperty("error.serverNotReady"));
+            var error = new CommunicationError(Code.NOT_READY, translate("error.serverNotReady"));
             var errorResponse = new Response<CommunicationError>(request.getExchange()).asError(HttpURLConnection.HTTP_CONFLICT, error);
 
             try {
@@ -61,7 +60,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         } catch (Exception e) {
             // TODO: We should do a better job with the error response here:
             // We can differentiate between application errors (500), user errors (502), missing certificate/UI closed (503)
-            var error = new CommunicationError(Code.SIGNING_FAILED, getProperty("error.signingFailed"), e.getMessage());
+            var error = new CommunicationError(Code.SIGNING_FAILED, translate("error.signingFailed"), e.getMessage());
             var errorResponse = new Response<CommunicationError>(request.getExchange()).asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error);
 
             try {
@@ -99,11 +98,13 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         var parameters = signRequest.getParameters();
         var mimeType = MimeType.parse(signRequest.getPayloadMimeType());
 
-        return switch (mimeType.getType()) {
-            case XMLDocument.MIME_TYPE -> buildXMLDocument(document, parameters, mimeType);
-            case PDFDocument.MIME_TYPE -> new PDFDocument(document);
-            default -> throw new IllegalArgumentException(String.format("Unsupported MIME type: %s", mimeType.getType()));
-        };
+        if (mimeType.equalsTypeSubtype(MimeType.XML)) {
+            return buildXMLDocument(document, parameters, mimeType);
+        } else if(mimeType.equalsTypeSubtype(MimeType.PDF)) {
+            return new PDFDocument(document);
+        } else {
+            throw new IllegalArgumentException("Unsupported MIME type");
+        }
     }
 
     private static XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) throws IntegrationException {

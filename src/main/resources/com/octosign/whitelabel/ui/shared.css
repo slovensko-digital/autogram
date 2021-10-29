@@ -19,7 +19,6 @@
  * Panel
  */
 .panel {
-    -fx-background-radius: 4;
     -fx-font-size: 1.25em;
 }
 .panel.secondary {
@@ -79,4 +78,56 @@ Button:hover {
 
 .p3 {
     -fx-padding: 8px;
+}
+
+/**
+ * Scrollbar overrides
+ */
+.scroll-bar {
+    -fx-background-color: transparent;
+    -fx-pref-width: 1em;
+    -fx-padding: 4;
+}
+.track {
+    -fx-background-color: rgba(0, 0, 0, 0.1);
+    -fx-border-color: transparent;
+    -fx-background-radius: 2em;
+}
+.thumb {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-background-insets: 0 0 0 0;
+    -fx-background-radius: 2em;
+}
+.thumb:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.7);
+}
+.thumb:active {
+    -fx-background-color: -primary-color;
+}
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 2em;
+    -fx-padding: 5;
+}
+.scroll-bar:horizontal .increment-arrow,
+.scroll-bar:vertical .increment-arrow,
+.scroll-bar:horizontal .decrement-arrow,
+.scroll-bar:vertical .decrement-arrow {
+    -fx-shape: "M 0 0 L 4 8 L 8 0 Z";
+    -fx-padding: 0.2em;
+    -fx-rotate: -90;
+}
+.scroll-bar:vertical .increment-arrow {
+    -fx-rotate: 0;
+}
+.scroll-bar:horizontal .decrement-arrow {
+    -fx-rotate: 90;
+}
+.scroll-bar:vertical .decrement-arrow {
+    -fx-rotate: -180;
+}
+.scroll-bar:vertical:focus,
+.scroll-bar:horizontal:focus {
+    -fx-background-color: transparent, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5);
 }

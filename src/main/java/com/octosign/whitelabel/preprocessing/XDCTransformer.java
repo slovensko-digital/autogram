@@ -25,7 +25,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 import static java.util.Objects.requireNonNull;
 
 
@@ -125,6 +125,7 @@ public class XDCTransformer {
         var element = document.createElement("XMLDataContainer");
         element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
         element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        // TODO: Make additional attributes configurable via parameters - this can't be hardcoded to data.gov.sk
         element.setAttribute("xmlns", "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1");
 
         return element;

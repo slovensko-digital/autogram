@@ -1,5 +1,6 @@
 package com.octosign.whitelabel.communication.server;
 
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
@@ -11,13 +12,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class Request<T> {
 
     private final HttpExchange exchange;
 
-    private final Map<String, BodyFormat> bodyFormats;
+    private final Map<MimeType, BodyFormat> bodyFormats = Map.of(
+            MimeType.JSON, JSON,
+            MimeType.PLAIN, JSON, // Plain is considered JSON so clients can prevent CORS preflight
+            MimeType.ANY, JSON // Implicit default format
+    );
 
     private final BodyFormat bodyFormat;
 
@@ -29,20 +34,14 @@ public class Request<T> {
         this.exchange = exchange;
 
         try {
-            bodyFormats = Map.of(
-                    JSON.getMimeType(), JSON,
-                    "text/plain", JSON, // Considered JSON so clients can prevent CORS preflight
-                    "*/*", JSON // Implicit default format
-            );
-
             var contentType = exchange.getRequestHeaders().get("Content-Type");
             if (contentType != null) {
-                bodyFormat = contentType.stream()
-                        .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-                        .filter(bodyFormats::containsKey)
+                var contentMimeType = MimeType.parse(contentType.get(0));
+                bodyFormat = bodyFormats.keySet().stream()
+                        .filter(m -> m.equalsTypeSubtype(contentMimeType))
                         .findFirst()
-                        .map(bodyFormats::get)
-                        .orElseGet(() -> contentType.isEmpty() ? bodyFormats.get("*/*") : null);
+                        .map(m -> bodyFormats.get(m))
+                        .orElse(bodyFormats.get(MimeType.ANY));
             } else {
                 bodyFormat = null;
             }
@@ -57,14 +56,18 @@ public class Request<T> {
         return exchange;
     }
 
-    public BodyFormat getBodyFormat() { return bodyFormat; }
+    public BodyFormat getBodyFormat() {
+        return bodyFormat;
+    }
 
-    public QueryParams getQueryParams() { return queryParams; }
+    public QueryParams getQueryParams() {
+        return queryParams;
+    }
 
     /**
      * List of supported body MIME types
      */
-    public List<String> getSupportedBodyFormats() {
+    public List<MimeType> getSupportedBodyFormats() {
         return new ArrayList<>(bodyFormats.keySet());
     }
 
@@ -74,9 +77,10 @@ public class Request<T> {
 
     /**
      * Retrieves and sets body as expected object
-     *
+     * <p>
      * Must be called only once
      *
+     * @param <T>       Expected object in the body
      * @param bodyClass Class of the expected object in the body
      */
     public T processBody(Class<T> bodyClass) {
@@ -94,9 +98,7 @@ public class Request<T> {
 
 
     /**
-     *
      * Inner class encapsulating logic for reading and handling query params
-     *
      */
     public static class QueryParams {
         private final List<Param> params;

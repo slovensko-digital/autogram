@@ -11,18 +11,21 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+
+import com.octosign.whitelabel.communication.MimeType;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * XML document for signing
  */
 public class XMLDocument extends Document {
 
-    public static final String MIME_TYPE = "application/xml";
+    public static final MimeType MIME_TYPE = MimeType.XML;
 
     protected String transformation;
     protected String schema;
@@ -84,25 +87,25 @@ public class XMLDocument extends Document {
     }
 
     public void validate() throws IntegrationException {
-//        if (content == null || schema == null) {
-//            var missingAttribute = (content == null) ? "content" : "schema";
-//            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent", missingAttribute));
-//        }
-//        var xsdSource = new StreamSource(new StringReader(schema));
-//        Schema xsdSchema;
-//
-//        try {
-//            xsdSchema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource);
-//        } catch (SAXException e) {
-//            throw new IntegrationException(Code.INVALID_SCHEMA, translate("error.xsdSchemaInvalid", e));
-//        }
-//
-//        var xmlInSource = new StreamSource(new StringReader(content));
-//
-//        try {
-//            xsdSchema.newValidator().validate(xmlInSource);
-//        } catch (SAXException | IOException e) {
-//            throw new IntegrationException(Code.VALIDATION_FAILED, translate("error.invalidXmlContent", e));
-//        }
+        if (content == null || schema == null) {
+            var missingAttribute = (content == null) ? "content" : "schema";
+            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent", missingAttribute));
+        }
+        var xsdSource = new StreamSource(new StringReader(schema));
+        Schema xsdSchema;
+
+        try {
+            xsdSchema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource);
+        } catch (SAXException e) {
+            throw new IntegrationException(Code.INVALID_SCHEMA, translate("error.xsdSchemaInvalid", e));
+        }
+
+        var xmlInSource = new StreamSource(new StringReader(content));
+
+        try {
+            xsdSchema.newValidator().validate(xmlInSource);
+        } catch (SAXException | IOException e) {
+            throw new IntegrationException(Code.VALIDATION_FAILED, translate("error.invalidXmlContent", e));
+        }
     }
 }

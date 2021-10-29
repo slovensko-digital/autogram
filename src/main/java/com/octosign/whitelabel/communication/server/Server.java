@@ -63,6 +63,10 @@ public class Server {
         server.start();
     }
 
+    public void stop() {
+        server.stop(0);
+    }
+
     public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
         signEndpoint.setOnSign(onSign);
     }

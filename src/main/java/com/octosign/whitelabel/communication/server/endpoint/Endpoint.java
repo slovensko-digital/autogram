@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Server API endpoint with no request or response abstraction
