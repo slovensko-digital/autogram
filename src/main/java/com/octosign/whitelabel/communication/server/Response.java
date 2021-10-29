@@ -1,5 +1,10 @@
 package com.octosign.whitelabel.communication.server;
 
+import com.octosign.whitelabel.communication.server.format.BodyFormat;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.sun.net.httpserver.HttpExchange;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +16,7 @@ import com.octosign.whitelabel.communication.server.format.BodyFormat;
 import com.sun.net.httpserver.HttpExchange;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Server response that conforms to request headers
@@ -30,7 +36,7 @@ public class Response<U> {
 
     private U body;
 
-    public Response(HttpExchange exchange) {
+    public Response(HttpExchange exchange) throws IntegrationException {
         this.exchange = exchange;
 
         var accept = exchange.getRequestHeaders().get("Accept");
@@ -83,12 +89,13 @@ public class Response<U> {
         var bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 
         headers.set("Content-Type", bodyFormat.getMimeType().toString());
-        exchange.sendResponseHeaders(statusCode, bodyBytes.length);
 
-        // automatically closes stream
         try (var stream = exchange.getResponseBody()) {
+            exchange.sendResponseHeaders(statusCode, bodyBytes.length);
             stream.write(bodyBytes);
         }
+//        catch (IOException e) {
+//            throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", body));
+//        }
     }
-
 }

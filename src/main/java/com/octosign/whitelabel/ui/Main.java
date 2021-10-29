@@ -1,50 +1,42 @@
 package com.octosign.whitelabel.ui;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ResourceBundle;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-
-import com.octosign.whitelabel.cli.command.Command;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
-
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import com.octosign.whitelabel.cli.command.Command;
-import com.octosign.whitelabel.cli.command.CommandFactory;
-import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.Info;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Server;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
+import static com.octosign.whitelabel.ui.FX.displayError;
+import static com.octosign.whitelabel.ui.FX.displayInfo;
+import static com.octosign.whitelabel.ui.I18n.getProperty;
+import static com.octosign.whitelabel.ui.I18n.translate;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
-    
+
     public enum Status {
         LOADING,
         READY
     }
 
+    private static final Locale skLocale = new Locale( "sk");
     private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
+
+    private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath, skLocale);
 
     private final CertificateManager certificateManager = new CertificateManager();
 
@@ -58,55 +50,31 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Command cliCommand;
         try {
-            cliCommand = CommandFactory.fromParameters(getParameters());
-        } catch (Throwable e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotUseParameters"),
-                e
-            );
+            var cliCommand = CommandFactory.fromParameters(getParameters());
+
+            if (cliCommand instanceof ListenCommand) {
+                startServer((ListenCommand) cliCommand);
+
+                statusIndication = new StatusIndication(this::exit);
+                Platform.setImplicitExit(false);
+                return;
+            }
+        } catch (IntegrationException e) {
+            displayError("launchFailed", e);
             return;
         }
 
-        if (cliCommand instanceof ListenCommand) {
-            startServer((ListenCommand) cliCommand);
-
-            statusIndication = new StatusIndication(() -> this.exit());
-
-            // Prevent exiting in server mode on last window close
-            Platform.setImplicitExit(false);
-            return;
-        }
-
-        // No CLI command means standalone GUI mode
-        // TODO: Show something more useful, this should be either:
-        // 1. Standalone mode once it gets implemented
-        // 2. Info about the app and how it is launched from the web
-        displayAlert(
-            AlertType.INFORMATION,
-            getProperty("application.name"),
-            "Application is installed",
-            "Start signing from the web."
-        );
+        displayInfo("appLaunched");
     }
 
     private void startServer(ListenCommand command) {
         var version = getVersion();
-        var hostname = getProperty("server.hostname");
-        var port = command.getPort() > 0
-            ? command.getPort()
-            : Integer.parseInt(getProperty("server.defaultPort"));
-
+        Server server;
         try {
-            server = new Server(hostname, port, command.getInitialNonce());
+            server = new Server(command.getInitialNonce());
         } catch (Throwable e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotListen"),
-                e
-            );
+            displayError("cannotListen");
             return;
         }
 
@@ -118,29 +86,30 @@ public class Main extends Application {
         try {
             server.start();
         } catch (Throwable e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotListen"),
-                e
-            );
+            displayError("cannotOpenWindow", e);
             return;
         }
+
         System.out.println("Running in server mode on " + server.getAddress().toString());
         if (server.isDevMode()) {
             var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
-            System.out.println("Documentation is available in dev mode at " + docsAddress);
+            System.out.println(getProperty("txt.docsAvailableAt", docsAddress));
         }
 
         server.setOnSign((SignatureUnit signatureUnit) -> {
             var future = new CompletableFuture<Document>();
 
-            Platform.runLater(() -> {
-                openWindow(signatureUnit, (String signedContent) -> {
-                    Document signedDocument = signatureUnit.getDocument().clone();
-                    signedDocument.setContent(signedContent);
-                    future.complete(signedDocument);
+                Platform.runLater(() -> {
+                    try {
+                    openWindow(signatureUnit, (String signedContent) -> {
+                        var signedDocument = signatureUnit.getDocument().clone();
+                        signedDocument.setContent(signedContent);
+                        future.complete(signedDocument);
+                    });
+                    } catch (IntegrationException e) {
+                        displayError("openingFailed", e);
+                    }
                 });
-            });
 
             return future;
         });
@@ -154,112 +123,37 @@ public class Main extends Application {
         Platform.exit();
     }
 
-    private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) {
+    private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) throws IntegrationException {
         var windowStage = new Stage();
 
         var fxmlLoader = loadWindow("main");
         VBox root = fxmlLoader.getRoot();
 
+        System.setProperty("javafx.sg.warn", "true");
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setSignatureUnit(signatureUnit);
+        controller.loadDocument();
         controller.setOnSigned((String signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });
 
         var scene = new Scene(root, 640, 480);
-        windowStage.setTitle(getProperty("application.name"));
+        windowStage.setTitle(translate("app.name"));
         windowStage.setScene(scene);
         windowStage.show();
     }
 
-    public static FXMLLoader loadWindow(String name) {
+    public static FXMLLoader loadWindow(String name) throws IntegrationException {
         var fxmlLoader = new FXMLLoader(Main.class.getResource(name + ".fxml"), bundle);
         try {
             fxmlLoader.load();
-        } catch (Exception e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotOpenWindow"),
-                e
-            );
-            return null;
+        } catch (IOException e) {
+            throw new IntegrationException("Unable to load FXMLLoader", e);
         }
 
         return fxmlLoader;
-    }
-
-    /**
-     * Display alert
-     */
-    public static void displayAlert(AlertType type, String title, String header, String description) {
-        getAlert(type, title, header, description).showAndWait();
-    }
-
-    /**
-     * Display error alert
-     */
-    public static void displayError(String header, String description) {
-        var alert = getAlert(AlertType.ERROR, getProperty("text.error"), header, description);
-
-        alert.showAndWait();
-    }
-
-    /**
-     * Display error alert with exception details
-     */
-    public static void displayError(String header, String description, Throwable e) {
-        var alert = getAlert(AlertType.ERROR, getProperty("text.error"), header, description);
-
-        if (e != null) {
-            e.printStackTrace();
-            var stringWriter = new StringWriter();
-            e.printStackTrace(new PrintWriter(stringWriter));
-            var stackTrace = stringWriter.toString();
-
-            var details = new GridPane();
-            details.setMaxWidth(Double.MAX_VALUE);
-
-            var label = new Label(getProperty("text.error.details"));
-            details.add(label, 0, 0);
-
-            var textArea = new TextArea(stackTrace);
-            textArea.setEditable(false);
-            textArea.setWrapText(true);
-            details.add(textArea, 0, 1);
-
-            alert.getDialogPane().setExpandableContent(details);
-        }
-
-        alert.showAndWait();
-    }
-
-    /**
-     * Create unified Alert
-     */
-    public static Alert getAlert(AlertType type, String title, String header, String description) {
-        var alert = new Alert(type);
-
-        var dialogPane = alert.getDialogPane();
-        var stylesheets = dialogPane.getStylesheets();
-        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
-
-        if (title != null) alert.setTitle(title);
-        if (header != null) alert.setHeaderText(header);
-        if (description != null) alert.setContentText(description);
-        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-
-        return alert;
-    }
-
-    /**
-     * Get string property from the bundle
-     */
-    public static String getProperty(String path) {
-        return bundle.getString(path);
     }
 
     /**
@@ -268,5 +162,4 @@ public class Main extends Application {
     public static String getVersion() {
         return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
     }
-
 }

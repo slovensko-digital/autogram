@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
-
 <VBox
     xmlns="http://javafx.com/javafx/11.0.1"
     xmlns:fx="http://javafx.com/fxml/1"
@@ -19,14 +13,13 @@
     fx:controller="com.octosign.whitelabel.ui.MainController"
 >
     <VBox styleClass="panel, secondary" VBox.vgrow="ALWAYS">
-        <Label fx:id="documentLabel" text="%text.document" styleClass="p3" />
         <WebView fx:id="webView" VBox.vgrow="ALWAYS" />
         <TextArea fx:id="textArea" editable="false" VBox.vgrow="ALWAYS" styleClass="content" wrapText="true" />
     </VBox>
 
     <HBox styleClass="footer" alignment="CENTER" spacing="8">
         <Button fx:id="aboutButton" onAction="#onAboutButtonAction" styleClass="white">
-            <tooltip><Tooltip text="%text.aboutHelp" showDelay="300ms" /></tooltip>
+            <tooltip><Tooltip text="%txt.aboutHelp.header" showDelay="300ms" /></tooltip>
             <graphic>
                 <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                 <image>
@@ -41,10 +34,10 @@
         <Region HBox.hgrow="ALWAYS" />
 
         <HBox styleClass="buttonGroup">
-            <Button fx:id="mainButton" onAction="#onMainButtonAction" text="%text.loadSigners" styleClass="leftButton, primary" />
+            <Button fx:id="mainButton" onAction="#onMainButtonAction" text="%btn.loadSigners" styleClass="leftButton, primary" />
 
             <Button fx:id="certSettingsButton" onAction="#onCertSettingsButtonAction" styleClass="rightButton, primary">
-                <tooltip><Tooltip text="%text.certificateSettings" showDelay="300ms" /></tooltip>
+                <tooltip><Tooltip text="%txt.certSettings" showDelay="300ms" /></tooltip>
                 <graphic>
                     <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                     <image>

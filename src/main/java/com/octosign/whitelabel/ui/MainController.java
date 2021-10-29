@@ -11,7 +11,6 @@ import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -26,13 +25,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static com.octosign.whitelabel.ui.FX.displayError;
+import static com.octosign.whitelabel.ui.I18n.translate;
+
 /**
  * Controller for the signing window
  */
 public class MainController {
 
     @FXML
-    private Label documentLabel;
+    public Button aboutButton;
+
+    @FXML
+    public Button certSettingsButton;
 
     @FXML
     private WebView webView;
@@ -78,14 +83,11 @@ public class MainController {
 
     public void setSignatureUnit(SignatureUnit signatureUnit) {
         this.signatureUnit = signatureUnit;
+    }
+
+    public void loadDocument() {
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
-
-        if (document.getTitle() != null && !document.getTitle().isBlank()) {
-            documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
-        } else {
-            documentLabel.setManaged(false);
-        }
 
         if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
@@ -96,24 +98,18 @@ public class MainController {
             String name = certificateManager
                 .getCertificate()
                 .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-            mainButton.setText(String.format(Main.getProperty("text.sign"), name));
+            mainButton.setText(translate("btn.signAs", name));
         }
 
-        //TODO consider simplifying this part to avoid tedious casting
-        boolean isXml = document instanceof XMLDocument;
+        boolean isXML = document instanceof XMLDocument;
         boolean isPDF = document instanceof PDFDocument;
-        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
-        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+        final boolean hasSchema = false; //isXML && ((XMLDocument) document).getSchema() != null;
+        final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
-            try {
-                ((XMLDocument) document).validate();
-            } catch (Exception e) {
-                displayAlert(
-                        "Neplatný formát",
-                        "XML súbor nie je validný",
-                        "Dokument na podpísanie nevyhovel požiadavkám validácie podľa XSD schémy. Detail chyby: " + e
-                );
+            try { ((XMLDocument) document).validate(); }
+            catch (Exception e) {
+                Platform.runLater(() -> displayError("invalidFormat", e));
                 return;
             }
         }
@@ -124,11 +120,7 @@ public class MainController {
                 var xmlDocument = (XMLDocument) document;
                 visualisation = xmlDocument.getTransformed();
             } catch (Exception e) {
-                displayAlert(
-                        "Chyba zobrazenia",
-                        "Získanie zobraziteľnej podoby zlyhalo",
-                        "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
-                );
+                Platform.runLater(() -> displayError("error.transformationFailed", e));
                 return;
             }
 
@@ -186,17 +178,6 @@ public class MainController {
         });
     }
 
-    private void displayAlert(String title, String header, String description) {
-        Platform.runLater(() -> {
-            Main.displayAlert(
-                    AlertType.ERROR,
-                    title,
-                    header,
-                    description
-            );
-        });
-    }
-
     public void setOnSigned(Consumer<String> onSigned) {
         this.onSigned = onSigned;
     }
@@ -206,7 +187,7 @@ public class MainController {
         if (certificateManager.getCertificate() == null) {
             // No certificate means this is loading of certificates
             mainButton.setDisable(true);
-            mainButton.setText(Main.getProperty("text.loading"));
+            mainButton.setText(translate("btn.loading"));
 
             CompletableFuture.runAsync(() -> {
                 String mainButtonText;
@@ -214,9 +195,9 @@ public class MainController {
                     String name = certificateManager
                         .getCertificate()
                         .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-                    mainButtonText = String.format(Main.getProperty("text.sign"), name);
+                    mainButtonText = translate("btn.signAs", name);
                 } else {
-                    mainButtonText = Main.getProperty("text.loadSigners");
+                    mainButtonText = translate("btn.loadSigners");
                 }
                 Platform.runLater(() -> {
                     mainButton.setText(mainButtonText);
@@ -227,18 +208,14 @@ public class MainController {
             // Otherwise this is signing
             String previousButtonText = mainButton.getText();
             mainButton.setDisable(true);
-            mainButton.setText(Main.getProperty("text.signing"));
+            mainButton.setText(translate("btn.signing"));
 
             CompletableFuture.runAsync(() -> {
                 try {
                     String signedContent = certificateManager.getCertificate().sign(signatureUnit);
                     Platform.runLater(() -> onSigned.accept(signedContent));
                 } catch (Exception e) {
-                    displayAlert(
-                            "Nepodpísané",
-                            "Súbor nebol podpísaný",
-                            "Podpísanie zlyhalo alebo bolo zrušené. Detail chyby: " + e
-                    );
+                    Platform.runLater(() -> displayError("notSigned", e));
                 } finally {
                     Platform.runLater(() -> {
                         mainButton.setText(previousButtonText);

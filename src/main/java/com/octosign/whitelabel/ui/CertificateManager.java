@@ -4,18 +4,14 @@ import com.octosign.whitelabel.signing.SigningCertificate;
 import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
 import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableView;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 
 import java.util.List;
 import java.util.Locale;
 
-import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.LONG;
-import static java.util.Optional.ofNullable;
+import static com.octosign.whitelabel.ui.FX.displayError;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Holds currently used certificate and takes care of picking
@@ -38,29 +34,29 @@ public class CertificateManager {
      * Use dialog picker to choose the certificate
      */
     public SigningCertificate useDialogPicker() {
-        // TODO: Move out and implement actual logic
-
         Dialog<SigningCertificate> dialog = new Dialog<>();
-        dialog.setTitle(Main.getProperty("text.certificateSettings"));
-        var dialogPane = dialog.getDialogPane();
-
-        var stylesheets = dialogPane.getStylesheets();
-        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
+        dialog.setTitle(translate("txt.certSettings"));
+        FX.addStylesheets(dialog);
 
         var treeTableView = new TreeTableView<SigningCertificate>();
-        var nameColumn = new TreeTableColumn<SigningCertificate, String>(Main.getProperty("text.subjectName"));
-        nameColumn.setCellValueFactory(input ->
+        var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("txt.subjectName"));
+
+    /*    nameColumn.setCellValueFactory(input ->
                 ofNullable(input.getValue())
                         .map(TreeItem::getValue)
                         .map(certificate -> certificate.getNicePrivateKeyDescription(LONG))
                         .map(SimpleStringProperty::new)
                         .orElse(null)
-        );
+        );*/
+
+        nameColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("olala "));
+        nameColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("olbla "));
+        nameColumn.setCellValueFactory(new TreeItemPropertyValueFactory<>("olcla "));
         treeTableView.getColumns().add(nameColumn);
         treeTableView.setRoot(new TreeItem<>(certificate));
-        dialogPane.setContent(treeTableView);
+//        dialogPane.setContent(treeTableView);
+        ButtonType t = new ButtonType("cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().add(t);
 
         return dialog.showAndWait().orElse(null);
     }
@@ -87,12 +83,7 @@ public class CertificateManager {
         }
 
         if (certificate == null) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                "Zlyhanie načítania",
-                "Podpisovací token nenájdený",
-                "Nepodarilo sa nájsť žiaden podporovaný token vhodný na podpisovanie. Uistite sa, že máte nainštalovaný softvér dodávaný s tokenom a skúste to znova."
-            );
+            displayError("tokenNotFound");
             return null;
         }
 
@@ -100,22 +91,12 @@ public class CertificateManager {
         try {
             keys = certificate.getAvailablePrivateKeys();
         } catch (Exception e) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                "Zlyhanie načítania",
-                "Podpisovací token nedostupný",
-                "Použitie podpisovacieho tokenu zlyhalo. Uistite sa, že máte správne pripavené podpisovacie zariadenie a skúste to znova. Detail chyby: " + e
-            );
+            displayError("tokenNotAvailable", e);
             return null;
         }
 
         if (keys.size() == 0) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                "Zlyhanie načítania",
-                "Podpisovací token prázdny",
-                "Podporovaný podpisovací token neobsahuje použiteľný certifikát. Uistite sa, že máte správne nastavený token a skúste to znova."
-            );
+            displayError("tokenEmpty");
             return null;
         }
 

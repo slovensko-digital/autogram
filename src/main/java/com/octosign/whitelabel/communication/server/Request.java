@@ -1,24 +1,27 @@
 package com.octosign.whitelabel.communication.server;
 
+import com.octosign.whitelabel.communication.MimeType;
+import com.octosign.whitelabel.communication.server.format.BodyFormat;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.sun.net.httpserver.HttpExchange;
+
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.server.format.BodyFormat;
-import com.sun.net.httpserver.HttpExchange;
-
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class Request<T> {
 
     private final HttpExchange exchange;
 
     private final Map<MimeType, BodyFormat> bodyFormats = Map.of(
-        MimeType.JSON, JSON,
-        MimeType.PLAIN, JSON, // Plain is considered JSON so clients can prevent CORS preflight
-        MimeType.ANY, JSON // Implicit default format
+            MimeType.JSON, JSON,
+            MimeType.PLAIN, JSON, // Plain is considered JSON so clients can prevent CORS preflight
+            MimeType.ANY, JSON // Implicit default format
     );
 
     private final BodyFormat bodyFormat;
@@ -27,31 +30,39 @@ public class Request<T> {
 
     private T body;
 
-    public Request(HttpExchange exchange) {
+    public Request(HttpExchange exchange) throws IntegrationException {
         this.exchange = exchange;
 
-        var contentType = exchange.getRequestHeaders().get("Content-Type");
-        if (contentType != null) {
-            var contentMimeType = MimeType.parse(contentType.get(0));
-            bodyFormat = bodyFormats.keySet().stream()
-                .filter(m -> m.equalsTypeSubtype(contentMimeType))
-                .findFirst()
-                .map(m -> bodyFormats.get(m))
-                .orElse(bodyFormats.get(MimeType.ANY));
-        } else {
-            bodyFormat = null;
-        }
+        try {
+            var contentType = exchange.getRequestHeaders().get("Content-Type");
+            if (contentType != null) {
+                var contentMimeType = MimeType.parse(contentType.get(0));
+                bodyFormat = bodyFormats.keySet().stream()
+                        .filter(m -> m.equalsTypeSubtype(contentMimeType))
+                        .findFirst()
+                        .map(m -> bodyFormats.get(m))
+                        .orElse(bodyFormats.get(MimeType.ANY));
+            } else {
+                bodyFormat = null;
+            }
 
-        this.queryParams = QueryParams.parse(getExchange().getRequestURI().getQuery());
+            this.queryParams = QueryParams.parse(getExchange().getRequestURI().getQuery());
+        } catch (Exception ex) {
+            throw new IntegrationException(Code.MALFORMED_INPUT, translate("Invalid request/parsing error", ex));
+        }
     }
 
     public HttpExchange getExchange() {
         return exchange;
     }
 
-    public BodyFormat getBodyFormat() { return bodyFormat; }
+    public BodyFormat getBodyFormat() {
+        return bodyFormat;
+    }
 
-    public QueryParams getQueryParams() { return queryParams; }
+    public QueryParams getQueryParams() {
+        return queryParams;
+    }
 
     /**
      * List of supported body MIME types
@@ -66,7 +77,7 @@ public class Request<T> {
 
     /**
      * Retrieves and sets body as expected object
-     *
+     * <p>
      * Must be called only once
      *
      * @param <T>       Expected object in the body
@@ -87,9 +98,7 @@ public class Request<T> {
 
 
     /**
-     *
      * Inner class encapsulating logic for reading and handling query params
-     *
      */
     public static class QueryParams {
         private final List<Param> params;

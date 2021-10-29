@@ -1,17 +1,8 @@
 package com.octosign.whitelabel.communication;
 
-public class CommunicationError {
-    public enum Code {
-        NOT_READY,
-        UNSUPPORTED_OPERATION,
-        MALFORMED_INPUT,
-        UNSUPPORTED_FORMAT,
-        SIGNING_FAILED,
-        UNEXPECTED_ORIGIN,
-        MALFORMED_MIMETYPE,
-        UNEXPECTED_ERROR
-    }
+import com.octosign.whitelabel.error_handling.Code;
 
+public class CommunicationError {
     public final Code code;
     public final String message;
     public String details;

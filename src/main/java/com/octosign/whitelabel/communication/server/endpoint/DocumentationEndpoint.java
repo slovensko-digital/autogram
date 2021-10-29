@@ -1,11 +1,15 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
+import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.sun.net.httpserver.HttpExchange;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import com.octosign.whitelabel.communication.server.Server;
-import com.sun.net.httpserver.HttpExchange;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class DocumentationEndpoint extends Endpoint {
 
@@ -20,7 +24,7 @@ public class DocumentationEndpoint extends Endpoint {
     }
 
     @Override
-    protected void handleRequest(HttpExchange exchange) throws IOException {
+    protected void handleRequest(HttpExchange exchange) throws IntegrationException {
         String cwd = System.getProperty("user.dir");
         boolean isYaml = exchange.getRequestURI().getPath().endsWith(".yml");
 
@@ -29,11 +33,13 @@ public class DocumentationEndpoint extends Endpoint {
 
         var headers = exchange.getResponseHeaders();
         headers.set("Content-Type", mimeType);
-        exchange.sendResponseHeaders(200, 0);
 
-        // automatically closes both streams
-        try (var fileStream = new FileInputStream(file.toString()); var responseStream = exchange.getResponseBody()) {
+        try (var fileStream = new FileInputStream(file.toString());
+             var responseStream = exchange.getResponseBody()) {
+            exchange.sendResponseHeaders(200, 0);
             fileStream.transferTo(responseStream);
+        } catch (IOException e) {
+            throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed"), e);
         }
     }
 
@@ -41,5 +47,4 @@ public class DocumentationEndpoint extends Endpoint {
     protected String[] getAllowedMethods() {
         return new String[]{ "GET" };
     }
-
 }
