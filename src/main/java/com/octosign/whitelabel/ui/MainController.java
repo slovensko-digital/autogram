@@ -5,6 +5,7 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 import javafx.application.Platform;
@@ -85,7 +86,7 @@ public class MainController {
         this.signatureUnit = signatureUnit;
     }
 
-    public void loadDocument() {
+    public void loadDocument() throws IntegrationException {
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
 
@@ -116,13 +117,13 @@ public class MainController {
 
         if (hasTransformation) {
             String visualisation;
-            try {
+//            try {/
                 var xmlDocument = (XMLDocument) document;
                 visualisation = xmlDocument.getTransformed();
-            } catch (Exception e) {
-                Platform.runLater(() -> displayIntegrationError("error.transformationFailed", e));
-                return;
-            }
+//            } catch (Exception e) {
+//                Platform.runLater(() -> displayIntegrationError("error.transformationFailed", e));
+//                return;
+//            }
 
             var transformationOutputType = parameters.getTransformationOutputMimeType() == null
                 ? MimeType.HTML

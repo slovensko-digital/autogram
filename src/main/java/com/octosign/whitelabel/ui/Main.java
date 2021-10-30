@@ -20,9 +20,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import static com.octosign.whitelabel.ui.FX.displayError;
 import static com.octosign.whitelabel.ui.FX.displayInfo;
-import static com.octosign.whitelabel.ui.I18n.getProperty;
 import static com.octosign.whitelabel.ui.I18n.translate;
 import static java.util.Objects.requireNonNullElse;
 
@@ -31,7 +29,6 @@ public class Main extends Application {
     public enum Status {
         LOADING,
         READY,
-        ERROR
     }
 
     private static final Locale skLocale = new Locale( "sk");
@@ -51,45 +48,46 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        try {
+//        try {
             var cliCommand = CommandFactory.fromParameters(getParameters());
 
             if (cliCommand instanceof ListenCommand) {
                 startServer((ListenCommand) cliCommand);
 
-                statusIndication = new StatusIndication(this::exit);
+//                statusIndication = new StatusIndication(this::exit);
                 Platform.setImplicitExit(false);
                 return;
             }
-        } catch (IntegrationException e) {
-            displayError("error.launchFailed.header", "error.launchFailed.description", e);
-            return;
-        }
+//        }
+//        catch (IntegrationException e) {
+//            displayError("error.launchFailed.header", "error.launchFailed.description", e);
+//            return;
+//        }
 
         displayInfo("info.appLaunched.header", "info.appLaunched.description");
     }
 
-    private void startServer(ListenCommand command) {
+    private void startServer(ListenCommand command) throws Exception {
         var version = getVersion();
         Server server;
-        try {
+//        try {
             server = new Server(command.getInitialNonce());
-        } catch (Throwable e) {
-            displayError("error.cannotListen.header", "error.cannotListen.description", e);
-            return;
-        }
+//        } catch (Throwable e) {
+//            displayError("error.cannotListen.header", "error.cannotListen.description", e);
+//            return;
+//        }
 
         server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
         if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
         if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());
 
-        try {
+//        try {
             server.start();
-        } catch (Throwable e) {
-            displayError("error.cannotOpenWindow.header", "error.cannotOpenWindow.description", e);
-            return;
-        }
+//        } catch (Throwable e) {
+//            displayError("error.cannotOpenWindow.header", "error.cannotOpenWindow.description", e);
+//            return;
+//        }
 
         System.out.println(translate("app.runningOn", server.getAddress()));
         if (server.isDevMode()) {
@@ -101,15 +99,19 @@ public class Main extends Application {
             var future = new CompletableFuture<Document>();
 
                 Platform.runLater(() -> {
+//                    try {
                     try {
-                    openWindow(signatureUnit, (String signedContent) -> {
-                        var signedDocument = signatureUnit.getDocument().clone();
-                        signedDocument.setContent(signedContent);
-                        future.complete(signedDocument);
-                    });
+                        openWindow(signatureUnit, (String signedContent) -> {
+                            var signedDocument = signatureUnit.getDocument().clone();
+                            signedDocument.setContent(signedContent);
+                            future.complete(signedDocument);
+                        });
                     } catch (IntegrationException e) {
-                        displayError("error.openingFailed.header", "error.openingFailed.description", e);
+                        e.printStackTrace();
                     }
+//                    } catch (IntegrationException e) {
+//                        displayError("error.openingFailed.header", "error.openingFailed.description", e);
+//                    }
                 });
 
             return future;
@@ -118,11 +120,11 @@ public class Main extends Application {
         server.setInfo(new Info(version, Status.READY));
     }
 
-    private void exit() {
-        if (statusIndication != null) statusIndication.dispose();
-        if (server != null) server.stop();
-        Platform.exit();
-    }
+//    private void exit() {
+//        if (statusIndication != null) statusIndication.dispose();
+//        if (server != null) server.stop();
+//        Platform.exit();
+//    }
 
     private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) throws IntegrationException {
         var windowStage = new Stage();

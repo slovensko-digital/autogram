@@ -30,11 +30,11 @@ public class StatusIndication {
     public StatusIndication(Runnable onExit) throws IntegrationException {
         this.onExit = onExit;
 
-        if (isTraySupported()) {
-            addAppToTray();
-        } else {
-            addMinimizedWindow();
-        }
+//        if (isTraySupported()) {
+//            addAppToTray();
+//        } else {
+//            addMinimizedWindow();
+//        }
     }
 
     /**

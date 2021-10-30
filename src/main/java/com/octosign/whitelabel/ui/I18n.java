@@ -1,45 +1,55 @@
 package com.octosign.whitelabel.ui;
 
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.regex.Pattern;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 
-import static java.util.Arrays.asList;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class I18n {
+
     private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
+
     protected static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
+
+    // Indicates how the application behaves in case of incorrect string interpolation arguments count
+    private static boolean useStrict = true;
 
     public static String getProperty(String path) {
         return bundle.getString(path);
     }
 
     public static String getProperty(String path, Object... args) {
-//        String property = bundle.getString(path);
-        String replaced = path.replaceAll("/[^%[a-z]]/", "");
-        int specifierCount = replaced.length() / 2;
-        System.out.println(specifierCount);
-        System.out.println(replaced);
+        var message = getProperty(path);
+        String[] converted = Arrays.stream(args).map(Object::toString).toArray(String[]::new);
+        String[] safeArgs = validate(message, converted);
 
-        if (specifierCount != args.length) {
-            throw new IllegalArgumentException("Invalid number of arguments (more or less than expected)");
+        return String.format(message, safeArgs);
+    }
+
+    private static String[] validate(String text, String... args) {
+        var specifiersCount = text.length() - text.replace("%", "").length();
+        var higherCount = (specifiersCount == args.length) ? null : Math.max(specifiersCount, args.length);
+
+        if (higherCount != null) {
+            var message = String.format("Numbers of input args and specifiers don't match. %d (args ) : %d (specifiers)", args.length, specifiersCount);
+
+            if (useStrict) throw new IllegalArgumentException(message);
+            else System.out.println("Warning!" + message);
+
+            return Arrays.copyOf(args, higherCount);
         }
 
-        return String.format(path, args);
+        return args;
     }
 
     public static String translate(String path, Object... args) {
-        if (args.length == 0) return getProperty(path);
-        else return getProperty(path, args);
+        if (args.length == 0)
+            return getProperty(path);
+        else
+            return getProperty(path, args);
     }
 
-//    public static boolean isSupported(Locale locale) { return asList(Locale.getAvailableLocales()).contains(locale); }
-//    public static void setLocale(Locale locale) { Locale.setDefault(locale); }
-//    public static Locale getLocale() { return Locale.getDefault(); }
-
-//    public static ResourceBundle getBundle() { return bundle; }
-
+    public static void setDevMode(boolean devMode) { I18n.useStrict = devMode; }
 }
