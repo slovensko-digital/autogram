@@ -90,9 +90,7 @@ public class Server {
         return secretKey;
     }
 
-    public InetSocketAddress getAddress() {
-        return server.getAddress();
-    }
+    public InetSocketAddress getAddress() { return server.getAddress(); }
 
     public String getDefaultHostname() { return DEFAULT_HOSTNAME; }
 }

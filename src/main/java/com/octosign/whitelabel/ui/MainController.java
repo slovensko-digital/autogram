@@ -83,7 +83,7 @@ public class MainController {
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
 
-    public void loadDocument() {
+    public void loadDocument() throws IntegrationException {
         var document = signatureUnit.getDocument();
 
         if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
@@ -119,7 +119,7 @@ public class MainController {
 
         if (hasTransformation) {
             String visualisation;
-            try {
+//            try {/
                 var xmlDocument = (XMLDocument) document;
                 visualisation = xmlDocument.getTransformed();
             } catch (Exception e) {

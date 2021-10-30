@@ -73,7 +73,6 @@ public class Request<T> {
      *
      * Must be called only once
      *
-     * @param <T>       Expected object in the body
      * @param bodyClass Class of the expected object in the body
      */
     public T processBody(Class<T> bodyClass) {

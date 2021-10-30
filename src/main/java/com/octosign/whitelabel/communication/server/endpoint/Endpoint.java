@@ -70,10 +70,12 @@ abstract class Endpoint implements HttpHandler {
         // Don't allow remote address != localhost when listening on localhost
         var hostname = server.getDefaultHostname();
         var listeningOnLocalhost = hostname.equals("localhost") || hostname.equals("127.0.0.1");
+        System.out.println(hostname);
         var isLoopbackAddress = exchange.getRemoteAddress().getAddress().isLoopbackAddress();
-
+        System.out.println(isLoopbackAddress);
         if (listeningOnLocalhost && !isLoopbackAddress) {
             try {
+                System.out.println("posielam z prvej");
                 errorResponse.send();
             } catch (IOException e) {
                 throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed"), e);
@@ -84,11 +86,13 @@ abstract class Endpoint implements HttpHandler {
         var allowedOrigin = server.getAllowedOrigin();
         var originHeader = exchange.getRequestHeaders().get("Origin");
 
+        System.out.println(originHeader);
         if (originHeader != null && !allowedOrigin.equals("*")) {
             var origin = originHeader.get(0);
-
+            System.out.println(origin);
             if (!origin.equals(allowedOrigin)) {
                 try {
+                    System.out.println("posielam z 2");
                     errorResponse.send();
                 } catch (IOException e) {
                     throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed"), e);
