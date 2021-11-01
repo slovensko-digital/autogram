@@ -36,22 +36,17 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) throws IntegrationException {
         if (onSign == null) {
             var error = new CommunicationError(Code.NOT_READY, translate("error.serverNotReady"));
-            var errorResponse = new Response<CommunicationError>(request.getExchange()).asError(HttpURLConnection.HTTP_CONFLICT, error);
+            var errorResponse = new Response<CommunicationError>(request.getExchange())
+                    .asError(HttpURLConnection.HTTP_CONFLICT, error);
 
-            try {
-                errorResponse.send();
-            } catch (IOException ex) {
-                throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", errorResponse.getBody()));
-            }
+            send(errorResponse);
             return null;
         }
 
         var signRequest = request.getBody();
-
         var document = getSpecificDocument(signRequest);
 //        var template = extractTemplateFrom(request);
         var parameters = resolveParameters(signRequest, null);
-
         var signatureUnit = new SignatureUnit(document, parameters);
 
         try {
@@ -61,13 +56,10 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
             // TODO: We should do a better job with the error response here:
             // We can differentiate between application errors (500), user errors (502), missing certificate/UI closed (503)
             var error = new CommunicationError(Code.SIGNING_FAILED, translate("error.signingFailed"), e.getMessage());
-            var errorResponse = new Response<CommunicationError>(request.getExchange()).asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error);
+            var errorResponse = new Response<CommunicationError>(request.getExchange())
+                    .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error);
 
-            try {
-                errorResponse.send();
-            } catch (IOException ex) {
-                throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", errorResponse.getBody()));
-            }
+            send(errorResponse);
             return null;
         }
     }
@@ -103,7 +95,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         } else if(mimeType.equalsTypeSubtype(MimeType.PDF)) {
             return new PDFDocument(document);
         } else {
-            throw new IllegalArgumentException("Unsupported MIME type");
+            throw new IntegrationException(Code.MALFORMED_MIMETYPE, translate("error.invalidMimetype_", mimeType));
         }
     }
 
@@ -117,10 +109,9 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
                 schema = decode(schema);
                 transformation = decode(transformation);
             } catch (IllegalArgumentException e) {
-                throw new IntegrationException(Code.DECODING_FAILED, translate("error.decodingFailed", e));
+                throw new IntegrationException(Code.DECODING_FAILED, e);
             }
         }
-
         return new XMLDocument(document, schema, transformation);
     }
 

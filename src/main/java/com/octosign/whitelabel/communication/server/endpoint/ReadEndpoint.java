@@ -22,9 +22,9 @@ abstract class ReadEndpoint<U> extends Endpoint {
     @Override
     protected void handleRequest(HttpExchange exchange) throws IntegrationException {
         var request = new Request<>(exchange);
-
         var response = handleRequest(request, new Response<>(exchange));
-        useResponse(response);
+
+        send(response);
     }
 
     /**

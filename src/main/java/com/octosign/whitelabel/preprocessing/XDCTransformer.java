@@ -64,7 +64,7 @@ public class XDCTransformer {
         try {
             parseDOMDocument(xmlInput);
         } catch (SAXException | IOException e) {
-            throw new IntegrationException(Code.MALFORMED_INPUT, translate("error.xmlParsingFailure", e));
+            throw new IntegrationException(Code.MALFORMED_INPUT, translate("error.xmlParsin gFailure", e));
         } catch (ParserConfigurationException e) {
             throw new IntegrationException(Code.UNEXPECTED_ERROR, translate("error.builderConfigInvalid", e));
         }

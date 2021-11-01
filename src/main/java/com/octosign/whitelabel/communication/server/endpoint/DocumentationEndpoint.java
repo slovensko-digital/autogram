@@ -39,7 +39,7 @@ public class DocumentationEndpoint extends Endpoint {
             exchange.sendResponseHeaders(200, 0);
             fileStream.transferTo(responseStream);
         } catch (IOException e) {
-            throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed"), e);
+            throw new IntegrationException(Code.HTTP_EXCHANGE_FAILED, e);
         }
     }
 

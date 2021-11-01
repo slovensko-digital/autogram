@@ -2,6 +2,8 @@ package com.octosign.whitelabel.communication.document;
 
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.SignerException;
+import com.octosign.whitelabel.error_handling.UserException;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -66,13 +68,14 @@ public class XMLDocument extends Document {
      */
     public String getTransformed() throws IntegrationException {
         if (content == null || transformation == null) {
-            var missingAttribute = (content == null) ? "content" : "transformation";
-            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent", missingAttribute));
+            var attribute = (content == null) ? "content" : "transformation";
+            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent_", attribute));
         }
 
         var xslSource = new StreamSource(new StringReader(transformation));
         var xmlInSource = new StreamSource(new StringReader(content));
         var xmlOutWriter = new StringWriter();
+
         var transformerFactory = TransformerFactory.newInstance();
 
         try {
@@ -80,16 +83,16 @@ public class XMLDocument extends Document {
             var transformer = transformerFactory.newTransformer(xslSource);
             transformer.transform(xmlInSource, new StreamResult(xmlOutWriter));
         } catch (TransformerException e) {
-            throw new IntegrationException(Code.TRANSFORMATION_ERROR, translate("error.transformationFailed", e));
+            throw new IntegrationException(Code.XSLT_ERROR, e);
         }
 
         return xmlOutWriter.toString();
     }
 
-    public void validate() throws IntegrationException {
+    public void validate() throws SignerException {
         if (content == null || schema == null) {
             var missingAttribute = (content == null) ? "content" : "schema";
-            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent", missingAttribute));
+            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent_", missingAttribute));
         }
         var xsdSource = new StreamSource(new StringReader(schema));
         Schema xsdSchema;
@@ -97,7 +100,7 @@ public class XMLDocument extends Document {
         try {
             xsdSchema = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource);
         } catch (SAXException e) {
-            throw new IntegrationException(Code.INVALID_SCHEMA, translate("error.xsdSchemaInvalid", e));
+            throw new IntegrationException(Code.XSD_SCHEMA_INVALID, e);
         }
 
         var xmlInSource = new StreamSource(new StringReader(content));
@@ -105,7 +108,7 @@ public class XMLDocument extends Document {
         try {
             xsdSchema.newValidator().validate(xmlInSource);
         } catch (SAXException | IOException e) {
-            throw new IntegrationException(Code.VALIDATION_FAILED, translate("error.invalidXmlContent", e));
+            throw new UserException(translate("error.invalidFormat.header"), translate("error.invalidFormat.description"), e);
         }
     }
 }

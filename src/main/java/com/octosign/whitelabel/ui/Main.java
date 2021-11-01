@@ -6,6 +6,7 @@ import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -13,14 +14,18 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static com.octosign.whitelabel.ui.FX.displayInfo;
+import static com.octosign.whitelabel.ui.I18n.getBundle;
 import static com.octosign.whitelabel.ui.I18n.translate;
 import static java.util.Objects.requireNonNullElse;
 
@@ -31,7 +36,7 @@ public class Main extends Application {
         READY,
     }
 
-    private static final Locale skLocale = new Locale( "sk");
+    private static final Locale skLocale = new Locale("sk");
     private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath, skLocale);
@@ -42,27 +47,32 @@ public class Main extends Application {
 
     private Server server;
 
+    private static final Logger LOGGER;
+
     public static void main(String[] args) {
-        Application.launch(Main.class, args);
+        try {
+            Application.launch(Main.class, args);
+        } catch (IntegrationException e) {
+            System.out.println(e.toString() + e.getCode() + e.getMessage());
+            LOGGER.log(Level.SEVERE, e.getMessage(), e.getStackTrace().)];
+        }
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-//        try {
+        try {
             var cliCommand = CommandFactory.fromParameters(getParameters());
 
             if (cliCommand instanceof ListenCommand) {
                 startServer((ListenCommand) cliCommand);
-
-//                statusIndication = new StatusIndication(this::exit);
+                statusIndication = new StatusIndication(this::exit);
                 Platform.setImplicitExit(false);
                 return;
             }
-//        }
-//        catch (IntegrationException e) {
-//            displayError("error.launchFailed.header", "error.launchFailed.description", e);
-//            return;
-//        }
+        } catch (IntegrationException e) {
+            displayError("error.launchFailed.header", "error.launchFailed.description", e);
+            return;
+        }
 
         displayInfo("info.appLaunched.header", "info.appLaunched.description");
     }
@@ -70,24 +80,24 @@ public class Main extends Application {
     private void startServer(ListenCommand command) throws Exception {
         var version = getVersion();
         Server server;
-//        try {
+        try {
             server = new Server(command.getInitialNonce());
-//        } catch (Throwable e) {
-//            displayError("error.cannotListen.header", "error.cannotListen.description", e);
-//            return;
-//        }
+        } catch (Throwable e) {
+            displayError("error.cannotListen.header", "error.cannotListen.description", e);
+            return;
+        }
 
         server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
         if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
         if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());
 
-//        try {
+        try {
             server.start();
-//        } catch (Throwable e) {
-//            displayError("error.cannotOpenWindow.header", "error.cannotOpenWindow.description", e);
-//            return;
-//        }
+        } catch (Throwable e) {
+            displayError("error.cannotOpenWindow.header", "error.cannotOpenWindow.description", e);
+            return;
+        }
 
         System.out.println(translate("app.runningOn", server.getAddress()));
         if (server.isDevMode()) {
@@ -98,8 +108,8 @@ public class Main extends Application {
         server.setOnSign((SignatureUnit signatureUnit) -> {
             var future = new CompletableFuture<Document>();
 
-                Platform.runLater(() -> {
-//                    try {
+            Platform.runLater(() -> {
+                try {
                     try {
                         openWindow(signatureUnit, (String signedContent) -> {
                             var signedDocument = signatureUnit.getDocument().clone();
@@ -109,30 +119,28 @@ public class Main extends Application {
                     } catch (IntegrationException e) {
                         e.printStackTrace();
                     }
-//                    } catch (IntegrationException e) {
-//                        displayError("error.openingFailed.header", "error.openingFailed.description", e);
-//                    }
-                });
+                }
 
-            return future;
-        });
+                return future;
+            });
 
-        server.setInfo(new Info(version, Status.READY));
+            server.setInfo(new Info(version, Status.READY));
+        }
     }
 
-//    private void exit() {
-//        if (statusIndication != null) statusIndication.dispose();
-//        if (server != null) server.stop();
-//        Platform.exit();
-//    }
+    private void exit() {
+        if (statusIndication != null) statusIndication.dispose();
+        if (server != null) server.stop();
+        Platform.exit();
+    }
 
     private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) throws IntegrationException {
+        System.setProperty("javafx.sg.warn", "true");
         var windowStage = new Stage();
 
         var fxmlLoader = loadWindow("main");
         VBox root = fxmlLoader.getRoot();
 
-        System.setProperty("javafx.sg.warn", "true");
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setSignatureUnit(signatureUnit);
@@ -153,9 +161,8 @@ public class Main extends Application {
         try {
             fxmlLoader.load();
         } catch (IOException e) {
-            throw new IntegrationException("error.fxmlLoaderLoadingFailed", e);
+            throw new IntegrationException(Code.FXML_LOADER_ERROR, e);
         }
-
         return fxmlLoader;
     }
 

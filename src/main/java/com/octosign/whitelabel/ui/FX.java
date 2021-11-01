@@ -10,18 +10,22 @@ import javafx.scene.layout.Region;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-import static com.octosign.whitelabel.ui.I18n.getProperty;
+import static com.octosign.whitelabel.ui.I18n.translate;
+import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
 public class FX {
 
-    public static void displayIntegrationError(String description) {
-        displayIntegrationError(description, null);
+    public static void displayError(String description) {
+        displayError(description, null);
     }
 
-    public static void displayIntegrationError(String description, Throwable cause) {
+    public static void displayError(String description, Throwable cause) {
         displayError("error.integration.header", description, cause);
     }
 
@@ -32,9 +36,9 @@ public class FX {
     public static void displayError(String header, String description, Throwable cause) {
         var alert = buildAlert(
                 Alert.AlertType.ERROR,
-                getProperty("error.title"),
-                getProperty(header),
-                getProperty(description)
+                translate("error.title"),
+                translate(header),
+                translate(description)
         );
 
         if(cause != null)
@@ -46,9 +50,9 @@ public class FX {
     public static void displayInfo(String header, String description) {
         var alert = buildAlert(
                 Alert.AlertType.INFORMATION,
-                getProperty("info.title"),
-                getProperty(header),
-                getProperty(description)
+                translate("info.title"),
+                translate(header),
+                translate(description)
         );
 
         alert.showAndWait();
@@ -87,7 +91,7 @@ public class FX {
         var details = new GridPane();
         details.setMaxWidth(Double.MAX_VALUE);
 
-        var label = new Label(getProperty("error.details"));
+        var label = new Label(translate("error.details"));
         details.add(label, 0, 0);
 
         var textArea = new TextArea(stackTrace);

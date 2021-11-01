@@ -53,11 +53,7 @@ abstract class WriteEndpoint<Q,S> extends Endpoint {
                 var error = new CommunicationError(Code.UNSUPPORTED_FORMAT, translate("error.invalidMimeType", supportedTypes));
                 errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_UNSUPPORTED_TYPE, error);
 
-                try {
-                    errorResponse.send();
-                } catch (IOException e) {
-                    throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", e));
-                }
+                send(errorResponse);
                 return;
             }
 
@@ -65,17 +61,13 @@ abstract class WriteEndpoint<Q,S> extends Endpoint {
                 var error = new CommunicationError(Code.MALFORMED_INPUT, translate("error.malformedInput"));
                 errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_BAD_REQUEST, error);
 
-                try {
-                    errorResponse.send();
-                } catch (IOException e) {
-                    throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", e));
-                }
+                send(errorResponse);
                 return;
             }
         }
 
         var response = handleRequest(request, new Response<>(exchange));
-        useResponse(response);
+        send(response);
     }
 
     /**

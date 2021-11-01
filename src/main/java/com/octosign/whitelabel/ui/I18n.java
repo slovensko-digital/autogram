@@ -1,55 +1,39 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.error_handling.IntegrationException;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.util.Arrays;
+import java.util.ResourceBundle;
 
 public class I18n {
+    private static boolean strictMode = true;
 
-    private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
-
-    protected static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
-
-    // Indicates how the application behaves in case of incorrect string interpolation arguments count
-    private static boolean useStrict = true;
-
-    public static String getProperty(String path) {
-        return bundle.getString(path);
+    public static String translate(String path, Object... args) {
+        return getProperty(path, args);
     }
 
     public static String getProperty(String path, Object... args) {
-        var message = getProperty(path);
-        String[] converted = Arrays.stream(args).map(Object::toString).toArray(String[]::new);
-        String[] safeArgs = validate(message, converted);
+        var message = getBundle().getString(path);
 
-        return String.format(message, safeArgs);
-    }
-
-    private static String[] validate(String text, String... args) {
-        var specifiersCount = text.length() - text.replace("%", "").length();
-        var higherCount = (specifiersCount == args.length) ? null : Math.max(specifiersCount, args.length);
-
-        if (higherCount != null) {
-            var message = String.format("Numbers of input args and specifiers don't match. %d (args ) : %d (specifiers)", args.length, specifiersCount);
-
-            if (useStrict) throw new IllegalArgumentException(message);
-            else System.out.println("Warning!" + message);
-
-            return Arrays.copyOf(args, higherCount);
-        }
-
-        return args;
-    }
-
-    public static String translate(String path, Object... args) {
-        if (args.length == 0)
-            return getProperty(path);
+        if (args == null || args.length == 0)
+            return message;
         else
-            return getProperty(path, args);
+            return String.format(message, validateArgs(message, args));
     }
 
-    public static void setDevMode(boolean devMode) { I18n.useStrict = devMode; }
+    private static Object[] validateArgs(String value, Object... args) {
+        var specifiersCount = value.length() - value.replace("%", "").length();
+        if (specifiersCount == args.length)
+            return args;
+
+        var msg = String.format("Cardinalities mismatch. %d args, %d specifiers", args.length, specifiersCount);
+        if (strictMode) {
+            throw new IllegalArgumentException(msg);
+        } else {
+            System.out.println("Warning! " + msg);
+            return Arrays.copyOf(args, Math.max(specifiersCount, args.length));
+        }
+    }
+
+    public static ResourceBundle getBundle() { return ResourceBundle.getBundle(Main.class.getCanonicalName().toLowerCase()); }
+
+    public static void setDevMode(boolean devMode) { I18n.strictMode = !devMode; }
 }

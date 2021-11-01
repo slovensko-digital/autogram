@@ -26,7 +26,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.octosign.whitelabel.ui.FX.displayIntegrationError;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
@@ -110,8 +109,7 @@ public class MainController {
         if (hasSchema) {
             try { ((XMLDocument) document).validate(); }
             catch (Exception e) {
-                Platform.runLater(() -> displayIntegrationError("invalidFormat", e));
-                return;
+                Platform.runLater(() -> displayError("invalidFormat", e));                return;
             }
         }
 
