@@ -36,22 +36,22 @@ public class Response<U> {
 
     private U body;
 
-    public Response(HttpExchange exchange) throws IntegrationException {
+    public Response(HttpExchange exchange) {
         this.exchange = exchange;
 
         var accept = exchange.getRequestHeaders().get("Accept");
 
         if (accept != null) {
             // TODO: Consider all mime types
-            var contentMimeType = Arrays.asList(accept.get(0).split(",")).stream()
-                .map(raw -> MimeType.parse(raw))
+            var contentMimeType = Arrays.stream(accept.get(0).split(","))
+                .map(MimeType::parse)
                 .findFirst()
-                .get();
+                .orElseThrow(IllegalArgumentException::new);
 
             bodyFormat = bodyFormats.keySet().stream()
                 .filter(m -> m.equalsTypeSubtype(contentMimeType))
                 .findFirst()
-                .map(m -> bodyFormats.get(m))
+                .map(bodyFormats::get)
                 .orElse(bodyFormats.get(MimeType.ANY));
         } else {
             bodyFormat = bodyFormats.get(MimeType.ANY);
@@ -85,9 +85,9 @@ public class Response<U> {
     public void send() throws IOException {
         var headers = exchange.getResponseHeaders();
         var body = bodyFormat.to(getBody());
+
         // TODO: Check Accept header instead of hardcoding UTF-8
         var bodyBytes = body.getBytes(StandardCharsets.UTF_8);
-
         headers.set("Content-Type", bodyFormat.getMimeType().toString());
         exchange.sendResponseHeaders(statusCode, bodyBytes.length);
 
@@ -96,8 +96,6 @@ public class Response<U> {
             exchange.sendResponseHeaders(statusCode, bodyBytes.length);
             stream.write(bodyBytes);
         }
-//        catch (IOException e) {
-//            throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", body));
-//        }
     }
 }
+

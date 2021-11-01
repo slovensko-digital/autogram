@@ -38,11 +38,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
             var error = new CommunicationError(Code.NOT_READY, getProperty("error.serverNotReady"));
             var errorResponse = new Response<CommunicationError>(request.getExchange()).asError(HttpURLConnection.HTTP_CONFLICT, error);
 
-            try {
-                errorResponse.send();
-            } catch (IOException ex) {
-                throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", errorResponse.getBody()));
-            }
+            send(errorResponse);
             return null;
         }
 
@@ -59,11 +55,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
             var error = new CommunicationError(Code.SIGNING_FAILED, getProperty("error.signingFailed"), e.getMessage());
             var errorResponse = new Response<CommunicationError>(request.getExchange()).asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error);
 
-            try {
-                errorResponse.send();
-            } catch (IOException ex) {
-                throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", errorResponse.getBody()));
-            }
+            send(errorResponse);
             return null;
         }
     }

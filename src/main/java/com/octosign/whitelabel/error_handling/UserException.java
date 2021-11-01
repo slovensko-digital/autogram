@@ -4,9 +4,15 @@ import com.octosign.whitelabel.communication.CommunicationError;
 
 public class UserException extends SignerException {
 
-    public UserException() {};
-    public UserException(String message) { super(message); }
-    public UserException(String message, Throwable cause) {
-        super(message, cause);
+    private String header;
+
+    public UserException(String description) { this(null, description, null); }
+    public UserException(String description, Throwable cause) { this(null, description, cause); }
+    public UserException(String header, String description) { this(header, description, null); }
+    public UserException(String header, String description, Throwable cause) {
+        super(description, cause);
+        this.header = header;
     }
+
+    public String getHeader() { return header; }
 }

@@ -5,6 +5,7 @@ import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.SignerException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -60,48 +61,34 @@ abstract class Endpoint implements HttpHandler {
      * Verifies the HTTP origin, remote address, and adds the origin to response
      *
      * @return True if valid, false if not
-     * @throws IOException
+     * @throws IntegrationException
      */
-    protected void verifyOrigin(HttpExchange exchange) throws IntegrationException {
+    protected boolean verifyOrigin(HttpExchange exchange) throws IntegrationException {
         var error = new CommunicationError(Code.UNEXPECTED_ORIGIN, translate("error.unexpectedOrigin"));
-        var errorResponse =
-                new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_FORBIDDEN, error);
+        var errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_FORBIDDEN, error);
 
-        // Don't allow remote address != localhost when listening on localhost
         var hostname = server.getDefaultHostname();
         var listeningOnLocalhost = hostname.equals("localhost") || hostname.equals("127.0.0.1");
-        System.out.println(hostname);
         var isLoopbackAddress = exchange.getRemoteAddress().getAddress().isLoopbackAddress();
-        System.out.println(isLoopbackAddress);
         if (listeningOnLocalhost && !isLoopbackAddress) {
-            try {
-                System.out.println("posielam z prvej");
-                errorResponse.send();
-            } catch (IOException e) {
-                throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed"), e);
-            }
-            return;
+            send(errorResponse);
+            return false;
         }
 
         var allowedOrigin = server.getAllowedOrigin();
         var originHeader = exchange.getRequestHeaders().get("Origin");
 
-        System.out.println(originHeader);
         if (originHeader != null && !allowedOrigin.equals("*")) {
             var origin = originHeader.get(0);
-            System.out.println(origin);
+
             if (!origin.equals(allowedOrigin)) {
-                try {
-                    System.out.println("posielam z 2");
-                    errorResponse.send();
-                } catch (IOException e) {
-                    throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed"), e);
-                }
-                return;
+                send(errorResponse);
+                return false;
             }
         }
 
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
+        return true;
     }
 
     /**
@@ -113,21 +100,17 @@ abstract class Endpoint implements HttpHandler {
      * @return True if valid, false if not
      * @throws IOException
      */
-    protected void verifyHTTPMethod(HttpExchange exchange) throws IntegrationException {
+    protected boolean verifyHTTPMethod(HttpExchange exchange) throws IntegrationException {
         var allowedMethodsList = Arrays.asList(getAllowedMethods());
-        var requestMethod = exchange.getRequestMethod();
+        if (allowedMethodsList.contains(exchange.getRequestMethod()))
+            return true;
 
-        if (!allowedMethodsList.contains(requestMethod)) {
-            var message = translate("error.unsupportedOperation", String.join(", ", allowedMethodsList));
-            var error = new CommunicationError(Code.UNSUPPORTED_OPERATION, message);
-            var errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_BAD_METHOD, error);
+        var message = translate("error.unsupportedOperation", String.join(", ", allowedMethodsList));
+        var error = new CommunicationError(Code.UNSUPPORTED_OPERATION, message);
+        var errorResponse = new Response<CommunicationError>(exchange).asError(HttpURLConnection.HTTP_BAD_METHOD, error);
 
-            try {
-                errorResponse.send();
-            } catch (IOException e) {
-                throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed", message), e);
-            }
-        }
+        send(errorResponse);
+        return false;
     }
 
     /**
@@ -136,32 +119,21 @@ abstract class Endpoint implements HttpHandler {
      * @param response
      * @throws IOException
      */
-    protected <U> void useResponse(Response<U> response) throws IntegrationException {
-        if (response == null)
-            throw new IntegrationException(Code.NULL_ARGUMENT, "Unable to send error response: response is null");
-
-        try {
-            response.send();
-        } catch (IOException e) {
-            throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.responseFailed"), e);
-        }
+    public <U> void send(Response<U> response) throws IntegrationException {
+        rethrow(response, Response::send);
     }
 
-
-    public <U> void rethrow(Response<U> response, TConsumer<Response<U>> responseProcessor) throws IntegrationException {
-        var description = response.getBody();
-
-        if (description == null)
+    public <T, U extends IOException> void rethrow(T subject, TConsumer<T, U> processor) throws IntegrationException {
+        if (subject == null)
             throw new IntegrationException(Code.MALFORMED_INPUT, "error.responseInvalid");
-
         try {
-            responseProcessor.accept(response);
+            processor.accept(subject);
         } catch (IOException e) {
-            throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", description), e);
+            throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", subject), e);
         }
     }
 
-    public interface TConsumer<T> {
-        void accept(T t) throws IOException;
+    public interface TConsumer<T, U extends Exception> {
+        void accept(T t) throws U;
     }
 }
