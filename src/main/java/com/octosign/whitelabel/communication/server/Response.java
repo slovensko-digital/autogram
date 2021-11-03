@@ -76,12 +76,6 @@ public class Response<U> {
         return this;
     }
 
-    public Response<U> asError(int httpCode, U error) {
-        setStatusCode(httpCode);
-        setBody(error);
-        return this;
-    }
-
     public void send() throws IOException {
         var headers = exchange.getResponseHeaders();
         var body = bodyFormat.to(getBody());

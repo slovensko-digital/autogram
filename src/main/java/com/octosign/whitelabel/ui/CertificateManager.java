@@ -1,5 +1,8 @@
 package com.octosign.whitelabel.ui;
 
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.signing.SigningCertificate;
 import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
 import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
@@ -10,8 +13,6 @@ import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import java.util.List;
 import java.util.Locale;
 
-import static com.octosign.whitelabel.ui.FX.displayError;
-import static com.octosign.whitelabel.ui.FX.displayIntegrationError;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
@@ -37,7 +38,7 @@ public class CertificateManager {
     public SigningCertificate useDialogPicker() {
         Dialog<SigningCertificate> dialog = new Dialog<>();
         dialog.setTitle(translate("text.certSettings"));
-        FX.addStylesheets(dialog);
+        FXUtils.addStylesheets(dialog);
 
         var treeTableView = new TreeTableView<SigningCertificate>();
         var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("text.subjectName"));
@@ -72,38 +73,37 @@ public class CertificateManager {
     /**
      * Tries to automatically choose the most appropriate token and private key
      *
-     * TODO: All strings here should come from the properties
      */
     private static SigningCertificate getDefaulCertificate() {
-        SigningCertificate certificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback());
+        SigningCertificate signingCertificate;
+
+        try { signingCertificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback()); }
+        catch (Exception e) { throw new IntegrationException(Code.PKCS11_INIT_FAILED, e); }
 
         // Try to fallback to MSCAPI on Windows
         String osName = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
-        if (certificate == null && osName.contains("win")) {
-            certificate = new SigningCertificateMSCAPI();
+
+        if (signingCertificate == null && osName.contains("win")) {
+            try { signingCertificate = new SigningCertificateMSCAPI(); }
+            catch (Exception e) { throw new IntegrationException(Code.MSCAPI_INIT_FAILED, e); }
         }
 
-        if (certificate == null) {
-            displayError("error.tokenNotFound.header", "error.tokenNotFound.description");
-            return null;
-        }
+        if (signingCertificate == null)
+            throw new UserException("error.tokenNotFound.header", "error.tokenNotFound.description");
 
         List<DSSPrivateKeyEntry> keys;
         try {
-            keys = certificate.getAvailablePrivateKeys();
+            keys = signingCertificate.getAvailablePrivateKeys();
         } catch (Exception e) {
-            displayError("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
-            return null;
+            throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
         }
 
-        if (keys.size() == 0) {
-            displayError("error.tokenEmpty.header", "error.tokenEmpty.description");
-            return null;
-        }
+        if (keys.size() == 0)
+            throw new UserException("error.tokenEmpty.header", "error.tokenEmpty.description");
 
         // Use the first available key
-        certificate.setPrivateKey(keys.get(0));
+        signingCertificate.setPrivateKey(keys.get(0));
 
-        return certificate;
+        return signingCertificate;
     }
 }

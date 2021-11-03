@@ -21,6 +21,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 
 /**
  * XML document for signing
@@ -57,18 +58,16 @@ public class XMLDocument extends Document {
         return transformation;
     }
 
-    public void setTransformation(String transformation) {
-        this.transformation = transformation;
-    }
+    public void setTransformation(String transformation) { this.transformation = transformation; }
 
     /**
      * Apply defined transformation on the document and get it
      *
      * @return String with the transformed XML document - for example its HTML representation
      */
-    public String getTransformed() throws IntegrationException {
-        if (content == null || transformation == null) {
-            var attribute = (content == null) ? "content" : "transformation";
+    public String getTransformed() {
+        if (isNullOrBlank(content) || isNullOrBlank(transformation)) {
+            var attribute = isNullOrBlank(content) ? "content" : "transformation";
             throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent_", attribute));
         }
 
@@ -89,10 +88,10 @@ public class XMLDocument extends Document {
         return xmlOutWriter.toString();
     }
 
-    public void validate() throws SignerException {
-        if (content == null || schema == null) {
-            var missingAttribute = (content == null) ? "content" : "schema";
-            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent_", missingAttribute));
+    public void validate() {
+        if (isNullOrBlank(content) || isNullOrBlank(schema)) {
+            var attribute = isNullOrBlank(content) ? "content" : "schema";
+            throw new IntegrationException(Code.ATTRIBUTE_MISSING, translate("error.missingContent_", attribute));
         }
         var xsdSource = new StreamSource(new StringReader(schema));
         Schema xsdSchema;
@@ -105,10 +104,14 @@ public class XMLDocument extends Document {
 
         var xmlInSource = new StreamSource(new StringReader(content));
 
+        // TODO UserException
         try {
             xsdSchema.newValidator().validate(xmlInSource);
         } catch (SAXException | IOException e) {
-            throw new UserException(translate("error.invalidFormat.header"), translate("error.invalidFormat.description"), e);
+            throw new UserException(
+                    "error.invalidFormat.header",
+                    "error.invalidFormat.description",
+                    e);
         }
     }
 }

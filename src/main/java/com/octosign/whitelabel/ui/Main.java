@@ -14,18 +14,15 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.octosign.whitelabel.ui.FX.displayInfo;
-import static com.octosign.whitelabel.ui.I18n.getBundle;
+import static com.octosign.whitelabel.ui.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
 import static java.util.Objects.requireNonNullElse;
 
@@ -47,15 +44,15 @@ public class Main extends Application {
 
     private Server server;
 
-    private static final Logger LOGGER;
+    private static Logger LOGGER;
 
     public static void main(String[] args) {
-        try {
-            Application.launch(Main.class, args);
-        } catch (IntegrationException e) {
-            System.out.println(e.toString() + e.getCode() + e.getMessage());
-            LOGGER.log(Level.SEVERE, e.getMessage(), e.getStackTrace().)];
-        }
+//        try {
+        Application.launch(Main.class, args);
+//        } catch (Throwable t) {
+//            t.printStackTrace();
+//            LOGGER.log(Level.SEVERE, e.getMessage(), e.getStackTrace());
+//        }
     }
 
     @Override
@@ -77,7 +74,7 @@ public class Main extends Application {
         displayInfo("info.appLaunched.header", "info.appLaunched.description");
     }
 
-    private void startServer(ListenCommand command) throws Exception {
+    private void startServer(ListenCommand command) {
         var version = getVersion();
         Server server;
         try {
@@ -109,24 +106,18 @@ public class Main extends Application {
             var future = new CompletableFuture<Document>();
 
             Platform.runLater(() -> {
-                try {
-                    try {
-                        openWindow(signatureUnit, (String signedContent) -> {
-                            var signedDocument = signatureUnit.getDocument().clone();
-                            signedDocument.setContent(signedContent);
-                            future.complete(signedDocument);
-                        });
-                    } catch (IntegrationException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                return future;
+                openWindow(signatureUnit, (String signedContent) -> {
+                    var signedDocument = signatureUnit.getDocument().clone();
+                    signedDocument.setContent(signedContent);
+                    future.complete(signedDocument);
+                });
             });
+            return future;
+        });
 
-            server.setInfo(new Info(version, Status.READY));
-        }
+        server.setInfo(new Info(version, Status.READY));
     }
+
 
     private void exit() {
         if (statusIndication != null) statusIndication.dispose();
@@ -134,7 +125,7 @@ public class Main extends Application {
         Platform.exit();
     }
 
-    private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) throws IntegrationException {
+    private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) {
         System.setProperty("javafx.sg.warn", "true");
         var windowStage = new Stage();
 
@@ -156,7 +147,7 @@ public class Main extends Application {
         windowStage.show();
     }
 
-    public static FXMLLoader loadWindow(String name) throws IntegrationException {
+    public static FXMLLoader loadWindow(String name) {
         var fxmlLoader = new FXMLLoader(Main.class.getResource(name + ".fxml"), bundle);
         try {
             fxmlLoader.load();

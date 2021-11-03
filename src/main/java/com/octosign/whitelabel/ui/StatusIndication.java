@@ -27,7 +27,7 @@ public class StatusIndication {
 
     private Runnable onExit;
 
-    public StatusIndication(Runnable onExit) throws IntegrationException {
+    public StatusIndication(Runnable onExit) {
         this.onExit = onExit;
 
 //        if (isTraySupported()) {
@@ -40,7 +40,7 @@ public class StatusIndication {
     /**
      * Add Window with info about the running app
      */
-    private void addMinimizedWindow() throws IntegrationException {
+    private void addMinimizedWindow() {
         var windowStage = new Stage();
 
         var fxmlLoader = Main.loadWindow("status");

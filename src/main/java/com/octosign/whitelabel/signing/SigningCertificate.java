@@ -4,10 +4,8 @@ import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.IntegrationException;
-import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.*;
-import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -51,7 +49,7 @@ public abstract class SigningCertificate {
      * - SHORT - Contains name and date range
      * - NAME - Contains name only
      */
-    public enum KeyDescriptionVerbosity {
+    public enum Verbosity {
         LONG,
         SHORT,
         NAME
@@ -60,9 +58,10 @@ public abstract class SigningCertificate {
     /**
      * Constructs human readable private key description
      */
-    public static String getNicePrivateKeyDescription(DSSPrivateKeyEntry key, KeyDescriptionVerbosity verbosity) {
+    public static String getNicePrivateKeyDescription(DSSPrivateKeyEntry key, Verbosity verbosity) {
         String dn = key.getCertificate().getSubject().getRFC2253();
         String label = "";
+
         try {
             LdapName ldapDN = new LdapName(dn);
             String dnName = "";
@@ -83,10 +82,10 @@ public abstract class SigningCertificate {
                     dnStreet = rdn.getValue().toString();
             }
 
-            if (verbosity == KeyDescriptionVerbosity.LONG) {
+            if (verbosity == Verbosity.LONG) {
                 label = String.format("%s, %s %s, %s (%s - %s)", dnName, dnCity, dnStreet, dnCountry, notBefore,
                     notAfter);
-            } else if (verbosity == KeyDescriptionVerbosity.SHORT) {
+            } else if (verbosity == Verbosity.SHORT) {
                 label = String.format("%s (%s - %s)", dnName, notBefore, notAfter);
             } else {
                 label = dnName;
@@ -109,27 +108,20 @@ public abstract class SigningCertificate {
     }
 
     public List<DSSPrivateKeyEntry> getAvailablePrivateKeys() {
-        List<DSSPrivateKeyEntry> keys;
-        try {
-            keys = token.getKeys();
-        } catch (Exception e) {
-            throw new RuntimeException(translate("error.keysNotRetrieved", e));
-        }
-
-        return keys;
+        return token.getKeys();
     }
 
     /**
      * Constructs human readable description for the current private key
      */
-    public String getNicePrivateKeyDescription(KeyDescriptionVerbosity verbosity) {
+    public String getNicePrivateKeyDescription(Verbosity verbosity) {
         return SigningCertificate.getNicePrivateKeyDescription(privateKey, verbosity);
     }
 
     /**
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
-    public String sign(SignatureUnit unit) throws IntegrationException {
+    public String sign(SignatureUnit unit) {
         if (unit.getSignatureParameters().getFormat().equals(SignatureParameters.Format.XADES))
             unit.standardizeAsXDC();
 

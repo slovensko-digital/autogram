@@ -24,16 +24,16 @@ public class DocumentationEndpoint extends Endpoint {
     }
 
     @Override
-    protected void handleRequest(HttpExchange exchange) throws IntegrationException {
+    protected void handleRequest(HttpExchange exchange) {
         String cwd = System.getProperty("user.dir");
         boolean isYaml = exchange.getRequestURI().getPath().endsWith(".yml");
 
         var file = Paths.get(cwd, docsPath, isYaml ? yamlName : htmlName);
         var mimeType = isYaml ? "text/yaml" : "text/html";
 
-        var headers = exchange.getResponseHeaders();
-        headers.set("Content-Type", mimeType);
+        exchange.getResponseHeaders().set("Content-Type", mimeType);
 
+        // TODO userexception?
         try (var fileStream = new FileInputStream(file.toString());
              var responseStream = exchange.getResponseBody()) {
             exchange.sendResponseHeaders(200, 0);

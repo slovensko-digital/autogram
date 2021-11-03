@@ -1,8 +1,6 @@
 package com.octosign.whitelabel.error_handling;
 
-import com.octosign.whitelabel.communication.CommunicationError;
-
-public class SignerException extends Exception {
+public class SignerException extends RuntimeException {
 
     public SignerException() { this(null, null); }
     public SignerException(String message) { this(message, null); }

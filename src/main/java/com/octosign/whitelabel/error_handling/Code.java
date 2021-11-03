@@ -3,22 +3,29 @@ package com.octosign.whitelabel.error_handling;
 public enum Code {
         DEFAULT,
         NOT_READY,
+
         UNSUPPORTED_OPERATION,
         ATTRIBUTE_MISSING,
         MALFORMED_INPUT,
         UNSUPPORTED_FORMAT,
-
+        NULL_RESPONSE,
+        UNEXPECTED_ORIGIN,
+        MALFORMED_MIMETYPE,
         XSD_SCHEMA_INVALID,
+        BAD_REQUEST,
+
+        FXML_LOADER_ERROR,
+        UNEXPECTED_ERROR,
         XSLT_ERROR,
-        VALIDATION_FAILED,
+        TRANSLATION_ERROR,
+        MISSING_ERROR_DETAILS,
 
         HTTP_EXCHANGE_FAILED,
-        FXML_LOADER_ERROR,
-        SIGNING_FAILED,
+        PKCS11_INIT_FAILED,
+        PKCS12_INIT_FAILED,
+        MSCAPI_INIT_FAILED,
+        VALIDATION_FAILED,
         RESPONSE_FAILED,
-        NULL_RESPONSE,
         DECODING_FAILED,
-        UNEXPECTED_ORIGIN,
-        UNEXPECTED_ERROR,
-        MALFORMED_MIMETYPE
+        SIGNING_FAILED,
 }

@@ -36,7 +36,7 @@ public class Server {
     // HMAC hex secret key
     private String secretKey;
 
-    public Server(int initialNonce) throws SignerException {
+    public Server(int initialNonce) {
         this(DEFAULT_HOSTNAME, DEFAULT_PORT, initialNonce);
     }
 
