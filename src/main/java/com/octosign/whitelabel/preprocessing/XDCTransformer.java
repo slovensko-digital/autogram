@@ -25,7 +25,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static com.octosign.whitelabel.ui.Main.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 import static java.util.Objects.requireNonNull;
 
 
@@ -60,11 +60,11 @@ public class XDCTransformer {
         this.digestAlgorithm = requireNonNull(digestAlgorithm, "digestAlgorithm");
     }
 
-    public String transform(String xmlInput, Mode mode) throws IntegrationException {
+    public String transform(String xmlInput, Mode mode) {
         try {
             parseDOMDocument(xmlInput);
         } catch (SAXException | IOException e) {
-            throw new IntegrationException(Code.MALFORMED_INPUT, translate("error.xmlParsin gFailure", e));
+            throw new IntegrationException(Code.MALFORMED_INPUT, translate("error.xmlParsingFailure", e));
         } catch (ParserConfigurationException e) {
             throw new IntegrationException(Code.UNEXPECTED_ERROR, translate("error.builderConfigInvalid", e));
         }

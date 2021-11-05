@@ -3,8 +3,12 @@ package com.octosign.whitelabel.signing;
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
-import eu.europa.esig.dss.model.*;
+import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -22,6 +26,7 @@ import java.util.List;
 
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -49,7 +54,7 @@ public abstract class SigningCertificate {
      * - SHORT - Contains name and date range
      * - NAME - Contains name only
      */
-    public enum KeyDescriptionVerbosity {
+    public enum Verbosity {
         LONG,
         SHORT,
         NAME
@@ -58,7 +63,7 @@ public abstract class SigningCertificate {
     /**
      * Constructs human readable private key description
      */
-    public static String getNicePrivateKeyDescription(DSSPrivateKeyEntry key, KeyDescriptionVerbosity verbosity) {
+    public static String getNicePrivateKeyDescription(DSSPrivateKeyEntry key, Verbosity verbosity) {
         String dn = key.getCertificate().getSubject().getRFC2253();
         String label = "";
         try {
@@ -81,10 +86,10 @@ public abstract class SigningCertificate {
                     dnStreet = rdn.getValue().toString();
             }
 
-            if (verbosity == KeyDescriptionVerbosity.LONG) {
+            if (verbosity == Verbosity.LONG) {
                 label = String.format("%s, %s %s, %s (%s - %s)", dnName, dnCity, dnStreet, dnCountry, notBefore,
                     notAfter);
-            } else if (verbosity == KeyDescriptionVerbosity.SHORT) {
+            } else if (verbosity == Verbosity.SHORT) {
                 label = String.format("%s (%s - %s)", dnName, notBefore, notAfter);
             } else {
                 label = dnName;
@@ -107,82 +112,87 @@ public abstract class SigningCertificate {
     }
 
     public List<DSSPrivateKeyEntry> getAvailablePrivateKeys() {
-        List<DSSPrivateKeyEntry> keys;
-        try {
-            keys = token.getKeys();
-        } catch (Exception e) {
-            throw new RuntimeException(translate("error.keysNotRetrieved", e));
-        }
-
-        return keys;
+        return token.getKeys();
     }
 
     /**
      * Constructs human readable description for the current private key
      */
-    public String getNicePrivateKeyDescription(KeyDescriptionVerbosity verbosity) {
+    public String getNicePrivateKeyDescription(Verbosity verbosity) {
         return SigningCertificate.getNicePrivateKeyDescription(privateKey, verbosity);
     }
 
     /**
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
-    public String sign(SignatureUnit unit) throws IOException {
+    public String sign(SignatureUnit unit) {
         var content = unit.getDocument().getContent();
         var parameters = unit.getSignatureParameters();
+        var format = parameters.getFormat();
 
         byte[] binaryContent;
-        if (parameters.getFormat() == PADES) {
+
+        if (format.equals(PADES)) {
             binaryContent = Base64.getDecoder().decode(content);
         } else {
-            if (parameters.getFormat() == XADES) unit.standardizeAsXDC();
+            if (format.equals(XADES))
+                unit.standardizeAsXDC();
             binaryContent = content.getBytes(StandardCharsets.UTF_8);
         }
 
         var document = new InMemoryDocument(binaryContent);
-        document.setName(parameters.getFilename());
+        // TODO!
+        document.setName("Vseobecna_agenda.xml");
+        document.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8"));
 
-        var output = new ByteArrayOutputStream();
         var signedDocument = sign(document, parameters);
-        signedDocument.writeTo(output);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        try {
+            signedDocument.writeTo(output);
+        } catch (IOException e) {
+            throw new IntegrationException("Unable to write result to the output stream: %e", e);
+        }
 
         return Utils.toBase64(output.toByteArray());
     }
 
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
         if (privateKey == null)
-            throw new RuntimeException("Missing private key");
+            throw new RuntimeException(translate("error.missingPrivateKey"));
 
-        var commonCertificateVerifier = new CommonCertificateVerifier();
+        CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+        DSSDocument signedDocument;
+        var format = inputParameters.getFormat();
 
-        switch(inputParameters.getFormat()) {
-            case XADES -> {
-                var parameters = SignatureParameterMapper.mapXAdESParameters(inputParameters);
-                parameters.setSigningCertificate(privateKey.getCertificate());
-                parameters.setCertificateChain(privateKey.getCertificateChain());
+        if (format.equals(PADES)) {
+            var parameters = SignatureParameterMapper.mapPAdESParameters(inputParameters);
+            parameters.setSigningCertificate(privateKey.getCertificate());
+            parameters.setCertificateChain(privateKey.getCertificateChain());
 
-                var service = new ASiCWithXAdESService(commonCertificateVerifier);
-                var dataToSign = service.getDataToSign(document, parameters);
-                var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
-                assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
+            var service = new PAdESService(commonCertificateVerifier);
+            var dataToSign = service.getDataToSign(document,parameters);
+            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
 
-                return service.signDocument(document, parameters, signatureValue);
-            }
+            signedDocument = service.signDocument(document, parameters, signatureValue);
 
-            case PADES -> {
-                var parameters = SignatureParameterMapper.mapPAdESParameters(inputParameters);
-                parameters.setSigningCertificate(privateKey.getCertificate());
-                parameters.setCertificateChain(privateKey.getCertificateChain());
+        } else if (format.equals(XADES)) {
+            var parameters = SignatureParameterMapper.mapXAdESParameters(inputParameters);
+            parameters.setSigningCertificate(privateKey.getCertificate());
+            parameters.setCertificateChain(privateKey.getCertificateChain());
 
-                var service = new PAdESService(commonCertificateVerifier);
-                var dataToSign = service.getDataToSign(document, parameters);
-                var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
-                assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
+            var service = new ASiCWithXAdESService(commonCertificateVerifier);
+            var dataToSign = service.getDataToSign(document, parameters);
+            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
+            assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
 
-                return service.signDocument(document, parameters, signatureValue);
-            }
+            signedDocument = service.signDocument(document, parameters, signatureValue);
 
-            default -> throw new IllegalArgumentException("Unknown format");
+        } else {
+            throw new IllegalArgumentException(translate("Unknown document format ", format));
         }
+
+        return signedDocument;
     }
 }

@@ -4,7 +4,6 @@ import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.error_handling.IntegrationException;
 
 public class InfoEndpoint extends ReadEndpoint<Info> {
 
@@ -19,7 +18,7 @@ public class InfoEndpoint extends ReadEndpoint<Info> {
     }
 
     @Override
-    protected Response<Info> handleRequest(Request<?> request, Response<Info> response) throws IntegrationException {
+    protected Response<Info> handleRequest(Request<?> request, Response<Info> response) {
         return response.setBody(info);
     }
 

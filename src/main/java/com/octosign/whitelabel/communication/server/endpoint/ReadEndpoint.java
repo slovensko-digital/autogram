@@ -3,7 +3,6 @@ package com.octosign.whitelabel.communication.server.endpoint;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -20,11 +19,11 @@ abstract class ReadEndpoint<U> extends Endpoint {
     }
 
     @Override
-    protected void handleRequest(HttpExchange exchange) throws IntegrationException {
+    protected void handleRequest(HttpExchange exchange) {
         var request = new Request<>(exchange);
         var response = handleRequest(request, new Response<>(exchange));
 
-        send(response);
+        useResponse(response);
     }
 
     /**
@@ -36,7 +35,7 @@ abstract class ReadEndpoint<U> extends Endpoint {
      * @return Modified response if the request succeeded or null if not and custom response was sent.
      * @throws IOException
      */
-    protected abstract Response<U> handleRequest(Request<?> request, Response<U> response) throws IntegrationException;
+    protected abstract Response<U> handleRequest(Request<?> request, Response<U> response);
 
     /**
      * Class of the response body object

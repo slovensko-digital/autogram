@@ -6,8 +6,8 @@ import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.endpoint.DocumentationEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.InfoEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.SignEndpoint;
-import com.octosign.whitelabel.error_handling.SignerException;
 import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.ui.Main;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
@@ -16,9 +16,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
+import static com.octosign.whitelabel.ui.Main.getProperty;
+
 public class Server {
 
-    private static final String DEFAULT_HOSTNAME = "127.0.0.1";
+    private static final String DEFAULT_HOSTNAME = "localhost";
     private static final int DEFAULT_PORT = 37200;
 
     private final InfoEndpoint infoEndpoint;
@@ -36,8 +38,8 @@ public class Server {
     // HMAC hex secret key
     private String secretKey;
 
-    public Server(int initialNonce) throws SignerException {
-        this(DEFAULT_HOSTNAME, DEFAULT_PORT, initialNonce);
+    public Server(int initialNonce) {
+        this(getProperty("app.serverAddress"), Integer.parseInt(getProperty("app.port")), initialNonce);
     }
 
     public Server(String hostname, int port, int initialNonce) throws UserException {
@@ -67,6 +69,22 @@ public class Server {
         server.stop(0);
     }
 
+    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
+        signEndpoint.setOnSign(onSign);
+    }
+
+    public void setInfo(Info info) {
+        infoEndpoint.setInfo(info);
+    }
+
+    public InetSocketAddress getAddress() {
+        return server.getAddress();
+    }
+
+    public String getDefaultHostname() {
+        return DEFAULT_HOSTNAME;
+    }
+
     public void setDevMode(boolean devMode) {
         this.devMode = devMode;
     }
@@ -77,9 +95,6 @@ public class Server {
         this.secretKey = secretKey;
     }
 
-    public void setInfo(Info info) { infoEndpoint.setInfo(info); }
-
-
     public boolean isDevMode() {
         return devMode;
     }
@@ -89,8 +104,4 @@ public class Server {
     public String getSecretKey() {
         return secretKey;
     }
-
-    public InetSocketAddress getAddress() { return server.getAddress(); }
-
-    public String getDefaultHostname() { return DEFAULT_HOSTNAME; }
 }

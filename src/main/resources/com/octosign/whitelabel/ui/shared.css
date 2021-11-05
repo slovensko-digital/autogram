@@ -101,7 +101,7 @@ Button:hover {
 .thumb:hover {
     -fx-background-color: rgba(0, 0, 0, 0.7);
 }
-.thumb:active {
+.thumb:pressed {
     -fx-background-color: -primary-color;
 }
 .scroll-bar .increment-button,
@@ -127,7 +127,7 @@ Button:hover {
 .scroll-bar:vertical .decrement-arrow {
     -fx-rotate: -180;
 }
-.scroll-bar:vertical:focus,
-.scroll-bar:horizontal:focus {
+.scroll-bar:vertical:focused,
+.scroll-bar:horizontal:focused {
     -fx-background-color: transparent, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5);
 }

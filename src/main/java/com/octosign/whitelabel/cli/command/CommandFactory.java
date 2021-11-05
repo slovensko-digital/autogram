@@ -13,9 +13,8 @@ public class CommandFactory {
      *
      * @param parameters
      * @return Command specified in the parameters or null if none
-     * @throws IntegrationException
      */
-    public static Command fromParameters(Parameters parameters) throws IntegrationException {
+    public static Command fromParameters(Parameters parameters) {
         var named = parameters.getNamed();
         var positional = parameters.getUnnamed();
         var urlParam = named.get("url");

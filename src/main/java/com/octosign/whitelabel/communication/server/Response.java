@@ -1,8 +1,8 @@
 package com.octosign.whitelabel.communication.server;
 
+import com.google.common.collect.ImmutableMap;
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.IOException;
@@ -11,12 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.server.format.BodyFormat;
-import com.sun.net.httpserver.HttpExchange;
-
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
-import static com.octosign.whitelabel.ui.Main.translate;
 
 /**
  * Server response that conforms to request headers
@@ -25,7 +20,7 @@ public class Response<U> {
 
     private final HttpExchange exchange;
 
-    private final Map<MimeType, BodyFormat> bodyFormats = Map.of(
+    private final Map<MimeType, BodyFormat> BODY_FORMATS = ImmutableMap.of(
         MimeType.JSON_UTF8, JSON,
         MimeType.ANY, JSON // Default format
     );
@@ -48,13 +43,14 @@ public class Response<U> {
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
 
-            bodyFormat = bodyFormats.keySet().stream()
+            // TODO very similar method in Request - lets merge them
+            bodyFormat = BODY_FORMATS.keySet().stream()
                 .filter(m -> m.equalsTypeSubtype(contentMimeType))
                 .findFirst()
-                .map(bodyFormats::get)
-                .orElse(bodyFormats.get(MimeType.ANY));
+                .map(BODY_FORMATS::get)
+                .orElse(BODY_FORMATS.get(MimeType.ANY));
         } else {
-            bodyFormat = bodyFormats.get(MimeType.ANY);
+            bodyFormat = BODY_FORMATS.get(MimeType.ANY);
         }
     }
 
@@ -76,12 +72,6 @@ public class Response<U> {
         return this;
     }
 
-    public Response<U> asError(int httpCode, U error) {
-        setStatusCode(httpCode);
-        setBody(error);
-        return this;
-    }
-
     public void send() throws IOException {
         var headers = exchange.getResponseHeaders();
         var body = bodyFormat.to(getBody());
@@ -98,4 +88,3 @@ public class Response<U> {
         }
     }
 }
-

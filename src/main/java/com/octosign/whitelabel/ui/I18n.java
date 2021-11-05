@@ -1,18 +1,27 @@
 package com.octosign.whitelabel.ui;
 
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+
 import java.util.Arrays;
-import java.util.ResourceBundle;
+import java.util.Locale;
 
 public class I18n {
+
+    static { Locale.setDefault(new Locale("sk"));  }
+
     private static boolean strictMode = true;
 
     public static String translate(String path, Object... args) {
-        return getProperty(path, args);
+        try {
+            return getProperty(path, args);
+        }
+        catch (Exception e) { throw new IntegrationException(Code.TRANSLATION_ERROR, e); }
     }
 
+    // TODO getBundle
     public static String getProperty(String path, Object... args) {
-        var message = getBundle().getString(path);
-
+        var message = Main.getBundle().getString(path);
         if (args == null || args.length == 0)
             return message;
         else
@@ -24,19 +33,12 @@ public class I18n {
         if (specifiersCount == args.length)
             return args;
 
-        var msg = String.format("Cardinalities mismatch. %d args, %d specifiers", args.length, specifiersCount);
+        var message = String.format("Cardinality mismatch: %d args, %d specifiers", args.length, specifiersCount);
         if (strictMode) {
-            throw new IllegalArgumentException(msg);
+            throw new IllegalArgumentException(message);
         } else {
-            System.out.println("Warning! " + msg);
+            System.out.println("WARNING: " + message);
             return Arrays.copyOf(args, Math.max(specifiersCount, args.length));
         }
     }
-
-//    public static boolean isSupported(Locale locale) { return asList(Locale.getAvailableLocales()).contains(locale); }
-//    public static void setLocale(Locale locale) { Locale.setDefault(locale); }
-//    public static Locale getLocale() { return Locale.getDefault(); }
-
-//    public static ResourceBundle getBundle() { return bundle; }
-
 }

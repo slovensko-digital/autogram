@@ -1,5 +1,8 @@
 package com.octosign.whitelabel.ui;
 
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.UserException;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -10,23 +13,31 @@ import javafx.scene.layout.Region;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static com.octosign.whitelabel.ui.I18n.translate;
-import static java.util.Arrays.asList;
+import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 import static java.util.Objects.requireNonNull;
 
-public class FX {
+public class FXUtils {
+
+    public static void displayUserError(String description, Throwable cause) {
+        displayError("error.user.header", description, cause);
+    }
+
+    public static void displayIntegrationError(String description, Throwable cause) {
+        displayError("error.integration.header", description, cause);
+    }
+
+    public static void displayError(UserException e) {
+        if (isNullOrBlank(e.getHeader()) && isNullOrBlank(e.getDescription()))
+            throw new IntegrationException(Code.MISSING_ERROR_DETAILS, e);
+
+        displayError(e.getHeader(), e.getDescription(), e);
+    }
 
     public static void displayError(String description) {
         displayError(description, null);
-    }
-
-    public static void displayError(String description, Throwable cause) {
-        displayError("error.integration.header", description, cause);
     }
 
     public static void displayError(String header, String description) {
@@ -42,7 +53,7 @@ public class FX {
         );
 
         if(cause != null)
-            alert.getDialogPane().setExpandableContent(getErrorDetails(cause));
+            alert.getDialogPane().setExpandableContent(buildErrorDetails(cause));
 
         alert.showAndWait();
     }
@@ -82,7 +93,7 @@ public class FX {
         return alert;
     }
 
-    private static <T extends Throwable> Pane getErrorDetails(T e) {
+    private static <T extends Throwable> Pane buildErrorDetails(T e) {
         e.printStackTrace();
         var stringWriter = new StringWriter();
         e.printStackTrace(new PrintWriter(stringWriter));
@@ -108,16 +119,5 @@ public class FX {
         stylesheets.add(requireNonNull(Main.class.getResource("shared.css")).toExternalForm());
         stylesheets.add(requireNonNull(Main.class.getResource("dialog.css")).toExternalForm());
         stylesheets.add(requireNonNull(Main.class.getResource("overrides.css")).toExternalForm());
-    }
-
-    /**
-     * Display error alert with exception details
-     */
-    public static void displayError(String title, String header, String description, Throwable cause) {
-        var alert = buildAlert(Alert.AlertType.ERROR, title, header, description);
-        if (cause != null)
-            alert.getDialogPane().setExpandableContent(getErrorDetails(cause));
-
-        alert.showAndWait();
     }
 }

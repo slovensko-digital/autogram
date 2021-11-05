@@ -5,25 +5,29 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
-import com.octosign.whitelabel.error_handling.SignerException;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import static com.octosign.whitelabel.ui.FX.displayError;
-import static com.octosign.whitelabel.ui.Main.getProperty;
-import static com.octosign.whitelabel.ui.Main.getResourceString;
+import static com.octosign.whitelabel.signing.SigningCertificate.Verbosity.NAME;
+import static com.octosign.whitelabel.ui.FXUtils.displayError;
+import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 
 /**
  * Controller for the signing window
@@ -46,10 +50,16 @@ public class MainController {
     private Label signLabel;
 
     /**
-     * Bottom-right button used to load/pick certificate and sign
+     * Bottom-right button used to load/pick certificate
      */
     @FXML
-    private Button mainButton;
+    private Button loadSignersButton;
+
+    /**
+     * Bottom-right button used to sign
+     */
+    @FXML
+    private Button signDocumentButton;
 
     @FXML
     private ResourceBundle resources;
@@ -69,6 +79,11 @@ public class MainController {
      */
     private Consumer<String> onSigned;
 
+    /**
+     * Name of the currently used signing certificate owner
+     */
+    private String certificateName;
+
     public void initialize() {
         webView.setContextMenuEnabled(false);
         webView.getEngine().setJavaScriptEnabled(false);
@@ -78,58 +93,32 @@ public class MainController {
         this.certificateManager = certificateManager;
     }
 
-    public void setSignatureUnit(SignatureUnit signatureUnit) {
-        this.signatureUnit = signatureUnit;
+    public void setOnSigned(Consumer<String> onSigned) { this.onSigned = onSigned; }
+
+    public void setSignatureUnit(SignatureUnit signatureUnit) { this.signatureUnit = signatureUnit; }
+
+    public void loadDocument() {
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
-
-    public void loadDocument() throws IntegrationException {
-        var document = signatureUnit.getDocument();
 
         if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }
 
-        if (certificateManager.getCertificate() != null) {
-            String name = certificateManager
-                .getCertificate()
-                .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-            mainButton.setText(getProperty("btn.signAs", name));
-        }
+        determineButtonAction();
 
-        //TODO consider simplifying this part to avoid tedious casting
-        boolean isXml = document instanceof XMLDocument;
+        boolean isXML = document instanceof XMLDocument;
         boolean isPDF = document instanceof PDFDocument;
-        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
-        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+        final boolean hasSchema = isXML && ((XMLDocument) document).getSchema() != null;
+        final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
-            try {
-                ((XMLDocument) document).validate();
-            } catch (Exception e) {
-                displayAlert(
-                        "Neplatný formát",
-                        "XML súbor nie je validný",
-                        "Dokument na podpísanie nevyhovel požiadavkám validácie podľa XSD schémy. Detail chyby: " + e
-                );
-                return;
-            }
+            ((XMLDocument) document).validate();
         }
 
         if (hasTransformation) {
-            String visualisation;
-//            try {/
-                var xmlDocument = (XMLDocument) document;
-                visualisation = xmlDocument.getTransformed();
-            } catch (Exception e) {
-                displayAlert(
-                        "Chyba zobrazenia",
-                        "Získanie zobraziteľnej podoby zlyhalo",
-                        "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
-                );
-                return;
-            }
+            var visualisation = ((XMLDocument) document).getTransformed();
 
             var transformationOutputType = parameters.getTransformationOutputMimeType() == null
                 ? MimeType.HTML
@@ -156,13 +145,11 @@ public class MainController {
         textArea.setManaged(false);
 
         var webEngine = webView.getEngine();
-        webEngine.getLoadWorker().stateProperty().addListener(
-            (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
-                if (newState == Worker.State.SUCCEEDED) {
-                    webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
-                }
+        webEngine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
             }
-        );
+        });
         webEngine.loadContent(getResourceAsString("visualization.html"));
     }
 
@@ -185,67 +172,93 @@ public class MainController {
         });
     }
 
-    private void displayAlert(String title, String header, String description) {
+    @FXML
+    private void onLoadSignersButtonAction() {
+        startLoading();
+
         Platform.runLater(() -> {
-            Main.displayAlert(
-                    AlertType.ERROR,
-                    title,
-                    header,
-                    description
-            );
+            try {
+                certificateManager.useDefault();
+            } catch (UserException e) {
+                displayError(e);
+            } finally {
+                finishLoading();
+                determineButtonAction();
+            }
         });
     }
 
-    public void setOnSigned(Consumer<String> onSigned) {
-        this.onSigned = onSigned;
+    @FXML
+    private void onSignDocumentButtonAction() {
+        startSigning();
+
+        Platform.runLater(() -> {
+            try {
+                var signedContent = certificateManager.getCertificate().sign(signatureUnit);
+                onSigned.accept(signedContent);
+            } catch (UserException e) {
+                displayError(e);
+            } finally {
+                finishSigning();
+                determineButtonAction();
+            }
+        });
     }
 
-    @FXML
-    private void onMainButtonAction() {
-        if (certificateManager.getCertificate() == null) {
-            // No certificate means this is loading of certificates
-            mainButton.setDisable(true);
-            mainButton.setText(getProperty("btn.loading"));
+    private void startLoading() {
+        loadSignersButton.setDisable(true);
+        loadSignersButton.setText(translate("btn.loading"));
+    }
 
-            CompletableFuture.runAsync(() -> {
-                String mainButtonText;
-                if (certificateManager.useDefault() != null) {
-                    String name = certificateManager
-                        .getCertificate()
-                        .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-                    mainButtonText = getProperty("btn.signAs", name);
-                } else {
-                    mainButtonText = getProperty("btn.loadSigners");
-                }
-                Platform.runLater(() -> {
-                    mainButton.setText(mainButtonText);
-                    mainButton.setDisable(false);
-                });
-            });
+    private void finishLoading() {
+        loadSignersButton.setDisable(false);
+        loadSignersButton.setText(translate("btn.loadSigners"));
+    }
+
+    private void startSigning() {
+//        if (!signDocumentButton.isDisabled()) {
+            signDocumentButton.setDisable(true);
+            signDocumentButton.setText(translate("btn.signing"));
+//        }
+    }
+
+    private void finishSigning() {
+//        if (signDocumentButton.isDisabled()) {
+            signDocumentButton.setDisable(false);
+            signDocumentButton.setText(translate("btn.signAs", getCachedName()));
+//        }
+    }
+
+    private void determineButtonAction() {
+        if (certificateManager.getCertificate() != null) {
+            vanish(loadSignersButton);
+            materialize(signDocumentButton);
+
+            if (isNullOrBlank(signDocumentButton.getText())) {
+                signDocumentButton.setText(translate("btn.signAs", getCachedName()));
+            }
         } else {
-            // Otherwise this is signing
-            String previousButtonText = mainButton.getText();
-            mainButton.setDisable(true);
-            mainButton.setText(getProperty("btn.signing"));
-
-            CompletableFuture.runAsync(() -> {
-                try {
-                    String signedContent = certificateManager.getCertificate().sign(signatureUnit);
-                    Platform.runLater(() -> onSigned.accept(signedContent));
-                } catch (Exception e) {
-                    displayAlert(
-                            "Nepodpísané",
-                            "Súbor nebol podpísaný",
-                            "Podpísanie zlyhalo alebo bolo zrušené. Detail chyby: " + e
-                    );
-                } finally {
-                    Platform.runLater(() -> {
-                        mainButton.setText(previousButtonText);
-                        mainButton.setDisable(false);
-                    });
-                }
-            });
+            vanish(signDocumentButton);
+            materialize(loadSignersButton);
         }
+    }
+
+    private void materialize(Node node) {
+        if (!node.isManaged()) node.setManaged(true);
+        if (!node.isVisible()) node.setVisible(true);
+    }
+
+    private void vanish(Node node) {
+        if (node.isManaged()) node.setManaged(false);
+        if (node.isVisible()) node.setVisible(false);
+    }
+
+    private String getCachedName() {
+        if (isNullOrBlank(certificateName)) {
+            certificateName = certificateManager.getCertificate().getNicePrivateKeyDescription(NAME);
+        }
+
+        return certificateName;
     }
 
     @FXML
@@ -263,7 +276,7 @@ public class MainController {
      */
     private static String getResourceAsString(String resourceName) {
         try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
-            if (inputStream == null) throw new Exception(getProperty("exc.resourceNotFound"));
+            if (inputStream == null) throw new Exception("Resource not found");
             try (
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                 BufferedReader reader = new BufferedReader(inputStreamReader)
@@ -271,7 +284,7 @@ public class MainController {
                 return reader.lines().collect(Collectors.joining(System.lineSeparator()));
             }
         } catch (Exception e) {
-            throw new RuntimeException(getProperty("exc.resourceLoadingFailed", resourceName), e);
+            throw new RuntimeException("Failed to load resource " + resourceName, e);
         }
     }
 }
