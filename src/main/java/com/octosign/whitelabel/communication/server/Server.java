@@ -7,16 +7,17 @@ import com.octosign.whitelabel.communication.server.endpoint.DocumentationEndpoi
 import com.octosign.whitelabel.communication.server.endpoint.InfoEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.SignEndpoint;
 import com.octosign.whitelabel.error_handling.UserException;
-import com.octosign.whitelabel.ui.Main;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
-import static com.octosign.whitelabel.ui.Main.getProperty;
+import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
+import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 
 public class Server {
 
@@ -39,13 +40,15 @@ public class Server {
     private String secretKey;
 
     public Server(int initialNonce) {
-        this(getProperty("app.serverAddress"), Integer.parseInt(getProperty("app.port")), initialNonce);
+        this(getHostname(), getPort(), initialNonce);
     }
 
     public Server(String hostname, int port, int initialNonce) throws UserException {
         try {
             server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
-        } catch (IOException e) {
+        } catch (BindException e) {
+            throw new UserException("error.addressInUse.header", "error.addressInUse_.description", e);
+        } catch (Exception e) {
             throw new UserException("error.serverNotCreated", e);
         }
 
@@ -69,6 +72,16 @@ public class Server {
         server.stop(0);
     }
 
+    public static String getHostname() {
+        var userDefined = getProperty("app.serverAddress");
+        return isNullOrBlank(userDefined) ? DEFAULT_HOSTNAME : userDefined;
+    }
+
+    public static int getPort() {
+        var userDefined = getProperty("app.port");
+        return isNullOrBlank(userDefined) ? DEFAULT_PORT : Integer.parseInt(userDefined);
+    }
+
     public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
         signEndpoint.setOnSign(onSign);
     }
@@ -79,10 +92,6 @@ public class Server {
 
     public InetSocketAddress getAddress() {
         return server.getAddress();
-    }
-
-    public String getDefaultHostname() {
-        return DEFAULT_HOSTNAME;
     }
 
     public void setDevMode(boolean devMode) {

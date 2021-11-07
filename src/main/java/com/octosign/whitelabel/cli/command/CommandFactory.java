@@ -1,6 +1,6 @@
 package com.octosign.whitelabel.cli.command;
 
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.UserException;
 import javafx.application.Application.Parameters;
 
 import java.net.URI;
@@ -27,9 +27,9 @@ public class CommandFactory {
                 return fromParameters(positional.get(0), parameters);
             }
         } catch (URISyntaxException e) {
-            throw new IntegrationException(String.format("Invalid URL - RFC 2396 violation: %s", e));
-        } catch (IllegalArgumentException e) {
-            throw new IntegrationException(String.format("Invalid parameters: %s", e));
+            throw new UserException("error.invalidUrl.header", "error.invalidUrl.description", e);
+        } catch (Exception e) {
+            throw new UserException("error.invalidParameters.header", "error.invalidParameters.description", e);
         }
     }
 

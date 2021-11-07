@@ -72,8 +72,9 @@ public class Request<T> {
 
     public <U extends Map<String, List<String>>> BodyFormat extractBodyFormat(U source) {
         var contentType = source.get("Content-Type");
+        var defaultBodyFormat = BODY_FORMATS.get(MimeType.ANY);
         if (contentType == null)
-            return BODY_FORMATS.get(MimeType.ANY);
+            return defaultBodyFormat;
 
         var contentMimeType = MimeType.parse(contentType.get(0));
 
@@ -81,6 +82,6 @@ public class Request<T> {
                 .filter(m -> m.equalsTypeSubtype(contentMimeType))
                 .findFirst()
                 .map(BODY_FORMATS::get)
-                .orElse(BODY_FORMATS.get(MimeType.ANY));
+                .orElse(defaultBodyFormat);
     }
 }

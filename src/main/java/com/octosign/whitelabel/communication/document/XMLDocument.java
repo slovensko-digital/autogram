@@ -101,14 +101,11 @@ public class XMLDocument extends Document {
 
         var xmlInSource = new StreamSource(new StringReader(content));
 
-        // TODO UserException
         try {
             xsdSchema.newValidator().validate(xmlInSource);
-        } catch (SAXException | IOException e) {
-            throw new UserException(
-                    "error.invalidFormat.header",
-                    "error.invalidFormat.description",
-                    e);
+        }
+        catch (SAXException | IOException e) {
+            throw new UserException("error.invalidFormat.header", "error.invalidFormat.description", e);
         }
     }
 }

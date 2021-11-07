@@ -31,7 +31,6 @@ public class DocumentationEndpoint extends Endpoint {
 
         exchange.getResponseHeaders().set("Content-Type", mimeType);
 
-        // TODO userexception?
         try (var fileStream = new FileInputStream(file.toString());
              var responseStream = exchange.getResponseBody()) {
             exchange.sendResponseHeaders(200, 0);

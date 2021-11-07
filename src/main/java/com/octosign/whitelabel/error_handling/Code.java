@@ -17,6 +17,7 @@ public enum Code {
         XSLT_ERROR,
         TRANSLATION_ERROR,
         MISSING_ERROR_DETAILS,
+        APP_LAUNCH_FAILED,
         HTTP_EXCHANGE_FAILED,
         PKCS11_INIT_FAILED,
         PKCS12_INIT_FAILED,
@@ -25,4 +26,10 @@ public enum Code {
         RESPONSE_FAILED,
         DECODING_FAILED,
         SIGNING_FAILED,
+        FATAL_ERROR,
+        PROPERTY_NOT_FOUND,
+        RESOURCE_NOT_FOUND,
+        TRANSLATION_FAILED,
+        SERVER_NOT_LAUNCHED,
+        PROPERTIES_NOT_LOADED
 }

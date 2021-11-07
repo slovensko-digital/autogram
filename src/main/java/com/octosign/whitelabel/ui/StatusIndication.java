@@ -10,6 +10,8 @@ import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
+
 /**
  * Status indication if the app is running in the background
  *
@@ -27,11 +29,11 @@ public class StatusIndication {
     public StatusIndication(Runnable onExit) {
         this.onExit = onExit;
 
-//        if (isTraySupported()) {
-//            addAppToTray();
-//        } else {
-//            addMinimizedWindow();
-//        }
+        if (isTraySupported()) {
+            addAppToTray();
+        } else {
+            addMinimizedWindow();
+        }
     }
 
     /**
@@ -44,7 +46,7 @@ public class StatusIndication {
         VBox root = fxmlLoader.getRoot();
 
         var scene = new Scene(root, 320, 160);
-        windowStage.setTitle(Main.getProperty("application.name"));
+        windowStage.setTitle(getProperty("application.name"));
         windowStage.setScene(scene);
         windowStage.setIconified(true);
         windowStage.setOnHidden((event) -> this.onExit.run());
@@ -58,9 +60,9 @@ public class StatusIndication {
         systemTray = SystemTray.get();
         if (systemTray != null) {
             systemTray.setImage(iconUrl);
-            systemTray.setStatus(Main.getProperty("application.name"));
+            systemTray.setStatus(getProperty("application.name"));
             systemTray.getMenu().add(
-                new MenuItem(Main.getProperty("text.quit"),
+                new MenuItem(getProperty("text.quit"),
                 e-> Platform.runLater(onExit))
             );
         }
@@ -91,5 +93,4 @@ public class StatusIndication {
             systemTray.shutdown();
         }
     }
-
 }

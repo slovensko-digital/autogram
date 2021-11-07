@@ -7,7 +7,6 @@ public class Utils {
         return value == null || value.isBlank();
     }
 
-
     public static String decode(String value) {
         if (isNullOrBlank(value))
             return null;

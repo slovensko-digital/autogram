@@ -51,8 +51,6 @@ public class Document implements Cloneable {
     /**
      * Creates and prepares payload type specific document
      *
-     * TODO: Consider extracting this out as this shouldn't be specific to server mode
-     *
      * @param signRequest object representing particular signing request data and params
      * @return Specific document like XMLDocument type-widened to Document
      */

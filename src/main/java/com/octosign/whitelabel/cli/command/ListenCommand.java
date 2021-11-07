@@ -107,7 +107,6 @@ public class ListenCommand extends Command {
             return key;
         }
 
-        // TODO implement this
         public static int validInitialNonce(String nonce) {
             return validInteger(nonce);
         }

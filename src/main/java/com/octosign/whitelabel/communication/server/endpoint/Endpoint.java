@@ -32,7 +32,7 @@ abstract class Endpoint implements HttpHandler {
                 handleRequest(exchange);
 
         } catch (IntegrationException e) {
-            //TODO IntegrationException @ Endpoint#handle
+            throw new IntegrationException(Code.HTTP_EXCHANGE_FAILED, e);
         }
     }
 
@@ -54,7 +54,7 @@ abstract class Endpoint implements HttpHandler {
      * @return True if valid, false if not
      */
     protected boolean verifyOrigin(HttpExchange exchange) {
-        var hostname = server.getDefaultHostname();
+        var hostname = server.getHostname();
         var listeningOnLocalhost = hostname.equals("localhost") || hostname.equals("127.0.0.1");
         var isLoopbackAddress = exchange.getRemoteAddress().getAddress().isLoopbackAddress();
 

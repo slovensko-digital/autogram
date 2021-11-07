@@ -2,6 +2,7 @@ package com.octosign.whitelabel.error_handling;
 
 public class IntegrationException extends SignerException {
 
+    private boolean display = true;
     private Code code;
 
     public IntegrationException(Code code) {
@@ -30,5 +31,14 @@ public class IntegrationException extends SignerException {
     public IntegrationException(String message, Throwable cause) {
         super(message, cause);
         this.code = null;
+    }
+
+    public IntegrationException noDisplay() {
+        this.display = false;
+        return this;
+    }
+
+    public boolean shouldDisplay() {
+        return display;
     }
 }

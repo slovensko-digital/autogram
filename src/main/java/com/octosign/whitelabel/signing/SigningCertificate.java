@@ -126,23 +126,34 @@ public abstract class SigningCertificate {
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
     public String sign(SignatureUnit unit) {
-        var content = unit.getDocument().getContent();
         var parameters = unit.getSignatureParameters();
         var format = parameters.getFormat();
 
-        byte[] binaryContent;
+        /*
+         *  You're travelling through a deep black forest of the incomprehensible and obscure code,
+         *  when, suddenly, a wild var content appears:
+         *
+         * "Desire to refactor is strong, you can't leave it behind.
+         *  My advice is, go ahead, but bear in mind:
+         *  Watch out next three lines - no coincidence
+         *  that #toXDC precedes my assignment.
+         *  Obey, or suffer from the consequence,
+         *  there is no circumvent."
+         */
+        if (format.equals(XADES))
+            unit.toXDC();
+        var content = unit.getDocument().getContent();
 
+        byte[] binaryContent;
         if (format.equals(PADES)) {
             binaryContent = Base64.getDecoder().decode(content);
         } else {
-            if (format.equals(XADES))
-                unit.standardizeAsXDC();
             binaryContent = content.getBytes(StandardCharsets.UTF_8);
         }
 
         var document = new InMemoryDocument(binaryContent);
-        // TODO!
-        document.setName("Vseobecna_agenda.xml");
+
+        document.setName(parameters.getFilename());
         document.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8"));
 
         var signedDocument = sign(document, parameters);
@@ -152,7 +163,7 @@ public abstract class SigningCertificate {
         try {
             signedDocument.writeTo(output);
         } catch (IOException e) {
-            throw new IntegrationException("Unable to write result to the output stream: %e", e);
+            throw new IntegrationException("error.outputStreamNotAvailable_", e);
         }
 
         return Utils.toBase64(output.toByteArray());
@@ -190,7 +201,7 @@ public abstract class SigningCertificate {
             signedDocument = service.signDocument(document, parameters, signatureValue);
 
         } else {
-            throw new IllegalArgumentException(translate("Unknown document format ", format));
+            throw new IllegalArgumentException(translate("error.unsupportedFormat_", format));
         }
 
         return signedDocument;

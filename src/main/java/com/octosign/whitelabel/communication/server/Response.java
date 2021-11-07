@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
@@ -52,6 +53,22 @@ public class Response<U> {
         } else {
             bodyFormat = BODY_FORMATS.get(MimeType.ANY);
         }
+    }
+
+    // TODO modify this to fit the above, then extract it and make equal with the almost identical method in Request class
+    public <U extends Map<String, List<String>>> BodyFormat extractBodyFormat(U source) {
+        var contentType = source.get("Accept");
+        var defaultBodyFormat = BODY_FORMATS.get(MimeType.ANY);
+        if (contentType == null)
+            return defaultBodyFormat;
+
+        var contentMimeType = MimeType.parse(contentType.get(0));
+
+        return BODY_FORMATS.keySet().stream()
+                .filter(m -> m.equalsTypeSubtype(contentMimeType))
+                .findFirst()
+                .map(BODY_FORMATS::get)
+                .orElse(defaultBodyFormat);
     }
 
     public int getStatusCode() {

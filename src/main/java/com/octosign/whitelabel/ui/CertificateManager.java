@@ -7,13 +7,13 @@ import com.octosign.whitelabel.signing.SigningCertificate;
 import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
 import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 
 import java.util.List;
 import java.util.Locale;
 
-import static com.octosign.whitelabel.signing.SigningCertificate.Verbosity;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
@@ -41,20 +41,20 @@ public class CertificateManager {
         dialog.setTitle(translate("text.certSettings"));
         FXUtils.addStylesheets(dialog);
 
-        var treeTableView = new TreeTableView<SigningCertificate>();
-        var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("text.subjectName"));
-        nameColumn.setCellValueFactory((cert) ->
-                        new SimpleStringProperty(
-                                cert.getValue().getValue().getNicePrivateKeyDescription(Verbosity.LONG)
-                        )
-        );
-        treeTableView.getColumns().add(nameColumn);
-        treeTableView.setRoot(new TreeItem<>(certificate));
-        dialog.getDialogPane().setContent(treeTableView);
-        ButtonType t = new ButtonType("cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().add(t);
+//        var treeTableView = new TreeTableView<SigningCertificate>();
+//        var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("text.subjectName"));
+//        nameColumn.setCellValueFactory((cert) ->
+//                        new SimpleStringProperty(
+//                                cert.getValue().getValue().getNicePrivateKeyDescription(Verbosity.LONG)
+//                        )
+//        );
+//        treeTableView.getColumns().add(nameColumn);
+//        treeTableView.setRoot(new TreeItem<>(certificate));
+//        dialog.getDialogPane().setContent(treeTableView);
+        var buttonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().add(buttonType);
 
-        return dialog.showAndWait().orElse(null);
+        return dialog.showAndWait().get();
     }
 
     /**

@@ -3,6 +3,7 @@ package com.octosign.whitelabel.ui;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -29,6 +30,14 @@ public class FXUtils {
         displayError("error.integration.header", description, cause);
     }
 
+    public static void displaySimpleError(String description) {
+        displayError("error.general.header", description, null);
+    }
+
+    public static void displaySimpleError() {
+        displaySimpleError("error.general.description");
+    }
+
     public static void displayError(UserException e) {
         if (isNullOrBlank(e.getHeader()) && isNullOrBlank(e.getDescription()))
             throw new IntegrationException(Code.MISSING_ERROR_DETAILS, e);
@@ -36,8 +45,11 @@ public class FXUtils {
         displayError(e.getHeader(), e.getDescription(), e);
     }
 
-    public static void displayError(String description) {
-        displayError(description, null);
+    public static void displayError(IntegrationException e) {
+        if (e.getCode() == null)
+            throw new IntegrationException(Code.MISSING_ERROR_DETAILS, e);
+
+        displayIntegrationError(e.getMessage(), e);
     }
 
     public static void displayError(String header, String description) {
@@ -52,7 +64,7 @@ public class FXUtils {
                 translate(description)
         );
 
-        if(cause != null)
+        if (cause != null)
             alert.getDialogPane().setExpandableContent(buildErrorDetails(cause));
 
         alert.showAndWait();
