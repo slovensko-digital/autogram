@@ -12,11 +12,19 @@ public class SignatureUnit {
         this.signatureParameters = signatureParameters;
     }
 
-    public Document getDocument() { return document; }
-    public void setDocument(Document document) { this.document = document; }
+    public Document getDocument() {
+        return document;
+    }
 
-    public SignatureParameters getSignatureParameters() { return signatureParameters; }
-  public void setSignatureParameters(SignatureParameters signatureParameters) { this.signatureParameters = signatureParameters; }
+    public void setDocument(Document document) {
+        this.document = document;
+    }
+
+    public SignatureParameters getSignatureParameters() {
+        return signatureParameters;
+    }
+
+    public void setSignatureParameters(SignatureParameters signatureParameters) { this.signatureParameters = signatureParameters; }
 
     public void toXDC() {
         var transformer = XDCTransformer.newInstance(signatureParameters);

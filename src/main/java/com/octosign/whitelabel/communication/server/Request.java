@@ -58,7 +58,6 @@ public class Request<T> {
      *
      * @param bodyClass Class of the expected object in the body
      */
-    //TODO userexception
     public T processBody(Class<T> bodyClass) {
         try {
             // TODO: Get charset from the Content-Type header - don't assume it's UTF-8
@@ -66,7 +65,7 @@ public class Request<T> {
             body = bodyFormat.from(bodyString, bodyClass);
             return body;
         } catch (Exception e) {
-            return null;
+            throw new IntegrationException(Code.MALFORMED_BODY, e);
         }
     }
 

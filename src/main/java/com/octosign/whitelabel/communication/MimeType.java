@@ -37,7 +37,7 @@ public record MimeType(String type, String subType, Map<String, String> paramete
         this.parameters = parameters;
     }
 
-    public static MimeType parse(String rawData) throws IllegalArgumentException {
+    public static MimeType parse(String rawData) {
         // MIME type can have optional params separated by ;, e.g. some/type;base64
         var parts = rawData.replaceAll("\\s", "").toLowerCase().split(";");
 

@@ -1,8 +1,8 @@
 package com.octosign.whitelabel.cli.command;
 
-import javafx.application.Application.Parameters;
-
 import java.net.URI;
+
+import javafx.application.Application.Parameters;
 
 /**
  * Command specified on the CLI
