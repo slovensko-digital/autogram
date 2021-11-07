@@ -5,23 +5,31 @@ import com.octosign.whitelabel.error_handling.IntegrationException;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 public class I18n {
-
-    static { Locale.setDefault(new Locale("sk"));  }
+    private static final ResourceBundle BUNDLE;
 
     private static boolean strictMode = true;
+
+    static {
+        var locale = new Locale("sk");
+        var resourcePath = I18n.class.getCanonicalName().toLowerCase();
+        BUNDLE = ResourceBundle.getBundle(resourcePath, locale);
+        Locale.setDefault(locale);
+    }
 
     public static String translate(String path, Object... args) {
         try {
             return getProperty(path, args);
         }
-        catch (Exception e) { throw new IntegrationException(Code.TRANSLATION_ERROR, e); }
+        catch (MissingResourceException e) { throw new IntegrationException(Code.RESOURCE_NOT_FOUND, e); }
+        catch (Exception e) { throw new IntegrationException(Code.TRANSLATION_FAILED, e); }
     }
 
-    // TODO getBundle
-    public static String getProperty(String path, Object... args) {
-        var message = Main.getBundle().getString(path);
+    private static String getProperty(String path, Object... args) {
+        var message = BUNDLE.getString(path);
         if (args == null || args.length == 0)
             return message;
         else
@@ -41,4 +49,6 @@ public class I18n {
             return Arrays.copyOf(args, Math.max(specifiersCount, args.length));
         }
     }
+
+    public static ResourceBundle getBundle() { return BUNDLE; }
 }
