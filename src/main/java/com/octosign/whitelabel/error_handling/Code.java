@@ -32,5 +32,6 @@ public enum Code {
         TRANSLATION_FAILED,
         SERVER_NOT_LAUNCHED,
         PROPERTIES_NOT_LOADED,
-        MALFORMED_BODY
+        MALFORMED_BODY,
+        STREAM_NOT_AVAILABLE
 }

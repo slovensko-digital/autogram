@@ -3,6 +3,7 @@ package com.octosign.whitelabel.signing;
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.CommonDocument;
@@ -163,7 +164,7 @@ public abstract class SigningCertificate {
         try {
             signedDocument.writeTo(output);
         } catch (IOException e) {
-            throw new IntegrationException("error.outputStreamNotAvailable_", e);
+            throw new IntegrationException(Code.STREAM_NOT_AVAILABLE, e);
         }
 
         return Utils.toBase64(output.toByteArray());
@@ -183,7 +184,7 @@ public abstract class SigningCertificate {
             parameters.setCertificateChain(privateKey.getCertificateChain());
 
             var service = new PAdESService(commonCertificateVerifier);
-            var dataToSign = service.getDataToSign(document,parameters);
+            var dataToSign = service.getDataToSign(document, parameters);
             var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
 
             signedDocument = service.signDocument(document, parameters, signatureValue);

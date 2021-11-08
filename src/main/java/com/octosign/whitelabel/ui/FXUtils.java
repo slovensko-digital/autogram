@@ -3,7 +3,6 @@ package com.octosign.whitelabel.ui;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
-import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -22,20 +21,17 @@ import static java.util.Objects.requireNonNull;
 
 public class FXUtils {
 
-    public static void displayUserError(String description, Throwable cause) {
-        displayError("error.user.header", description, cause);
-    }
-
     public static void displayIntegrationError(String description, Throwable cause) {
         displayError("error.integration.header", description, cause);
     }
 
-    public static void displaySimpleError(String description) {
-        displayError("error.general.header", description, null);
-    }
-
-    public static void displaySimpleError() {
-        displaySimpleError("error.general.description");
+    public static void displaySimpleError(String... inputs) {
+        switch (inputs.length) {
+            case 0 -> displayError("error.general.header", "error.general.description");
+            case 1 -> displayError("error.general.header", inputs[0]);
+            case 2 -> displayError(inputs[0], inputs[1]);
+            default -> displaySimpleError();
+        }
     }
 
     public static void displayError(UserException e) {
