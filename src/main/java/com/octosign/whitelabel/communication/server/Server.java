@@ -73,12 +73,12 @@ public class Server {
     }
 
     public static String getHostname() {
-        var userDefined = getProperty("app.serverAddress");
+        var userDefined = getProperty("server.address");
         return isNullOrBlank(userDefined) ? DEFAULT_HOSTNAME : userDefined;
     }
 
     public static int getPort() {
-        var userDefined = getProperty("app.port");
+        var userDefined = getProperty("server.port");
         return isNullOrBlank(userDefined) ? DEFAULT_PORT : Integer.parseInt(userDefined);
     }
 

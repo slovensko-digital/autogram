@@ -56,8 +56,8 @@ public class FXUtils {
         var alert = buildAlert(
                 Alert.AlertType.ERROR,
                 translate("error.title"),
-                translate(header),
-                translate(description)
+                translateIfNeeded(header),
+                translateIfNeeded(description)
         );
 
         if (cause != null)
@@ -70,11 +70,18 @@ public class FXUtils {
         var alert = buildAlert(
                 Alert.AlertType.INFORMATION,
                 translate("info.title"),
-                translate(header),
-                translate(description)
+                translateIfNeeded(header),
+                translateIfNeeded(description)
         );
 
         alert.showAndWait();
+    }
+
+    private static String translateIfNeeded(String input) {
+        if (input.startsWith("error."))
+            return translate(input);
+        else
+            return input;
     }
 
     /**

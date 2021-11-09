@@ -22,13 +22,13 @@ public class I18n {
 
     public static String translate(String path, Object... args) {
         try {
-            return getProperty(path, args);
+            return getTranslation(path, args);
         }
         catch (MissingResourceException e) { throw new IntegrationException(Code.RESOURCE_NOT_FOUND, e); }
         catch (Exception e) { throw new IntegrationException(Code.TRANSLATION_FAILED, e); }
     }
 
-    private static String getProperty(String path, Object... args) {
+    private static String getTranslation(String path, Object... args) {
         var message = BUNDLE.getString(path);
         if (args == null || args.length == 0)
             return message;

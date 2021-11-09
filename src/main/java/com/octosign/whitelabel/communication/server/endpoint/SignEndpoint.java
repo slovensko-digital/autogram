@@ -27,7 +27,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     @Override
     protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) {
         if (onSign == null)
-            throw new UserException(Code.NOT_READY, translate("error.serverNotReady"));
+            throw new UserException(translate("error.serverNotReady"));
 
         var signRequest = request.getBody();
         var document = Document.getSpecificDocument(signRequest);
