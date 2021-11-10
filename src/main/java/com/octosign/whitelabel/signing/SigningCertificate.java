@@ -142,8 +142,9 @@ public abstract class SigningCertificate {
         }
 
         var document = new InMemoryDocument(binaryContent);
-
         document.setName(parameters.getFilename());
+
+        // TODO shouldn't this apply only for XAdES?
         document.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8"));
 
         var signedDocument = sign(document, parameters);

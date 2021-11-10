@@ -42,7 +42,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
+//        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
 
         Command cliCommand;
         try {

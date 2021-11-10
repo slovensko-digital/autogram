@@ -93,9 +93,9 @@ public class MainController {
         this.certificateManager = certificateManager;
     }
 
-    public void setOnSigned(Consumer<String> onSigned) { this.onSigned = onSigned; }
+    public void setOnSigned(Consumer<String> onSigned) {this.onSigned = onSigned;}
 
-    public void setSignatureUnit(SignatureUnit signatureUnit) { this.signatureUnit = signatureUnit; }
+    public void setSignatureUnit(SignatureUnit signatureUnit) {this.signatureUnit = signatureUnit;}
 
     public void loadDocument() {
         var document = signatureUnit.getDocument();
@@ -129,7 +129,7 @@ public class MainController {
             } else {
                 displayPlainTextVisualisation(visualisation);
             }
-        } else if(isPDF) {
+        } else if (isPDF) {
             displayPDFVisualisation(document);
         } else {
             displayPlainTextVisualisation(document.getContent());
@@ -178,7 +178,7 @@ public class MainController {
 
         Platform.runLater(() -> {
             try {
-                certificateManager.useDefault();
+//                certificateManager.resolveCertificate();
             } catch (UserException e) {
                 displayError(e);
             } finally {
@@ -268,7 +268,7 @@ public class MainController {
 
     @FXML
     private void onCertSettingsButtonAction() {
-        certificateManager.useDialogPicker();
+//        certificateManager.useDialogPicker();
     }
 
     /**
@@ -276,11 +276,10 @@ public class MainController {
      */
     private static String getResourceAsString(String resourceName) {
         try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
-            if (inputStream == null) throw new Exception("Resource not found");
-            try (
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                BufferedReader reader = new BufferedReader(inputStreamReader)
-            ) {
+            if (inputStream == null)
+                throw new Exception("Resource not found");
+            try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+                        BufferedReader reader = new BufferedReader(inputStreamReader)) {
                 return reader.lines().collect(Collectors.joining(System.lineSeparator()));
             }
         } catch (Exception e) {

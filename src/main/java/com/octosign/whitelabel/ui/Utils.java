@@ -1,6 +1,9 @@
 package com.octosign.whitelabel.ui;
 
 import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public class Utils {
     public static boolean isNullOrBlank(String value) {
@@ -12,5 +15,19 @@ public class Utils {
             return null;
 
         return new String(Base64.getDecoder().decode(value));
+    }
+
+    public static <T> T[] concat(T[]... args) {
+        return (T[]) Stream.of(args)
+                .map(Objects::requireNonNull)
+                .flatMap(Stream::of)
+                .toArray();
+    }
+
+    public static <T> List<T> toFlattenedList(T[]... args) {
+        return Stream.of(args)
+                .map(Objects::requireNonNull)
+                .flatMap(Stream::of)
+                .toList();
     }
 }

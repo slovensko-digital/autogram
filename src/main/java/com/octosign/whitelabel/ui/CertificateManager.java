@@ -7,14 +7,15 @@ import com.octosign.whitelabel.signing.SigningCertificate;
 import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
 import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 
-import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.signing.SigningCertificatePKCS11.*;
+import static java.util.stream.Stream.of;
 
 /**
  * Holds currently used certificate and takes care of picking
@@ -25,36 +26,57 @@ public class CertificateManager {
      */
     private SigningCertificate certificate;
 
+
+    public static final String[] MANDATE_PATHS = { "/etc/hosts/somedir", "/home/michal/nonexistentdir" };
+
+    // dummy method somehow returning required paths
+    public String[] getAllMandatePaths() {
+        return MANDATE_PATHS;
+    }
+
     /**
      * Loads and sets default signing certificate
      */
-    public SigningCertificate useDefault() {
+
+    public SigningCertificate resolveCertificate() {
+//        var eidPaths = resolvePkcsDriverPath();
+        List<File> drivers = Utils.toFlattenedList(getAllPkcs11DriverPaths(), getAllMandatePaths())
+                .stream()
+                .map(File::new)
+                .filter(File::exists)
+                .toList();
+
+        if (drivers.isEmpty()) throw new UserException("");
+        if (drivers.size() == 1) return useDriver(drivers.get(0));
+
+        var path = (validPaths.length == 1) ? validPaths[0] : "";
+
+        if  {
+            return useDriverPath();
+        } else {
+            return useDriverPath(eidPaths[0]);
+        }
+
         certificate = getDefaulCertificate();
         return certificate;
     }
 
-    /**
-     * Use dialog picker to choose the certificate
-     */
-    public SigningCertificate useDialogPicker() {
-        Dialog<SigningCertificate> dialog = new Dialog<>();
-        dialog.setTitle(translate("text.certSettings"));
-        FXUtils.addStylesheets(dialog);
+    private File[] getValidDriverPaths(String[]... paths) {
+        return of(paths)
+                .flatMap(Stream::of)
+                .map(File::new)
+                .filter(File::exists)
+                .toArray(File[]::new);
+    }
 
-//        var treeTableView = new TreeTableView<SigningCertificate>();
-//        var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("text.subjectName"));
-//        nameColumn.setCellValueFactory((cert) ->
-//                        new SimpleStringProperty(
-//                                cert.getValue().getValue().getNicePrivateKeyDescription(Verbosity.LONG)
-//                        )
-//        );
-//        treeTableView.getColumns().add(nameColumn);
-//        treeTableView.setRoot(new TreeItem<>(certificate));
-//        dialog.getDialogPane().setContent(treeTableView);
-        var buttonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().add(buttonType);
+    // dummy
+    private void selectDriver() {
+        // TODO
+    }
 
-        return dialog.showAndWait().get();
+    // dummy
+    private void useDriver(File driver) {
+        // TODO
     }
 
     /**
@@ -66,30 +88,38 @@ public class CertificateManager {
 
     /**
      * Tries to automatically choose the most appropriate token and private key
-     *
      */
     private static SigningCertificate getDefaulCertificate() {
         SigningCertificate signingCertificate;
 
-        try { signingCertificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback()); }
-        catch (Exception e) { throw new IntegrationException(Code.PKCS11_INIT_FAILED, e); }
+        try {
+            signingCertificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback());
+        } catch (Exception e) {
+            throw new IntegrationException(Code.PKCS11_INIT_FAILED, e);
+        }
 
         // Try to fallback to MSCAPI on Windows
         String osName = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
 
         if (signingCertificate == null && osName.contains("win")) {
-            try { signingCertificate = new SigningCertificateMSCAPI(); }
-            catch (Exception e) { throw new IntegrationException(Code.MSCAPI_INIT_FAILED, e); }
+            try {
+                signingCertificate = new SigningCertificateMSCAPI();
+            } catch (Exception e) {
+                throw new IntegrationException(Code.MSCAPI_INIT_FAILED, e);
+            }
         }
 
         if (signingCertificate == null)
-            throw new UserException("error.tokenNotFound.header", "error.tokenNotFound.description");
+            throw new UserException("error.tokenNotFound.header",
+                    "error.tokenNotFound.description");
 
         List<DSSPrivateKeyEntry> keys;
         try {
             keys = signingCertificate.getAvailablePrivateKeys();
         } catch (Exception e) {
-            throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
+            throw new UserException("error.tokenNotAvailable.header",
+                    "error.tokenNotAvailable.description",
+                    e);
         }
 
         if (keys.size() == 0)
