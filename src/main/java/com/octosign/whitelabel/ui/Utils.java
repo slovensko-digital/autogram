@@ -17,6 +17,7 @@ public class Utils {
         return new String(Base64.getDecoder().decode(value));
     }
 
+    @SafeVarargs
     public static <T> T[] concat(T[]... args) {
         return (T[]) Stream.of(args)
                 .map(Objects::requireNonNull)
@@ -24,6 +25,7 @@ public class Utils {
                 .toArray();
     }
 
+    @SafeVarargs
     public static <T> List<T> toFlattenedList(T[]... args) {
         return Stream.of(args)
                 .map(Objects::requireNonNull)
