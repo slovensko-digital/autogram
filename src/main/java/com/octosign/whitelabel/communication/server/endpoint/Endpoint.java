@@ -1,5 +1,8 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.error_handling.Code;
@@ -7,14 +10,11 @@ import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Server API endpoint with no request or response abstraction
- * <p>
+ *
  * When writing a new endpoint, consider using high-level ReadEndpoint or WriteEndpoint.
  */
 abstract class Endpoint implements HttpHandler {
@@ -38,7 +38,7 @@ abstract class Endpoint implements HttpHandler {
 
     /**
      * Handle request on this endpoint
-     * <p>
+     *
      * When writing a new endpoint, consider high-level Response<Res> handleRequest(request, response).
      */
     protected abstract void handleRequest(HttpExchange exchange);
@@ -79,7 +79,7 @@ abstract class Endpoint implements HttpHandler {
 
     /**
      * Verify the HTTP methods allowed
-     * <p>
+     *
      * Sends error response if not
      *
      * @param exchange

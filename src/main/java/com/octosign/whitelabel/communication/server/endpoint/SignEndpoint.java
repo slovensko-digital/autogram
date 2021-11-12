@@ -7,6 +7,7 @@ import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
 
 import java.util.concurrent.Future;
@@ -22,7 +23,9 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         super(server, initialNonce);
     }
 
-    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) { this.onSign = onSign; }
+    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
+        this.onSign = onSign;
+    }
 
     @Override
     protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) {
@@ -36,12 +39,11 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
         try {
             var signedDocument = onSign.apply(signatureUnit).get();
-
             return response.setBody(signedDocument);
         } catch (Exception e) {
             // TODO: We should do a better job with the error response here:
             // We can differentiate between application errors (500), user errors (502), missing certificate/UI closed (503)
-            return null;
+            throw new IntegrationException(Code.HTTP_EXCHANGE_FAILED, "error.requestHandlingFailed", e);
         }
     }
 
@@ -56,5 +58,8 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     }
 
     @Override
-    protected String[] getAllowedMethods() { return new String[] { "POST" }; }
+    protected String[] getAllowedMethods() {
+        return new String[] { "POST" };
+    }
+
 }

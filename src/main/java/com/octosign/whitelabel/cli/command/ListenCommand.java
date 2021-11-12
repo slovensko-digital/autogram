@@ -35,18 +35,21 @@ public class ListenCommand extends Command {
                                     .map(this::nullifyBlank)
                                     .toArray(String[]::new);
 
-        if (params.length > 1)
+        if (params.length > 1 && !params[1].isBlank()) {
             setPort(params[1]);
+        }
 
-        if (params.length > 2)
+        if (params.length > 2 && !params[2].isBlank()) {
             setOrigin(params[2]);
+        }
 
-        if (params.length > 3)
+        if (params.length > 3 && !params[3].isBlank()) {
             setSecretKey(params[3]);
+        }
 
-        if (params.length > 4)
+        if (params.length > 4 && !params[4].isBlank()) {
             setInitialNonce(params[4]);
-
+        }
     }
 
     /**
@@ -54,34 +57,58 @@ public class ListenCommand extends Command {
      *
      * Used when the application is not launched using the custom protocol
      */
-        ListenCommand(Parameters parameters) {
+    ListenCommand(Parameters parameters) {
         super(parameters);
+
         var named = parameters.getNamed();
 
-        if (named.containsKey("port"))
+        if (named.containsKey("port")) {
             setPort(named.get("port"));
+        }
 
-        if (named.containsKey("origin"))
+        if (named.containsKey("origin")) {
             setOrigin(named.get("origin"));
+        }
 
-        if (named.containsKey("key"))
+        if (named.containsKey("key")) {
             setSecretKey(named.get("key"));
+        }
 
-        if (named.containsKey("nonce"))
+        if (named.containsKey("nonce")) {
             setInitialNonce(named.get("nonce"));
+        }
     }
 
     private String nullifyBlank(String value) { return (value != null && value.isBlank()) ? null : value; }
 
-    public int getPort() { return port; }
-    public String getOrigin() { return origin; }
-    public String getSecretKey() { return secretKey; }
-    public int getInitialNonce() { return initialNonce; }
+    public int getPort() {
+        return port;
+    }
+    public String getOrigin() {
+        return origin;
+    }
+    public String getSecretKey() {
+        return secretKey;
+    }
+    public int getInitialNonce() {
+        return initialNonce;
+    }
 
-    private void setPort(String port) { this.port = validPort(port); }
-    private void setOrigin(String origin) { this.origin = validOrigin(origin); }
-    private void setSecretKey(String secretKey) { this.secretKey = validSecretKey(secretKey); }
-    private void setInitialNonce(String initialNonce) { this.initialNonce = validInitialNonce(initialNonce); }
+    private void setPort(String port) {
+        this.port = validPort(port);
+    }
+
+    private void setOrigin(String origin) {
+        this.origin = validOrigin(origin);
+    }
+
+    private void setSecretKey(String secretKey) {
+        this.secretKey = validSecretKey(secretKey);
+    }
+
+    private void setInitialNonce(String initialNonce) {
+        this.initialNonce = validInitialNonce(initialNonce);
+    }
 
     public static class Validations {
         private static final int MAX_PORT_NUMBER = 65535;

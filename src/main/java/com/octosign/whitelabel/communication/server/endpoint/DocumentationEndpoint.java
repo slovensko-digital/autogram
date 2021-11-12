@@ -1,13 +1,13 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Paths;
+
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Paths;
 
 public class DocumentationEndpoint extends Endpoint {
 
@@ -29,11 +29,14 @@ public class DocumentationEndpoint extends Endpoint {
         var file = Paths.get(cwd, docsPath, isYaml ? yamlName : htmlName);
         var mimeType = isYaml ? "text/yaml" : "text/html";
 
-        exchange.getResponseHeaders().set("Content-Type", mimeType);
+        var headers = exchange.getResponseHeaders();
+        headers.set("Content-Type", mimeType);
 
+        // automatically closes both streams
         try (var fileStream = new FileInputStream(file.toString());
              var responseStream = exchange.getResponseBody()) {
             exchange.sendResponseHeaders(200, 0);
+
             fileStream.transferTo(responseStream);
         } catch (IOException e) {
             throw new IntegrationException(Code.HTTP_EXCHANGE_FAILED, e);
@@ -44,4 +47,5 @@ public class DocumentationEndpoint extends Endpoint {
     protected String[] getAllowedMethods() {
         return new String[]{ "GET" };
     }
+
 }

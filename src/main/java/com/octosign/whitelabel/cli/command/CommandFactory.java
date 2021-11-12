@@ -1,10 +1,10 @@
 package com.octosign.whitelabel.cli.command;
 
-import com.octosign.whitelabel.error_handling.UserException;
-import javafx.application.Application.Parameters;
-
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import com.octosign.whitelabel.error_handling.UserException;
+import javafx.application.Application.Parameters;
 
 public class CommandFactory {
 
@@ -36,8 +36,8 @@ public class CommandFactory {
     /**
      * Create command using its name and CLI parameters
      *
-     * @param name       Name, e.g. "listen"
-     * @param parameters Launch URL
+     * @param name      Name, e.g. "listen"
+     * @param params    Launch URL
      * @return Command if it exists or null if not
      */
     public static Command fromParameters(String name, Parameters parameters) {
@@ -50,8 +50,8 @@ public class CommandFactory {
     /**
      * Create command using its name and launch URL
      *
-     * @param name Name, e.g. "listen"
-     * @param url  Launch URL
+     * @param name  Name, e.g. "listen"
+     * @param url   Launch URL
      * @return Command if it exists or null if not
      */
     public static Command fromUrl(String name, URI url) {

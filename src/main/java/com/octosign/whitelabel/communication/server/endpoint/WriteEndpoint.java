@@ -14,7 +14,7 @@ import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Server API endpoint
- * <p>
+ *
  * TODO: Handle IOException in the handle - it means the request was aborted from the client
  * @param <T> Expected request body
  * @param <U> Response body
@@ -23,7 +23,7 @@ abstract class WriteEndpoint<T, U> extends Endpoint {
 
     /**
      * This endpoint's current nonce
-     * <p>
+     *
      * Incremented on each successful request.
      */
     private AtomicInteger nonce;

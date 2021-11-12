@@ -7,7 +7,7 @@ import com.octosign.whitelabel.communication.MimeType;
  */
 public class PDFDocument extends Document {
 
-    public static final MimeType MIME_TYPE = MimeType.PDF;
+    public static final MimeType mimeType = MimeType.PDF;
 
     public PDFDocument() { }
 
@@ -17,4 +17,5 @@ public class PDFDocument extends Document {
         setContent(document.getContent());
         setLegalEffect(document.getLegalEffect());
     }
+
 }

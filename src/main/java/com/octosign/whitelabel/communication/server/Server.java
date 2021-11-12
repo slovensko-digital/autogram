@@ -1,5 +1,11 @@
 package com.octosign.whitelabel.communication.server;
 
+import java.net.BindException;
+import java.net.InetSocketAddress;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+
 import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
@@ -9,23 +15,19 @@ import com.octosign.whitelabel.communication.server.endpoint.SignEndpoint;
 import com.octosign.whitelabel.error_handling.UserException;
 import com.sun.net.httpserver.HttpServer;
 
-import java.io.IOException;
-import java.net.BindException;
-import java.net.InetSocketAddress;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.function.Function;
-
 import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
 import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 
 public class Server {
 
     private static final String DEFAULT_HOSTNAME = "localhost";
+
     private static final int DEFAULT_PORT = 37200;
 
     private final InfoEndpoint infoEndpoint;
+
     private final SignEndpoint signEndpoint;
+
     private final DocumentationEndpoint documentationEndpoint;
 
     private final HttpServer server;
@@ -43,7 +45,7 @@ public class Server {
         this(getHostname(), getPort(), initialNonce);
     }
 
-    public Server(String hostname, int port, int initialNonce) throws UserException {
+    public Server(String hostname, int port, int initialNonce) {
         try {
             server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
         } catch (BindException e) {
@@ -53,7 +55,9 @@ public class Server {
         }
 
         documentationEndpoint = new DocumentationEndpoint(this);
+
         infoEndpoint = new InfoEndpoint(this);
+
         signEndpoint = new SignEndpoint(this, initialNonce);
     }
 
@@ -61,15 +65,53 @@ public class Server {
         server.createContext("/", infoEndpoint);
         server.createContext("/sign", signEndpoint);
 
-        if (devMode)
+        if (devMode) {
             server.createContext("/documentation", documentationEndpoint);
+        }
 
+        // Run requests in separate threads
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
     }
 
     public void stop() {
         server.stop(0);
+    }
+
+    public void setDevMode(boolean devMode) {
+        this.devMode = devMode;
+    }
+
+    public boolean isDevMode() {
+        return devMode;
+    }
+
+    public String getAllowedOrigin() {
+        return allowedOrigin;
+    }
+
+    public void setAllowedOrigin(String allowedOrigin) {
+        this.allowedOrigin = allowedOrigin;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+    }
+
+    public void setInfo(Info info) {
+        infoEndpoint.setInfo(info);
+    }
+
+    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
+        signEndpoint.setOnSign(onSign);
+    }
+
+    public InetSocketAddress getAddress() {
+        return server.getAddress();
     }
 
     public static String getHostname() {
@@ -82,35 +124,4 @@ public class Server {
         return isNullOrBlank(userDefined) ? DEFAULT_PORT : Integer.parseInt(userDefined);
     }
 
-    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
-        signEndpoint.setOnSign(onSign);
-    }
-
-    public void setInfo(Info info) {
-        infoEndpoint.setInfo(info);
-    }
-
-    public InetSocketAddress getAddress() {
-        return server.getAddress();
-    }
-
-    public void setDevMode(boolean devMode) {
-        this.devMode = devMode;
-    }
-
-    public void setAllowedOrigin(String allowedOrigin) { this.allowedOrigin = allowedOrigin; }
-
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
-
-    public boolean isDevMode() {
-        return devMode;
-    }
-
-    public String getAllowedOrigin() { return allowedOrigin; }
-
-    public String getSecretKey() {
-        return secretKey;
-    }
 }

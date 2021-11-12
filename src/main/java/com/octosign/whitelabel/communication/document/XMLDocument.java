@@ -25,12 +25,12 @@ import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
  */
 public class XMLDocument extends Document {
 
-    public static final MimeType MIME_TYPE = MimeType.XML;
+    public static final MimeType mimeType = MimeType.XML;
 
     protected String transformation;
     protected String schema;
 
-    public XMLDocument() { }
+    public XMLDocument() {}
 
     public XMLDocument(Document document) {
         setId(document.getId());
@@ -45,7 +45,9 @@ public class XMLDocument extends Document {
         this.transformation = transformation;
     }
 
-    public String getSchema() { return this.schema; }
+    public String getSchema() {
+        return this.schema;
+    }
 
     public void setSchema(String schema) {
         this.schema = schema;
@@ -55,7 +57,9 @@ public class XMLDocument extends Document {
         return transformation;
     }
 
-    public void setTransformation(String transformation) { this.transformation = transformation; }
+    public void setTransformation(String transformation) {
+        this.transformation = transformation;
+    }
 
     /**
      * Apply defined transformation on the document and get it
