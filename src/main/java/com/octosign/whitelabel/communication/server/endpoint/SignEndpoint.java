@@ -3,12 +3,8 @@ package com.octosign.whitelabel.communication.server.endpoint;
 import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Request;
-import com.octosign.whitelabel.communication.server.Response;
-import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.communication.server.*;
+import com.octosign.whitelabel.error_handling.*;
 
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -59,7 +55,7 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
     @Override
     protected String[] getAllowedMethods() {
-        return new String[] { "POST" };
+        return new String[]{ "POST" };
     }
 
 }

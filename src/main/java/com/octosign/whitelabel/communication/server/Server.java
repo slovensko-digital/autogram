@@ -55,9 +55,7 @@ public class Server {
         }
 
         documentationEndpoint = new DocumentationEndpoint(this);
-
         infoEndpoint = new InfoEndpoint(this);
-
         signEndpoint = new SignEndpoint(this, initialNonce);
     }
 

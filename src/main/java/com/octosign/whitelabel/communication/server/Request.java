@@ -61,13 +61,15 @@ public class Request<T> {
      *
      * Must be called only once
      *
-     * @param <T> Expected object in the body
+     * @param <T>       Expected object in the body
      * @param bodyClass Class of the expected object in the body
      */
     public T processBody(Class<T> bodyClass) {
+        var stream = exchange.getRequestBody();
+
         try {
             // TODO: Get charset from the Content-Type header - don't assume it's UTF-8
-            var bodyString = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            var bodyString = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
             body = bodyFormat.from(bodyString, bodyClass);
             return body;
         } catch (Exception e) {

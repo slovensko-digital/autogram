@@ -3,12 +3,16 @@ package com.octosign.whitelabel.ui;
 import java.util.List;
 import java.util.Locale;
 
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
-import com.octosign.whitelabel.signing.*;
-import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.signing.SigningCertificate;
+import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
+import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
+import com.octosign.whitelabel.error_handling.*;
 
 import static com.octosign.whitelabel.ui.I18n.translate;
 

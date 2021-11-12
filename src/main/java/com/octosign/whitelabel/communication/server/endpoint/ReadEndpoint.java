@@ -30,10 +30,8 @@ abstract class ReadEndpoint<U> extends Endpoint {
      * Handle request on this endpoint
      *
      * @param request   Request
-     * @param request   Request
      * @param response  Prepared successful response
      * @return Modified response if the request succeeded or null if not and custom response was sent.
-     * @throws IOException
      */
     protected abstract Response<U> handleRequest(Request<?> request, Response<U> response);
 

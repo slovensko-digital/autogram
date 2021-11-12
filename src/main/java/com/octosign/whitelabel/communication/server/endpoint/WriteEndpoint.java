@@ -3,11 +3,8 @@ package com.octosign.whitelabel.communication.server.endpoint;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.server.Request;
-import com.octosign.whitelabel.communication.server.Response;
-import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.communication.server.*;
+import com.octosign.whitelabel.error_handling.*;
 import com.sun.net.httpserver.HttpExchange;
 
 import static com.octosign.whitelabel.ui.I18n.translate;

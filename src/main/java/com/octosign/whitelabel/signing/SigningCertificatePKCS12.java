@@ -2,8 +2,7 @@ package com.octosign.whitelabel.signing;
 
 import java.security.KeyStore.PasswordProtection;
 
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 

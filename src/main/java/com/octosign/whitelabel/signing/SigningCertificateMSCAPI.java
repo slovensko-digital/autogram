@@ -1,7 +1,6 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.token.MSCAPISignatureToken;
 
 public class SigningCertificateMSCAPI extends SigningCertificate {

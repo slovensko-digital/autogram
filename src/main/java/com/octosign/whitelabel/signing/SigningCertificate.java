@@ -20,7 +20,8 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.List;
 
-import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
@@ -49,7 +50,7 @@ public abstract class SigningCertificate {
      * - SHORT - Contains name and date range
      * - NAME - Contains name only
      */
-    public enum Verbosity {
+    public enum KeyDescriptionVerbosity {
         LONG,
         SHORT,
         NAME
@@ -58,7 +59,7 @@ public abstract class SigningCertificate {
     /**
      * Constructs human readable private key description
      */
-    public static String getNicePrivateKeyDescription(DSSPrivateKeyEntry key, Verbosity verbosity) {
+    public static String getNicePrivateKeyDescription(DSSPrivateKeyEntry key, KeyDescriptionVerbosity verbosity) {
         String dn = key.getCertificate().getSubject().getRFC2253();
         String label = "";
         try {
@@ -81,10 +82,10 @@ public abstract class SigningCertificate {
                     dnStreet = rdn.getValue().toString();
             }
 
-            if (verbosity == Verbosity.LONG) {
+            if (verbosity == KeyDescriptionVerbosity.LONG) {
                 label = String.format("%s, %s %s, %s (%s - %s)", dnName, dnCity, dnStreet, dnCountry, notBefore,
                     notAfter);
-            } else if (verbosity == Verbosity.SHORT) {
+            } else if (verbosity == KeyDescriptionVerbosity.SHORT) {
                 label = String.format("%s (%s - %s)", dnName, notBefore, notAfter);
             } else {
                 label = dnName;
@@ -120,7 +121,7 @@ public abstract class SigningCertificate {
     /**
      * Constructs human readable description for the current private key
      */
-    public String getNicePrivateKeyDescription(Verbosity verbosity) {
+    public String getNicePrivateKeyDescription(KeyDescriptionVerbosity verbosity) {
         return SigningCertificate.getNicePrivateKeyDescription(privateKey, verbosity);
     }
 

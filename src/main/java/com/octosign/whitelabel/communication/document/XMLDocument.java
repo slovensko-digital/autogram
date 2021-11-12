@@ -1,9 +1,7 @@
 package com.octosign.whitelabel.communication.document;
 
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.error_handling.*;
+
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -13,6 +11,9 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
+
+import com.octosign.whitelabel.communication.MimeType;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -30,7 +31,7 @@ public class XMLDocument extends Document {
     protected String transformation;
     protected String schema;
 
-    public XMLDocument() {}
+    public XMLDocument() { }
 
     public XMLDocument(Document document) {
         setId(document.getId());

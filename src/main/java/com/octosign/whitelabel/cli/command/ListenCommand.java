@@ -84,12 +84,15 @@ public class ListenCommand extends Command {
     public int getPort() {
         return port;
     }
+
     public String getOrigin() {
         return origin;
     }
+
     public String getSecretKey() {
         return secretKey;
     }
+
     public int getInitialNonce() {
         return initialNonce;
     }

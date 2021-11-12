@@ -39,9 +39,9 @@ public class Response<U> {
         if (accept != null) {
             // TODO: Consider all mime types
             var contentMimeType = Arrays.asList(accept.get(0).split(",")).stream()
-                    .map(raw -> MimeType.parse(raw))
-                    .findFirst()
-                    .orElseThrow(IllegalArgumentException::new);
+                .map(raw -> MimeType.parse(raw))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
 
             // TODO very similar method in Request - lets merge them
             bodyFormat = bodyFormats.keySet().stream()
@@ -91,7 +91,6 @@ public class Response<U> {
     public void send() throws IOException {
         var headers = exchange.getResponseHeaders();
         var body = bodyFormat.to(getBody());
-
         // TODO: Check Accept header instead of hardcoding UTF-8
         var bodyBytes = body.getBytes(StandardCharsets.UTF_8);
 

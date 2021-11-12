@@ -5,9 +5,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.error_handling.*;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -15,7 +14,9 @@ import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import com.octosign.whitelabel.cli.command.*;
+import com.octosign.whitelabel.cli.command.Command;
+import com.octosign.whitelabel.cli.command.CommandFactory;
+import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.octosign.whitelabel.ui.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
+
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {

@@ -5,8 +5,7 @@ import java.util.Arrays;
 
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -70,10 +69,10 @@ abstract class Endpoint implements HttpHandler {
 
             if (!origin.equals(allowedOrigin))
                 throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.unexpectedOrigin"));
-
         }
 
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
+
         return true;
     }
 
@@ -93,7 +92,6 @@ abstract class Endpoint implements HttpHandler {
             var message = translate("error.unsupportedOperation", String.join(", ", allowedMethods));
             throw new IntegrationException(Code.UNSUPPORTED_OPERATION, message);
         }
-
         return true;
     }
 

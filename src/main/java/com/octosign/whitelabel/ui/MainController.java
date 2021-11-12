@@ -2,9 +2,12 @@ package com.octosign.whitelabel.ui;
 
 import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.document.*;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.document.PDFDocument;
+import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.ui.about.AboutDialog;
+
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
@@ -22,7 +25,7 @@ import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.octosign.whitelabel.signing.SigningCertificate.Verbosity.NAME;
+import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.*;
 import static com.octosign.whitelabel.ui.FXUtils.displayError;
 import static com.octosign.whitelabel.ui.I18n.translate;
 import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
@@ -277,7 +280,7 @@ public class MainController {
             if (inputStream == null) throw new Exception("Resource not found");
             try (
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                BufferedReader reader = new BufferedReader(inputStreamReader)
+                BufferedReader reader = new BufferedReader(inputStreamReader);
             ) {
                 return reader.lines().collect(Collectors.joining(System.lineSeparator()));
             }
