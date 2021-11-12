@@ -6,7 +6,7 @@ import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
 
 import java.util.concurrent.Future;
@@ -41,7 +41,8 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         } catch (Exception e) {
             // TODO: We should do a better job with the error response here:
             // We can differentiate between application errors (500), user errors (502), missing certificate/UI closed (503)
-            return null;
+            throw new IntegrationException("FAILED! : " + e);
+//            return null;
         }
     }
 

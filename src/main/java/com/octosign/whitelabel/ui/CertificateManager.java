@@ -6,16 +6,12 @@ import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.signing.SigningCertificate;
 import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
 import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
+import com.octosign.whitelabel.signing.SigningCertificatePKCS12;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Stream;
-
-import static com.octosign.whitelabel.signing.SigningCertificatePKCS11.*;
-import static java.util.stream.Stream.of;
 
 /**
  * Holds currently used certificate and takes care of picking
@@ -26,57 +22,12 @@ public class CertificateManager {
      */
     private SigningCertificate certificate;
 
-
-    public static final String[] MANDATE_PATHS = { "/etc/hosts/somedir", "/home/michal/nonexistentdir" };
-
-    // dummy method somehow returning required paths
-    public String[] getAllMandatePaths() {
-        return MANDATE_PATHS;
-    }
-
     /**
      * Loads and sets default signing certificate
      */
-
-    public SigningCertificate resolveCertificate() {
-//        var eidPaths = resolvePkcsDriverPath();
-        List<File> drivers = Utils.toFlattenedList(getAllPkcs11DriverPaths(), getAllMandatePaths())
-                .stream()
-                .map(File::new)
-                .filter(File::exists)
-                .toList();
-
-        if (drivers.isEmpty()) throw new UserException("");
-        if (drivers.size() == 1) return useDriver(drivers.get(0));
-
-        var path = (validPaths.length == 1) ? validPaths[0] : "";
-
-        if  {
-            return useDriverPath();
-        } else {
-            return useDriverPath(eidPaths[0]);
-        }
-
+    public SigningCertificate useDefault() {
         certificate = getDefaulCertificate();
         return certificate;
-    }
-
-    private File[] getValidDriverPaths(String[]... paths) {
-        return of(paths)
-                .flatMap(Stream::of)
-                .map(File::new)
-                .filter(File::exists)
-                .toArray(File[]::new);
-    }
-
-    // dummy
-    private void selectDriver() {
-        // TODO
-    }
-
-    // dummy
-    private void useDriver(File driver) {
-        // TODO
     }
 
     /**
@@ -129,5 +80,12 @@ public class CertificateManager {
         signingCertificate.setPrivateKey(keys.get(0));
 
         return signingCertificate;
+    }
+
+    public static List<DSSPrivateKeyEntry> getFakeSigner() {
+        var p11 = SigningCertificatePKCS11.getTemp();
+        var p12 = SigningCertificatePKCS12.createTemp();
+        System.out.println();
+        return Arrays.asList(p11, p12);
     }
 }

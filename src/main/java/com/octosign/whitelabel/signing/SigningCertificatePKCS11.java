@@ -1,27 +1,26 @@
 package com.octosign.whitelabel.signing;
 
 import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.ui.PasswordCallback;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.stream.Stream;
 
+import static com.octosign.whitelabel.ui.ConfigurationProperties.getPropertyArray;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class SigningCertificatePKCS11 extends SigningCertificate {
-    public static final String[] WINDOWS_PKCS_DLLS = {
-            // Slovak eID default installation directory
-            "C:\\Program Files (x86)\\EAC MW klient\\pkcs11_x64.dll" };
-    public static final String[] LINUX_PKCS_DLLS = {
-            // Slovak eID default installation directory
-            "/usr/lib/eac_mw_klient/libpkcs11_x64.so" };
-    public static final String[] DARWIN_PKCS_DLLS = {
-            // Slovak eID default installation directory
-            "/Applications/Aplikacia_pre_eID.app/Contents/pkcs11/libPkcs11.dylib" };
+    public static final String[] WINDOWS_PKCS_DLLS = getPropertyArray("[].driver.eid.windows"); // Slovak eID default installation directory
+
+    public static final String[] LINUX_PKCS_DLLS = getPropertyArray("[].driver.eid.linux");
+
+    public static final String[] DARWIN_PKCS_DLLS = getPropertyArray("[].driver.eid.darwin"); // Slovak eID default installation directory
+
+    public static final String[] MANDATE_PKCS_DLLS = getPropertyArray("[].driver.mandate.linux");
 
     /**
      * Tries to find one of the known PKCS11 DLLs
@@ -39,6 +38,11 @@ public class SigningCertificatePKCS11 extends SigningCertificate {
         }
 
         return null;
+    }
+
+    public static DSSPrivateKeyEntry getTemp() {
+        var signingCertificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback());
+        return signingCertificate.token.getKeys().get(0);
     }
 
     public static String[] resolvePkcsDriverPath() {

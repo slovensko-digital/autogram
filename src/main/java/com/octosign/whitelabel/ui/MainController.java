@@ -6,6 +6,7 @@ import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
 import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.signing.Driver;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
@@ -20,6 +21,8 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -178,7 +181,22 @@ public class MainController {
 
         Platform.runLater(() -> {
             try {
-//                certificateManager.resolveCertificate();
+                List<Driver> devices = getAvailableTokenStoreDevices();
+
+//                switch (devices.size()) {
+//                    case 0 -> enterDriverPathDialog();
+//                    case 1 -> devices.get(0).getCertificate();
+//                    case 2 -> {
+//                        var selectedDevice = devices.get(0);
+//
+//                        if (selectedDevice.getType() == Driver.StorageType.SINGLE) {
+//                            selectedDevice.getCertificate();
+//                        } else {
+//                            selectSignerDialog();
+//                        }
+//                    }
+//                }
+                certificateManager.useDefault();
             } catch (UserException e) {
                 displayError(e);
             } finally {
@@ -186,6 +204,10 @@ public class MainController {
                 determineButtonAction();
             }
         });
+    }
+
+    private List<Driver> getAvailableTokenStoreDevices() {
+        return Collections.emptyList();
     }
 
     @FXML
