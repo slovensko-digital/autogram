@@ -1,12 +1,10 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.cli.command.Command;
-import com.octosign.whitelabel.cli.command.CommandFactory;
-import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.Info;
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
@@ -16,12 +14,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import com.octosign.whitelabel.cli.command.*;
+import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.server.Server;
+import org.slf4j.LoggerFactory;
 
 import static com.octosign.whitelabel.ui.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
@@ -146,7 +144,7 @@ public class Main extends Application {
         return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
     }
 
-    class ExceptionHandler implements UncaughtExceptionHandler {
+    class ExceptionHandler implements Thread.UncaughtExceptionHandler {
 
         private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
 

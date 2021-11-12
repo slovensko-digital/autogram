@@ -2,9 +2,7 @@ package com.octosign.whitelabel.ui;
 
 import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.document.PDFDocument;
-import com.octosign.whitelabel.communication.document.XMLDocument;
+import com.octosign.whitelabel.communication.document.*;
 import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 import javafx.application.Platform;

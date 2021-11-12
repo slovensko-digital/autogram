@@ -1,5 +1,7 @@
 package com.octosign.whitelabel.ui;
 
+import java.net.URL;
+
 import dorkbox.os.OSUtil;
 import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.SystemTray;
@@ -8,9 +10,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.net.URL;
-
-import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**

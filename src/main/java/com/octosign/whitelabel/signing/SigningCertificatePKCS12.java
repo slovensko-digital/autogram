@@ -1,11 +1,11 @@
 package com.octosign.whitelabel.signing;
 
-import eu.europa.esig.dss.token.PasswordInputCallback;
-import eu.europa.esig.dss.token.Pkcs12SignatureToken;
-
 import java.security.KeyStore.PasswordProtection;
 
-import static com.octosign.whitelabel.ui.I18n.translate;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import eu.europa.esig.dss.token.PasswordInputCallback;
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 public class SigningCertificatePKCS12 extends SigningCertificate {
     /**
@@ -27,7 +27,7 @@ public class SigningCertificatePKCS12 extends SigningCertificate {
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
             token = new Pkcs12SignatureToken(pkcsPath, password);
         } catch (Exception e) {
-            throw new RuntimeException(translate("error.pkcs12InitFailed", e));
+            throw new IntegrationException(Code.PKCS12_INIT_FAILED, e);
         }
     }
 }

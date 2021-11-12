@@ -1,14 +1,9 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.communication.SignatureParameterMapper;
-import com.octosign.whitelabel.communication.SignatureParameters;
-import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
-import eu.europa.esig.dss.model.CommonDocument;
-import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
@@ -25,8 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.List;
 
-import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
-import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
@@ -113,7 +107,14 @@ public abstract class SigningCertificate {
     }
 
     public List<DSSPrivateKeyEntry> getAvailablePrivateKeys() {
-        return token.getKeys();
+        List<DSSPrivateKeyEntry> keys;
+        try {
+            keys = token.getKeys();
+        } catch (Exception e) {
+            throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
+        }
+
+        return keys;
     }
 
     /**

@@ -1,18 +1,14 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.UserException;
-import com.octosign.whitelabel.signing.SigningCertificate;
-import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
-import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-
 import java.util.List;
 import java.util.Locale;
+
+import javafx.scene.control.*;
+
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+
+import com.octosign.whitelabel.signing.*;
+import com.octosign.whitelabel.error_handling.UserException;
 
 import static com.octosign.whitelabel.ui.I18n.translate;
 
@@ -69,35 +65,26 @@ public class CertificateManager {
      *
      */
     private static SigningCertificate getDefaulCertificate() {
-        SigningCertificate signingCertificate;
-
-        try { signingCertificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback()); }
-        catch (Exception e) { throw new IntegrationException(Code.PKCS11_INIT_FAILED, e); }
+        SigningCertificate certificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback());
 
         // Try to fallback to MSCAPI on Windows
         String osName = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
 
-        if (signingCertificate == null && osName.contains("win")) {
-            try { signingCertificate = new SigningCertificateMSCAPI(); }
-            catch (Exception e) { throw new IntegrationException(Code.MSCAPI_INIT_FAILED, e); }
+        if (certificate == null && osName.contains("win")) {
+            certificate = new SigningCertificateMSCAPI();
         }
 
-        if (signingCertificate == null)
+        if (certificate == null)
             throw new UserException("error.tokenNotFound.header", "error.tokenNotFound.description");
 
-        List<DSSPrivateKeyEntry> keys;
-        try {
-            keys = signingCertificate.getAvailablePrivateKeys();
-        } catch (Exception e) {
-            throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
-        }
+        List<DSSPrivateKeyEntry> keys = certificate.getAvailablePrivateKeys();
 
         if (keys.size() == 0)
             throw new UserException("error.tokenEmpty.header", "error.tokenEmpty.description");
 
         // Use the first available key
-        signingCertificate.setPrivateKey(keys.get(0));
+        certificate.setPrivateKey(keys.get(0));
 
-        return signingCertificate;
+        return certificate;
     }
 }

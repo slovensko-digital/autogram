@@ -1,10 +1,12 @@
 package com.octosign.whitelabel.signing;
 
-import eu.europa.esig.dss.token.PasswordInputCallback;
-import eu.europa.esig.dss.token.Pkcs11SignatureToken;
-
 import java.io.File;
 import java.util.Locale;
+
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import eu.europa.esig.dss.token.PasswordInputCallback;
+import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 
 public class SigningCertificatePKCS11 extends SigningCertificate {
     /**
@@ -50,11 +52,15 @@ public class SigningCertificatePKCS11 extends SigningCertificate {
      * Creates signing certificate that will use given PKCS11
      */
     public SigningCertificatePKCS11(String pkcsPath, PasswordInputCallback passwordCallback) {
+        try {
             // TODO: Get a list of slots with tokens and let user choose
             // Currently, default slot should be used if the int is negative
             // We probably have to use reflection (.getClass().getMethod())
             // using method C_GetSlotList with true as parameter to get slots with tokens
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
             token = new Pkcs11SignatureToken(pkcsPath, passwordCallback, -1);
+        } catch (Exception e) {
+            throw new IntegrationException(Code.PKCS11_INIT_FAILED, e);
+        }
     }
 }

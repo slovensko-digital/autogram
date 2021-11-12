@@ -1,5 +1,7 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
@@ -8,14 +10,11 @@ import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Server API endpoint
  *
- * TODO: Handle IOException in the handle - it means the request was aborted from the client
  * @param <T> Expected request body
  * @param <U> Response body
  */
@@ -30,6 +29,7 @@ abstract class WriteEndpoint<T, U> extends Endpoint {
 
     public WriteEndpoint(Server server, int initialNonce) {
         super(server);
+
         nonce = new AtomicInteger(initialNonce);
     }
 
@@ -37,7 +37,10 @@ abstract class WriteEndpoint<T, U> extends Endpoint {
     protected void handleRequest(HttpExchange exchange) {
         var request = new Request<T>(exchange);
 
-        if (getRequestClass() != null) {
+        // TODO: Add verifying of HMAC if server has secretKey specified
+
+        var requestClass = getRequestClass();
+        if (requestClass != null) {
             // If request class is not null, the body must contain correct object
             if (request.getBodyFormat() == null) {
                 var supportedTypes = String.join(", ", request.getSupportedBodyFormats().stream().map(MimeType::toString).toArray(String[]::new));
