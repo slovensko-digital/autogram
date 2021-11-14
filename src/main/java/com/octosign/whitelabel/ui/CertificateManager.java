@@ -39,7 +39,7 @@ public class CertificateManager {
     public SigningCertificate useDialogPicker() {
         Dialog<SigningCertificate> dialog = new Dialog<>();
         dialog.setTitle(translate("text.certSettings"));
-        FXUtils.addStylesheets(dialog);
+        FXUtils.addCustomStyles(dialog);
 
 //        var treeTableView = new TreeTableView<SigningCertificate>();
 //        var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("text.subjectName"));

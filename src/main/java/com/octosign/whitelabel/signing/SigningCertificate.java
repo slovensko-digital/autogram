@@ -4,7 +4,6 @@ import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.*;
-import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -22,7 +21,6 @@ import java.util.List;
 
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
-import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -144,18 +142,16 @@ public abstract class SigningCertificate {
         }
 
         var document = new InMemoryDocument(binaryContent);
-
-        document.setName(parameters.getFilename());
-        document.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8"));
+        if (format.equals(XADES))
+            document.setName(parameters.getFilename());
 
         var signedDocument = sign(document, parameters);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-
         try {
             signedDocument.writeTo(output);
         } catch (IOException e) {
-            throw new IntegrationException(Code.STREAM_NOT_AVAILABLE, e);
+            throw new RuntimeException(e);
         }
 
         return Utils.toBase64(output.toByteArray());
@@ -163,7 +159,7 @@ public abstract class SigningCertificate {
 
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
         if (privateKey == null)
-            throw new RuntimeException(translate("error.missingPrivateKey"));
+            throw new RuntimeException("Private key missing");
 
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
         DSSDocument signedDocument;
@@ -193,7 +189,7 @@ public abstract class SigningCertificate {
             signedDocument = service.signDocument(document, parameters, signatureValue);
 
         } else {
-            throw new IllegalArgumentException(translate("error.unsupportedFormat_", format));
+            throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Unsupported format: " + format);
         }
 
         return signedDocument;

@@ -26,7 +26,7 @@ public class SigningCertificatePKCS12 extends SigningCertificate {
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
             token = new Pkcs12SignatureToken(pkcsPath, password);
         } catch (Exception e) {
-            throw new IntegrationException(Code.PKCS12_INIT_FAILED, e);
+            throw new UserException("error.tokenAccessDenied.header", "error.tokenAccessDenied.description", e);
         }
     }
 }

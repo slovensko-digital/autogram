@@ -7,8 +7,6 @@ import com.octosign.whitelabel.communication.server.*;
 import com.octosign.whitelabel.error_handling.*;
 import com.sun.net.httpserver.HttpExchange;
 
-import static com.octosign.whitelabel.ui.I18n.translate;
-
 /**
  * Server API endpoint
  *
@@ -31,7 +29,7 @@ abstract class WriteEndpoint<T, U> extends Endpoint {
     }
 
     @Override
-    protected void handleRequest(HttpExchange exchange) {
+    protected void handleRequest(HttpExchange exchange) throws Throwable {
         var request = new Request<T>(exchange);
 
         // TODO: Add verifying of HMAC if server has secretKey specified
@@ -41,15 +39,16 @@ abstract class WriteEndpoint<T, U> extends Endpoint {
             // If request class is not null, the body must contain correct object
             if (request.getBodyFormat() == null) {
                 var supportedTypes = String.join(", ", request.getSupportedBodyFormats().stream().map(MimeType::toString).toArray(String[]::new));
-                throw new IntegrationException(Code.BAD_REQUEST, translate("error.invalidMimetype_", supportedTypes));
+                throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Unsupported format. Supported formats are: " + supportedTypes);
             }
 
             if (request.processBody(getRequestClass()) == null) {
-                throw new IntegrationException(Code.MALFORMED_INPUT, translate("error.malformedInput"));
+                throw new IntegrationException(Code.MALFORMED_INPUT);
             }
         }
         var response = handleRequest(request, new Response<>(exchange));
-        useResponse(response);
+        response.send();
+        nonce.incrementAndGet();
     }
 
     /**
@@ -59,7 +58,8 @@ abstract class WriteEndpoint<T, U> extends Endpoint {
      * @param response  Prepared successful response
      * @return Modified response if the request succeeded or null if not and custom response was sent.
      */
-    protected abstract Response<U> handleRequest(Request<T> request, Response<U> response);
+    protected abstract Response<U> handleRequest(Request<T> request, Response<U> response)
+            throws Throwable;
 
     /**
      * Class of the request body object, should be null if request does not have body

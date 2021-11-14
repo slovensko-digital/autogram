@@ -1,37 +1,43 @@
 package com.octosign.whitelabel.error_handling;
 
+import static com.octosign.whitelabel.error_handling.Code.Category.*;
+import static java.net.HttpURLConnection.*;
+
 public enum Code {
-        DEFAULT,
-        NOT_READY,
-        UNSUPPORTED_OPERATION,
-        ATTRIBUTE_MISSING,
-        MALFORMED_INPUT,
-        UNSUPPORTED_FORMAT,
-        NULL_RESPONSE,
-        UNEXPECTED_ORIGIN,
-        MALFORMED_MIMETYPE,
-        XSD_SCHEMA_INVALID,
-        BAD_REQUEST,
-        FXML_LOADER_ERROR,
-        UNEXPECTED_ERROR,
-        XSLT_ERROR,
-        TRANSLATION_ERROR,
-        MISSING_ERROR_DETAILS,
-        APP_LAUNCH_FAILED,
-        HTTP_EXCHANGE_FAILED,
-        PKCS11_INIT_FAILED,
-        PKCS12_INIT_FAILED,
-        MSCAPI_INIT_FAILED,
-        VALIDATION_FAILED,
-        RESPONSE_FAILED,
-        DECODING_FAILED,
-        SIGNING_FAILED,
-        FATAL_ERROR,
-        PROPERTY_NOT_FOUND,
-        RESOURCE_NOT_FOUND,
-        TRANSLATION_FAILED,
-        SERVER_NOT_LAUNCHED,
-        PROPERTIES_NOT_LOADED,
-        MALFORMED_BODY,
-        STREAM_NOT_AVAILABLE
+    UNEXPECTED_ERROR(GENERAL),
+    TOKEN_INIT_FAILED(GENERAL),
+    SIGNING_FAILED(GENERAL),
+
+    NOT_READY(INPUT),
+    UNSUPPORTED_OPERATION(INPUT),
+    MISSING_INPUT(INPUT),
+    MALFORMED_INPUT(INPUT),
+    INVALID_CONTENT(INPUT),
+    UNSUPPORTED_FORMAT(INPUT),
+    MALFORMED_MIMETYPE(INPUT),
+    INVALID_SCHEMA(INPUT),
+    TRANSFORMATION_ERROR(INPUT),
+    DECODING_FAILED(INPUT),
+
+    UNEXPECTED_ORIGIN(SECURITY);
+
+    private final Category category;
+
+    Code(Category category) {
+        this.category = category;
+    }
+
+    public int toHttpCode() {
+        return switch(this.category) {
+            case GENERAL -> HTTP_INTERNAL_ERROR;
+            case INPUT -> HTTP_BAD_REQUEST;
+            case SECURITY -> HTTP_FORBIDDEN;
+        };
+    }
+
+    public enum Category {
+        GENERAL,
+        INPUT,
+        SECURITY;
+    }
 }

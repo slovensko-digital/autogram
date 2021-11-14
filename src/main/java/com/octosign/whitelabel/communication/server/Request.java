@@ -9,6 +9,7 @@ import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 import com.sun.net.httpserver.HttpExchange;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
@@ -61,7 +62,6 @@ public class Request<T> {
      *
      * Must be called only once
      *
-     * @param <T>       Expected object in the body
      * @param bodyClass Class of the expected object in the body
      */
     public T processBody(Class<T> bodyClass) {
@@ -73,7 +73,7 @@ public class Request<T> {
             body = bodyFormat.from(bodyString, bodyClass);
             return body;
         } catch (Exception e) {
-            throw new IntegrationException(Code.MALFORMED_BODY, e);
+            throw new IntegrationException(Code.MALFORMED_INPUT, e);
         }
     }
 
@@ -83,7 +83,12 @@ public class Request<T> {
         if (contentType == null)
             return defaultBodyFormat;
 
-        var contentMimeType = MimeType.parse(contentType.get(0));
+        MimeType contentMimeType;
+        try {
+            contentMimeType = MimeType.parse(contentType.get(0));
+        } catch (MalformedMimetypeException e) {
+            throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
+        }
 
         return bodyFormats.keySet().stream()
                 .filter(m -> m.equalsTypeSubtype(contentMimeType))

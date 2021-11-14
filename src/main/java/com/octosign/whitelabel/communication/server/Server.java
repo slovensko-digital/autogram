@@ -16,13 +16,8 @@ import com.octosign.whitelabel.error_handling.UserException;
 import com.sun.net.httpserver.HttpServer;
 
 import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
-import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 
 public class Server {
-
-    private static final String DEFAULT_HOSTNAME = "localhost";
-
-    private static final int DEFAULT_PORT = 37200;
 
     private final InfoEndpoint infoEndpoint;
 
@@ -42,14 +37,18 @@ public class Server {
     private String secretKey;
 
     public Server(int initialNonce) {
-        this(getHostname(), getPort(), initialNonce);
+        this(
+            getProperty("server.defaultAddress"),
+            Integer.parseInt(getProperty("server.defaultPort")),
+            initialNonce
+        );
     }
 
     public Server(String hostname, int port, int initialNonce) {
         try {
             server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
         } catch (BindException e) {
-            throw new UserException("error.addressInUse.header", "error.addressInUse_.description", e);
+            throw new UserException("error.launchFailed.header", "error.launchFailed.addressInUse.description", e);
         } catch (Exception e) {
             throw new UserException("error.serverNotCreated", e);
         }
@@ -111,15 +110,4 @@ public class Server {
     public InetSocketAddress getAddress() {
         return server.getAddress();
     }
-
-    public static String getHostname() {
-        var userDefined = getProperty("server.address");
-        return isNullOrBlank(userDefined) ? DEFAULT_HOSTNAME : userDefined;
-    }
-
-    public static int getPort() {
-        var userDefined = getProperty("server.port");
-        return isNullOrBlank(userDefined) ? DEFAULT_PORT : Integer.parseInt(userDefined);
-    }
-
 }

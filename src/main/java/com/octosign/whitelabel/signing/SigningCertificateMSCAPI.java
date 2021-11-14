@@ -11,7 +11,7 @@ public class SigningCertificateMSCAPI extends SigningCertificate {
         try {
             token = new MSCAPISignatureToken();
         } catch (Exception e) {
-            throw new IntegrationException(Code.MSCAPI_INIT_FAILED, e);
+            throw new UserException("error.tokenAccessDenied.header", "error.tokenAccessDenied.description", e);
         }
     }
 }

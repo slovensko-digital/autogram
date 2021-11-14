@@ -40,8 +40,7 @@
         <Region HBox.hgrow="ALWAYS" />
 
         <HBox styleClass="buttonGroup">
-            <Button fx:id="loadSignersButton" onAction="#onLoadSignersButtonAction" text="%btn.loadSigners" styleClass="leftButton, primary"/>
-            <Button fx:id="signDocumentButton" onAction="#onSignDocumentButtonAction" styleClass="leftButton, primary" managed="false" visible="false" />
+            <Button fx:id="mainButton" onAction="#onMainButtonAction" text="%btn.loadSigners" styleClass="leftButton, primary"/>
 
             <Button fx:id="certSettingsButton" onAction="#onCertSettingsButtonAction" styleClass="rightButton, primary">
                 <tooltip><Tooltip text="%text.certificateSettings" showDelay="300ms" /></tooltip>

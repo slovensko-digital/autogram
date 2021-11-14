@@ -33,12 +33,13 @@ public class DocumentationEndpoint extends Endpoint {
         headers.set("Content-Type", mimeType);
 
         // automatically closes both streams
-        try (var fileStream = new FileInputStream(file.toString()); var responseStream = exchange.getResponseBody()) {
+        try (var fileStream = new FileInputStream(file.toString());
+             var responseStream = exchange.getResponseBody()) {
             exchange.sendResponseHeaders(200, 0);
 
             fileStream.transferTo(responseStream);
-        } catch (IOException e) {
-            throw new IntegrationException(Code.HTTP_EXCHANGE_FAILED, e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

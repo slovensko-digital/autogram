@@ -5,8 +5,8 @@ import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 
-import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.ui.Utils.*;
 
 /**
@@ -57,14 +57,19 @@ public class Document implements Cloneable {
     public static Document getSpecificDocument(SignRequest signRequest) {
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
-        var mimeType = MimeType.parse(signRequest.getPayloadMimeType());
+        MimeType mimeType;
+        try {
+            mimeType = MimeType.parse(signRequest.getPayloadMimeType());
+        } catch (MalformedMimetypeException e) {
+            throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
+        }
 
         if (mimeType.equalsTypeSubtype(MimeType.XML)) {
             return document.buildXMLDocument(parameters, mimeType);
         } else if(mimeType.equalsTypeSubtype(MimeType.PDF)) {
             return new PDFDocument(document);
         } else {
-            throw new IntegrationException(Code.MALFORMED_MIMETYPE, translate("error.invalidMimetype_", mimeType));
+            throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Document format not supported: " + mimeType);
         }
     }
 
@@ -74,10 +79,10 @@ public class Document implements Cloneable {
 
         if (mimeType.isBase64()) {
             try {
-                setContent(decode(getContent()));
-                schema = decode(schema);
-                transformation = decode(transformation);
-            } catch (IllegalArgumentException e) {
+                setContent(decodeBase64(getContent()));
+                schema = decodeBase64(schema);
+                transformation = decodeBase64(transformation);
+            } catch (Exception e) {
                 throw new IntegrationException(Code.DECODING_FAILED, e);
             }
         }

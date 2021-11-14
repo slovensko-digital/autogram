@@ -6,10 +6,9 @@ import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.*;
 import com.octosign.whitelabel.error_handling.*;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Function;
-
-import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
 
@@ -24,23 +23,26 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     }
 
     @Override
-    protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response) {
+    protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response)
+            throws Throwable {
         if (onSign == null)
-            throw new UserException(translate("error.serverNotReady"));
+            throw new IntegrationException(Code.NOT_READY);
 
         var signRequest = request.getBody();
         var document = Document.getSpecificDocument(signRequest);
         var parameters = signRequest.getParameters();
         var signatureUnit = new SignatureUnit(document, parameters);
 
+        Document signedDocument;
         try {
-            var signedDocument = onSign.apply(signatureUnit).get();
-            return response.setBody(signedDocument);
-        } catch (Exception e) {
-            // TODO: We should do a better job with the error response here:
-            // We can differentiate between application errors (500), user errors (502), missing certificate/UI closed (503)
-            throw new IntegrationException(Code.HTTP_EXCHANGE_FAILED, "error.requestHandlingFailed", e);
+            signedDocument = onSign.apply(signatureUnit).get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw e.getCause();
         }
+
+        return response.setBody(signedDocument);
     }
 
     @Override

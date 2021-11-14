@@ -20,7 +20,7 @@ public class AboutDialog extends Dialog<Boolean> {
         setTitle(translate("text.aboutHelp.header"));
         setContentText(getContent());
 
-        FXUtils.addStylesheets(this);
+        FXUtils.addCustomStyles(this);
         getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         getDialogPane().setMinWidth(520);
         getDialogPane().getButtonTypes().add(new ButtonType("OK", ButtonData.OK_DONE));

@@ -1,14 +1,11 @@
 package com.octosign.whitelabel.communication;
 
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * MIME type representing type of the value
@@ -37,13 +34,13 @@ public record MimeType(String type, String subType, Map<String, String> paramete
         this.parameters = parameters;
     }
 
-    public static MimeType parse(String rawData) {
+    public static MimeType parse(String rawData) throws MalformedMimetypeException {
         // MIME type can have optional params separated by ;, e.g. some/type;base64
         var parts = rawData.replaceAll("\\s", "").toLowerCase().split(";");
 
         var types = parts[0].split("/");
         if (types.length != 2) {
-            throw new IllegalArgumentException(translate("error.invalidMimetype_", rawData));
+            throw new MalformedMimetypeException("Unsupported MIME type: " + rawData);
         }
 
         if (parts.length == 1) {

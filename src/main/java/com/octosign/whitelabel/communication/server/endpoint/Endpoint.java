@@ -9,7 +9,7 @@ import com.octosign.whitelabel.error_handling.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.error_handling.Code.UNEXPECTED_ERROR;
 
 /**
  * Server API endpoint with no request or response abstraction
@@ -30,17 +30,29 @@ abstract class Endpoint implements HttpHandler {
             if (verifyHTTPMethod(exchange) && verifyOrigin(exchange))
                 handleRequest(exchange);
 
+        } catch (UserException e) {
+            throw e;
+
         } catch (IntegrationException e) {
-            throw new IntegrationException(Code.HTTP_EXCHANGE_FAILED, e);
+            new Response<IntegrationException>(exchange)
+                .asError(e.getCode().toHttpCode(), e)
+                .send();
+            throw e;
+
+        } catch (Throwable t) {
+            new Response<Throwable>(exchange)
+                .asError(UNEXPECTED_ERROR.toHttpCode(), t)
+                .send();
+            throw new UnknownError(t.toString());
         }
     }
 
     /**
      * Handle request on this endpoint
      *
-     * When writing a new endpoint, consider high-level Response<Res> handleRequest(request, response).
+     * When writing a new endpoint, consider high-level Response<U> handleRequest(request, response).
      */
-    protected abstract void handleRequest(HttpExchange exchange);
+    protected abstract void handleRequest(HttpExchange exchange) throws Throwable;
 
     /**
      * List of allowed HTTP methods
@@ -53,12 +65,12 @@ abstract class Endpoint implements HttpHandler {
      * @return True if valid, false if not
      */
     protected boolean verifyOrigin(HttpExchange exchange) {
-        var hostname = server.getHostname();
+        var hostname = server.getAddress().getHostName();
         var listeningOnLocalhost = hostname.equals("localhost") || hostname.equals("127.0.0.1");
         var isLoopbackAddress = exchange.getRemoteAddress().getAddress().isLoopbackAddress();
 
         if (listeningOnLocalhost && !isLoopbackAddress)
-            throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.unexpectedOrigin"));
+            throw new IntegrationException(Code.UNEXPECTED_ORIGIN);
 
 
         var allowedOrigin = server.getAllowedOrigin();
@@ -68,7 +80,7 @@ abstract class Endpoint implements HttpHandler {
             var origin = originHeader.get(0);
 
             if (!origin.equals(allowedOrigin))
-                throw new IntegrationException(Code.UNEXPECTED_ORIGIN, translate("error.unexpectedOrigin"));
+                throw new IntegrationException(Code.UNEXPECTED_ORIGIN);
         }
 
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
@@ -89,32 +101,8 @@ abstract class Endpoint implements HttpHandler {
         var allowedMethods = Arrays.asList(getAllowedMethods());
 
         if (!allowedMethods.contains(exchange.getRequestMethod())) {
-            var message = translate("error.unsupportedOperation", String.join(", ", allowedMethods));
-            throw new IntegrationException(Code.UNSUPPORTED_OPERATION, message);
+            throw new IntegrationException(Code.UNSUPPORTED_OPERATION, "Allowed methods: " + String.join(", ", allowedMethods));
         }
         return true;
-    }
-
-    /**
-     * Use response produced by the endpoint handler
-     *
-     * @param response
-     */
-    public <U> void useResponse(Response<U> response) {
-        rethrow(response, Response::send);
-    }
-
-    public <T, U extends IOException> void rethrow(T subject, TConsumer<T, U> processor) {
-        if (subject == null)
-            throw new IntegrationException(Code.MALFORMED_INPUT, "error.responseInvalid");
-        try {
-            processor.accept(subject);
-        } catch (IOException e) {
-            throw new IntegrationException(Code.RESPONSE_FAILED, translate("error.responseFailed", subject), e);
-        }
-    }
-
-    public interface TConsumer<T, U extends Exception> {
-        void accept(T t) throws U;
     }
 }

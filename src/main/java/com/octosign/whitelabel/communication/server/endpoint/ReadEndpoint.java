@@ -1,7 +1,5 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import java.io.IOException;
-
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
@@ -22,8 +20,8 @@ abstract class ReadEndpoint<U> extends Endpoint {
     protected void handleRequest(HttpExchange exchange) {
         var request = new Request<>(exchange);
 
-        var response = handleRequest(request, new Response<U>(exchange));
-        useResponse(response);
+        var response = handleRequest(request, new Response<>(exchange));
+        response.send();
     }
 
     /**

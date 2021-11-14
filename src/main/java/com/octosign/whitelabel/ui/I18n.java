@@ -1,11 +1,6 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-
 import java.util.Arrays;
-import java.util.Locale;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 public class I18n {
@@ -14,18 +9,17 @@ public class I18n {
     private static boolean strictMode = true;
 
     static {
-        var locale = new Locale("sk");
         var resourcePath = I18n.class.getCanonicalName().toLowerCase();
-        BUNDLE = ResourceBundle.getBundle(resourcePath, locale);
-        Locale.setDefault(locale);
+        BUNDLE = ResourceBundle.getBundle(resourcePath);
     }
 
     public static String translate(String path, Object... args) {
         try {
             return getTranslation(path, args);
         }
-        catch (MissingResourceException e) { throw new IntegrationException(Code.RESOURCE_NOT_FOUND, e); }
-        catch (Exception e) { throw new IntegrationException(Code.TRANSLATION_FAILED, e); }
+        catch (Exception e) {
+            throw new RuntimeException("Translation failed for: " + path, e);
+        }
     }
 
     private static String getTranslation(String path, Object... args) {
@@ -41,7 +35,7 @@ public class I18n {
         if (specifiersCount == args.length)
             return args;
 
-        var message = String.format("Cardinality mismatch: %d args, %d specifiers", args.length, specifiersCount);
+        var message = "Cardinality mismatch: " + args.length + " args, " + specifiersCount + " specifiers";
         if (strictMode) {
             throw new IllegalArgumentException(message);
         } else {
@@ -50,5 +44,7 @@ public class I18n {
         }
     }
 
-    public static ResourceBundle getBundle() { return BUNDLE; }
+    public static ResourceBundle getBundle() {
+        return BUNDLE;
+    }
 }

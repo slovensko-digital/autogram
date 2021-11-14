@@ -32,7 +32,6 @@ public class ListenCommand extends Command {
         super(url);
         var params = Arrays.stream(url.getPath().split("/"))
                                     .map(String::strip)
-                                    .map(this::nullifyBlank)
                                     .toArray(String[]::new);
 
         if (params.length > 1 && !params[1].isBlank()) {
@@ -79,8 +78,6 @@ public class ListenCommand extends Command {
         }
     }
 
-    private String nullifyBlank(String value) { return (value != null && value.isBlank()) ? null : value; }
-
     public int getPort() {
         return port;
     }
@@ -115,21 +112,21 @@ public class ListenCommand extends Command {
 
     public static class Validations {
         private static final int MAX_PORT_NUMBER = 65535;
-        private static final String VALID_ORIGIN_REGEX = "^(\\*)|(((http:\\/\\/|https:\\/\\/)?(www.)?([a-zA-Z0-9]+).[a-zA-Z0-9]*.[a-z]{3}.?([a-z]+)?)|((\\d{1,3}\\.){3}\\d{1,3}))$";
+        private static final String VALID_ORIGIN_REGEX = "^\\*|((https?:\\/\\/)([^\\s.:/\\\\]+[\\.])*([^\\s.:/\\\\]+)(:\\d+)?)$";
 
         public static int validPort(String port) {
             var result = validInteger(port);
-            if (result <= MAX_PORT_NUMBER)
+            if (result <= MAX_PORT_NUMBER && result >= 1)
                 return result;
             else
-                throw new IllegalArgumentException(String.format("Port number %s is outside allowed range (1-65535)", result));
+                throw new IllegalArgumentException("Port " + result + " is outside the allowed range (1-65535)");
         }
 
         public static String validOrigin(String origin) {
             if (Pattern.compile(VALID_ORIGIN_REGEX).matcher(origin).matches())
                 return origin;
             else
-                throw new IllegalArgumentException(String.format("Origin %s is invalid.", origin));
+                throw new IllegalArgumentException("Origin " + origin + " is invalid.");
         }
 
         // TODO implement this
@@ -145,7 +142,7 @@ public class ListenCommand extends Command {
             try {
                 return Integer.parseInt(input);
             } catch(NumberFormatException e) {
-                throw new IllegalArgumentException(String.format("Input '%s' is not a valid integer value. Detail: %s", input, e.getMessage()));
+                throw new IllegalArgumentException("Input [" + input + "] is not a valid integer value. Details: " + e.getMessage());
             }
         }
     }
