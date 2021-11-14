@@ -16,6 +16,7 @@ import com.octosign.whitelabel.error_handling.UserException;
 import com.sun.net.httpserver.HttpServer;
 
 import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class Server {
 
@@ -48,7 +49,7 @@ public class Server {
         try {
             server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
         } catch (BindException e) {
-            throw new UserException("error.launchFailed.header", "error.launchFailed.addressInUse.description", e);
+            throw new UserException("error.launchFailed.header", translate("error.launchFailed.addressInUse.description", port), e);
         } catch (Exception e) {
             throw new UserException("error.serverNotCreated", e);
         }
