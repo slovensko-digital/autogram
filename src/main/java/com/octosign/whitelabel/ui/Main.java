@@ -164,7 +164,7 @@ public class Main extends Application {
             } else {
                 LOGGER.error("ATTENTION - unexpected exception handled: " + throwable.getClass().getName(), throwable);
                 Platform.runLater(FXUtils::displaySimpleError);
-                System.exit(0);
+                System.exit(1);
             }
         }
 
