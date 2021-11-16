@@ -1,11 +1,14 @@
 package com.octosign.whitelabel.communication;
 
 import com.google.common.collect.ImmutableMap;
+import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.model.AbstractSerializableSignatureParameters;
+import eu.europa.esig.dss.model.SerializableSignatureParameters;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -62,7 +65,8 @@ public class SignatureParameterMapper {
     public static SignaturePackaging map(SignatureParameters.Packaging packaging) { return signaturePackagingMapping.get(packaging); }
     public static String map(SignatureParameters.CanonicalizationMethod canonicalizationMethod) { return canonicalizationMethodMapping.get(canonicalizationMethod); }
 
-    public static ASiCWithXAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) {
+
+    public static ASiCWithXAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) { 
         var parameters = new ASiCWithXAdESSignatureParameters();
 
         parameters.aSiC().setContainerType(map(sp.getContainer()));

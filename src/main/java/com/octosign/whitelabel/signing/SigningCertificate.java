@@ -1,8 +1,7 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.communication.SignatureParameterMapper;
-import com.octosign.whitelabel.communication.SignatureParameters;
-import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.pades.signature.PAdESService;
@@ -111,7 +110,7 @@ public abstract class SigningCertificate {
         try {
             keys = token.getKeys();
         } catch (Exception e) {
-            throw new RuntimeException("Private keys could not be retrieved", e);
+            throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
         }
 
         return keys;
@@ -127,62 +126,72 @@ public abstract class SigningCertificate {
     /**
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
-    public String sign(SignatureUnit unit) throws IOException {
-        var content = unit.getDocument().getContent();
+    public String sign(SignatureUnit unit) {
         var parameters = unit.getSignatureParameters();
+        var format = parameters.getFormat();
+
+        if (format.equals(XADES))
+            unit.toXDC();
+        var content = unit.getDocument().getContent();
 
         byte[] binaryContent;
-        if (parameters.getFormat() == PADES) {
+        if (format.equals(PADES)) {
             binaryContent = Base64.getDecoder().decode(content);
         } else {
-            if (parameters.getFormat() == XADES) unit.standardizeAsXDC();
             binaryContent = content.getBytes(StandardCharsets.UTF_8);
         }
 
         var document = new InMemoryDocument(binaryContent);
-        document.setName(parameters.getFilename());
+        if (format.equals(XADES))
+            document.setName(parameters.getFilename());
 
-        var output = new ByteArrayOutputStream();
         var signedDocument = sign(document, parameters);
-        signedDocument.writeTo(output);
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try {
+            signedDocument.writeTo(output);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         return Utils.toBase64(output.toByteArray());
     }
 
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
         if (privateKey == null)
-            throw new RuntimeException("Missing private key");
+            throw new RuntimeException("Private key missing");
 
-        var commonCertificateVerifier = new CommonCertificateVerifier();
+        CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+        DSSDocument signedDocument;
+        var format = inputParameters.getFormat();
 
-        switch(inputParameters.getFormat()) {
-            case XADES -> {
-                var parameters = SignatureParameterMapper.mapXAdESParameters(inputParameters);
-                parameters.setSigningCertificate(privateKey.getCertificate());
-                parameters.setCertificateChain(privateKey.getCertificateChain());
+        if (format.equals(PADES)) {
+            var parameters = SignatureParameterMapper.mapPAdESParameters(inputParameters);
+            parameters.setSigningCertificate(privateKey.getCertificate());
+            parameters.setCertificateChain(privateKey.getCertificateChain());
 
-                var service = new ASiCWithXAdESService(commonCertificateVerifier);
-                var dataToSign = service.getDataToSign(document, parameters);
-                var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
-                assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
+            var service = new PAdESService(commonCertificateVerifier);
+            var dataToSign = service.getDataToSign(document, parameters);
+            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
 
-                return service.signDocument(document, parameters, signatureValue);
-            }
+            signedDocument = service.signDocument(document, parameters, signatureValue);
 
-            case PADES -> {
-                var parameters = SignatureParameterMapper.mapPAdESParameters(inputParameters);
-                parameters.setSigningCertificate(privateKey.getCertificate());
-                parameters.setCertificateChain(privateKey.getCertificateChain());
+        } else if (format.equals(XADES)) {
+            var parameters = SignatureParameterMapper.mapXAdESParameters(inputParameters);
+            parameters.setSigningCertificate(privateKey.getCertificate());
+            parameters.setCertificateChain(privateKey.getCertificateChain());
 
-                var service = new PAdESService(commonCertificateVerifier);
-                var dataToSign = service.getDataToSign(document, parameters);
-                var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
-                assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
+            var service = new ASiCWithXAdESService(commonCertificateVerifier);
+            var dataToSign = service.getDataToSign(document, parameters);
+            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
+            assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
 
-                return service.signDocument(document, parameters, signatureValue);
-            }
+            signedDocument = service.signDocument(document, parameters, signatureValue);
 
-            default -> throw new IllegalArgumentException("Unknown format");
+        } else {
+            throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Unsupported format: " + format);
         }
+
+        return signedDocument;
     }
 }

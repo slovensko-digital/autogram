@@ -2,6 +2,7 @@ package com.octosign.whitelabel.signing;
 
 import java.security.KeyStore.PasswordProtection;
 
+import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
@@ -25,7 +26,7 @@ public class SigningCertificatePKCS12 extends SigningCertificate {
             // and C_GetSlotInfo/C_GetTokenInfo for info about these slots
             token = new Pkcs12SignatureToken(pkcsPath, password);
         } catch (Exception e) {
-            throw new RuntimeException("Cannot initialize PKCS12", e);
+            throw new UserException("error.tokenAccessDenied.header", "error.tokenAccessDenied.description", e);
         }
     }
 }

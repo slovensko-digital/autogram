@@ -1,5 +1,6 @@
 package com.octosign.whitelabel.communication.server;
 
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -11,7 +12,11 @@ import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.endpoint.DocumentationEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.InfoEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.SignEndpoint;
+import com.octosign.whitelabel.error_handling.UserException;
 import com.sun.net.httpserver.HttpServer;
+
+import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class Server {
 
@@ -32,11 +37,21 @@ public class Server {
     // HMAC hex secret key
     private String secretKey;
 
+    public Server(int initialNonce) {
+        this(
+            getProperty("server.defaultAddress"),
+            Integer.parseInt(getProperty("server.defaultPort")),
+            initialNonce
+        );
+    }
+
     public Server(String hostname, int port, int initialNonce) {
         try {
             server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
+        } catch (BindException e) {
+            throw new UserException("error.launchFailed.header", translate("error.launchFailed.addressInUse.description", port), e);
         } catch (Exception e) {
-            throw new RuntimeException("Could not create server", e);
+            throw new UserException("error.serverNotCreated", e);
         }
 
         documentationEndpoint = new DocumentationEndpoint(this);
@@ -96,5 +111,4 @@ public class Server {
     public InetSocketAddress getAddress() {
         return server.getAddress();
     }
-
 }

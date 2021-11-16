@@ -1,25 +1,19 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
-import com.octosign.whitelabel.communication.CommunicationError;
-import com.octosign.whitelabel.communication.CommunicationError.Code;
-import com.octosign.whitelabel.communication.server.Request;
-import com.octosign.whitelabel.communication.server.Response;
-import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.communication.MimeType;
+import com.octosign.whitelabel.communication.server.*;
+import com.octosign.whitelabel.error_handling.*;
 import com.sun.net.httpserver.HttpExchange;
 
 /**
  * Server API endpoint
  *
- * TODO: Handle IOException in the handle - it means the request was aborted from the client
- * @param <Req> Expected request body
- * @param <Res> Response body
+ * @param <T> Expected request body
+ * @param <U> Response body
  */
-abstract class WriteEndpoint<Req, Res> extends Endpoint {
+abstract class WriteEndpoint<T, U> extends Endpoint {
 
     /**
      * This endpoint's current nonce
@@ -35,8 +29,8 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
     }
 
     @Override
-    protected void handleRequest(HttpExchange exchange) throws IOException {
-        var request = new Request<Req>(exchange);
+    protected void handleRequest(HttpExchange exchange) throws Throwable {
+        var request = new Request<T>(exchange);
 
         // TODO: Add verifying of HMAC if server has secretKey specified
 
@@ -44,26 +38,17 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
         if (requestClass != null) {
             // If request class is not null, the body must contain correct object
             if (request.getBodyFormat() == null) {
-                var supportedTypes = request.getSupportedBodyFormats().stream()
-                    .map(m -> m.toString())
-                    .collect(Collectors.joining(", "));
-                var message = "Unsupported request body MIME type. Supported: " + supportedTypes;
-                var error = new CommunicationError(Code.UNSUPPORTED_FORMAT, message);
-                new Response<CommunicationError>(exchange)
-                    .asError(HttpURLConnection.HTTP_UNSUPPORTED_TYPE, error)
-                    .send();
-                return;
-            } else if (request.processBody(requestClass) == null) {
-                var error = new CommunicationError(Code.MALFORMED_INPUT, "Malformed input body.");
-                new Response<CommunicationError>(exchange)
-                    .asError(HttpURLConnection.HTTP_BAD_REQUEST, error)
-                    .send();
-                return;
+                var supportedTypes = String.join(", ", request.getSupportedBodyFormats().stream().map(MimeType::toString).toArray(String[]::new));
+                throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Unsupported format. Supported formats are: " + supportedTypes);
+            }
+
+            if (request.processBody(getRequestClass()) == null) {
+                throw new IntegrationException(Code.MALFORMED_INPUT);
             }
         }
-
-        var response = handleRequest(request, new Response<Res>(exchange));
-        useResponse(response);
+        var response = handleRequest(request, new Response<>(exchange));
+        response.send();
+        nonce.incrementAndGet();
     }
 
     /**
@@ -72,34 +57,17 @@ abstract class WriteEndpoint<Req, Res> extends Endpoint {
      * @param request   Request
      * @param response  Prepared successful response
      * @return Modified response if the request succeeded or null if not and custom response was sent.
-     * @throws IOException
      */
-    protected abstract Response<Res> handleRequest(Request<Req> request, Response<Res> response) throws IOException;
+    protected abstract Response<U> handleRequest(Request<T> request, Response<U> response)
+            throws Throwable;
 
     /**
      * Class of the request body object, should be null if request does not have body
      */
-    protected abstract Class<Req> getRequestClass();
+    protected abstract Class<T> getRequestClass();
 
     /**
      * Class of the response body object
      */
-    protected abstract Class<Res> getResponseClass();
-
-    /**
-     * Use response produced by the endpoint handler
-     *
-     * @param response
-     * @throws IOException
-     */
-    protected void useResponse(Response<Res> response) throws IOException {
-        if (response != null) {
-            response.send();
-            // TODO: Add bumping of nonce
-        } else {
-            // The request failed and the endpoint sent its own error response
-            // TODO: Check response stream to make sure this is the case
-        }
-    }
-
+    protected abstract Class<U> getResponseClass();
 }

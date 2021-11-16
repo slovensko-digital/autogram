@@ -10,12 +10,13 @@ import javafx.scene.layout.HBox;
 
 import eu.europa.esig.dss.token.PasswordInputCallback;
 
+import static com.octosign.whitelabel.ui.I18n.translate;
+
 public class PasswordCallback implements PasswordInputCallback {
     @Override
     public char[] getPassword() {
         Dialog<String> dialog = new Dialog<>();
-        // TODO: Replace with message from .properties
-        dialog.setTitle("Zadajte heslo");
+        dialog.setTitle(translate("text.enterPassword"));
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
     
         PasswordField pwd = new PasswordField();

@@ -1,29 +1,17 @@
 package com.octosign.whitelabel.ui;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ResourceBundle;
+import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import com.octosign.whitelabel.cli.command.Command;
-import com.octosign.whitelabel.cli.command.CommandFactory;
-import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.error_handling.*;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -33,18 +21,20 @@ import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
+import javafx.stage.Window;
+import org.slf4j.LoggerFactory;
+
+import static com.octosign.whitelabel.ui.FXUtils.*;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
-    
+
     public enum Status {
         LOADING,
-        READY
+        READY,
     }
-
-    private static final String bundlePath = Main.class.getCanonicalName().toLowerCase();
-    private static final ResourceBundle bundle = ResourceBundle.getBundle(bundlePath);
 
     private final CertificateManager certificateManager = new CertificateManager();
 
@@ -53,82 +43,46 @@ public class Main extends Application {
     private Server server;
 
     public static void main(String[] args) {
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
+
         Application.launch(Main.class, args);
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        Command cliCommand;
-        try {
-            cliCommand = CommandFactory.fromParameters(getParameters());
-        } catch (Throwable e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotUseParameters"),
-                e
-            );
-            return;
-        }
+    public void start(Stage primaryStage) {
+        var cliCommand = CommandFactory.fromParameters(getParameters());
 
-        if (cliCommand instanceof ListenCommand) {
-            startServer((ListenCommand) cliCommand);
-
-            statusIndication = new StatusIndication(() -> this.exit());
+        if (cliCommand instanceof ListenCommand listenCommand) {
+            startServer(listenCommand);
+            statusIndication = new StatusIndication(this::exit);
 
             // Prevent exiting in server mode on last window close
             Platform.setImplicitExit(false);
-            return;
+        } else {
+            // No CLI command means standalone GUI mode
+            // TODO: Show something more useful, this should be either:
+            // 1. Standalone mode once it gets implemented
+            // 2. Info about the app and how it is launched from the web
+            displayInfo("info.appLaunched.header", "info.appLaunched.description");
         }
-
-        // No CLI command means standalone GUI mode
-        // TODO: Show something more useful, this should be either:
-        // 1. Standalone mode once it gets implemented
-        // 2. Info about the app and how it is launched from the web
-        displayAlert(
-            AlertType.INFORMATION,
-            getProperty("application.name"),
-            "Application is installed",
-            "Start signing from the web."
-        );
     }
 
     private void startServer(ListenCommand command) {
         var version = getVersion();
-        var hostname = getProperty("server.hostname");
-        var port = command.getPort() > 0
-            ? command.getPort()
-            : Integer.parseInt(getProperty("server.defaultPort"));
 
-        try {
-            server = new Server(hostname, port, command.getInitialNonce());
-        } catch (Throwable e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotListen"),
-                e
-            );
-            return;
-        }
-
+        server = new Server(command.getInitialNonce());
         server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
+
         if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
         if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());
 
-        try {
-            server.start();
-        } catch (Throwable e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotListen"),
-                e
-            );
-            return;
-        }
-        System.out.println("Running in server mode on " + server.getAddress().toString());
+        server.start();
+        System.out.println(translate("app.runningOn", server.getAddress()));
+
         if (server.isDevMode()) {
             var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
-            System.out.println("Documentation is available in dev mode at " + docsAddress);
+            System.out.println(translate("text.docsAvailableAt", docsAddress));
         }
 
         server.setOnSign((SignatureUnit signatureUnit) -> {
@@ -136,12 +90,11 @@ public class Main extends Application {
 
             Platform.runLater(() -> {
                 openWindow(signatureUnit, (String signedContent) -> {
-                    Document signedDocument = signatureUnit.getDocument().clone();
+                    var signedDocument = signatureUnit.getDocument().clone();
                     signedDocument.setContent(signedContent);
                     future.complete(signedDocument);
                 });
             });
-
             return future;
         });
 
@@ -163,103 +116,26 @@ public class Main extends Application {
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setSignatureUnit(signatureUnit);
+        controller.loadDocument();
         controller.setOnSigned((String signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });
 
         var scene = new Scene(root, 640, 480);
-        windowStage.setTitle(getProperty("application.name"));
+        windowStage.setTitle(translate("app.name"));
         windowStage.setScene(scene);
         windowStage.show();
     }
 
     public static FXMLLoader loadWindow(String name) {
-        var fxmlLoader = new FXMLLoader(Main.class.getResource(name + ".fxml"), bundle);
+        var fxmlLoader = new FXMLLoader(Main.class.getResource(name + ".fxml"), I18n.getBundle());
         try {
             fxmlLoader.load();
-        } catch (Exception e) {
-            displayError(
-                getProperty("text.error.openingFailed"),
-                getProperty("text.error.cannotOpenWindow"),
-                e
-            );
-            return null;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
         return fxmlLoader;
-    }
-
-    /**
-     * Display alert
-     */
-    public static void displayAlert(AlertType type, String title, String header, String description) {
-        getAlert(type, title, header, description).showAndWait();
-    }
-
-    /**
-     * Display error alert
-     */
-    public static void displayError(String header, String description) {
-        var alert = getAlert(AlertType.ERROR, getProperty("text.error"), header, description);
-
-        alert.showAndWait();
-    }
-
-    /**
-     * Display error alert with exception details
-     */
-    public static void displayError(String header, String description, Throwable e) {
-        var alert = getAlert(AlertType.ERROR, getProperty("text.error"), header, description);
-
-        if (e != null) {
-            e.printStackTrace();
-            var stringWriter = new StringWriter();
-            e.printStackTrace(new PrintWriter(stringWriter));
-            var stackTrace = stringWriter.toString();
-
-            var details = new GridPane();
-            details.setMaxWidth(Double.MAX_VALUE);
-
-            var label = new Label(getProperty("text.error.details"));
-            details.add(label, 0, 0);
-
-            var textArea = new TextArea(stackTrace);
-            textArea.setEditable(false);
-            textArea.setWrapText(true);
-            details.add(textArea, 0, 1);
-
-            alert.getDialogPane().setExpandableContent(details);
-        }
-
-        alert.showAndWait();
-    }
-
-    /**
-     * Create unified Alert
-     */
-    public static Alert getAlert(AlertType type, String title, String header, String description) {
-        var alert = new Alert(type);
-
-        var dialogPane = alert.getDialogPane();
-        var stylesheets = dialogPane.getStylesheets();
-        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
-
-        if (title != null) alert.setTitle(title);
-        if (header != null) alert.setHeaderText(header);
-        if (description != null) alert.setContentText(description);
-        alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
-
-        return alert;
-    }
-
-    /**
-     * Get string property from the bundle
-     */
-    public static String getProperty(String path) {
-        return bundle.getString(path);
     }
 
     /**
@@ -269,4 +145,31 @@ public class Main extends Application {
         return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
     }
 
+    private static class ExceptionHandler implements Thread.UncaughtExceptionHandler {
+
+        private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
+
+        @Override
+        public void uncaughtException(Thread thread, Throwable throwable) {
+            if (throwable instanceof IntegrationException ie) {
+                LOGGER.error("IntegrationException handled, code: " + ie.getCode().toString(), ie);
+                if (ie.shouldDisplay())
+                    Platform.runLater(() -> displayError(ie));
+                closeAllWindows();
+
+            } else if (throwable instanceof UserException ue) {
+                LOGGER.error("UserException handled: ", ue);
+                Platform.runLater(() -> displayError(ue));
+
+            } else {
+                LOGGER.error("ATTENTION - unexpected exception handled: " + throwable.getClass().getName(), throwable);
+                Platform.runLater(FXUtils::displaySimpleError);
+                System.exit(1);
+            }
+        }
+
+        private void closeAllWindows() {
+            Stage.getWindows().stream().filter(Window::isShowing).forEach(window -> ((Stage)window).close());
+        }
+    }
 }

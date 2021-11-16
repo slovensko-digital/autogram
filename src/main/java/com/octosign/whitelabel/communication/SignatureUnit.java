@@ -26,7 +26,7 @@ public class SignatureUnit {
 
     public void setSignatureParameters(SignatureParameters signatureParameters) { this.signatureParameters = signatureParameters; }
 
-    public void standardizeAsXDC() {
+    public void toXDC() {
         var transformer = XDCTransformer.newInstance(signatureParameters);
         var transformedContent = transformer.transform(document.getContent(), XDCTransformer.Mode.IDEMPOTENT);
 

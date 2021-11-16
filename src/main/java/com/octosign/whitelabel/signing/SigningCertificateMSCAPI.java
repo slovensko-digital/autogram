@@ -1,5 +1,6 @@
 package com.octosign.whitelabel.signing;
 
+import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.token.MSCAPISignatureToken;
 
 public class SigningCertificateMSCAPI extends SigningCertificate {
@@ -10,7 +11,7 @@ public class SigningCertificateMSCAPI extends SigningCertificate {
         try {
             token = new MSCAPISignatureToken();
         } catch (Exception e) {
-            throw new RuntimeException("Cannot initialize MSCAPI", e);
+            throw new UserException("error.tokenAccessDenied.header", "error.tokenAccessDenied.description", e);
         }
     }
 }

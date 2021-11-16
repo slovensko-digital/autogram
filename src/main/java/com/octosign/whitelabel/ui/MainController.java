@@ -5,13 +5,16 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.document.PDFDocument;
 import com.octosign.whitelabel.communication.document.XMLDocument;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
+import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.ui.about.AboutDialog;
+
 import javafx.application.Platform;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -22,9 +25,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ResourceBundle;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.*;
+import static com.octosign.whitelabel.ui.FXUtils.displayError;
+import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 
 /**
  * Controller for the signing window
@@ -32,7 +39,10 @@ import java.util.stream.Collectors;
 public class MainController {
 
     @FXML
-    private Label documentLabel;
+    public Button aboutButton;
+
+    @FXML
+    public Button certSettingsButton;
 
     @FXML
     private WebView webView;
@@ -67,111 +77,86 @@ public class MainController {
      */
     private Consumer<String> onSigned;
 
+    /**
+     * Name of the currently used signing certificate owner
+     */
+    private String certificateName;
+
     public void initialize() {
         webView.setContextMenuEnabled(false);
         webView.getEngine().setJavaScriptEnabled(false);
+        mainButton.setText(resolveMainButtonText());
     }
 
     public void setCertificateManager(CertificateManager certificateManager) {
         this.certificateManager = certificateManager;
     }
 
-    public void setSignatureUnit(SignatureUnit signatureUnit) {
-        this.signatureUnit = signatureUnit;
+    public void setOnSigned(Consumer<String> onSigned) { this.onSigned = onSigned; }
+
+    public void setSignatureUnit(SignatureUnit signatureUnit) { this.signatureUnit = signatureUnit; }
+
+    public void loadDocument() {
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
-
-        if (document.getTitle() != null && !document.getTitle().isBlank()) {
-            documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
-        } else {
-            documentLabel.setManaged(false);
-        }
 
         if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }
 
-        if (certificateManager.getCertificate() != null) {
-            String name = certificateManager
-                .getCertificate()
-                .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-            mainButton.setText(String.format(Main.getProperty("text.sign"), name));
-        }
-
-        //TODO consider simplifying this part to avoid tedious casting
-        boolean isXml = document instanceof XMLDocument;
+        boolean isXML = document instanceof XMLDocument;
         boolean isPDF = document instanceof PDFDocument;
-        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
-        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+        final boolean hasSchema = isXML && ((XMLDocument) document).getSchema() != null;
+        final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
-            try {
-                ((XMLDocument) document).validate();
-            } catch (Exception e) {
-                displayAlert(
-                        "Neplatný formát",
-                        "XML súbor nie je validný",
-                        "Dokument na podpísanie nevyhovel požiadavkám validácie podľa XSD schémy. Detail chyby: " + e
-                );
-                return;
-            }
+            ((XMLDocument) document).validate();
         }
 
         if (hasTransformation) {
-            String visualisation;
-            try {
-                var xmlDocument = (XMLDocument) document;
-                visualisation = xmlDocument.getTransformed();
-            } catch (Exception e) {
-                displayAlert(
-                        "Chyba zobrazenia",
-                        "Získanie zobraziteľnej podoby zlyhalo",
-                        "Pri zostavovaní zobraziteľnej podoby došlo k chybe a načítavaný súbor nemôže byť zobrazený. Detail chyby: " + e
-                );
-                return;
-            }
+            var visualisation = ((XMLDocument) document).getTransformed();
 
-            var transformationOutputType = parameters.getTransformationOutputMimeType() == null
-                ? MimeType.HTML
-                : MimeType.parse(parameters.getTransformationOutputMimeType());
+            MimeType transformationOutputType;
+            try {
+                transformationOutputType = parameters.getTransformationOutputMimeType() == null
+                    ? MimeType.HTML
+                    : MimeType.parse(parameters.getTransformationOutputMimeType());
+            } catch (MalformedMimetypeException e) {
+                throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
+            }
 
             if (transformationOutputType.equalsTypeSubtype(MimeType.HTML)) {
                 displayHTMLVisualisation(visualisation);
             } else {
                 displayPlainTextVisualisation(visualisation);
             }
-        } else if(!isPDF) {
-            displayPlainTextVisualisation(document.getContent());
         } else if(isPDF) {
             displayPDFVisualisation(document);
         } else {
-            throw new RuntimeException("Unsupported document format");
+            displayPlainTextVisualisation(document.getContent());
         }
     }
 
     private void displayPlainTextVisualisation(String visualisation) {
-        webView.setManaged(false);
+        vanish(webView);
         textArea.setText(visualisation);
     }
 
     private void displayHTMLVisualisation(String visualisation) {
-        textArea.setManaged(false);
+        vanish(textArea);
 
         var webEngine = webView.getEngine();
-        webEngine.getLoadWorker().stateProperty().addListener(
-            (ObservableValue<? extends Worker.State> observable, Worker.State oldState, Worker.State newState) -> {
-                if (newState == Worker.State.SUCCEEDED) {
-                    webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
-                }
+        webEngine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                webEngine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
             }
-        );
+        });
         webEngine.loadContent(getResourceAsString("visualization.html"));
     }
 
     private void displayPDFVisualisation(Document document) {
-        textArea.setManaged(false);
-        textArea.setVisible(false);
+        vanish(textArea);
 
         Platform.runLater(() -> {
             var engine = webView.getEngine();
@@ -188,67 +173,82 @@ public class MainController {
         });
     }
 
-    private void displayAlert(String title, String header, String description) {
+    @FXML
+    private void onMainButtonAction() {
+        if (!isSignerReady()) {
+            loadSigners();
+        } else {
+            signDocument();
+        }
+    }
+
+    private boolean isSignerReady() {
+        return this.certificateManager.getCertificate() != null;
+    }
+
+    private void loadSigners() {
+        disableWithText(translate("btn.loading"));
+
         Platform.runLater(() -> {
-            Main.displayAlert(
-                    AlertType.ERROR,
-                    title,
-                    header,
-                    description
-            );
+            try {
+                certificateManager.useDefault();
+            } catch (UserException e) {
+                displayError(e);
+            } finally {
+                enableWithDefaultText();
+            }
         });
     }
 
-    public void setOnSigned(Consumer<String> onSigned) {
-        this.onSigned = onSigned;
+    private void signDocument() {
+        disableWithText(translate("btn.signing"));
+
+        Platform.runLater(() -> {
+            try {
+                var signedContent = certificateManager.getCertificate().sign(signatureUnit);
+                onSigned.accept(signedContent);
+            } catch (UserException e) {
+                displayError(e);
+            } finally {
+                enableWithDefaultText();
+            }
+        });
+    }
+
+    private void disableWithText(String newText) {
+        mainButton.setDisable(true);
+        mainButton.setText(newText);
+    }
+
+    private void enableWithDefaultText() {
+        mainButton.setDisable(false);
+        mainButton.setText(resolveMainButtonText());
     }
 
     @FXML
-    private void onMainButtonAction() {
-        if (certificateManager.getCertificate() == null) {
-            // No certificate means this is loading of certificates
-            mainButton.setDisable(true);
-            mainButton.setText(Main.getProperty("text.loading"));
-
-            CompletableFuture.runAsync(() -> {
-                String mainButtonText;
-                if (certificateManager.useDefault() != null) {
-                    String name = certificateManager
-                        .getCertificate()
-                        .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-                    mainButtonText = String.format(Main.getProperty("text.sign"), name);
-                } else {
-                    mainButtonText = Main.getProperty("text.loadSigners");
-                }
-                Platform.runLater(() -> {
-                    mainButton.setText(mainButtonText);
-                    mainButton.setDisable(false);
-                });
-            });
+    public String resolveMainButtonText() {
+        if (isSignerReady()) {
+            return translate("btn.signAs", getCachedName());
         } else {
-            // Otherwise this is signing
-            String previousButtonText = mainButton.getText();
-            mainButton.setDisable(true);
-            mainButton.setText(Main.getProperty("text.signing"));
-
-            CompletableFuture.runAsync(() -> {
-                try {
-                    String signedContent = certificateManager.getCertificate().sign(signatureUnit);
-                    Platform.runLater(() -> onSigned.accept(signedContent));
-                } catch (Exception e) {
-                    displayAlert(
-                            "Nepodpísané",
-                            "Súbor nebol podpísaný",
-                            "Podpísanie zlyhalo alebo bolo zrušené. Detail chyby: " + e
-                    );
-                } finally {
-                    Platform.runLater(() -> {
-                        mainButton.setText(previousButtonText);
-                        mainButton.setDisable(false);
-                    });
-                }
-            });
+            return translate("btn.loadSigners");
         }
+    }
+
+    private void vanish(Node node) {
+        if (node.isManaged()) node.setManaged(false);
+        if (node.isVisible()) node.setVisible(false);
+    }
+
+    private void materialize(Node node) {
+        if (!node.isManaged()) node.setManaged(true);
+        if (!node.isVisible()) node.setVisible(true);
+    }
+
+    private String getCachedName() {
+        if (isNullOrBlank(certificateName)) {
+            certificateName = certificateManager.getCertificate().getNicePrivateKeyDescription(NAME);
+        }
+        return certificateName;
     }
 
     @FXML

@@ -7,6 +7,9 @@ import java.util.Map;
 
 import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 import com.sun.net.httpserver.HttpExchange;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
@@ -28,16 +31,10 @@ public class Request<T> {
     public Request(HttpExchange exchange) {
         this.exchange = exchange;
 
-        var contentType = exchange.getRequestHeaders().get("Content-Type");
-        if (contentType != null) {
-            var contentMimeType = MimeType.parse(contentType.get(0));
-            bodyFormat = bodyFormats.keySet().stream()
-                .filter(m -> m.equalsTypeSubtype(contentMimeType))
-                .findFirst()
-                .map(m -> bodyFormats.get(m))
-                .orElse(bodyFormats.get(MimeType.ANY));
-        } else {
-            bodyFormat = null;
+        try {
+            bodyFormat = extractBodyFormat(exchange.getRequestHeaders());
+        } catch (Exception ex) {
+            throw new IntegrationException(Code.MALFORMED_INPUT, ex);
         }
     }
 
@@ -65,7 +62,6 @@ public class Request<T> {
      *
      * Must be called only once
      *
-     * @param <T>       Expected object in the body
      * @param bodyClass Class of the expected object in the body
      */
     public T processBody(Class<T> bodyClass) {
@@ -77,8 +73,27 @@ public class Request<T> {
             body = bodyFormat.from(bodyString, bodyClass);
             return body;
         } catch (Exception e) {
-            return null;
+            throw new IntegrationException(Code.MALFORMED_INPUT, e);
         }
     }
 
+    public <U extends Map<String, List<String>>> BodyFormat extractBodyFormat(U source) {
+        var contentType = source.get("Content-Type");
+        var defaultBodyFormat = bodyFormats.get(MimeType.ANY);
+        if (contentType == null)
+            return defaultBodyFormat;
+
+        MimeType contentMimeType;
+        try {
+            contentMimeType = MimeType.parse(contentType.get(0));
+        } catch (MalformedMimetypeException e) {
+            throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
+        }
+
+        return bodyFormats.keySet().stream()
+                .filter(m -> m.equalsTypeSubtype(contentMimeType))
+                .findFirst()
+                .map(bodyFormats::get)
+                .orElse(defaultBodyFormat);
+    }
 }

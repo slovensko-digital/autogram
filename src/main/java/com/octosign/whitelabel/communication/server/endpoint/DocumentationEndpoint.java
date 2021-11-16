@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.sun.net.httpserver.HttpExchange;
 
 public class DocumentationEndpoint extends Endpoint {
@@ -20,7 +22,7 @@ public class DocumentationEndpoint extends Endpoint {
     }
 
     @Override
-    protected void handleRequest(HttpExchange exchange) throws IOException {
+    protected void handleRequest(HttpExchange exchange) {
         String cwd = System.getProperty("user.dir");
         boolean isYaml = exchange.getRequestURI().getPath().endsWith(".yml");
 
@@ -29,11 +31,15 @@ public class DocumentationEndpoint extends Endpoint {
 
         var headers = exchange.getResponseHeaders();
         headers.set("Content-Type", mimeType);
-        exchange.sendResponseHeaders(200, 0);
 
         // automatically closes both streams
-        try (var fileStream = new FileInputStream(file.toString()); var responseStream = exchange.getResponseBody()) {
+        try (var fileStream = new FileInputStream(file.toString());
+             var responseStream = exchange.getResponseBody()) {
+            exchange.sendResponseHeaders(200, 0);
+
             fileStream.transferTo(responseStream);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
