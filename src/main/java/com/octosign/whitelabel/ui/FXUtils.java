@@ -30,8 +30,8 @@ public class FXUtils {
      */
     public static void displaySimpleError(String... inputs) {
         switch (inputs.length) {
-            case 0 -> displayError("error.general.header", "error.general.description");
-            case 1 -> displayError("error.general.header", inputs[0]);
+            case 0 -> displayError("text.error", "error.general.description");
+            case 1 -> displayError("text.error", inputs[0]);
             case 2 -> displayError(inputs[0], inputs[1]);
             default -> displaySimpleError();
         }
@@ -76,7 +76,7 @@ public class FXUtils {
     public static void displayError(String header, String description, Throwable cause) {
         var alert = buildAlert(
                 Alert.AlertType.ERROR,
-                translate("error.title"),
+                translate("text.error"),
                 translateIfNeeded("error.", header),
                 translateIfNeeded("error.", description)
         );
@@ -96,7 +96,7 @@ public class FXUtils {
     public static void displayInfo(String header, String description) {
         var alert = buildAlert(
                 Alert.AlertType.INFORMATION,
-                translate("info.title"),
+                translate("text.info"),
                 translateIfNeeded("info.", header),
                 translateIfNeeded("info.", description)
         );
