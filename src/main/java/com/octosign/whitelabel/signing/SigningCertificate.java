@@ -1,15 +1,9 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.communication.SignatureParameterMapper;
-import com.octosign.whitelabel.communication.SignatureParameters;
-import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
-import eu.europa.esig.dss.model.CommonDocument;
-import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.model.MimeType;
+import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -27,7 +21,6 @@ import java.util.List;
 
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
-import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -55,7 +48,7 @@ public abstract class SigningCertificate {
      * - SHORT - Contains name and date range
      * - NAME - Contains name only
      */
-    public enum Verbosity {
+    public enum KeyDescriptionVerbosity {
         LONG,
         SHORT,
         NAME
@@ -64,7 +57,7 @@ public abstract class SigningCertificate {
     /**
      * Constructs human readable private key description
      */
-    public static String getNicePrivateKeyDescription(DSSPrivateKeyEntry key, Verbosity verbosity) {
+    public static String getNicePrivateKeyDescription(DSSPrivateKeyEntry key, KeyDescriptionVerbosity verbosity) {
         String dn = key.getCertificate().getSubject().getRFC2253();
         String label = "";
         try {
@@ -87,10 +80,10 @@ public abstract class SigningCertificate {
                     dnStreet = rdn.getValue().toString();
             }
 
-            if (verbosity == Verbosity.LONG) {
+            if (verbosity == KeyDescriptionVerbosity.LONG) {
                 label = String.format("%s, %s %s, %s (%s - %s)", dnName, dnCity, dnStreet, dnCountry, notBefore,
                     notAfter);
-            } else if (verbosity == Verbosity.SHORT) {
+            } else if (verbosity == KeyDescriptionVerbosity.SHORT) {
                 label = String.format("%s (%s - %s)", dnName, notBefore, notAfter);
             } else {
                 label = dnName;
@@ -113,13 +106,20 @@ public abstract class SigningCertificate {
     }
 
     public List<DSSPrivateKeyEntry> getAvailablePrivateKeys() {
-        return token.getKeys();
+        List<DSSPrivateKeyEntry> keys;
+        try {
+            keys = token.getKeys();
+        } catch (Exception e) {
+            throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
+        }
+
+        return keys;
     }
 
     /**
      * Constructs human readable description for the current private key
      */
-    public String getNicePrivateKeyDescription(Verbosity verbosity) {
+    public String getNicePrivateKeyDescription(KeyDescriptionVerbosity verbosity) {
         return SigningCertificate.getNicePrivateKeyDescription(privateKey, verbosity);
     }
 
@@ -142,19 +142,16 @@ public abstract class SigningCertificate {
         }
 
         var document = new InMemoryDocument(binaryContent);
-        document.setName(parameters.getFilename());
-
-        // TODO shouldn't this apply only for XAdES?
-        document.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8"));
+        if (format.equals(XADES))
+            document.setName(parameters.getFilename());
 
         var signedDocument = sign(document, parameters);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-
         try {
             signedDocument.writeTo(output);
         } catch (IOException e) {
-            throw new IntegrationException(Code.STREAM_NOT_AVAILABLE, e);
+            throw new RuntimeException(e);
         }
 
         return Utils.toBase64(output.toByteArray());
@@ -162,7 +159,7 @@ public abstract class SigningCertificate {
 
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
         if (privateKey == null)
-            throw new RuntimeException(translate("error.missingPrivateKey"));
+            throw new RuntimeException("Private key missing");
 
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
         DSSDocument signedDocument;
@@ -192,7 +189,7 @@ public abstract class SigningCertificate {
             signedDocument = service.signDocument(document, parameters, signatureValue);
 
         } else {
-            throw new IllegalArgumentException(translate("error.unsupportedFormat_", format));
+            throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Unsupported format: " + format);
         }
 
         return signedDocument;

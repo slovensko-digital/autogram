@@ -22,10 +22,6 @@ public class IntegrationException extends SignerException {
         this(code, null, cause);
     }
 
-    public IntegrationException(String message) {
-        this(null, message, null);
-    }
-
     public Code getCode() {
         return code;
     }

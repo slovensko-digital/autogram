@@ -1,13 +1,14 @@
 package com.octosign.whitelabel.ui;
 
-import eu.europa.esig.dss.token.PasswordInputCallback;
+import java.util.Optional;
+
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.HBox;
 
-import java.util.Optional;
+import eu.europa.esig.dss.token.PasswordInputCallback;
 
 import static com.octosign.whitelabel.ui.I18n.translate;
 

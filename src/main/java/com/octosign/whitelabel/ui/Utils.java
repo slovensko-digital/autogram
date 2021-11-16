@@ -1,5 +1,6 @@
 package com.octosign.whitelabel.ui;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
@@ -10,11 +11,18 @@ public class Utils {
         return value == null || value.isBlank();
     }
 
-    public static String decode(String value) {
+    public static String encodeBase64(String value) {
         if (isNullOrBlank(value))
             return null;
 
-        return new String(Base64.getDecoder().decode(value));
+        return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String decodeBase64(String value) {
+        if (isNullOrBlank(value))
+            return null;
+
+        return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
     }
 
     @SafeVarargs

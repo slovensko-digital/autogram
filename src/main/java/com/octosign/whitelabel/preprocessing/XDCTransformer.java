@@ -2,8 +2,7 @@ package com.octosign.whitelabel.preprocessing;
 
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.xades.DSSXMLUtils;
@@ -25,7 +24,6 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static com.octosign.whitelabel.ui.I18n.translate;
 import static java.util.Objects.requireNonNull;
 
 
@@ -64,21 +62,21 @@ public class XDCTransformer {
         try {
             parseDOMDocument(xmlInput);
         } catch (SAXException | IOException e) {
-            throw new IntegrationException(Code.MALFORMED_INPUT, translate("error.xmlParsingFailure", e));
+            throw new IntegrationException(Code.INVALID_CONTENT, e);
         } catch (ParserConfigurationException e) {
-            throw new IntegrationException(Code.UNEXPECTED_ERROR, translate("error.builderConfigInvalid", e));
+            throw new RuntimeException(e);
         }
 
         try {
             transformDocument(mode);
         } catch (DOMException e) {
-            throw new IntegrationException(String.format("XML DOM related error: %s", e));
+            throw new IntegrationException(Code.INVALID_CONTENT, e);
         }
 
         try {
             return getDocumentContent();
         } catch (TransformerException e) {
-            throw new IntegrationException(String.format("Pre-final transformation failed: %s", e));
+            throw new IntegrationException(Code.INVALID_CONTENT, e);
         }
     }
 
