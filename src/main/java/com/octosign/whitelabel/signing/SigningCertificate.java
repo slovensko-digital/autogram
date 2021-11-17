@@ -1,6 +1,10 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.communication.SignatureParameterMapper;
+import com.octosign.whitelabel.communication.SignatureParameters;
+import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.*;
