@@ -273,6 +273,11 @@ components:
     SignatureParameters:
       type: object
       properties:
+        filename:
+          type: string
+          example: General_Agenda.xml
+          description: 'Filename to be used for the signed file within ASIC container.'
+
         format:
           type: string
           enum:
@@ -284,9 +289,8 @@ components:
         level:
           type: string
           enum:
-          - PADES_BASELINE_B
-          - XADES_BASELINE_B
-          example: XADES_BASELINE_B
+            - BASELINE_B
+          example: BASELINE_B
           description: 'Optional signature level, defaults to BASELINE_B relevant for the signature format.'
 
         fileMimeType:
@@ -362,6 +366,11 @@ components:
           type: string
           example: '<?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>'
           description: 'Optional XML transformation, format is dictated by `payloadMimeType`.'
+
+        transformationOutputMimeType:
+          type: string
+          example: text/html
+          description: 'Optional transformation output MIME type. Required to display the result correctly.'
 
         schema:
           type: string
