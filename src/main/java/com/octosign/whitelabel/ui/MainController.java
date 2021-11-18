@@ -92,9 +92,13 @@ public class MainController {
         this.certificateManager = certificateManager;
     }
 
-    public void setOnSigned(Consumer<String> onSigned) { this.onSigned = onSigned; }
+    public void setOnSigned(Consumer<String> onSigned) {
+        this.onSigned = onSigned;
+    }
 
-    public void setSignatureUnit(SignatureUnit signatureUnit) { this.signatureUnit = signatureUnit; }
+    public void setSignatureUnit(SignatureUnit signatureUnit) {
+        this.signatureUnit = signatureUnit;
+    }
 
     public void loadDocument() {
         var document = signatureUnit.getDocument();
