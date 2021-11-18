@@ -140,7 +140,7 @@ public class MainController {
 
     private void displayPlainTextVisualisation(String visualisation) {
         vanish(webView);
-        textArea.setText(visualisation);
+        textArea.setText(visualisation.translateEscapes());
     }
 
     private void displayHTMLVisualisation(String visualisation) {
@@ -183,7 +183,7 @@ public class MainController {
     }
 
     private boolean isSignerReady() {
-        return this.certificateManager.getCertificate() != null;
+        return certificateManager != null && certificateManager.getCertificate() != null;
     }
 
     private void loadSigners() {
