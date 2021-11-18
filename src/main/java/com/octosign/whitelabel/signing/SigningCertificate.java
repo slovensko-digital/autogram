@@ -21,6 +21,7 @@ import java.util.List;
 
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
+import static com.octosign.whitelabel.ui.Utils.notNullOrBlank;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -142,8 +143,10 @@ public abstract class SigningCertificate {
         }
 
         var document = new InMemoryDocument(binaryContent);
-        if (format.equals(XADES))
-            document.setName(parameters.getFilename());
+        var targetFilename = parameters.getFilename();
+
+        if (format.equals(XADES) && notNullOrBlank(targetFilename))
+            document.setName(targetFilename);
 
         var signedDocument = sign(document, parameters);
 
