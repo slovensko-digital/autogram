@@ -130,6 +130,17 @@ public abstract class SigningCertificate {
         var parameters = unit.getSignatureParameters();
         var format = parameters.getFormat();
 
+        /*
+         *  You're travelling through a deep black forest of the incomprehensible and obscure code,
+         *  when, suddenly, a wild var content appears:
+         *
+         * "Desire to refactor is strong, you can't leave it behind.
+         *  My advice is, go ahead, but bear in mind:
+         *  Watch out next three lines - no coincidence
+         *  that #toXDC precedes my assignment.
+         *  Obey, or suffer from the consequence,
+         *  there is no circumvent."
+         */
         if (format.equals(XADES))
             unit.toXDC();
         var content = unit.getDocument().getContent();
