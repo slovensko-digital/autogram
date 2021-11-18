@@ -59,7 +59,7 @@ public class SignatureParameterMapper {
             INCLUSIVE, CanonicalizationMethod.INCLUSIVE
         );
 
-    public static SignatureLevel map(SignatureParameters.Level level) { return signatureLevelMapping.get(level).get(XADES); }
+    public static SignatureLevel map(SignatureParameters.Level level, SignatureParameters.Format format) { return signatureLevelMapping.get(level).get(format); }
     public static ASiCContainerType map(SignatureParameters.Container container) { return asicContainerTypeMapping.get(container); }
     public static DigestAlgorithm map(SignatureParameters.DigestAlgorithm digestAlgorithm) { return digestAlgorithMapping.get(digestAlgorithm); }
     public static SignaturePackaging map(SignatureParameters.Packaging packaging) { return signaturePackagingMapping.get(packaging); }
@@ -70,7 +70,7 @@ public class SignatureParameterMapper {
         var parameters = new ASiCWithXAdESSignatureParameters();
 
         parameters.aSiC().setContainerType(map(sp.getContainer()));
-        parameters.setSignatureLevel(map(sp.getLevel()));
+        parameters.setSignatureLevel(map(sp.getLevel(), XADES));
         parameters.setSignaturePackaging(map(sp.getPackaging()));
         parameters.setDigestAlgorithm(map(sp.getDigestAlgorithm()));
         parameters.setSigningCertificateDigestMethod(map(sp.getDigestAlgorithm()));
@@ -84,7 +84,7 @@ public class SignatureParameterMapper {
     public static PAdESSignatureParameters mapPAdESParameters(SignatureParameters sp) {
         var parameters = new PAdESSignatureParameters();
 
-        parameters.setSignatureLevel(map(sp.getLevel()));
+        parameters.setSignatureLevel(map(sp.getLevel(), PADES));
         parameters.setDigestAlgorithm(map(sp.getDigestAlgorithm()));
         parameters.setSignaturePackaging(map(sp.getPackaging()));
 
