@@ -47,11 +47,13 @@ public record MimeType(String type, String subType, Map<String, String> paramete
             return new MimeType(types[0], types[1]);
         }
 
-        var parameters = Arrays.asList(parts)
+        var parameters = new HashMap<String, String>();
+
+        Arrays.asList(parts)
             .subList(1, parts.length)
             .stream()
             .map(s -> s.split("="))
-            .collect(Collectors.toMap(p -> p[0], p -> p[1]));
+            .forEach(p -> parameters.put(p[0], (p.length > 1 ? p[1] : null)));
 
         return new MimeType(types[0], types[1], parameters);
     }
