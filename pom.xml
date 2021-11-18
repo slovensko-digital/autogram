@@ -174,7 +174,6 @@
                             <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
                             <fromDir>cmaps</fromDir>
                             <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs/cmaps</toDir>
-                            <skipIfExists>true</skipIfExists>
                         </configuration>
                     </execution>
                 </executions>
