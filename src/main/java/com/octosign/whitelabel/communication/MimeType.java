@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toMap;
+
 /**
  * MIME type representing type of the value
  *
@@ -47,13 +49,11 @@ public record MimeType(String type, String subType, Map<String, String> paramete
             return new MimeType(types[0], types[1]);
         }
 
-        var parameters = new HashMap<String, String>();
-
-        Arrays.asList(parts)
-            .subList(1, parts.length)
-            .stream()
-            .map(s -> s.split("="))
-            .forEach(p -> parameters.put(p[0], (p.length > 1 ? p[1] : null)));
+        var parameters = Arrays.stream(parts)
+                               .skip(1)
+                               .map(s -> s.split("="))
+                               .collect(toMap(param -> param[0],
+                                       param -> (param.length > 1) ? param[1] : null));
 
         return new MimeType(types[0], types[1], parameters);
     }
