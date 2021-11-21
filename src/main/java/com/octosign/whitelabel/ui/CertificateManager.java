@@ -66,7 +66,6 @@ public class CertificateManager {
 
     /**
      * Tries to automatically choose the most appropriate token and private key
-     *
      */
     private static SigningCertificate getDefaulCertificate() {
         SigningCertificate certificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback());
