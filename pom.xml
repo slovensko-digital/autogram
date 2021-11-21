@@ -142,7 +142,7 @@
                             <provider>BELLSOFT</provider>
                             <providerConfig>
                                 <type>jdk</type>
-                                <version>17+35</version>
+                                <version>17.0.1+12</version>
                                 <arch>amd64-full</arch>
                             </providerConfig>
                         </configuration>
