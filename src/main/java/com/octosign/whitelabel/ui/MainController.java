@@ -243,11 +243,6 @@ public class MainController {
         if (node.isVisible()) node.setVisible(false);
     }
 
-    private void materialize(Node node) {
-        if (!node.isManaged()) node.setManaged(true);
-        if (!node.isVisible()) node.setVisible(true);
-    }
-
     private String getCachedName() {
         if (isNullOrBlank(certificateName)) {
             certificateName = certificateManager.getCertificate().getNicePrivateKeyDescription(NAME);

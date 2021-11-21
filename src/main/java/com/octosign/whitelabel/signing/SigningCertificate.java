@@ -2,6 +2,8 @@ package com.octosign.whitelabel.signing;
 
 import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.error_handling.*;
+
+import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.pades.signature.PAdESService;
@@ -9,6 +11,7 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.xades.signature.XAdESService;
 
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
@@ -21,6 +24,7 @@ import java.util.List;
 
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
+import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -129,6 +133,7 @@ public abstract class SigningCertificate {
     public String sign(SignatureUnit unit) {
         var parameters = unit.getSignatureParameters();
         var format = parameters.getFormat();
+        var container = parameters.getContainer();
 
         /*
          *  You're travelling through a deep black forest of the incomprehensible and obscure code,
@@ -141,7 +146,7 @@ public abstract class SigningCertificate {
          *  Obey, or suffer from the consequence,
          *  there is no circumvent."
          */
-        if (format.equals(XADES))
+        if (container != null)
             unit.toXDC();
         var content = unit.getDocument().getContent();
 
@@ -153,8 +158,9 @@ public abstract class SigningCertificate {
         }
 
         var document = new InMemoryDocument(binaryContent);
-        if (format.equals(XADES))
-            document.setName(parameters.getFilename());
+        var targetFilename = parameters.getContainerFilename();
+        if (container != null && !isNullOrBlank(targetFilename))
+            document.setName(targetFilename);
 
         var signedDocument = sign(document, parameters);
 
@@ -192,13 +198,19 @@ public abstract class SigningCertificate {
             parameters.setSigningCertificate(privateKey.getCertificate());
             parameters.setCertificateChain(privateKey.getCertificateChain());
 
-            var service = new ASiCWithXAdESService(commonCertificateVerifier);
-            var dataToSign = service.getDataToSign(document, parameters);
-            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
-            assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
-
-            signedDocument = service.signDocument(document, parameters, signatureValue);
-
+            if (parameters instanceof ASiCWithXAdESSignatureParameters asicParameters) {
+                var service = new ASiCWithXAdESService(commonCertificateVerifier);
+                var dataToSign = service.getDataToSign(document, asicParameters);
+                var signatureValue = token.sign(dataToSign, asicParameters.getDigestAlgorithm(), privateKey);
+    
+                signedDocument = service.signDocument(document, asicParameters, signatureValue);
+            } else {
+                var service = new XAdESService(commonCertificateVerifier);
+                var dataToSign = service.getDataToSign(document, parameters);
+                var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
+    
+                signedDocument = service.signDocument(document, parameters, signatureValue);
+            }
         } else {
             throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Unsupported format: " + format);
         }

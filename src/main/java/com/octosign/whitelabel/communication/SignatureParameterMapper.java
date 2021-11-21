@@ -1,16 +1,13 @@
 package com.octosign.whitelabel.communication;
 
 import com.google.common.collect.ImmutableMap;
-import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.model.AbstractSerializableSignatureParameters;
-import eu.europa.esig.dss.model.SerializableSignatureParameters;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
-
+import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.util.Map;
 
@@ -59,24 +56,32 @@ public class SignatureParameterMapper {
             INCLUSIVE, CanonicalizationMethod.INCLUSIVE
         );
 
-    public static SignatureLevel map(SignatureParameters.Level level) { return signatureLevelMapping.get(level).get(XADES); }
+    public static SignatureLevel map(SignatureParameters.Level level, SignatureParameters.Format format) { return signatureLevelMapping.get(level).get(format); }
     public static ASiCContainerType map(SignatureParameters.Container container) { return asicContainerTypeMapping.get(container); }
     public static DigestAlgorithm map(SignatureParameters.DigestAlgorithm digestAlgorithm) { return digestAlgorithMapping.get(digestAlgorithm); }
     public static SignaturePackaging map(SignatureParameters.Packaging packaging) { return signaturePackagingMapping.get(packaging); }
     public static String map(SignatureParameters.CanonicalizationMethod canonicalizationMethod) { return canonicalizationMethodMapping.get(canonicalizationMethod); }
 
 
-    public static ASiCWithXAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) { 
-        var parameters = new ASiCWithXAdESSignatureParameters();
+    public static XAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) { 
+        XAdESSignatureParameters parameters;
 
-        parameters.aSiC().setContainerType(map(sp.getContainer()));
-        parameters.setSignatureLevel(map(sp.getLevel()));
+        if (sp.getContainer() != null) {
+            parameters = new ASiCWithXAdESSignatureParameters();
+            ((ASiCWithXAdESSignatureParameters) parameters).aSiC().setContainerType(map(sp.getContainer()));
+        } else {
+            parameters = new XAdESSignatureParameters();
+        }
+
+        parameters.setSignatureLevel(map(sp.getLevel(), XADES));
         parameters.setSignaturePackaging(map(sp.getPackaging()));
         parameters.setDigestAlgorithm(map(sp.getDigestAlgorithm()));
         parameters.setSigningCertificateDigestMethod(map(sp.getDigestAlgorithm()));
-        parameters.setSignedInfoCanonicalizationMethod(map(sp.getInfoCanonicalization()));
-        parameters.setSignedPropertiesCanonicalizationMethod(map(sp.getPropertiesCanonicalization()));
         parameters.setEn319132(sp.isEn319132());
+        if (sp.getInfoCanonicalization() != null)
+            parameters.setSignedInfoCanonicalizationMethod(map(sp.getInfoCanonicalization()));
+        if (sp.getPropertiesCanonicalization() != null)
+            parameters.setSignedPropertiesCanonicalizationMethod(map(sp.getPropertiesCanonicalization()));
 
         return parameters;
     }
@@ -84,9 +89,8 @@ public class SignatureParameterMapper {
     public static PAdESSignatureParameters mapPAdESParameters(SignatureParameters sp) {
         var parameters = new PAdESSignatureParameters();
 
-        parameters.setSignatureLevel(map(sp.getLevel()));
+        parameters.setSignatureLevel(map(sp.getLevel(), PADES));
         parameters.setDigestAlgorithm(map(sp.getDigestAlgorithm()));
-        parameters.setSignaturePackaging(map(sp.getPackaging()));
 
         return parameters;
     }
