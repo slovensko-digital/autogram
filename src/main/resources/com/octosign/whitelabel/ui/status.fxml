@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.web.WebView?>
+
+<VBox
+    xmlns="http://javafx.com/javafx/11.0.1"
+    xmlns:fx="http://javafx.com/fxml/1"
+    stylesheets="@shared.css, @overrides.css"
+    fx:controller="com.octosign.whitelabel.ui.status.StatusController"
+
+    alignment="CENTER"
+>
+    <Label fx:id="statusLabel" text="%text.serverListening" styleClass="p3" />
+
+    <Button fx:id="exitButton" onAction="#onExitButtonAction" text="%text.quit" styleClass="primary" />
+</VBox>

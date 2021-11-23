@@ -5,7 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.server.format.BodyFormat;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 import com.sun.net.httpserver.HttpExchange;
 
 import static com.octosign.whitelabel.communication.server.format.StandardBodyFormats.JSON;
@@ -14,7 +18,11 @@ public class Request<T> {
 
     private final HttpExchange exchange;
 
-    private final Map<String, BodyFormat> bodyFormats;
+    private final Map<MimeType, BodyFormat> bodyFormats = Map.of(
+        MimeType.JSON, JSON,
+        MimeType.PLAIN, JSON, // Plain is considered JSON so clients can prevent CORS preflight
+        MimeType.ANY, JSON // Implicit default format
+    );
 
     private final BodyFormat bodyFormat;
 
@@ -23,22 +31,10 @@ public class Request<T> {
     public Request(HttpExchange exchange) {
         this.exchange = exchange;
 
-        bodyFormats = Map.of(
-            JSON.getMimeType(), JSON,
-            "text/plain", JSON, // Considered JSON so clients can prevent CORS preflight
-            "*/*", JSON // Implicit default format
-        );
-
-        var contentType = exchange.getRequestHeaders().get("Content-Type");
-        if (contentType != null) {
-            bodyFormat = contentType.stream()
-                .map((mimeType) -> mimeType.split(";")[0].toLowerCase())
-                .filter((String mimeType) -> bodyFormats.containsKey(mimeType))
-                .findFirst()
-                .map((mimeType) -> bodyFormats.get(mimeType))
-                .orElseGet(() -> contentType.isEmpty() ? bodyFormats.get("*/*") : null);
-        } else {
-            bodyFormat = null;
+        try {
+            bodyFormat = extractBodyFormat(exchange.getRequestHeaders());
+        } catch (Exception ex) {
+            throw new IntegrationException(Code.MALFORMED_INPUT, ex);
         }
     }
 
@@ -53,7 +49,7 @@ public class Request<T> {
     /**
      * List of supported body MIME types
      */
-    public List<String> getSupportedBodyFormats() {
+    public List<MimeType> getSupportedBodyFormats() {
         return new ArrayList<>(bodyFormats.keySet());
     }
 
@@ -66,7 +62,6 @@ public class Request<T> {
      *
      * Must be called only once
      *
-     * @param <T>       Expected object in the body
      * @param bodyClass Class of the expected object in the body
      */
     public T processBody(Class<T> bodyClass) {
@@ -78,8 +73,27 @@ public class Request<T> {
             body = bodyFormat.from(bodyString, bodyClass);
             return body;
         } catch (Exception e) {
-            return null;
+            throw new IntegrationException(Code.MALFORMED_INPUT, e);
         }
     }
 
+    public <U extends Map<String, List<String>>> BodyFormat extractBodyFormat(U source) {
+        var contentType = source.get("Content-Type");
+        var defaultBodyFormat = bodyFormats.get(MimeType.ANY);
+        if (contentType == null)
+            return defaultBodyFormat;
+
+        MimeType contentMimeType;
+        try {
+            contentMimeType = MimeType.parse(contentType.get(0));
+        } catch (MalformedMimetypeException e) {
+            throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
+        }
+
+        return bodyFormats.keySet().stream()
+                .filter(m -> m.equalsTypeSubtype(contentMimeType))
+                .findFirst()
+                .map(bodyFormats::get)
+                .orElse(defaultBodyFormat);
+    }
 }

@@ -1,16 +1,15 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.Arrays;
 
-import com.octosign.whitelabel.communication.CommunicationError;
-import com.octosign.whitelabel.communication.CommunicationError.Code;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.ui.Main;
+import com.octosign.whitelabel.error_handling.*;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
+import static com.octosign.whitelabel.error_handling.Code.UNEXPECTED_ERROR;
 
 /**
  * Server API endpoint with no request or response abstraction
@@ -19,8 +18,6 @@ import com.sun.net.httpserver.HttpHandler;
  */
 abstract class Endpoint implements HttpHandler {
 
-    // TODO Think about handling of IOException-s
-
     protected final Server server;
 
     public Endpoint(Server server) {
@@ -28,27 +25,34 @@ abstract class Endpoint implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        if (verifyHTTPMethod(exchange) == false) return;
-        if (verifyOrigin(exchange) == false) return;
-
+    public void handle(HttpExchange exchange) {
         try {
-            handleRequest(exchange);
-        } catch (Throwable e) {
-            var message = "An unexpected internal error occurred";
-            var error = new CommunicationError(Code.UNEXPECTED_ERROR, message, e.getMessage());
-            new Response<CommunicationError>(exchange)
-                .asError(HttpURLConnection.HTTP_INTERNAL_ERROR, error)
+            if (verifyHTTPMethod(exchange) && verifyOrigin(exchange))
+                handleRequest(exchange);
+
+        } catch (UserException e) {
+            throw e;
+
+        } catch (IntegrationException e) {
+            new Response<IntegrationException>(exchange)
+                .asError(e.getCode().toHttpCode(), e)
                 .send();
+            throw e;
+
+        } catch (Throwable t) {
+            new Response<Throwable>(exchange)
+                .asError(UNEXPECTED_ERROR.toHttpCode(), t)
+                .send();
+            throw new UnknownError(t.toString());
         }
     }
 
     /**
      * Handle request on this endpoint
      *
-     * When writing a new endpoint, consider high-level Response<Res> handleRequest(request, response).
+     * When writing a new endpoint, consider high-level Response<U> handleRequest(request, response).
      */
-    protected abstract void handleRequest(HttpExchange exchange) throws IOException;
+    protected abstract void handleRequest(HttpExchange exchange) throws Throwable;
 
     /**
      * List of allowed HTTP methods
@@ -59,30 +63,24 @@ abstract class Endpoint implements HttpHandler {
      * Verifies the HTTP origin, remote address, and adds the origin to response
      *
      * @return True if valid, false if not
-     * @throws IOException
      */
-    protected boolean verifyOrigin(HttpExchange exchange) throws IOException {
-        var message = "The request comes from an unexpected origin";
-        var error = new CommunicationError(Code.UNEXPECTED_ORIGIN, message);
-        var errorResponse = new Response<CommunicationError>(exchange)
-            .asError(HttpURLConnection.HTTP_FORBIDDEN, error);
-
-        // Don't allow remote address != localhost when listening on localhost
-        var hostname = Main.getProperty("server.hostname");
+    protected boolean verifyOrigin(HttpExchange exchange) {
+        var hostname = server.getAddress().getHostName();
         var listeningOnLocalhost = hostname.equals("localhost") || hostname.equals("127.0.0.1");
-        if (listeningOnLocalhost && !exchange.getRemoteAddress().getAddress().isLoopbackAddress()) {
-            errorResponse.send();
-            return false;
-        }
+        var isLoopbackAddress = exchange.getRemoteAddress().getAddress().isLoopbackAddress();
+
+        if (listeningOnLocalhost && !isLoopbackAddress)
+            throw new IntegrationException(Code.UNEXPECTED_ORIGIN);
+
 
         var allowedOrigin = server.getAllowedOrigin();
         var originHeader = exchange.getRequestHeaders().get("Origin");
+
         if (originHeader != null && !allowedOrigin.equals("*")) {
             var origin = originHeader.get(0);
-            if (!origin.equals(allowedOrigin)) {
-                errorResponse.send();
-                return false;
-            }
+
+            if (!origin.equals(allowedOrigin))
+                throw new IntegrationException(Code.UNEXPECTED_ORIGIN);
         }
 
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", allowedOrigin);
@@ -99,18 +97,12 @@ abstract class Endpoint implements HttpHandler {
      * @return True if valid, false if not
      * @throws IOException
      */
-    protected boolean verifyHTTPMethod(HttpExchange exchange) throws IOException {
-        var allowedMethodsList = Arrays.asList(getAllowedMethods());
-        if (!allowedMethodsList.contains(exchange.getRequestMethod())) {
-            var supportedMethods = String.join(", ", allowedMethodsList);
-            var message = "Unsupported HTTP method. Supported: " + supportedMethods;
-            var error = new CommunicationError(Code.UNSUPPORTED_OPERATION, message);
-            new Response<CommunicationError>(exchange)
-                .asError(HttpURLConnection.HTTP_BAD_METHOD, error)
-                .send();
-            return false;
+    protected boolean verifyHTTPMethod(HttpExchange exchange) {
+        var allowedMethods = Arrays.asList(getAllowedMethods());
+
+        if (!allowedMethods.contains(exchange.getRequestMethod())) {
+            throw new IntegrationException(Code.UNSUPPORTED_OPERATION, "Allowed methods: " + String.join(", ", allowedMethods));
         }
         return true;
     }
-
 }

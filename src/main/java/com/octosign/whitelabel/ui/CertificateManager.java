@@ -3,19 +3,18 @@ package com.octosign.whitelabel.ui;
 import java.util.List;
 import java.util.Locale;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableView;
 
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import com.octosign.whitelabel.signing.SigningCertificate;
-import com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity;
 import com.octosign.whitelabel.signing.SigningCertificateMSCAPI;
 import com.octosign.whitelabel.signing.SigningCertificatePKCS11;
+import com.octosign.whitelabel.error_handling.*;
+
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
  * Holds currently used certificate and takes care of picking
@@ -38,29 +37,24 @@ public class CertificateManager {
      * Use dialog picker to choose the certificate
      */
     public SigningCertificate useDialogPicker() {
-        // TODO: Move out and implement actual logic
-
         Dialog<SigningCertificate> dialog = new Dialog<>();
-        dialog.setTitle(Main.getProperty("text.certificateSettings"));
-        var dialogPane = dialog.getDialogPane();
+        dialog.setTitle(translate("text.certSettings"));
+        FXUtils.addCustomStyles(dialog);
 
-        var stylesheets = dialogPane.getStylesheets();
-        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
+//        var treeTableView = new TreeTableView<SigningCertificate>();
+//        var nameColumn = new TreeTableColumn<SigningCertificate, String>(translate("text.subjectName"));
+//        nameColumn.setCellValueFactory((cert) ->
+//                        new SimpleStringProperty(
+//                                cert.getValue().getValue().getNicePrivateKeyDescription(Verbosity.LONG)
+//                        )
+//        );
+//        treeTableView.getColumns().add(nameColumn);
+//        treeTableView.setRoot(new TreeItem<>(certificate));
+//        dialog.getDialogPane().setContent(treeTableView);
+        var buttonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().add(buttonType);
 
-        var treeTableView = new TreeTableView<SigningCertificate>();
-        var nameColumn = new TreeTableColumn<SigningCertificate, String>(Main.getProperty("text.subjectName"));
-        nameColumn.setCellValueFactory((cert) ->
-            new SimpleStringProperty(
-                cert.getValue().getValue().getNicePrivateKeyDescription(KeyDescriptionVerbosity.LONG)
-            )
-        );
-        treeTableView.getColumns().add(nameColumn);
-        treeTableView.setRoot(new TreeItem<>(certificate));
-        dialogPane.setContent(treeTableView);
-
-        return dialog.showAndWait().orElse(null);
+        return dialog.showAndWait().get();
     }
 
     /**
@@ -72,50 +66,24 @@ public class CertificateManager {
 
     /**
      * Tries to automatically choose the most appropriate token and private key
-     *
-     * TODO: All strings here should come from the properties
      */
     private static SigningCertificate getDefaulCertificate() {
         SigningCertificate certificate = SigningCertificatePKCS11.createFromDetected(new PasswordCallback());
 
         // Try to fallback to MSCAPI on Windows
         String osName = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
-        if (certificate == null && osName.indexOf("win") >= 0) {
+
+        if (certificate == null && osName.contains("win")) {
             certificate = new SigningCertificateMSCAPI();
         }
 
-        if (certificate == null) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                "Zlyhanie načítania",
-                "Podpisovací token nenájdený",
-                "Nepodarilo sa nájsť žiaden podporovaný token vhodný na podpisovanie. Uistite sa, že máte nainštalovaný softvér dodávaný s tokenom a skúste to znova."
-            );
-            return null;
-        }
+        if (certificate == null)
+            throw new UserException("error.tokenNotFound.header", "error.tokenNotFound.description");
 
-        List<DSSPrivateKeyEntry> keys;
-        try {
-            keys = certificate.getAvailablePrivateKeys();
-        } catch (Exception e) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                "Zlyhanie načítania",
-                "Podpisovací token nedostupný",
-                "Použitie podpisovacieho tokenu zlyhalo. Uistite sa, že máte správne pripavené podpisovacie zariadenie a skúste to znova. Detail chyby: " + e
-            );
-            return null;
-        }
+        List<DSSPrivateKeyEntry> keys = certificate.getAvailablePrivateKeys();
 
-        if (keys.size() == 0) {
-            Main.displayAlert(
-                AlertType.ERROR,
-                "Zlyhanie načítania",
-                "Podpisovací token prázdny",
-                "Podporovaný podpisovací token neobsahuje použiteľný certifikát. Uistite sa, že máte správne nastavený token a skúste to znova."
-            );
-            return null;
-        }
+        if (keys.size() == 0)
+            throw new UserException("error.tokenEmpty.header", "error.tokenEmpty.description");
 
         // Use the first available key
         certificate.setPrivateKey(keys.get(0));

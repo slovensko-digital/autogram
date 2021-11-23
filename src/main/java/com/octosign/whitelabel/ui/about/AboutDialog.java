@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.octosign.whitelabel.ui.FXUtils;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -11,33 +12,24 @@ import javafx.scene.layout.Region;
 
 import com.octosign.whitelabel.ui.Main;
 
+import static com.octosign.whitelabel.ui.I18n.translate;
+
 public class AboutDialog extends Dialog<Boolean> {
     public AboutDialog() {
         super();
-
-        setTitle(Main.getProperty("text.aboutHelp"));
-        addStylesheets();
+        setTitle(translate("text.aboutHelp.header"));
         setContentText(getContent());
+
+        FXUtils.addCustomStyles(this);
         getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         getDialogPane().setMinWidth(520);
         getDialogPane().getButtonTypes().add(new ButtonType("OK", ButtonData.OK_DONE));
     }
 
-    private void addStylesheets() {
-        var stylesheets = getDialogPane().getStylesheets();
-        stylesheets.add(Main.class.getResource("shared.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("dialog.css").toExternalForm());
-        stylesheets.add(Main.class.getResource("overrides.css").toExternalForm());
-    }
-
     private static String getContent() {
         // TODO This should be properly styled FXML with clickable links
 
-        String appDescription = String.format(
-            Main.getProperty("text.aboutHelp.description"),
-            Main.getVersion(),
-            Main.getProperty("application.author")
-        );
+        String appDescription = translate("text.aboutHelp.description", Main.getVersion(), translate("app.author"));
 
         String usedOSS = getUsedOSS()
             .stream()
@@ -46,24 +38,24 @@ public class AboutDialog extends Dialog<Boolean> {
 
         return String.join(
             "\n",
-            Main.getProperty("application.name"),
+            translate("app.name"),
             appDescription,
-            "Help: " + Main.getProperty("application.website"),
+            "Help: " + translate("app.website"),
             "",
-            Main.getProperty("text.aboutHelp.license"),
+            translate("text.aboutHelp.license"),
             "",
-            Main.getProperty("text.aboutHelp.usedOSS"),
-            Main.getProperty("text.aboutHelp.javaInfo"),
-            Main.getProperty("text.aboutHelp.depsInfo"),
+            translate("text.aboutHelp.usedOSS"),
+            translate("text.aboutHelp.javaInfo"),
+            translate("text.aboutHelp.depsInfo"),
             usedOSS,
-            Main.getProperty("text.aboutHelp.moreLegalInfo")
+            translate("text.aboutHelp.moreLegalInfo")
         );
     }
 
     private static List<String> getUsedOSS() {
-        return Arrays.asList(new String[]{
+        return Arrays.asList(
             "Digital Signature Service 5.8 - github.com/esig/dss - CEF Digital - LGPL-2.1",
             "Gson 2 - github.com/google/gson - Google Inc. - Apache 2"
-        });
+        );
     }
 }

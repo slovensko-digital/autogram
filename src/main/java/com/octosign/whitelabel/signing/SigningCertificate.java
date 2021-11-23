@@ -1,29 +1,27 @@
 package com.octosign.whitelabel.signing;
 
+import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.error_handling.*;
+import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
+import eu.europa.esig.dss.model.*;
+import eu.europa.esig.dss.pades.signature.PAdESService;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.utils.Utils;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.List;
 
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-
-import com.octosign.whitelabel.communication.SignatureParameterMapper;
-import com.octosign.whitelabel.communication.SignatureParameters;
-import com.octosign.whitelabel.communication.SignatureUnit;
-import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
-import eu.europa.esig.dss.model.CommonDocument;
-import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.model.SignatureValue;
-import eu.europa.esig.dss.model.ToBeSigned;
-import eu.europa.esig.dss.utils.Utils;
-import eu.europa.esig.dss.xades.signature.XAdESService;
-import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
+import static com.octosign.whitelabel.ui.Utils.notNullOrBlank;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -113,7 +111,7 @@ public abstract class SigningCertificate {
         try {
             keys = token.getKeys();
         } catch (Exception e) {
-            throw new RuntimeException("Private keys could not be retrieved", e);
+            throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
         }
 
         return keys;
@@ -129,53 +127,73 @@ public abstract class SigningCertificate {
     /**
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
-    public String sign(SignatureUnit unit) throws IOException {
-        unit.standardizeAsXDC();
+    public String sign(SignatureUnit unit) {
+        var parameters = unit.getSignatureParameters();
+        var format = parameters.getFormat();
 
+        if (format.equals(XADES))
+            unit.toXDC();
         var content = unit.getDocument().getContent();
-        var document = new InMemoryDocument(content.getBytes(StandardCharsets.UTF_8));
 
-        var signedDocument = sign(document, unit.getSignatureParameters());
+        byte[] binaryContent;
+        if (format.equals(PADES)) {
+            binaryContent = Base64.getDecoder().decode(content);
+        } else {
+            binaryContent = content.getBytes(StandardCharsets.UTF_8);
+        }
+
+        var document = new InMemoryDocument(binaryContent);
+        var targetFilename = parameters.getFilename();
+
+        if (format.equals(XADES) && notNullOrBlank(targetFilename))
+            document.setName(targetFilename);
+
+        var signedDocument = sign(document, parameters);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        signedDocument.writeTo(output);
+        try {
+            signedDocument.writeTo(output);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         return Utils.toBase64(output.toByteArray());
     }
-    // TODO update these 2 sign methods appropriately to emerging needs after adding new signature types
+
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
-        if (privateKey == null) {
-            throw new RuntimeException("Missing private key");
-        }
+        if (privateKey == null)
+            throw new RuntimeException("Private key missing");
 
-        // TODO: Add trust for -LT/-LTA - requires use of qualified services
         CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+        DSSDocument signedDocument;
+        var format = inputParameters.getFormat();
 
-        ASiCWithXAdESSignatureParameters parameters = SignatureParameterMapper.map(inputParameters);
-        parameters.setSigningCertificate(privateKey.getCertificate());
-        parameters.setCertificateChain(privateKey.getCertificateChain());
+        if (format.equals(PADES)) {
+            var parameters = SignatureParameterMapper.mapPAdESParameters(inputParameters);
+            parameters.setSigningCertificate(privateKey.getCertificate());
+            parameters.setCertificateChain(privateKey.getCertificateChain());
 
-        XAdESService service = new XAdESService(commonCertificateVerifier);
+            var service = new PAdESService(commonCertificateVerifier);
+            var dataToSign = service.getDataToSign(document, parameters);
+            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
 
-        // TODO: Add support for TSP
-        /*
-        boolean useTsp = false;
-        // We choose the level of the signature (-B, -T, -LT, -LTA).
-        parameters.setSignatureLevel(useTsp ? SignatureLevel.XAdES_BASELINE_T : SignatureLevel.XAdES_BASELINE_B);
-        if (useTsp) {
-            // Create and set the TSP source
-            OnlineTSPSource tspSource = new OnlineTSPSource(tspUrl);
-            service.setTspSource(tspSource);
-        }*/
+            signedDocument = service.signDocument(document, parameters, signatureValue);
 
-        // Get the SignedInfo segment that needs to be signed.
-        ToBeSigned dataToSign = service.getDataToSign(document, parameters);
+        } else if (format.equals(XADES)) {
+            var parameters = SignatureParameterMapper.mapXAdESParameters(inputParameters);
+            parameters.setSigningCertificate(privateKey.getCertificate());
+            parameters.setCertificateChain(privateKey.getCertificateChain());
 
-        // Create signature - digest - for the signed data
-        SignatureValue signatureValue = token.sign(dataToSign, DigestAlgorithm.SHA256, privateKey);
+            var service = new ASiCWithXAdESService(commonCertificateVerifier);
+            var dataToSign = service.getDataToSign(document, parameters);
+            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
+            assert(service.isValidSignatureValue(dataToSign, signatureValue, privateKey.getCertificate()));
 
-        // Use the signature to sign the document
-        DSSDocument signedDocument = service.signDocument(document, parameters, signatureValue);
+            signedDocument = service.signDocument(document, parameters, signatureValue);
+
+        } else {
+            throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Unsupported format: " + format);
+        }
 
         return signedDocument;
     }

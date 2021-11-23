@@ -19,14 +19,13 @@
     fx:controller="com.octosign.whitelabel.ui.MainController"
 >
     <VBox styleClass="panel, secondary" VBox.vgrow="ALWAYS">
-        <Label fx:id="documentLabel" text="%text.document" styleClass="p3" />
         <WebView fx:id="webView" VBox.vgrow="ALWAYS" />
-        <TextArea fx:id="textArea" editable="false" VBox.vgrow="ALWAYS" styleClass="content" />
+        <TextArea fx:id="textArea" editable="false" VBox.vgrow="ALWAYS" styleClass="content" wrapText="true" />
     </VBox>
 
     <HBox styleClass="footer" alignment="CENTER" spacing="8">
         <Button fx:id="aboutButton" onAction="#onAboutButtonAction" styleClass="white">
-            <tooltip><Tooltip text="%text.aboutHelp" showDelay="300ms" /></tooltip>
+            <tooltip><Tooltip text="%text.aboutHelp.header" showDelay="300ms" /></tooltip>
             <graphic>
                 <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                 <image>
@@ -41,7 +40,7 @@
         <Region HBox.hgrow="ALWAYS" />
 
         <HBox styleClass="buttonGroup">
-            <Button fx:id="mainButton" onAction="#onMainButtonAction" text="%text.loadSigners" styleClass="leftButton, primary" />
+            <Button fx:id="mainButton" onAction="#onMainButtonAction" text="%btn.loadSigners" styleClass="leftButton, primary"/>
 
             <Button fx:id="certSettingsButton" onAction="#onCertSettingsButtonAction" styleClass="rightButton, primary">
                 <tooltip><Tooltip text="%text.certificateSettings" showDelay="300ms" /></tooltip>
