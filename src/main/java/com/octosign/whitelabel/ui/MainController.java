@@ -11,19 +11,13 @@ import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.signing.SigningCertificate;
 import com.octosign.whitelabel.ui.about.AboutDialog;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.PopupControl;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.GridPane;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
@@ -31,12 +25,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.NAME;
 import static com.octosign.whitelabel.ui.FXUtils.displayError;
@@ -205,87 +196,42 @@ public class MainController {
         disableWithText(translate("btn.loading"));
 
         try {
-            var certificate = CertificateManager.getDefaulCertificate();
-            certificateManager.setCertificate(certificate);
+            var drivers = certificateManager.getAvailableDrivers();
+
+            if (drivers.size() == 1)
+                useCertificate(drivers.get(0).getCertificate());
+            else {
+                var selectedDriver = new DriverSelect(drivers, getStage()).showDialog();
+                useCertificate(selectedDriver.getCertificate());
+            }
+
         } catch (UserException e) {
             displayError(e);
+
         } finally {
             enableWithDefaultText();
         }
     }
 
+    private void useCertificate(SigningCertificate certificate) {
+        certificateManager.setCertificate(certificate);
+    }
+
+    private Stage getStage() {
+        return (Stage)mainButton.getScene().getWindow();
+    }
+
     private void signDocument() {
         disableWithText(translate("btn.signing"));
 
-            try {
-                var signedContent = certificateManager.getCertificate().sign(signatureUnit);
-                onSigned.accept(signedContent);
-            } catch (UserException e) {
-                displayError(e);
-            } finally {
-                enableWithDefaultText();
-            }
-    }
-
-    private void displayTokenSelectDialog() {
-        Stage stage = new Stage();
-        PopupControl pp = new PopupControl();
-        List<Button> buttons = new ArrayList<>();
-        var params = CertificateManager.getSelectionParameters();
-
-        for (var entry : params.entrySet()) {
-            var button = new Button(entry.getKey());
-            button.setOnAction(e -> {
-                var certificates = entry.getValue().get();
-                if (certificates.isEmpty())
-                    throw new RuntimeException("no certs!!");
-                var keys = certificates.stream()
-                    .map(SigningCertificate::getAvailablePrivateKeys)
-                    .map(list -> list.toArray(DSSPrivateKeyEntry[]::new))
-                    .flatMap(Stream::of)
-                    .toList();
-                if (keys.isEmpty())
-                    throw new RuntimeException("neni PKs!!!");
-                certificateManager.setCertificate(certificates.get(0));
-                if (keys.size() > 1) {
-                    stage.setScene(getCertSelectScene(keys));
-                }
-                stage.close();
-            });
-            buttons.add(button);
+        try {
+            var signedContent = certificateManager.getCertificate().sign(signatureUnit);
+            onSigned.accept(signedContent);
+        } catch (UserException e) {
+            displayError(e);
+        } finally {
+            enableWithDefaultText();
         }
-        pp.setWidth(280);
-        pp.setHeight(120);
-        GridPane pane = new GridPane();
-        pane.setAlignment(Pos.CENTER);
-        pane.setPadding(new Insets(16));
-        pane.setHgap(16);
-        pane.setVgap(8);
-        for (int i = 0; i < buttons.size(); i++) {
-            pane.add(buttons.get(i), i, 0);
-        }
-        var scene = new Scene(pane, 280, 120);
-        stage.setScene(scene);
-        stage.show();
-        pp.show(stage, 280, 120);
-    }
-
-    public Scene getCertSelectScene(List<DSSPrivateKeyEntry> keys) {
-        GridPane pane = new GridPane();
-        var scene = new Scene(pane, 420, 200);
-        List<Button> buttons = new ArrayList<>();
-        for (var key : keys) {
-            var button = new Button(SigningCertificate.getNicePrivateKeyDescription(key,
-                SigningCertificate.KeyDescriptionVerbosity.SHORT));
-            button.setOnAction(event -> {
-                ((Stage) scene.getWindow()).close();
-            });
-            buttons.add(button);
-        }
-        for (int i = 0; i < buttons.size(); i++) {
-            pane.add(buttons.get(i), i, 0);
-        }
-        return scene;
     }
 
     private void disableWithText(String newText) {
@@ -323,7 +269,7 @@ public class MainController {
     private String getCachedName() {
         if (isNullOrBlank(certificateName)) {
             certificateName = certificateManager.getCertificate()
-                .getNicePrivateKeyDescription(NAME);
+                                                .getNicePrivateKeyDescription(NAME);
         }
         return certificateName;
     }
@@ -346,9 +292,9 @@ public class MainController {
             if (inputStream == null)
                 throw new Exception("Resource not found");
             try (
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream,
-                    StandardCharsets.UTF_8);
-                BufferedReader reader = new BufferedReader(inputStreamReader);) {
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream,
+                            StandardCharsets.UTF_8);
+                    BufferedReader reader = new BufferedReader(inputStreamReader);) {
                 return reader.lines().collect(Collectors.joining(System.lineSeparator()));
             }
         } catch (Exception e) {

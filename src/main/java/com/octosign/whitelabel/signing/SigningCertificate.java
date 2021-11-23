@@ -44,7 +44,7 @@ public abstract class SigningCertificate {
      *
      * List of available private keys can be retrieved using .getAvailablePrivateKeys()
      */
-    private DSSPrivateKeyEntry privateKey;
+    protected DSSPrivateKeyEntry privateKey;
 
     /**
      * How verbose should key description be
@@ -58,6 +58,13 @@ public abstract class SigningCertificate {
         NAME
     }
 
+    public SigningCertificate() {
+    }
+
+    public SigningCertificate(AbstractKeyStoreTokenConnection token, DSSPrivateKeyEntry privateKey) {
+        this.token = token;
+        this.privateKey = privateKey;
+    }
     /**
      * Constructs human readable private key description
      */
@@ -113,6 +120,17 @@ public abstract class SigningCertificate {
         List<DSSPrivateKeyEntry> keys;
         try {
             keys = token.getKeys();
+        } catch (Exception e) {
+            throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
+        }
+
+        return keys;
+    }
+
+    public static List<DSSPrivateKeyEntry> getAvailablePrivateKeys(AbstractKeyStoreTokenConnection argToken) {
+        List<DSSPrivateKeyEntry> keys;
+        try {
+            keys = argToken.getKeys();
         } catch (Exception e) {
             throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
         }
