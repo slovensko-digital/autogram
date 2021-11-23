@@ -1,7 +1,6 @@
 package com.octosign.whitelabel.ui;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -15,7 +14,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import com.octosign.whitelabel.cli.command.Command;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.Info;
@@ -116,11 +114,11 @@ public class Main extends Application {
         MainController controller = fxmlLoader.getController();
         controller.setCertificateManager(certificateManager);
         controller.setSignatureUnit(signatureUnit);
-        controller.loadDocument();
         controller.setOnSigned((String signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });
+        controller.loadDocument();
 
         var scene = new Scene(root, 640, 480);
         windowStage.setTitle(translate("app.name"));

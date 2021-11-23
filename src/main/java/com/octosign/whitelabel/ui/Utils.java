@@ -2,6 +2,7 @@ package com.octosign.whitelabel.ui;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -9,6 +10,10 @@ import java.util.stream.Stream;
 public class Utils {
     public static boolean isNullOrBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    public static boolean isNullOrEmpty(Collection<?> collection) {
+        return collection == null || collection.isEmpty();
     }
 
     public static String encodeBase64(String value) {
