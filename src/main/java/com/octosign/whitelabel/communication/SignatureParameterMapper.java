@@ -73,8 +73,6 @@ public class SignatureParameterMapper {
             parameters = new XAdESSignatureParameters();
         }
 
-
-        parameters.aSiC().setContainerType(map(sp.getContainer()));
         parameters.setSignatureLevel(map(sp.getLevel(), XADES));
         parameters.setSignaturePackaging(map(sp.getPackaging()));
         parameters.setDigestAlgorithm(map(sp.getDigestAlgorithm()));
