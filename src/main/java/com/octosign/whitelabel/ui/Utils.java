@@ -8,6 +8,11 @@ public class Utils {
         return value == null || value.isBlank();
     }
 
+    public static boolean notNullOrBlank(String value) {
+        return !(isNullOrBlank(value));
+    }
+
+
     public static String encodeBase64(String value) {
         if (isNullOrBlank(value))
             return null;

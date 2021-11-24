@@ -22,9 +22,9 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.List;
 
-import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
-import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
-import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
+import static com.octosign.whitelabel.ui.Utils.*;
+
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -158,6 +158,7 @@ public abstract class SigningCertificate {
         }
 
         var document = new InMemoryDocument(binaryContent);
+
         var targetFilename = parameters.getContainerFilename();
         if (container != null && !isNullOrBlank(targetFilename))
             document.setName(targetFilename);
