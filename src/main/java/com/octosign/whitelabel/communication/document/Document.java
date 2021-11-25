@@ -5,7 +5,6 @@ import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 
 import static com.octosign.whitelabel.ui.Utils.*;
 
@@ -57,10 +56,13 @@ public class Document implements Cloneable {
     public static Document getSpecificDocument(SignRequest signRequest) {
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
+
+        // TODO: Assert document, parameters, and payloadMimeType are not null
+
         MimeType mimeType;
         try {
             mimeType = MimeType.parse(signRequest.getPayloadMimeType());
-        } catch (MalformedMimetypeException e) {
+        } catch (Exception e) {
             throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
         }
 

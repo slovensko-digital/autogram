@@ -105,6 +105,9 @@ public class FXUtils {
     }
 
     private static String translateIfNeeded(String prefix, String input) {
+        if (input == null)
+            return "";
+
         if (input.startsWith(prefix))
             return translate(input);
         else

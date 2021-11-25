@@ -39,7 +39,6 @@ public class SignatureParameters {
         EXCLUSIVE
     }
 
-    private String filename;
 
     private Format format;
 
@@ -48,6 +47,10 @@ public class SignatureParameters {
     private String fileMimeType;
 
     private Container container;
+
+    private String containerFilename;
+
+    private String containerXmlns;
 
     private Packaging packaging;
 
@@ -75,12 +78,13 @@ public class SignatureParameters {
 
     private String version;
 
-    public SignatureParameters(String filename, Format format, Level level, String fileMimeType, Container container, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String transformationOutputMimeType, String schema, String identifier, String version) {
-        this.filename = filename;
+    public SignatureParameters(Format format, Level level, String fileMimeType, Container container, String containerFilename, String containerXmlns, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String transformationOutputMimeType, String schema, String identifier, String version) {
         this.format = format;
         this.level = level;
         this.fileMimeType = fileMimeType;
         this.container = container;
+        this.containerFilename = containerFilename;
+        this.containerXmlns = containerXmlns;
         this.packaging = packaging;
         this.digestAlgorithm = digestAlgorithm;
         this.en319132 = en319132;
@@ -96,8 +100,9 @@ public class SignatureParameters {
         this.version = version;
     }
 
+    public String getContainerFilename() { return containerFilename; }
 
-    public String getFilename() { return filename; }
+    public String getContainerXmlns() { return containerXmlns; }
 
     public Format getFormat() { return format; }
 

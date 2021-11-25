@@ -92,9 +92,13 @@ public class MainController {
         this.certificateManager = certificateManager;
     }
 
-    public void setOnSigned(Consumer<String> onSigned) { this.onSigned = onSigned; }
+    public void setOnSigned(Consumer<String> onSigned) {
+        this.onSigned = onSigned;
+    }
 
-    public void setSignatureUnit(SignatureUnit signatureUnit) { this.signatureUnit = signatureUnit; }
+    public void setSignatureUnit(SignatureUnit signatureUnit) {
+        this.signatureUnit = signatureUnit;
+    }
 
     public void loadDocument() {
         var document = signatureUnit.getDocument();
@@ -140,7 +144,7 @@ public class MainController {
 
     private void displayPlainTextVisualisation(String visualisation) {
         vanish(webView);
-        textArea.setText(visualisation);
+        textArea.setText(visualisation.translateEscapes());
     }
 
     private void displayHTMLVisualisation(String visualisation) {
@@ -183,7 +187,7 @@ public class MainController {
     }
 
     private boolean isSignerReady() {
-        return this.certificateManager.getCertificate() != null;
+        return certificateManager != null && certificateManager.getCertificate() != null;
     }
 
     private void loadSigners() {
@@ -237,11 +241,6 @@ public class MainController {
     private void vanish(Node node) {
         if (node.isManaged()) node.setManaged(false);
         if (node.isVisible()) node.setVisible(false);
-    }
-
-    private void materialize(Node node) {
-        if (!node.isManaged()) node.setManaged(true);
-        if (!node.isVisible()) node.setVisible(true);
     }
 
     private String getCachedName() {
