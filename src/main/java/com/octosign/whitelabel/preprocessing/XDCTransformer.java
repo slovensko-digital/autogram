@@ -18,12 +18,11 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static com.octosign.whitelabel.ui.Utils.isPresent;
 import static java.util.Objects.requireNonNull;
 
 
@@ -38,24 +37,29 @@ public class XDCTransformer {
     private final String xsdSchema;
     private final String xsltSchema;
     private final String canonicalizationMethod;
+    private final String containerXmlns;
     private final DigestAlgorithm digestAlgorithm;
+    private final String mediaDestinationTypeDescription;
 
     private Document document;
+    private String documentXmlns;
 
     public static XDCTransformer newInstance(SignatureParameters sp) {
         var method = SignatureParameterMapper.map(sp.getPropertiesCanonicalization());
         var algorithm = SignatureParameterMapper.map(sp.getDigestAlgorithm());
-
-        return new XDCTransformer(sp.getIdentifier(), sp.getVersion(), sp.getSchema(), sp.getTransformation(), method, algorithm);
+        //TODO fix!
+        return new XDCTransformer(sp.getIdentifier(), sp.getVersion(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(), method, algorithm, "TXT");
     }
 
-    private XDCTransformer(String identifier, String version, String xsdSchema, String xsltSchema, String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
-        this.identifier = requireNonNull(identifier, "identifier");
-        this.version = requireNonNull(version, "version");
-        this.xsdSchema = requireNonNull(xsdSchema, "xsdSchema");
-        this.xsltSchema = requireNonNull(xsltSchema, "xsltSchema");
-        this.canonicalizationMethod = requireNonNull(canonicalizationMethod, "canonicalizationMethod");
+    private XDCTransformer(String identifier, String version, String xsdSchema, String xsltSchema, String containerXmlns, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, String mediaDestinationTypeDescription) {
+        this.identifier = identifier;
+        this.version = version;
+        this.containerXmlns = containerXmlns;
+        this.canonicalizationMethod = canonicalizationMethod;
+        this.xsdSchema = xsdSchema;
+        this.xsltSchema = xsltSchema;
         this.digestAlgorithm = requireNonNull(digestAlgorithm, "digestAlgorithm");
+        this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
     public String transform(String xmlInput, Mode mode) {
@@ -100,7 +104,9 @@ public class XDCTransformer {
 
         xmlDataContainer.appendChild(xmlData);
         xmlData.appendChild(root);
-        xmlDataContainer.appendChild(usedSchemasReferenced);
+        if (usedSchemasReferenced != null) {
+            xmlDataContainer.appendChild(usedSchemasReferenced);
+        }
 
         document.appendChild(xmlDataContainer);
     }
@@ -110,21 +116,22 @@ public class XDCTransformer {
     }
 
     private String getDocumentContent() throws TransformerException {
+        document.setXmlStandalone(true);
         var xmlSource = new DOMSource(document);
         var outputTarget = new StreamResult(new StringWriter());
 
         var transformerFactory= TransformerFactory.newInstance();
         transformerFactory.newTransformer().transform(xmlSource, outputTarget);
 
-        return outputTarget.toString();
+        return outputTarget.getWriter().toString();
     }
 
     private Element createXMLDataContainer() {
         var element = document.createElement("XMLDataContainer");
         element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
         element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        // TODO: Make additional attributes configurable via parameters - this can't be hardcoded to data.gov.sk
-        element.setAttribute("xmlns", "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1");
+        if (containerXmlns != null)
+            element.setAttribute("xmlns", containerXmlns);
 
         return element;
     }
@@ -132,19 +139,31 @@ public class XDCTransformer {
     private Element createXMLData() {
         var element = document.createElement("XMLData");
         element.setAttribute("ContentType", "application/xml; charset=UTF-8");
-        element.setAttribute("Identifier", identifier);
-        element.setAttribute("Version", version);
+        if (identifier != null)
+            element.setAttribute("Identifier", identifier);
+        if (version != null) 
+            element.setAttribute("Version", version);
 
         return element;
     }
 
     private Element createUsedSchemasReferenced() {
-        var element = document.createElement("UsedSchemasReferenced");
-        var xsdSchemaReference = createUsedXSDReference();
-        var xsltSchemaReference = createUsedPresentationSchemaReference();
+        if (canonicalizationMethod == null || identifier == null || version == null)
+            return null;
 
-        element.appendChild(xsdSchemaReference);
-        element.appendChild(xsltSchemaReference);
+        var element = document.createElement("UsedSchemasReferenced");
+        if (isPresent(xsdSchema) || isPresent(xsltSchema))
+            documentXmlns = document.getFirstChild().getAttributes().getNamedItem("xmlns").getNodeValue();
+
+
+        if (xsdSchema != null) {
+            var xsdSchemaReference = createUsedXSDReference();
+            element.appendChild(xsdSchemaReference);
+        }
+        if (xsltSchema != null) {
+            var xsltSchemaReference = createUsedPresentationSchemaReference();
+            element.appendChild(xsltSchemaReference);
+        }
 
         return element;
     }
@@ -158,14 +177,19 @@ public class XDCTransformer {
         return new String(asBase64, StandardCharsets.UTF_8);
     }
 
-    private String buildXSDReference() { return toURIString(identifier, version,"form.xsd"); }
-    private String buildXSLTReference() { return toURIString(identifier, version,"form.xslt"); }
+    // TODO: These should be configurable
+    private String buildXSDReference() {
+        return toURIString(documentXmlns, "form.xsd");
+    }
+    private String buildXSLTReference() {
+        return toURIString(documentXmlns, "form.xslt");
+    }
 
-    private static String toURIString(String identifier, String version, String suffix) {
-        String base = identifier.replaceAll("/+$", "");
+    private static String toURIString(String xmlns, String suffix) {
+        String base = xmlns.replaceAll("/+$", "");
         String attached = suffix.replaceAll("^/+", "");
 
-        return base + "/" + version + "/" + attached;
+        return  base + "/" + attached;
     }
 
     private Element createUsedXSDReference() {
@@ -181,7 +205,7 @@ public class XDCTransformer {
     private Element createUsedPresentationSchemaReference() {
         var element = document.createElement("UsedPresentationSchemaReference");
         element.setAttribute("ContentType", "application/xslt+xml");
-        element.setAttribute("MediaDestinationTypeDescription", "HTML");
+        element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription);
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue", computeDigest(xsltSchema));
@@ -191,35 +215,4 @@ public class XDCTransformer {
     }
 
     private static String toNamespacedString(DigestAlgorithm digestAlgorithm) { return "urn:oid:" + digestAlgorithm.getOid(); }
-
-    // Unclear if these methods will be ever needed, but let it stay here for a while
-    private Element createUsedSchemasEmbedded(String xsdSchemaContent, String xsltSchemaContent) {
-        var element = document.createElement("UsedSchemasEmbedded");
-        element.appendChild(createUsedXSDEmbedded(xsdSchemaContent));
-        element.appendChild(createUsedPresentationSchemaEmbedded(xsltSchemaContent));
-
-        return element;
-    }
-
-    private Element createUsedXSDEmbedded(String xsdContent) {
-        var element = document.createElement("UsedXSDEmbedded");
-        element.setTextContent(xsdContent);
-
-        return element;
-    }
-
-    private Element createUsedPresentationSchemaEmbedded(String xsltContent) {
-        var element = document.createElement("UsedPresentationSchemaEmbedded");
-        element.setAttribute("ContentType", "application/xslt+xml");
-        element.setAttribute("MediaDestinationTypeDescription", "HTML");
-        element.setTextContent(xsltContent);
-
-        return element;
-    }
-
-    private DigestAlgorithm resolveDigestMethod(String urnOidMethod) {
-        if (!urnOidMethod.startsWith("urn:oid:")) throw new IllegalArgumentException();
-
-        return DigestAlgorithm.forOID(urnOidMethod.replace("urn:oid:", ""));
-    }
 }

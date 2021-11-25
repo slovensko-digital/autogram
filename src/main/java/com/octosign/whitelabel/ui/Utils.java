@@ -8,8 +8,8 @@ public class Utils {
         return value == null || value.isBlank();
     }
 
-    public static boolean notNullOrBlank(String value) {
-        return !(isNullOrBlank(value));
+    public static boolean isPresent(String value) {
+        return !isNullOrBlank(value);
     }
 
 
