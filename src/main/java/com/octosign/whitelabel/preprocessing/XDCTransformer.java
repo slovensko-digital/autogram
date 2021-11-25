@@ -22,6 +22,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static com.octosign.whitelabel.ui.Utils.isPresent;
 import static java.util.Objects.requireNonNull;
 
 
@@ -36,26 +37,29 @@ public class XDCTransformer {
     private final String xsdSchema;
     private final String xsltSchema;
     private final String canonicalizationMethod;
-    private final String xmlns;
+    private final String containerXmlns;
     private final DigestAlgorithm digestAlgorithm;
+    private final String mediaDestinationTypeDescription;
 
     private Document document;
+    private String documentXmlns;
 
     public static XDCTransformer newInstance(SignatureParameters sp) {
         var method = SignatureParameterMapper.map(sp.getPropertiesCanonicalization());
         var algorithm = SignatureParameterMapper.map(sp.getDigestAlgorithm());
-
-        return new XDCTransformer(sp.getIdentifier(), sp.getVersion(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(), method, algorithm);
+        //TODO fix!
+        return new XDCTransformer(sp.getIdentifier(), sp.getVersion(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(), method, algorithm, "TXT");
     }
 
-    private XDCTransformer(String identifier, String version, String xsdSchema, String xsltSchema, String xmlns, String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
+    private XDCTransformer(String identifier, String version, String xsdSchema, String xsltSchema, String containerXmlns, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, String mediaDestinationTypeDescription) {
         this.identifier = identifier;
         this.version = version;
-        this.xmlns = xmlns;
+        this.containerXmlns = containerXmlns;
         this.canonicalizationMethod = canonicalizationMethod;
         this.xsdSchema = xsdSchema;
         this.xsltSchema = xsltSchema;
         this.digestAlgorithm = requireNonNull(digestAlgorithm, "digestAlgorithm");
+        this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
     public String transform(String xmlInput, Mode mode) {
@@ -112,6 +116,7 @@ public class XDCTransformer {
     }
 
     private String getDocumentContent() throws TransformerException {
+        document.setXmlStandalone(true);
         var xmlSource = new DOMSource(document);
         var outputTarget = new StreamResult(new StringWriter());
 
@@ -125,8 +130,8 @@ public class XDCTransformer {
         var element = document.createElement("XMLDataContainer");
         element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
         element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        if (xmlns != null)
-            element.setAttribute("xmlns", xmlns);
+        if (containerXmlns != null)
+            element.setAttribute("xmlns", containerXmlns);
 
         return element;
     }
@@ -147,6 +152,10 @@ public class XDCTransformer {
             return null;
 
         var element = document.createElement("UsedSchemasReferenced");
+        if (isPresent(xsdSchema) || isPresent(xsltSchema))
+            documentXmlns = document.getFirstChild().getAttributes().getNamedItem("xmlns").getNodeValue();
+
+
         if (xsdSchema != null) {
             var xsdSchemaReference = createUsedXSDReference();
             element.appendChild(xsdSchemaReference);
@@ -169,14 +178,18 @@ public class XDCTransformer {
     }
 
     // TODO: These should be configurable
-    private String buildXSDReference() { return toURIString(identifier, version, "form.xsd"); }
-    private String buildXSLTReference() { return toURIString(identifier, version, "form.xslt"); }
+    private String buildXSDReference() {
+        return toURIString(documentXmlns, "form.xsd");
+    }
+    private String buildXSLTReference() {
+        return toURIString(documentXmlns, "form.xslt");
+    }
 
-    private static String toURIString(String identifier, String version, String suffix) {
-        String base = identifier.replaceAll("/+$", "");
+    private static String toURIString(String xmlns, String suffix) {
+        String base = xmlns.replaceAll("/+$", "");
         String attached = suffix.replaceAll("^/+", "");
 
-        return base + "/" + version + "/" + attached;
+        return  base + "/" + attached;
     }
 
     private Element createUsedXSDReference() {
@@ -192,7 +205,7 @@ public class XDCTransformer {
     private Element createUsedPresentationSchemaReference() {
         var element = document.createElement("UsedPresentationSchemaReference");
         element.setAttribute("ContentType", "application/xslt+xml");
-        element.setAttribute("MediaDestinationTypeDescription", "HTML");
+        element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription);
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue", computeDigest(xsltSchema));
