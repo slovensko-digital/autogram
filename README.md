@@ -36,7 +36,7 @@ Development can be done only using JDK with bundled JavaFX. It is highly recomme
 ```
 {
     "name": "JavaSE-17",
-    "path": "/home/jakub/octosign/white-label/target/jdkCache/LIBERICA_jdk17+35_linux_amd64-full"
+    "path": "/home/jakub/octosign/white-label/target/jdkCache/LIBERICA_jdk17.0.1+12_linux_amd64-full"
 }
 ```
 
