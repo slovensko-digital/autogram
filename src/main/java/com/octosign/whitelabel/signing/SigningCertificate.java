@@ -160,7 +160,7 @@ public abstract class SigningCertificate {
         var document = new InMemoryDocument(binaryContent);
 
         var targetFilename = parameters.getContainerFilename();
-        if (container != null && !isNullOrBlank(targetFilename))
+        if (container != null && isPresent(targetFilename))
             document.setName(targetFilename);
 
         var signedDocument = sign(document, parameters);
