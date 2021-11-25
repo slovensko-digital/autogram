@@ -18,9 +18,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -120,7 +118,7 @@ public class XDCTransformer {
         var transformerFactory= TransformerFactory.newInstance();
         transformerFactory.newTransformer().transform(xmlSource, outputTarget);
 
-        return outputTarget.toString();
+        return outputTarget.getWriter().toString();
     }
 
     private Element createXMLDataContainer() {
