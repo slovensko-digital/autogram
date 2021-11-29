@@ -1,10 +1,7 @@
 package com.octosign.whitelabel.ui;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class Utils {
@@ -14,6 +11,13 @@ public class Utils {
 
     public static boolean isNullOrEmpty(Collection<?> collection) {
         return collection == null || collection.isEmpty();
+    }
+
+    public static <T> T first(Collection<T> collection) {
+//        if (isNullOrEmpty(collection))
+//            throw ;
+
+        return collection.stream().findFirst().orElseThrow(() -> new RuntimeException("Collection is null or has no data!"));
     }
 
     public static String encodeBase64(String value) {

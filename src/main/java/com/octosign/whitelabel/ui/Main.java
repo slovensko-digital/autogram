@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.*;
 
+import com.octosign.whitelabel.signing.SigningManager;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -34,7 +35,7 @@ public class Main extends Application {
         READY,
     }
 
-    private final CertificateManager certificateManager = new CertificateManager();
+    private final SigningManager signingManager = new SigningManager();
 
     private StatusIndication statusIndication;
 
@@ -112,7 +113,7 @@ public class Main extends Application {
         VBox root = fxmlLoader.getRoot();
 
         MainController controller = fxmlLoader.getController();
-        controller.setCertificateManager(certificateManager);
+        controller.setSigningManager(signingManager);
         controller.setSignatureUnit(signatureUnit);
         controller.setOnSigned((String signedContent) -> {
             onSigned.accept(signedContent);

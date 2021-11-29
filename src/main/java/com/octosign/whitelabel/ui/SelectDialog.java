@@ -1,7 +1,5 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.signing.SigningCertificate;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -10,51 +8,47 @@ import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.Window;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class CertificateSelect extends Stage implements SelectCallback<DSSPrivateKeyEntry> {
+public class SelectDialog<T extends Selectable> extends Stage {
 
-    private DSSPrivateKeyEntry selected = null;
+    private T selectedItem = null;
 
-    public CertificateSelect(@Nonnull List<DSSPrivateKeyEntry> elements) {
+    public SelectDialog(@Nonnull List<T> items, @Nonnull Window parent) {
         super();
         var vbox = new VBox();
-        var buttons = elements.stream().map(this::createButton).toList();
+        var buttons = items.stream().map(this::createButton).toList();
         vbox.getChildren().addAll(buttons);
 
         var scene = new Scene(vbox);
         scene.getStylesheets().addAll(FXUtils.getStylesheets());
 
-//        initOwner(parent);
+        initOwner(parent);
         initStyle(StageStyle.UNDECORATED);
         initModality(Modality.WINDOW_MODAL);
         setScene(scene);
     }
 
-    private Button createButton(DSSPrivateKeyEntry element) {
-        var button = new Button((SigningCertificate.getNicePrivateKeyDescription(element, SigningCertificate.KeyDescriptionVerbosity.SHORT)));
+    private Button createButton(T item) {
+        var button = new Button(item.getName());
         button.setPadding(new Insets(32, 48, 32, 48));
         button.setFont(Font.font("DejaVu Sans", 20));
 
         button.setOnAction(e -> {
-            selected = element;
+            selectedItem = item;
             close();
         });
 
         return button;
     }
 
-    public DSSPrivateKeyEntry showDialog() {
-        selected = null;
+    public T getResult() {
+        selectedItem = null;
         showAndWait();
 
-        return selected;
-    }
-
-    @Override
-    public DSSPrivateKeyEntry select() {
-        return showDialog();
+        return selectedItem;
     }
 }

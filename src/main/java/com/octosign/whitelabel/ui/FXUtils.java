@@ -3,6 +3,7 @@ package com.octosign.whitelabel.ui;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;

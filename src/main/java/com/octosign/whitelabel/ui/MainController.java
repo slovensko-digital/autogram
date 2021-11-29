@@ -9,7 +9,7 @@ import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 import com.octosign.whitelabel.error_handling.UserException;
-import com.octosign.whitelabel.signing.SigningCertificate;
+import com.octosign.whitelabel.signing.*;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
@@ -21,18 +21,12 @@ import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.NAME;
 import static com.octosign.whitelabel.ui.FXUtils.displayError;
 import static com.octosign.whitelabel.ui.I18n.translate;
-import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 
 /**
  * Controller for the signing window
@@ -64,9 +58,14 @@ public class MainController {
     private ResourceBundle resources;
 
     /**
+     * Factory for signing tokens
+     */
+    private TokenFactory tokenFactory;
+
+    /**
      * Signing certificate manager
      */
-    private CertificateManager certificateManager;
+    private SigningManager signingManager;
 
     /**
      * Wrapper for document in this window (to be signed) and parameters
@@ -88,8 +87,8 @@ public class MainController {
         webView.getEngine().setJavaScriptEnabled(false);
     }
 
-    public void setCertificateManager(CertificateManager certificateManager) {
-        this.certificateManager = certificateManager;
+    public void setSigningManager(SigningManager signingManager) {
+        this.signingManager = signingManager;
     }
 
     public void setOnSigned(Consumer<String> onSigned) {this.onSigned = onSigned;}
@@ -97,6 +96,8 @@ public class MainController {
     public void setSignatureUnit(SignatureUnit signatureUnit) {this.signatureUnit = signatureUnit;}
 
     public void loadDocument() {
+        mainButton.setText(resolveMainButtonText());
+
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
 
@@ -104,8 +105,6 @@ public class MainController {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }
-
-        resolveMainButtonText();
 
         boolean isXML = document instanceof XMLDocument;
         boolean isPDF = document instanceof PDFDocument;
@@ -148,15 +147,15 @@ public class MainController {
     private void displayHTMLVisualisation(String visualisation) {
         vanish(textArea);
 
-        var webEngine = webView.getEngine();
-        webEngine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
+        var engine = webView.getEngine();
+        engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                webEngine.getDocument()
+                engine.getDocument()
                     .getElementById("frame")
                     .setAttribute("srcdoc", visualisation);
             }
         });
-        webEngine.loadContent(getResourceAsString("visualization.html"));
+        engine.load(Main.class.getResource("visualization.html").toExternalForm());
     }
 
     private void displayPDFVisualisation(Document document) {
@@ -179,84 +178,70 @@ public class MainController {
 
     @FXML
     private void onMainButtonAction() {
-        Platform.runLater(() -> {
-            if (!isSignerReady()) {
-                loadSigners();
-            } else {
-                signDocument();
-            }
-        });
+        if (!isSignerReady()) {
+            disableAndSet(translate("btn.loading"));
+            loadSigners();
+
+        } else {
+            disableAndSet(translate("btn.signing"));
+            signDocument();
+        }
+
+        enableAndSet(resolveMainButtonText());
     }
 
     private boolean isSignerReady() {
-        return certificateManager != null && certificateManager.getCertificate() != null;
+        return signingManager != null && signingManager.getActiveCertificate() != null;
     }
 
     private void loadSigners() {
-        disableWithText(translate("btn.loading"));
-
         try {
-            var drivers = certificateManager.getAvailableDrivers();
+            var driver = getOrShowDialogIfMany(TokenFactory.getDrivers());
+            var token = TokenFactory.getToken(driver);
 
-            if (drivers.size() == 1)
-                useCertificate(drivers.get(0).getCertificate());
-            else {
-                var selectedDriver = new DriverSelect(drivers, getStage()).showDialog();
-                useCertificate(selectedDriver.getCertificate());
-            }
-
+            var certificate = getOrShowDialogIfMany(token.getCertificates());
+            signingManager.setActiveCertificate(certificate);
         } catch (UserException e) {
             displayError(e);
-
-        } finally {
-            enableWithDefaultText();
         }
     }
 
-    private void useCertificate(SigningCertificate certificate) {
-        certificateManager.setCertificate(certificate);
-    }
+    private <T extends Selectable> T getOrShowDialogIfMany(List<T> items) {
+        var currentStage = (Stage) mainButton.getScene().getWindow();
 
-    private Stage getStage() {
-        return (Stage)mainButton.getScene().getWindow();
+        if (items.size() == 1) {
+            return items.get(0);
+        } else {
+            var dialog = new SelectDialog<>(items, currentStage);
+            return dialog.getResult();
+        }
     }
 
     private void signDocument() {
-        disableWithText(translate("btn.signing"));
-
         try {
-            var signedContent = certificateManager.getCertificate().sign(signatureUnit);
+            var signedContent = signingManager.sign(signatureUnit);
             onSigned.accept(signedContent);
         } catch (UserException e) {
             displayError(e);
-        } finally {
-            enableWithDefaultText();
         }
     }
 
-    private void disableWithText(String newText) {
-        mainButton.setText(newText);
+    private void disableAndSet(String text) {
+        mainButton.setText(text);
         mainButton.setDisable(true);
     }
 
-    private void enableWithDefaultText() {
-        resolveMainButtonText();
+    private void enableAndSet(String text) {
+        mainButton.setText(text);
         mainButton.setDisable(false);
     }
 
-    public void resolveMainButtonText() {
+    public String resolveMainButtonText() {
         if (isSignerReady()) {
-            mainButton.setText(translate("btn.signAs", getCachedName()));
+            return translate("btn.signAs", signingManager.getActiveCertificate().getName());
         } else {
-            mainButton.setText(translate("btn.loadSigners"));
+            return translate("btn.loadSigners");
         }
-    }
-
-    private void vanish(Node node) {
-        if (node.isManaged())
-            node.setManaged(false);
-        if (node.isVisible())
-            node.setVisible(false);
     }
 
     private void materialize(Node node) {
@@ -266,12 +251,11 @@ public class MainController {
             node.setVisible(true);
     }
 
-    private String getCachedName() {
-        if (isNullOrBlank(certificateName)) {
-            certificateName = certificateManager.getCertificate()
-                                                .getNicePrivateKeyDescription(NAME);
-        }
-        return certificateName;
+    private void vanish(Node node) {
+        if (node.isManaged())
+            node.setManaged(false);
+        if (node.isVisible())
+            node.setVisible(false);
     }
 
     @FXML
@@ -281,24 +265,6 @@ public class MainController {
 
     @FXML
     private void onCertSettingsButtonAction() {
-        certificateManager.useDialogPicker();
-    }
-
-    /**
-     * Get resource from the ui resources as string using name
-     */
-    private static String getResourceAsString(String resourceName) {
-        try (InputStream inputStream = MainController.class.getResourceAsStream(resourceName)) {
-            if (inputStream == null)
-                throw new Exception("Resource not found");
-            try (
-                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream,
-                            StandardCharsets.UTF_8);
-                    BufferedReader reader = new BufferedReader(inputStreamReader);) {
-                return reader.lines().collect(Collectors.joining(System.lineSeparator()));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load resource " + resourceName, e);
-        }
+        loadSigners();
     }
 }

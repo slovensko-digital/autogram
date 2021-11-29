@@ -8,7 +8,7 @@
     <option name="VM_PARAMETERS" value="--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED -Djava.security.debug=sunpkcs11,pkcs11 -Djava.security.debug=pkcs11keystore" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="com.octosign.whitelabel.ui.*" />
+        <option name="PATTERN" value="com.octosign.whitelabel.signing.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
