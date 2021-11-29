@@ -2,22 +2,16 @@ package com.octosign.whitelabel.ui;
 
 import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.document.PDFDocument;
-import com.octosign.whitelabel.communication.document.XMLDocument;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
-import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.communication.document.*;
+import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.signing.*;
 import com.octosign.whitelabel.ui.about.AboutDialog;
+
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
@@ -25,8 +19,11 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
+
+import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.*;
 import static com.octosign.whitelabel.ui.FXUtils.displayError;
 import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
 
 /**
  * Controller for the signing window
@@ -58,11 +55,6 @@ public class MainController {
     private ResourceBundle resources;
 
     /**
-     * Factory for signing tokens
-     */
-    private TokenFactory tokenFactory;
-
-    /**
      * Signing certificate manager
      */
     private SigningManager signingManager;
@@ -77,11 +69,6 @@ public class MainController {
      */
     private Consumer<String> onSigned;
 
-    /**
-     * Name of the currently used signing certificate owner
-     */
-    private String certificateName;
-
     public void initialize() {
         webView.setContextMenuEnabled(false);
         webView.getEngine().setJavaScriptEnabled(false);
@@ -91,25 +78,41 @@ public class MainController {
         this.signingManager = signingManager;
     }
 
-    public void setOnSigned(Consumer<String> onSigned) {this.onSigned = onSigned;}
+    public void setOnSigned(Consumer<String> onSigned) {
+        this.onSigned = onSigned;
+    }
 
-    public void setSignatureUnit(SignatureUnit signatureUnit) {this.signatureUnit = signatureUnit;}
+    public void setSignatureUnit(SignatureUnit signatureUnit) {
+        this.signatureUnit = signatureUnit;
+    }
 
     public void loadDocument() {
-        mainButton.setText(resolveMainButtonText());
-
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
+
+        if (document.getTitle() != null && !document.getTitle().isBlank()) {
+            documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
+        } else {
+            documentLabel.setManaged(false);
+        }
 
         if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }
 
-        boolean isXML = document instanceof XMLDocument;
+        if (certificateManager.getCertificate() != null) {
+            String name = certificateManager
+                .getCertificate()
+                .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
+            mainButton.setText(String.format(Main.getProperty("text.sign"), name));
+        }
+
+        //TODO consider simplifying this part to avoid tedious casting
+        boolean isXml = document instanceof XMLDocument;
         boolean isPDF = document instanceof PDFDocument;
-        final boolean hasSchema = isXML && ((XMLDocument) document).getSchema() != null;
-        final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
+        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
+        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
             ((XMLDocument) document).validate();
@@ -120,9 +123,9 @@ public class MainController {
 
             MimeType transformationOutputType;
             try {
-                transformationOutputType = parameters.getTransformationOutputMimeType() == null ?
-                    MimeType.HTML :
-                    MimeType.parse(parameters.getTransformationOutputMimeType());
+                transformationOutputType = parameters.getTransformationOutputMimeType() == null
+                    ? MimeType.HTML
+                    : MimeType.parse(parameters.getTransformationOutputMimeType());
             } catch (MalformedMimetypeException e) {
                 throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
             }
@@ -141,7 +144,7 @@ public class MainController {
 
     private void displayPlainTextVisualisation(String visualisation) {
         vanish(webView);
-        textArea.setText(visualisation);
+        textArea.setText(visualisation.translateEscapes());
     }
 
     private void displayHTMLVisualisation(String visualisation) {

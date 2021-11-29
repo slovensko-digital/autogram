@@ -57,10 +57,13 @@ public class Document implements Cloneable {
     public static Document getSpecificDocument(SignRequest signRequest) {
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
+
+        // TODO: Assert document, parameters, and payloadMimeType are not null
+
         MimeType mimeType;
         try {
             mimeType = MimeType.parse(signRequest.getPayloadMimeType());
-        } catch (MalformedMimetypeException e) {
+        } catch (Exception e) {
             throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
         }
 

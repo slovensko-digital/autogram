@@ -31,8 +31,7 @@ import static java.util.Objects.requireNonNullElse;
 public class Main extends Application {
 
     public enum Status {
-        LOADING,
-        READY,
+        LOADING, READY
     }
 
     private final SigningManager signingManager = new SigningManager();
@@ -151,17 +150,17 @@ public class Main extends Application {
         @Override
         public void uncaughtException(Thread thread, Throwable throwable) {
             if (throwable instanceof IntegrationException ie) {
-                LOGGER.error("IntegrationException handled, code: " + ie.getCode().toString(), ie);
+                LOGGER.error("IntegrationException - code: " + ie.getCode().toString(), ie);
                 if (ie.shouldDisplay())
                     Platform.runLater(() -> displayError(ie));
                 closeAllWindows();
 
             } else if (throwable instanceof UserException ue) {
-                LOGGER.error("UserException handled: ", ue);
+                LOGGER.error("UserException: ", ue);
                 Platform.runLater(() -> displayError(ue));
 
             } else {
-                LOGGER.error("ATTENTION - unexpected exception handled: " + throwable.getClass().getName(), throwable);
+                LOGGER.error("[NOT EXPECTED] Error: " + throwable.getClass().getName(), throwable);
                 Platform.runLater(FXUtils::displaySimpleError);
                 System.exit(1);
             }

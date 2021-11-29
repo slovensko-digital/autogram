@@ -29,19 +29,18 @@ abstract class Endpoint implements HttpHandler {
         try {
             if (verifyHTTPMethod(exchange) && verifyOrigin(exchange))
                 handleRequest(exchange);
-
         } catch (UserException e) {
             throw e;
-
         } catch (IntegrationException e) {
             new Response<IntegrationException>(exchange)
                 .asError(e.getCode().toHttpCode(), e)
                 .send();
             throw e;
-
         } catch (Throwable t) {
+            var error = new IntegrationException(UNEXPECTED_ERROR, t);
+
             new Response<Throwable>(exchange)
-                .asError(UNEXPECTED_ERROR.toHttpCode(), t)
+                .asError(error.getCode().toHttpCode(), error)
                 .send();
             throw new UnknownError(t.toString());
         }

@@ -8,8 +8,10 @@ public enum Code {
     TOKEN_INIT_FAILED(GENERAL),
     SIGNING_FAILED(GENERAL),
 
-    NOT_READY(INPUT),
-    UNSUPPORTED_OPERATION(INPUT),
+    UNSUPPORTED_OPERATION(UNKNOWN_ACTION),
+
+    NOT_READY(CONFLICT),
+
     MISSING_INPUT(INPUT),
     MALFORMED_INPUT(INPUT),
     INVALID_CONTENT(INPUT),
@@ -31,6 +33,8 @@ public enum Code {
         return switch(this.category) {
             case GENERAL -> HTTP_INTERNAL_ERROR;
             case INPUT -> HTTP_BAD_REQUEST;
+            case UNKNOWN_ACTION -> HTTP_BAD_METHOD;
+            case CONFLICT -> HTTP_CONFLICT;
             case SECURITY -> HTTP_FORBIDDEN;
         };
     }
@@ -38,6 +42,8 @@ public enum Code {
     public enum Category {
         GENERAL,
         INPUT,
+        UNKNOWN_ACTION,
+        CONFLICT,
         SECURITY;
     }
 }

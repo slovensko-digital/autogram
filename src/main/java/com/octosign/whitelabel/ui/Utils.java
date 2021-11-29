@@ -3,10 +3,15 @@ package com.octosign.whitelabel.ui;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Stream;
+import java.util.Base64;
 
 public class Utils {
     public static boolean isNullOrBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    public static boolean isPresent(String value) {
+        return !isNullOrBlank(value);
     }
 
     public static boolean isNullOrEmpty(Collection<?> collection) {
