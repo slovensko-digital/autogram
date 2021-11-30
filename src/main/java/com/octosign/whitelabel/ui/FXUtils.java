@@ -173,7 +173,7 @@ public class FXUtils {
         dialog.getDialogPane().getStylesheets().addAll(getStylesheets());
     }
 
-    static List<String> getStylesheets() {
+    public static List<String> getStylesheets() {
         return Stream.of("shared.css" , "dialog.css", "overrides.css")
             .map(filename -> requireNonNull(Main.class.getResource(filename)).toExternalForm())
             .toList();
