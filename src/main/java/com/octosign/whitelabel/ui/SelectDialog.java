@@ -13,7 +13,7 @@ import javafx.stage.Window;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class SelectDialog<T extends Selectable> extends Stage {
+public class SelectDialog<T extends SelectableItem> extends Stage {
 
     private T selectedItem = null;
 
@@ -24,6 +24,7 @@ public class SelectDialog<T extends Selectable> extends Stage {
         vbox.getChildren().addAll(buttons);
 
         var scene = new Scene(vbox);
+        // TODO to fxml
         scene.getStylesheets().addAll(FXUtils.getStylesheets());
 
         initOwner(parent);
@@ -33,7 +34,8 @@ public class SelectDialog<T extends Selectable> extends Stage {
     }
 
     private Button createButton(T item) {
-        var button = new Button(item.getName());
+        var button = new Button(item.getSimpleName());
+        // TODO to fxml
         button.setPadding(new Insets(32, 48, 32, 48));
         button.setFont(Font.font("DejaVu Sans", 20));
 
