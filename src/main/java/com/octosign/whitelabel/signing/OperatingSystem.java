@@ -1,4 +1,4 @@
-package com.octosign.whitelabel.ui;
+package com.octosign.whitelabel.signing;
 
 import com.octosign.whitelabel.error_handling.UserException;
 
@@ -6,14 +6,14 @@ import java.util.Locale;
 
 import static com.octosign.whitelabel.ui.I18n.translate;
 
-public enum OS {
+public enum OperatingSystem {
     WINDOWS,
     LINUX,
-    DARWIN;
+    MAC;
 
-    public static OS fromString(String osName) {
+    public static OperatingSystem fromString(String osName) {
         if ((osName.contains("mac")) || (osName.contains("darwin"))) {
-            return DARWIN;
+            return MAC;
         } else if (osName.contains("win")) {
             return WINDOWS;
         } else if (osName.contains("nux")) {
@@ -23,7 +23,7 @@ public enum OS {
         }
     }
 
-    public static OS current() {
+    public static OperatingSystem current() {
         return fromString(getCurrentOsName());
     }
 
