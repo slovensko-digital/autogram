@@ -1,12 +1,13 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.ui.Selectable;
-import eu.europa.esig.dss.model.x509.CertificateToken;
+import com.octosign.whitelabel.ui.SelectableItem;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 import java.text.SimpleDateFormat;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
@@ -15,13 +16,26 @@ import java.text.SimpleDateFormat;
  * - Can construct human readable description of the key.
  * - Can sign an XML document represented as string.
  */
-public abstract class Certificate implements Selectable {
+public class Certificate implements SelectableItem {
     /**
      * Token set by technology-specific class (MSCAPI/PKCS11/PKCS12)
      */
-    protected Token token;
+    private final Token token;
 
-    protected DSSPrivateKeyEntry dssPrivateKey;
+    private final DSSPrivateKeyEntry dssPrivateKey;
+
+    public Certificate(DSSPrivateKeyEntry dssPrivateKey, Token token) {
+        this.dssPrivateKey = requireNonNull(dssPrivateKey);
+        this.token = requireNonNull(token);
+    }
+
+    protected DSSPrivateKeyEntry getDssPrivateKey() {
+        return dssPrivateKey;
+    }
+
+    protected Token getToken() {
+        return token;
+    }
 
     /**
      * How verbose should key description be
@@ -30,14 +44,16 @@ public abstract class Certificate implements Selectable {
      * - NAME - Contains name only
      */
     public enum DescriptionVerbosity {
-        LONG, SHORT, NAME
+        LONG,
+        SHORT,
+        NAME
     }
 
     /**
      * Constructs human readable private key description
      */
     public static String getCertificateDescription(Certificate certificate, DescriptionVerbosity verbosity) {
-        String dn = certificate.getDssPKCertificate().getSubject().getRFC2253();
+        String dn = certificate.getDssPrivateKey().getCertificate().getSubject().getRFC2253();
         String label = "";
         try {
             LdapName ldapDN = new LdapName(dn);
@@ -46,8 +62,8 @@ public abstract class Certificate implements Selectable {
             String dnCity = "";
             String dnStreet = "";
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String notBefore = dateFormat.format(certificate.getDssPKCertificate().getNotBefore());
-            String notAfter = dateFormat.format(certificate.getDssPKCertificate().getNotAfter());
+            String notBefore = dateFormat.format(certificate.getDssPrivateKey().getCertificate().getNotBefore());
+            String notAfter = dateFormat.format(certificate.getDssPrivateKey().getCertificate().getNotAfter());
             for (Rdn rdn: ldapDN.getRdns()) {
                 if (rdn.getType().equalsIgnoreCase("CN"))
                     dnName = rdn.getValue().toString();
@@ -69,7 +85,7 @@ public abstract class Certificate implements Selectable {
             }
         } catch (Exception e) {
             // If retrieving sensible name fails, use serial number
-            label = "SN: " + certificate.getDssPKCertificate().getCertificate().getSerialNumber().toString(16);
+            label = "SN: " + certificate.getDssPrivateKey().getCertificate().getCertificate().getSerialNumber().toString(16);
         }
 
         return label;
@@ -83,26 +99,7 @@ public abstract class Certificate implements Selectable {
     }
 
     @Override
-    public String getName() {
+    public String getSimpleName() {
         return this.getCertificateDescription(DescriptionVerbosity.NAME);
-    }
-
-    public void setDssPrivateKey(DSSPrivateKeyEntry dssPrivateKey) {
-        this.dssPrivateKey = dssPrivateKey;
-    }
-
-    public DSSPrivateKeyEntry getDssPrivateKey() {
-        return dssPrivateKey;
-    }
-
-    protected Token getToken() {
-        return token;
-    }
-
-    protected CertificateToken getDssPKCertificate() {
-        if (dssPrivateKey == null)
-            throw new RuntimeException("Private key not set up");
-
-        return dssPrivateKey.getCertificate();
     }
 }
