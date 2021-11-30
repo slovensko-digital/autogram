@@ -6,6 +6,7 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import eu.europa.esig.dss.AbstractSignatureParameters;
+import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -13,6 +14,7 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.xades.signature.XAdESService;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -53,7 +55,7 @@ public class SigningManager {
 
         var document = new InMemoryDocument(binaryContent);
         if (format.equals(XADES))
-            document.setName(parameters.getFilename());
+            document.setName(parameters.getContainerFilename());
 
         var signedDocument = sign(document, parameters);
 
@@ -77,26 +79,37 @@ public class SigningManager {
 
         if (format.equals(PADES)) {
             var parameters = SignatureParameterMapper.mapPAdESParameters(inputParameters);
-            injectPrivateKeyData(parameters);
+            parameters.setSigningCertificate(activeCertificate.getDssPrivateKey().getCertificate());
+            parameters.setCertificateChain(activeCertificate.getDssPrivateKey().getCertificateChain());
 
             var service = new PAdESService(commonCertificateVerifier);
             var dataToSign = service.getDataToSign(document, parameters);
-            var token = getActiveCertificate().getToken().dssToken;
+            var token = getActiveCertificate().getToken().getDssToken();
             var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), activeCertificate.getDssPrivateKey());
 
             signedDocument = service.signDocument(document, parameters, signatureValue);
 
         } else if (format.equals(XADES)) {
             var parameters = SignatureParameterMapper.mapXAdESParameters(inputParameters);
-            injectPrivateKeyData(parameters);
+            parameters.setSigningCertificate(activeCertificate.getDssPrivateKey().getCertificate());
+            parameters.setCertificateChain(activeCertificate.getDssPrivateKey().getCertificateChain());
 
-            var service = new ASiCWithXAdESService(commonCertificateVerifier);
-            var dataToSign = service.getDataToSign(document, parameters);
-            var token = getActiveCertificate().getToken().dssToken;
-            var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), activeCertificate.getDssPrivateKey());
+            if (parameters instanceof ASiCWithXAdESSignatureParameters asicParameters) {
+                var service = new ASiCWithXAdESService(commonCertificateVerifier);
+                var dataToSign = service.getDataToSign(document, asicParameters);
+                var token = getActiveCertificate().getToken().getDssToken();
+                var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), activeCertificate.getDssPrivateKey());
 
-            signedDocument = service.signDocument(document, parameters, signatureValue);
+                signedDocument = service.signDocument(document, asicParameters, signatureValue);
 
+            } else {
+                var service = new XAdESService(commonCertificateVerifier);
+                var dataToSign = service.getDataToSign(document, parameters);
+                var token = getActiveCertificate().getToken().getDssToken();
+                var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), activeCertificate.getDssPrivateKey());
+
+                signedDocument = service.signDocument(document, parameters, signatureValue);
+            }
         } else {
             throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Unsupported format: " + format);
         }
@@ -105,7 +118,7 @@ public class SigningManager {
     }
 
     private <T extends AbstractSignatureParameters<?>> void injectPrivateKeyData(T parameters) {
-        parameters.setSigningCertificate(activeCertificate.getDssPKCertificate());
+        parameters.setSigningCertificate(activeCertificate.getDssPrivateKey().getCertificate());
         parameters.setCertificateChain(activeCertificate.getDssPrivateKey().getCertificateChain());
     }
 }
