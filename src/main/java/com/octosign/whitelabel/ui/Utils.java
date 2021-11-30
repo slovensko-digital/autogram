@@ -10,18 +10,26 @@ public class Utils {
         return value == null || value.isBlank();
     }
 
-    public static boolean isPresent(String value) {
-        return !isNullOrBlank(value);
-    }
-
     public static boolean isNullOrEmpty(Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
-    public static <T> T first(Collection<T> collection) {
-//        if (isNullOrEmpty(collection))
-//            throw ;
+    public static boolean isNullOrEmpty(char[] array) {
+        return array == null || array.length == 0;
+    }
 
+    public static boolean isPresent(String value) {
+        return !isNullOrBlank(value);
+    }
+
+    /**
+     * Returns first item of the given collection.
+     * Much prettier compared to eg. <code>collection.get(0)</code>
+     * @param collection
+     * @param <T>
+     * @return
+     */
+    public static <T> T first(Collection<T> collection) {
         return collection.stream().findFirst().orElseThrow(() -> new RuntimeException("Collection is null or has no data!"));
     }
 
