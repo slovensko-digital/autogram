@@ -66,9 +66,6 @@ public class SignatureParameterMapper {
     public static XAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) {
         XAdESSignatureParameters parameters;
 
-    public static ASiCWithXAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) {
-        var parameters = new ASiCWithXAdESSignatureParameters();
-
         if (sp.getContainer() != null) {
             parameters = new ASiCWithXAdESSignatureParameters();
             ((ASiCWithXAdESSignatureParameters) parameters).aSiC().setContainerType(map(sp.getContainer()));
