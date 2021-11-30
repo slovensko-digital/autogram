@@ -36,4 +36,12 @@ public class PasswordCallback implements PasswordInputCallback {
 
         return result.isPresent() ? result.get().toCharArray() : "".toCharArray();
     }
+
+    public String getPasswordString() {
+        var input = this.getPassword();
+        if (input == null)
+            throw new RuntimeException("PasswordCallback returned null");
+
+        return new String(input);
+    }
 }
