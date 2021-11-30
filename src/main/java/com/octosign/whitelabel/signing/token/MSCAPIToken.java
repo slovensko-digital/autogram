@@ -9,10 +9,12 @@ public class MSCAPIToken extends Token {
      * Create signing certificate that will use Windows MS CAPI
      */
     public MSCAPIToken() {
+        MSCAPISignatureToken token;
         try {
-            dssToken = new MSCAPISignatureToken();
+             token = new MSCAPISignatureToken();
         } catch (Exception e) {
             throw new UserException("error.tokenAccessDenied.header", "error.tokenAccessDenied.description", e);
         }
+        initialize(token);
     }
 }

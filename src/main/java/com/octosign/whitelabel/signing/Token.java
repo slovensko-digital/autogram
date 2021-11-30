@@ -1,35 +1,71 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.signing.certificate.PKCS11Certificate;
-import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
+import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.signing.token.PKCS11Token;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 
-import java.sql.Driver;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static com.octosign.whitelabel.ui.Utils.isNullOrEmpty;
 
-public class Token {
+public abstract class Token {
+    private SignatureTokenConnection dssToken;
 
-    protected AbstractKeyStoreTokenConnection dssToken;
+    private List<Certificate> certificates;
 
     protected Driver driver;
 
-    protected List<? extends Certificate> certificates = new ArrayList<>();
+    protected void initialize(SignatureTokenConnection dssToken) {
+        this.dssToken = dssToken;
+        this.certificates = buildCertificates();
+    }
 
+    protected SignatureTokenConnection getDssToken() {
+        return dssToken;
+    }
 
-    public List<? extends Certificate> getCertificates() {
+    protected List<Certificate> buildCertificates() {
+        return getAllPrivateKeys().stream()
+                                  .map(key -> new Certificate(key, this))
+                                  .toList();
+    }
+
+    public List<Certificate> getCertificates() {
         if (isNullOrEmpty(certificates))
-            loadCertificates();
+            certificates = buildCertificates();
 
         return certificates;
     }
 
-    private void loadCertificates() {
-        certificates = dssToken.getKeys().stream().map(PKCS11Certificate::new).toList();
+    protected List<DSSPrivateKeyEntry> getAllPrivateKeys() {
+        List<DSSPrivateKeyEntry> keys;
+        try {
+            keys = dssToken.getKeys();
+        } catch (Exception e) {
+            throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description", e);
+        }
+
+        return keys;
     }
 
-    public boolean containsMultipleCertificates() {
-        return (certificates.size() > 1) && (dssToken.getKeys().size() > 1);
+
+    public static List<Driver> getAvailableDrivers() {
+        return Token.getAllDrivers().stream()
+                    .filter(Driver::isCompatible)
+                    .filter(Driver::isInstalled)
+                    .toList();
     }
+
+    public static Collection<Driver> getAllDrivers() {
+        var drivers = new ArrayList<>(PKCS11Token.getDrivers());
+
+        //  TODO - what else belongs here?
+        //  do the other implementations (PKCS12, MSCAPI, MOCCHA) also have some kind of Drivers,
+        //  or not necessarily/not at all?
+        return drivers;
+    }
+
 }
