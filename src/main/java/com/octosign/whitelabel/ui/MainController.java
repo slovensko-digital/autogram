@@ -16,14 +16,13 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
-
-import static com.octosign.whitelabel.signing.SigningCertificate.KeyDescriptionVerbosity.*;
+import static com.octosign.whitelabel.signing.Token.getAvailableDrivers;
 import static com.octosign.whitelabel.ui.FXUtils.displayError;
 import static com.octosign.whitelabel.ui.I18n.translate;
-import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
+import static com.octosign.whitelabel.ui.Utils.first;
+import static com.octosign.whitelabel.ui.Utils.isNullOrEmpty;
 
 /**
  * Controller for the signing window
@@ -50,9 +49,6 @@ public class MainController {
      */
     @FXML
     private Button mainButton;
-
-    @FXML
-    private ResourceBundle resources;
 
     /**
      * Signing certificate manager
@@ -87,32 +83,20 @@ public class MainController {
     }
 
     public void loadDocument() {
+        mainButton.setText(resolveMainButtonText());
+
         var document = signatureUnit.getDocument();
         var parameters = signatureUnit.getSignatureParameters();
-
-        if (document.getTitle() != null && !document.getTitle().isBlank()) {
-            documentLabel.setText(String.format(Main.getProperty("text.document"), document.getTitle()));
-        } else {
-            documentLabel.setManaged(false);
-        }
 
         if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
             signLabel.setText(document.getLegalEffect());
             signLabel.setVisible(true);
         }
 
-        if (certificateManager.getCertificate() != null) {
-            String name = certificateManager
-                .getCertificate()
-                .getNicePrivateKeyDescription(KeyDescriptionVerbosity.NAME);
-            mainButton.setText(String.format(Main.getProperty("text.sign"), name));
-        }
-
-        //TODO consider simplifying this part to avoid tedious casting
-        boolean isXml = document instanceof XMLDocument;
+        boolean isXML = document instanceof XMLDocument;
         boolean isPDF = document instanceof PDFDocument;
-        final boolean hasSchema = isXml && ((XMLDocument) document).getSchema() != null;
-        final boolean hasTransformation = isXml && ((XMLDocument) document).getTransformation() != null;
+        final boolean hasSchema = isXML && ((XMLDocument) document).getSchema() != null;
+        final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
 
         if (hasSchema) {
             ((XMLDocument) document).validate();
@@ -199,24 +183,28 @@ public class MainController {
 
     private void loadSigners() {
         try {
-            var driver = getOrShowDialogIfMany(TokenFactory.getDrivers());
-            var token = TokenFactory.getToken(driver);
+            var driver = getIfSingle_selectIfMany(getAvailableDrivers());
+            var certificates = driver.createToken().getCertificates();
 
-            var certificate = getOrShowDialogIfMany(token.getCertificates());
-            signingManager.setActiveCertificate(certificate);
+            var signingCertificate = getIfSingle_selectIfMany(certificates);
+            signingManager.setActiveCertificate(signingCertificate);
+
         } catch (UserException e) {
             displayError(e);
         }
     }
 
-    private <T extends Selectable> T getOrShowDialogIfMany(List<T> items) {
-        var currentStage = (Stage) mainButton.getScene().getWindow();
+    private <T extends SelectableItem> T getIfSingle_selectIfMany(List<T> items) {
+        if (isNullOrEmpty(items))
+            throw new RuntimeException("Collection is null or empty!");
 
         if (items.size() == 1) {
-            return items.get(0);
+            return first(items);
         } else {
-            var dialog = new SelectDialog<>(items, currentStage);
-            return dialog.getResult();
+            var currentStage = (Stage) mainButton.getScene().getWindow();
+            var selectDialog = new SelectDialog<>(items, currentStage);
+
+            return selectDialog.getResult();
         }
     }
 
@@ -241,17 +229,10 @@ public class MainController {
 
     public String resolveMainButtonText() {
         if (isSignerReady()) {
-            return translate("btn.signAs", signingManager.getActiveCertificate().getName());
+            return translate("btn.signAs", signingManager.getActiveCertificate().getSimpleName());
         } else {
             return translate("btn.loadSigners");
         }
-    }
-
-    private void materialize(Node node) {
-        if (!node.isManaged())
-            node.setManaged(true);
-        if (!node.isVisible())
-            node.setVisible(true);
     }
 
     private void vanish(Node node) {
@@ -259,6 +240,13 @@ public class MainController {
             node.setManaged(false);
         if (node.isVisible())
             node.setVisible(false);
+    }
+
+    private void materialize(Node node) {
+        if (!node.isManaged())
+            node.setManaged(true);
+        if (!node.isVisible())
+            node.setVisible(true);
     }
 
     @FXML
