@@ -166,15 +166,10 @@ public class MainController {
     @FXML
     private void onMainButtonAction() {
         if (!isSignerReady()) {
-            disableAndSet(translate("btn.loading"));
             loadSigners();
-
         } else {
-            disableAndSet(translate("btn.signing"));
             signDocument();
         }
-
-        enableAndSet(resolveMainButtonText());
     }
 
     private boolean isSignerReady() {
@@ -182,6 +177,8 @@ public class MainController {
     }
 
     private void loadSigners() {
+        disableAndSet(translate("btn.loading"));
+
         try {
             var driver = getIfSingle_selectIfMany(getAvailableDrivers());
             var certificates = driver.createToken().getCertificates();
@@ -192,6 +189,8 @@ public class MainController {
         } catch (UserException e) {
             displayError(e);
         }
+
+        enableAndSet(resolveMainButtonText());
     }
 
     private <T extends SelectableItem> T getIfSingle_selectIfMany(List<T> items) {
@@ -209,12 +208,16 @@ public class MainController {
     }
 
     private void signDocument() {
+        disableAndSet(translate("btn.signing"));
+
         try {
             var signedContent = signingManager.sign(signatureUnit);
             onSigned.accept(signedContent);
         } catch (UserException e) {
             displayError(e);
         }
+
+        enableAndSet(resolveMainButtonText());
     }
 
     private void disableAndSet(String text) {
@@ -240,13 +243,6 @@ public class MainController {
             node.setManaged(false);
         if (node.isVisible())
             node.setVisible(false);
-    }
-
-    private void materialize(Node node) {
-        if (!node.isManaged())
-            node.setManaged(true);
-        if (!node.isVisible())
-            node.setVisible(true);
     }
 
     @FXML
