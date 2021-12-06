@@ -3,6 +3,11 @@ package com.octosign.whitelabel.communication;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.preprocessing.XDCTransformer;
 
+import java.nio.charset.StandardCharsets;
+
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
+
 public class SignatureUnit {
     private Document document;
     private SignatureParameters signatureParameters;
@@ -24,9 +29,19 @@ public class SignatureUnit {
         return signatureParameters;
     }
 
-    public void setSignatureParameters(SignatureParameters signatureParameters) { this.signatureParameters = signatureParameters; }
+    public void setSignatureParameters(SignatureParameters signatureParameters) {
+        this.signatureParameters = signatureParameters;
+    }
 
-    public void toXDC() {
+    public byte[] getBinaryContent() {
+        if (signatureParameters.getFormat() == PADES) {
+            return decodeBase64(document.getContent());
+        } else {
+            return document.getContent().getBytes(StandardCharsets.UTF_8);
+        }
+    }
+
+    public void transformToXDC() {
         var transformer = XDCTransformer.newInstance(signatureParameters);
         var transformedContent = transformer.transform(document.getContent(), XDCTransformer.Mode.IDEMPOTENT);
 
