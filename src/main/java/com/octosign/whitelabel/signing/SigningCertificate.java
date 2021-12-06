@@ -6,6 +6,7 @@ import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.*;
+import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -17,9 +18,7 @@ import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
 import java.util.List;
 
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
@@ -130,38 +129,20 @@ public abstract class SigningCertificate {
     /**
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
-    public String sign(SignatureUnit unit) {
-        var parameters = unit.getSignatureParameters();
-        var format = parameters.getFormat();
-        var container = parameters.getContainer();
+    public String sign(SignatureUnit data) {
+        var parameters = data.getSignatureParameters();
+        var isXAdES = parameters.getFormat().equals(XADES);
 
-        /*
-         *  You're travelling through a deep black forest of the incomprehensible and obscure code,
-         *  when, suddenly, a wild var content appears:
-         *
-         * "Desire to refactor is strong, you can't leave it behind.
-         *  My advice is, go ahead, but bear in mind:
-         *  Watch out next three lines - no coincidence
-         *  that #toXDC precedes my assignment.
-         *  Obey, or suffer from the consequence,
-         *  there is no circumvent."
-         */
-        if (container != null)
-            unit.toXDC();
-        var content = unit.getDocument().getContent();
+        if (isXAdES) data.transformToXDC();
 
-        byte[] binaryContent;
-        if (format.equals(PADES)) {
-            binaryContent = Base64.getDecoder().decode(content);
-        } else {
-            binaryContent = content.getBytes(StandardCharsets.UTF_8);
+        var document = new InMemoryDocument(data.getBinaryContent());
+
+        if (isXAdES) {
+            var filename = parameters.getContainerFilename();
+
+            document.setName(filename);
+            document.setMimeType(new MimeType(parameters.getFileMimeType(), parseExtension(filename)));
         }
-
-        var document = new InMemoryDocument(binaryContent);
-
-        var targetFilename = parameters.getContainerFilename();
-        if (container != null && isPresent(targetFilename))
-            document.setName(targetFilename);
 
         var signedDocument = sign(document, parameters);
 
@@ -177,9 +158,9 @@ public abstract class SigningCertificate {
 
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
         if (privateKey == null)
-            throw new RuntimeException("Private key missing");
+            throw new RuntimeException("Signing certificate not set");
 
-        CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+        var commonCertificateVerifier = new CommonCertificateVerifier();
         DSSDocument signedDocument;
         var format = inputParameters.getFormat();
 
@@ -202,14 +183,15 @@ public abstract class SigningCertificate {
             if (parameters instanceof ASiCWithXAdESSignatureParameters asicParameters) {
                 var service = new ASiCWithXAdESService(commonCertificateVerifier);
                 var dataToSign = service.getDataToSign(document, asicParameters);
-                var signatureValue = token.sign(dataToSign, asicParameters.getDigestAlgorithm(), privateKey);
-    
+                var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
+
                 signedDocument = service.signDocument(document, asicParameters, signatureValue);
+
             } else {
                 var service = new XAdESService(commonCertificateVerifier);
                 var dataToSign = service.getDataToSign(document, parameters);
                 var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
-    
+
                 signedDocument = service.signDocument(document, parameters, signatureValue);
             }
         } else {

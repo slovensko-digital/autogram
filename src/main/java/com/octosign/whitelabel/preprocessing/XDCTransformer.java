@@ -1,5 +1,6 @@
 package com.octosign.whitelabel.preprocessing;
 
+import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.error_handling.*;
@@ -48,6 +49,14 @@ public class XDCTransformer {
     private String documentXmlns;
 
     public static XDCTransformer newInstance(SignatureParameters sp) {
+        MimeType mimeType;
+        try {
+            mimeType = MimeType.parse(sp.getTransformationOutputMimeType());
+        } catch (MalformedMimetypeException e) {
+            throw new IntegrationException(Code.MALFORMED_INPUT, sp.getTransformationOutputMimeType());
+        }
+
+        var mediaType = SignatureParameterMapper.map(mimeType);
         var method = SignatureParameterMapper.map(sp.getPropertiesCanonicalization());
         var algorithm = SignatureParameterMapper.map(sp.getDigestAlgorithm());
 
@@ -192,7 +201,7 @@ public class XDCTransformer {
         String base = xmlns.replaceAll("/+$", "");
         String attached = suffix.replaceAll("^/+", "");
 
-        return  base + "/" + attached;
+        return base + "/" + attached;
     }
 
     private Element createUsedXSDReference() {
