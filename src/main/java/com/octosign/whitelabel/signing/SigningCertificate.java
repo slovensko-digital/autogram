@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
-import static com.octosign.whitelabel.ui.Utils.*;
 
 
 /**
@@ -138,10 +137,8 @@ public abstract class SigningCertificate {
         var document = new InMemoryDocument(data.getBinaryContent());
 
         if (isXAdES) {
-            var filename = parameters.getContainerFilename();
-
-            document.setName(filename);
-            document.setMimeType(new MimeType(parameters.getFileMimeType(), parseExtension(filename)));
+            document.setName(parameters.getContainerFilename());
+            document.setMimeType(MimeType.fromMimeTypeString(parameters.getFileMimeType()));
         }
 
         var signedDocument = sign(document, parameters);
