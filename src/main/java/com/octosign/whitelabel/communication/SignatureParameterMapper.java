@@ -1,6 +1,9 @@
 package com.octosign.whitelabel.communication;
 
 import com.google.common.collect.ImmutableMap;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 import com.octosign.whitelabel.preprocessing.XDCTransformer;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.*;
@@ -51,7 +54,7 @@ public class SignatureParameterMapper {
             INCLUSIVE, CanonicalizationMethod.INCLUSIVE
         );
 
-    private static final Map<MimeType, XDCTransformer.DestinationMediaType> transformationOutputMimetypeToDestinationMediaTypeMapping =
+    private static final Map<MimeType, XDCTransformer.DestinationMediaType> mimeTypeToDestinationMediaTypeMapping =
             ImmutableMap.of(
                     MimeType.PLAIN, DestinationMediaType.TXT,
                     MimeType.XML, DestinationMediaType.HTML,
@@ -85,8 +88,14 @@ public class SignatureParameterMapper {
     /*
      * Single item mappings to another DSS-specific format (outside of the scope of DSS-specific signature parameters)
      */
-    public static DestinationMediaType map(MimeType mimeType) {
-        return transformationOutputMimetypeToDestinationMediaTypeMapping.get(mimeType);
+    public static DestinationMediaType map(String transformationOutputMimeType) {
+        MimeType mimeType;
+        try {
+            mimeType = MimeType.parse(transformationOutputMimeType);
+        } catch (MalformedMimetypeException e) {
+            throw new IntegrationException(Code.MALFORMED_MIMETYPE, transformationOutputMimeType);
+        }
+        return mimeTypeToDestinationMediaTypeMapping.get(mimeType);
     }
 
 

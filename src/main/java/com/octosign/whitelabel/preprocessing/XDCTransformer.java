@@ -49,14 +49,7 @@ public class XDCTransformer {
     private String documentXmlns;
 
     public static XDCTransformer newInstance(SignatureParameters sp) {
-        MimeType mimeType;
-        try {
-            mimeType = MimeType.parse(sp.getTransformationOutputMimeType());
-        } catch (MalformedMimetypeException e) {
-            throw new IntegrationException(Code.MALFORMED_INPUT, sp.getTransformationOutputMimeType());
-        }
-
-        var mediaType = SignatureParameterMapper.map(mimeType);
+        var mediaType = SignatureParameterMapper.map(sp.getTransformationOutputMimeType());
         var method = SignatureParameterMapper.map(sp.getPropertiesCanonicalization());
         var algorithm = SignatureParameterMapper.map(sp.getDigestAlgorithm());
 
