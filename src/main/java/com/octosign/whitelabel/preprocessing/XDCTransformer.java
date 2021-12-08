@@ -189,7 +189,7 @@ public class XDCTransformer {
         String base = xmlns.replaceAll("/+$", "");
         String attached = suffix.replaceAll("^/+", "");
 
-        return base + "/" + attached;
+        return  base + "/" + attached;
     }
 
     private Element createUsedXSDReference() {

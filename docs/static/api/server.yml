@@ -196,7 +196,7 @@ components:
           description: 'Content of the document to sign, format is dictated by `payloadMimeType`.'
         legalEffect:
           type: string
-          example:
+          example: 'By signing this document...'
           description: 'Optional legal effect of signing the document shown to the user when signing.'
       required:
       - content

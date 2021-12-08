@@ -10,12 +10,12 @@ import static java.util.Objects.requireNonNull;
 
 public class Driver implements SelectableItem {
     private final String name;
-    private final API api;
+    private final KeystoreType keystoreType;
     private final Map<OperatingSystem, Path> files;
 
-    private Driver(String name, API api, Map<OperatingSystem, Path> files) {
+    private Driver(String name, KeystoreType keystoreType, Map<OperatingSystem, Path> files) {
         this.name = requireNonNull(name);
-        this.api = requireNonNull(api);
+        this.keystoreType = requireNonNull(keystoreType);
         this.files = requireNonNull(files);
    }
 
@@ -28,8 +28,8 @@ public class Driver implements SelectableItem {
         return getName();
     }
 
-    public API getAPI() {
-        return api;
+    public KeystoreType getKeystoreType() {
+        return keystoreType;
     }
 
     public Path getPath() {
@@ -52,11 +52,7 @@ public class Driver implements SelectableItem {
         return files.containsKey(OperatingSystem.current());
     }
 
-    public Token createToken() {
-        return api.createToken(this);
-    }
-
-    public static Driver.Builder of(String name) {
+    public static Driver.Builder name(String name) {
         return new Driver.Builder(name);
     }
 
@@ -74,8 +70,8 @@ public class Driver implements SelectableItem {
             return this;
         }
 
-        public Driver with(API api) {
-            return new Driver(name, api, items);
+        public Driver keystore(KeystoreType keystoreType) {
+            return new Driver(name, keystoreType, items);
         }
     }
 }

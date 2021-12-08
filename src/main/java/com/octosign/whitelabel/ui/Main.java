@@ -31,7 +31,8 @@ import static java.util.Objects.requireNonNullElse;
 public class Main extends Application {
 
     public enum Status {
-        LOADING, READY
+        LOADING,
+        READY,
     }
 
     private final SigningManager signingManager = new SigningManager();

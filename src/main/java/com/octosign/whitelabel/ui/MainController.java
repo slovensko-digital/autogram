@@ -181,7 +181,7 @@ public class MainController {
 
         try {
             var driver = getIfSingle_selectIfMany(getAvailableDrivers());
-            var certificates = driver.createToken().getCertificates();
+            var certificates = Token.fromDriver(driver).getCertificates();
 
             var signingCertificate = getIfSingle_selectIfMany(certificates);
             signingManager.setActiveCertificate(signingCertificate);

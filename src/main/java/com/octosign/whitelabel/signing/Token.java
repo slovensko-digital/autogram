@@ -1,17 +1,16 @@
 package com.octosign.whitelabel.signing;
 
 import com.octosign.whitelabel.error_handling.UserException;
-import com.octosign.whitelabel.signing.token.PKCS11Token;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static com.octosign.whitelabel.ui.Utils.isNullOrEmpty;
 
 public abstract class Token {
+    private static List<Driver> DRIVERS;
+
     private SignatureTokenConnection dssToken;
 
     private List<Certificate> certificates;
@@ -21,6 +20,10 @@ public abstract class Token {
     protected void initialize(SignatureTokenConnection dssToken) {
         this.dssToken = dssToken;
         this.certificates = buildCertificates();
+    }
+
+    public static Token fromDriver(Driver driver) {
+        return driver.getKeystoreType().createToken(driver);
     }
 
     protected SignatureTokenConnection getDssToken() {
@@ -53,19 +56,20 @@ public abstract class Token {
 
 
     public static List<Driver> getAvailableDrivers() {
-        return Token.getAllDrivers().stream()
+        return Token.getDrivers().stream()
                     .filter(Driver::isCompatible)
                     .filter(Driver::isInstalled)
                     .toList();
     }
 
-    public static Collection<Driver> getAllDrivers() {
-        var drivers = new ArrayList<>(PKCS11Token.getDrivers());
+    public static Collection<Driver> getDrivers() {
+        if (DRIVERS == null)
+            DRIVERS = new ArrayList<>();
 
-        //  TODO - what else belongs here?
-        //  do the other implementations (PKCS12, MSCAPI, MOCCHA) also have some kind of Drivers,
-        //  or not necessarily/not at all?
-        return drivers;
+        return DRIVERS;
     }
 
+    protected static void registerDriver(Driver driver) {
+        getDrivers().add(driver);
+    }
 }
