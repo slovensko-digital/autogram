@@ -61,9 +61,6 @@ public class SignatureParameterMapper {
                     MimeType.PDF, DestinationMediaType.HTML
             );
 
-    /*
-     * Single item mappings to DSS-specific implementation of signature parameters
-     */
     public static SignatureLevel map(SignatureParameters.Level level, SignatureParameters.Format format) {
         return signatureLevelMapping.get(level).get(format);
     }
@@ -85,9 +82,6 @@ public class SignatureParameterMapper {
     }
 
 
-    /*
-     * Single item mappings to another DSS-specific format (outside of the scope of DSS-specific signature parameters)
-     */
     public static DestinationMediaType map(String transformationOutputMimeType) {
         MimeType mimeType;
         try {
@@ -98,11 +92,6 @@ public class SignatureParameterMapper {
         return mimeTypeToDestinationMediaTypeMapping.get(mimeType);
     }
 
-
-    /*
-     * Composite mappings
-     * Each should fit a DSS-specific complex type (XAdESSignatureParameters)
-     */
 
     public static XAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) {
         XAdESSignatureParameters parameters;
