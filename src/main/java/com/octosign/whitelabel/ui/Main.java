@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.*;
 
+import com.octosign.whitelabel.signing.OperatingSystem;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -22,6 +23,7 @@ import com.octosign.whitelabel.communication.server.Server;
 import javafx.stage.Window;
 import org.slf4j.LoggerFactory;
 
+import static com.octosign.whitelabel.signing.OperatingSystem.*;
 import static com.octosign.whitelabel.ui.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
@@ -51,6 +53,7 @@ public class Main extends Application {
         var cliCommand = CommandFactory.fromParameters(getParameters());
 
         if (cliCommand instanceof ListenCommand listenCommand) {
+            validate(listenCommand);
             startServer(listenCommand);
             statusIndication = new StatusIndication(this::exit);
 
@@ -65,15 +68,28 @@ public class Main extends Application {
         }
     }
 
+    private void validate(ListenCommand command) {
+        if (command.isRequiredSSL()) {
+            if (OperatingSystem.current() == MAC) {
+                displayInfo("SSL mode enabled", "Application was launched with SSL mode enabled. This makes sense only when Safari is also involved. Otherwise there is no point of any SSL here.");
+            } else {
+               throw new RuntimeException("It is pointless to enforce SSL for any case where Safari and Mac are not both involved. Please, launch application again and without SSL.");
+            }
+        }
+    }
+
     private void startServer(ListenCommand command) {
         var version = getVersion();
 
-        server = new Server(command.getInitialNonce());
+        server = new Server(command.getInitialNonce(), command.isRequiredSSL());
         server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
 
-        if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
-        if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());
+        if (command.getOrigin() != null)
+            server.setAllowedOrigin(command.getOrigin());
+
+        if (command.getSecretKey() != null)
+            server.setSecretKey(command.getSecretKey());
 
         server.start();
         System.out.println(translate("app.runningOn", server.getAddress()));
