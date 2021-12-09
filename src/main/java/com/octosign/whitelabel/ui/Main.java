@@ -68,13 +68,14 @@ public class Main extends Application {
         }
     }
 
+    // TODO uncomment this
     private void validate(ListenCommand command) {
         if (command.isRequiredSSL()) {
-            if (OperatingSystem.current() == LINUX) {
+//            if (OperatingSystem.current() == MAC) {
                 displayInfo("SSL mode enabled", "Application was launched with SSL mode enabled. This makes sense only when Safari is also involved. Otherwise there is no point of any SSL here.");
-            } else {
-               throw new RuntimeException("It is pointless to enforce SSL for any case where Safari and Mac are not both involved. Please, launch application again and without SSL.");
-            }
+//            } else {
+//               throw new RuntimeException("It is pointless to enforce SSL for any case where Safari and Mac are not both involved. Please, launch application again and without SSL.");
+//            }
         }
     }
 
