@@ -70,7 +70,7 @@ public class Main extends Application {
 
     private void validate(ListenCommand command) {
         if (command.isRequiredSSL()) {
-            if (OperatingSystem.current() == MAC) {
+            if (OperatingSystem.current() == LINUX) {
                 displayInfo("SSL mode enabled", "Application was launched with SSL mode enabled. This makes sense only when Safari is also involved. Otherwise there is no point of any SSL here.");
             } else {
                throw new RuntimeException("It is pointless to enforce SSL for any case where Safari and Mac are not both involved. Please, launch application again and without SSL.");
@@ -95,7 +95,8 @@ public class Main extends Application {
         System.out.println(translate("app.runningOn", server.getAddress()));
 
         if (server.isDevMode()) {
-            var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
+            var prefix = server.isSSLRequired() ? "https:/" : "http:/";
+            var docsAddress = prefix + server.getAddress().toString() + "/documentation";
             System.out.println(translate("text.docsAvailableAt", docsAddress));
         }
 

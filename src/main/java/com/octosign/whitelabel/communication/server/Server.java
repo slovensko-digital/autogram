@@ -45,6 +45,8 @@ public class Server {
     // HMAC hex secret key
     private String secretKey;
 
+    private String protocol;
+
     public Server(int initialNonce, boolean isRequiredSSL) {
         this(
             getProperty("server.defaultAddress"),
@@ -57,10 +59,10 @@ public class Server {
     public Server(String hostname, int port, int initialNonce, boolean isRequiredSSL) {
         try {
             if (isRequiredSSL) {
-                var p12file = new File("/home/michal/Library/Application Support/Octosign/tls/octosign-cert.p12");
+                var p12file = new File(System.getProperty("user.home") + "/Library/Application Support/Octosign/tls/octosign-cert.p12");
 
                 server = HttpsServer.create(new InetSocketAddress(hostname, port), 0);
-
+                protocol = "https";
                 SSLContext sslContext = SSLContext.getInstance("TLS");
                 char[] password = "".toCharArray();
 
@@ -94,6 +96,7 @@ public class Server {
 
             } else {
                 server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
+                protocol = "http";
             }
         } catch (BindException e) {
             throw new UserException("error.launchFailed.header", translate("error.launchFailed.addressInUse.description", port), e);
@@ -157,5 +160,9 @@ public class Server {
 
     public InetSocketAddress getAddress() {
         return server.getAddress();
+    }
+
+    public boolean isSSLRequired() {
+        return protocol.equalsIgnoreCase("https");
     }
 }
