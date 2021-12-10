@@ -8,6 +8,7 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.*;
 
 import com.octosign.whitelabel.signing.SigningManager;
+import com.octosign.whitelabel.signing.OperatingSystem;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -23,6 +24,7 @@ import com.octosign.whitelabel.communication.server.Server;
 import javafx.stage.Window;
 import org.slf4j.LoggerFactory;
 
+import static com.octosign.whitelabel.signing.OperatingSystem.*;
 import static com.octosign.whitelabel.ui.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
@@ -67,20 +69,27 @@ public class Main extends Application {
     }
 
     private void startServer(ListenCommand command) {
-        var version = getVersion();
+        I18n.setLocale(command.getLanguage());
 
-        server = new Server(command.getInitialNonce());
+        checkSSL(command);
+        server = new Server(command.getInitialNonce(), command.isRequiredSSL());
+
+        var version = getVersion();
         server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
 
-        if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
-        if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());
+        if (command.getOrigin() != null)
+            server.setAllowedOrigin(command.getOrigin());
+
+        if (command.getSecretKey() != null)
+            server.setSecretKey(command.getSecretKey());
 
         server.start();
         System.out.println(translate("app.runningOn", server.getAddress()));
 
         if (server.isDevMode()) {
-            var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
+            var prefix = server.isSSLRequired() ? "https:/" : "http:/";
+            var docsAddress = prefix + server.getAddress().toString() + "/documentation";
             System.out.println(translate("text.docsAvailableAt", docsAddress));
         }
 
@@ -98,6 +107,17 @@ public class Main extends Application {
         });
 
         server.setInfo(new Info(version, Status.READY));
+    }
+
+    private void checkSSL(ListenCommand command) {
+        if (command.isRequiredSSL()) {
+            if (OperatingSystem.current() == MAC) {
+                displayInfo("info.sslEnabled.header", "info.sslEnabled.description");
+            } else {
+                displayError("error.sslNotAllowed.header", "error.sslNotAllowed.description");
+                System.exit(0);
+            }
+        }
     }
 
     private void exit() {
