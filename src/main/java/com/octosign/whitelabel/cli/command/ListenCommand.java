@@ -33,7 +33,7 @@ public class ListenCommand extends Command {
     /**
      * Parse command using a URL
      *
-     * EXAMPLES
+     * EXAMPLE:
      * signer://listen?protocol=https&host=localhost&port=37200&origin=*&key=abc123qwer456xyz&nonce=16 (currently active)
      *
      * Used when the application is launched using the custom protocol
@@ -43,8 +43,7 @@ public class ListenCommand extends Command {
         this.scheme = validateScheme(url.getScheme());
         var query = QueryParams.parseQueryString(url.getQuery());
 
-        initialize(query.get("protocol"), query.get("host"), query.get("port"),
-                query.get("origin"), query.get("key"), query.get("nonce"));
+        initialize(query.get("protocol"), query.get("host"), query.get("port"), query.get("origin"), query.get("key"), query.get("nonce"));
     }
 
     /**
@@ -56,8 +55,7 @@ public class ListenCommand extends Command {
         super(parameters);
         var named = parameters.getNamed();
 
-        initialize(named.get("protocol"), named.get("host"), named.get("port"),
-                named.get("origin"), named.get("key"), named.get("nonce"));
+        initialize(named.get("protocol"), named.get("host"), named.get("port"), named.get("origin"), named.get("key"), named.get("nonce"));
     }
 
     private void initialize(String protocol, String host, String port, String origin, String key, String nonce) {
