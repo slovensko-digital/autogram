@@ -4,7 +4,7 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="com.octosign.whitelabel.ui.Main" />
     <module name="whitelabel" />
-    <option name="PROGRAM_PARAMETERS" value="--url=signer://listen?protocol=http&amp;host=localhost&amp;port=37200&amp;origin=*" />
+    <option name="PROGRAM_PARAMETERS" value="--url=signer://listen?protocol=http&amp;host=localhost&amp;port=37200&amp;origin=*&amp;language=sk" />
     <option name="VM_PARAMETERS" value="--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED" />
     <extension name="coverage">
       <pattern>

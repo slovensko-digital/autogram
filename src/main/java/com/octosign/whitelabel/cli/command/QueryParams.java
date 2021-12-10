@@ -29,4 +29,8 @@ public class QueryParams {
     public String get(String key) {
         return params.get(key);
     }
+
+    public Map<String, String> asMap() {
+        return Collections.unmodifiableMap(params);
+    }
 }
