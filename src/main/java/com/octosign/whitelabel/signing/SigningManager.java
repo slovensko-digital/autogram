@@ -5,11 +5,13 @@ import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.UserException;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.utils.Utils;
@@ -57,7 +59,17 @@ public class SigningManager {
         if (format.equals(XADES))
             document.setName(parameters.getContainerFilename());
 
-        var signedDocument = sign(document, parameters);
+
+        DSSDocument signedDocument;
+        try {
+            signedDocument = sign(document, parameters);
+        } catch (DSSException ex) {
+            if (ex.getMessage().matches(".*?Token.*?removed.*?")) {
+                throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description");
+            } else {
+                throw ex;
+            }
+        }
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
