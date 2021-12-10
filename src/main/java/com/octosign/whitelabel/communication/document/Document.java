@@ -5,7 +5,6 @@ import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 
 import static com.octosign.whitelabel.ui.Utils.*;
 
@@ -17,7 +16,6 @@ public class Document implements Cloneable {
     protected String title;
     protected String content;
     protected String legalEffect;
-
     protected MimeType mimeType;
 
     public Document() {}
@@ -79,7 +77,7 @@ public class Document implements Cloneable {
         document.setMimeType(mimeType);
 
         if (mimeType.equalsTypeSubtype(MimeType.XML)) {
-            return document.buildXMLDocument(parameters, mimeType);
+            return buildXMLDocument(document, parameters, mimeType);
         } else if(mimeType.equalsTypeSubtype(MimeType.PDF)) {
             return new PDFDocument(document);
         } else {
@@ -87,19 +85,19 @@ public class Document implements Cloneable {
         }
     }
 
-    private XMLDocument buildXMLDocument(SignatureParameters parameters, MimeType mimeType) {
+    private static XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) {
         var schema = parameters.getSchema();
         var transformation = parameters.getTransformation();
 
         if (mimeType.isBase64()) {
             try {
-                setContent(decodeBase64(getContent()));
+                document.setContent(decodeBase64(document.getContent()));
                 schema = decodeBase64(schema);
                 transformation = decodeBase64(transformation);
             } catch (Exception e) {
                 throw new IntegrationException(Code.DECODING_FAILED, e);
             }
         }
-        return new XMLDocument(this, schema, transformation);
+        return new XMLDocument(document, schema, transformation);
     }
 }
