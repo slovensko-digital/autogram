@@ -31,6 +31,7 @@ public class XMLDocument extends Document {
         setTitle(document.getTitle());
         setContent(document.getContent());
         setLegalEffect(document.getLegalEffect());
+        setMimeType(document.getMimeType());
     }
 
     public XMLDocument(Document document, String schema, String transformation) {
