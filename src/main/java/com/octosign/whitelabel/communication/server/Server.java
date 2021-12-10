@@ -45,7 +45,7 @@ public class Server {
     // HMAC hex secret key
     private String secretKey;
 
-    private String protocol;
+    private final String protocol;
 
     public Server(int initialNonce, boolean isRequiredSSL) {
         this(
@@ -88,8 +88,8 @@ public class Server {
                             params.setProtocols(engine.getEnabledProtocols());
                             SSLParameters defaultSSLParameters = c.getDefaultSSLParameters();
                             params.setSSLParameters(defaultSSLParameters);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
+                        } catch (Exception e) {
+                            throw new UserException("error.serverNotCreated", e);
                         }
                     }
                 });
