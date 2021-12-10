@@ -1,12 +1,14 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.communication.MimeType;
+import com.octosign.whitelabel.communication.SignatureParameterMapper;
+import com.octosign.whitelabel.communication.SignatureParameters;
+import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.*;
 
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.*;
-import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -18,10 +20,14 @@ import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
+import static com.octosign.whitelabel.ui.Utils.isPresent;
+import static eu.europa.esig.dss.model.MimeType.fromMimeTypeString;
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 
 /**
@@ -129,19 +135,34 @@ public abstract class SigningCertificate {
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
     public String sign(SignatureUnit data) {
+        var document = data.getDocument();
         var parameters = data.getSignatureParameters();
-        var isXAdES = parameters.getFormat().equals(XADES);
 
-        if (isXAdES) data.transformToXDC();
+        var mimeType = document.getMimeType();
+        var isXML = mimeType.equalsTypeSubtype(MimeType.XML);
+        var hasContainer = parameters.getContainer() != null;
 
-        var document = new InMemoryDocument(data.getBinaryContent());
+        if (isXML && hasContainer)
+            data.transformToXDC();
 
-        if (isXAdES) {
-            document.setName(parameters.getContainerFilename());
-            document.setMimeType(MimeType.fromMimeTypeString(parameters.getFileMimeType()));
+        byte[] binaryContent;
+        var content = document.getContent();
+
+        if (mimeType.isBase64()) {
+            binaryContent = decodeBase64(content);
+        } else {
+            binaryContent = content.getBytes(StandardCharsets.UTF_8);
         }
 
-        var signedDocument = sign(document, parameters);
+        var dssDocument = new InMemoryDocument(binaryContent);
+        var targetFilename = parameters.getContainerFilename();
+
+        if (isPresent(targetFilename) && isXML && hasContainer) {
+            dssDocument.setName(targetFilename);
+            dssDocument.setMimeType(fromMimeTypeString(parameters.getFileMimeType()));
+        }
+
+        var signedDocument = sign(dssDocument, parameters);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {

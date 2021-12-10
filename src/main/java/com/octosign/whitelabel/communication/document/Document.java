@@ -17,6 +17,8 @@ public class Document implements Cloneable {
     protected String content;
     protected String legalEffect;
 
+    protected MimeType mimeType;
+
     public Document() {}
 
     public Document(String id, String title, String content, String legalEffect) {
@@ -42,6 +44,14 @@ public class Document implements Cloneable {
 
     public void setLegalEffect(String legalEffect) { this.legalEffect = legalEffect; }
 
+    public MimeType getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(MimeType mimeType) {
+        this.mimeType = mimeType;
+    }
+
     @Override
     public Document clone() {
         return new Document(id, title, content, legalEffect);
@@ -65,6 +75,7 @@ public class Document implements Cloneable {
         } catch (Exception e) {
             throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
         }
+        document.setMimeType(mimeType);
 
         if (mimeType.equalsTypeSubtype(MimeType.XML)) {
             return document.buildXMLDocument(parameters, mimeType);
