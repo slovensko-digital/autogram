@@ -121,7 +121,7 @@ public class Main extends Application {
         });
         controller.loadDocument();
 
-        var scene = new Scene(root, 640, 480);
+        var scene = new Scene(root, 720, 540);
         windowStage.setTitle(translate("app.name"));
         windowStage.setScene(scene);
         windowStage.show();
