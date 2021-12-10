@@ -57,7 +57,6 @@ public abstract class Token {
         return keys;
     }
 
-
     public static List<Driver> getAvailableDrivers() {
         return getDrivers().stream()
                            .filter(Driver::isCompatible)
@@ -73,9 +72,7 @@ public abstract class Token {
     private static void loadDrivers() {
         DRIVERS = new ArrayList<>();
 
-        /*
-         * PKCS11 drivers
-         */
+        // PKCS11 drivers
         DRIVERS.addAll(List.of(
                 Driver.name(translate("btn.eID"))
                       .file(WINDOWS, "C:\\Program Files (x86)\\EAC MW klient\\pkcs11_x64.dll")
