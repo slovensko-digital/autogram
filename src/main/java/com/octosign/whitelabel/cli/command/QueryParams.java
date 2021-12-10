@@ -1,11 +1,14 @@
 package com.octosign.whitelabel.cli.command;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
+import static java.util.stream.Collectors.toMap;
 
 public class QueryParams {
     private final Map<String, String> params;
@@ -18,18 +21,12 @@ public class QueryParams {
         if (isNullOrBlank(query)) {
             params = Collections.emptyMap();
         } else {
-            params = Stream.of(query.split("&"))
-                           .filter(entry -> !entry.isBlank())
-                           .map(entry -> entry.split("="))
-                           .collect(Collectors.toMap(pair -> pair[0], pair -> (pair.length > 1) ? pair[1] : null));
+            params = URLEncodedUtils.parse(query, StandardCharsets.UTF_8).stream()
+                                    .collect(toMap(NameValuePair::getName, NameValuePair::getValue));
         }
     }
 
     public String get(String key) {
         return params.get(key);
-    }
-
-    public <T> T get(String key, Class<T> klass) {
-        return klass.cast(key);
     }
 }
