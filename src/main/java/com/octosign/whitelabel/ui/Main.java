@@ -53,7 +53,6 @@ public class Main extends Application {
         var cliCommand = CommandFactory.fromParameters(getParameters());
 
         if (cliCommand instanceof ListenCommand listenCommand) {
-            validate(listenCommand);
             startServer(listenCommand);
             statusIndication = new StatusIndication(this::exit);
 
@@ -68,21 +67,13 @@ public class Main extends Application {
         }
     }
 
-    // TODO uncomment this
-    private void validate(ListenCommand command) {
-        if (command.isRequiredSSL()) {
-//            if (OperatingSystem.current() == MAC) {
-                displayInfo("SSL mode enabled", "Application was launched with SSL mode enabled. This makes sense only when Safari is also involved. Otherwise there is no point of any SSL here.");
-//            } else {
-//               throw new RuntimeException("It is pointless to enforce SSL for any case where Safari and Mac are not both involved. Please, launch application again and without SSL.");
-//            }
-        }
-    }
-
     private void startServer(ListenCommand command) {
-        var version = getVersion();
+        I18n.setLocale(command.getLanguage());
 
+        checkSSL(command);
         server = new Server(command.getInitialNonce(), command.isRequiredSSL());
+
+        var version = getVersion();
         server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
 
@@ -115,6 +106,17 @@ public class Main extends Application {
         });
 
         server.setInfo(new Info(version, Status.READY));
+    }
+
+    private void checkSSL(ListenCommand command) {
+        if (command.isRequiredSSL()) {
+            if (OperatingSystem.current() == MAC) {
+                displayInfo("info.sslEnabled.header", "info.sslEnabled.description");
+            } else {
+                displayError("error.sslNotAllowed.header", "error.sslNotAllowed.description");
+                System.exit(0);
+            }
+        }
     }
 
     private void exit() {
