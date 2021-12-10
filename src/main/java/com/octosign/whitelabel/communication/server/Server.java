@@ -1,6 +1,5 @@
 package com.octosign.whitelabel.communication.server;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -48,21 +47,13 @@ public class Server {
 
     private final String protocol;
 
-    public Server(int initialNonce, boolean isRequiredSSL) {
-        this(
-            getProperty("server.defaultAddress"),
-            Integer.parseInt(getProperty("server.defaultPort")),
-            initialNonce,
-            isRequiredSSL
-        );
-    }
 
     public Server(String hostname, int port, int initialNonce, boolean isRequiredSSL) {
+        this.protocol = isRequiredSSL ? "https" : "http";
         try {
             if (isRequiredSSL) {
                 var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert")).toFile();
                 server = HttpsServer.create(new InetSocketAddress(hostname, port), 0);
-                protocol = "https";
                 SSLContext sslContext = SSLContext.getInstance("TLS");
                 char[] password = "".toCharArray();
 
@@ -95,7 +86,6 @@ public class Server {
                 });
             } else {
                 server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
-                protocol = "http";
             }
         } catch (BindException e) {
             throw new UserException("error.launchFailed.header", translate("error.launchFailed.addressInUse.description", port), e);
@@ -163,5 +153,9 @@ public class Server {
 
     public boolean isSSLRequired() {
         return protocol.equalsIgnoreCase("https");
+    }
+
+    public String getProtocol() {
+        return protocol;
     }
 }

@@ -72,7 +72,8 @@ public class Main extends Application {
         I18n.setLocale(command.getLanguage());
 
         checkSSL(command);
-        server = new Server(command.getInitialNonce(), command.isRequiredSSL());
+        server = new Server(command.getHost(), command.getPort(), command.getInitialNonce(), command.isRequiredSSL());
+        server.setAllowedOrigin(command.getOrigin());
 
         var version = getVersion();
         server.setDevMode(version.equals("dev"));
@@ -88,8 +89,7 @@ public class Main extends Application {
         System.out.println(translate("app.runningOn", server.getAddress()));
 
         if (server.isDevMode()) {
-            var prefix = server.isSSLRequired() ? "https:/" : "http:/";
-            var docsAddress = prefix + server.getAddress().toString() + "/documentation";
+            var docsAddress = server.getProtocol() + ":/" + server.getAddress().toString() + "/documentation";
             System.out.println(translate("text.docsAvailableAt", docsAddress));
         }
 

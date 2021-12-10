@@ -3,18 +3,18 @@ package com.octosign.whitelabel.cli.command;
 import javafx.application.Application.Parameters;
 
 import java.net.URI;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.octosign.whitelabel.cli.command.ListenCommand.Validations.*;
 import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
+import static com.octosign.whitelabel.ui.Utils.isPresent;
+import static java.util.Optional.ofNullable;
 
 /**
  * Launch application in the server mode - listening
  */
 public class ListenCommand extends Command {
-
     public static final String NAME = "listen";
 
     private String protocol;
@@ -29,7 +29,7 @@ public class ListenCommand extends Command {
 
     private int initialNonce;
 
-    private Locale language = Locale.getDefault();
+    private Locale language;
 
     /**
      * Parse command using a URL
@@ -57,26 +57,24 @@ public class ListenCommand extends Command {
     }
 
     private void initialize(Map<String, String> params) {
-        var protocol = params.getOrDefault("protocol", getProperty("server.defaultProtocol"));
+        var protocol = ofNullable(params.get("protocol")).orElse(getProperty("server.defaultProtocol"));
+        var host = ofNullable(params.get("host")).orElse(getProperty("server.defaultAddress"));
+        var port = ofNullable(params.get("port")).orElse(getProperty("server.defaultPort"));
+        var origin = ofNullable(params.get("origin")).orElse(getProperty("server.defaultOrigin"));
+        var language = ofNullable(params.get("language")).orElse(Locale.getDefault().getLanguage());
+        var key = params.get("key");
+        var nonce = params.get("nonce");
+
         this.protocol = validateProtocol(protocol);
-
-        var host = params.getOrDefault("host", getProperty("server.defaultAddress"));
         this.host = validateHost(host);
-
-        var port = params.getOrDefault("port", getProperty("server.defaultPort"));
         this.port = validatePort(port);
-
-        var origin = params.getOrDefault("origin", getProperty("server.defaultOrigin"));
         this.origin = validateOrigin(origin);
+        this.language = validateLanguage(language);
 
-        if (params.containsKey("key"))
-            this.secretKey = validateSecretKey(params.get("key"));
-
-        if (params.containsKey("nonce"))
-            this.initialNonce = validateInitialNonce(params.get("nonce"));
-
-        if (params.containsKey("language"))
-            this.language = validateLanguage(params.get("language"));
+        if (isPresent(key))
+            this.secretKey = validateSecretKey(key);
+        if (isPresent(nonce))
+            this.initialNonce = validateInitialNonce(nonce);
     }
 
     public boolean isRequiredSSL() {
