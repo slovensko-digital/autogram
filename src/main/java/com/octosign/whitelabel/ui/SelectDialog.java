@@ -36,8 +36,10 @@ public class SelectDialog<T extends SelectableItem> extends Stage {
     private Button createButton(T item) {
         var button = new Button(item.getSimpleName());
         // TODO to fxml
+        button.getStyleClass().add("button-custom");
         button.setPadding(new Insets(32, 48, 32, 48));
         button.setFont(Font.font("DejaVu Sans", 20));
+        button.setMaxWidth(Double.MAX_VALUE);
 
         button.setOnAction(e -> {
             selectedItem = item;

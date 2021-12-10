@@ -14,3 +14,12 @@
 .footer {
     -fx-padding: 16px;
 }
+
+.button-custom {
+    -fx-background-color: #c8c8c8;
+    -fx-background-radius: 9px;
+    -fx-text-fill: #373737;
+    -fx-padding: 5px;
+    -fx-border-insets: 5px;
+    -fx-background-insets: 5px;
+}
