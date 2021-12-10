@@ -1,6 +1,5 @@
 package com.octosign.whitelabel.preprocessing;
 
-import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.error_handling.*;
@@ -64,7 +63,7 @@ public class XDCTransformer {
         this.xsdSchema = xsdSchema;
         this.xsltSchema = xsltSchema;
         this.digestAlgorithm = requireNonNull(digestAlgorithm, "digestAlgorithm");
-        this.mediaDestinationTypeDescription = requireNonNull(mediaDestinationTypeDescription, "transformationOutputMimeType");
+        this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
     public String transform(String xmlInput, Mode mode) {
