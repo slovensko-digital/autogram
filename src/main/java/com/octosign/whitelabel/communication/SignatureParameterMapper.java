@@ -2,26 +2,26 @@ package com.octosign.whitelabel.communication;
 
 import com.google.common.collect.ImmutableMap;
 import eu.europa.esig.dss.AbstractSignatureParameters;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
+import com.octosign.whitelabel.preprocessing.XDCTransformer;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.*;
-import eu.europa.esig.dss.model.AbstractSerializableSignatureParameters;
-import eu.europa.esig.dss.model.SerializableSignatureParameters;
+import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.util.Map;
 
-import static com.octosign.whitelabel.communication.SignatureParameters.CanonicalizationMethod.INCLUSIVE;
-import static com.octosign.whitelabel.communication.SignatureParameters.Container.ASICE;
-import static com.octosign.whitelabel.communication.SignatureParameters.Container.ASICS;
+import static com.octosign.whitelabel.communication.SignatureParameters.CanonicalizationMethod.*;
+import static com.octosign.whitelabel.communication.SignatureParameters.Container.*;
 import static com.octosign.whitelabel.communication.SignatureParameters.DigestAlgorithm.*;
-import static com.octosign.whitelabel.communication.SignatureParameters.Format.PADES;
-import static com.octosign.whitelabel.communication.SignatureParameters.Format.XADES;
-import static com.octosign.whitelabel.communication.SignatureParameters.Level.BASELINE_B;
-import static com.octosign.whitelabel.communication.SignatureParameters.Packaging.ENVELOPED;
-import static com.octosign.whitelabel.communication.SignatureParameters.Packaging.ENVELOPING;
-import static eu.europa.esig.dss.enumerations.SignatureLevel.PAdES_BASELINE_B;
-import static eu.europa.esig.dss.enumerations.SignatureLevel.XAdES_BASELINE_B;
+import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
+import static com.octosign.whitelabel.communication.SignatureParameters.Level.*;
+import static com.octosign.whitelabel.communication.SignatureParameters.Packaging.*;
+import static com.octosign.whitelabel.preprocessing.XDCTransformer.*;
+import static eu.europa.esig.dss.enumerations.SignatureLevel.*;
 
 public class SignatureParameterMapper {
     private static final Map<SignatureParameters.Level, Map<SignatureParameters.Format, SignatureLevel>> signatureLevelMapping =
@@ -56,11 +56,43 @@ public class SignatureParameterMapper {
             INCLUSIVE, CanonicalizationMethod.INCLUSIVE
         );
 
-    public static SignatureLevel map(SignatureParameters.Level level, SignatureParameters.Format format) { return signatureLevelMapping.get(level).get(format); }
-    public static ASiCContainerType map(SignatureParameters.Container container) { return asicContainerTypeMapping.get(container); }
-    public static DigestAlgorithm map(SignatureParameters.DigestAlgorithm digestAlgorithm) { return digestAlgorithMapping.get(digestAlgorithm); }
-    public static SignaturePackaging map(SignatureParameters.Packaging packaging) { return signaturePackagingMapping.get(packaging); }
-    public static String map(SignatureParameters.CanonicalizationMethod canonicalizationMethod) { return canonicalizationMethodMapping.get(canonicalizationMethod); }
+    private static final Map<MimeType, XDCTransformer.DestinationMediaType> mimeTypeToDestinationMediaTypeMapping =
+            ImmutableMap.of(
+                    MimeType.PLAIN, DestinationMediaType.TXT,
+                    MimeType.XML, DestinationMediaType.HTML,
+                    MimeType.PDF, DestinationMediaType.HTML
+            );
+
+    public static SignatureLevel map(SignatureParameters.Level level, SignatureParameters.Format format) {
+        return signatureLevelMapping.get(level).get(format);
+    }
+
+    public static ASiCContainerType map(SignatureParameters.Container container) {
+        return asicContainerTypeMapping.get(container);
+    }
+
+    public static DigestAlgorithm map(SignatureParameters.DigestAlgorithm digestAlgorithm) {
+        return digestAlgorithMapping.get(digestAlgorithm);
+    }
+
+    public static SignaturePackaging map(SignatureParameters.Packaging packaging) {
+        return signaturePackagingMapping.get(packaging);
+    }
+
+    public static String map(SignatureParameters.CanonicalizationMethod canonicalizationMethod) {
+        return canonicalizationMethodMapping.get(canonicalizationMethod);
+    }
+
+
+    public static DestinationMediaType map(String transformationOutputMimeType) {
+        MimeType mimeType;
+        try {
+            mimeType = MimeType.parse(transformationOutputMimeType);
+        } catch (MalformedMimetypeException e) {
+            throw new IntegrationException(Code.MALFORMED_MIMETYPE, transformationOutputMimeType);
+        }
+        return mimeTypeToDestinationMediaTypeMapping.get(mimeType);
+    }
 
 
     public static XAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) {
