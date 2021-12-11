@@ -56,7 +56,7 @@ public class SigningManager {
         byte[] binaryContent;
         var content = document.getContent();
 
-        if (mimeType.isBase64()) {
+        if (mimeType.isBase64() || parameters.getFormat() == PADES) {
             binaryContent = decodeBase64(content);
         } else {
             binaryContent = content.getBytes(StandardCharsets.UTF_8);
