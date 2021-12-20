@@ -28,11 +28,6 @@ public class Driver implements SelectableItem {
         return getName();
     }
 
-    @Override
-    public String getSimpleName() {
-        return getName();
-    }
-
     public KeystoreType getKeystoreType() {
         return keystoreType;
     }
