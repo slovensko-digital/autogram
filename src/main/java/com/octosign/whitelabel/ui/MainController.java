@@ -128,7 +128,7 @@ public class MainController {
 
     private void displayPlainTextVisualisation(String visualisation) {
         vanish(webView);
-        textArea.setText(visualisation.translateEscapes());
+        textArea.setText(visualisation);
     }
 
     private void displayHTMLVisualisation(String visualisation) {
@@ -188,8 +188,9 @@ public class MainController {
 
         } catch (UserException e) {
             displayError(e);
+        } finally {
+            enableAndSet(resolveMainButtonText());
         }
-
         enableAndSet(resolveMainButtonText());
     }
 
@@ -232,7 +233,7 @@ public class MainController {
 
     public String resolveMainButtonText() {
         if (isSignerReady()) {
-            return translate("btn.signAs", signingManager.getActiveCertificate().getSimpleName());
+            return translate("btn.signAs", signingManager.getActiveCertificate().getDisplayedName());
         } else {
             return translate("btn.loadSigners");
         }
