@@ -11,6 +11,7 @@ public class PDFDocument extends Document {
         setTitle(document.getTitle());
         setContent(document.getContent());
         setLegalEffect(document.getLegalEffect());
+        setMimeType(document.getMimeType());
     }
 
 }

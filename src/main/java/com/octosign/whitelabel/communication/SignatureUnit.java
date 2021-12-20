@@ -29,6 +29,18 @@ public class SignatureUnit {
         this.signatureParameters = signatureParameters;
     }
 
+    public boolean isPADES() {
+        return document.getMimeType().equalsTypeSubtype(MimeType.PDF);
+    }
+
+    public boolean isXAdES() {
+        return document.getMimeType().equalsTypeSubtype(MimeType.XML);
+    }
+
+    public boolean isXDC() {
+        return isXAdES() && signatureParameters.getContainer() != null;
+    }
+
     public void transformToXDC() {
         var transformer = XDCTransformer.newInstance(signatureParameters);
         var transformedContent = transformer.transform(document.getContent(), XDCTransformer.Mode.IDEMPOTENT);

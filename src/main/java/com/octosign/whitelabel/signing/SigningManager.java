@@ -6,7 +6,6 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
-import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.CommonDocument;
@@ -21,9 +20,11 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.util.Optional;
 
+import static com.octosign.whitelabel.communication.MimeType.toDSSMimeType;
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 public class SigningManager {
 
@@ -40,29 +41,35 @@ public class SigningManager {
     /**
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
-    public String sign(SignatureUnit unit) {
-        var parameters = unit.getSignatureParameters();
-        var format = parameters.getFormat();
+    public String sign(SignatureUnit data) {
+        if (data.isXDC())
+            data.transformToXDC();
 
-        if (format.equals(XADES))
-            unit.transformToXDC();
-        var content = unit.getDocument().getContent();
-
+        var document = data.getDocument();
+        var parameters = data.getSignatureParameters();
+        var mimeType = document.getMimeType();
+        var content = document.getContent();
         byte[] binaryContent;
-        if (format.equals(PADES)) {
-            binaryContent = Base64.getDecoder().decode(content);
+
+        if (mimeType.isBase64()) {
+            binaryContent = decodeBase64(content);
         } else {
             binaryContent = content.getBytes(StandardCharsets.UTF_8);
         }
 
-        var document = new InMemoryDocument(binaryContent);
-        if (format.equals(XADES))
-            document.setName(parameters.getContainerFilename());
+        CommonDocument dssDocument = new InMemoryDocument(binaryContent);
 
+        if (data.isXDC()) {
+            var targetFilename = parameters.getContainerFilename();
+            var targetMimeType = toDSSMimeType(parameters.getFileMimeType());
+
+            Optional.ofNullable(targetFilename).ifPresent(dssDocument::setName);
+            Optional.ofNullable(targetMimeType).ifPresent(dssDocument::setMimeType);
+        }
 
         DSSDocument signedDocument;
         try {
-            signedDocument = sign(document, parameters);
+            signedDocument = sign(dssDocument, parameters);
         } catch (DSSException ex) {
             if (ex.getMessage().matches(".*?Token.*?removed.*?")) {
                 throw new UserException("error.tokenNotAvailable.header", "error.tokenNotAvailable.description");
@@ -71,14 +78,13 @@ public class SigningManager {
             }
         }
 
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try {
+        try (var output = new ByteArrayOutputStream()) {
             signedDocument.writeTo(output);
+
+            return Utils.toBase64(output.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return Utils.toBase64(output.toByteArray());
     }
 
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
@@ -88,6 +94,7 @@ public class SigningManager {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         DSSDocument signedDocument;
         var format = inputParameters.getFormat();
+        var token = getActiveCertificate().getToken().getDssToken();
 
         if (format.equals(PADES)) {
             var parameters = SignatureParameterMapper.mapPAdESParameters(inputParameters);
@@ -96,7 +103,6 @@ public class SigningManager {
 
             var service = new PAdESService(commonCertificateVerifier);
             var dataToSign = service.getDataToSign(document, parameters);
-            var token = getActiveCertificate().getToken().getDssToken();
             var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), activeCertificate.getDssPrivateKey());
 
             signedDocument = service.signDocument(document, parameters, signatureValue);
@@ -109,7 +115,6 @@ public class SigningManager {
             if (parameters instanceof ASiCWithXAdESSignatureParameters asicParameters) {
                 var service = new ASiCWithXAdESService(commonCertificateVerifier);
                 var dataToSign = service.getDataToSign(document, asicParameters);
-                var token = getActiveCertificate().getToken().getDssToken();
                 var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), activeCertificate.getDssPrivateKey());
 
                 signedDocument = service.signDocument(document, asicParameters, signatureValue);
@@ -117,7 +122,6 @@ public class SigningManager {
             } else {
                 var service = new XAdESService(commonCertificateVerifier);
                 var dataToSign = service.getDataToSign(document, parameters);
-                var token = getActiveCertificate().getToken().getDssToken();
                 var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), activeCertificate.getDssPrivateKey());
 
                 signedDocument = service.signDocument(document, parameters, signatureValue);
@@ -129,8 +133,4 @@ public class SigningManager {
         return signedDocument;
     }
 
-    private <T extends AbstractSignatureParameters<?>> void injectPrivateKeyData(T parameters) {
-        parameters.setSigningCertificate(activeCertificate.getDssPrivateKey().getCertificate());
-        parameters.setCertificateChain(activeCertificate.getDssPrivateKey().getCertificateChain());
-    }
 }

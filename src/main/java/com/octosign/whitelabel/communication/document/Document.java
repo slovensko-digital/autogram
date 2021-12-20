@@ -5,7 +5,6 @@ import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 
 import static com.octosign.whitelabel.ui.Utils.*;
 
@@ -66,7 +65,9 @@ public class Document implements Cloneable {
     public static Document getSpecificDocument(SignRequest signRequest) {
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
+
         // TODO: Assert document, parameters, and payloadMimeType are not null
+
         MimeType mimeType;
         try {
             mimeType = MimeType.parse(signRequest.getPayloadMimeType());
@@ -74,6 +75,7 @@ public class Document implements Cloneable {
             throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
         }
         document.setMimeType(mimeType);
+
         if (mimeType.equalsTypeSubtype(MimeType.XML)) {
             return buildXMLDocument(document, parameters, mimeType);
         } else if(mimeType.equalsTypeSubtype(MimeType.PDF)) {
@@ -82,9 +84,11 @@ public class Document implements Cloneable {
             throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Document format not supported: " + mimeType);
         }
     }
+
     private static XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) {
         var schema = parameters.getSchema();
         var transformation = parameters.getTransformation();
+
         if (mimeType.isBase64()) {
             try {
                 document.setContent(decodeBase64(document.getContent()));
@@ -93,6 +97,7 @@ public class Document implements Cloneable {
             } catch (Exception e) {
                 throw new IntegrationException(Code.DECODING_FAILED, e);
             }
+            mimeType.removeParameter("base64");
         }
         return new XMLDocument(document, schema, transformation);
     }
