@@ -306,7 +306,7 @@ components:
         transformationOutputMimeType:
           type: string
           example: text/html
-          description: 'Optional transformation output MIME type. Required to display the result correctly. Defaults to text/html.'
+          description: 'Optional transformation output MIME type. Required to display the result correctly.'
 
         schema:
           type: string
