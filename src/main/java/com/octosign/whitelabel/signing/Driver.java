@@ -17,10 +17,15 @@ public class Driver implements SelectableItem {
         this.name = requireNonNull(name);
         this.keystoreType = requireNonNull(keystoreType);
         this.files = requireNonNull(files);
-   }
+    }
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getDisplayedName() {
+        return getName();
     }
 
     @Override
@@ -66,7 +71,11 @@ public class Driver implements SelectableItem {
         }
 
         public Builder file(OperatingSystem os, String path) {
-            items.put(os, Path.of(path));
+            return file(os, Path.of(path));
+        }
+
+        public Builder file(OperatingSystem os, Path path) {
+            items.put(os, path);
             return this;
         }
 
