@@ -1,14 +1,12 @@
 package com.octosign.whitelabel.communication;
 
 import com.google.common.collect.ImmutableMap;
-import eu.europa.esig.dss.AbstractSignatureParameters;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 import com.octosign.whitelabel.preprocessing.XDCTransformer;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.*;
-import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -59,8 +57,7 @@ public class SignatureParameterMapper {
     private static final Map<MimeType, XDCTransformer.DestinationMediaType> mimeTypeToDestinationMediaTypeMapping =
             ImmutableMap.of(
                     MimeType.PLAIN, DestinationMediaType.TXT,
-                    MimeType.XML, DestinationMediaType.HTML,
-                    MimeType.PDF, DestinationMediaType.HTML
+                    MimeType.HTML, DestinationMediaType.HTML
             );
 
     public static SignatureLevel map(SignatureParameters.Level level, SignatureParameters.Format format) {
