@@ -1,6 +1,5 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.communication.SignatureUnit;
@@ -21,10 +20,10 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
+import static com.octosign.whitelabel.communication.MimeType.toDSSMimeType;
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
-import static com.octosign.whitelabel.ui.Utils.isPresent;
-import static eu.europa.esig.dss.model.MimeType.fromMimeTypeString;
 import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 public class SigningManager {
@@ -43,31 +42,29 @@ public class SigningManager {
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
     public String sign(SignatureUnit data) {
-        var document = data.getDocument();
-        var parameters = data.getSignatureParameters();
-
-        var mimeType = document.getMimeType();
-        var isXML = mimeType.equalsTypeSubtype(MimeType.XML);
-        var hasContainer = parameters.getContainer() != null;
-
-        if (isXML && hasContainer)
+        if (data.isXDC())
             data.transformToXDC();
 
-        byte[] binaryContent;
+        var document = data.getDocument();
+        var parameters = data.getSignatureParameters();
+        var mimeType = document.getMimeType();
         var content = document.getContent();
+        byte[] binaryContent;
 
-        if (mimeType.isBase64() || parameters.getFormat() == PADES) {
+        if (mimeType.isBase64()) {
             binaryContent = decodeBase64(content);
         } else {
             binaryContent = content.getBytes(StandardCharsets.UTF_8);
         }
 
-        var dssDocument = new InMemoryDocument(binaryContent);
-        var targetFilename = parameters.getContainerFilename();
+        CommonDocument dssDocument = new InMemoryDocument(binaryContent);
 
-        if (isPresent(targetFilename) && isXML && hasContainer) {
-            dssDocument.setName(targetFilename);
-            dssDocument.setMimeType(fromMimeTypeString(parameters.getFileMimeType()));
+        if (data.isXDC()) {
+            var targetFilename = parameters.getContainerFilename();
+            var targetMimeType = toDSSMimeType(parameters.getFileMimeType());
+
+            Optional.ofNullable(targetFilename).ifPresent(dssDocument::setName);
+            Optional.ofNullable(targetMimeType).ifPresent(dssDocument::setMimeType);
         }
 
         DSSDocument signedDocument;
@@ -81,14 +78,13 @@ public class SigningManager {
             }
         }
 
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try {
+        try (var output = new ByteArrayOutputStream()) {
             signedDocument.writeTo(output);
+
+            return Utils.toBase64(output.toByteArray());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return Utils.toBase64(output.toByteArray());
     }
 
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
