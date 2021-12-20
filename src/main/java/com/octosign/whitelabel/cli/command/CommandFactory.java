@@ -1,9 +1,17 @@
 package com.octosign.whitelabel.cli.command;
 
-import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import static java.util.stream.Collectors.toMap;
 
 import com.octosign.whitelabel.error_handling.UserException;
+import static com.octosign.whitelabel.ui.Utils.*;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URIBuilder;
+
 import javafx.application.Application.Parameters;
 
 public class CommandFactory {
@@ -20,12 +28,21 @@ public class CommandFactory {
         var urlParam = named.get("url");
 
         try {
+            String commandName;
+            Map<String, String> params;
             if (urlParam != null) {
-                var url = new URI(urlParam);
-                return fromUrl(url.getHost(), url);
+                var url = new URIBuilder(urlParam);
+                commandName = url.getHost();
+                params = getUrlQueryParameters(url.getQueryParams());
             } else {
-                return fromParameters(positional.get(0), parameters);
+                commandName = positional.get(0);
+                params = named;
             }
+
+            return switch (commandName) {
+                case ListenCommand.NAME -> new ListenCommand(params);
+                default -> throw new IllegalArgumentException("Invalid command: " + commandName);
+            };
         } catch (URISyntaxException e) {
             throw new UserException("error.launchFailed.header", "error.launchFailed.invalidUrl.description", e);
         } catch (Exception e) {
@@ -33,32 +50,13 @@ public class CommandFactory {
         }
     }
 
-    /**
-     * Create command using its name and CLI parameters
-     *
-     * @param name      Name, e.g. "listen"
-     * @param parameters    Launch URL
-     * @return Command if it exists or null if not
-     */
-    public static Command fromParameters(String name, Parameters parameters) {
-        return switch (name) {
-            case ListenCommand.NAME -> new ListenCommand(parameters);
-            default -> throw new IllegalArgumentException("Invalid command: " + name);
-        };
-    }
-
-    /**
-     * Create command using its name and launch URL
-     *
-     * @param name  Name, e.g. "listen"
-     * @param url   Launch URL
-     * @return Command if it exists or null if not
-     */
-    public static Command fromUrl(String name, URI url) {
-        return switch (name) {
-            case ListenCommand.NAME -> new ListenCommand(url);
-            default -> throw new IllegalArgumentException("Invalid command: " + name);
-        };
+    private static Map<String, String> getUrlQueryParameters(List<NameValuePair> queryParams) {
+        if (isNullOrEmpty(queryParams)) {
+            return Collections.emptyMap();
+        } else {
+            return Collections.unmodifiableMap(queryParams.stream()
+                    .collect(toMap(NameValuePair::getName, NameValuePair::getValue)));
+        }
     }
 
 }
