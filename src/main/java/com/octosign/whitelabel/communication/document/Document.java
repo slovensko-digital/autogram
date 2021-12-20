@@ -27,6 +27,14 @@ public class Document implements Cloneable {
         this.legalEffect = legalEffect;
     }
 
+    public Document(Document document) {
+        setId(document.getId());
+        setTitle(document.getTitle());
+        setContent(document.getContent());
+        setLegalEffect(document.getLegalEffect());
+        setMimeType(document.getMimeType());
+    }
+
     public String getId() { return id; }
 
     public void setId(String id) { this.id = id; }
