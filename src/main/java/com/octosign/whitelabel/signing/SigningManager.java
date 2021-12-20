@@ -45,7 +45,7 @@ public class SigningManager {
         var format = parameters.getFormat();
 
         if (format.equals(XADES))
-            unit.toXDC();
+            unit.transformToXDC();
         var content = unit.getDocument().getContent();
 
         byte[] binaryContent;
