@@ -11,8 +11,6 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import com.octosign.whitelabel.communication.MimeType;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -23,9 +21,6 @@ import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
  * XML document for signing
  */
 public class XMLDocument extends Document {
-
-    public static final MimeType mimeType = MimeType.XML;
-
     protected String transformation;
     protected String schema;
 
@@ -36,6 +31,7 @@ public class XMLDocument extends Document {
         setTitle(document.getTitle());
         setContent(document.getContent());
         setLegalEffect(document.getLegalEffect());
+        setMimeType(document.getMimeType());
     }
 
     public XMLDocument(Document document, String schema, String transformation) {

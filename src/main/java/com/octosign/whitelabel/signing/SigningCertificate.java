@@ -1,6 +1,9 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.communication.MimeType;
+import com.octosign.whitelabel.communication.SignatureParameterMapper;
+import com.octosign.whitelabel.communication.SignatureParameters;
+import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.*;
 
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
@@ -19,11 +22,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
 import java.util.List;
 
 import static com.octosign.whitelabel.communication.SignatureParameters.Format.*;
-import static com.octosign.whitelabel.ui.Utils.*;
+import static com.octosign.whitelabel.ui.Utils.isPresent;
+import static eu.europa.esig.dss.model.MimeType.fromMimeTypeString;
+import static org.apache.commons.codec.binary.Base64.decodeBase64;
 
 
 /**
@@ -130,40 +134,35 @@ public abstract class SigningCertificate {
     /**
      * Signs passed UTF-8 encoded string document and returns document in the same format
      */
-    public String sign(SignatureUnit unit) {
-        var parameters = unit.getSignatureParameters();
-        var format = parameters.getFormat();
-        var container = parameters.getContainer();
+    public String sign(SignatureUnit data) {
+        var document = data.getDocument();
+        var parameters = data.getSignatureParameters();
 
-        /*
-         *  You're travelling through a deep black forest of the incomprehensible and obscure code,
-         *  when, suddenly, a wild var content appears:
-         *
-         * "Desire to refactor is strong, you can't leave it behind.
-         *  My advice is, go ahead, but bear in mind:
-         *  Watch out next three lines - no coincidence
-         *  that #toXDC precedes my assignment.
-         *  Obey, or suffer from the consequence,
-         *  there is no circumvent."
-         */
-        if (container != null)
-            unit.toXDC();
-        var content = unit.getDocument().getContent();
+        var mimeType = document.getMimeType();
+        var isXML = mimeType.equalsTypeSubtype(MimeType.XML);
+        var hasContainer = parameters.getContainer() != null;
+
+        if (isXML && hasContainer)
+            data.transformToXDC();
 
         byte[] binaryContent;
-        if (format.equals(PADES)) {
-            binaryContent = Base64.getDecoder().decode(content);
+        var content = document.getContent();
+
+        if (mimeType.isBase64()) {
+            binaryContent = decodeBase64(content);
         } else {
             binaryContent = content.getBytes(StandardCharsets.UTF_8);
         }
 
-        var document = new InMemoryDocument(binaryContent);
-
+        var dssDocument = new InMemoryDocument(binaryContent);
         var targetFilename = parameters.getContainerFilename();
-        if (container != null && isPresent(targetFilename))
-            document.setName(targetFilename);
 
-        var signedDocument = sign(document, parameters);
+        if (isPresent(targetFilename) && isXML && hasContainer) {
+            dssDocument.setName(targetFilename);
+            dssDocument.setMimeType(fromMimeTypeString(parameters.getFileMimeType()));
+        }
+
+        var signedDocument = sign(dssDocument, parameters);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try {
@@ -177,9 +176,9 @@ public abstract class SigningCertificate {
 
     private DSSDocument sign(CommonDocument document, SignatureParameters inputParameters) {
         if (privateKey == null)
-            throw new RuntimeException("Private key missing");
+            throw new RuntimeException("Signing certificate not set");
 
-        CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+        var commonCertificateVerifier = new CommonCertificateVerifier();
         DSSDocument signedDocument;
         var format = inputParameters.getFormat();
 
@@ -202,14 +201,15 @@ public abstract class SigningCertificate {
             if (parameters instanceof ASiCWithXAdESSignatureParameters asicParameters) {
                 var service = new ASiCWithXAdESService(commonCertificateVerifier);
                 var dataToSign = service.getDataToSign(document, asicParameters);
-                var signatureValue = token.sign(dataToSign, asicParameters.getDigestAlgorithm(), privateKey);
-    
+                var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
+
                 signedDocument = service.signDocument(document, asicParameters, signatureValue);
+
             } else {
                 var service = new XAdESService(commonCertificateVerifier);
                 var dataToSign = service.getDataToSign(document, parameters);
                 var signatureValue = token.sign(dataToSign, parameters.getDigestAlgorithm(), privateKey);
-    
+
                 signedDocument = service.signDocument(document, parameters, signatureValue);
             }
         } else {
