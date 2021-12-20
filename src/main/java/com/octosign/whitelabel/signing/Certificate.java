@@ -99,7 +99,7 @@ public class Certificate implements SelectableItem {
     }
 
     @Override
-    public String getSimpleName() {
+    public String getDisplayedName() {
         return this.getCertificateDescription(DescriptionVerbosity.NAME);
     }
 }
