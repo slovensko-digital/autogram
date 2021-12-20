@@ -66,20 +66,27 @@ public class Main extends Application {
     }
 
     private void startServer(ListenCommand command) {
-        var version = getVersion();
+        I18n.setLocale(command.getLanguage());
 
-        server = new Server(command.getInitialNonce());
+        server = new Server(command.getHost(), command.getPort(), command.getInitialNonce(), command.isRequiredSSL());
+        server.setAllowedOrigin(command.getOrigin());
+
+        var version = getVersion();
         server.setDevMode(version.equals("dev"));
         server.setInfo(new Info(version, Status.LOADING));
 
-        if (command.getOrigin() != null) server.setAllowedOrigin(command.getOrigin());
-        if (command.getSecretKey() != null) server.setSecretKey(command.getSecretKey());
+        if (command.getOrigin() != null)
+            server.setAllowedOrigin(command.getOrigin());
+
+        if (command.getSecretKey() != null)
+            server.setSecretKey(command.getSecretKey());
 
         server.start();
         System.out.println(translate("app.runningOn", server.getAddress()));
 
         if (server.isDevMode()) {
-            var docsAddress = "http:/" + server.getAddress().toString() + "/documentation";
+            var protocol = server.isHttps() ? "https" : "http";
+            var docsAddress = protocol + ":/" + server.getAddress().toString() + "/documentation";
             System.out.println(translate("text.docsAvailableAt", docsAddress));
         }
 

@@ -1,8 +1,6 @@
 package com.octosign.whitelabel.cli.command;
 
-import java.net.URI;
-
-import javafx.application.Application.Parameters;
+import java.util.Map;
 
 /**
  * Command specified on the CLI
@@ -11,24 +9,20 @@ import javafx.application.Application.Parameters;
  *
  * 1. From custom protocol - by using --url parameter
  * 2. Using traditional CLI interface with command, parameters, flags...
+ *
+ * EXAMPLE:
+ * signer://listen?protocol=https&host=localhost&port=37200&origin=*&key=abc12&nonce=16&language=sk
+ * where signer:// is any protocol configured for this application
+ * Used when the application is launched using the custom protocol
  */
 public abstract class Command {
 
     /**
-     * URL available if the command was created from URL
+     * Named parameters used with the command
      */
-    protected URI url;
+    protected Map<String, String> parameters;
 
-    /**
-     * Parameters available if the command was not created from URL
-     */
-    protected Parameters parameters;
-
-    Command(URI url) {
-        this.url = url;
-    }
-
-    Command(Parameters parameters) {
+    Command(Map<String, String> parameters) {
         this.parameters = parameters;
     }
 

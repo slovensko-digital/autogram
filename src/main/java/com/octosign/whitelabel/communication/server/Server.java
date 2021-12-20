@@ -1,7 +1,10 @@
 package com.octosign.whitelabel.communication.server;
 
+import java.io.FileInputStream;
 import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.nio.file.Paths;
+import java.security.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -14,8 +17,13 @@ import com.octosign.whitelabel.communication.server.endpoint.InfoEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.SignEndpoint;
 import com.octosign.whitelabel.error_handling.UserException;
 import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
+import com.sun.net.httpserver.HttpsServer;
 
-import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
+import javax.net.ssl.*;
+
+import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class Server {
@@ -37,23 +45,12 @@ public class Server {
     // HMAC hex secret key
     private String secretKey;
 
-    public Server(int initialNonce) {
-        this(
-            getProperty("server.defaultAddress"),
-            Integer.parseInt(getProperty("server.defaultPort")),
-            initialNonce
-        );
-    }
+    private boolean isHttps;
 
-    public Server(String hostname, int port, int initialNonce) {
-        try {
-            server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
-        } catch (BindException e) {
-            throw new UserException("error.launchFailed.header", translate("error.launchFailed.addressInUse.description", port), e);
-        } catch (Exception e) {
-            throw new UserException("error.serverNotCreated", e);
-        }
+    public Server(String hostname, int port, int initialNonce, boolean isHttps) {
+        this.isHttps = isHttps;
 
+        server = getServer(hostname, port, initialNonce, isHttps);
         documentationEndpoint = new DocumentationEndpoint(this);
         infoEndpoint = new InfoEndpoint(this);
         signEndpoint = new SignEndpoint(this, initialNonce);
@@ -108,7 +105,58 @@ public class Server {
         signEndpoint.setOnSign(onSign);
     }
 
+    public boolean isHttps() {
+        return this.isHttps;
+    }
+
     public InetSocketAddress getAddress() {
         return server.getAddress();
+    }
+
+    private HttpServer getServer(String hostname, int port, int initialNonce, boolean isHttps) {
+        try {
+            var server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
+
+            if (isHttps) {
+                var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert")).toFile();
+                server = HttpsServer.create(new InetSocketAddress(hostname, port), 0);
+                SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
+                char[] password = "".toCharArray();
+
+                KeyStore ks = KeyStore.getInstance("PKCS12");
+                FileInputStream fis = new FileInputStream(p12file);
+                ks.load(fis, password);
+
+                KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+                kmf.init(ks, password);
+
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+                tmf.init(ks);
+
+                sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+                ((HttpsServer)server).setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+                    public void configure(HttpsParameters params) {
+                        try {
+                            SSLContext c = SSLContext.getDefault();
+                            SSLEngine engine = c.createSSLEngine();
+                            params.setNeedClientAuth(false);
+                            params.setCipherSuites(engine.getEnabledCipherSuites());
+                            params.setProtocols(engine.getEnabledProtocols());
+                            SSLParameters defaultSSLParameters = c.getDefaultSSLParameters();
+                            params.setSSLParameters(defaultSSLParameters);
+                        } catch (Exception e) {
+                            throw new UserException("error.serverNotCreated", e);
+                        }
+                    }
+                });
+            }
+        } catch (BindException e) {
+            throw new UserException("error.launchFailed.header", translate("error.launchFailed.addressInUse.description", port), e);
+        } catch (Exception e) {
+            throw new UserException("error.serverNotCreated", e);
+        }
+
+        return server;
     }
 }
