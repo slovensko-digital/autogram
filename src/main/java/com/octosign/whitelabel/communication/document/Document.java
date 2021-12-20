@@ -17,6 +17,7 @@ public class Document implements Cloneable {
     protected String title;
     protected String content;
     protected String legalEffect;
+    protected MimeType mimeType;
 
     public Document() {}
 
@@ -43,6 +44,14 @@ public class Document implements Cloneable {
 
     public void setLegalEffect(String legalEffect) { this.legalEffect = legalEffect; }
 
+    public MimeType getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(MimeType mimeType) {
+        this.mimeType = mimeType;
+    }
+
     @Override
     public Document clone() {
         return new Document(id, title, content, legalEffect);
@@ -57,38 +66,34 @@ public class Document implements Cloneable {
     public static Document getSpecificDocument(SignRequest signRequest) {
         var document = signRequest.getDocument();
         var parameters = signRequest.getParameters();
-
         // TODO: Assert document, parameters, and payloadMimeType are not null
-
         MimeType mimeType;
         try {
             mimeType = MimeType.parse(signRequest.getPayloadMimeType());
         } catch (Exception e) {
             throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
         }
-
+        document.setMimeType(mimeType);
         if (mimeType.equalsTypeSubtype(MimeType.XML)) {
-            return document.buildXMLDocument(parameters, mimeType);
+            return buildXMLDocument(document, parameters, mimeType);
         } else if(mimeType.equalsTypeSubtype(MimeType.PDF)) {
             return new PDFDocument(document);
         } else {
             throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Document format not supported: " + mimeType);
         }
     }
-
-    private XMLDocument buildXMLDocument(SignatureParameters parameters, MimeType mimeType) {
+    private static XMLDocument buildXMLDocument(Document document, SignatureParameters parameters, MimeType mimeType) {
         var schema = parameters.getSchema();
         var transformation = parameters.getTransformation();
-
         if (mimeType.isBase64()) {
             try {
-                setContent(decodeBase64(getContent()));
+                document.setContent(decodeBase64(document.getContent()));
                 schema = decodeBase64(schema);
                 transformation = decodeBase64(transformation);
             } catch (Exception e) {
                 throw new IntegrationException(Code.DECODING_FAILED, e);
             }
         }
-        return new XMLDocument(this, schema, transformation);
+        return new XMLDocument(document, schema, transformation);
     }
 }

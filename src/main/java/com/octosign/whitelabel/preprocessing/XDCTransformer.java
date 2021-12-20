@@ -28,8 +28,11 @@ import static java.util.Objects.requireNonNull;
 
 public class XDCTransformer {
     public enum Mode {
-        IDEMPOTENT,
-        RUSSIAN_DOLL
+        IDEMPOTENT, RUSSIAN_DOLL
+    }
+
+    public enum DestinationMediaType {
+        TXT, HTML, XHTML
     }
 
     private final String identifier;
@@ -39,19 +42,20 @@ public class XDCTransformer {
     private final String canonicalizationMethod;
     private final String containerXmlns;
     private final DigestAlgorithm digestAlgorithm;
-    private final String mediaDestinationTypeDescription;
+    private final DestinationMediaType mediaDestinationTypeDescription;
 
     private Document document;
     private String documentXmlns;
 
     public static XDCTransformer newInstance(SignatureParameters sp) {
+        var mediaType = SignatureParameterMapper.map(sp.getTransformationOutputMimeType());
         var method = SignatureParameterMapper.map(sp.getPropertiesCanonicalization());
         var algorithm = SignatureParameterMapper.map(sp.getDigestAlgorithm());
-        //TODO fix!
-        return new XDCTransformer(sp.getIdentifier(), sp.getVersion(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(), method, algorithm, "TXT");
+
+        return new XDCTransformer(sp.getIdentifier(), sp.getVersion(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(), method, algorithm, mediaType);
     }
 
-    private XDCTransformer(String identifier, String version, String xsdSchema, String xsltSchema, String containerXmlns, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, String mediaDestinationTypeDescription) {
+    private XDCTransformer(String identifier, String version, String xsdSchema, String xsltSchema, String containerXmlns, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, DestinationMediaType mediaDestinationTypeDescription) {
         this.identifier = identifier;
         this.version = version;
         this.containerXmlns = containerXmlns;
@@ -155,7 +159,6 @@ public class XDCTransformer {
         if (isPresent(xsdSchema) || isPresent(xsltSchema))
             documentXmlns = document.getFirstChild().getAttributes().getNamedItem("xmlns").getNodeValue();
 
-
         if (xsdSchema != null) {
             var xsdSchemaReference = createUsedXSDReference();
             element.appendChild(xsdSchemaReference);
@@ -181,6 +184,7 @@ public class XDCTransformer {
     private String buildXSDReference() {
         return toURIString(documentXmlns, "form.xsd");
     }
+
     private String buildXSLTReference() {
         return toURIString(documentXmlns, "form.xslt");
     }
@@ -189,7 +193,7 @@ public class XDCTransformer {
         String base = xmlns.replaceAll("/+$", "");
         String attached = suffix.replaceAll("^/+", "");
 
-        return  base + "/" + attached;
+        return base + "/" + attached;
     }
 
     private Element createUsedXSDReference() {
@@ -205,7 +209,7 @@ public class XDCTransformer {
     private Element createUsedPresentationSchemaReference() {
         var element = document.createElement("UsedPresentationSchemaReference");
         element.setAttribute("ContentType", "application/xslt+xml");
-        element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription);
+        element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription.name());
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue", computeDigest(xsltSchema));
@@ -214,5 +218,7 @@ public class XDCTransformer {
         return element;
     }
 
-    private static String toNamespacedString(DigestAlgorithm digestAlgorithm) { return "urn:oid:" + digestAlgorithm.getOid(); }
+    private static String toNamespacedString(DigestAlgorithm digestAlgorithm) {
+        return "urn:oid:" + digestAlgorithm.getOid();
+    }
 }

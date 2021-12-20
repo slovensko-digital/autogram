@@ -1,8 +1,5 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;

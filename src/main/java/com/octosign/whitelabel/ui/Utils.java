@@ -23,8 +23,8 @@ public class Utils {
     }
 
     /**
-     * Returns first item of the given collection.
-     * Much prettier compared to eg. <code>collection.get(0)</code>
+     * Returns first item of any collection.
+     * Syntactic sugar - improved readability, compared to eg. <code>collection.get(0)</code>
      * @param collection
      * @param <T>
      * @return
@@ -53,13 +53,5 @@ public class Utils {
                 .map(Objects::requireNonNull)
                 .flatMap(Stream::of)
                 .toArray();
-    }
-
-    @SafeVarargs
-    public static <T> List<T> toFlattenedList(T[]... args) {
-        return Stream.of(args)
-                .map(Objects::requireNonNull)
-                .flatMap(Stream::of)
-                .toList();
     }
 }
