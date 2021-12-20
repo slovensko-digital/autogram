@@ -69,14 +69,15 @@ public class Main extends Application {
     }
 
     private void startServer(ListenCommand command) {
+        var version = getVersion();
+        var isDevMode = version.equals("dev");
         I18n.setLocale(command.getLanguage());
 
-        checkSSL(command);
+        if (!isDevMode) checkSSL(command);
+
         server = new Server(command.getHost(), command.getPort(), command.getInitialNonce(), command.isRequiredSSL());
         server.setAllowedOrigin(command.getOrigin());
-
-        var version = getVersion();
-        server.setDevMode(version.equals("dev"));
+        server.setDevMode(isDevMode);
         server.setInfo(new Info(version, Status.LOADING));
 
         if (command.getOrigin() != null)
