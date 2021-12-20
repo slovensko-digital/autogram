@@ -63,12 +63,12 @@ public record MimeType(String type, String subType, Map<String, String> paramete
     }
 
     public boolean isBase64() {
-        if (this.subType.equals(MimeType.PDF.subType))
-            return true;
-
         return parameters.containsKey("base64");
     }
 
+    // TODO
+    // MimeType should be immutable,
+    // remove this after appropriate refactor
     public void removeParameter(String key) {
         if (!parameters.containsKey(key))
             throw new RuntimeException("Parameter with key " + key + " does not exist within this mimetype!");
