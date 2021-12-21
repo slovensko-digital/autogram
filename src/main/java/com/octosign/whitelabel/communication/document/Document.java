@@ -97,6 +97,8 @@ public class Document implements Cloneable {
             } catch (Exception e) {
                 throw new IntegrationException(Code.DECODING_FAILED, e);
             }
+
+            // TODO don't forget about this too
             mimeType.removeParameter("base64");
         }
         return new XMLDocument(document, schema, transformation);
