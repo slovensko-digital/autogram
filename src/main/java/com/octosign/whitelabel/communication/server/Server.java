@@ -114,8 +114,9 @@ public class Server {
     }
 
     private HttpServer getServer(String hostname, int port, int initialNonce, boolean isHttps) {
+        HttpServer server;
         try {
-            var server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
+            server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
 
             if (isHttps) {
                 var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert")).toFile();
