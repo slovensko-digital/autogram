@@ -5,4 +5,8 @@ package com.octosign.whitelabel.communication.document;
  */
 public class PDFDocument extends Document {
     public PDFDocument() { }
+
+    public PDFDocument(Document document) {
+        super(document);
+    }
 }
