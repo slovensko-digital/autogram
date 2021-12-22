@@ -1,7 +1,4 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -13,7 +10,7 @@
             // Windows requires additional argument if using MSCAPI
             // "vmArgs": "--add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED",
             "vmArgs": "--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED",
-            "args": "--url=\"signer://listen/37200/*\""
+            "args": "--url=\"signer://listen?protocol=http&host=localhost&port=37200&origin=*&language=sk\""
         }
     ]
 }
