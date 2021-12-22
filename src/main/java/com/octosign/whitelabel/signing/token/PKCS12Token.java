@@ -2,31 +2,45 @@ package com.octosign.whitelabel.signing.token;
 
 import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.signing.Token;
-import com.octosign.whitelabel.ui.PasswordCallback;
+import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 import java.security.KeyStore;
 
 public class PKCS12Token extends Token {
 
-    public PKCS12Token(String filepath) {
-        this(filepath, null);
+    public PKCS12Token(String path, PasswordInputCallback passwordInputCallback) {
+        Pkcs12SignatureToken token = null;
+
+        // Find out if password is required with empty password
+        // This way user isn't prompted for password if not required
+        try {
+            var passwordProtection = new KeyStore.PasswordProtection("".toCharArray());
+            token = new Pkcs12SignatureToken(path, passwordProtection);
+            initialize(token);
+        } catch (Exception e) {
+            if (e.getMessage().contains("password was incorrect")) {
+                createToken(path, passwordInputCallback.getPassword());
+            } else {
+                throw new UserException("error.tokenAccessDenied.header", "error.tokenAccessDenied.description", e);
+            }
+        }
     }
 
-    public PKCS12Token(String filepath, String password) {
+    public PKCS12Token(String path, String password) {
+        createToken(path, password.toCharArray());
+    }
+
+    private void createToken(String path, char[] password) {
         Pkcs12SignatureToken token;
 
-        if (password == null) {
-            var input = new PasswordCallback().getPassword();
-            password = (input == null) ? "" : new String(input);
-        }
-        var passwordProtection = new KeyStore.PasswordProtection(password.toCharArray());
-
         try {
-            token = new Pkcs12SignatureToken(filepath, passwordProtection);
+            var passwordProtection = new KeyStore.PasswordProtection(password);
+            token = new Pkcs12SignatureToken(path, passwordProtection);
         } catch (Exception e) {
             throw new UserException("error.tokenAccessDenied.header", "error.tokenAccessDenied.description", e);
         }
+
         initialize(token);
     }
 }

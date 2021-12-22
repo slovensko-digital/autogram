@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 public enum KeystoreType {
     PKCS11 ((driver) -> new PKCS11Token(driver.path(), new PasswordCallback())),
-    PKCS12 ((driver) -> new PKCS12Token(driver.path())),
+    PKCS12 ((driver) -> new PKCS12Token(driver.path(), new PasswordCallback())),
     MSCAPI ((__) -> new MSCAPIToken());
 
     private Function<Driver, Token> instantiation;
