@@ -11,10 +11,6 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Represents a combination of Token and PrivateKey within that token
- *
- * - Can retrieve a list of possible keys within the current.
- * - Can construct human readable description of the key.
- * - Can sign an XML document represented as string.
  */
 public class Certificate implements SelectableItem {
     /**

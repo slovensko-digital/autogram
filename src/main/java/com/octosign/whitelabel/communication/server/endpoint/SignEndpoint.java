@@ -29,6 +29,8 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
             throw new IntegrationException(Code.NOT_READY);
 
         var signRequest = request.getBody();
+        // TODO: Decode from base64 only here
+
         var document = Document.getSpecificDocument(signRequest);
         var parameters = signRequest.getParameters();
         var signatureUnit = new SignatureUnit(document, parameters);
@@ -41,6 +43,8 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
         } catch (ExecutionException e) {
             throw e.getCause();
         }
+
+        // TODO: Encode back to base64 only here
 
         return response.setBody(signedDocument);
     }
