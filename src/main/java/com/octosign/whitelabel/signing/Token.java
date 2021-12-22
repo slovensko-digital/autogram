@@ -80,7 +80,7 @@ public abstract class Token {
                       .file(MAC, "/Applications/Aplikacia_pre_eID.app/Contents/pkcs11/libPkcs11.dylib")
                       .keystore(PKCS11),
 
-                Driver.name(translate("btn.mandateCert"))
+                Driver.name(translate("btn.ICASecureStore"))
                       .file(WINDOWS, "C:\\Program Files\\I.CA SecureStore\\ICASecureStorePkcs11.dll")
                       .file(LINUX, "/usr/lib/pkcs11/libICASecureStorePkcs11.so")
                       .keystore(PKCS11)
