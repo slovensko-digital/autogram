@@ -2,6 +2,7 @@ package com.octosign.whitelabel.ui;
 
 import java.util.Optional;
 
+import com.octosign.whitelabel.error_handling.UserException;
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -35,5 +36,13 @@ public class PasswordCallback implements PasswordInputCallback {
         Optional<String> result = dialog.showAndWait();
 
         return result.isPresent() ? result.get().toCharArray() : "".toCharArray();
+    }
+
+    public String getPasswordString() {
+        var input = this.getPassword();
+        if (input == null)
+            throw new UserException("error.nullPassword.header", "error.nullPassword.description");
+
+        return new String(input);
     }
 }

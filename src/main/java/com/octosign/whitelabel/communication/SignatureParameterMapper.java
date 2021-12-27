@@ -57,8 +57,7 @@ public class SignatureParameterMapper {
     private static final Map<MimeType, XDCTransformer.DestinationMediaType> mimeTypeToDestinationMediaTypeMapping =
             ImmutableMap.of(
                     MimeType.PLAIN, DestinationMediaType.TXT,
-                    MimeType.XML, DestinationMediaType.HTML,
-                    MimeType.PDF, DestinationMediaType.HTML
+                    MimeType.HTML, DestinationMediaType.HTML
             );
 
     public static SignatureLevel map(SignatureParameters.Level level, SignatureParameters.Format format) {

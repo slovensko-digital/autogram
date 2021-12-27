@@ -47,17 +47,6 @@ public class Utils {
         return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
     }
 
-    public static String parseExtension(String filename) {
-        var extension = "";
-
-        int index = filename.lastIndexOf('.');
-        if (index > 0) {
-            extension = filename.substring(index + 1);
-        }
-
-        return extension;
-    }
-
     @SafeVarargs
     public static <T> T[] concat(T[]... args) {
         return (T[]) Stream.of(args)

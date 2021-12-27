@@ -3,7 +3,9 @@ package com.octosign.whitelabel.ui;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
+
 import javafx.scene.control.Alert;
+import javafx.scene.Node;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -171,7 +173,7 @@ public class FXUtils {
         dialog.getDialogPane().getStylesheets().addAll(getStylesheets());
     }
 
-    private static List<String> getStylesheets() {
+    public static List<String> getStylesheets() {
         return Stream.of("shared.css" , "dialog.css", "overrides.css")
             .map(filename -> requireNonNull(Main.class.getResource(filename)).toExternalForm())
             .toList();

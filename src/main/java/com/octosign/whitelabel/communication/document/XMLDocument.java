@@ -26,16 +26,8 @@ public class XMLDocument extends Document {
 
     public XMLDocument() { }
 
-    public XMLDocument(Document document) {
-        setId(document.getId());
-        setTitle(document.getTitle());
-        setContent(document.getContent());
-        setLegalEffect(document.getLegalEffect());
-        setMimeType(document.getMimeType());
-    }
-
     public XMLDocument(Document document, String schema, String transformation) {
-        this(document);
+        super(document);
         this.schema = schema;
         this.transformation = transformation;
     }
