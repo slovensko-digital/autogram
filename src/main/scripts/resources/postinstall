@@ -20,7 +20,7 @@ function create_cert(){
     TLS_DIR="$HOME/Library/Application Support/Octosign/tls"
 
 
-    DIALOG_RET=$(osascript -e 'return display dialog "Teraz vygenerujeme Váš osobný certifikát. Následne budete požiadaný o heslo aby sme ho vedeli pridať ako dôveryhodný pre spojenie so Safari." with icon caution')
+    DIALOG_RET=$(osascript -e 'return display dialog "Teraz vygenerujeme Váš osobný certifikát. Následne budete požiadaný o heslo, aby sme ho vedeli pridať ako dôveryhodný pre spojenie so Safari." with icon caution')
 
     if [ $DIALOG_RET -ne 0 ]; then
         return 0
@@ -47,14 +47,14 @@ certificatePolicies = 1.2.3.4
 
 [dn]
 C=SK
-O=arcicode
-CN=localhost.arcicode.com
+O=SSD
+CN=fuf.me
 
 [CA_default]
 copy_extension=copy
 
 [alt_names]
-DNS.1=localhost.arcicode.com
+DNS.1=fuf.me
 
 " > $SSL_CONFIG_TMP ;
 
