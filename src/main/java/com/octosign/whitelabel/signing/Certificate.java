@@ -2,11 +2,14 @@ package com.octosign.whitelabel.signing;
 
 import com.octosign.whitelabel.ui.SelectableItem;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 
+import static com.octosign.whitelabel.ui.Utils.isPresent;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -42,6 +45,7 @@ public class Certificate implements SelectableItem {
     public enum DescriptionVerbosity {
         LONG,
         SHORT,
+        BUTTON,
         NAME
     }
 
@@ -49,7 +53,9 @@ public class Certificate implements SelectableItem {
      * Constructs human readable private key description
      */
     public static String getCertificateDescription(Certificate certificate, DescriptionVerbosity verbosity) {
-        String dn = certificate.getDssPrivateKey().getCertificate().getSubject().getRFC2253();
+        var privateKey = certificate.getDssPrivateKey();
+        String dn = privateKey.getCertificate().getSubject().getRFC2253();
+        String alias = getAlias(privateKey);
         String label = "";
         try {
             LdapName ldapDN = new LdapName(dn);
@@ -58,8 +64,8 @@ public class Certificate implements SelectableItem {
             String dnCity = "";
             String dnStreet = "";
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String notBefore = dateFormat.format(certificate.getDssPrivateKey().getCertificate().getNotBefore());
-            String notAfter = dateFormat.format(certificate.getDssPrivateKey().getCertificate().getNotAfter());
+            String notBefore = dateFormat.format(privateKey.getCertificate().getNotBefore());
+            String notAfter = dateFormat.format(privateKey.getCertificate().getNotAfter());
             for (Rdn rdn: ldapDN.getRdns()) {
                 if (rdn.getType().equalsIgnoreCase("CN"))
                     dnName = rdn.getValue().toString();
@@ -76,15 +82,30 @@ public class Certificate implements SelectableItem {
                     notAfter);
             } else if (verbosity == DescriptionVerbosity.SHORT) {
                 label = String.format("%s (%s - %s)", dnName, notBefore, notAfter);
+            } else if (verbosity == DescriptionVerbosity.BUTTON) {
+                label = isPresent(alias) ? dnName + " - " + alias : dnName;
             } else {
                 label = dnName;
             }
         } catch (Exception e) {
             // If retrieving sensible name fails, use serial number
-            label = "SN: " + certificate.getDssPrivateKey().getCertificate().getCertificate().getSerialNumber().toString(16);
+            label = "SN: " + privateKey.getCertificate().getCertificate().getSerialNumber().toString(16);
         }
 
         return label;
+    }
+
+    private static String getAlias(DSSPrivateKeyEntry privateKey) {
+        try {
+            var alias = ((KSPrivateKeyEntry) privateKey).getAlias();
+            if (isPresent(alias)) {
+                alias = new String(alias.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+            }
+            return alias;
+
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
 
     /**
@@ -96,6 +117,6 @@ public class Certificate implements SelectableItem {
 
     @Override
     public String getDisplayedName() {
-        return this.getCertificateDescription(DescriptionVerbosity.NAME);
+        return this.getCertificateDescription(DescriptionVerbosity.BUTTON);
     }
 }
