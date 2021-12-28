@@ -4,15 +4,25 @@ import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
 
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.Node;
+
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
@@ -33,7 +43,7 @@ public class FXUtils {
     public static void displaySimpleError(String... inputs) {
         switch (inputs.length) {
             case 0 -> displayError("text.error", "error.general.description");
-            case 1 -> displayError("text.error", inputs[0]);
+            case 1 -> displayError("textfile:///home/michal/Desktop/main-signer/index-mini%20(copy).html\n.error", inputs[0]);
             case 2 -> displayError(inputs[0], inputs[1]);
             default -> displaySimpleError();
         }
@@ -177,5 +187,55 @@ public class FXUtils {
         return Stream.of("shared.css" , "dialog.css", "overrides.css")
             .map(filename -> requireNonNull(Main.class.getResource(filename)).toExternalForm())
             .toList();
+    }
+
+    public static void displayLaunchStatus(boolean launchSuccessful) {
+        VBox vbox = new VBox();
+        vbox.setAlignment(Pos.CENTER);
+
+        HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        hbox.setPadding(new Insets(20));
+        vbox.getChildren().add(hbox);
+        hbox.setSpacing(20);
+
+        try {
+            var imageView = new ImageView(new Image(new FileInputStream("src/main/resources/com/octosign/whitelabel/ui/icon.png"), 128, 128, true, true));
+            hbox.getChildren().add(imageView);
+
+            var statusText = new Text(translate(launchSuccessful ? "text.signerReady" : "text.launchFailed"));
+            statusText.setFont(Font.font("DejaVu Sans", 25));
+            hbox.getChildren().add(statusText);
+        } catch (FileNotFoundException e) {
+            var text = new Text("Loading...");
+            text.setFont(Font.font("DejaVu Sans", 25));
+            hbox.getChildren().add(text);
+        }
+
+        Stage stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+
+        Scene scene = new Scene(vbox, 512, 192); //, Color.TRANSPARENT);
+        scene.setOnMouseClicked(e -> stage.close());
+        scene.getStylesheets().addAll(getStylesheets());
+        stage.setScene(scene);
+        scheduleClosing(stage);
+        stage.show();
+    }
+
+    public static void scheduleClosing(Stage stage) {
+        Thread thread = new Thread(() -> {
+            try {
+                Thread.sleep(6000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            if (stage.isShowing())
+                Platform.runLater(stage::close);
+        });
+
+        thread.setDaemon(true);
+        thread.start();
     }
 }

@@ -52,8 +52,10 @@ public class Main extends Application {
         var cliCommand = CommandFactory.fromParameters(getParameters());
 
         if (cliCommand instanceof ListenCommand listenCommand) {
-            startServer(listenCommand);
+            boolean serverRunning = startServer(listenCommand);
             statusIndication = new StatusIndication(this::exit);
+
+            displayLaunchStatus(serverRunning);
 
             // Prevent exiting in server mode on last window close
             Platform.setImplicitExit(false);
@@ -66,7 +68,7 @@ public class Main extends Application {
         }
     }
 
-    private void startServer(ListenCommand command) {
+    private boolean startServer(ListenCommand command) {
         I18n.setLocale(command.getLanguage());
 
         server = new Server(command.getHost(), command.getPort(), command.getInitialNonce(), command.isRequiredSSL());
@@ -105,6 +107,8 @@ public class Main extends Application {
         });
 
         server.setInfo(new Info(version, Status.READY));
+
+        return true;
     }
 
     private void exit() {
