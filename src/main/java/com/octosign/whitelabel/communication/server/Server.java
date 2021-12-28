@@ -116,11 +116,11 @@ public class Server {
     private HttpServer getServer(String hostname, int port, int initialNonce, boolean isHttps) {
         HttpServer server;
         try {
-            server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
 
             if (isHttps) {
-                var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert")).toFile();
                 server = HttpsServer.create(new InetSocketAddress(hostname, port), 0);
+
+                var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert")).toFile();
                 SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
                 char[] password = "".toCharArray();
 
@@ -151,6 +151,8 @@ public class Server {
                         }
                     }
                 });
+            } else {
+                server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
             }
         } catch (BindException e) {
             throw new UserException("error.launchFailed.header", translate("error.launchFailed.addressInUse.description", port), e);
