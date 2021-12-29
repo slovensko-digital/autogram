@@ -45,7 +45,7 @@ public class Certificate implements SelectableItem {
     public enum DescriptionVerbosity {
         LONG,
         SHORT,
-        BUTTON,
+        COMPACT,
         NAME
     }
 
@@ -55,7 +55,6 @@ public class Certificate implements SelectableItem {
     public static String getCertificateDescription(Certificate certificate, DescriptionVerbosity verbosity) {
         var privateKey = certificate.getDssPrivateKey();
         String dn = privateKey.getCertificate().getSubject().getRFC2253();
-        String alias = getAlias(privateKey);
         String label = "";
         try {
             LdapName ldapDN = new LdapName(dn);
@@ -82,8 +81,8 @@ public class Certificate implements SelectableItem {
                     notAfter);
             } else if (verbosity == DescriptionVerbosity.SHORT) {
                 label = String.format("%s (%s - %s)", dnName, notBefore, notAfter);
-            } else if (verbosity == DescriptionVerbosity.BUTTON) {
-                label = isPresent(alias) ? dnName + " - " + alias : dnName;
+            } else if (verbosity == DescriptionVerbosity.COMPACT) {
+                label = dnName;
             } else {
                 label = dnName;
             }
@@ -95,19 +94,6 @@ public class Certificate implements SelectableItem {
         return label;
     }
 
-    private static String getAlias(DSSPrivateKeyEntry privateKey) {
-        try {
-            var alias = ((KSPrivateKeyEntry) privateKey).getAlias();
-            if (isPresent(alias)) {
-                alias = new String(alias.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-            }
-            return alias;
-
-        } catch (ClassCastException e) {
-            return null;
-        }
-    }
-
     /**
      * Constructs human readable description for the current private key
      */
@@ -117,6 +103,11 @@ public class Certificate implements SelectableItem {
 
     @Override
     public String getDisplayedName() {
-        return this.getCertificateDescription(DescriptionVerbosity.BUTTON);
+        return this.getCertificateDescription(DescriptionVerbosity.NAME);
+    }
+
+    @Override
+    public String getDisplayedDetails() {
+        return this.getCertificateDescription(DescriptionVerbosity.COMPACT);
     }
 }

@@ -3,6 +3,7 @@ package com.octosign.whitelabel.ui;
 import java.util.Optional;
 
 import com.octosign.whitelabel.error_handling.UserException;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -32,7 +33,11 @@ public class PasswordCallback implements PasswordInputCallback {
             }
             return null;
         });
-    
+
+        dialog.setOnShown(event -> {
+            Platform.runLater(pwd::requestFocus);
+            event.consume();
+        });
         Optional<String> result = dialog.showAndWait();
 
         return result.isPresent() ? result.get().toCharArray() : "".toCharArray();
