@@ -60,9 +60,10 @@ public class Server {
         server.createContext("/", infoEndpoint);
         server.createContext("/sign", signEndpoint);
 
-        if (devMode) {
+//        TODO decide this along with TODO in ../Main.java
+//        if (devMode) {
             server.createContext("/documentation", documentationEndpoint);
-        }
+//        }
 
         // Run requests in separate threads
         server.setExecutor(Executors.newCachedThreadPool());
