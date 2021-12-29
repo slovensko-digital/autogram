@@ -50,7 +50,7 @@ public class SelectDialog<T extends SelectableItem> extends Stage {
     }
 
     private ToggleButton createButton(T item) {
-        var button = new ToggleButton(item.getDisplayedName());
+        var button = new ToggleButton(item.getDisplayedDetails());
         button.setToggleGroup(group);
         button.setSelected(false);
         button.setUserData(item);

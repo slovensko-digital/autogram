@@ -74,13 +74,15 @@ public abstract class Token {
 
         // PKCS11 drivers
         DRIVERS.addAll(List.of(
-                Driver.name(translate("btn.eID"))
+                Driver.name("eID")
+                      .tokenType(translate("text.idCard"))
                       .file(WINDOWS, "C:\\Program Files (x86)\\EAC MW klient\\pkcs11_x64.dll")
                       .file(LINUX, "/usr/lib/eac_mw_klient/libpkcs11_x64.so")
                       .file(MAC, "/Applications/Aplikacia_pre_eID.app/Contents/pkcs11/libPkcs11.dylib")
                       .keystore(PKCS11),
 
-                Driver.name(translate("btn.ICASecureStore"))
+                Driver.name("ICASecureStore")
+                      .tokenType(translate("text.mandateCertificate"))
                       .file(WINDOWS, "C:\\Program Files\\I.CA SecureStore\\ICASecureStorePkcs11.dll")
                       .file(LINUX, "/usr/lib/pkcs11/libICASecureStorePkcs11.so")
                       .keystore(PKCS11)
