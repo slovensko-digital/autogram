@@ -85,6 +85,7 @@ public abstract class Token {
                       .tokenType(translate("text.mandateCertificate"))
                       .file(WINDOWS, "C:\\Program Files\\I.CA SecureStore\\ICASecureStorePkcs11.dll")
                       .file(LINUX, "/usr/lib/pkcs11/libICASecureStorePkcs11.so")
+                      .file(MAC, "/usr/local/lib/pkcs11/libICASecureStorePkcs11.dylib")
                       .keystore(PKCS11)
                 )
         );
