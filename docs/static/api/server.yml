@@ -245,7 +245,7 @@ components:
           - ASICS
           - ASICE
           example: ASICE
-          description: Optional container type that should be used to place the file with signature to. Defaults to ASICE.
+          description: Optional container type that should be used to place the file with signature to.
 
         containerFilename:
           type: string
@@ -256,6 +256,11 @@ components:
           type: string
           example: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
           description: XML namespace for the ASiC container.
+
+        identifier:
+          type: string
+          example: https://data.gov.sk/id/egov/eform/App.GeneralAgenda/1.9
+          description: Optional identifier of the document template.
 
         packaging:
           type: string
@@ -313,6 +318,11 @@ components:
           example: Don't be evil.
           description: Optional signature policy content.
 
+        schema:
+          type: string
+          example: '<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="Document"><xs:complexType><xs:sequence><xs:element name="Title" type="xs:string" /></xs:sequence></xs:complexType></xs:element></xs:schema>'
+          description: 'Optional XML schema, format is dictated by `payloadMimeType`.'
+
         transformation:
           type: string
           example: '<?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>'
@@ -323,10 +333,6 @@ components:
           example: text/html
           description: Optional transformation output MIME type. Required to display the result correctly.
 
-        schema:
-          type: string
-          example: '<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="Document"><xs:complexType><xs:sequence><xs:element name="Title" type="xs:string" /></xs:sequence></xs:complexType></xs:element></xs:schema>'
-          description: 'Optional XML schema, format is dictated by `payloadMimeType`.'
       required:
       - format
 
@@ -463,7 +469,7 @@ components:
     XAdES-ASICE-TXT-TXT:
       value:
         document:
-          content: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</GeneralAgenda>"
+          content: "<?xml version=\"1.0\"encoding=\"UTF-8\"?><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</GeneralAgenda>"
         parameters:
           format: XADES
           fileMimeType: application/lor.ip.xmldatacontainer+xml
