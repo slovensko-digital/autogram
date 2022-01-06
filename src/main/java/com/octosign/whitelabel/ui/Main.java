@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.error_handling.*;
 
@@ -93,13 +94,15 @@ public class Main extends Application {
       //  }
 
         server.setOnSign((SignatureUnit signatureUnit) -> {
-            var future = new CompletableFuture<Document>();
+            var future = new CompletableFuture<SignedData>();
 
             Platform.runLater(() -> {
-                openWindow(signatureUnit, (String signedContent) -> {
-                    var signedDocument = signatureUnit.getDocument().clone();
-                    signedDocument.setContent(signedContent);
-                    future.complete(signedDocument);
+                openWindow(signatureUnit, (byte[] signedContent) -> {
+                    Document d = signatureUnit.getDocument();
+                    Document signedDocument = new Document(d.getId(), d.getTitle(), signedContent, d.getLegalEffect());
+                    SignedData signedData = new SignedData(signedDocument, signatureUnit.getMimeType());
+
+                    future.complete(signedData);
                 });
             });
             return future;
@@ -114,7 +117,7 @@ public class Main extends Application {
         Platform.exit();
     }
 
-    private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) {
+    private void openWindow(SignatureUnit signatureUnit, Consumer<byte[]> onSigned) {
         var windowStage = new Stage();
 
         var fxmlLoader = loadWindow("main");
@@ -123,7 +126,7 @@ public class Main extends Application {
         MainController controller = fxmlLoader.getController();
         controller.setSigningManager(signingManager);
         controller.setSignatureUnit(signatureUnit);
-        controller.setOnSigned((String signedContent) -> {
+        controller.setOnSigned((byte[] signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });

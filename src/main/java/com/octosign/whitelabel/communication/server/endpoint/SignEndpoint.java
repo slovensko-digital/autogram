@@ -2,6 +2,7 @@ package com.octosign.whitelabel.communication.server.endpoint;
 
 import com.octosign.whitelabel.communication.SignRequest;
 import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.*;
 import com.octosign.whitelabel.error_handling.*;
@@ -10,43 +11,41 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
-public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
+public class SignEndpoint extends WriteEndpoint<SignRequest, SignedData> {
 
-    private Function<SignatureUnit, Future<Document>> onSign;
+    private Function<SignatureUnit, Future<SignedData>> onSign;
 
     public SignEndpoint(Server server, int initialNonce) {
         super(server, initialNonce);
     }
 
-    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
+    public void setOnSign(Function<SignatureUnit, Future<SignedData>> onSign) {
         this.onSign = onSign;
     }
 
     @Override
-    protected Response<Document> handleRequest(Request<SignRequest> request, Response<Document> response)
-            throws Throwable {
+    protected Response<SignedData> handleRequest(Request<SignRequest> request, Response<SignedData> response) throws Throwable {
         if (onSign == null)
             throw new IntegrationException(Code.NOT_READY);
 
         var signRequest = request.getBody();
-        // TODO: Decode from base64 only here
 
         var document = Document.getSpecificDocument(signRequest);
         var parameters = signRequest.getParameters();
-        var signatureUnit = new SignatureUnit(document, parameters);
+        var mimeType = signRequest.getPayloadMimeType();
 
-        Document signedDocument;
+        var signatureUnit = new SignatureUnit(document, parameters, mimeType);
+
+        SignedData signedData;
         try {
-            signedDocument = onSign.apply(signatureUnit).get();
+            signedData = onSign.apply(signatureUnit).get();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (ExecutionException e) {
             throw e.getCause();
         }
 
-        // TODO: Encode back to base64 only here
-
-        return response.setBody(signedDocument);
+        return response.setBody(signedData);
     }
 
     @Override
@@ -55,8 +54,8 @@ public class SignEndpoint extends WriteEndpoint<SignRequest, Document> {
     }
 
     @Override
-    protected Class<Document> getResponseClass() {
-        return Document.class;
+    protected Class<SignedData> getResponseClass() {
+        return SignedData.class;
     }
 
     @Override
