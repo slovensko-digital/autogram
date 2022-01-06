@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import static com.octosign.whitelabel.ui.Utils.isPresent;
-import static java.util.Objects.requireNonNull;
 
 
 public class XDCTransformer {
@@ -35,8 +34,8 @@ public class XDCTransformer {
         TXT, HTML, XHTML
     }
 
-    private final String identifier;
-    private final String version;
+    private final String identifierUri;
+    private final String identifierVersion;
     private final String xsdSchema;
     private final String xsltSchema;
     private final String canonicalizationMethod;
@@ -48,21 +47,23 @@ public class XDCTransformer {
     private String documentXmlns;
 
     public static XDCTransformer newInstance(SignatureParameters sp) {
-        var mediaType = SignatureParameterMapper.map(sp.getTransformationOutputMimeType());
         var method = SignatureParameterMapper.map(sp.getPropertiesCanonicalization());
         var algorithm = SignatureParameterMapper.map(sp.getDigestAlgorithm());
+        var mediaType = SignatureParameterMapper.map(sp.getTransformationOutputMimeType());
 
-        return new XDCTransformer(sp.getIdentifier(), sp.getVersion(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(), method, algorithm, mediaType);
+        return new XDCTransformer(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(), method, algorithm, mediaType);
     }
 
-    private XDCTransformer(String identifier, String version, String xsdSchema, String xsltSchema, String containerXmlns, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, DestinationMediaType mediaDestinationTypeDescription) {
-        this.identifier = identifier;
-        this.version = version;
+    private XDCTransformer(String identifier, String xsdSchema, String xsltSchema, String containerXmlns, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, DestinationMediaType mediaDestinationTypeDescription) {
+        int lastSlashIndex = identifier.lastIndexOf("/");
+        this.identifierUri = identifier.substring(0, lastSlashIndex + 1);
+        this.identifierVersion = identifier.substring(lastSlashIndex + 1);
+
         this.containerXmlns = containerXmlns;
         this.canonicalizationMethod = canonicalizationMethod;
         this.xsdSchema = xsdSchema;
         this.xsltSchema = xsltSchema;
-        this.digestAlgorithm = requireNonNull(digestAlgorithm, "digestAlgorithm");
+        this.digestAlgorithm = digestAlgorithm;
         this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
@@ -88,12 +89,38 @@ public class XDCTransformer {
         }
     }
 
+    public byte[] transform(byte[] xmlByteArrayInput, Mode mode) {
+        try {
+            parseDOMDocument(xmlByteArrayInput);
+        } catch (SAXException | IOException e) {
+            throw new IntegrationException(Code.INVALID_CONTENT, e);
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            transformDocument(mode);
+        } catch (DOMException e) {
+            throw new IntegrationException(Code.INVALID_CONTENT, e);
+        }
+
+        try {
+            return getDocumentContent().getBytes(StandardCharsets.UTF_8);
+        } catch (TransformerException e) {
+            throw new IntegrationException(Code.INVALID_CONTENT, e);
+        }
+    }
+
     private void parseDOMDocument(String xmlContent) throws ParserConfigurationException, IOException, SAXException {
         var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
 
         var source = new InputSource(new StringReader(xmlContent));
         this.document = builderFactory.newDocumentBuilder().parse(source);
+    }
+
+    private void parseDOMDocument(byte[] xmlContent) throws ParserConfigurationException, IOException, SAXException {
+        parseDOMDocument(new String(xmlContent, StandardCharsets.UTF_8));
     }
 
     private void transformDocument(Mode mode) {
@@ -143,18 +170,13 @@ public class XDCTransformer {
     private Element createXMLData() {
         var element = document.createElement("XMLData");
         element.setAttribute("ContentType", "application/xml; charset=UTF-8");
-        if (identifier != null)
-            element.setAttribute("Identifier", identifier);
-        if (version != null)
-            element.setAttribute("Version", version);
+        element.setAttribute("Identifier", identifierUri);
+        element.setAttribute("Version", identifierVersion);
 
         return element;
     }
 
     private Element createUsedSchemasReferenced() {
-        if (canonicalizationMethod == null || identifier == null || version == null)
-            return null;
-
         var element = document.createElement("UsedSchemasReferenced");
         if (isPresent(xsdSchema) || isPresent(xsltSchema))
             documentXmlns = document.getFirstChild().getAttributes().getNamedItem("xmlns").getNodeValue();

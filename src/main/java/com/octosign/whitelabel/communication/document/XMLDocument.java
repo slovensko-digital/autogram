@@ -21,48 +21,21 @@ import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
  * XML document for signing
  */
 public class XMLDocument extends Document {
-    protected String transformation;
-    protected String schema;
 
     public XMLDocument() { }
 
-    public XMLDocument(Document document, String schema, String transformation) {
+    public XMLDocument(Document document) {
         super(document);
-        this.schema = schema;
-        this.transformation = transformation;
     }
 
-    public String getSchema() {
-        return this.schema;
-    }
 
-    public void setSchema(String schema) {
-        this.schema = schema;
-    }
-
-    public String getTransformation() {
-        return transformation;
-    }
-
-    public void setTransformation(String transformation) {
-        this.transformation = transformation;
-    }
-
-    /**
-     * Apply defined transformation on the document and get it
-     *
-     * @return String with the transformed XML document - for example its HTML representation
-     */
-    public String getTransformed() {
-        if (isNullOrBlank(content) || isNullOrBlank(transformation)) {
-            var attribute = isNullOrBlank(content) ? "body.parameters.content" : "body.parameters.transformation";
-            throw new IntegrationException(Code.MISSING_INPUT, "Input attribute missing: " + attribute);
-        }
+    public String getTransformed(String transformation) {
+        if (isNullOrBlank(transformation))
+            throw new IntegrationException(Code.MISSING_INPUT, "body.parameters.transformation missing!");
 
         var xslSource = new StreamSource(new StringReader(transformation));
-        var xmlInSource = new StreamSource(new StringReader(content));
+        var xmlInSource = new StreamSource(new StringReader(getContentString()));
         var xmlOutWriter = new StringWriter();
-
         var transformerFactory = TransformerFactory.newInstance();
 
         try {
@@ -76,11 +49,10 @@ public class XMLDocument extends Document {
         return xmlOutWriter.toString();
     }
 
-    public void validate() {
-        if (isNullOrBlank(content) || isNullOrBlank(schema)) {
-            var attribute = isNullOrBlank(content) ? "body.parameters.content" : "body.parameters.schema";
-            throw new IntegrationException(Code.MISSING_INPUT, "Input attribute missing: " + attribute);
-        }
+    public void validate(String schema) {
+        if (isNullOrBlank(schema))
+            throw new IntegrationException(Code.MISSING_INPUT, "body.parameters.schema missing!");
+
         var xsdSource = new StreamSource(new StringReader(schema));
         Schema xsdSchema;
 
@@ -90,7 +62,7 @@ public class XMLDocument extends Document {
             throw new IntegrationException(Code.INVALID_SCHEMA, e);
         }
 
-        var xmlInSource = new StreamSource(new StringReader(content));
+        var xmlInSource = new StreamSource(new StringReader(getContentString()));
 
         try {
             xsdSchema.newValidator().validate(xmlInSource);
