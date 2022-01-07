@@ -93,14 +93,14 @@ public class Main extends Application {
             System.out.println(translate("text.docsAvailableAt", docsAddress));
       //  }
 
-        server.setOnSign((SignatureUnit signatureUnit) -> {
+        server.setOnSign((SignatureUnit unit) -> {
             var future = new CompletableFuture<SignedData>();
 
             Platform.runLater(() -> {
-                openWindow(signatureUnit, (byte[] signedContent) -> {
-                    Document d = signatureUnit.getDocument();
+                openWindow(unit, (byte[] signedContent) -> {
+                    Document d = unit.getDocument();
                     Document signedDocument = new Document(d.getId(), d.getTitle(), signedContent, d.getLegalEffect());
-                    SignedData signedData = new SignedData(signedDocument, signatureUnit.getMimeType());
+                    SignedData signedData = new SignedData(signedDocument, unit.getMimeType(), unit.isPlainOldXML());
 
                     future.complete(signedData);
                 });

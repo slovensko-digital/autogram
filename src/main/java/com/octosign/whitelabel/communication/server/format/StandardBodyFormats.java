@@ -68,12 +68,13 @@ public enum StandardBodyFormats implements BodyFormat {
 
         static class SignedDataSerializer implements JsonSerializer<SignedData> {
             @Override
-            public JsonElement serialize(SignedData signedData, Type type, JsonSerializationContext context) {
+            public JsonElement serialize(SignedData data, Type type, JsonSerializationContext context) {
                 JsonObject jsonDocument = new JsonObject();
-                Document document = signedData.document();
+                Document document = data.document();
 
+                boolean requireBase64Encoding = data.mimeType().isBase64() || !data.stringifyable();
                 byte[] binaryContent = document.getContent();
-                if (signedData.payloadMimeType().isBase64())
+                if (requireBase64Encoding)
                     binaryContent = encodeBase64ToByteArr(binaryContent);
 
                 var content = new String(binaryContent, StandardCharsets.UTF_8);
@@ -116,13 +117,12 @@ public enum StandardBodyFormats implements BodyFormat {
 
                 JsonObject params = signRequest.get("parameters").getAsJsonObject();
                 Format format = context.deserialize(params.get("format"), Format.class);
+                Level level = context.deserialize(params.get("level"), Level.class);
                 MimeType fileMimeType = context.deserialize(params.get("fileMimeType"), MimeType.class);
                 Container container = context.deserialize(params.get("container"), Container.class);
                 String containerFilename = getOptional("containerFilename", params);
                 String containerXmlns = getOptional("containerXmlns", params);
                 String identifier = getOptional("identifier", params);
-                MimeType transformationOutputMimeType = context.deserialize(params.get("transformationOutputMimeType"), MimeType.class);
-                Level level = context.deserialize(params.get("level"), Level.class);
                 Packaging packaging = context.deserialize(params.get("packaging"), Packaging.class);
                 DigestAlgorithm digestAlgorithm = context.deserialize(params.get("digestAlgorithm"), DigestAlgorithm.class);
                 Boolean en319132 = isNullValue("en319132", params) ? null : params.get("en319132").getAsBoolean();
@@ -131,12 +131,13 @@ public enum StandardBodyFormats implements BodyFormat {
                 CanonicalizationMethod keyInfoCanonicalization = context.deserialize(params.get("keyInfoCanonicalization"), CanonicalizationMethod.class);
                 String signaturePolicyId = getOptional("signaturePolicyId", params);
                 String signaturePolicyContent = getOptional("signaturePolicyContent", params);
-                String transformation = getOptional("transformation", params);
                 String schema = getOptional("schema", params);
+                String transformation = getOptional("transformation", params);
+                MimeType transformationOutputMimeType = context.deserialize(params.get("transformationOutputMimeType"), MimeType.class);
 
                 if (payloadType.isBase64()) {
-                    transformation = decodeBase64(transformation);
                     schema = decodeBase64(schema);
+                    transformation = decodeBase64(transformation);
                 }
 
                 Document document = new Document(id, title, content, legalEffect);
@@ -160,7 +161,7 @@ public enum StandardBodyFormats implements BodyFormat {
         static class MimeTypeDeserializer implements JsonDeserializer<MimeType> {
             @Override
             public MimeType deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
-                if (jsonElement.isJsonNull())
+                if (jsonElement == null || jsonElement.isJsonNull())
                     throw new IntegrationException(Code.MISSING_INPUT);
 
                 try {

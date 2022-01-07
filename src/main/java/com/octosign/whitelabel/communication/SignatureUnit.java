@@ -3,11 +3,13 @@ package com.octosign.whitelabel.communication;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.preprocessing.XDCTransformer;
 
+import static com.octosign.whitelabel.communication.MimeType.*;
+
 
 public class SignatureUnit {
-    private Document document;
-    private SignatureParameters signatureParameters;
-    private MimeType mimeType;
+    private final Document document;
+    private final SignatureParameters signatureParameters;
+    private final MimeType mimeType;
 
     public SignatureUnit(Document document, SignatureParameters signatureParameters, MimeType mimeType) {
         this.document = document;
@@ -28,11 +30,15 @@ public class SignatureUnit {
     }
 
     public boolean isPDF() {
-        return mimeType.is(MimeType.PDF);
+        return mimeType.is(PDF);
     }
 
     public boolean isXML() {
         return mimeType.is(MimeType.XML);
+    }
+
+    public boolean isPlainOldXML() {
+        return isXML() && signatureParameters.getContainer() == null;
     }
 
     public boolean isXDC() {
