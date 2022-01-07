@@ -25,11 +25,8 @@ public class Document {
         this.legalEffect = legalEffect;
     }
 
-    public Document(Document document) {
-        setId(document.getId());
-        setTitle(document.getTitle());
-        setContent(document.getContent());
-        setLegalEffect(document.getLegalEffect());
+    public Document(Document d) {
+        this(d.id, d.title, d.content, d.legalEffect);
     }
 
     public String getId() { return id; }

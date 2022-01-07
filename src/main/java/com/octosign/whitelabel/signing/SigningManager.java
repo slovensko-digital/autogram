@@ -51,9 +51,9 @@ public class SigningManager {
 
     private DSSDocument signXDC(SignatureUnit data) {
         data.transformToXDC();
+        var params = data.getSignatureParameters();
 
         var dssDocument = new InMemoryDocument(data.getDocument().getContent());
-        var params = data.getSignatureParameters();
         if (isPresent(params.getContainerFilename()))
             dssDocument.setName(params.getContainerFilename());
         if (params.getFileMimeType() != null)
@@ -73,7 +73,6 @@ public class SigningManager {
 
     private DSSDocument signPDF(SignatureUnit data) {
         var dssDocument = new InMemoryDocument(data.getDocument().getContent());
-
         var dssParams = SignatureParameterMapper.mapPAdESParameters(data.getSignatureParameters());
         dssParams.setSigningCertificate(activeCertificate.getDssPrivateKey().getCertificate());
         dssParams.setCertificateChain(activeCertificate.getDssPrivateKey().getCertificateChain());
@@ -88,7 +87,6 @@ public class SigningManager {
 
     private DSSDocument signXAdES(SignatureUnit data) {
         var dssDocument = new InMemoryDocument(data.getDocument().getContent());
-
         var dssParams = SignatureParameterMapper.mapASiCWithXAdESParameters(data.getSignatureParameters());
         dssParams.setSigningCertificate(activeCertificate.getDssPrivateKey().getCertificate());
         dssParams.setCertificateChain(activeCertificate.getDssPrivateKey().getCertificateChain());

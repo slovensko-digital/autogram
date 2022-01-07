@@ -33,10 +33,17 @@ public class Utils {
     }
 
     public static String encodeBase64(String value) {
-        if (isNullOrBlank(value))
+        if (value == null)
+             return null;
+        return encodeBase64(value.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String encodeBase64(byte[] value) {
+        if (value == null)
             return null;
 
-        return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
+        byte[] encoded = Base64.getEncoder().encode(value);
+        return new String(encoded, StandardCharsets.UTF_8);
     }
 
     public static byte[] encodeBase64ToByteArr(byte[] value) {
