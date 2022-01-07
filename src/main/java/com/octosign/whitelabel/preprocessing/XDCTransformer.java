@@ -56,9 +56,11 @@ public class XDCTransformer {
 
     private XDCTransformer(String identifier, String xsdSchema, String xsltSchema, String containerXmlns, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, DestinationMediaType mediaDestinationTypeDescription) {
         int lastSlashIndex = identifier.lastIndexOf("/");
+        if (lastSlashIndex == -1)
+            throw new IntegrationException(Code.MALFORMED_INPUT, "Identifier contains no slash: " + identifier);
+
         this.identifierUri = identifier.substring(0, lastSlashIndex + 1);
         this.identifierVersion = identifier.substring(lastSlashIndex + 1);
-
         this.containerXmlns = containerXmlns;
         this.canonicalizationMethod = canonicalizationMethod;
         this.xsdSchema = xsdSchema;
@@ -230,11 +232,11 @@ public class XDCTransformer {
 
     private Element createUsedPresentationSchemaReference() {
         var element = document.createElement("UsedPresentationSchemaReference");
-        element.setAttribute("ContentType", "application/xslt+xml");
-        element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription.name());
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue", computeDigest(xsltSchema));
+        element.setAttribute("ContentType", "application/xslt+xml");
+        element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription.name());
         element.setTextContent(buildXSLTReference());
 
         return element;
