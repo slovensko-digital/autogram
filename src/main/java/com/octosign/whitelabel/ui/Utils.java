@@ -2,7 +2,6 @@ package com.octosign.whitelabel.ui;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Stream;
 import java.util.Base64;
 
 public class Utils {
@@ -34,25 +33,36 @@ public class Utils {
     }
 
     public static String encodeBase64(String value) {
+        if (value == null)
+             return null;
+        return encodeBase64(value.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String encodeBase64(byte[] value) {
+        if (value == null)
+            return null;
+
+        byte[] encoded = Base64.getEncoder().encode(value);
+        return new String(encoded, StandardCharsets.UTF_8);
+    }
+
+    public static byte[] encodeBase64ToByteArr(byte[] value) {
+        return Base64.getEncoder().encode(value);
+    }
+
+    public static byte[] decodeBase64ToByteArr(String value) {
         if (isNullOrBlank(value))
             return null;
 
-        return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
+        return Base64.getDecoder().decode(value);
     }
 
     public static String decodeBase64(String value) {
-        if (isNullOrBlank(value))
+        byte[] decoded = decodeBase64ToByteArr(value);
+        if (value == null || decoded == null)
             return null;
 
-        return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
-    }
-
-    @SafeVarargs
-    public static <T> T[] concat(T[]... args) {
-        return (T[]) Stream.of(args)
-                .map(Objects::requireNonNull)
-                .flatMap(Stream::of)
-                .toArray();
+        return new String(decoded, StandardCharsets.UTF_8);
     }
 
 }

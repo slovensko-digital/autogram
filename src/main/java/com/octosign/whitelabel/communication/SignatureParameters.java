@@ -1,5 +1,7 @@
 package com.octosign.whitelabel.communication;
 
+import static com.octosign.whitelabel.communication.SignatureParameters.CanonicalizationMethod.INCLUSIVE;
+
 /**
  * Immutable parameters for signature creation
  */
@@ -39,52 +41,33 @@ public class SignatureParameters {
         EXCLUSIVE
     }
 
+    private final Format format;
+    private final Level level;
+    private final MimeType fileMimeType;
+    private final Container container;
+    private final String containerFilename;
+    private final String containerXmlns;
+    private final String identifier;
+    private final Packaging packaging;
+    private final DigestAlgorithm digestAlgorithm;
+    private final Boolean en319132;
+    private final CanonicalizationMethod infoCanonicalization;
+    private final CanonicalizationMethod propertiesCanonicalization;
+    private final CanonicalizationMethod keyInfoCanonicalization;
+    private final String signaturePolicyId;
+    private final String signaturePolicyContent;
+    private final String schema;
+    private final String transformation;
+    private final MimeType transformationOutputMimeType;
 
-    private Format format;
-
-    private Level level;
-
-    private String fileMimeType;
-
-    private Container container;
-
-    private String containerFilename;
-
-    private String containerXmlns;
-
-    private Packaging packaging;
-
-    private DigestAlgorithm digestAlgorithm;
-
-    private boolean en319132;
-
-    private CanonicalizationMethod infoCanonicalization;
-
-    private CanonicalizationMethod propertiesCanonicalization;
-
-    private CanonicalizationMethod keyInfoCanonicalization;
-
-    private String signaturePolicyId;
-
-    private String signaturePolicyContent;
-
-    private String transformation;
-
-    private String transformationOutputMimeType;
-
-    private String schema;
-
-    private String identifier;
-
-    private String version;
-
-    public SignatureParameters(Format format, Level level, String fileMimeType, Container container, String containerFilename, String containerXmlns, Packaging packaging, DigestAlgorithm digestAlgorithm, boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String transformation, String transformationOutputMimeType, String schema, String identifier, String version) {
+    public SignatureParameters(Format format, Level level, MimeType fileMimeType, Container container, String containerFilename, String containerXmlns, String identifier, Packaging packaging, DigestAlgorithm digestAlgorithm, Boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String schema, String transformation, MimeType transformationOutputMimeType) {
         this.format = format;
         this.level = level;
         this.fileMimeType = fileMimeType;
         this.container = container;
         this.containerFilename = containerFilename;
         this.containerXmlns = containerXmlns;
+        this.identifier = identifier;
         this.packaging = packaging;
         this.digestAlgorithm = digestAlgorithm;
         this.en319132 = en319132;
@@ -93,16 +76,10 @@ public class SignatureParameters {
         this.keyInfoCanonicalization = keyInfoCanonicalization;
         this.signaturePolicyId = signaturePolicyId;
         this.signaturePolicyContent = signaturePolicyContent;
+        this.schema = schema;
         this.transformation = transformation;
         this.transformationOutputMimeType = transformationOutputMimeType;
-        this.schema = schema;
-        this.identifier = identifier;
-        this.version = version;
     }
-
-    public String getContainerFilename() { return containerFilename; }
-
-    public String getContainerXmlns() { return containerXmlns; }
 
     public Format getFormat() { return format; }
 
@@ -110,12 +87,20 @@ public class SignatureParameters {
         return level != null ? level : Level.BASELINE_B;
     }
 
-    public String getFileMimeType() {
+    public MimeType getFileMimeType() {
         return fileMimeType;
     }
 
     public Container getContainer() {
         return container;
+    }
+
+    public String getContainerFilename() { return containerFilename; }
+
+    public String getContainerXmlns() { return containerXmlns; }
+
+    public String getIdentifier() {
+        return identifier;
     }
 
     public Packaging getPackaging() {
@@ -126,20 +111,20 @@ public class SignatureParameters {
         return digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
     }
 
-    public boolean isEn319132() {
-        return en319132;
+    public Boolean isEn319132() {
+        return en319132 != null ? en319132 : true;
     }
 
     public CanonicalizationMethod getInfoCanonicalization() {
-        return infoCanonicalization;
+        return infoCanonicalization != null ? infoCanonicalization : INCLUSIVE;
     }
 
     public CanonicalizationMethod getPropertiesCanonicalization() {
-        return propertiesCanonicalization;
+        return propertiesCanonicalization != null ? propertiesCanonicalization : INCLUSIVE;
     }
 
     public CanonicalizationMethod getKeyInfoCanonicalization() {
-        return keyInfoCanonicalization;
+        return keyInfoCanonicalization != null ? keyInfoCanonicalization : INCLUSIVE;
     }
 
     public String getSignaturePolicyId() {
@@ -150,23 +135,16 @@ public class SignatureParameters {
         return signaturePolicyContent;
     }
 
-    public String getTransformation() {
-        return transformation;
-    }
-
-    public String getTransformationOutputMimeType() {
-        return transformationOutputMimeType;
-    }
-
     public String getSchema() {
         return schema;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public String getTransformation() {
+        return transformation;
     }
 
-    public String getVersion() {
-        return version;
+    public MimeType getTransformationOutputMimeType() {
+        return transformationOutputMimeType;
     }
+
 }

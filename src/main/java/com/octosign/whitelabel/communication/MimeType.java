@@ -66,16 +66,6 @@ public record MimeType(String type, String subType, Map<String, String> paramete
         return parameters.containsKey("base64");
     }
 
-    // TODO
-    // MimeType should be immutable,
-    // remove this after appropriate refactor
-    public void removeParameter(String key) {
-        if (!parameters.containsKey(key))
-            throw new RuntimeException("Parameter with key " + key + " does not exist within this mimetype!");
-
-        parameters.remove(key);
-    }
-
     public boolean equalsTypeSubtype(MimeType other) {
         if (this == other) {
             return true;
@@ -90,6 +80,13 @@ public record MimeType(String type, String subType, Map<String, String> paramete
         }
 
         return true;
+    }
+
+    public boolean is(MimeType other) {
+        if (other == null)
+            return false;
+
+        return equalsTypeSubtype(other);
     }
 
     @Override
@@ -125,10 +122,7 @@ public record MimeType(String type, String subType, Map<String, String> paramete
         return firstPart + "; " + secondPart;
     }
 
-    public static eu.europa.esig.dss.model.MimeType toDSSMimeType(String mimeTypeString) {
-        if (isNullOrBlank(mimeTypeString))
-            return null;
-
-        return eu.europa.esig.dss.model.MimeType.fromMimeTypeString(mimeTypeString);
+    public eu.europa.esig.dss.model.MimeType toDSSMimeType() {
+        return eu.europa.esig.dss.model.MimeType.fromMimeTypeString(this.toString());
     }
 }

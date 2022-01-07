@@ -1,9 +1,6 @@
 package com.octosign.whitelabel.communication;
 
 import com.google.common.collect.ImmutableMap;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 import com.octosign.whitelabel.preprocessing.XDCTransformer;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.*;
@@ -80,27 +77,15 @@ public class SignatureParameterMapper {
         return canonicalizationMethodMapping.get(canonicalizationMethod);
     }
 
-
-    public static DestinationMediaType map(String transformationOutputMimeType) {
-        MimeType mimeType;
-        try {
-            mimeType = MimeType.parse(transformationOutputMimeType);
-        } catch (MalformedMimetypeException e) {
-            throw new IntegrationException(Code.MALFORMED_MIMETYPE, transformationOutputMimeType);
-        }
-        return mimeTypeToDestinationMediaTypeMapping.get(mimeType);
+    public static DestinationMediaType map(MimeType transformationOutputMimeType) {
+        return mimeTypeToDestinationMediaTypeMapping.get(transformationOutputMimeType);
     }
 
-
+    /*
+        Parameter mapping for XADES signatures without XDC or ASICE
+     */
     public static XAdESSignatureParameters mapXAdESParameters(SignatureParameters sp) {
-        XAdESSignatureParameters parameters;
-
-        if (sp.getContainer() != null) {
-            parameters = new ASiCWithXAdESSignatureParameters();
-            ((ASiCWithXAdESSignatureParameters) parameters).aSiC().setContainerType(map(sp.getContainer()));
-        } else {
-            parameters = new XAdESSignatureParameters();
-        }
+        var parameters = new XAdESSignatureParameters();
 
         parameters.setSignatureLevel(map(sp.getLevel(), XADES));
         parameters.setSignaturePackaging(map(sp.getPackaging()));
@@ -115,6 +100,29 @@ public class SignatureParameterMapper {
         return parameters;
     }
 
+    /*
+        Parameter mapping for XADES signatures within XDC or ASICE in general
+     */
+    public static ASiCWithXAdESSignatureParameters mapASiCWithXAdESParameters(SignatureParameters sp) {
+        var parameters = new ASiCWithXAdESSignatureParameters();
+
+        parameters.aSiC().setContainerType(map(sp.getContainer()));
+        parameters.setSignatureLevel(map(sp.getLevel(), XADES));
+        parameters.setSignaturePackaging(map(sp.getPackaging()));
+        parameters.setDigestAlgorithm(map(sp.getDigestAlgorithm()));
+        parameters.setSigningCertificateDigestMethod(map(sp.getDigestAlgorithm()));
+        parameters.setEn319132(sp.isEn319132());
+        if (sp.getInfoCanonicalization() != null)
+            parameters.setSignedInfoCanonicalizationMethod(map(sp.getInfoCanonicalization()));
+        if (sp.getPropertiesCanonicalization() != null)
+            parameters.setSignedPropertiesCanonicalizationMethod(map(sp.getPropertiesCanonicalization()));
+
+        return parameters;
+    }
+
+    /*
+        Parameter mapping for PADES signatures
+    */
     public static PAdESSignatureParameters mapPAdESParameters(SignatureParameters sp) {
         var parameters = new PAdESSignatureParameters();
 

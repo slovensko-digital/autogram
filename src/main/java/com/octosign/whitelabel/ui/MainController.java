@@ -18,11 +18,11 @@ import javafx.stage.Stage;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static com.octosign.whitelabel.communication.MimeType.*;
 import static com.octosign.whitelabel.signing.Token.getAvailableDrivers;
 import static com.octosign.whitelabel.ui.FXUtils.displayError;
 import static com.octosign.whitelabel.ui.I18n.translate;
-import static com.octosign.whitelabel.ui.Utils.first;
-import static com.octosign.whitelabel.ui.Utils.isNullOrEmpty;
+import static com.octosign.whitelabel.ui.Utils.*;
 
 /**
  * Controller for the signing window
@@ -63,7 +63,7 @@ public class MainController {
     /**
      * Consumer of the signed document content on success
      */
-    private Consumer<String> onSigned;
+    private Consumer<byte[]> onSigned;
 
     public void initialize() {
         webView.setContextMenuEnabled(false);
@@ -74,7 +74,7 @@ public class MainController {
         this.signingManager = signingManager;
     }
 
-    public void setOnSigned(Consumer<String> onSigned) {
+    public void setOnSigned(Consumer<byte[]> onSigned) {
         this.onSigned = onSigned;
     }
 
@@ -86,44 +86,28 @@ public class MainController {
         mainButton.setText(resolveMainButtonText());
 
         var document = signatureUnit.getDocument();
-        var parameters = signatureUnit.getSignatureParameters();
+        var params = signatureUnit.getSignatureParameters();
+        var mimeType = signatureUnit.getMimeType();
 
-        if (document.getLegalEffect() != null && !document.getLegalEffect().isBlank()) {
-            signLabel.setText(document.getLegalEffect());
-            signLabel.setVisible(true);
-        }
+        if (mimeType.is(XML)) {
+            XMLDocument xmlDocument = (XMLDocument) document;
+            xmlDocument.validate(params.getSchema());
+            var visualisation = xmlDocument.getTransformed(params.getTransformation());
 
-        boolean isXML = document instanceof XMLDocument;
-        boolean isPDF = document instanceof PDFDocument;
-        final boolean hasSchema = isXML && ((XMLDocument) document).getSchema() != null;
-        final boolean hasTransformation = isXML && ((XMLDocument) document).getTransformation() != null;
-
-        if (hasSchema) {
-            ((XMLDocument) document).validate();
-        }
-
-        if (hasTransformation) {
-            var visualisation = ((XMLDocument) document).getTransformed();
-
-            MimeType transformationOutputType;
-            try {
-                transformationOutputType = parameters.getTransformationOutputMimeType() == null
-                    ? MimeType.HTML
-                    : MimeType.parse(parameters.getTransformationOutputMimeType());
-            } catch (MalformedMimetypeException e) {
-                throw new IntegrationException(Code.MALFORMED_MIMETYPE, e);
-            }
-
-            if (transformationOutputType.equalsTypeSubtype(MimeType.HTML)) {
-                displayHTMLVisualisation(visualisation);
-            } else {
+            MimeType transformationOutput = params.getTransformationOutputMimeType();
+            if (transformationOutput.is(PLAIN))
                 displayPlainTextVisualisation(visualisation);
-            }
-        } else if (isPDF) {
-            displayPDFVisualisation(document);
-        } else {
-            displayPlainTextVisualisation(document.getContent());
+            else
+                displayHTMLVisualisation(visualisation);
+
         }
+
+        if (mimeType.is(PDF))
+            displayPDFVisualisation(document);
+
+        if (!mimeType.is(PDF) && !mimeType.is(XML))
+            displayPlainTextVisualisation(document.getContentString());
+
     }
 
     private void displayPlainTextVisualisation(String visualisation) {
@@ -155,7 +139,7 @@ public class MainController {
             engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
                 if (newState == Worker.State.SUCCEEDED) {
                     WebViewLogger.register(engine);
-                    engine.executeScript("displayPdf('" + document.getContent() + "')");
+                    engine.executeScript("displayPdf('" + encodeBase64(document.getContent()) + "')");
                 }
             });
 

@@ -10,8 +10,8 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.endpoint.DocumentationEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.InfoEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.SignEndpoint;
@@ -102,7 +102,7 @@ public class Server {
         infoEndpoint.setInfo(info);
     }
 
-    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
+    public void setOnSign(Function<SignatureUnit, Future<SignedData>> onSign) {
         signEndpoint.setOnSign(onSign);
     }
 
