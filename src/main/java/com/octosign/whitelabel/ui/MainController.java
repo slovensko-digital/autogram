@@ -91,25 +91,23 @@ public class MainController {
 
         if (mimeType.is(XML)) {
             XMLDocument xmlDocument = (XMLDocument) document;
-
             xmlDocument.validate(params.getSchema());
             var visualisation = xmlDocument.getTransformed(params.getTransformation());
 
             MimeType transformationOutput = params.getTransformationOutputMimeType();
-            if (transformationOutput.is(PLAIN)) {
+            if (transformationOutput.is(PLAIN))
                 displayPlainTextVisualisation(visualisation);
-            } else {
+            else
                 displayHTMLVisualisation(visualisation);
-            }
+
         }
 
-        if (mimeType.is(PDF)) {
+        if (mimeType.is(PDF))
             displayPDFVisualisation(document);
-        }
 
-        if (!mimeType.is(PDF) && !mimeType.is(XML)) {
+        if (!mimeType.is(PDF) && !mimeType.is(XML))
             displayPlainTextVisualisation(document.getContentString());
-        }
+
     }
 
     private void displayPlainTextVisualisation(String visualisation) {
@@ -141,7 +139,7 @@ public class MainController {
             engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
                 if (newState == Worker.State.SUCCEEDED) {
                     WebViewLogger.register(engine);
-                    engine.executeScript("displayPdf('" + document.getContent() + "')");
+                    engine.executeScript("displayPdf('" + encodeBase64(document.getContent()) + "')");
                 }
             });
 
