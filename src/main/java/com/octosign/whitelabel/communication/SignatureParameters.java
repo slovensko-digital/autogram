@@ -41,41 +41,24 @@ public class SignatureParameters {
         EXCLUSIVE
     }
 
-    private Format format;
-
-    private Level level;
-
-    private MimeType fileMimeType;
-
-    private Container container;
-
-    private String containerFilename;
-
-    private String containerXmlns;
-
-    private String identifier;
-
-    private Packaging packaging;
-
-    private DigestAlgorithm digestAlgorithm;
-
-    private Boolean en319132;
-
-    private CanonicalizationMethod infoCanonicalization;
-
-    private CanonicalizationMethod propertiesCanonicalization;
-
-    private CanonicalizationMethod keyInfoCanonicalization;
-
-    private String signaturePolicyId;
-
-    private String signaturePolicyContent;
-
-    private String schema;
-
-    private String transformation;
-
-    private MimeType transformationOutputMimeType;
+    private final Format format;
+    private final Level level;
+    private final MimeType fileMimeType;
+    private final Container container;
+    private final String containerFilename;
+    private final String containerXmlns;
+    private final String identifier;
+    private final Packaging packaging;
+    private final DigestAlgorithm digestAlgorithm;
+    private final Boolean en319132;
+    private final CanonicalizationMethod infoCanonicalization;
+    private final CanonicalizationMethod propertiesCanonicalization;
+    private final CanonicalizationMethod keyInfoCanonicalization;
+    private final String signaturePolicyId;
+    private final String signaturePolicyContent;
+    private final String schema;
+    private final String transformation;
+    private final MimeType transformationOutputMimeType;
 
     public SignatureParameters(Format format, Level level, MimeType fileMimeType, Container container, String containerFilename, String containerXmlns, String identifier, Packaging packaging, DigestAlgorithm digestAlgorithm, Boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String schema, String transformation, MimeType transformationOutputMimeType) {
         this.format = format;
@@ -96,27 +79,6 @@ public class SignatureParameters {
         this.schema = schema;
         this.transformation = transformation;
         this.transformationOutputMimeType = transformationOutputMimeType;
-    }
-
-    public SignatureParameters(SignatureParameters sp) {
-        this.format = sp.format;
-        this.level = sp.level;
-        this.fileMimeType = sp.fileMimeType;
-        this.container = sp.container;
-        this.containerFilename = sp.containerFilename;
-        this.containerXmlns = sp.containerXmlns;
-        this.identifier = sp.identifier;
-        this.packaging = sp.packaging;
-        this.digestAlgorithm = sp.digestAlgorithm;
-        this.en319132 = sp.en319132;
-        this.infoCanonicalization = sp.infoCanonicalization;
-        this.propertiesCanonicalization = sp.propertiesCanonicalization;
-        this.keyInfoCanonicalization = sp.keyInfoCanonicalization;
-        this.signaturePolicyId = sp.signaturePolicyId;
-        this.signaturePolicyContent = sp.signaturePolicyContent;
-        this.schema = sp.schema;
-        this.transformation = sp.transformation;
-        this.transformationOutputMimeType = sp.transformationOutputMimeType;
     }
 
     public Format getFormat() { return format; }

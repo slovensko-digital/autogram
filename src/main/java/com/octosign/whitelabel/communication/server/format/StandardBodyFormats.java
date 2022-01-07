@@ -159,9 +159,7 @@ public enum StandardBodyFormats implements BodyFormat {
 
         static class MimeTypeDeserializer implements JsonDeserializer<MimeType> {
             @Override
-            public MimeType deserialize(JsonElement jsonElement,
-                    Type type,
-                    JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            public MimeType deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
                 if (jsonElement.isJsonNull())
                     throw new IntegrationException(Code.MISSING_INPUT);
 
