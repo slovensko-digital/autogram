@@ -53,6 +53,9 @@ public class Main extends Application {
         var cliCommand = CommandFactory.fromParameters(getParameters());
 
         if (cliCommand instanceof ListenCommand listenCommand) {
+            I18n.setLocale(listenCommand.getLanguage());
+            UpdateNotifier.checkForUpdates();
+
             startServer(listenCommand);
             statusIndication = new StatusIndication(this::exit);
 
@@ -68,8 +71,6 @@ public class Main extends Application {
     }
 
     private void startServer(ListenCommand command) {
-        I18n.setLocale(command.getLanguage());
-
         server = new Server(command.getHost(), command.getPort(), command.getInitialNonce(), command.isRequiredSSL());
         server.setAllowedOrigin(command.getOrigin());
 
@@ -157,7 +158,7 @@ public class Main extends Application {
 
     private static class ExceptionHandler implements Thread.UncaughtExceptionHandler {
 
-        private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
+        private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
 
         @Override
         public void uncaughtException(Thread thread, Throwable throwable) {
