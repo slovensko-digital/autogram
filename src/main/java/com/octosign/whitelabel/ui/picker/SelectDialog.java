@@ -14,7 +14,7 @@ import javafx.stage.Window;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-import static com.octosign.whitelabel.ui.utils.I18n.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class SelectDialog<T extends SelectableItem> extends Stage {
 

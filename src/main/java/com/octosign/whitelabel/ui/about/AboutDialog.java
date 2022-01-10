@@ -12,7 +12,7 @@ import javafx.scene.layout.Region;
 
 import com.octosign.whitelabel.ui.Main;
 
-import static com.octosign.whitelabel.ui.utils.I18n.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class AboutDialog extends Dialog<Boolean> {
     public AboutDialog() {

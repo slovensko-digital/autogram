@@ -1,4 +1,4 @@
-package com.octosign.whitelabel.ui.utils;
+package com.octosign.whitelabel.ui;
 
 import java.util.Locale;
 import java.util.ResourceBundle;

@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.octosign.whitelabel.ui.utils.I18n.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 import static com.octosign.whitelabel.ui.utils.Utils.isNullOrBlank;
 import static java.util.Objects.requireNonNull;
 

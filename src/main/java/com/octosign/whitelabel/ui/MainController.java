@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 import static com.octosign.whitelabel.communication.MimeType.*;
 import static com.octosign.whitelabel.signing.token.Token.getAvailableDrivers;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
-import static com.octosign.whitelabel.ui.utils.I18n.*;
+import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.ui.utils.Utils.*;
 
 /**

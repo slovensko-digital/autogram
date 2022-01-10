@@ -10,7 +10,6 @@ import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.signing.SigningManager;
 import com.octosign.whitelabel.ui.status.StatusIndication;
 import com.octosign.whitelabel.ui.utils.FXUtils;
-import com.octosign.whitelabel.ui.utils.I18n;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -25,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
-import static com.octosign.whitelabel.ui.utils.I18n.*;
+import static com.octosign.whitelabel.ui.I18n.*;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
