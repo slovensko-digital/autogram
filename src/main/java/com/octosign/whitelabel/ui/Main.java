@@ -1,13 +1,14 @@
 package com.octosign.whitelabel.ui;
 
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-
-import com.octosign.whitelabel.communication.SignedData;
+import com.octosign.whitelabel.cli.command.CommandFactory;
+import com.octosign.whitelabel.cli.command.ListenCommand;
+import com.octosign.whitelabel.communication.Info;
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.error_handling.*;
-
+import com.octosign.whitelabel.communication.SignedData;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.signing.SigningManager;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -15,18 +16,16 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import com.octosign.whitelabel.cli.command.CommandFactory;
-import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.Info;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Server;
 import javafx.stage.Window;
 import org.slf4j.LoggerFactory;
 
-import static com.octosign.whitelabel.ui.FXUtils.*;
-import static com.octosign.whitelabel.ui.I18n.translate;
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
+import static com.octosign.whitelabel.ui.FXUtils.displayError;
+import static com.octosign.whitelabel.ui.FXUtils.displayInfo;
+import static com.octosign.whitelabel.ui.I18n.translate;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
@@ -86,12 +85,11 @@ public class Main extends Application {
         server.start();
         System.out.println(translate("app.runningOn", server.getAddress()));
 
-      // TODO decide,gkit if we want to allow documentation outside of dev or not
-      // if (server.isDevMode()) {
+        if (server.isDevMode()) {
             var protocol = server.isHttps() ? "https" : "http";
             var docsAddress = protocol + ":/" + server.getAddress().toString() + "/documentation";
             System.out.println(translate("text.docsAvailableAt", docsAddress));
-      //  }
+        }
 
         server.setOnSign((SignatureUnit unit) -> {
             var future = new CompletableFuture<SignedData>();
@@ -157,7 +155,7 @@ public class Main extends Application {
 
     private static class ExceptionHandler implements Thread.UncaughtExceptionHandler {
 
-        private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
+        private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
 
         @Override
         public void uncaughtException(Thread thread, Throwable throwable) {
