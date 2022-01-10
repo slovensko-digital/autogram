@@ -29,7 +29,7 @@ public class AboutDialog extends Dialog<Boolean> {
     private static String getContent() {
         // TODO This should be properly styled FXML with clickable links
 
-        String appDescription = translate("text.aboutHelp.description", Main.getVersion(), translate("app.author"));
+        String appDescription = translate("text.aboutHelp.description", Main.getVersion());
 
         String usedOSS = getUsedOSS()
             .stream()
@@ -40,6 +40,9 @@ public class AboutDialog extends Dialog<Boolean> {
             "\n",
             translate("app.name"),
             appDescription,
+            translate("app.authors"),
+            translate("app.contributors"),
+            translate("app.sponsors"),
             "Help: " + translate("app.website"),
             "",
             translate("text.aboutHelp.license"),
