@@ -123,12 +123,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorBody'
-        415:
-          description: 'Unsupported request body MIME type.'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorBody'
         400:
           description: 'The request body cannot be processed.'
           content:
