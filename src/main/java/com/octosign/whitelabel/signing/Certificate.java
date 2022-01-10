@@ -1,6 +1,7 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.ui.SelectableItem;
+import com.octosign.whitelabel.signing.token.Token;
+import com.octosign.whitelabel.ui.picker.SelectableItem;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 
