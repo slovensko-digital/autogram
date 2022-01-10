@@ -11,8 +11,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-import static com.octosign.whitelabel.ui.FXUtils.displayInfo;
-import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.utils.FXUtils.*;
+import static com.octosign.whitelabel.ui.utils.I18n.*;
 
 public class UpdateNotifier {
     private static final String RELEASES_URL = env("GITHUB_API_URL") + "/repos/" + env("GITHUB_REPOSITORY") + "/releases";
