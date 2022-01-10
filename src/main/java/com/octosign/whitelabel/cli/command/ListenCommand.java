@@ -48,7 +48,7 @@ public class ListenCommand extends Command {
         this.host = validateHost(host);
         this.port = validatePort(port);
         this.origin = validateOrigin(origin);
-        this.language = validateLanguage(language);
+        this.language = Locale.forLanguageTag(validateLanguage(language));
 
         if (isPresent(key))
             this.secretKey = validateSecretKey(key);
@@ -136,9 +136,19 @@ public class ListenCommand extends Command {
             return validInteger(nonce);
         }
 
-        public static Locale validateLanguage(String language) {
-            if (Pattern.compile(VALID_LANGUAGE_REGEX).matcher(language).matches())
-                return Locale.forLanguageTag(language);
+        public static String validateLanguage(String language) {
+            if (Pattern.compile(VALID_LANGUAGE_REGEX).matcher(language).matches()) {
+                var conformed = language.toLowerCase()
+                        .strip()
+                        .replaceAll("[_/,.;+\\\\]", "-")
+                        .replaceFirst("en-[a-z]{2}", "en-us");
+
+                return switch (conformed) {
+                    case "en", "gb", "uk", "us", "en-us", "en-en", "us-us", "us-en" -> "en-US";
+                    case "sk", "sk-sk", "svk" -> "sk-SK";
+                    default -> conformed;
+                };
+            }
             else
                 throw new IllegalArgumentException("Language " + language + " is not a valid Locale.");
         }
