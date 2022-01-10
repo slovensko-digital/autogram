@@ -1,15 +1,29 @@
 package com.octosign.whitelabel.signing;
 
 import com.octosign.whitelabel.ui.SelectableItem;
+import eu.europa.esig.dss.detailedreport.DetailedReport;
+import eu.europa.esig.dss.diagnostic.DiagnosticData;
+import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
+import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.service.crl.OnlineCRLSource;
+import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
+import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
+import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
+import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
+import eu.europa.esig.dss.simplecertificatereport.SimpleCertificateReport;
+import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
+import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.token.KSPrivateKeyEntry;
+import eu.europa.esig.dss.tsl.cache.CacheCleaner;
+import eu.europa.esig.dss.tsl.job.TLValidationJob;
+import eu.europa.esig.dss.tsl.source.LOTLSource;
+import eu.europa.esig.dss.validation.*;
+import eu.europa.esig.dss.validation.reports.CertificateReports;
 
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 
-import static com.octosign.whitelabel.ui.Utils.isPresent;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -109,5 +123,56 @@ public class Certificate implements SelectableItem {
     @Override
     public String getDisplayedDetails() {
         return this.getCertificateDescription(DescriptionVerbosity.COMPACT);
+    }
+
+    public boolean isValid() {
+        CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
+
+        DefaultAIASource aiaSource = new DefaultAIASource();
+        aiaSource.setDataLoader(new CommonsDataLoader());
+        commonCertificateVerifier.setAIASource(aiaSource);
+
+        CommonsDataLoader commonsHttpDataLoader = new CommonsDataLoader();
+        OCSPDataLoader ocspDataLoader = new OCSPDataLoader();
+
+        LOTLSource lotlSource = new LOTLSource();
+        lotlSource.setUrl("https://ec.europa.eu/tools/lotl/eu-lotl.xml");
+        lotlSource.setPivotSupport(true);
+
+        TrustedListsCertificateSource tslCertificateSource = new TrustedListsCertificateSource();
+
+        FileCacheDataLoader onlineFileLoader = new FileCacheDataLoader(commonsHttpDataLoader);
+
+        CacheCleaner cacheCleaner = new CacheCleaner();
+        cacheCleaner.setCleanFileSystem(true);
+        cacheCleaner.setDSSFileLoader(onlineFileLoader);
+
+        TLValidationJob validationJob = new TLValidationJob();
+        validationJob.setTrustedListCertificateSource(tslCertificateSource);
+        validationJob.setOnlineDataLoader(onlineFileLoader);
+        validationJob.setCacheCleaner(cacheCleaner);
+        validationJob.setListOfTrustedListSources(lotlSource);
+        validationJob.onlineRefresh();
+
+        commonCertificateVerifier.setTrustedCertSources(tslCertificateSource);
+
+        OnlineCRLSource onlineCRLSource = new OnlineCRLSource();
+        onlineCRLSource.setDataLoader(commonsHttpDataLoader);
+        commonCertificateVerifier.setCrlSource(onlineCRLSource);
+
+        OnlineOCSPSource onlineOCSPSource = new OnlineOCSPSource();
+        onlineOCSPSource.setDataLoader(ocspDataLoader);
+        commonCertificateVerifier.setOcspSource(onlineOCSPSource);
+
+        commonCertificateVerifier.setCheckRevocationForUntrustedChains(true);
+
+        CertificateToken token = dssPrivateKey.getCertificate();
+        CertificateValidator validator = CertificateValidator.fromCertificate(token);
+        validator.setCertificateVerifier(commonCertificateVerifier);
+        validator.setTokenExtractionStrategy(TokenExtractionStrategy.EXTRACT_CERTIFICATES_AND_REVOCATION_DATA);
+        CertificateReports certificateReports = validator.validate();
+        DiagnosticData diagnosticData = certificateReports.getDiagnosticData();
+
+        return diagnosticData.isValidCertificate(token.getDSSIdAsString());
     }
 }
