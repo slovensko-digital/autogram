@@ -5,8 +5,11 @@ import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.*;
 import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.signing.*;
+import com.octosign.whitelabel.signing.token.Token;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 
+import com.octosign.whitelabel.ui.picker.SelectDialog;
+import com.octosign.whitelabel.ui.picker.SelectableItem;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
@@ -19,10 +22,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
-import static com.octosign.whitelabel.signing.Token.getAvailableDrivers;
-import static com.octosign.whitelabel.ui.FXUtils.displayError;
-import static com.octosign.whitelabel.ui.I18n.translate;
-import static com.octosign.whitelabel.ui.Utils.*;
+import static com.octosign.whitelabel.signing.token.Token.getAvailableDrivers;
+import static com.octosign.whitelabel.ui.utils.FXUtils.*;
+import static com.octosign.whitelabel.ui.utils.I18n.*;
+import static com.octosign.whitelabel.ui.utils.Utils.*;
 
 /**
  * Controller for the signing window

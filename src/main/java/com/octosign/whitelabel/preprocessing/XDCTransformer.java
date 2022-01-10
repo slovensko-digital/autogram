@@ -1,6 +1,5 @@
 package com.octosign.whitelabel.preprocessing;
 
-import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -22,7 +21,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static com.octosign.whitelabel.ui.Utils.isPresent;
+import static com.octosign.whitelabel.ui.utils.Utils.isPresent;
 
 
 public class XDCTransformer {

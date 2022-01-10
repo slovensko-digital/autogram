@@ -1,7 +1,8 @@
-package com.octosign.whitelabel.ui;
+package com.octosign.whitelabel.ui.status;
 
 import java.net.URL;
 
+import com.octosign.whitelabel.ui.Main;
 import dorkbox.os.OSUtil;
 import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.SystemTray;
@@ -10,7 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.utils.I18n.translate;
 
 /**
  * Status indication if the app is running in the background

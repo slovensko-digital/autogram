@@ -4,7 +4,7 @@ import com.octosign.whitelabel.error_handling.UserException;
 
 import java.util.Locale;
 
-import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.utils.I18n.translate;
 
 public enum OperatingSystem {
     WINDOWS,

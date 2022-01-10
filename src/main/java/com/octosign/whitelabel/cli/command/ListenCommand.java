@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.octosign.whitelabel.cli.command.ListenCommand.Validations.*;
-import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
-import static com.octosign.whitelabel.ui.Utils.isPresent;
+import static com.octosign.whitelabel.ui.utils.ConfigurationProperties.getProperty;
+import static com.octosign.whitelabel.ui.utils.Utils.isPresent;
 import static java.util.Optional.ofNullable;
 
 /**

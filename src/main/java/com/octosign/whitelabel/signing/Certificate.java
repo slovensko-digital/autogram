@@ -1,15 +1,13 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.ui.SelectableItem;
+import com.octosign.whitelabel.signing.token.Token;
+import com.octosign.whitelabel.ui.picker.SelectableItem;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 
-import static com.octosign.whitelabel.ui.Utils.isPresent;
 import static java.util.Objects.requireNonNull;
 
 /**

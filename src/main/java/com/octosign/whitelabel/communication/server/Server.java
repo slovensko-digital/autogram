@@ -23,8 +23,8 @@ import com.sun.net.httpserver.HttpsServer;
 
 import javax.net.ssl.*;
 
-import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
-import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.utils.ConfigurationProperties.*;
+import static com.octosign.whitelabel.ui.utils.I18n.translate;
 
 public class Server {
 

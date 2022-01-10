@@ -14,7 +14,7 @@ import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
-import static com.octosign.whitelabel.ui.Utils.*;
+import static com.octosign.whitelabel.ui.utils.Utils.*;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public enum StandardBodyFormats implements BodyFormat {
