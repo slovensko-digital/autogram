@@ -136,6 +136,7 @@ public class Main extends Application {
         windowStage.setTitle(translate("app.name"));
         windowStage.setScene(scene);
         windowStage.show();
+        windowStage.toFront();
     }
 
     public static FXMLLoader loadWindow(String name) {
