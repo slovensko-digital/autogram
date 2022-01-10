@@ -106,6 +106,23 @@ public class FXUtils {
         alert.showAndWait();
     }
 
+    /**
+     * Displays warning alert
+     *
+     * @param header
+     * @param description
+     */
+    public static void displayWarning(String header, String description) {
+        var alert = buildAlert(
+                Alert.AlertType.WARNING,
+                translate("text.warn"),
+                translateIfNeeded("warn.", header),
+                translateIfNeeded("warn.", description)
+        );
+
+        alert.showAndWait();
+    }
+
     private static String translateIfNeeded(String prefix, String input) {
         if (input == null)
             return "";
