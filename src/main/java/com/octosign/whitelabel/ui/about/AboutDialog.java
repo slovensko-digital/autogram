@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.octosign.whitelabel.ui.FXUtils;
+import com.octosign.whitelabel.ui.utils.FXUtils;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -12,7 +12,7 @@ import javafx.scene.layout.Region;
 
 import com.octosign.whitelabel.ui.Main;
 
-import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.utils.I18n.translate;
 
 public class AboutDialog extends Dialog<Boolean> {
     public AboutDialog() {

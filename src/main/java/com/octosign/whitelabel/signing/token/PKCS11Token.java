@@ -1,7 +1,6 @@
 package com.octosign.whitelabel.signing.token;
 
 import com.octosign.whitelabel.error_handling.UserException;
-import com.octosign.whitelabel.signing.Token;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 

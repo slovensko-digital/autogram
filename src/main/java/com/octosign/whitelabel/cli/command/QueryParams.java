@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 
-import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
+import static com.octosign.whitelabel.ui.utils.Utils.isNullOrBlank;
 import static java.util.stream.Collectors.toMap;
 
 public class QueryParams {

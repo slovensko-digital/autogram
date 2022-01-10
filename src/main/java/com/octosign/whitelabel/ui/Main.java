@@ -2,14 +2,15 @@ package com.octosign.whitelabel.ui;
 
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.Info;
-import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.SignedData;
+import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.signing.SigningManager;
+import com.octosign.whitelabel.ui.status.StatusIndication;
+import com.octosign.whitelabel.ui.utils.FXUtils;
+import com.octosign.whitelabel.ui.utils.I18n;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -23,9 +24,8 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import static com.octosign.whitelabel.ui.FXUtils.displayError;
-import static com.octosign.whitelabel.ui.FXUtils.displayInfo;
-import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.utils.FXUtils.*;
+import static com.octosign.whitelabel.ui.utils.I18n.*;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {

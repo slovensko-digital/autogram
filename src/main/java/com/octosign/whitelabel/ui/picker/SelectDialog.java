@@ -1,5 +1,6 @@
-package com.octosign.whitelabel.ui;
+package com.octosign.whitelabel.ui.picker;
 
+import com.octosign.whitelabel.ui.utils.FXUtils;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -13,7 +14,7 @@ import javafx.stage.Window;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-import static com.octosign.whitelabel.ui.I18n.translate;
+import static com.octosign.whitelabel.ui.utils.I18n.translate;
 
 public class SelectDialog<T extends SelectableItem> extends Stage {
 

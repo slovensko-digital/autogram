@@ -7,7 +7,7 @@ import java.util.Map;
 import static java.util.stream.Collectors.toMap;
 
 import com.octosign.whitelabel.error_handling.UserException;
-import static com.octosign.whitelabel.ui.Utils.*;
+import static com.octosign.whitelabel.ui.utils.Utils.*;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
