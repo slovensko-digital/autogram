@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
 import static com.octosign.whitelabel.signing.Token.getAvailableDrivers;
-import static com.octosign.whitelabel.ui.FXUtils.displayError;
+import static com.octosign.whitelabel.ui.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
 import static com.octosign.whitelabel.ui.Utils.*;
 
@@ -168,7 +168,7 @@ public class MainController {
             var certificates = Token.fromDriver(driver).getCertificates();
 
             var signingCertificate = getIfSingle_selectIfMany(certificates);
-            signingManager.setActiveCertificate(signingCertificate);
+            validateAndSetCertificate(signingCertificate);
 
         } catch (UserException e) {
             displayError(e);
@@ -176,6 +176,16 @@ public class MainController {
             enableAndSet(resolveMainButtonText());
         }
         enableAndSet(resolveMainButtonText());
+    }
+
+    private void validateAndSetCertificate(Certificate certificate) {
+        if (certificate.isValid()) {
+            displayWarning("warn.invalidCertificate.header", "warn.invalidCertificate.description");
+        } else {
+            displayInfo("info.validCertificate.header", "info.validCertificate.description");
+        }
+
+        signingManager.setActiveCertificate(certificate);
     }
 
     private <T extends SelectableItem> T getIfSingle_selectIfMany(List<T> items) {
