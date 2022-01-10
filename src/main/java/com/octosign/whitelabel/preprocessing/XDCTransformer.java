@@ -180,9 +180,13 @@ public class XDCTransformer {
 
     private Element createUsedSchemasReferenced() {
         var element = document.createElement("UsedSchemasReferenced");
-        if (isPresent(xsdSchema) || isPresent(xsltSchema))
-            documentXmlns = document.getFirstChild().getAttributes().getNamedItem("xmlns").getNodeValue();
-
+        if (isPresent(xsdSchema) || isPresent(xsltSchema)) {
+            var documentXmlnsNode = document.getFirstChild().getAttributes().getNamedItem("xmlns");
+            if (documentXmlnsNode != null)
+                documentXmlns = documentXmlnsNode.getNodeValue();
+            else
+                documentXmlns = "";
+        }
         if (xsdSchema != null) {
             var xsdSchemaReference = createUsedXSDReference();
             element.appendChild(xsdSchemaReference);
