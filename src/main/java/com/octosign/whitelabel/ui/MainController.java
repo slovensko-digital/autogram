@@ -1,7 +1,6 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.document.*;
 import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.signing.*;
@@ -16,15 +15,14 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
-import javafx.stage.Stage;
 
 import java.util.List;
 import java.util.function.Consumer;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
+import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.signing.token.Token.getAvailableDrivers;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
-import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.ui.utils.Utils.*;
 
 /**
@@ -43,9 +41,6 @@ public class MainController {
 
     @FXML
     private TextArea textArea;
-
-    @FXML
-    private Label signLabel;
 
     /**
      * Bottom-right button used to load/pick certificate and sign
@@ -188,8 +183,7 @@ public class MainController {
         if (items.size() == 1) {
             return first(items);
         } else {
-            var currentStage = (Stage) mainButton.getScene().getWindow();
-            var selectDialog = new SelectDialog<>(items, currentStage);
+            var selectDialog = new SelectDialog<>(items, getCurrentStage(mainButton));
 
             return selectDialog.getResult();
         }

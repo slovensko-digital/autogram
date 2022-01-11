@@ -21,7 +21,11 @@ public enum Code {
     TRANSFORMATION_ERROR(INPUT),
     DECODING_FAILED(INPUT),
 
-    UNEXPECTED_ORIGIN(SECURITY);
+    UNEXPECTED_ORIGIN(SECURITY),
+
+    CANCELLED_BY_USER(USER_ACTION);
+
+    public static final int HTTP_CLIENT_CLOSED_REQUEST = 499;
 
     private final Category category;
 
@@ -36,6 +40,7 @@ public enum Code {
             case UNKNOWN_ACTION -> HTTP_BAD_METHOD;     //405
             case CONFLICT -> HTTP_CONFLICT;             //409
             case SECURITY -> HTTP_FORBIDDEN;            //403
+            case USER_ACTION -> HTTP_CLIENT_CLOSED_REQUEST;
         };
     }
 
@@ -44,6 +49,7 @@ public enum Code {
         INPUT,
         UNKNOWN_ACTION,
         CONFLICT,
-        SECURITY;
+        SECURITY,
+        USER_ACTION;
     }
 }

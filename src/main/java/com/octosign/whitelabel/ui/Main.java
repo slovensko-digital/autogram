@@ -1,5 +1,13 @@
 package com.octosign.whitelabel.ui;
 
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
+import com.octosign.whitelabel.communication.SignedData;
+import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.server.Response;
+import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.*;
@@ -10,6 +18,8 @@ import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.signing.SigningManager;
 import com.octosign.whitelabel.ui.status.StatusIndication;
 import com.octosign.whitelabel.ui.utils.FXUtils;
+
+import com.octosign.whitelabel.ui.utils.Utils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -18,10 +28,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.*;
@@ -51,7 +57,7 @@ public class Main extends Application {
         var cliCommand = CommandFactory.fromParameters(getParameters());
 
         if (cliCommand instanceof ListenCommand listenCommand) {
-            I18n.setLocale(listenCommand.getLanguage());
+            I18n.setLanguage(listenCommand.getLanguage());
             UpdateNotifier.checkForUpdates();
 
             startServer(listenCommand);
@@ -117,6 +123,9 @@ public class Main extends Application {
 
     private void openWindow(SignatureUnit signatureUnit, Consumer<byte[]> onSigned) {
         var windowStage = new Stage();
+        windowStage.setOnCloseRequest(e -> {
+            throw new UnexpectedActionException(Code.CANCELLED_BY_USER, "User canceled");
+        });
 
         var fxmlLoader = loadWindow("main");
         VBox root = fxmlLoader.getRoot();
@@ -162,19 +171,34 @@ public class Main extends Application {
         public void uncaughtException(Thread thread, Throwable throwable) {
             if (throwable instanceof IntegrationException ie) {
                 LOGGER.error("IntegrationException - code: " + ie.getCode().toString(), ie);
-                if (ie.shouldDisplay())
+                if (ie.shouldDisplay()) {
                     Platform.runLater(() -> displayError(ie));
+                }
+                respondWith(ie.getCode().toHttpCode(), ie.getMessage());
                 closeAllWindows();
 
             } else if (throwable instanceof UserException ue) {
                 LOGGER.error("UserException: ", ue);
                 Platform.runLater(() -> displayError(ue));
 
+            } else if (throwable instanceof UnexpectedActionException uae) {
+                LOGGER.error("UnexpectedActionException: ", uae);
+                respondWith(uae.getCode().toHttpCode(), uae.getMessage());
+                System.exit(1);
+
             } else {
                 LOGGER.error("[NOT EXPECTED] Error: " + throwable.getClass().getName(), throwable);
                 Platform.runLater(FXUtils::displaySimpleError);
+                respondWith(Code.UNEXPECTED_ERROR.toHttpCode(), throwable.getMessage());
                 System.exit(1);
             }
+        }
+
+        private void respondWith(int httpCode, String message) {
+            new Response<String>(Utils.getExchange())
+                    .setStatusCode(httpCode)
+                    .setBody(message)
+                    .send();
         }
 
         private void closeAllWindows() {
