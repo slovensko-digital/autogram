@@ -9,9 +9,8 @@ import eu.europa.esig.dss.token.SignatureTokenConnection;
 import java.util.*;
 
 import static com.octosign.whitelabel.signing.KeystoreType.PKCS11;
-import static com.octosign.whitelabel.signing.KeystoreType.PKCS12;
 import static com.octosign.whitelabel.signing.OperatingSystem.*;
-import static com.octosign.whitelabel.ui.utils.I18n.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 import static com.octosign.whitelabel.ui.utils.Utils.isNullOrEmpty;
 
 public abstract class Token {

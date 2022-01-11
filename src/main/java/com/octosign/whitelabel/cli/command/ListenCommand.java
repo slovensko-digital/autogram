@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.octosign.whitelabel.cli.command.ListenCommand.Validations.*;
-import static com.octosign.whitelabel.ui.utils.ConfigurationProperties.getProperty;
+import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
 import static com.octosign.whitelabel.ui.utils.Utils.isPresent;
 import static java.util.Optional.ofNullable;
 
@@ -26,7 +26,7 @@ public class ListenCommand extends Command {
 
     private int initialNonce;
 
-    private Locale language;
+    private String language;
 
     /**
      * Parse command using JavaFX Application Parameters
@@ -84,7 +84,7 @@ public class ListenCommand extends Command {
         return initialNonce;
     }
 
-    public Locale getLanguage() {
+    public String getLanguage() {
         return language;
     }
 
@@ -136,11 +136,14 @@ public class ListenCommand extends Command {
             return validInteger(nonce);
         }
 
-        public static Locale validateLanguage(String language) {
-            if (Pattern.compile(VALID_LANGUAGE_REGEX).matcher(language).matches())
-                return Locale.forLanguageTag(language);
-            else
-                throw new IllegalArgumentException("Language " + language + " is not a valid Locale.");
+        public static String validateLanguage(String language) {
+            if (Pattern.compile(VALID_LANGUAGE_REGEX).matcher(language).matches()) {
+                return language.toLowerCase().strip()
+                        .replaceAll("[_/,.;+\\\\]", "-")
+                        .replaceFirst("en-[a-z]{2}", "en-us");
+
+            } else
+                throw new IllegalArgumentException("Language " + language + " is not valid.");
         }
 
         private static int validInteger(String input) {
