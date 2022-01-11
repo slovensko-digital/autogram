@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import static com.octosign.whitelabel.communication.MimeType.*;
 import static com.octosign.whitelabel.signing.Token.getAvailableDrivers;
 import static com.octosign.whitelabel.ui.FXUtils.displayError;
+import static com.octosign.whitelabel.ui.FXUtils.getCurrentStage;
 import static com.octosign.whitelabel.ui.I18n.translate;
 import static com.octosign.whitelabel.ui.Utils.*;
 
@@ -40,9 +41,6 @@ public class MainController {
 
     @FXML
     private TextArea textArea;
-
-    @FXML
-    private Label signLabel;
 
     /**
      * Bottom-right button used to load/pick certificate and sign
@@ -185,8 +183,7 @@ public class MainController {
         if (items.size() == 1) {
             return first(items);
         } else {
-            var currentStage = (Stage) mainButton.getScene().getWindow();
-            var selectDialog = new SelectDialog<>(items, currentStage);
+            var selectDialog = new SelectDialog<>(items, getCurrentStage(mainButton));
 
             return selectDialog.getResult();
         }

@@ -26,7 +26,7 @@ public class ListenCommand extends Command {
 
     private int initialNonce;
 
-    private Locale language;
+    private String language;
 
     /**
      * Parse command using JavaFX Application Parameters
@@ -48,7 +48,7 @@ public class ListenCommand extends Command {
         this.host = validateHost(host);
         this.port = validatePort(port);
         this.origin = validateOrigin(origin);
-        this.language = Locale.forLanguageTag(validateLanguage(language));
+        this.language = validateLanguage(language);
 
         if (isPresent(key))
             this.secretKey = validateSecretKey(key);
@@ -84,7 +84,7 @@ public class ListenCommand extends Command {
         return initialNonce;
     }
 
-    public Locale getLanguage() {
+    public String getLanguage() {
         return language;
     }
 
@@ -138,19 +138,12 @@ public class ListenCommand extends Command {
 
         public static String validateLanguage(String language) {
             if (Pattern.compile(VALID_LANGUAGE_REGEX).matcher(language).matches()) {
-                var conformed = language.toLowerCase()
-                        .strip()
+                return language.toLowerCase().strip()
                         .replaceAll("[_/,.;+\\\\]", "-")
                         .replaceFirst("en-[a-z]{2}", "en-us");
 
-                return switch (conformed) {
-                    case "en", "gb", "uk", "us", "en-us", "en-en", "us-us", "us-en" -> "en-US";
-                    case "sk", "sk-sk", "svk" -> "sk-SK";
-                    default -> conformed;
-                };
-            }
-            else
-                throw new IllegalArgumentException("Language " + language + " is not a valid Locale.");
+            } else
+                throw new IllegalArgumentException("Language " + language + " is not valid.");
         }
 
         private static int validInteger(String input) {

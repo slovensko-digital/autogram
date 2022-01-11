@@ -7,9 +7,7 @@ import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.communication.SignatureParameters.*;
 import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
+import com.octosign.whitelabel.error_handling.*;
 
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -25,7 +23,8 @@ public enum StandardBodyFormats implements BodyFormat {
 
         static {
             GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(IntegrationException.class, new ExceptionSerializer());
+            gsonBuilder.registerTypeAdapter(ErrorData.class, new ErrorDataSerializer());
+            gsonBuilder.registerTypeAdapter(String.class, new MessageSerializer());
             gsonBuilder.registerTypeAdapter(MimeType.class, new MimeTypeDeserializer());
             gsonBuilder.registerTypeAdapter(SignRequest.class, new SignRequestDeserializer());
             gsonBuilder.registerTypeAdapter(SignedData.class, new SignedDataSerializer());
@@ -47,21 +46,24 @@ public enum StandardBodyFormats implements BodyFormat {
             return mimeType;
         }
 
-        static class ExceptionSerializer implements JsonSerializer<IntegrationException> {
+        static class MessageSerializer implements JsonSerializer<String> {
             @Override
-            public JsonElement serialize(IntegrationException src, Type type, JsonSerializationContext context) {
+            public JsonElement serialize(String message, Type type, JsonSerializationContext context) {
                 JsonObject jsonObject = new JsonObject();
+                jsonObject.add("message", new JsonPrimitive(message != null ? message : "Unknown error"));
+                return jsonObject;
+            }
+        }
 
-                var code = src.getCode();
-                jsonObject.add("code", new JsonPrimitive(code.toString()));
+        static class ErrorDataSerializer implements JsonSerializer<ErrorData> {
+            @Override
+            public JsonElement serialize(ErrorData src, Type type, JsonSerializationContext context) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.add("code", new JsonPrimitive(src.httpCode()));
 
-                var message = src.getMessage();
+                var message = src.message();
                 jsonObject.add("message", new JsonPrimitive(message != null ? message : "Unknown error"));
 
-                var cause = src.getCause();
-                if (cause != null) {
-                    jsonObject.add("details", new JsonPrimitive(cause.getMessage()));
-                }
                 return jsonObject;
             }
         }

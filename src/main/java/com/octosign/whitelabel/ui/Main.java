@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 
 import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.error_handling.*;
 
 import com.octosign.whitelabel.signing.SigningManager;
@@ -53,6 +54,8 @@ public class Main extends Application {
         var cliCommand = CommandFactory.fromParameters(getParameters());
 
         if (cliCommand instanceof ListenCommand listenCommand) {
+            I18n.setLanguage(listenCommand.getLanguage());
+
             startServer(listenCommand);
             statusIndication = new StatusIndication(this::exit);
 
@@ -68,8 +71,6 @@ public class Main extends Application {
     }
 
     private void startServer(ListenCommand command) {
-        I18n.setLocale(command.getLanguage());
-
         server = new Server(command.getHost(), command.getPort(), command.getInitialNonce(), command.isRequiredSSL());
         server.setAllowedOrigin(command.getOrigin());
 
@@ -119,6 +120,9 @@ public class Main extends Application {
 
     private void openWindow(SignatureUnit signatureUnit, Consumer<byte[]> onSigned) {
         var windowStage = new Stage();
+        windowStage.setOnCloseRequest(e -> {
+            throw new UnexpectedActionException(Code.CANCELLED_BY_USER, "User canceled");
+        });
 
         var fxmlLoader = loadWindow("main");
         VBox root = fxmlLoader.getRoot();
@@ -164,19 +168,34 @@ public class Main extends Application {
         public void uncaughtException(Thread thread, Throwable throwable) {
             if (throwable instanceof IntegrationException ie) {
                 LOGGER.error("IntegrationException - code: " + ie.getCode().toString(), ie);
-                if (ie.shouldDisplay())
+                if (ie.shouldDisplay()) {
                     Platform.runLater(() -> displayError(ie));
+                }
+                respondWith(ie.getCode().toHttpCode(), ie.getMessage());
                 closeAllWindows();
 
             } else if (throwable instanceof UserException ue) {
                 LOGGER.error("UserException: ", ue);
                 Platform.runLater(() -> displayError(ue));
 
+            } else if (throwable instanceof UnexpectedActionException uae) {
+                LOGGER.error("UnexpectedActionException: ", uae);
+                respondWith(uae.getCode().toHttpCode(), uae.getMessage());
+                System.exit(1);
+
             } else {
                 LOGGER.error("[NOT EXPECTED] Error: " + throwable.getClass().getName(), throwable);
                 Platform.runLater(FXUtils::displaySimpleError);
+                respondWith(Code.UNEXPECTED_ERROR.toHttpCode(), throwable.getMessage());
                 System.exit(1);
             }
+        }
+
+        private void respondWith(int httpCode, String message) {
+            new Response<String>(Utils.getExchange())
+                    .setStatusCode(httpCode)
+                    .setBody(message)
+                    .send();
         }
 
         private void closeAllWindows() {
