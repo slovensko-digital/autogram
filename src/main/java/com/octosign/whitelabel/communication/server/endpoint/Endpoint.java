@@ -6,7 +6,7 @@ import java.util.Arrays;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.error_handling.*;
-import com.octosign.whitelabel.ui.Utils;
+import com.octosign.whitelabel.ui.utils.Utils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
