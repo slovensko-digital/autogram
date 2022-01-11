@@ -1,6 +1,8 @@
-package com.octosign.whitelabel.communication;
+package com.octosign.whitelabel.preprocessing;
 
 import com.google.common.collect.ImmutableMap;
+import com.octosign.whitelabel.communication.MimeType;
+import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.preprocessing.XDCTransformer;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.*;

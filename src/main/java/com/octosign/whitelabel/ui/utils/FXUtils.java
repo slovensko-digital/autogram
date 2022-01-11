@@ -1,11 +1,12 @@
-package com.octosign.whitelabel.ui;
+package com.octosign.whitelabel.ui.utils;
 
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
 
-import javafx.scene.control.Alert;
+import com.octosign.whitelabel.ui.Main;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -21,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.octosign.whitelabel.ui.I18n.translate;
-import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
+import static com.octosign.whitelabel.ui.utils.Utils.isNullOrBlank;
 import static java.util.Objects.requireNonNull;
 
 public class FXUtils {
@@ -102,6 +103,23 @@ public class FXUtils {
                 translate("text.info"),
                 translateIfNeeded("info.", header),
                 translateIfNeeded("info.", description)
+        );
+
+        alert.showAndWait();
+    }
+
+    /**
+     * Displays warning alert
+     *
+     * @param header
+     * @param description
+     */
+    public static void displayWarning(String header, String description) {
+        var alert = buildAlert(
+                Alert.AlertType.WARNING,
+                translate("text.warn"),
+                translateIfNeeded("warn.", header),
+                translateIfNeeded("warn.", description)
         );
 
         alert.showAndWait();

@@ -8,26 +8,29 @@ import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.error_handling.*;
-
+import com.octosign.whitelabel.cli.command.CommandFactory;
+import com.octosign.whitelabel.cli.command.ListenCommand;
+import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.signing.SigningManager;
+import com.octosign.whitelabel.ui.status.StatusIndication;
+import com.octosign.whitelabel.ui.utils.FXUtils;
+
+import com.octosign.whitelabel.ui.utils.Utils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import com.octosign.whitelabel.cli.command.CommandFactory;
-import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.Info;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Server;
 import javafx.stage.Window;
 import org.slf4j.LoggerFactory;
 
-import static com.octosign.whitelabel.ui.FXUtils.*;
-import static com.octosign.whitelabel.ui.I18n.translate;
-
+import static com.octosign.whitelabel.ui.utils.FXUtils.*;
+import static com.octosign.whitelabel.ui.I18n.*;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
@@ -55,6 +58,7 @@ public class Main extends Application {
 
         if (cliCommand instanceof ListenCommand listenCommand) {
             I18n.setLanguage(listenCommand.getLanguage());
+            UpdateNotifier.checkForUpdates();
 
             startServer(listenCommand);
             statusIndication = new StatusIndication(this::exit);
@@ -87,12 +91,11 @@ public class Main extends Application {
         server.start();
         System.out.println(translate("app.runningOn", server.getAddress()));
 
-      // TODO decide,gkit if we want to allow documentation outside of dev or not
-      // if (server.isDevMode()) {
+        if (server.isDevMode()) {
             var protocol = server.isHttps() ? "https" : "http";
             var docsAddress = protocol + ":/" + server.getAddress().toString() + "/documentation";
             System.out.println(translate("text.docsAvailableAt", docsAddress));
-      //  }
+        }
 
         server.setOnSign((SignatureUnit unit) -> {
             var future = new CompletableFuture<SignedData>();
@@ -162,7 +165,7 @@ public class Main extends Application {
 
     private static class ExceptionHandler implements Thread.UncaughtExceptionHandler {
 
-        private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
+        private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
 
         @Override
         public void uncaughtException(Thread thread, Throwable throwable) {

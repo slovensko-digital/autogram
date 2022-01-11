@@ -1,6 +1,6 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.ui.SelectableItem;
+import com.octosign.whitelabel.ui.picker.SelectableItem;
 
 import java.nio.file.Path;
 import java.util.HashMap;

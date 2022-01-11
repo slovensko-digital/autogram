@@ -35,11 +35,11 @@ public enum Code {
 
     public int toHttpCode() {
         return switch(this.category) {
-            case GENERAL -> HTTP_INTERNAL_ERROR;
-            case INPUT -> HTTP_BAD_REQUEST;
-            case UNKNOWN_ACTION -> HTTP_BAD_METHOD;
-            case CONFLICT -> HTTP_CONFLICT;
-            case SECURITY -> HTTP_FORBIDDEN;
+            case GENERAL -> HTTP_INTERNAL_ERROR;        //500
+            case INPUT -> HTTP_BAD_REQUEST;             //400
+            case UNKNOWN_ACTION -> HTTP_BAD_METHOD;     //405
+            case CONFLICT -> HTTP_CONFLICT;             //409
+            case SECURITY -> HTTP_FORBIDDEN;            //403
             case USER_ACTION -> HTTP_CLIENT_CLOSED_REQUEST;
         };
     }

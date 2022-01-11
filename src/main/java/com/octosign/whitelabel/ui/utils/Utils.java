@@ -1,4 +1,4 @@
-package com.octosign.whitelabel.ui;
+package com.octosign.whitelabel.ui.utils;
 
 import com.sun.net.httpserver.HttpExchange;
 

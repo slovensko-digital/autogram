@@ -1,21 +1,12 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Paths;
-
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.ui.Main;
 import com.sun.net.httpserver.HttpExchange;
 
+import static java.util.Objects.requireNonNull;
+
 public class DocumentationEndpoint extends Endpoint {
-
-    private final String docsPath = "./docs/static/api";
-
-    private final String htmlName = "index.html";
-
-    private final String yamlName = "server.yml";
 
     public DocumentationEndpoint(Server server) {
         super(server);
@@ -23,21 +14,18 @@ public class DocumentationEndpoint extends Endpoint {
 
     @Override
     protected void handleRequest(HttpExchange exchange) {
-        String cwd = System.getProperty("user.dir");
         boolean isYaml = exchange.getRequestURI().getPath().endsWith(".yml");
-
-        var file = Paths.get(cwd, docsPath, isYaml ? yamlName : htmlName);
         var mimeType = isYaml ? "text/yaml" : "text/html";
+        var filename = isYaml ? "server.yml" : "index.html";
 
-        var headers = exchange.getResponseHeaders();
-        headers.set("Content-Type", mimeType);
+        exchange.getResponseHeaders().set("Content-Type", mimeType);
 
         // automatically closes both streams
-        try (var fileStream = new FileInputStream(file.toString());
+        try (var stream =  Main.class.getResourceAsStream(filename);
              var responseStream = exchange.getResponseBody()) {
             exchange.sendResponseHeaders(200, 0);
 
-            fileStream.transferTo(responseStream);
+            requireNonNull(stream).transferTo(responseStream);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -47,5 +35,4 @@ public class DocumentationEndpoint extends Endpoint {
     protected String[] getAllowedMethods() {
         return new String[]{ "GET" };
     }
-
 }
