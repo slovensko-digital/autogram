@@ -5,6 +5,7 @@ import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
 
 import com.octosign.whitelabel.ui.Main;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -12,6 +13,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -19,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static com.octosign.whitelabel.ui.utils.I18n.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 import static com.octosign.whitelabel.ui.utils.Utils.isNullOrBlank;
 import static java.util.Objects.requireNonNull;
 
@@ -194,5 +196,9 @@ public class FXUtils {
         return Stream.of("shared.css" , "dialog.css", "overrides.css")
             .map(filename -> requireNonNull(Main.class.getResource(filename)).toExternalForm())
             .toList();
+    }
+
+    public static Stage getCurrentStage(Node source) {
+        return (Stage) source.getScene().getWindow();
     }
 }

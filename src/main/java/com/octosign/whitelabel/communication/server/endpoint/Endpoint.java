@@ -6,6 +6,7 @@ import java.util.Arrays;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.error_handling.*;
+import com.octosign.whitelabel.ui.utils.Utils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -26,6 +27,7 @@ abstract class Endpoint implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) {
+        Utils.setExchange(exchange);
         try {
             if (verifyHTTPMethod(exchange) && verifyOrigin(exchange))
                 handleRequest(exchange);
