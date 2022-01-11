@@ -13,9 +13,10 @@ import java.time.Duration;
 
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.*;
+import static com.octosign.whitelabel.ui.utils.Utils.isNullOrBlank;
 
 public class UpdateNotifier {
-    private static final String RELEASES_URL = env("GITHUB_API_URL") + "/repos/" + env("GITHUB_REPOSITORY") + "/releases";
+    private static final String RELEASES_URL = "https://api.github.com/repos/slovensko-digital/white-label/releases";
 
     public static void checkForUpdates() {
         //Update disabled in DEV environment
@@ -41,22 +42,25 @@ public class UpdateNotifier {
             return;
         }
 
-        JsonElement tagName = new Gson().fromJson(response.body(), JsonObject.class).get("tag_name");
-
-        if (tagName == null) return;
-         String latestVersion = tagName.getAsString();
+        var latestVersion = parseVersion(response);
+        if (isNullOrBlank(latestVersion))
+            return;
 
         if (!latestVersion.equalsIgnoreCase(currentVersion())) {
             displayInfo("info.updateAvailable.header", translate("info.updateAvailable.description", latestVersion, currentVersion(), RELEASES_URL));
         }
     }
 
-    private static String env(String key) {
-        return System.getenv().get(key);
+    private static String parseVersion(HttpResponse<String> response) {
+        var json = new Gson().fromJson(response.body(), JsonObject.class);
+        var version = json.get("tag_name");
+
+        return (version == null) ? null : version.getAsString();
     }
 
+    // TODO change this when about to go public
     private static String currentVersion() {
-        return Main.getVersion();
+        return "dev";
     }
 
 }
