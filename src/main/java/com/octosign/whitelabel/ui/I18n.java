@@ -1,11 +1,21 @@
-package com.octosign.whitelabel.ui.utils;
+package com.octosign.whitelabel.ui;
 
+import com.octosign.whitelabel.signing.OperatingSystem;
+
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
+
+import static com.octosign.whitelabel.signing.OperatingSystem.MAC;
 
 public class I18n {
     private static final String PATH = I18n.class.getCanonicalName().toLowerCase();
     private static ResourceBundle BUNDLE;
+    private static final Map<List<String>, Locale> MAPPING = Map.of(
+            List.of("en", "uk", "us", "gb", "en-us", "en-gb", "en-uk", "en-en"), Locale.forLanguageTag("en-US.UTF-8"),
+            List.of("sk", "svk", "sk-sk"), Locale.forLanguageTag("sk-SK.UTF-8")
+    );
 
     static {
         setLocale(Locale.getDefault());
@@ -13,6 +23,24 @@ public class I18n {
 
     public static void setLocale(Locale locale) {
         BUNDLE = ResourceBundle.getBundle(PATH, locale);
+    }
+
+    public static void setLanguage(String language) {
+        var locale = map(language);
+        if (OperatingSystem.current() == MAC) {
+            Locale.setDefault(locale);
+            System.setProperty("user.language", language.substring(0, 2));
+        }
+
+        setLocale(locale);
+    }
+
+    private static Locale map(String tag) {
+        var key = MAPPING.keySet().stream().filter(list -> list.contains(tag)).findFirst();
+        if (key.isPresent())
+            return MAPPING.get(key.get());
+        else
+            return Locale.getDefault();
     }
 
     public static String translate(String path, Object... args) {

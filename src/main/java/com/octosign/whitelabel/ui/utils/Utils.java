@@ -1,5 +1,7 @@
 package com.octosign.whitelabel.ui.utils;
 
+import com.sun.net.httpserver.HttpExchange;
+
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Base64;
@@ -65,4 +67,13 @@ public class Utils {
         return new String(decoded, StandardCharsets.UTF_8);
     }
 
+    private static HttpExchange currentExchange;
+
+    public static void setExchange(HttpExchange e) {
+        currentExchange = e;
+    }
+
+    public static HttpExchange getExchange() {
+        return currentExchange;
+    }
 }

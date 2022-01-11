@@ -1,4 +1,4 @@
-package com.octosign.whitelabel.ui.utils;
+package com.octosign.whitelabel.ui;
 
 import java.io.IOException;
 import java.util.Properties;

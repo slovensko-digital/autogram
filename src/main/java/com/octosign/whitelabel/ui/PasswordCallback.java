@@ -12,7 +12,7 @@ import javafx.scene.layout.HBox;
 
 import eu.europa.esig.dss.token.PasswordInputCallback;
 
-import static com.octosign.whitelabel.ui.utils.I18n.translate;
+import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class PasswordCallback implements PasswordInputCallback {
     @Override
