@@ -1,6 +1,7 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.communication.MimeType;
+import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.document.*;
 import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.signing.*;
@@ -14,16 +15,20 @@ import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.web.WebView;
 
+import java.io.*;
 import java.util.List;
 import java.util.function.Consumer;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
-import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.signing.token.Token.getAvailableDrivers;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
+import static com.octosign.whitelabel.ui.I18n.translate;
 import static com.octosign.whitelabel.ui.utils.Utils.*;
+import static com.octosign.whitelabel.ui.utils.FXUtils.getCurrentStage;
 
 /**
  * Controller for the signing window
@@ -41,6 +46,9 @@ public class MainController {
 
     @FXML
     private TextArea textArea;
+
+    @FXML
+    private ImageView imageView;
 
     /**
      * Bottom-right button used to load/pick certificate and sign
@@ -98,19 +106,27 @@ public class MainController {
             else
                 displayHTMLVisualisation(visualisation);
 
-        }
-
-        if (mimeType.is(PDF))
+        } else if (mimeType.is(PDF)) {
             displayPDFVisualisation(document);
+        } else if (BinaryDocument.isNotBlacklisted(mimeType)) {
+            // TODO change to isDrawable or similar for other image formats
+            if (mimeType.is(PNG))
+                displayImageVisualisation(document.getContent());
+            else
+                displayPlainTextVisualisation(document.getContentString());
 
-        if (!mimeType.is(PDF) && !mimeType.is(XML))
-            displayPlainTextVisualisation(document.getContentString());
-
+        }
     }
 
     private void displayPlainTextVisualisation(String visualisation) {
         vanish(webView);
         textArea.setText(visualisation);
+    }
+
+    private void displayImageVisualisation(byte[] content) {
+        ByteArrayInputStream imageStream = new ByteArrayInputStream(content);
+        Image image = new Image(imageStream);
+        imageView.setImage(image);
     }
 
     private void displayHTMLVisualisation(String visualisation) {

@@ -25,6 +25,7 @@ public record MimeType(String type, String subType, Map<String, String> paramete
     public final static MimeType PDF = new MimeType("application", "pdf");
     public final static MimeType YAML = new MimeType("text", "yaml");
     public final static MimeType XML = new MimeType("application", "xml");
+    public final static MimeType PNG = new MimeType("image", "png");
 
     public MimeType(String type, String subType) {
         this(type, subType, new HashMap<>());
