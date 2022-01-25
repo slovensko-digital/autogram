@@ -54,6 +54,11 @@
         </dependency>
         <dependency>
             <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-asic-cades</artifactId>
+            <version>${dss.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
             <artifactId>dss-pades-pdfbox</artifactId>
             <version>${dss.version}</version>
         </dependency>
@@ -86,6 +91,11 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>${apache.httpcomponents.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.octosign.whitelabel</groupId>
+            <artifactId>whitelabel</artifactId>
+            <version>1.0.0</version>
         </dependency>
     </dependencies>
 
