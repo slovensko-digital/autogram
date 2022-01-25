@@ -60,8 +60,10 @@ public class Document {
 
         if (mimeType.is(XML)) {
             return new XMLDocument(document);
-        } else if(mimeType.is(PDF)) {
+        } else if (mimeType.is(PDF)) {
             return new PDFDocument(document);
+        } else if (BinaryDocument.isNotBlacklisted(mimeType)) {
+            return new BinaryDocument(document);
         } else {
             throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Document format not supported: " + mimeType);
         }
