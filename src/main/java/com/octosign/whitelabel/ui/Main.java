@@ -91,11 +91,9 @@ public class Main extends Application {
         server.start();
         System.out.println(translate("app.runningOn", server.getAddress()));
 
-        if (server.isDevMode()) {
-            var protocol = server.isHttps() ? "https" : "http";
-            var docsAddress = protocol + ":/" + server.getAddress().toString() + "/documentation";
-            System.out.println(translate("text.docsAvailableAt", docsAddress));
-        }
+        var protocol = server.isHttps() ? "https" : "http";
+        var docsAddress = protocol + ":/" + server.getAddress().toString() + "/documentation";
+        System.out.println(translate("text.docsAvailableAt", docsAddress));
 
         server.setOnSign((SignatureUnit unit) -> {
             var future = new CompletableFuture<SignedData>();
