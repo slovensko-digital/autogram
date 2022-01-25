@@ -103,18 +103,19 @@ public enum StandardBodyFormats implements BodyFormat {
                 JsonObject signRequest = jElement.getAsJsonObject();
 
                 String hmac = getOptional("hmac", signRequest);
-                MimeType payloadType = context.deserialize(signRequest.get("payloadMimeType"), MimeType.class);
+                MimeType payloadMimeType = context.deserialize(signRequest.get("payloadMimeType"), MimeType.class);
 
                 JsonObject jDocument = signRequest.get("document").getAsJsonObject();
                 String id = getOptional("id", jDocument);
                 String title = getOptional("title", jDocument);
                 String legalEffect = getOptional("legalEffect", jDocument);
-                String tempContent = jDocument.get("content").getAsString();
+                String rawContent = jDocument.get("content").getAsString();
+
                 byte[] content;
-                if (payloadType.isBase64()) {
-                    content = decodeBase64ToByteArr(tempContent);
+                if (payloadMimeType.isBase64()) {
+                    content = decodeBase64ToByteArr(rawContent);
                 } else {
-                    content = tempContent.getBytes(UTF_8);
+                    content = rawContent.getBytes(UTF_8);
                 }
 
                 JsonObject params = signRequest.get("parameters").getAsJsonObject();
@@ -137,7 +138,7 @@ public enum StandardBodyFormats implements BodyFormat {
                 String transformation = getOptional("transformation", params);
                 MimeType transformationOutputMimeType = context.deserialize(params.get("transformationOutputMimeType"), MimeType.class);
 
-                if (payloadType.isBase64()) {
+                if (payloadMimeType.isBase64()) {
                     schema = decodeBase64(schema);
                     transformation = decodeBase64(transformation);
                 }
@@ -145,7 +146,7 @@ public enum StandardBodyFormats implements BodyFormat {
                 Document document = new Document(id, title, content, legalEffect);
                 SignatureParameters signatureParameters = new SignatureParameters(format, level, fileMimeType, container, containerFilename, containerXmlns, identifier, packaging, digestAlgorithm, en319132, infoCanonicalization, propertiesCanonicalization, keyInfoCanonicalization, signaturePolicyId, signaturePolicyContent, schema, transformation, transformationOutputMimeType);
 
-                return new SignRequest(document, signatureParameters, payloadType, hmac);
+                return new SignRequest(document, signatureParameters, payloadMimeType, hmac);
             }
 
             private String getOptional(String key, JsonObject source) {

@@ -8,7 +8,8 @@ import static com.octosign.whitelabel.communication.SignatureParameters.Canonica
 public class SignatureParameters {
     public enum Format {
         XADES,
-        PADES
+        PADES,
+        CADES
     }
 
     public enum Level {
