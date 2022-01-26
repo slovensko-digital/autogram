@@ -108,13 +108,8 @@ public class MainController {
 
         } else if (mimeType.is(PDF)) {
             displayPDFVisualisation(document);
-        } else if (BinaryDocument.isNotBlacklisted(mimeType)) {
-            // TODO change to isDrawable or similar for other image formats
-            if (mimeType.is(PNG))
-                displayImageVisualisation(document.getContent());
-            else
-                displayPlainTextVisualisation(document.getContentString());
-
+        } else {
+            displayBinaryFileVisualisation(params.getContainerFilename());
         }
     }
 
@@ -123,6 +118,13 @@ public class MainController {
         textArea.setText(visualisation);
     }
 
+    private void displayBinaryFileVisualisation(String filename) {
+        vanish(webView);
+        textArea.setText(translate("text.visualizationNotSupported", filename));
+    }
+
+
+    // TODO
     private void displayImageVisualisation(byte[] content) {
         ByteArrayInputStream imageStream = new ByteArrayInputStream(content);
         Image image = new Image(imageStream);
