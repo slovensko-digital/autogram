@@ -48,6 +48,7 @@ public class Document {
     public String getContentString() {
         return new String(content, StandardCharsets.UTF_8);
     }
+
     /**
      * Creates and prepares payload type specific document
      *
@@ -62,7 +63,7 @@ public class Document {
             return new XMLDocument(document);
         } else if (mimeType.is(PDF)) {
             return new PDFDocument(document);
-        } else if (BinaryDocument.isNotBlacklisted(mimeType)) {
+        } else if (BinaryDocument.isWhitelisted(mimeType)) {
             return new BinaryDocument(document);
         } else {
             throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Document format not supported: " + mimeType);

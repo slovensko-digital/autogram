@@ -123,8 +123,7 @@ public class MainController {
         textArea.setText(translate("text.visualizationNotSupported", filename));
     }
 
-
-    // TODO
+    // TODO unsafe PNG image visualization - either make safe or use with caution
     private void displayImageVisualisation(byte[] content) {
         ByteArrayInputStream imageStream = new ByteArrayInputStream(content);
         Image image = new Image(imageStream);
