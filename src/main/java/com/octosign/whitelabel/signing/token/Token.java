@@ -71,6 +71,10 @@ public abstract class Token {
         return DRIVERS;
     }
 
+    public static void addDriver(Driver driver) {
+        DRIVERS.add(driver);
+    }
+
     private static void loadDrivers() {
         DRIVERS = new ArrayList<>();
 
