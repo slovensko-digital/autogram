@@ -22,12 +22,14 @@ import static com.octosign.whitelabel.ui.utils.Utils.isNullOrBlank;
  */
 public class XMLDocument extends Document {
 
-    public XMLDocument() { }
-
     public XMLDocument(Document document) {
         super(document);
     }
 
+    static {
+        System.setProperty("javax.xml.parsers.SAXParserFactory", "org.apache.xerces.jaxp.SAXParserFactoryImpl");
+        System.setProperty("javax.xml.transform.TransformerFactory", "net.sf.saxon.TransformerFactoryImpl");
+    }
 
     public String getTransformed(String transformation) {
         if (isNullOrBlank(transformation))
