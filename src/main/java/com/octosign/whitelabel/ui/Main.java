@@ -10,7 +10,7 @@ import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.cli.command.CommandFactory;
 import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.communication.dto.*;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.error_handling.IntegrationException;
@@ -195,9 +195,9 @@ public class Main extends Application {
         }
 
         private void respondWith(int httpCode, String message) {
-            new Response<String>(Utils.getExchange())
+            new Response<ErrorData>(Utils.getExchange())
                     .setStatusCode(httpCode)
-                    .setBody(message)
+                    .setBody(new ErrorData(httpCode, message))
                     .send();
         }
 
