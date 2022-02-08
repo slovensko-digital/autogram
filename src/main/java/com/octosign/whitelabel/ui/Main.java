@@ -184,7 +184,7 @@ public class Main extends Application {
             } else if (throwable instanceof UnexpectedActionException uae) {
                 LOGGER.error("UnexpectedActionException: ", uae);
                 respondWith(uae.getCode().toHttpCode(), uae.getMessage());
-                System.exit(1);
+                closeAllWindows();
 
             } else {
                 LOGGER.error("[NOT EXPECTED] Error: " + throwable.getClass().getName(), throwable);
