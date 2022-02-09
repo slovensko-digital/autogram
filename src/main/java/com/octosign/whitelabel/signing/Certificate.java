@@ -1,27 +1,40 @@
 package com.octosign.whitelabel.signing;
 
 import com.octosign.whitelabel.ui.SelectableItem;
+import eu.europa.esig.dss.detailedreport.DetailedReport;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
-import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
-import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
-import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
+import eu.europa.esig.dss.simplecertificatereport.SimpleCertificateReport;
+import eu.europa.esig.dss.spi.client.http.DSSFileLoader;
+import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
+import eu.europa.esig.dss.spi.x509.CertificateSource;
+import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.tsl.cache.CacheCleaner;
+import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
-import eu.europa.esig.dss.validation.*;
+import eu.europa.esig.dss.tsl.sync.ExpirationAndSignatureCheckStrategy;
+import eu.europa.esig.dss.tsl.sync.SynchronizationStrategy;
+import eu.europa.esig.dss.validation.CertificateValidator;
+import eu.europa.esig.dss.validation.CertificateVerifier;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
 
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.*;
 
+import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -123,54 +136,143 @@ public class Certificate implements SelectableItem {
         return this.getCertificateDescription(DescriptionVerbosity.COMPACT);
     }
 
+    // temp benchmarking vars
+    Long startTime;
+    Map<String, Long> times = new LinkedHashMap<>();
+
+    private void log(String label) {
+        long endTime = System.currentTimeMillis();
+        times.put(label, endTime - startTime);
+        startTime = System.currentTimeMillis();
+    }
+
+    private static final String LOTL_URL = "https://ec.europa.eu/tools/lotl/eu-lotl.xml";
+    private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
+
     public boolean isValid() {
-        CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier();
-
-        DefaultAIASource aiaSource = new DefaultAIASource();
-        aiaSource.setDataLoader(new CommonsDataLoader());
-        commonCertificateVerifier.setAIASource(aiaSource);
-
-        CommonsDataLoader commonsHttpDataLoader = new CommonsDataLoader();
-        OCSPDataLoader ocspDataLoader = new OCSPDataLoader();
-
-        LOTLSource lotlSource = new LOTLSource();
-        lotlSource.setUrl("https://ec.europa.eu/tools/lotl/eu-lotl.xml");
-        lotlSource.setPivotSupport(true);
-
-        TrustedListsCertificateSource tslCertificateSource = new TrustedListsCertificateSource();
-
-        FileCacheDataLoader onlineFileLoader = new FileCacheDataLoader(commonsHttpDataLoader);
-
-        CacheCleaner cacheCleaner = new CacheCleaner();
-        cacheCleaner.setCleanFileSystem(true);
-        cacheCleaner.setDSSFileLoader(onlineFileLoader);
+        startTime = System.currentTimeMillis();
 
         TLValidationJob validationJob = new TLValidationJob();
-        validationJob.setTrustedListCertificateSource(tslCertificateSource);
-        validationJob.setOnlineDataLoader(onlineFileLoader);
-        validationJob.setCacheCleaner(cacheCleaner);
-        validationJob.setListOfTrustedListSources(lotlSource);
+        validationJob.setListOfTrustedListSources(getLOTL());
+        log("fetching LOTL");
+
+        validationJob.setSynchronizationStrategy(new ExpirationAndSignatureCheckStrategy());
+        validationJob.setTrustedListSources();
+        validationJob.setOfflineDataLoader(offlineLoader());
+        validationJob.setOnlineDataLoader(onlineLoader());
+        validationJob.setDebug(true);
         validationJob.onlineRefresh();
+//        validationJob.offlineRefresh();
 
-        commonCertificateVerifier.setTrustedCertSources(tslCertificateSource);
 
-        OnlineCRLSource onlineCRLSource = new OnlineCRLSource();
-        onlineCRLSource.setDataLoader(commonsHttpDataLoader);
-        commonCertificateVerifier.setCrlSource(onlineCRLSource);
+        var summary = validationJob.getSummary();
+        var lotlN = summary.getNumberOfProcessedLOTLs();
+        var tlN = summary.getNumberOfProcessedTLs();
+        System.out.println("\\\\\\\\\\\\\\\\////////////////\\\\\\\\\\\\\\\\/////////////////\\\\\\\\\\\\\\//////////////");
+        System.out.printf("LOTLs count: %d \t\t TLs count: %d", lotlN, tlN);
+        System.out.println("\\\\\\\\\\\\\\\\////////////////\\\\\\\\\\\\\\\\/////////////////\\\\\\\\\\\\\\//////////////");
+//        summary.getLOTLInfos().forEach(System.out::println);
+//        summary.getOtherTLInfos().forEach(System.out::println);
+        log("LOTL other settings and feches");
+//        validationJob.setExecutorService(Executors.newSingleThreadExecutor());
 
-        OnlineOCSPSource onlineOCSPSource = new OnlineOCSPSource();
-        onlineOCSPSource.setDataLoader(ocspDataLoader);
-        commonCertificateVerifier.setOcspSource(onlineOCSPSource);
 
-        commonCertificateVerifier.setCheckRevocationForUntrustedChains(true);
+//        onlineFileLoader.setFileCacheDirectory();
+//        CacheCleaner cacheCleaner = new CacheCleaner();
+//        cacheCleaner.setCleanFileSystem(true);
+//        cacheCleaner.setDSSFileLoader(onlineFileLoader);
 
-        CertificateToken token = dssPrivateKey.getCertificate();
-        CertificateValidator validator = CertificateValidator.fromCertificate(token);
-        validator.setCertificateVerifier(commonCertificateVerifier);
+        log("settings in between");
+
+        DefaultAIASource aiaSource = new DefaultAIASource();
+        aiaSource.setDataLoader(dataLoader());
+        log("AIA source");
+
+        OnlineCRLSource crlSource = new OnlineCRLSource();
+        crlSource.setDataLoader(dataLoader());
+        log("CRL source");
+
+        OnlineOCSPSource ocspSource = new OnlineOCSPSource();
+        ocspSource.setDataLoader(dataLoader());
+        log("OCS source");
+
+        CertificateVerifier verifier = new CommonCertificateVerifier();
+
+        // THIS tooks way too much longer when uncommented
+        // hopefully this is redundant check? try to find out
+        //        verifier.setAIASource(aiaSource);
+
+        verifier.setCrlSource(crlSource);
+        verifier.setOcspSource(ocspSource);
+        log("settings");
+
+        CertificateValidator validator = CertificateValidator.fromCertificate(dssPrivateKey.getCertificate());
+        validator.setCertificateVerifier(verifier);
         validator.setTokenExtractionStrategy(TokenExtractionStrategy.EXTRACT_CERTIFICATES_AND_REVOCATION_DATA);
-        CertificateReports certificateReports = validator.validate();
-        DiagnosticData diagnosticData = certificateReports.getDiagnosticData();
+        log("some settings");
 
-        return diagnosticData.isValidCertificate(token.getDSSIdAsString());
+        CertificateReports certificateReports = validator.validate();
+        log("validator.validate");
+
+        DiagnosticData diagnosticData = certificateReports.getDiagnosticData();
+        DetailedReport detailedReport = certificateReports.getDetailedReport();
+        SimpleCertificateReport simpleReport = certificateReports.getSimpleReport();
+        log("reporting");
+
+
+        System.out.println("===========================================");
+        System.out.println("====    benchmarking results           ====");
+        System.out.println("===========================================");
+        times.forEach((k, v) -> System.out.printf("%s took %d milliseconds \n", k, v));
+        System.out.println("===========================================");
+
+        return true;
+    }
+
+    private LOTLSource getLOTL() {
+        CertificateSource journalCertificateSource;
+
+        Path keystorePath = Path.of(System.getProperty("user.dir"), getProperty("file.pkcs12.lotl.certs"));
+        var password = getProperty("password.file.pkcs12.lotl.certs");
+
+        try {
+            var file = new FileInputStream(keystorePath.toFile());
+            journalCertificateSource = new KeyStoreCertificateSource(file, "PKCS12", password);
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+
+        LOTLSource lotlSource = new LOTLSource();
+        lotlSource.setUrl(LOTL_URL);
+        lotlSource.setCertificateSource(journalCertificateSource);
+        lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(OJ_URL));
+        lotlSource.setPivotSupport(true);
+        return lotlSource;
+    }
+
+    public DSSFileLoader offlineLoader() {
+        FileCacheDataLoader offlineFileLoader = new FileCacheDataLoader();
+        offlineFileLoader.setCacheExpirationTime(Long.MAX_VALUE);
+        offlineFileLoader.setDataLoader(new IgnoreDataLoader());
+        offlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
+        return offlineFileLoader;
+    }
+
+    public DSSFileLoader onlineLoader() {
+        FileCacheDataLoader onlineFileLoader = new FileCacheDataLoader();
+        onlineFileLoader.setCacheExpirationTime(0);
+        onlineFileLoader.setDataLoader(dataLoader());
+        onlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
+        return onlineFileLoader;
+    }
+
+    private File tlCacheDirectory() {
+         File targetLocation  = Path.of(System.getProperty("user.dir"), "cache", "certs").toFile();
+         targetLocation.mkdirs();
+         return targetLocation;
+    }
+
+    private CommonsDataLoader dataLoader() {
+        return new CommonsDataLoader();
     }
 }
