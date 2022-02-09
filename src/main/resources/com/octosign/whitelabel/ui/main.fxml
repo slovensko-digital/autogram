@@ -43,7 +43,7 @@
             <Button fx:id="mainButton" onAction="#onMainButtonAction" text="%btn.loadSigners" styleClass="leftButton, primary"/>
 
             <Button fx:id="certSettingsButton" onAction="#onCertSettingsButtonAction" styleClass="rightButton, primary">
-                <tooltip><Tooltip text="%text.certificateSettings" showDelay="300ms" /></tooltip>
+                <tooltip><Tooltip text="%text.certSettings" showDelay="300ms" /></tooltip>
                 <graphic>
                     <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                     <image>

@@ -1,17 +1,19 @@
-package com.octosign.whitelabel.signing;
+package com.octosign.whitelabel.signing.token;
 
 import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.token.MSCAPISignatureToken;
 
-public class SigningCertificateMSCAPI extends SigningCertificate {
+public class MSCAPIToken extends Token {
     /**
      * Create signing certificate that will use Windows MS CAPI
      */
-    public SigningCertificateMSCAPI() {
+    public MSCAPIToken() {
+        MSCAPISignatureToken token;
         try {
-            token = new MSCAPISignatureToken();
+             token = new MSCAPISignatureToken();
         } catch (Exception e) {
             throw new UserException("error.tokenAccessDenied.header", "error.tokenAccessDenied.description", e);
         }
+        initialize(token);
     }
 }

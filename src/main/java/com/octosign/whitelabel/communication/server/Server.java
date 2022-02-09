@@ -10,8 +10,8 @@ import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.endpoint.DocumentationEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.InfoEndpoint;
 import com.octosign.whitelabel.communication.server.endpoint.SignEndpoint;
@@ -60,9 +60,10 @@ public class Server {
         server.createContext("/", infoEndpoint);
         server.createContext("/sign", signEndpoint);
 
-        if (devMode) {
+//        TODO decide this along with TODO in ../Main.java
+//        if (devMode) {
             server.createContext("/documentation", documentationEndpoint);
-        }
+//        }
 
         // Run requests in separate threads
         server.setExecutor(Executors.newCachedThreadPool());
@@ -101,7 +102,7 @@ public class Server {
         infoEndpoint.setInfo(info);
     }
 
-    public void setOnSign(Function<SignatureUnit, Future<Document>> onSign) {
+    public void setOnSign(Function<SignatureUnit, Future<SignedData>> onSign) {
         signEndpoint.setOnSign(onSign);
     }
 
@@ -114,12 +115,12 @@ public class Server {
     }
 
     private HttpServer getServer(String hostname, int port, int initialNonce, boolean isHttps) {
+        HttpServer server;
         try {
-            var server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
-
             if (isHttps) {
-                var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert")).toFile();
                 server = HttpsServer.create(new InetSocketAddress(hostname, port), 0);
+
+                var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert")).toFile();
                 SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
                 char[] password = "".toCharArray();
 
@@ -150,6 +151,8 @@ public class Server {
                         }
                     }
                 });
+            } else {
+                server = HttpServer.create(new InetSocketAddress(hostname, port), 0);
             }
         } catch (BindException e) {
             throw new UserException("error.launchFailed.header", translate("error.launchFailed.addressInUse.description", port), e);

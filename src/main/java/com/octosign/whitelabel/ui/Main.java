@@ -4,27 +4,33 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
+import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.error_handling.*;
+import com.octosign.whitelabel.cli.command.CommandFactory;
+import com.octosign.whitelabel.cli.command.ListenCommand;
+import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.server.Server;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.signing.SigningManager;
+import com.octosign.whitelabel.ui.status.StatusIndication;
+import com.octosign.whitelabel.ui.utils.FXUtils;
 
+import com.octosign.whitelabel.ui.utils.Utils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-
-import com.octosign.whitelabel.cli.command.CommandFactory;
-import com.octosign.whitelabel.cli.command.ListenCommand;
-import com.octosign.whitelabel.communication.Info;
-import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Server;
 import javafx.stage.Window;
 import org.slf4j.LoggerFactory;
 
-import static com.octosign.whitelabel.ui.FXUtils.*;
-import static com.octosign.whitelabel.ui.I18n.translate;
-
+import static com.octosign.whitelabel.ui.utils.FXUtils.*;
+import static com.octosign.whitelabel.ui.I18n.*;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main extends Application {
@@ -34,7 +40,7 @@ public class Main extends Application {
         READY,
     }
 
-    private final CertificateManager certificateManager = new CertificateManager();
+    private final SigningManager signingManager = new SigningManager();
 
     private StatusIndication statusIndication;
 
@@ -51,6 +57,9 @@ public class Main extends Application {
         var cliCommand = CommandFactory.fromParameters(getParameters());
 
         if (cliCommand instanceof ListenCommand listenCommand) {
+            I18n.setLanguage(listenCommand.getLanguage());
+            UpdateNotifier.checkForUpdates();
+
             startServer(listenCommand);
             statusIndication = new StatusIndication(this::exit);
 
@@ -66,8 +75,6 @@ public class Main extends Application {
     }
 
     private void startServer(ListenCommand command) {
-        I18n.setLocale(command.getLanguage());
-
         server = new Server(command.getHost(), command.getPort(), command.getInitialNonce(), command.isRequiredSSL());
         server.setAllowedOrigin(command.getOrigin());
 
@@ -90,14 +97,16 @@ public class Main extends Application {
             System.out.println(translate("text.docsAvailableAt", docsAddress));
         }
 
-        server.setOnSign((SignatureUnit signatureUnit) -> {
-            var future = new CompletableFuture<Document>();
+        server.setOnSign((SignatureUnit unit) -> {
+            var future = new CompletableFuture<SignedData>();
 
             Platform.runLater(() -> {
-                openWindow(signatureUnit, (String signedContent) -> {
-                    var signedDocument = signatureUnit.getDocument().clone();
-                    signedDocument.setContent(signedContent);
-                    future.complete(signedDocument);
+                openWindow(unit, (byte[] signedContent) -> {
+                    Document d = unit.getDocument();
+                    Document signedDocument = new Document(d.getId(), d.getTitle(), signedContent, d.getLegalEffect());
+                    SignedData signedData = new SignedData(signedDocument, unit.getMimeType(), unit.isPlainOldXML());
+
+                    future.complete(signedData);
                 });
             });
             return future;
@@ -112,25 +121,29 @@ public class Main extends Application {
         Platform.exit();
     }
 
-    private void openWindow(SignatureUnit signatureUnit, Consumer<String> onSigned) {
+    private void openWindow(SignatureUnit signatureUnit, Consumer<byte[]> onSigned) {
         var windowStage = new Stage();
+        windowStage.setOnCloseRequest(e -> {
+            throw new UnexpectedActionException(Code.CANCELLED_BY_USER, "User canceled");
+        });
 
         var fxmlLoader = loadWindow("main");
         VBox root = fxmlLoader.getRoot();
 
         MainController controller = fxmlLoader.getController();
-        controller.setCertificateManager(certificateManager);
+        controller.setSigningManager(signingManager);
         controller.setSignatureUnit(signatureUnit);
-        controller.loadDocument();
-        controller.setOnSigned((String signedContent) -> {
+        controller.setOnSigned((byte[] signedContent) -> {
             onSigned.accept(signedContent);
             windowStage.close();
         });
+        controller.loadDocument();
 
-        var scene = new Scene(root, 640, 480);
+        var scene = new Scene(root, 720, 540);
         windowStage.setTitle(translate("app.name"));
         windowStage.setScene(scene);
         windowStage.show();
+        windowStage.toFront();
     }
 
     public static FXMLLoader loadWindow(String name) {
@@ -152,25 +165,40 @@ public class Main extends Application {
 
     private static class ExceptionHandler implements Thread.UncaughtExceptionHandler {
 
-        private static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
+        private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ExceptionHandler.class);
 
         @Override
         public void uncaughtException(Thread thread, Throwable throwable) {
             if (throwable instanceof IntegrationException ie) {
                 LOGGER.error("IntegrationException - code: " + ie.getCode().toString(), ie);
-                if (ie.shouldDisplay())
+                if (ie.shouldDisplay()) {
                     Platform.runLater(() -> displayError(ie));
+                }
+                respondWith(ie.getCode().toHttpCode(), ie.getMessage());
                 closeAllWindows();
 
             } else if (throwable instanceof UserException ue) {
                 LOGGER.error("UserException: ", ue);
                 Platform.runLater(() -> displayError(ue));
 
+            } else if (throwable instanceof UnexpectedActionException uae) {
+                LOGGER.error("UnexpectedActionException: ", uae);
+                respondWith(uae.getCode().toHttpCode(), uae.getMessage());
+                System.exit(1);
+
             } else {
                 LOGGER.error("[NOT EXPECTED] Error: " + throwable.getClass().getName(), throwable);
                 Platform.runLater(FXUtils::displaySimpleError);
+                respondWith(Code.UNEXPECTED_ERROR.toHttpCode(), throwable.getMessage());
                 System.exit(1);
             }
+        }
+
+        private void respondWith(int httpCode, String message) {
+            new Response<String>(Utils.getExchange())
+                    .setStatusCode(httpCode)
+                    .setBody(message)
+                    .send();
         }
 
         private void closeAllWindows() {

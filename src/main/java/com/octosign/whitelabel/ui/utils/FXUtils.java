@@ -1,8 +1,11 @@
-package com.octosign.whitelabel.ui;
+package com.octosign.whitelabel.ui.utils;
 
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
+
+import com.octosign.whitelabel.ui.Main;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
@@ -10,6 +13,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
+import javafx.stage.Stage;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -18,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.octosign.whitelabel.ui.I18n.translate;
-import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
+import static com.octosign.whitelabel.ui.utils.Utils.isNullOrBlank;
 import static java.util.Objects.requireNonNull;
 
 public class FXUtils {
@@ -104,6 +108,23 @@ public class FXUtils {
         alert.showAndWait();
     }
 
+    /**
+     * Displays warning alert
+     *
+     * @param header
+     * @param description
+     */
+    public static void displayWarning(String header, String description) {
+        var alert = buildAlert(
+                Alert.AlertType.WARNING,
+                translate("text.warn"),
+                translateIfNeeded("warn.", header),
+                translateIfNeeded("warn.", description)
+        );
+
+        alert.showAndWait();
+    }
+
     private static String translateIfNeeded(String prefix, String input) {
         if (input == null)
             return "";
@@ -171,9 +192,13 @@ public class FXUtils {
         dialog.getDialogPane().getStylesheets().addAll(getStylesheets());
     }
 
-    private static List<String> getStylesheets() {
+    public static List<String> getStylesheets() {
         return Stream.of("shared.css" , "dialog.css", "overrides.css")
             .map(filename -> requireNonNull(Main.class.getResource(filename)).toExternalForm())
             .toList();
+    }
+
+    public static Stage getCurrentStage(Node source) {
+        return (Stage) source.getScene().getWindow();
     }
 }

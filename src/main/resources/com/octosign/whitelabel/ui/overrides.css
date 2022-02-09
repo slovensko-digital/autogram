@@ -10,3 +10,21 @@
         -light-text-color: #ffffff;
     }
 */
+
+.button-pick-selected {
+    -fx-background-color: rgba(0, 0, 0, 0.24);
+    -fx-background-radius: 9px;
+    -fx-text-fill: #373737;
+    -fx-padding: 5px;
+    -fx-border-insets: 5px;
+    -fx-background-insets: 5px;
+}
+
+.button-pick-unselected {
+    -fx-background-color: #cdd7d7;
+    -fx-background-radius: 9px;
+    -fx-text-fill: #373737;
+    -fx-padding: 5px;
+    -fx-border-insets: 5px;
+    -fx-background-insets: 5px;
+}

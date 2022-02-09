@@ -52,9 +52,12 @@ public record MimeType(String type, String subType, Map<String, String> paramete
         var parameters = Arrays.stream(parts)
                                .skip(1)
                                .map(s -> s.split("="))
-                               .collect(toMap(param -> param[0],
-                                       param -> (param.length > 1) ? param[1] : null));
+                               .collect(toMap(
+                                       param -> param[0],
+                                       param -> (param.length > 1) ? param[1] : "")
+                               );
 
+        parameters.replaceAll((k, v) -> ("".equals(v)) ? null : v);
         return new MimeType(types[0], types[1], parameters);
     }
 
@@ -76,6 +79,13 @@ public record MimeType(String type, String subType, Map<String, String> paramete
         }
 
         return true;
+    }
+
+    public boolean is(MimeType other) {
+        if (other == null)
+            return false;
+
+        return equalsTypeSubtype(other);
     }
 
     @Override
@@ -104,10 +114,14 @@ public record MimeType(String type, String subType, Map<String, String> paramete
             return firstPart;
         }
 
-        var secondPart = parameters.keySet().stream()
-            .map(key -> key + "=" + parameters.get(key))
-            .collect(Collectors.joining(","));
+        var secondPart = parameters.entrySet().stream()
+                                   .map(e -> (e.getValue() == null) ? e.getKey() : e.getKey() + "=" + e.getValue())
+                                   .collect(Collectors.joining("; "));
 
-        return firstPart + ";" + secondPart;
+        return firstPart + "; " + secondPart;
+    }
+
+    public eu.europa.esig.dss.model.MimeType toDSSMimeType() {
+        return eu.europa.esig.dss.model.MimeType.fromMimeTypeString(this.toString());
     }
 }

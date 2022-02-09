@@ -8,16 +8,13 @@ import com.octosign.whitelabel.communication.document.Document;
 public class SignRequest {
 
     private Document document;
-
     private SignatureParameters parameters;
-
-    private String payloadMimeType;
-
+    private MimeType payloadMimeType;
     private String hmac;
 
     public SignRequest() {}
 
-    public SignRequest(Document document, SignatureParameters parameters, String payloadMimeType, String hmac) {
+    public SignRequest(Document document, SignatureParameters parameters, MimeType payloadMimeType, String hmac) {
         this.document = document;
         this.parameters = parameters;
         this.payloadMimeType = payloadMimeType;
@@ -32,7 +29,7 @@ public class SignRequest {
         return parameters;
     }
 
-    public String getPayloadMimeType() {
+    public MimeType getPayloadMimeType() {
         return payloadMimeType;
     }
 
