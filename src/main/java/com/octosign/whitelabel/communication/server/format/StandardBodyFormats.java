@@ -83,7 +83,7 @@ public enum StandardBodyFormats implements BodyFormat {
                 jsonDocument.add("content", new JsonPrimitive(content));
 
                 var certificateDN = data.certificateDN();
-                jsonDocument.add("certificateDN", new JsonPrimitive(certificateDN));
+                jsonDocument.add("signedBy", new JsonPrimitive(certificateDN));
 
                 return jsonDocument;
             }
