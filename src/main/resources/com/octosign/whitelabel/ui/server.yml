@@ -110,7 +110,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SignedResponse'
+                $ref: '#/components/schemas/SignResponseBody'
         403:
           description: 'Request came from an unexpected origin.'
           content:
@@ -217,7 +217,7 @@ components:
       - content
 
 
-    SignedResponse:
+    SignResponseBody:
       type: object
       properties:
         content:
