@@ -4,34 +4,27 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import com.octosign.whitelabel.communication.SignedData;
-import com.octosign.whitelabel.communication.SignatureUnit;
-import com.octosign.whitelabel.communication.server.Response;
-import com.octosign.whitelabel.error_handling.*;
-import com.octosign.whitelabel.cli.command.CommandFactory;
-import com.octosign.whitelabel.cli.command.ListenCommand;
 import com.octosign.whitelabel.communication.*;
+import com.octosign.whitelabel.communication.server.*;
+import com.octosign.whitelabel.error_handling.*;
+import com.octosign.whitelabel.cli.command.*;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.signing.SigningManager;
 import com.octosign.whitelabel.ui.status.StatusIndication;
 import com.octosign.whitelabel.ui.utils.FXUtils;
 
 import com.octosign.whitelabel.ui.utils.Utils;
-import javafx.application.Application;
-import javafx.application.Platform;
+import javafx.application.*;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import javafx.stage.Window;
+import javafx.stage.*;
 import org.slf4j.LoggerFactory;
 
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.*;
-import static java.util.Objects.requireNonNullElse;
+import static java.util.Objects.*;
 
 public class Main extends Application {
 
