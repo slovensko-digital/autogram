@@ -1,9 +1,6 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.signing.token.MSCAPIToken;
-import com.octosign.whitelabel.signing.token.PKCS11Token;
-import com.octosign.whitelabel.signing.token.PKCS12Token;
-import com.octosign.whitelabel.signing.token.Token;
+import com.octosign.whitelabel.signing.token.*;
 import com.octosign.whitelabel.ui.PasswordCallback;
 
 import java.util.function.Function;
