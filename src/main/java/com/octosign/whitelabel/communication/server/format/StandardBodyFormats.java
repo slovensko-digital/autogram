@@ -48,7 +48,6 @@ public enum StandardBodyFormats implements BodyFormat {
             public JsonElement serialize(ErrorData src, Type type, JsonSerializationContext context) {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.add("code", new JsonPrimitive(src.httpCode()));
-
                 var message = src.message();
                 jsonObject.add("message", new JsonPrimitive(message != null ? message : "Unknown error"));
 
