@@ -67,6 +67,12 @@ public class Utils {
         return new String(decoded, StandardCharsets.UTF_8);
     }
 
+    public static String encodeBase64SafeChars(byte[] value) {
+        byte[] decoded = Base64.getUrlEncoder().encode(value);
+
+        return new String(decoded, StandardCharsets.UTF_8);
+    }
+
     private static HttpExchange currentExchange;
 
     public static void setExchange(HttpExchange e) {
