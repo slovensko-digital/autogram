@@ -1,25 +1,26 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.document.*;
 import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.signing.*;
 import com.octosign.whitelabel.signing.token.Token;
 import com.octosign.whitelabel.ui.about.AboutDialog;
 
-import com.octosign.whitelabel.ui.picker.SelectDialog;
-import com.octosign.whitelabel.ui.picker.SelectableItem;
+import com.octosign.whitelabel.ui.picker.*;
+import dorkbox.util.FileUtil;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.image.*;
 import javafx.scene.web.WebView;
 
+import java.awt.*;
 import java.io.*;
+import java.nio.file.*;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -40,6 +41,9 @@ public class MainController {
 
     @FXML
     public Button certSettingsButton;
+
+    @FXML
+    public Button hiddenOpenFileButton;
 
     @FXML
     private WebView webView;
@@ -108,9 +112,53 @@ public class MainController {
 
         } else if (mimeType.is(PDF)) {
             displayPDFVisualisation(document);
+        } else if (document.isPermitted()) {
+            displayBinaryFileVisualisation(document);
         } else {
-            displayBinaryFileVisualisation(params.getContainerFilename());
+            displayForbiddenTypeVisualization(document, mimeType);
         }
+    }
+
+    public File saveToFilesystem(Document document) {
+        Path location = Path.of(System.getProperty("java.io.tmpdir"), "Autogram", "documents").toAbsolutePath();
+        location.toFile().mkdirs();
+
+        int counter = 0;
+        String filename = document.getFilename();
+        File outputFile;
+
+        while ((outputFile = buildFile(location, counter, filename)).exists())
+            counter++;
+
+        FileUtil.touch(outputFile);
+
+        try (OutputStream stream = new FileOutputStream(outputFile)) {
+            stream.write(document.getContent());
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to save file!");
+        }
+
+        return outputFile;
+    }
+
+    private File buildFile(Path location, int i, String filename) {
+        int dot = filename.lastIndexOf(".");
+        String basename = filename.substring(0, dot);
+        String extension = filename.substring(dot + 1);
+
+        if (i == 0)
+            filename = String.format("%s.%s", basename, extension);
+        else
+            filename = String.format("%s_%d.%s", basename, i, extension);
+
+        return Paths.get(location.toString(), filename).toFile();
+    }
+
+    private void displayForbiddenTypeVisualization(Document document, MimeType mimeType) {
+        vanish(webView);
+        mainButton.setDisable(true);
+        certSettingsButton.setDisable(true);
+        textArea.setText(translate("text.visualizationNotSupported",mimeType.subType()));
     }
 
     private void displayPlainTextVisualisation(String visualisation) {
@@ -118,16 +166,15 @@ public class MainController {
         textArea.setText(visualisation);
     }
 
-    private void displayBinaryFileVisualisation(String filename) {
+    private void displayBinaryFileVisualisation(Document document) {
         vanish(webView);
-        textArea.setText(translate("text.visualizationNotSupported", filename));
-    }
+        materialize(hiddenOpenFileButton);
 
-    // TODO unsafe PNG image visualization - either make safe or use with caution
-    private void displayImageVisualisation(byte[] content) {
-        ByteArrayInputStream imageStream = new ByteArrayInputStream(content);
-        Image image = new Image(imageStream);
-        imageView.setImage(image);
+        textArea.setText(translate("text.openBinaryFile"));
+        File documentFile = saveToFilesystem(document);
+
+        hiddenOpenFileButton.setUserData(documentFile.getAbsolutePath());
+        hiddenOpenFileButton.setText(translate("btn.openFile", documentFile.getName()));
     }
 
     private void displayHTMLVisualisation(String visualisation) {
@@ -176,6 +223,7 @@ public class MainController {
     }
 
     private void loadSigners() {
+        vanish(hiddenOpenFileButton);
         disableAndSet(translate("btn.loading"));
 
         try {
@@ -237,6 +285,13 @@ public class MainController {
         }
     }
 
+    private void materialize(Node node) {
+        if (!node.isManaged())
+            node.setManaged(true);
+        if (!node.isVisible())
+            node.setVisible(true);
+    }
+
     private void vanish(Node node) {
         if (node.isManaged())
             node.setManaged(false);
@@ -252,5 +307,21 @@ public class MainController {
     @FXML
     private void onCertSettingsButtonAction() {
         loadSigners();
+    }
+
+    @FXML
+    private void onHiddenOpenFileButtonAction() {
+        textArea.setText("");
+
+        File targetFile = new File((String)hiddenOpenFileButton.getUserData());
+
+        new Thread(() -> {
+            try {
+                Desktop.getDesktop().open(targetFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
     }
 }
