@@ -5,6 +5,7 @@ import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
 
 import com.octosign.whitelabel.ui.Main;
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Dialog;
@@ -200,5 +201,16 @@ public class FXUtils {
 
     public static Stage getCurrentStage(Node source) {
         return (Stage) source.getScene().getWindow();
+    }
+
+    public static void runLater(Runnable delayedTask, int millis) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Platform.runLater(delayedTask);
+        }).start();
     }
 }
