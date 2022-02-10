@@ -101,7 +101,7 @@ public class Main extends Application {
             Platform.runLater(() -> {
                 openWindow(unit, (byte[] signedContent) -> {
                     Document d = unit.getDocument();
-                    Document signedDocument = new Document(d.getId(), d.getTitle(), signedContent, d.getLegalEffect());
+                    Document signedDocument = new Document(d.getId(), d.getFilename(), signedContent);
                     SignedData signedData = new SignedData(signedDocument, unit.getMimeType(), unit.isPlainOldXML());
 
                     future.complete(signedData);
