@@ -3,8 +3,7 @@ package com.octosign.whitelabel.signing;
 import com.octosign.whitelabel.ui.picker.SelectableItem;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 
