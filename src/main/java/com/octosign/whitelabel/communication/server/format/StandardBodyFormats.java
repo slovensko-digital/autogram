@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 import static com.octosign.whitelabel.ui.utils.Utils.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 public enum StandardBodyFormats implements BodyFormat {
     JSON {
