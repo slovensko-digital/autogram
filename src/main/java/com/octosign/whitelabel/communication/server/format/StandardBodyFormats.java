@@ -2,9 +2,8 @@ package com.octosign.whitelabel.communication.server.format;
 
 import com.google.gson.*;
 import com.octosign.whitelabel.communication.*;
-import com.octosign.whitelabel.communication.SignatureParameters.*;
+import com.octosign.whitelabel.communication.dto.*;
 import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.dto.ErrorData;
 import com.octosign.whitelabel.error_handling.*;
 
 import java.lang.reflect.Type;
