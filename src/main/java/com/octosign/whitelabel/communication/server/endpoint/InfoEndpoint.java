@@ -1,6 +1,6 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.dto.Info;
 import com.octosign.whitelabel.communication.server.Request;
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
