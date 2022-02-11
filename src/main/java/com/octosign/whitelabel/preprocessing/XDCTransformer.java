@@ -1,6 +1,5 @@
 package com.octosign.whitelabel.preprocessing;
 
-import com.octosign.whitelabel.communication.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureParameters;
 import com.octosign.whitelabel.error_handling.*;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -22,7 +21,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static com.octosign.whitelabel.ui.Utils.isPresent;
+import static com.octosign.whitelabel.ui.utils.Utils.isPresent;
 
 
 public class XDCTransformer {
@@ -180,9 +179,13 @@ public class XDCTransformer {
 
     private Element createUsedSchemasReferenced() {
         var element = document.createElement("UsedSchemasReferenced");
-        if (isPresent(xsdSchema) || isPresent(xsltSchema))
-            documentXmlns = document.getFirstChild().getAttributes().getNamedItem("xmlns").getNodeValue();
-
+        if (isPresent(xsdSchema) || isPresent(xsltSchema)) {
+            var documentXmlnsNode = document.getFirstChild().getAttributes().getNamedItem("xmlns");
+            if (documentXmlnsNode != null)
+                documentXmlns = documentXmlnsNode.getNodeValue();
+            else
+                documentXmlns = "";
+        }
         if (xsdSchema != null) {
             var xsdSchemaReference = createUsedXSDReference();
             element.appendChild(xsdSchemaReference);

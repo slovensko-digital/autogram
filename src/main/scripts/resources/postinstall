@@ -48,13 +48,13 @@ certificatePolicies = 1.2.3.4
 [dn]
 C=SK
 O=SSD
-CN=fuf.me
+CN=yoogle.com
 
 [CA_default]
 copy_extension=copy
 
 [alt_names]
-DNS.1=fuf.me
+DNS.1=yoogle.com
 
 " > $SSL_CONFIG_TMP ;
 

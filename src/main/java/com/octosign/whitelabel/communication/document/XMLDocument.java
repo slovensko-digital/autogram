@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
+import static com.octosign.whitelabel.ui.utils.Utils.isNullOrBlank;
 
 /**
  * XML document for signing
