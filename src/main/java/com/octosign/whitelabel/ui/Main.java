@@ -7,14 +7,13 @@ import java.util.function.Consumer;
 import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.server.*;
 import com.octosign.whitelabel.error_handling.*;
+import com.octosign.whitelabel.communication.dto.*;
 import com.octosign.whitelabel.cli.command.*;
 import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.signing.SigningManager;
-import com.octosign.whitelabel.ui.status.StatusIndication;
-import com.octosign.whitelabel.ui.utils.FXUtils;
+import com.octosign.whitelabel.ui.status.*;
+import com.octosign.whitelabel.ui.utils.*;
 
-import com.octosign.whitelabel.ui.utils.Utils;
 import javafx.application.*;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -188,9 +187,9 @@ public class Main extends Application {
         }
 
         private void respondWith(int httpCode, String message) {
-            new Response<String>(Utils.getExchange())
+            new Response<ErrorData>(Utils.getExchange())
                     .setStatusCode(httpCode)
-                    .setBody(message)
+                    .setBody(new ErrorData(httpCode, message))
                     .send();
         }
 
