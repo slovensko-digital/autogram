@@ -9,7 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
-import com.octosign.whitelabel.communication.Info;
+import com.octosign.whitelabel.communication.dto.*;
 import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import com.octosign.whitelabel.communication.server.endpoint.DocumentationEndpoint;
