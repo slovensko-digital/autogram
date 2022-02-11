@@ -203,7 +203,7 @@ public class FXUtils {
         return (Stage) source.getScene().getWindow();
     }
 
-    public static void runLater(Runnable delayedTask, int millis) {
+    public static void delayedTask(Runnable delayedTask, int millis) {
         new Thread(() -> {
             try {
                 Thread.sleep(millis);

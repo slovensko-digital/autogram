@@ -141,7 +141,7 @@ public class Main extends Application {
         stage.show();
         stage.toFront();
         stage.requestFocus();
-        runLater(() -> stage.setAlwaysOnTop(false), 42);
+        delayedTask(() -> stage.setAlwaysOnTop(false), 42);
     }
 
     public static FXMLLoader loadWindow(String name) {
