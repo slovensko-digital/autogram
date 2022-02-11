@@ -110,7 +110,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Document'
+                $ref: '#/components/schemas/SignResponseBody'
         403:
           description: 'Request came from an unexpected origin.'
           content:
@@ -215,6 +215,22 @@ components:
           description: 'Optional legal effect of signing the document shown to the user when signing.'
       required:
       - content
+
+
+    SignResponseBody:
+      type: object
+      properties:
+        content:
+          type: string
+          example: 'TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvQDSdd57FueSBoYW5kcyBtYWtlIGxpZ2h0IHdvsRWdaAeSBoYW5kcyBtYW=='
+          description: 'Signed content of the original document - either in plaintext or in Base64 format.'
+        signedBy:
+          type: string
+          example: 'CN=John Smith, OU=Test, O=IBM, C=GB, ...'
+          description: 'Distinguished name of the certificate used/attempting to sign the document.'
+      required:
+        - content
+        - signedBy
 
     SignatureParameters:
       type: object
