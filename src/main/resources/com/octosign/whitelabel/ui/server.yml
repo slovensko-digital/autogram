@@ -511,7 +511,6 @@ components:
           packaging: ENVELOPING
         payloadMimeType: "image/png; base64"
 
-
     XmlContentAsPlaintext:
       value: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</GeneralAgenda>"
 

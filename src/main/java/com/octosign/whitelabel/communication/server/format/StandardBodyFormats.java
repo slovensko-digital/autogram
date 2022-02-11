@@ -1,11 +1,8 @@
 package com.octosign.whitelabel.communication.server.format;
 
 import com.google.gson.*;
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.SignRequest;
-import com.octosign.whitelabel.communication.SignatureParameters;
+import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.SignatureParameters.*;
-import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.error_handling.*;
 
@@ -13,7 +10,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 import static com.octosign.whitelabel.ui.utils.Utils.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 public enum StandardBodyFormats implements BodyFormat {
     JSON {
@@ -24,7 +21,6 @@ public enum StandardBodyFormats implements BodyFormat {
         static {
             GsonBuilder gsonBuilder = new GsonBuilder();
             gsonBuilder.registerTypeAdapter(ErrorData.class, new ErrorDataSerializer());
-            gsonBuilder.registerTypeAdapter(String.class, new MessageSerializer());
             gsonBuilder.registerTypeAdapter(MimeType.class, new MimeTypeDeserializer());
             gsonBuilder.registerTypeAdapter(SignRequest.class, new SignRequestDeserializer());
             gsonBuilder.registerTypeAdapter(SignedData.class, new SignedDataSerializer());
@@ -44,15 +40,6 @@ public enum StandardBodyFormats implements BodyFormat {
         @Override
         public MimeType getMimeType() {
             return mimeType;
-        }
-
-        static class MessageSerializer implements JsonSerializer<String> {
-            @Override
-            public JsonElement serialize(String message, Type type, JsonSerializationContext context) {
-                JsonObject jsonObject = new JsonObject();
-                jsonObject.add("message", new JsonPrimitive(message != null ? message : "Unknown error"));
-                return jsonObject;
-            }
         }
 
         static class ErrorDataSerializer implements JsonSerializer<ErrorData> {

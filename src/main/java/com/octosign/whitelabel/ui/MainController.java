@@ -4,11 +4,10 @@ import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.document.*;
 import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.signing.*;
-import com.octosign.whitelabel.signing.token.Token;
-import com.octosign.whitelabel.ui.about.AboutDialog;
+import com.octosign.whitelabel.signing.token.*;
+import com.octosign.whitelabel.ui.about.*;
 
 import com.octosign.whitelabel.ui.picker.*;
-import dorkbox.util.FileUtil;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
@@ -21,15 +20,15 @@ import javafx.scene.web.WebView;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
-import java.util.List;
-import java.util.function.Consumer;
+import java.util.*;
+import java.util.function.*;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
-import static com.octosign.whitelabel.signing.token.Token.getAvailableDrivers;
+import static com.octosign.whitelabel.signing.token.Token.*;
+import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
-import static com.octosign.whitelabel.ui.I18n.translate;
 import static com.octosign.whitelabel.ui.utils.Utils.*;
-import static com.octosign.whitelabel.ui.utils.FXUtils.getCurrentStage;
+
 
 /**
  * Controller for the signing window
@@ -184,8 +183,8 @@ public class MainController {
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
                 engine.getDocument()
-                    .getElementById("frame")
-                    .setAttribute("srcdoc", visualisation);
+                      .getElementById("frame")
+                      .setAttribute("srcdoc", visualisation);
             }
         });
         engine.load(Main.class.getResource("visualization.html").toExternalForm());
@@ -227,10 +226,10 @@ public class MainController {
         disableAndSet(translate("btn.loading"));
 
         try {
-            var driver = getIfSingle_selectIfMany(getAvailableDrivers());
+            var driver = getDriverOrSelectIfMany(getAvailableDrivers());
             var certificates = Token.fromDriver(driver).getCertificates();
 
-            var signingCertificate = getIfSingle_selectIfMany(certificates);
+            var signingCertificate = getCertificateOrSelectIfMany(certificates);
             signingManager.setActiveCertificate(signingCertificate);
 
         } catch (UserException e) {
@@ -241,7 +240,20 @@ public class MainController {
         enableAndSet(resolveMainButtonText());
     }
 
-    private <T extends SelectableItem> T getIfSingle_selectIfMany(List<T> items) {
+    private Driver getDriverOrSelectIfMany(List<Driver> items) {
+        if (isNullOrEmpty(items))
+            throw new RuntimeException("Collection is null or empty!");
+
+        if (items.size() == 1) {
+            return first(items);
+        } else {
+            var selectDialog = new SelectDialog<>(items, getCurrentStage(mainButton));
+
+            return selectDialog.getResult();
+        }
+    }
+
+    private Certificate getCertificateOrSelectIfMany(List<Certificate> items) {
         if (isNullOrEmpty(items))
             throw new RuntimeException("Collection is null or empty!");
 
