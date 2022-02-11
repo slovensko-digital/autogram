@@ -3,15 +3,15 @@ package com.octosign.whitelabel.communication.server.format;
 import com.google.gson.*;
 import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.SignatureParameters.*;
-import com.octosign.whitelabel.communication.dto.*;
 import com.octosign.whitelabel.communication.document.Document;
+import com.octosign.whitelabel.communication.dto.ErrorData;
 import com.octosign.whitelabel.error_handling.*;
 
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
 import static com.octosign.whitelabel.ui.utils.Utils.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.charset.StandardCharsets.*;
 
 public enum StandardBodyFormats implements BodyFormat {
     JSON {
