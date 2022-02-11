@@ -96,7 +96,8 @@ public class Main extends Application {
                 openWindow(unit, (byte[] signedContent) -> {
                     Document d = unit.getDocument();
                     Document signedDocument = new Document(d.getId(), d.getTitle(), signedContent, d.getLegalEffect());
-                    SignedData signedData = new SignedData(signedDocument, unit.getMimeType(), unit.isPlainOldXML());
+                    String certificateDN = signingManager.getActiveCertificate().getDistinguishedName();
+                    SignedData signedData = new SignedData(signedDocument, unit.getMimeType(), unit.isPlainOldXML(), certificateDN);
 
                     future.complete(signedData);
                 });
