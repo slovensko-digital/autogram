@@ -2,13 +2,10 @@ package com.octosign.whitelabel.communication;
 
 import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.stream.*;
 
-import static com.octosign.whitelabel.ui.Utils.isNullOrBlank;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 /**
  * MIME type representing type of the value

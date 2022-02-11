@@ -1,28 +1,28 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.SignatureUnit;
+import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.document.*;
 import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.signing.*;
-import com.octosign.whitelabel.ui.about.AboutDialog;
+import com.octosign.whitelabel.signing.token.*;
+import com.octosign.whitelabel.ui.about.*;
 
+import com.octosign.whitelabel.ui.picker.*;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
-import javafx.stage.Stage;
 
-import java.util.List;
-import java.util.function.Consumer;
+import java.util.*;
+import java.util.function.*;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
-import static com.octosign.whitelabel.signing.Token.getAvailableDrivers;
-import static com.octosign.whitelabel.ui.FXUtils.*;
-import static com.octosign.whitelabel.ui.I18n.translate;
-import static com.octosign.whitelabel.ui.Utils.*;
+import static com.octosign.whitelabel.signing.token.Token.*;
+import static com.octosign.whitelabel.ui.I18n.*;
+import static com.octosign.whitelabel.ui.utils.FXUtils.*;
+import static com.octosign.whitelabel.ui.utils.Utils.*;
 
 /**
  * Controller for the signing window
@@ -40,9 +40,6 @@ public class MainController {
 
     @FXML
     private TextArea textArea;
-
-    @FXML
-    private Label signLabel;
 
     /**
      * Bottom-right button used to load/pick certificate and sign
@@ -122,8 +119,8 @@ public class MainController {
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
                 engine.getDocument()
-                    .getElementById("frame")
-                    .setAttribute("srcdoc", visualisation);
+                      .getElementById("frame")
+                      .setAttribute("srcdoc", visualisation);
             }
         });
         engine.load(Main.class.getResource("visualization.html").toExternalForm());
@@ -164,11 +161,11 @@ public class MainController {
         disableAndSet(translate("btn.loading"));
 
         try {
-            var driver = getIfSingle_selectIfMany(getAvailableDrivers());
+            var driver = getDriverOrSelectIfMany(getAvailableDrivers());
             var certificates = Token.fromDriver(driver).getCertificates();
 
-            var signingCertificate = getIfSingle_selectIfMany(certificates);
-            validateAndSetCertificate(signingCertificate);
+            var signingCertificate = getCertificateOrSelectIfMany(certificates);
+            signingManager.setActiveCertificate(signingCertificate);
 
         } catch (UserException e) {
             displayError(e);
@@ -178,25 +175,27 @@ public class MainController {
         enableAndSet(resolveMainButtonText());
     }
 
-    private void validateAndSetCertificate(Certificate certificate) {
-        if (certificate.isValid()) {
-            displayWarning("warn.invalidCertificate.header", "warn.invalidCertificate.description");
-        } else {
-            displayInfo("info.validCertificate.header", "info.validCertificate.description");
-        }
-
-        signingManager.setActiveCertificate(certificate);
-    }
-
-    private <T extends SelectableItem> T getIfSingle_selectIfMany(List<T> items) {
+    private Driver getDriverOrSelectIfMany(List<Driver> items) {
         if (isNullOrEmpty(items))
             throw new RuntimeException("Collection is null or empty!");
 
         if (items.size() == 1) {
             return first(items);
         } else {
-            var currentStage = (Stage) mainButton.getScene().getWindow();
-            var selectDialog = new SelectDialog<>(items, currentStage);
+            var selectDialog = new SelectDialog<>(items, getCurrentStage(mainButton));
+
+            return selectDialog.getResult();
+        }
+    }
+
+    private Certificate getCertificateOrSelectIfMany(List<Certificate> items) {
+        if (isNullOrEmpty(items))
+            throw new RuntimeException("Collection is null or empty!");
+
+        if (items.size() == 1) {
+            return first(items);
+        } else {
+            var selectDialog = new SelectDialog<>(items, getCurrentStage(mainButton));
 
             return selectDialog.getResult();
         }

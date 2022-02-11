@@ -6,15 +6,4 @@ public class SignerException extends RuntimeException {
         super(message, cause);
     }
 
-    public SignerException() {
-        this(null, null);
-    }
-
-    public SignerException(String message) {
-        this(message, null);
-    }
-
-    public SignerException(Throwable cause) {
-        this(null, cause);
-    }
 }

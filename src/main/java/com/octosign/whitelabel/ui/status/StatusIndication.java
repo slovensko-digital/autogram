@@ -1,7 +1,8 @@
-package com.octosign.whitelabel.ui;
+package com.octosign.whitelabel.ui.status;
 
 import java.net.URL;
 
+import com.octosign.whitelabel.ui.Main;
 import dorkbox.os.OSUtil;
 import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.SystemTray;

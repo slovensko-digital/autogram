@@ -1,4 +1,4 @@
-package com.octosign.whitelabel.ui;
+package com.octosign.whitelabel.ui.picker;
 
 public interface SelectableItem {
     String getDisplayedName();

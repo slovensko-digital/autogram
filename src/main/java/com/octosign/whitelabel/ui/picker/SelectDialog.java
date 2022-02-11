@@ -1,5 +1,6 @@
-package com.octosign.whitelabel.ui;
+package com.octosign.whitelabel.ui.picker;
 
+import com.octosign.whitelabel.ui.utils.FXUtils;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;

@@ -1,6 +1,6 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.communication.SignatureParameterMapper;
+import com.octosign.whitelabel.preprocessing.SignatureParameterMapper;
 import com.octosign.whitelabel.communication.SignatureUnit;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.*;
@@ -11,7 +11,7 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static com.octosign.whitelabel.ui.Utils.isPresent;
+import static com.octosign.whitelabel.ui.utils.Utils.isPresent;
 
 public class SigningManager {
 

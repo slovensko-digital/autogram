@@ -1,41 +1,33 @@
 package com.octosign.whitelabel.signing;
 
-import com.octosign.whitelabel.ui.SelectableItem;
+import com.octosign.whitelabel.signing.token.Token;
+import com.octosign.whitelabel.ui.picker.SelectableItem;
 import eu.europa.esig.dss.detailedreport.DetailedReport;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.enumerations.TokenExtractionStrategy;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
-import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
-import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
+import eu.europa.esig.dss.service.http.commons.*;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.simplecertificatereport.SimpleCertificateReport;
-import eu.europa.esig.dss.spi.client.http.DSSFileLoader;
-import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
-import eu.europa.esig.dss.spi.x509.CertificateSource;
-import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
+import eu.europa.esig.dss.spi.client.http.*;
+import eu.europa.esig.dss.spi.x509.*;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.tsl.sync.ExpirationAndSignatureCheckStrategy;
-import eu.europa.esig.dss.tsl.sync.SynchronizationStrategy;
-import eu.europa.esig.dss.validation.CertificateValidator;
-import eu.europa.esig.dss.validation.CertificateVerifier;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.validation.*;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
 
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import javax.naming.ldap.*;
+import java.io.*;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.octosign.whitelabel.ui.ConfigurationProperties.getProperty;
-import static java.util.Objects.requireNonNull;
+import static java.util.Objects.*;
 
 /**
  * Represents a combination of Token and PrivateKey within that token

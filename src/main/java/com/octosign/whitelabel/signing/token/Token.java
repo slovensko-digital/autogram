@@ -1,6 +1,8 @@
-package com.octosign.whitelabel.signing;
+package com.octosign.whitelabel.signing.token;
 
 import com.octosign.whitelabel.error_handling.UserException;
+import com.octosign.whitelabel.signing.Certificate;
+import com.octosign.whitelabel.signing.Driver;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 
@@ -9,7 +11,7 @@ import java.util.*;
 import static com.octosign.whitelabel.signing.KeystoreType.PKCS11;
 import static com.octosign.whitelabel.signing.OperatingSystem.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
-import static com.octosign.whitelabel.ui.Utils.isNullOrEmpty;
+import static com.octosign.whitelabel.ui.utils.Utils.isNullOrEmpty;
 
 public abstract class Token {
     private static List<Driver> DRIVERS;
@@ -29,7 +31,7 @@ public abstract class Token {
         return driver.getKeystoreType().createToken(driver);
     }
 
-    protected SignatureTokenConnection getDssToken() {
+    public SignatureTokenConnection getDssToken() {
         return dssToken;
     }
 

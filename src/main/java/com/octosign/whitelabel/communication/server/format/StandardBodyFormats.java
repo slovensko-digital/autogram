@@ -1,21 +1,16 @@
 package com.octosign.whitelabel.communication.server.format;
 
 import com.google.gson.*;
-import com.octosign.whitelabel.communication.MimeType;
-import com.octosign.whitelabel.communication.SignRequest;
-import com.octosign.whitelabel.communication.SignatureParameters;
+import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.SignatureParameters.*;
-import com.octosign.whitelabel.communication.SignedData;
 import com.octosign.whitelabel.communication.document.Document;
-import com.octosign.whitelabel.error_handling.Code;
-import com.octosign.whitelabel.error_handling.IntegrationException;
-import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
+import com.octosign.whitelabel.error_handling.*;
 
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 
-import static com.octosign.whitelabel.ui.Utils.*;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.octosign.whitelabel.ui.utils.Utils.*;
+import static java.nio.charset.StandardCharsets.*;
 
 public enum StandardBodyFormats implements BodyFormat {
     JSON {
@@ -25,7 +20,7 @@ public enum StandardBodyFormats implements BodyFormat {
 
         static {
             GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(IntegrationException.class, new ExceptionSerializer());
+            gsonBuilder.registerTypeAdapter(ErrorData.class, new ErrorDataSerializer());
             gsonBuilder.registerTypeAdapter(MimeType.class, new MimeTypeDeserializer());
             gsonBuilder.registerTypeAdapter(SignRequest.class, new SignRequestDeserializer());
             gsonBuilder.registerTypeAdapter(SignedData.class, new SignedDataSerializer());
@@ -47,21 +42,15 @@ public enum StandardBodyFormats implements BodyFormat {
             return mimeType;
         }
 
-        static class ExceptionSerializer implements JsonSerializer<IntegrationException> {
+        static class ErrorDataSerializer implements JsonSerializer<ErrorData> {
             @Override
-            public JsonElement serialize(IntegrationException src, Type type, JsonSerializationContext context) {
+            public JsonElement serialize(ErrorData src, Type type, JsonSerializationContext context) {
                 JsonObject jsonObject = new JsonObject();
+                jsonObject.add("code", new JsonPrimitive(src.httpCode()));
 
-                var code = src.getCode();
-                jsonObject.add("code", new JsonPrimitive(code.toString()));
-
-                var message = src.getMessage();
+                var message = src.message();
                 jsonObject.add("message", new JsonPrimitive(message != null ? message : "Unknown error"));
 
-                var cause = src.getCause();
-                if (cause != null) {
-                    jsonObject.add("details", new JsonPrimitive(cause.getMessage()));
-                }
                 return jsonObject;
             }
         }
