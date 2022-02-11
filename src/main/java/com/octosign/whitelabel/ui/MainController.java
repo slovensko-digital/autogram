@@ -12,9 +12,14 @@ import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.image.*;
 import javafx.scene.web.WebView;
 
+import java.awt.*;
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
 
@@ -23,6 +28,7 @@ import static com.octosign.whitelabel.signing.token.Token.*;
 import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.utils.Utils.*;
+
 
 /**
  * Controller for the signing window
@@ -36,10 +42,16 @@ public class MainController {
     public Button certSettingsButton;
 
     @FXML
+    public Button hiddenOpenFileButton;
+
+    @FXML
     private WebView webView;
 
     @FXML
     private TextArea textArea;
+
+    @FXML
+    private ImageView imageView;
 
     /**
      * Bottom-right button used to load/pick certificate and sign
@@ -97,19 +109,71 @@ public class MainController {
             else
                 displayHTMLVisualisation(visualisation);
 
+        } else if (mimeType.is(PDF)) {
+            displayPDFVisualisation(document);
+        } else if (document.isPermitted()) {
+            displayBinaryFileVisualisation(document);
+        } else {
+            displayForbiddenTypeVisualization(document, mimeType);
+        }
+    }
+
+    public File saveToFilesystem(Document document) {
+        Path location = Path.of(System.getProperty("java.io.tmpdir"), "Autogram", "documents").toAbsolutePath();
+        location.toFile().mkdirs();
+
+        int counter = 0;
+        String filename = document.getFilename();
+        File outputFile;
+
+        while ((outputFile = buildFile(location, counter, filename)).exists())
+            counter++;
+
+        FileUtil.touch(outputFile);
+
+        try (OutputStream stream = new FileOutputStream(outputFile)) {
+            stream.write(document.getContent());
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to save file!");
         }
 
-        if (mimeType.is(PDF))
-            displayPDFVisualisation(document);
+        return outputFile;
+    }
 
-        if (!mimeType.is(PDF) && !mimeType.is(XML))
-            displayPlainTextVisualisation(document.getContentString());
+    private File buildFile(Path location, int i, String filename) {
+        int dot = filename.lastIndexOf(".");
+        String basename = filename.substring(0, dot);
+        String extension = filename.substring(dot + 1);
 
+        if (i == 0)
+            filename = String.format("%s.%s", basename, extension);
+        else
+            filename = String.format("%s_%d.%s", basename, i, extension);
+
+        return Paths.get(location.toString(), filename).toFile();
+    }
+
+    private void displayForbiddenTypeVisualization(Document document, MimeType mimeType) {
+        vanish(webView);
+        mainButton.setDisable(true);
+        certSettingsButton.setDisable(true);
+        textArea.setText(translate("text.visualizationNotSupported",mimeType.subType()));
     }
 
     private void displayPlainTextVisualisation(String visualisation) {
         vanish(webView);
         textArea.setText(visualisation);
+    }
+
+    private void displayBinaryFileVisualisation(Document document) {
+        vanish(webView);
+        materialize(hiddenOpenFileButton);
+
+        textArea.setText(translate("text.openBinaryFile"));
+        File documentFile = saveToFilesystem(document);
+
+        hiddenOpenFileButton.setUserData(documentFile.getAbsolutePath());
+        hiddenOpenFileButton.setText(translate("btn.openFile", documentFile.getName()));
     }
 
     private void displayHTMLVisualisation(String visualisation) {
@@ -158,6 +222,7 @@ public class MainController {
     }
 
     private void loadSigners() {
+        vanish(hiddenOpenFileButton);
         disableAndSet(translate("btn.loading"));
 
         try {
@@ -232,6 +297,13 @@ public class MainController {
         }
     }
 
+    private void materialize(Node node) {
+        if (!node.isManaged())
+            node.setManaged(true);
+        if (!node.isVisible())
+            node.setVisible(true);
+    }
+
     private void vanish(Node node) {
         if (node.isManaged())
             node.setManaged(false);
@@ -247,5 +319,21 @@ public class MainController {
     @FXML
     private void onCertSettingsButtonAction() {
         loadSigners();
+    }
+
+    @FXML
+    private void onHiddenOpenFileButtonAction() {
+        textArea.setText("");
+
+        File targetFile = new File((String)hiddenOpenFileButton.getUserData());
+
+        new Thread(() -> {
+            try {
+                Desktop.getDesktop().open(targetFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
     }
 }

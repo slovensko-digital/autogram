@@ -24,7 +24,8 @@ public class SignatureParameterMapper {
         ImmutableMap.of(
             BASELINE_B, ImmutableMap.of(
                             XADES, XAdES_BASELINE_B,
-                            PADES, PAdES_BASELINE_B
+                            PADES, PAdES_BASELINE_B,
+                            CADES, CAdES_BASELINE_B
                         )
         );
 
@@ -120,6 +121,20 @@ public class SignatureParameterMapper {
 
         return parameters;
     }
+
+    /*
+        Parameter mapping for CADES signatures
+    */
+    public static ASiCWithCAdESSignatureParameters mapASiCWithCAdESParameters(SignatureParameters sp) {
+        var parameters = new ASiCWithCAdESSignatureParameters();
+
+        parameters.aSiC().setContainerType(map(sp.getContainer()));
+        parameters.setSignatureLevel(map(sp.getLevel(), CADES));
+        parameters.setSignaturePackaging(map(sp.getPackaging()));
+        parameters.setDigestAlgorithm(map(sp.getDigestAlgorithm()));
+        return parameters;
+    }
+
 
     /*
         Parameter mapping for PADES signatures

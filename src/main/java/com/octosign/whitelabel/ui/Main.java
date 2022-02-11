@@ -12,9 +12,8 @@ import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.signing.SigningManager;
 import com.octosign.whitelabel.ui.status.StatusIndication;
-import com.octosign.whitelabel.ui.utils.FXUtils;
+import com.octosign.whitelabel.ui.utils.*;
 
-import com.octosign.whitelabel.ui.utils.Utils;
 import javafx.application.*;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -25,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.*;
 import static java.util.Objects.*;
+
 
 public class Main extends Application {
 
@@ -84,11 +84,9 @@ public class Main extends Application {
         server.start();
         System.out.println(translate("app.runningOn", server.getAddress()));
 
-        if (server.isDevMode()) {
-            var protocol = server.isHttps() ? "https" : "http";
-            var docsAddress = protocol + ":/" + server.getAddress().toString() + "/documentation";
-            System.out.println(translate("text.docsAvailableAt", docsAddress));
-        }
+        var protocol = server.isHttps() ? "https" : "http";
+        var docsAddress = protocol + ":/" + server.getAddress().toString() + "/documentation";
+        System.out.println(translate("text.docsAvailableAt", docsAddress));
 
         server.setOnSign((SignatureUnit unit) -> {
             var future = new CompletableFuture<SignedData>();
@@ -96,7 +94,7 @@ public class Main extends Application {
             Platform.runLater(() -> {
                 openWindow(unit, (byte[] signedContent) -> {
                     Document d = unit.getDocument();
-                    Document signedDocument = new Document(d.getId(), d.getTitle(), signedContent, d.getLegalEffect());
+                    Document signedDocument = new Document(d.getId(), d.getFilename(), signedContent);
                     SignedData signedData = new SignedData(signedDocument, unit.getMimeType(), unit.isPlainOldXML());
 
                     future.complete(signedData);

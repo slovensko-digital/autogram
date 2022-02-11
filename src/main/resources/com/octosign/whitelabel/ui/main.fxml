@@ -1,31 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.web.WebView?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.*?>
 
-<VBox
-    xmlns="http://javafx.com/javafx/11.0.1"
-    xmlns:fx="http://javafx.com/fxml/1"
-    stylesheets="@shared.css, @main.css, @overrides.css"
-
-    fx:controller="com.octosign.whitelabel.ui.MainController"
->
+<VBox stylesheets="@shared.css, @main.css, @overrides.css" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.octosign.whitelabel.ui.MainController">
     <VBox styleClass="panel, secondary" VBox.vgrow="ALWAYS">
         <WebView fx:id="webView" VBox.vgrow="ALWAYS" />
-        <TextArea fx:id="textArea" editable="false" VBox.vgrow="ALWAYS" styleClass="content" wrapText="true" />
+        <TextArea fx:id="textArea" editable="false" styleClass="content" wrapText="true" VBox.vgrow="ALWAYS" />
+        <ImageView fx:id="imageView" styleClass="content" VBox.vgrow="ALWAYS" />
     </VBox>
 
-    <HBox styleClass="footer" alignment="CENTER" spacing="8">
+    <HBox alignment="CENTER" spacing="8" styleClass="footer">
         <Button fx:id="aboutButton" onAction="#onAboutButtonAction" styleClass="white">
-            <tooltip><Tooltip text="%text.aboutHelp.header" showDelay="300ms" /></tooltip>
+            <tooltip><Tooltip showDelay="300ms" text="%text.aboutHelp.header" /></tooltip>
             <graphic>
                 <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                 <image>
@@ -40,10 +29,10 @@
         <Region HBox.hgrow="ALWAYS" />
 
         <HBox styleClass="buttonGroup">
-            <Button fx:id="mainButton" onAction="#onMainButtonAction" text="%btn.loadSigners" styleClass="leftButton, primary"/>
+            <Button fx:id="mainButton" onAction="#onMainButtonAction" styleClass="leftButton, primary" text="%btn.loadSigners" />
 
             <Button fx:id="certSettingsButton" onAction="#onCertSettingsButtonAction" styleClass="rightButton, primary">
-                <tooltip><Tooltip text="%text.certSettings" showDelay="300ms" /></tooltip>
+                <tooltip><Tooltip showDelay="300ms" text="%text.certSettings" /></tooltip>
                 <graphic>
                     <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                     <image>
@@ -52,6 +41,7 @@
                     </ImageView>
                 </graphic>
             </Button>
+         <Button fx:id="hiddenOpenFileButton" managed="false" mnemonicParsing="false" onAction="#onHiddenOpenFileButtonAction" text="Button" visible="false" />
         </HBox>
     </HBox>
 </VBox>
