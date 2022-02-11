@@ -21,7 +21,6 @@ import static com.octosign.whitelabel.ui.utils.Utils.isNullOrBlank;
  * XML document for signing
  */
 public class XMLDocument extends Document {
-
     public XMLDocument(Document document) {
         super(document);
     }
