@@ -12,8 +12,8 @@ import com.octosign.whitelabel.communication.dto.*;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.signing.SigningManager;
-import com.octosign.whitelabel.ui.status.StatusIndication;
-import com.octosign.whitelabel.ui.utils.FXUtils;
+import com.octosign.whitelabel.ui.status.*;
+import com.octosign.whitelabel.ui.utils.*;
 
 import com.octosign.whitelabel.ui.utils.Utils;
 import javafx.application.*;
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.*;
-import static java.util.Objects.requireNonNullElse;
+import static java.util.Objects.*;
 
 public class Main extends Application {
 
