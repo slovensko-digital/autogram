@@ -1,6 +1,6 @@
 package com.octosign.whitelabel.communication;
 
-import static com.octosign.whitelabel.communication.SignatureParameters.CanonicalizationMethod.INCLUSIVE;
+import static com.octosign.whitelabel.communication.SignatureParameters.CanonicalizationMethod.*;
 
 /**
  * Immutable parameters for signature creation
