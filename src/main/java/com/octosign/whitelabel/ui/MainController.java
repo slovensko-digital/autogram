@@ -19,8 +19,7 @@ import javafx.scene.web.WebView;
 
 import java.awt.*;
 import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+import java.util.List;
 import java.util.function.*;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
@@ -114,50 +113,15 @@ public class MainController {
         } else if (document.isPermitted()) {
             displayBinaryFileVisualisation(document);
         } else {
-            displayForbiddenTypeVisualization(document, mimeType);
+            displayForbiddenTypeVisualization(document);
         }
     }
 
-    public File saveToFilesystem(Document document) {
-        Path location = Path.of(System.getProperty("java.io.tmpdir"), "Autogram", "documents").toAbsolutePath();
-        location.toFile().mkdirs();
-
-        int counter = 0;
-        String filename = document.getFilename();
-        File outputFile;
-
-        while ((outputFile = buildFile(location, counter, filename)).exists())
-            counter++;
-
-        FileUtil.touch(outputFile);
-
-        try (OutputStream stream = new FileOutputStream(outputFile)) {
-            stream.write(document.getContent());
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to save file!");
-        }
-
-        return outputFile;
-    }
-
-    private File buildFile(Path location, int i, String filename) {
-        int dot = filename.lastIndexOf(".");
-        String basename = filename.substring(0, dot);
-        String extension = filename.substring(dot + 1);
-
-        if (i == 0)
-            filename = String.format("%s.%s", basename, extension);
-        else
-            filename = String.format("%s_%d.%s", basename, i, extension);
-
-        return Paths.get(location.toString(), filename).toFile();
-    }
-
-    private void displayForbiddenTypeVisualization(Document document, MimeType mimeType) {
+    private void displayForbiddenTypeVisualization(Document document) {
         vanish(webView);
         mainButton.setDisable(true);
         certSettingsButton.setDisable(true);
-        textArea.setText(translate("text.visualizationNotSupported",mimeType.subType()));
+        textArea.setText(translate("text.visualizationNotSupported", document.getFilename()));
     }
 
     private void displayPlainTextVisualisation(String visualisation) {
@@ -170,10 +134,7 @@ public class MainController {
         materialize(hiddenOpenFileButton);
 
         textArea.setText(translate("text.openBinaryFile"));
-        File documentFile = saveToFilesystem(document);
-
-        hiddenOpenFileButton.setUserData(documentFile.getAbsolutePath());
-        hiddenOpenFileButton.setText(translate("btn.openFile", documentFile.getName()));
+        hiddenOpenFileButton.setText(translate("btn.openFile", document.getFilename()));
     }
 
     private void displayHTMLVisualisation(String visualisation) {
@@ -323,9 +284,7 @@ public class MainController {
 
     @FXML
     private void onHiddenOpenFileButtonAction() {
-        textArea.setText("");
-
-        File targetFile = new File((String)hiddenOpenFileButton.getUserData());
+        File targetFile = signatureUnit.getDocument().asDownloadedFile();
 
         new Thread(() -> {
             try {
@@ -334,6 +293,5 @@ public class MainController {
                 e.printStackTrace();
             }
         }).start();
-
     }
 }
