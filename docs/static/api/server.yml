@@ -12,17 +12,17 @@ info:
     url: https://github.com/octosign/white-label/blob/main/LICENSE
   version: 0.1.0
 servers:
-- url: http://localhost:37200
+  - url: http://localhost:37200
 tags:
-- name: Info
-  description: Information and status of the server
-- name: Sign
-  description: Document signing
+  - name: Info
+    description: Information and status of the server
+  - name: Sign
+    description: Document signing
 paths:
   /info:
     get:
       tags:
-      - Info
+        - Info
       summary: Retrieve info and the current server status
       operationId: getInfo
       responses:
@@ -116,7 +116,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Document'
+                $ref: '#/components/schemas/SignResponseBody'
         403:
           description: 'Request came from an unexpected origin.'
           content:
@@ -125,6 +125,12 @@ paths:
                 $ref: '#/components/schemas/ErrorBody'
         405:
           description: 'Incorrect HTTP method.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        415:
+          description: 'Unsupported request body MIME type.'
           content:
             application/json:
               schema:
@@ -159,8 +165,8 @@ components:
         status:
           type: string
           enum:
-          - LOADING
-          - READY
+            - LOADING
+            - READY
 
     SignRequestBody:
       type: object
@@ -190,9 +196,9 @@ components:
             3. Serialize the request body again, but this time with the calculated additional `hmac` property.
             4. Increase the nonce if the request succeeded.
       required:
-      - document
-      - parameters
-      - payloadMimeType
+        - document
+        - parameters
+        - payloadMimeType
 
     Document:
       type: object
@@ -214,7 +220,23 @@ components:
           example: 'By signing this document...'
           description: 'Optional legal effect of signing the document shown to the user when signing.'
       required:
-      - content
+        - content
+
+
+    SignResponseBody:
+      type: object
+      properties:
+        content:
+          type: string
+          example: 'TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvQDSdd57FueSBoYW5kcyBtYWtlIGxpZ2h0IHdvsRWdaAeSBoYW5kcyBtYW=='
+          description: 'Signed content of the original document - either in plaintext or in Base64 format.'
+        signedBy:
+          type: string
+          example: 'CN=John Smith, OU=Test, O=IBM, C=GB, ...'
+          description: 'Distinguished name of the certificate used/attempting to sign the document.'
+      required:
+        - content
+        - signedBy
 
     SignatureParameters:
       type: object
@@ -222,8 +244,8 @@ components:
         format:
           type: string
           enum:
-          - PADES
-          - XADES
+            - PADES
+            - XADES
           example: XADES
           description: 'Signature format PAdES is usable only with documents of type `application/pdf`. Format XAdES is usable with XML or with any file type if using an ASiC container.'
 
@@ -242,8 +264,8 @@ components:
         container:
           type: string
           enum:
-          - ASICS
-          - ASICE
+            - ASICS
+            - ASICE
           example: ASICE
           description: Optional container type that should be used to place the file with signature to.
 
@@ -265,17 +287,17 @@ components:
         packaging:
           type: string
           enum:
-          - ENVELOPED
-          - ENVELOPING
+            - ENVELOPED
+            - ENVELOPING
           example: ENVELOPED
           description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Defaults to ENVELOPED.
 
         digestAlgorithm:
           type: string
           enum:
-          - SHA256
-          - SHA384
-          - SHA512
+            - SHA256
+            - SHA384
+            - SHA512
           example: SHA256
           description: Optional algorithm used to calculate digests. Defaults to SHA256.
 
@@ -287,24 +309,24 @@ components:
         infoCanonicalization:
           type: string
           enum:
-          - INCLUSIVE
-          - EXCLUSIVE
+            - INCLUSIVE
+            - EXCLUSIVE
           example: INCLUSIVE
           description: Optional info canonicalization method.
 
         propertiesCanonicalization:
           type: string
           enum:
-          - INCLUSIVE
-          - EXCLUSIVE
+            - INCLUSIVE
+            - EXCLUSIVE
           example: INCLUSIVE
           description: Optional properties canonicalization method.
 
         keyInfoCanonicalization:
           type: string
           enum:
-          - INCLUSIVE
-          - EXCLUSIVE
+            - INCLUSIVE
+            - EXCLUSIVE
           example: INCLUSIVE
           description: Optional key info canonicalization method.
 
@@ -334,7 +356,7 @@ components:
           description: Optional transformation output MIME type. Required to display the result correctly.
 
       required:
-      - format
+        - format
 
     ErrorBody:
       type: object
@@ -342,13 +364,13 @@ components:
         code:
           type: string
           enum:
-          - NOT_READY
-          - UNSUPPORTED_OPERATION
-          - MALFORMED_INPUT
-          - UNSUPPORTED_FORMAT
-          - SIGNING_FAILED
-          - UNEXPECTED_ORIGIN
-          - UNEXPECTED_ERROR
+            - NOT_READY
+            - UNSUPPORTED_OPERATION
+            - MALFORMED_INPUT
+            - UNSUPPORTED_FORMAT
+            - SIGNING_FAILED
+            - UNEXPECTED_ORIGIN
+            - UNEXPECTED_ERROR
           example: MALFORMED_INPUT
           description: Code that can be used to identify the error.
         message:

@@ -1,17 +1,18 @@
 package com.octosign.whitelabel.ui;
 
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.server.*;
 import com.octosign.whitelabel.error_handling.*;
 import com.octosign.whitelabel.cli.command.*;
+import com.octosign.whitelabel.communication.dto.*;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.communication.server.Server;
 import com.octosign.whitelabel.signing.SigningManager;
-import com.octosign.whitelabel.ui.status.StatusIndication;
+import com.octosign.whitelabel.ui.status.*;
 import com.octosign.whitelabel.ui.utils.*;
 
 import javafx.application.*;
@@ -95,7 +96,8 @@ public class Main extends Application {
                 openWindow(unit, (byte[] signedContent) -> {
                     Document d = unit.getDocument();
                     Document signedDocument = new Document(d.getId(), d.getFilename(), signedContent);
-                    SignedData signedData = new SignedData(signedDocument, unit.getMimeType(), unit.isPlainOldXML());
+                    String certificateDN = signingManager.getActiveCertificate().getDistinguishedName();
+                    SignedData signedData = new SignedData(signedDocument, unit.getMimeType(), unit.isPlainOldXML(), certificateDN);
 
                     future.complete(signedData);
                 });
@@ -113,8 +115,8 @@ public class Main extends Application {
     }
 
     private void openWindow(SignatureUnit signatureUnit, Consumer<byte[]> onSigned) {
-        var windowStage = new Stage();
-        windowStage.setOnCloseRequest(e -> {
+        var stage = new Stage();
+        stage.setOnCloseRequest(e -> {
             throw new UnexpectedActionException(Code.CANCELLED_BY_USER, "User canceled");
         });
 
@@ -126,15 +128,19 @@ public class Main extends Application {
         controller.setSignatureUnit(signatureUnit);
         controller.setOnSigned((byte[] signedContent) -> {
             onSigned.accept(signedContent);
-            windowStage.close();
+            stage.close();
         });
         controller.loadDocument();
 
         var scene = new Scene(root, 720, 540);
-        windowStage.setTitle(translate("app.name"));
-        windowStage.setScene(scene);
-        windowStage.show();
-        windowStage.toFront();
+        stage.setTitle(translate("app.name"));
+        stage.setScene(scene);
+
+        stage.setAlwaysOnTop(true);
+        stage.show();
+        stage.toFront();
+        stage.requestFocus();
+        delayedTask(() -> stage.setAlwaysOnTop(false), 42);
     }
 
     public static FXMLLoader loadWindow(String name) {
@@ -175,7 +181,7 @@ public class Main extends Application {
             } else if (throwable instanceof UnexpectedActionException uae) {
                 LOGGER.error("UnexpectedActionException: ", uae);
                 respondWith(uae.getCode().toHttpCode(), uae.getMessage());
-                System.exit(1);
+                closeAllWindows();
 
             } else {
                 LOGGER.error("[NOT EXPECTED] Error: " + throwable.getClass().getName(), throwable);
@@ -186,9 +192,9 @@ public class Main extends Application {
         }
 
         private void respondWith(int httpCode, String message) {
-            new Response<String>(Utils.getExchange())
+            new Response<ErrorData>(Utils.getExchange())
                     .setStatusCode(httpCode)
-                    .setBody(message)
+                    .setBody(new ErrorData(httpCode, message))
                     .send();
         }
 
