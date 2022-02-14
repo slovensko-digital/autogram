@@ -52,10 +52,9 @@ public class Certificate implements SelectableItem {
      */
     public static String getCertificateDescription(Certificate certificate, DescriptionVerbosity verbosity) {
         var privateKey = certificate.getDssPrivateKey();
-        String dn = privateKey.getCertificate().getSubject().getRFC2253();
         String label = "";
         try {
-            LdapName ldapDN = new LdapName(dn);
+            LdapName ldapDN = new LdapName(certificate.getDistinguishedName());
             String dnName = "";
             String dnCountry = "";
             String dnCity = "";
@@ -97,6 +96,10 @@ public class Certificate implements SelectableItem {
      */
     public String getCertificateDescription(DescriptionVerbosity verbosity) {
         return getCertificateDescription(this, verbosity);
+    }
+
+    public String getDistinguishedName() {
+        return dssPrivateKey.getCertificate().getSubject().getRFC2253();
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.octosign.whitelabel.communication.server.format;
 import com.google.gson.*;
 import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.SignatureParameters.*;
+import com.octosign.whitelabel.communication.dto.*;
 import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.error_handling.*;
 
@@ -47,7 +48,6 @@ public enum StandardBodyFormats implements BodyFormat {
             public JsonElement serialize(ErrorData src, Type type, JsonSerializationContext context) {
                 JsonObject jsonObject = new JsonObject();
                 jsonObject.add("code", new JsonPrimitive(src.httpCode()));
-
                 var message = src.message();
                 jsonObject.add("message", new JsonPrimitive(message != null ? message : "Unknown error"));
 
@@ -70,9 +70,11 @@ public enum StandardBodyFormats implements BodyFormat {
                 jsonDocument.add("content", new JsonPrimitive(content));
 
                 var id = document.getId();
-
                 if (isPresent(id))
                     jsonDocument.add("id", new JsonPrimitive(id));
+
+                var certificateDN = data.certificateDN();
+                jsonDocument.add("signedBy", new JsonPrimitive(certificateDN));
 
                 return jsonDocument;
             }

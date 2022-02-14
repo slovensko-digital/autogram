@@ -91,7 +91,7 @@ public class MainController {
     }
 
     public void loadDocument() {
-        mainButton.setText(resolveMainButtonText());
+        mainButton.setText(getProperMainButtonText());
 
         var document = signatureUnit.getDocument();
         var params = signatureUnit.getSignatureParameters();
@@ -184,37 +184,24 @@ public class MainController {
 
     private void loadSigners() {
         vanish(hiddenOpenFileButton);
-        disableAndSet(translate("btn.loading"));
+        disableMainButton(translate("btn.loading"));
 
         try {
-            var driver = getDriverOrSelectIfMany(getAvailableDrivers());
+            var driver = displaySelectDialogIfMany(getAvailableDrivers());
+
             var certificates = Token.fromDriver(driver).getCertificates();
+            var signingCertificate = displaySelectDialogIfMany(certificates);
 
-            var signingCertificate = getCertificateOrSelectIfMany(certificates);
             signingManager.setActiveCertificate(signingCertificate);
-
         } catch (UserException e) {
             displayError(e);
         } finally {
-            enableAndSet(resolveMainButtonText());
+            enableMainButton(getProperMainButtonText());
         }
-        enableAndSet(resolveMainButtonText());
+        enableMainButton(getProperMainButtonText());
     }
 
-    private Driver getDriverOrSelectIfMany(List<Driver> items) {
-        if (isNullOrEmpty(items))
-            throw new RuntimeException("Collection is null or empty!");
-
-        if (items.size() == 1) {
-            return first(items);
-        } else {
-            var selectDialog = new SelectDialog<>(items, getCurrentStage(mainButton));
-
-            return selectDialog.getResult();
-        }
-    }
-
-    private Certificate getCertificateOrSelectIfMany(List<Certificate> items) {
+    private <T extends SelectableItem> T displaySelectDialogIfMany(List<T> items) {
         if (isNullOrEmpty(items))
             throw new RuntimeException("Collection is null or empty!");
 
@@ -228,7 +215,7 @@ public class MainController {
     }
 
     private void signDocument() {
-        disableAndSet(translate("btn.signing"));
+        disableMainButton(translate("btn.signing"));
 
         try {
             var signedContent = signingManager.sign(signatureUnit);
@@ -237,20 +224,20 @@ public class MainController {
             displayError(e);
         }
 
-        enableAndSet(resolveMainButtonText());
+        enableMainButton(getProperMainButtonText());
     }
 
-    private void disableAndSet(String text) {
+    private void disableMainButton(String text) {
         mainButton.setText(text);
         mainButton.setDisable(true);
     }
 
-    private void enableAndSet(String text) {
+    private void enableMainButton(String text) {
         mainButton.setText(text);
         mainButton.setDisable(false);
     }
 
-    public String resolveMainButtonText() {
+    public String getProperMainButtonText() {
         if (isSignerReady()) {
             return translate("btn.signAs", signingManager.getActiveCertificate().getDisplayedName());
         } else {
