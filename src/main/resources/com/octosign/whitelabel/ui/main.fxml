@@ -29,6 +29,8 @@
         <Region HBox.hgrow="ALWAYS" />
 
         <HBox styleClass="buttonGroup">
+            <Button fx:id="hiddenOpenFileButton" managed="false" mnemonicParsing="false" onAction="#onHiddenOpenFileButtonAction" text="Button" visible="false" />
+
             <Button fx:id="mainButton" onAction="#onMainButtonAction" styleClass="leftButton, primary" text="%btn.loadSigners" />
 
             <Button fx:id="certSettingsButton" onAction="#onCertSettingsButtonAction" styleClass="rightButton, primary">
@@ -41,7 +43,6 @@
                     </ImageView>
                 </graphic>
             </Button>
-         <Button fx:id="hiddenOpenFileButton" managed="false" mnemonicParsing="false" onAction="#onHiddenOpenFileButtonAction" text="Button" visible="false" />
         </HBox>
     </HBox>
 </VBox>
