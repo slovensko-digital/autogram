@@ -529,6 +529,17 @@ components:
           packaging: ENVELOPING
         payloadMimeType: "image/png; base64"
 
+    CAdES-NOT_SUPPORTED_FORMAT:
+      value:
+        document:
+          filename: "direc - .desktop"
+          content: "W0Rlc2t0b3AgRW50cnldClR5cGU9QXBwbGljYXRpb24KTmFtZT1ELkxhdW5jaGVyCk5hbWVbc2tdPUQuTGF1bmNoZXIKI0NvbW1lbnQ9Ckljb249ZGl0ZWMtZGxhdW5jaGVyCkV4ZWM9L2hvbWUvbWljaGFsLy5kaXRlYy9kbGF1bmNoZXItYmluL2RMYXVuY2hlciAlVQpNaW1lVHlwZT14LXNjaGVtZS1oYW5kbGVyL2RpdGVjLWRsYXVuY2hlcgpDYXRlZ29yaWVzPU5ldHdvcms7U2VjdXJpdHkK",
+         parameters:
+           format: CADES
+           container: ASICE
+           packaging: ENVLOPING
+
+
     XmlContentAsPlaintext:
       value: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</GeneralAgenda>"
 
