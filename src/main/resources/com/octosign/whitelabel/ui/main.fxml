@@ -29,7 +29,7 @@
         <Region HBox.hgrow="ALWAYS" />
 
         <HBox styleClass="buttonGroup">
-            <Button fx:id="hiddenOpenFileButton" managed="false" mnemonicParsing="false" onAction="#onHiddenOpenFileButtonAction" text="Button" visible="false" />
+            <Button fx:id="showNativeVisualizationButton" managed="false" mnemonicParsing="false" onAction="#onShowNativeVisualizationButtonAction" text="%btn.loading" visible="false" />
 
             <Button fx:id="mainButton" onAction="#onMainButtonAction" styleClass="leftButton, primary" text="%btn.loadSigners" />
 

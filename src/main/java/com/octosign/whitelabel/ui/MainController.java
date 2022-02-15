@@ -14,7 +14,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
-import javafx.scene.image.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.web.WebView;
 
 import java.awt.*;
@@ -41,7 +41,7 @@ public class MainController {
     public Button certSettingsButton;
 
     @FXML
-    public Button hiddenOpenFileButton;
+    public Button showNativeVisualizationButton;
 
     @FXML
     private WebView webView;
@@ -110,7 +110,7 @@ public class MainController {
 
         } else if (mimeType.is(PDF)) {
             displayPDFVisualisation(document);
-        } else if (document.isPermitted()) {
+        } else if (document.isOfAllowedType()) {
             displayBinaryFileVisualisation(document);
         } else {
             displayForbiddenTypeVisualization(document);
@@ -118,27 +118,27 @@ public class MainController {
     }
 
     private void displayForbiddenTypeVisualization(Document document) {
-        vanish(webView);
+        hide(webView);
         mainButton.setDisable(true);
         certSettingsButton.setDisable(true);
         textArea.setText(translate("text.visualizationNotSupported", document.getFilename()));
     }
 
     private void displayPlainTextVisualisation(String visualisation) {
-        vanish(webView);
+        hide(webView);
         textArea.setText(visualisation);
     }
 
     private void displayBinaryFileVisualisation(Document document) {
-        vanish(webView);
-        materialize(hiddenOpenFileButton);
+        hide(webView);
+        show(showNativeVisualizationButton);
 
         textArea.setText(translate("text.openBinaryFile"));
-        hiddenOpenFileButton.setText(translate("btn.openFile", document.getFilename()));
+        showNativeVisualizationButton.setText(translate("btn.openFile", document.getFilename()));
     }
 
     private void displayHTMLVisualisation(String visualisation) {
-        vanish(textArea);
+        hide(textArea);
 
         var engine = webView.getEngine();
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
@@ -152,7 +152,7 @@ public class MainController {
     }
 
     private void displayPDFVisualisation(Document document) {
-        vanish(textArea);
+        hide(textArea);
 
         Platform.runLater(() -> {
             var engine = webView.getEngine();
@@ -183,7 +183,7 @@ public class MainController {
     }
 
     private void loadSigners() {
-        vanish(hiddenOpenFileButton);
+        hide(showNativeVisualizationButton);
         disableMainButton(translate("btn.loading"));
 
         try {
@@ -245,14 +245,14 @@ public class MainController {
         }
     }
 
-    private void materialize(Node node) {
+    private void show(Node node) {
         if (!node.isManaged())
             node.setManaged(true);
         if (!node.isVisible())
             node.setVisible(true);
     }
 
-    private void vanish(Node node) {
+    private void hide(Node node) {
         if (node.isManaged())
             node.setManaged(false);
         if (node.isVisible())
@@ -270,7 +270,7 @@ public class MainController {
     }
 
     @FXML
-    private void onHiddenOpenFileButtonAction() {
+    private void onShowNativeVisualizationButtonAction() {
         File targetFile = signatureUnit.getDocument().asDownloadedFile();
 
         new Thread(() -> {

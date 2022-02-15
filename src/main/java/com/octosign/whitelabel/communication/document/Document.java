@@ -57,7 +57,7 @@ public class Document {
         return new String(content, StandardCharsets.UTF_8);
     }
 
-    public boolean isPermitted() { return ALLOWED_TYPES.contains(getFileExtension(filename)); }
+    public boolean isOfAllowedType() { return ALLOWED_TYPES.contains(getFileExtension(filename)); }
 
     /**
      * Creates and prepares payload type specific document
@@ -73,7 +73,7 @@ public class Document {
             return new XMLDocument(document);
         } else if (mimeType.is(PDF)) {
             return new PDFDocument(document);
-        } else if (document.isPermitted()) {
+        } else if (document.isOfAllowedType()) {
             return new BinaryDocument(document);
         } else {
             return new ForbiddenTypeDocument(document);
