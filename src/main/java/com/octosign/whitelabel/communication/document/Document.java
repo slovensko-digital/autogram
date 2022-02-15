@@ -12,12 +12,13 @@ import java.util.Set;
 
 import static com.google.common.io.Files.*;
 import static com.octosign.whitelabel.communication.MimeType.*;
+import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
 
 /**
  * Generic document exchanged during communication
  */
 public class Document {
-    public static final Path DEFAULT_DOWNLOAD_DIR = Path.of(System.getProperty("java.io.tmpdir"), "Autogram", "documents").toAbsolutePath();
+    public static final Path DEFAULT_DOWNLOAD_DIR = Path.of(System.getProperty("java.io.tmpdir"), getProperty("app.shortName"), "documents").toAbsolutePath();
 
     public static final Set<String> ALLOWED_TYPES = new HashSet<>(
             List.of("pdf", "doc", "docx", "odt", "txt", "xml", "rtf", "png", "gif", "tif", "tiff", "bmp", "jpg", "jpeg", "xml", "pdf", "xsd", "xls")
