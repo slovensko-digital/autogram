@@ -1,5 +1,6 @@
 package com.octosign.whitelabel.ui;
 
+import com.google.common.io.Files;
 import com.octosign.whitelabel.communication.*;
 import com.octosign.whitelabel.communication.document.*;
 import com.octosign.whitelabel.error_handling.*;
@@ -14,16 +15,19 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
-import javafx.scene.image.ImageView;
 import javafx.scene.web.WebView;
 
 import java.awt.*;
 import java.io.*;
+import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.*;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
 import static com.octosign.whitelabel.signing.token.Token.*;
+import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
 import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.utils.Utils.*;
@@ -48,9 +52,6 @@ public class MainController {
 
     @FXML
     private TextArea textArea;
-
-    @FXML
-    private ImageView imageView;
 
     /**
      * Bottom-right button used to load/pick certificate and sign
@@ -91,33 +92,53 @@ public class MainController {
     }
 
     public void loadDocument() {
-        mainButton.setText(getProperMainButtonText());
-
         var document = signatureUnit.getDocument();
         var params = signatureUnit.getSignatureParameters();
         var mimeType = signatureUnit.getMimeType();
 
-        if (mimeType.is(XML)) {
-            XMLDocument xmlDocument = (XMLDocument) document;
-            xmlDocument.validate(params.getSchema());
-            var visualisation = xmlDocument.getTransformed(params.getTransformation());
+        if (mimeType.is(XML))
+            ((XMLDocument) document).validate(params.getSchema());
 
-            MimeType transformationOutput = params.getTransformationOutputMimeType();
-            if (transformationOutput.is(PLAIN))
-                displayPlainTextVisualisation(visualisation);
-            else
-                displayHTMLVisualisation(visualisation);
-
-        } else if (mimeType.is(PDF)) {
-            displayPDFVisualisation(document);
-        } else if (document.isOfAllowedType()) {
-            displayBinaryFileVisualisation(document);
+        if (isVisualizationSupported(document)) {
+            displayVisualization(document, params, mimeType);
         } else {
-            displayForbiddenTypeVisualization(document);
+            displayNotSupportedType(document);
         }
     }
 
-    private void displayForbiddenTypeVisualization(Document document) {
+    private boolean isVisualizationSupported(Document document) {
+        var extension = Files.getFileExtension(document.getFilename());
+
+        return ALLOWED_TYPES.contains(extension);
+    }
+
+    private void displayVisualization(Document document, SignatureParameters params, MimeType mimeType) {
+        if (mimeType.is(XML)) {
+            displayXMLVisualization((XMLDocument)document, params);
+
+        } else if (mimeType.is(PDF)) {
+            displayPDFVisualisation(document);
+
+        } else {
+            displayBinaryFileVisualisation(document);
+        }
+    }
+
+    private void displayXMLVisualization(XMLDocument document, SignatureParameters params) {
+        String transformation = params.getTransformation();
+        MimeType transformationOutputMimeType = params.getTransformationOutputMimeType();
+
+        String transformationOutput = document.getTransformed(transformation);
+
+        if (transformationOutputMimeType.is(PLAIN))
+            displayPlainTextVisualisation(transformationOutput);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+        else
+            displayHTMLVisualisation(transformationOutput);
+
+    }
+
+
+    private void displayNotSupportedType(Document document) {
         hide(webView);
         mainButton.setDisable(true);
         certSettingsButton.setDisable(true);
@@ -271,7 +292,7 @@ public class MainController {
 
     @FXML
     private void onShowNativeVisualizationButtonAction() {
-        File targetFile = signatureUnit.getDocument().asDownloadedFile();
+        File targetFile = downloadIfNeeded(signatureUnit.getDocument());
 
         new Thread(() -> {
             try {
@@ -280,5 +301,34 @@ public class MainController {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    public static final Set<String> ALLOWED_TYPES = new HashSet<>(List.of("pdf", "doc", "docx", "odt", "txt", "xml", "rtf", "png", "gif", "tif", "tiff", "bmp", "jpg", "jpeg", "xml", "pdf", "xsd", "xls"));
+
+    private Path downloadDirectory = Path.of(System.getProperty("java.io.tmpdir"), getProperty("app.shortName"), "documents").toAbsolutePath();
+    private File cachedFile;
+
+    public File downloadIfNeeded(Document document) {
+        File toBeDownloaded = downloadDirectory.resolve(document.getFilename()).toFile();
+
+        if (fileExists(cachedFile) && areEqual(toBeDownloaded, cachedFile)) {
+            // no download
+        } else {
+            cachedFile = downloadFile(toBeDownloaded, document);
+        }
+
+        return cachedFile;
+    }
+
+    public File downloadFile(File targetFile, Document document) {
+        targetFile.getParentFile().mkdirs();
+
+        try (var stream = new FileOutputStream(targetFile)) {
+            stream.write(document.getContent());
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to save file!");
+        }
+
+        return targetFile;
     }
 }
