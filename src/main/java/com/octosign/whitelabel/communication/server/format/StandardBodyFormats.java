@@ -69,10 +69,6 @@ public enum StandardBodyFormats implements BodyFormat {
                 var content = new String(binaryContent, StandardCharsets.UTF_8);
                 jsonDocument.add("content", new JsonPrimitive(content));
 
-                var id = document.getId();
-                if (isPresent(id))
-                    jsonDocument.add("id", new JsonPrimitive(id));
-
                 var certificateDN = data.certificateDN();
                 jsonDocument.add("signedBy", new JsonPrimitive(certificateDN));
 

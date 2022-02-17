@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 /**
@@ -47,7 +48,7 @@ public class StatusIndication {
         VBox root = fxmlLoader.getRoot();
 
         var scene = new Scene(root, 320, 160);
-        windowStage.setTitle(translate("app.name"));
+        windowStage.setTitle(getProperty("app.name"));
         windowStage.setScene(scene);
         windowStage.setIconified(true);
         windowStage.setOnHidden((event) -> this.onExit.run());
@@ -61,7 +62,7 @@ public class StatusIndication {
         systemTray = SystemTray.get();
         if (systemTray != null) {
             systemTray.setImage(iconUrl);
-            systemTray.setStatus(translate("app.name"));
+            systemTray.setStatus(getProperty("app.name"));
             systemTray.getMenu().add(
                 new MenuItem(translate("text.quit"),
                 e-> Platform.runLater(onExit))

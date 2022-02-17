@@ -1,7 +1,12 @@
 package com.octosign.whitelabel.ui.utils;
 
+import com.google.common.io.Files;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Base64;
@@ -71,6 +76,25 @@ public class Utils {
         byte[] decoded = Base64.getUrlEncoder().encode(value);
 
         return new String(decoded, StandardCharsets.UTF_8);
+    }
+
+    public static boolean areEqual(File file1, File file2) {
+        try (InputStream is1 = new FileInputStream(file1);
+             InputStream is2 = new FileInputStream(file2)) {
+
+            if (Files.equal(file1, file2)) {
+                return Arrays.equals(is1.readAllBytes(), is2.readAllBytes());
+            }
+        } catch (IOException e) {
+            System.out.println("Unable to open and/or compare these two files.");
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static boolean fileExists(File file) {
+        return file != null && file.exists();
     }
 
     private static HttpExchange currentExchange;

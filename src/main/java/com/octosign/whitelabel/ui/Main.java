@@ -22,6 +22,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.*;
 import org.slf4j.LoggerFactory;
 
+import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.*;
 import static java.util.Objects.*;
@@ -133,7 +134,7 @@ public class Main extends Application {
         controller.loadDocument();
 
         var scene = new Scene(root, 720, 540);
-        stage.setTitle(translate("app.name"));
+        stage.setTitle(getProperty("app.name"));
         stage.setScene(scene);
 
         stage.setAlwaysOnTop(true);
