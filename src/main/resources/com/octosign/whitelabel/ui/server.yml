@@ -213,7 +213,6 @@ components:
         - filename
         - content
 
-
     SignResponseBody:
       type: object
       properties:
