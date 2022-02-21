@@ -292,7 +292,7 @@ public class MainController {
 
     @FXML
     private void onShowNativeVisualizationButtonAction() {
-        File targetFile = downloadIfNeeded(signatureUnit.getDocument());
+        File targetFile = getFromCache(signatureUnit.getDocument());
 
         new Thread(() -> {
             try {
@@ -305,22 +305,30 @@ public class MainController {
 
     public static final Set<String> ALLOWED_TYPES = new HashSet<>(List.of("pdf", "doc", "docx", "odt", "txt", "xml", "rtf", "png", "gif", "tif", "tiff", "bmp", "jpg", "jpeg", "xml", "pdf", "xsd", "xls"));
 
-    private Path downloadDirectory = Path.of(System.getProperty("java.io.tmpdir"), getProperty("app.shortName"), "documents").toAbsolutePath();
+    private Path DOCUMENT_CACHE_DIR = Path.of(System.getProperty("java.io.tmpdir"), getProperty("app.shortName"), "documents").toAbsolutePath();
     private File cachedFile;
 
-    public File downloadIfNeeded(Document document) {
-        File toBeDownloaded = downloadDirectory.resolve(document.getFilename()).toFile();
+    public File getFromCache(Document document) {
+        File toBeDownloaded = DOCUMENT_CACHE_DIR.resolve(buildFilename(document)).toFile();
 
-        if (fileExists(cachedFile) && areEqual(toBeDownloaded, cachedFile)) {
+        if (fileExistsOnDisk(cachedFile) && areEqual(toBeDownloaded, cachedFile)) {
             // no download
         } else {
-            cachedFile = downloadFile(toBeDownloaded, document);
+            cachedFile = saveDocumentToFile(toBeDownloaded, document);
         }
 
         return cachedFile;
     }
 
-    public File downloadFile(File targetFile, Document document) {
+    private String buildFilename(Document document) {
+        String original = document.getFilename();
+        var basename = Files.getNameWithoutExtension(original);
+        var extension = Files.getFileExtension(original);
+
+        return basename + "-" + document.getUuid() + "." + extension;
+    }
+
+    public File saveDocumentToFile(File targetFile, Document document) {
         targetFile.getParentFile().mkdirs();
 
         try (var stream = new FileOutputStream(targetFile)) {
