@@ -107,9 +107,9 @@ public class MainController {
     }
 
     private boolean isVisualizationSupported(Document document) {
-        var extension = Files.getFileExtension(document.getFilename());
+        String extension = Files.getFileExtension(document.getFilename());
 
-        return ALLOWED_TYPES.contains(extension);
+        return isPresent(extension) && ALLOWED_TYPES.contains(extension);
     }
 
     private void displayVisualization(Document document, SignatureParameters params, MimeType mimeType) {
