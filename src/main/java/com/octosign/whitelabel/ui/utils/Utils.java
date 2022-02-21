@@ -93,7 +93,7 @@ public class Utils {
         return false;
     }
 
-    public static boolean fileExists(File file) {
+    public static boolean fileExistsOnDisk(File file) {
         return file != null && file.exists();
     }
 
