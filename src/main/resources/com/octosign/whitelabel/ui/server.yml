@@ -210,6 +210,7 @@ components:
           example: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>'
           description: 'Content of the document to sign, format is dictated by `payloadMimeType`.'
       required:
+        - filename
         - content
 
 
