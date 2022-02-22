@@ -20,11 +20,11 @@ import javafx.scene.web.WebView;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.function.*;
 
+import static com.google.common.io.Files.*;
 import static com.octosign.whitelabel.communication.MimeType.*;
 import static com.octosign.whitelabel.signing.token.Token.*;
 import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
@@ -99,17 +99,19 @@ public class MainController {
         if (mimeType.is(XML))
             ((XMLDocument) document).validate(params.getSchema());
 
-        if (isVisualizationSupported(document)) {
+        if (isVisualizationSupported(document, mimeType)) {
             displayVisualization(document, params, mimeType);
         } else {
             displayNotSupportedType(document);
         }
     }
 
-    private boolean isVisualizationSupported(Document document) {
-        String extension = Files.getFileExtension(document.getFilename());
+    private boolean isVisualizationSupported(Document document, MimeType mimeType) {
+        String filename = document.getFilename();
 
-        return isPresent(extension) && ALLOWED_TYPES.contains(extension);
+        var extension = isPresent(filename) ? getFileExtension(filename) : mimeType.subType();
+
+        return ALLOWED_TYPES.contains(extension);
     }
 
     private void displayVisualization(Document document, SignatureParameters params, MimeType mimeType) {
@@ -136,7 +138,6 @@ public class MainController {
             displayHTMLVisualisation(transformationOutput);
 
     }
-
 
     private void displayNotSupportedType(Document document) {
         hide(webView);
@@ -238,6 +239,8 @@ public class MainController {
     private void signDocument() {
         disableMainButton(translate("btn.signing"));
 
+        checkForDocumentChanges();
+
         try {
             var signedContent = signingManager.sign(signatureUnit);
             onSigned.accept(signedContent);
@@ -246,6 +249,23 @@ public class MainController {
         }
 
         enableMainButton(getProperMainButtonText());
+    }
+
+    private void checkForDocumentChanges() {
+        byte[] originalContent = signatureUnit.getDocument().getContent();
+        byte[] contentFromDisk;
+
+        try {
+            contentFromDisk = Files.toByteArray(cachedFile);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to read file!");
+        }
+
+        // consider making classes records (immutable) to prevent such sneaky assignments
+        if (not(Arrays.equals(contentFromDisk, originalContent))) {
+            signatureUnit.getDocument().setContent(contentFromDisk);
+            displayWarning("warn.dataToSignChanged.header", "warn.dataToSignChanged.description");
+        }
     }
 
     private void disableMainButton(String text) {
@@ -323,7 +343,7 @@ public class MainController {
     private String buildFilename(Document document) {
         String original = document.getFilename();
         var basename = Files.getNameWithoutExtension(original);
-        var extension = Files.getFileExtension(original);
+        var extension = getFileExtension(original);
 
         return basename + "-" + document.getUuid() + "." + extension;
     }
