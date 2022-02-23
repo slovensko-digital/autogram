@@ -2,7 +2,6 @@ package com.octosign.whitelabel.communication.document;
 import com.octosign.whitelabel.communication.SignRequest;
 
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
 
@@ -15,16 +14,12 @@ public class Document {
     protected String filename;
     protected byte[] content;
 
-    private transient UUID uuid;
-
     public Document() {}
 
     public Document(String id, String filename, byte[] content) {
         this.id = id;
         this.filename = filename;
         this.content = content;
-
-        this.uuid = UUID.randomUUID();
     }
 
     public Document(Document d) {
@@ -45,10 +40,6 @@ public class Document {
 
     public String getContentString() {
         return new String(content, StandardCharsets.UTF_8);
-    }
-
-    public UUID getUuid() {
-        return uuid;
     }
 
     /**
