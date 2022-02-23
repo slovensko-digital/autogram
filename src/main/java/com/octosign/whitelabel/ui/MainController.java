@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.function.*;
 
 import static com.google.common.io.Files.*;
+import static com.google.common.io.Files.getFileExtension;
 import static com.octosign.whitelabel.communication.MimeType.*;
 import static com.octosign.whitelabel.signing.token.Token.*;
 import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
@@ -239,11 +240,14 @@ public class MainController {
     private void signDocument() {
         disableMainButton(translate("btn.signing"));
 
-        checkForDocumentChanges();
+        if (fileExists(cachedFile))
+            detectFileModifications();
 
         try {
             var signedContent = signingManager.sign(signatureUnit);
             onSigned.accept(signedContent);
+            clearCache();
+
         } catch (UserException e) {
             displayError(e);
         }
@@ -251,15 +255,9 @@ public class MainController {
         enableMainButton(getProperMainButtonText());
     }
 
-    private void checkForDocumentChanges() {
+    private void detectFileModifications() {
         byte[] originalContent = signatureUnit.getDocument().getContent();
-        byte[] contentFromDisk;
-
-        try {
-            contentFromDisk = Files.toByteArray(cachedFile);
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to read file!");
-        }
+        byte[] contentFromDisk = readBytes(cachedFile);
 
         // consider making classes records (immutable) to prevent such sneaky assignments
         if (not(Arrays.equals(contentFromDisk, originalContent))) {
@@ -312,11 +310,11 @@ public class MainController {
 
     @FXML
     private void onShowNativeVisualizationButtonAction() {
-        File targetFile = getFromCache(signatureUnit.getDocument());
+        cacheAsFile(signatureUnit.getDocument());
 
         new Thread(() -> {
             try {
-                Desktop.getDesktop().open(targetFile);
+                Desktop.getDesktop().open(cachedFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -325,38 +323,34 @@ public class MainController {
 
     public static final Set<String> ALLOWED_TYPES = new HashSet<>(List.of("pdf", "doc", "docx", "odt", "txt", "xml", "rtf", "png", "gif", "tif", "tiff", "bmp", "jpg", "jpeg", "xml", "pdf", "xsd", "xls"));
 
-    private Path DOCUMENT_CACHE_DIR = Path.of(System.getProperty("java.io.tmpdir"), getProperty("app.shortName"), "documents").toAbsolutePath();
+    private Path DOCUMENT_CACHE_DIR = Path.of(System.getProperty("java.io.tmpdir"), getProperty("app.shortName"), "documents");
     private File cachedFile;
 
-    public File getFromCache(Document document) {
-        File toBeDownloaded = DOCUMENT_CACHE_DIR.resolve(buildFilename(document)).toFile();
+    public void cacheAsFile(Document document) {
+        DOCUMENT_CACHE_DIR.toFile().mkdirs();
 
-        if (fileExistsOnDisk(cachedFile) && areEqual(toBeDownloaded, cachedFile)) {
-            // no download
-        } else {
-            cachedFile = saveDocumentToFile(toBeDownloaded, document);
-        }
+        try {
+            if (not(fileExists(cachedFile))) {
+                var prefix = Files.getNameWithoutExtension(document.getFilename());
+                var suffix = "." + Files.getFileExtension(document.getFilename());
 
-        return cachedFile;
-    }
+                cachedFile = File.createTempFile(prefix, suffix, DOCUMENT_CACHE_DIR.toFile());
+                Files.write(document.getContent(), cachedFile);
+            }
+            cachedFile.deleteOnExit();
 
-    private String buildFilename(Document document) {
-        String original = document.getFilename();
-        var basename = Files.getNameWithoutExtension(original);
-        var extension = getFileExtension(original);
-
-        return basename + "-" + document.getUuid() + "." + extension;
-    }
-
-    public File saveDocumentToFile(File targetFile, Document document) {
-        targetFile.getParentFile().mkdirs();
-
-        try (var stream = new FileOutputStream(targetFile)) {
-            stream.write(document.getContent());
         } catch (IOException e) {
-            throw new RuntimeException("Unable to save file!");
+            throw new RuntimeException(e);
         }
+    }
 
-        return targetFile;
+    private void clearCache() {
+        if (fileExists(cachedFile)) {
+            if (not(cachedFile.delete())) {
+                displayWarning("warn.fileNotDeleted.header", "warn.fileNotDeleted.description");
+            }
+
+            cachedFile = null;
+        }
     }
 }
