@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.Base64;
 
@@ -97,8 +98,24 @@ public class Utils {
         return false;
     }
 
-    public static boolean fileExistsOnDisk(File file) {
+    public static boolean fileExists(Path path) {
+        return path != null && path.toFile().exists() && path.toFile().canRead();
+    }
+
+    public static boolean fileExists(File file) {
         return file != null && file.exists();
+    }
+
+    public static byte[] readBytes(Path path) {
+        try (var stream = new FileInputStream(path.toFile())) {
+            return stream.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Unable to read from file: %s", path));
+        }
+    }
+
+    public static byte[] readBytes(File file) {
+        return readBytes(file.toPath());
     }
 
     private static HttpExchange currentExchange;
