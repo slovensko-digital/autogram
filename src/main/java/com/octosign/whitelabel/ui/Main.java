@@ -111,7 +111,6 @@ public class Main extends Application {
     }
 
     private void exit() {
-        if (statusIndication != null) statusIndication.dispose();
         if (server != null) server.stop();
         Platform.exit();
     }
