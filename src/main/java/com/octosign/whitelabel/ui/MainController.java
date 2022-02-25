@@ -19,25 +19,19 @@ import javafx.scene.web.WebView;
 
 import java.awt.*;
 import java.io.*;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.function.*;
 
-import static com.google.common.io.Files.*;
 import static com.google.common.io.Files.getFileExtension;
 import static com.octosign.whitelabel.communication.MimeType.*;
 import static com.octosign.whitelabel.signing.token.Token.*;
-import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
 import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.utils.Utils.*;
 
-
-/**
- * Controller for the signing window
- */
 public class MainController {
+    public static final Set<String> ALLOWED_TYPES = new HashSet<>(List.of("pdf", "doc", "docx", "odt", "txt", "xml", "rtf", "png", "gif", "tif", "tiff", "bmp","jpg", "jpeg", "xml", "pdf", "xsd", "xls", "xlsx"));
 
     @FXML
     public Button aboutButton;
@@ -69,6 +63,8 @@ public class MainController {
      * Wrapper for document in this window (to be signed) and parameters
      */
     private SignatureUnit signatureUnit;
+
+    private File cachedFile;
 
     /**
      * Consumer of the signed document content on success
@@ -321,20 +317,13 @@ public class MainController {
         }).start();
     }
 
-    public static final Set<String> ALLOWED_TYPES = new HashSet<>(List.of("pdf", "doc", "docx", "odt", "txt", "xml", "rtf", "png", "gif", "tif", "tiff", "bmp", "jpg", "jpeg", "xml", "pdf", "xsd", "xls"));
-
-    private Path DOCUMENT_CACHE_DIR = Path.of(System.getProperty("java.io.tmpdir"), getProperty("app.shortName"), "documents");
-    private File cachedFile;
-
     public void cacheAsFile(Document document) {
-        DOCUMENT_CACHE_DIR.toFile().mkdirs();
-
         try {
             if (not(fileExists(cachedFile))) {
                 var prefix = Files.getNameWithoutExtension(document.getFilename());
                 var suffix = "." + Files.getFileExtension(document.getFilename());
 
-                cachedFile = File.createTempFile(prefix, suffix, DOCUMENT_CACHE_DIR.toFile());
+                cachedFile = File.createTempFile(prefix, suffix);
                 Files.write(document.getContent(), cachedFile);
             }
             cachedFile.deleteOnExit();
