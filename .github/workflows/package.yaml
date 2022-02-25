@@ -15,6 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Update version in pom if tag pushed
+        if: startsWith(github.ref, 'refs/tags/')
+        run: mvn versions:set -DnewVersion=$(git describe --tags --abbrev=0)
+
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
@@ -36,9 +40,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create release if on Main
+      - name: Create release if tag pushed
         uses: softprops/action-gh-release@v1
-        if: github.ref == 'refs/heads/main'
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: true
           prerelease: true
