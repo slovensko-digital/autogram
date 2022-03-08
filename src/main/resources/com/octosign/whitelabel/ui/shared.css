@@ -22,10 +22,10 @@
     -fx-font-size: 1.25em;
 }
 .panel.secondary {
-    -fx-background-color: -secondary-color;
+    -fx-background-color: -light-text-color;
 }
 .panel.secondary Label {
-    -fx-text-fill: -light-text-color;
+    -fx-text-fill: -dark-text-color;
 }
 
 /**
@@ -130,4 +130,11 @@ Button:hover {
 .scroll-bar:vertical:focused,
 .scroll-bar:horizontal:focused {
     -fx-background-color: transparent, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5);
+}
+
+/**
+ * Text alignment
+ */
+.text-centered {
+    -fx-text-alignment: center;
 }

@@ -4,7 +4,7 @@
 
 #textArea {
     -fx-background-color: #ffffff;
-    -fx-text-fill: -dark-text-color;
+    -fx-text-fill: -light-text-color;
     -fx-background-insets: 0;
     -fx-background-radius: 0;
     -fx-focus-color: transparent;
