@@ -7,8 +7,7 @@ import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.ui.Main;
 import javafx.application.Platform;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Dialog;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
@@ -19,6 +18,7 @@ import javafx.stage.Stage;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -116,24 +116,37 @@ public class FXUtils {
      * @param description
      */
     public static void displayWarning(String header, String description) {
-        var alert = buildAlert(
-                Alert.AlertType.WARNING,
+        var alert= buildWarning(header, description);
+
+        alert.showAndWait();
+    }
+
+    public static Alert buildWarning(String header, String description) {
+        return buildAlert(
+                Alert.AlertType.NONE,
                 translate("text.warn"),
                 translateIfNeeded("warn.", header),
                 translateIfNeeded("warn.", description)
         );
-
-        alert.showAndWait();
     }
 
     private static String translateIfNeeded(String prefix, String input) {
         if (input == null)
             return "";
 
-        if (input.startsWith(prefix))
+        if (input.startsWith(prefix)) {
             return translate(input);
-        else
+
+        } else if (input.contains(".")) {
+            try {
+                return translate(input);
+            } catch (MissingResourceException e) {
+                System.out.println("No translation for key " + input + "; remains unchanged");
+                return input;
+            }
+        } else {
             return input;
+        }
     }
 
     /**
@@ -150,7 +163,7 @@ public class FXUtils {
         alert.showAndWait();
     }
 
-    private static Alert buildAlert(Alert.AlertType type, String title, String header, String description) {
+    public static Alert buildAlert(Alert.AlertType type, String title, String header, String description) {
         var alert = new Alert(type);
         Optional.ofNullable(title).ifPresent(alert::setTitle);
         Optional.ofNullable(header).ifPresent(alert::setHeaderText);
@@ -199,18 +212,43 @@ public class FXUtils {
             .toList();
     }
 
+    public static Alert transformDialogTo(Alert.AlertType type, String i18nKey, Alert alert) {
+        alert.setAlertType(type);
+        alert.setTitle(translate(String.format("text.%s", toPrefix(type))));
+        alert.setHeaderText(translate(String.format("%s.%s.header", toPrefix(type), i18nKey)));
+        alert.setContentText(translate(String.format("%s.%s.description", toPrefix(type), i18nKey)));
+
+        ButtonType continueType = new ButtonType(translate("btn.continue"), ButtonBar.ButtonData.OK_DONE);
+        alert.getButtonTypes().setAll(continueType);
+        return alert;
+    }
+
+    public static String toPrefix(Alert.AlertType dialogType) {
+        return switch (dialogType) {
+            case INFORMATION -> "info";
+            case WARNING -> "warn";
+            case ERROR -> "error";
+            case CONFIRMATION -> throw new RuntimeException("Not used yet, first create dictionary entries!");
+            case NONE -> throw new RuntimeException("Not used yet, first create dictionary entries!");
+        };
+    }
+
     public static Stage getCurrentStage(Node source) {
         return (Stage) source.getScene().getWindow();
     }
 
-    public static void delayedTask(Runnable delayedTask, int millis) {
-        new Thread(() -> {
+    public static void bringToForeground(Stage stage) {
+        stage.requestFocus();
+        stage.setAlwaysOnTop(true);
+        stage.toFront();
+
+        Platform.runLater(() -> {
             try {
-                Thread.sleep(millis);
+                Thread.sleep(42);
+                stage.setAlwaysOnTop(false);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            Platform.runLater(delayedTask);
-        }).start();
+        });
     }
 }

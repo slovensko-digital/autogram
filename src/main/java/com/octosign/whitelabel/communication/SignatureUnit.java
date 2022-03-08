@@ -4,6 +4,7 @@ import com.octosign.whitelabel.communication.document.Document;
 import com.octosign.whitelabel.preprocessing.XDCTransformer;
 
 import static com.octosign.whitelabel.communication.MimeType.*;
+import static com.octosign.whitelabel.ui.utils.Utils.*;
 
 
 public class SignatureUnit {
@@ -43,6 +44,10 @@ public class SignatureUnit {
 
     public boolean isXDC() {
         return isXML() && signatureParameters.getContainer() != null;
+    }
+
+    public boolean isBinary() {
+        return not(isXML()) && not(isPDF());
     }
 
     public void transformToXDC() {

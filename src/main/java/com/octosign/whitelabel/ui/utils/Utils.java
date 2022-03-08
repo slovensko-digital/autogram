@@ -25,7 +25,7 @@ public class Utils {
         return collection == null || collection.isEmpty();
     }
 
-    public static boolean isNullOrEmpty(char[] array) {
+    public static <T> boolean isNullOrEmpty(T[] array) {
         return array == null || array.length == 0;
     }
 
