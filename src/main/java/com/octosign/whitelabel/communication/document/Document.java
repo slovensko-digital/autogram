@@ -63,7 +63,7 @@ public class Document {
         } else if(mimeType.is(PDF)) {
             return new PDFDocument(document);
         } else {
-            throw new IntegrationException(Code.UNSUPPORTED_FORMAT, "Document format not supported: " + mimeType);
+            return new OtherDocument(document);
         }
     }
 }

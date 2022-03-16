@@ -31,15 +31,14 @@ public class SigningManager {
 
         DSSDocument signedDocument;
 
-        if (data.isPDF())
-            signedDocument = signPDF(data);
-        else if (data.isXDC())
+        if (data.isXDC())
             signedDocument = signXDC(data);
+        else if (data.isPDF())
+            signedDocument = signPAdEs(data);
         else if (data.isXML())
-            signedDocument = signXAdES(data);
+            signedDocument = signXML(data);
         else
-            throw new RuntimeException("Unknown document type!");
-
+            signedDocument = signXAdES(data);
 
         try (var output = new ByteArrayOutputStream()) {
             signedDocument.writeTo(output);
@@ -71,7 +70,7 @@ public class SigningManager {
        return service.signDocument(dssDocument, dssParams, signatureValue);
     }
 
-    private DSSDocument signPDF(SignatureUnit data) {
+    private DSSDocument signPAdEs(SignatureUnit data) {
         var dssDocument = new InMemoryDocument(data.getDocument().getContent());
         var dssParams = SignatureParameterMapper.mapPAdESParameters(data.getSignatureParameters());
         dssParams.setSigningCertificate(activeCertificate.getDssPrivateKey().getCertificate());
@@ -85,13 +84,27 @@ public class SigningManager {
         return service.signDocument(dssDocument, dssParams, signatureValue);
     }
 
-    private DSSDocument signXAdES(SignatureUnit data) {
+    private DSSDocument signXML(SignatureUnit data) {
         var dssDocument = new InMemoryDocument(data.getDocument().getContent());
         var dssParams = SignatureParameterMapper.mapASiCWithXAdESParameters(data.getSignatureParameters());
         dssParams.setSigningCertificate(activeCertificate.getDssPrivateKey().getCertificate());
         dssParams.setCertificateChain(activeCertificate.getDssPrivateKey().getCertificateChain());
 
         var service = new XAdESService(new CommonCertificateVerifier());
+        var dataToSign = service.getDataToSign(dssDocument, dssParams);
+        var token = getActiveCertificate().getToken().getDssToken();
+        var signatureValue = token.sign(dataToSign, dssParams.getDigestAlgorithm(), activeCertificate.getDssPrivateKey());
+
+        return service.signDocument(dssDocument, dssParams, signatureValue);
+    }
+
+    private DSSDocument signXAdES(SignatureUnit data) {
+        var dssDocument = new InMemoryDocument(data.getDocument().getContent());
+        var dssParams = SignatureParameterMapper.mapASiCWithXAdESParameters(data.getSignatureParameters());
+        dssParams.setSigningCertificate(activeCertificate.getDssPrivateKey().getCertificate());
+        dssParams.setCertificateChain(activeCertificate.getDssPrivateKey().getCertificateChain());
+
+        var service = new ASiCWithXAdESService(new CommonCertificateVerifier());
         var dataToSign = service.getDataToSign(dssDocument, dssParams);
         var token = getActiveCertificate().getToken().getDssToken();
         var signatureValue = token.sign(dataToSign, dssParams.getDigestAlgorithm(), activeCertificate.getDssPrivateKey());
