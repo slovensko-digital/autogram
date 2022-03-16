@@ -43,7 +43,7 @@ public class StatusIndication {
     private void addMinimizedWindow() {
         var windowStage = new Stage();
 
-        var fxmlLoader = Main.loadWindow("status");
+        var fxmlLoader = Main.loadFXML("status.fxml");
         VBox root = fxmlLoader.getRoot();
 
         var scene = new Scene(root, 320, 160);
