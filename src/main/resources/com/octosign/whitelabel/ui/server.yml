@@ -443,6 +443,7 @@ components:
           content: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48R2VuZXJhbEFnZW5kYSB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45Ij4KICA8c3ViamVjdD5Ob3bDqSBwb2RhbmllPC9zdWJqZWN0PgogIDx0ZXh0PlBvZMOhdmFtIHRvdG8gbm92w6kgcG9kYW5pZS48L3RleHQ+CjwvR2VuZXJhbEFnZW5kYT4="
         parameters:
           format: XADES
+          identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9"
           fileMimeType: application/lor.ip.xmldatacontainer+xml
           container: ASICE
           containerFilename: General_Agenda.xml
@@ -458,6 +459,7 @@ components:
           content: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48R2VuZXJhbEFnZW5kYSB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45Ij4KICA8c3ViamVjdD5Ob3bDqSBwb2RhbmllPC9zdWJqZWN0PgogIDx0ZXh0PlBvZMOhdmFtIHRvdG8gbm92w6kgcG9kYW5pZS48L3RleHQ+CjwvR2VuZXJhbEFnZW5kYT4="
         parameters:
           format: XADES
+          identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9"
           fileMimeType: application/lor.ip.xmldatacontainer+xml
           container: ASICE
           containerFilename: General_Agenda.xml
@@ -473,6 +475,7 @@ components:
           content: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</GeneralAgenda>"
         parameters:
           format: XADES
+          identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9"
           fileMimeType: application/lor.ip.xmldatacontainer+xml
           container: ASICE
           containerFilename: General_Agenda.xml
@@ -488,6 +491,7 @@ components:
           content: "<?xml version=\"1.0\"encoding=\"UTF-8\"?><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</GeneralAgenda>"
         parameters:
           format: XADES
+          identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9"
           fileMimeType: application/lor.ip.xmldatacontainer+xml
           container: ASICE
           containerFilename: General_Agenda.xml
