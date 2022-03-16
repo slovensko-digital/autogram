@@ -103,7 +103,7 @@ public class MainController {
             displayPDFVisualisation(document);
 
         if (!mimeType.is(PDF) && !mimeType.is(XML))
-            displayPlainTextVisualisation(document.getContentString());
+            displayPlainTextVisualisation("format unsafe to visualiza <temp message>");
 
     }
 
