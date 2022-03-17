@@ -8,12 +8,14 @@ import com.octosign.whitelabel.signing.token.*;
 import com.octosign.whitelabel.ui.about.*;
 
 import com.octosign.whitelabel.ui.picker.*;
+import com.octosign.whitelabel.ui.utils.FXUtils;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 
 import java.util.*;
 import java.util.function.*;
@@ -161,31 +163,40 @@ public class MainController {
         disableMainButton(translate("btn.loading"));
 
         try {
-            var driver = displaySelectDialogIfMany(getAvailableDrivers());
+            List<Driver> allDrivers = getAvailableDrivers();
+            var driver = selectDialog(allDrivers).orElseThrow(
+                    () -> new UserException("error.noDriverInstalled.header", "error.noDriverInstalled.description")
+            );
 
-            var certificates = Token.fromDriver(driver).getCertificates();
-            var signingCertificate = displaySelectDialogIfMany(certificates);
+            var allTokenCertificates = Token.fromDriver(driver).getCertificates();
+            var certificate = selectDialog(allTokenCertificates).orElseThrow(
+                    () -> new UserException("error.tokenEmpty.header", "error.tokenEmpty.description")
+            );
 
-            signingManager.setActiveCertificate(signingCertificate);
+            signingManager.setActiveCertificate(certificate);
         } catch (UserException e) {
             displayError(e);
-        } finally {
-            enableMainButton(getProperMainButtonText());
         }
+
         enableMainButton(getProperMainButtonText());
     }
 
-    private <T extends SelectableItem> T displaySelectDialogIfMany(List<T> items) {
+    private <T extends SelectableItem> Optional<T> selectDialog(List<T> items) {
         if (isNullOrEmpty(items))
-            throw new RuntimeException("Collection is null or empty!");
+            return Optional.empty();
 
         if (items.size() == 1) {
-            return first(items);
-        } else {
-            var selectDialog = new SelectDialog<>(items, getCurrentStage(mainButton));
+            return Optional.of(first(items));
 
-            return selectDialog.getResult();
+        } else {
+            var dialog = new SelectDialog<>(items, getStage());
+
+            return Optional.of(dialog.getResult());
         }
+    }
+
+    private Stage getStage() {
+        return FXUtils.getCurrentStage(mainButton);
     }
 
     private void signDocument() {
