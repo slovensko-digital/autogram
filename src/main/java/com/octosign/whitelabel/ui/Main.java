@@ -120,7 +120,7 @@ public class Main extends Application {
             throw new UnexpectedActionException(Code.CANCELLED_BY_USER, "User canceled");
         });
 
-        var fxmlLoader = loadWindow("main");
+        var fxmlLoader = loadFXML("main.fxml");
         VBox root = fxmlLoader.getRoot();
 
         MainController controller = fxmlLoader.getController();
@@ -136,15 +136,12 @@ public class Main extends Application {
         stage.setTitle(getProperty("app.name"));
         stage.setScene(scene);
 
-        stage.setAlwaysOnTop(true);
         stage.show();
-        stage.toFront();
-        stage.requestFocus();
-        delayedTask(() -> stage.setAlwaysOnTop(false), 42);
+        bringToForeground(stage);
     }
 
-    public static FXMLLoader loadWindow(String name) {
-        var fxmlLoader = new FXMLLoader(Main.class.getResource(name + ".fxml"), I18n.getBundle());
+    public static FXMLLoader loadFXML(String fxml) {
+        var fxmlLoader = new FXMLLoader(Main.class.getResource(fxml), I18n.getBundle());
         try {
             fxmlLoader.load();
         } catch (IOException e) {
