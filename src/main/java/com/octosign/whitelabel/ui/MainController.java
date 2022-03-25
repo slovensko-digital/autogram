@@ -13,7 +13,6 @@ import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.web.WebView;
@@ -31,7 +30,6 @@ import static com.octosign.whitelabel.signing.token.Token.*;
 import static com.octosign.whitelabel.ui.I18n.*;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.utils.Utils.*;
-import static javafx.scene.control.ButtonBar.ButtonData.*;
 
 public class MainController {
     public static final Set<String> ALLOWED_TYPES = new HashSet<>(List.of("pdf", "doc", "docx", "odt", "txt", "xml", "rtf", "png", "gif", "tif", "tiff", "bmp","jpg", "jpeg", "xml", "pdf", "xsd", "xls", "xlsx"));
@@ -54,33 +52,21 @@ public class MainController {
     @FXML
     private Node nativeViewPrompt;
 
-    /**
-     * Bottom-right button used to load/pick certificate and sign
-     */
     @FXML
     private Button mainButton;
 
-    /**
-     * Signing certificate manager
-     */
     private SigningManager signingManager;
 
-    /**
-     * Wrapper for document in this window (to be signed) and parameters
-     */
     private SignatureUnit signatureUnit;
 
     private volatile File savedDocument;
 
-    private boolean documentWasVisualized;
+    private boolean documentAlreadyVisualized = false;
 
-    /**
-     * Consumer of the signed document content on success
-     */
+    // Consumer of the signed document content on success
     private Consumer<byte[]> onSigned;
 
     public void initialize() {
-        mainButton.setText(getProperMainButtonText());
         webView.setContextMenuEnabled(false);
         webView.getEngine().setJavaScriptEnabled(false);
     }
@@ -113,6 +99,8 @@ public class MainController {
             exitOnUnsupportedFormat();
         }
 
+        requireVisualizationToContinue();
+
         Platform.runLater(() -> bringToForeground(getCurrentStage(mainButton)));
     }
 
@@ -126,12 +114,15 @@ public class MainController {
     private void displayVisualization(Document document, SignatureParameters params, MimeType mimeType) {
         if (mimeType.is(XML)) {
             displayXMLVisualization((XMLDocument) document, params);
+            documentAlreadyVisualized = true;
 
         } else if (mimeType.is(PDF)) {
             displayPDFVisualisation(document);
+            documentAlreadyVisualized = true;
 
         } else {
-            displayBinaryFileVisualisation();
+            saveToFile(document);
+            displayBinaryFileVisualisationPrompt();
         }
     }
 
@@ -161,10 +152,9 @@ public class MainController {
         plaintextView.setText(visualisation);
     }
 
-    private void displayBinaryFileVisualisation() {
+    private void displayBinaryFileVisualisationPrompt() {
         show(nativeViewPrompt);
         hide(webView);
-        saveToFile(signatureUnit.getDocument());
     }
 
     private void displayHTMLVisualisation(String visualisation) {
@@ -222,8 +212,17 @@ public class MainController {
             displayError(e);
         }
 
-        enableMainButton(getProperMainButtonText());
+        requireVisualizationToContinue();
     }
+
+    private void requireVisualizationToContinue() {
+        if (!documentAlreadyVisualized) {
+            disableMainButton(translate("btn.visualizationRequired"));
+        } else {
+            enableMainButton(getProperMainButtonText());
+        }
+    }
+
 
     private <T extends SelectableItem> T displaySelectDialogIfMany(List<T> items) {
         if (isNullOrEmpty(items))
@@ -240,26 +239,9 @@ public class MainController {
 
     private void signDocument() {
         disableMainButton(translate("btn.signing"));
-        boolean smoothProcess = true;
 
-        if (signatureUnit.isBinary()) {
-            if (not(documentWasVisualized)) {
-                smoothProcess = false;
-                skipVisualizationDialog().showAndWait().ifPresent(response -> {
-                    if (response.getButtonData() == NO) {
-                        requireVisualization();
-                    }
-                });
-            }
-
-            boolean documentWasModified = fileExists(savedDocument) && checkDocumentModifications();
-
-                if (documentWasModified) {
-                    syncAllWithLatest();
-                    displayWarning("warn.contentModified.header", "warn.contentModified.description");
-                } else if (not(smoothProcess) && documentWasVisualized) {
-                    displayInfo("info.previewSuccess.header", "info.previewSuccess.description");
-                }
+        if (signatureUnit.isBinary() && wasDocumentFileModified()) {
+            updateInMemoryDocumentFromModifiedFile();
         }
 
         try {
@@ -274,61 +256,53 @@ public class MainController {
         clearDocumentCache();
     }
 
-    private void requireVisualization() {
-        FutureTask<Boolean> task = new FutureTask<Boolean>(() -> {
-        if (performRuntimeVisualization())
-            return true;
+    private boolean wasDocumentFileModified() {
+        if (!fileExists(savedDocument))
+            return false;
 
-        if (performDesktopVisualization())
-            return true;
+        byte[] inMemoryContent = signatureUnit.getDocument().getContent();
+        byte[] contentFromDisk = readBytes(savedDocument);
 
-        if (not(documentWasVisualized)) {
-            exitOnUnsupportedFormat();
-        }
-        return false;
-        });
-
-        task.run();
-        try {
-            task.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        return !(Arrays.equals(contentFromDisk, inMemoryContent));
     }
 
-    private Alert skipVisualizationDialog() {
-        Alert alert = buildWarning("warn.skipVisualization.header", "warn.skipVisualization.description");
-        ButtonType yesType = new ButtonType(translate("btn.skipVisualization.yes"), ButtonBar.ButtonData.YES);
-        ButtonType noType = new ButtonType(translate("btn.skipVisualization.no"), ButtonBar.ButtonData.NO);
-        alert.getButtonTypes().setAll(yesType, noType);
+    private void updateInMemoryDocumentFromModifiedFile() {
+        // consider making classes records (immutable) to prevent such sneaky assignments
+        byte[] modifiedContent = readBytes(savedDocument);
+        signatureUnit.getDocument().setContent(modifiedContent);
+    }
 
-        Button noButton = (Button) alert.getDialogPane().lookupButton(noType);
-//        alert.setOnCloseRequest(Event::consume);
-        return alert;
+    private void visualizeOrTerminate() {
+        if (performRuntimeVisualization() || performDesktopVisualization()) {
+            documentAlreadyVisualized = true;
+            return;
+        }
+
+        if (!(documentAlreadyVisualized)) {
+            exitOnUnsupportedFormat();
+        }
     }
 
     private boolean performRuntimeVisualization() {
         saveToFile(signatureUnit.getDocument());
-        boolean wasSuccessful = false;
+        boolean success = false;
 
         for (var command: getPlatformSpecificCommands()) {
             var process = executeNative(command);
 
             if (process != null) {
                 try {
-                    wasSuccessful = process.onExit().thenApply(p -> p.exitValue() == 0).get();
+                    success = process.onExit().thenApply(p -> p.exitValue() == 0).get();
                 } catch (InterruptedException | ExecutionException ignored) {}
 
             } else {
                 continue;
             }
 
-            if (wasSuccessful) break;
+            if (success) break;
         }
 
-        return wasSuccessful;
+        return success;
     }
 
     private String[][] getPlatformSpecificCommands() {
@@ -350,13 +324,13 @@ public class MainController {
     private Process executeNative(String... commands) {
         try {
             return new ProcessBuilder(commands).inheritIO().start();
-        } catch (IOException e) {
+        } catch (IOException ignored) {
             // continue
         }
 
         try {
             return Runtime.getRuntime().exec(commands);
-        } catch (IOException ex) {
+        } catch (IOException ignored) {
             // continue
         }
 
@@ -370,21 +344,20 @@ public class MainController {
                 Desktop.getDesktop().open(savedDocument);
                 return true;
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
-
         return false;
     }
 
     public void saveToFile(Document document) {
         try {
-            if (not(fileExists(savedDocument))) {
+            if (!(fileExists(savedDocument))) {
                 var prefix = Files.getNameWithoutExtension(document.getFilename());
                 var suffix = "." + Files.getFileExtension(document.getFilename());
 
                 savedDocument = File.createTempFile(prefix, suffix);
-//                cachedFile.setExecutable(true, false);
+                savedDocument.setExecutable(true, false);
                 Files.write(document.getContent(), savedDocument);
             }
             savedDocument.deleteOnExit();
@@ -394,27 +367,14 @@ public class MainController {
         }
     }
 
-    private boolean checkDocumentModifications() {
-        byte[] originalContent = signatureUnit.getDocument().getContent();
-        byte[] contentFromDisk = readBytes(savedDocument);
-
-        return not(Arrays.equals(contentFromDisk, originalContent));
-    }
-
-    private void syncAllWithLatest() {
-        // consider making classes records (immutable) to prevent such sneaky assignments
-        byte[] modifiedContent = readBytes(savedDocument);
-        signatureUnit.getDocument().setContent(modifiedContent);
-    }
-
     private void clearDocumentCache() {
         if (fileExists(savedDocument)) {
-            if (not(savedDocument.delete())) {
+            if (!(savedDocument.delete())) {
                 displayWarning("warn.fileNotDeleted.header", "warn.fileNotDeleted.description");
             }
         }
         savedDocument = null;
-        documentWasVisualized = false;
+        documentAlreadyVisualized = false;
     }
 
     private void disableMainButton(String text) {
@@ -451,8 +411,8 @@ public class MainController {
 
     @FXML
     private void onNativeVisualizationButtonAction() {
-        requireVisualization();
-        documentWasVisualized = true;
+        visualizeOrTerminate();
+        requireVisualizationToContinue();
     }
 
     @FXML
