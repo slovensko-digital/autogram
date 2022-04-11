@@ -168,6 +168,7 @@ public class MainController {
 
             signingManager.setActiveCertificate(signingCertificate);
         } catch (UserException e) {
+            signingManager.setActiveCertificate(null);
             displayError(e);
         } finally {
             enableMainButton(getProperMainButtonText());
