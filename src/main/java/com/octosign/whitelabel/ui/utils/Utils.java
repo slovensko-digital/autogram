@@ -7,6 +7,10 @@ import java.util.*;
 import java.util.Base64;
 
 public class Utils {
+    public static String normalized(String value) {
+        return value.strip().trim().toLowerCase(Locale.ROOT);
+    }
+
     public static boolean isNullOrBlank(String value) {
         return value == null || value.isBlank();
     }
