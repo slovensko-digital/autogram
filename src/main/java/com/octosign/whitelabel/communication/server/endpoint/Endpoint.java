@@ -2,6 +2,7 @@ package com.octosign.whitelabel.communication.server.endpoint;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Locale;
 
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
@@ -11,6 +12,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import static com.octosign.whitelabel.error_handling.Code.UNEXPECTED_ERROR;
+import static com.octosign.whitelabel.ui.utils.Utils.normalized;
 
 /**
  * Server API endpoint with no request or response abstraction
@@ -18,6 +20,7 @@ import static com.octosign.whitelabel.error_handling.Code.UNEXPECTED_ERROR;
  * When writing a new endpoint, consider using high-level ReadEndpoint or WriteEndpoint.
  */
 abstract class Endpoint implements HttpHandler {
+    private static final String[] CORS_HEADERS = new String[] { "Access-Control-Request-Method", "Access-Control-Request-Headers" };
 
     protected final Server server;
 
@@ -28,9 +31,14 @@ abstract class Endpoint implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) {
         Utils.setExchange(exchange);
+
         try {
-            if (verifyHTTPMethod(exchange) && verifyOrigin(exchange))
+            if (isPreflightRequest(exchange)) {
+                handlePreflightRequest(exchange);
+
+            } else if (verifyHTTPMethod(exchange) && verifyOrigin(exchange)) {
                 handleRequest(exchange);
+            }
         } catch (UserException e) {
             throw e;
         } catch (IntegrationException e) {
@@ -54,6 +62,32 @@ abstract class Endpoint implements HttpHandler {
      * When writing a new endpoint, consider high-level Response<U> handleRequest(request, response).
      */
     protected abstract void handleRequest(HttpExchange exchange) throws Throwable;
+
+    private boolean isCorsHeader(String header) {
+        var corsHeaders = Arrays.stream(CORS_HEADERS).map(Utils::normalized).toList();
+
+        return corsHeaders.contains(normalized(header));
+    }
+
+    private boolean isPreflightRequest(HttpExchange exchange) {
+        var isOptionsMethod = exchange.getRequestMethod().equals("OPTIONS");
+        var containsCorsHeaders =  exchange.getRequestHeaders().keySet().stream().anyMatch(this::isCorsHeader);
+
+        return isOptionsMethod && containsCorsHeaders;
+    }
+
+    protected void handlePreflightRequest(HttpExchange exchange) throws IOException {
+        var corsHeaders = exchange.getRequestHeaders().keySet().stream().filter(this::isCorsHeader).toList();
+
+        if (corsHeaders.contains(normalized("Access-Control-Request-Method"))) {
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", String.join(", ", getAllowedMethods()));
+        }
+
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", exchange.getRequestHeaders().getFirst("Origin"));
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*/*");
+
+        exchange.sendResponseHeaders(204, -1);
+    }
 
     /**
      * List of allowed HTTP methods
