@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.Base64;
 
 public class Utils {
-    public static String normalized(String value) {
+    public static String normalize(String value) {
         return value.strip().trim().toLowerCase(Locale.ROOT);
     }
 

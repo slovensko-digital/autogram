@@ -2,7 +2,6 @@ package com.octosign.whitelabel.communication.server.endpoint;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Locale;
 
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
@@ -12,7 +11,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import static com.octosign.whitelabel.error_handling.Code.UNEXPECTED_ERROR;
-import static com.octosign.whitelabel.ui.utils.Utils.normalized;
+import static com.octosign.whitelabel.ui.utils.Utils.normalize;
 
 /**
  * Server API endpoint with no request or response abstraction
@@ -64,9 +63,9 @@ abstract class Endpoint implements HttpHandler {
     protected abstract void handleRequest(HttpExchange exchange) throws Throwable;
 
     private boolean isCorsHeader(String header) {
-        var corsHeaders = Arrays.stream(CORS_HEADERS).map(Utils::normalized).toList();
+        var corsHeaders = Arrays.stream(CORS_HEADERS).map(Utils::normalize).toList();
 
-        return corsHeaders.contains(normalized(header));
+        return corsHeaders.contains(normalize(header));
     }
 
     private boolean isPreflightRequest(HttpExchange exchange) {
@@ -79,7 +78,7 @@ abstract class Endpoint implements HttpHandler {
     protected void handlePreflightRequest(HttpExchange exchange) throws IOException {
         var corsHeaders = exchange.getRequestHeaders().keySet().stream().filter(this::isCorsHeader).toList();
 
-        if (corsHeaders.contains(normalized("Access-Control-Request-Method"))) {
+        if (corsHeaders.contains(normalize("Access-Control-Request-Method"))) {
             exchange.getResponseHeaders().add("Access-Control-Allow-Methods", String.join(", ", getAllowedMethods()));
         }
 
