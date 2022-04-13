@@ -3,13 +3,10 @@ package com.octosign.whitelabel.ui.utils;
 import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
-
 import com.octosign.whitelabel.ui.Main;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -18,7 +15,6 @@ import javafx.stage.Stage;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -82,8 +78,8 @@ public class FXUtils {
         var alert = buildAlert(
                 Alert.AlertType.ERROR,
                 translate("text.error"),
-                translateIfNeeded("error.", header),
-                translateIfNeeded("error.", description)
+                translate(header),
+                translate(description)
         );
 
         if (cause != null)
@@ -102,8 +98,8 @@ public class FXUtils {
         var alert = buildAlert(
                 Alert.AlertType.INFORMATION,
                 translate("text.info"),
-                translateIfNeeded("info.", header),
-                translateIfNeeded("info.", description)
+                translate(header),
+                translate(description)
         );
 
         alert.showAndWait();
@@ -125,28 +121,9 @@ public class FXUtils {
         return buildAlert(
                 Alert.AlertType.NONE,
                 translate("text.warn"),
-                translateIfNeeded("warn.", header),
-                translateIfNeeded("warn.", description)
+                translate(header),
+                translate(description)
         );
-    }
-
-    private static String translateIfNeeded(String prefix, String input) {
-        if (input == null)
-            return "";
-
-        if (input.startsWith(prefix)) {
-            return translate(input);
-
-        } else if (input.contains(".")) {
-            try {
-                return translate(input);
-            } catch (MissingResourceException e) {
-                System.out.println("No translation for key " + input + "; remains unchanged");
-                return input;
-            }
-        } else {
-            return input;
-        }
     }
 
     /**
