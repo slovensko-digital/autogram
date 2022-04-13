@@ -2,10 +2,7 @@ package com.octosign.whitelabel.ui;
 
 import com.octosign.whitelabel.signing.OperatingSystem;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static com.octosign.whitelabel.signing.OperatingSystem.MAC;
 
@@ -45,19 +42,12 @@ public class I18n {
 
     public static String translate(String path, Object... args) {
         try {
-            return getTranslation(path, args);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Translation failed for: " + path, e);
-        }
-    }
-
-    private static String getTranslation(String path, Object... args) {
-        var message = BUNDLE.getString(path);
-        if (args == null || args.length == 0)
-            return message;
-        else
+            var message = BUNDLE.getString(path);
+            if (args == null || args.length == 0) return message;
             return String.format(message, validateArgs(message, args));
+        } catch (MissingResourceException e) {
+            return path; // return placeholder when translation not found
+        }
     }
 
     private static Object[] validateArgs(String value, Object... args) {

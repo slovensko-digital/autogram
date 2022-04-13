@@ -45,6 +45,10 @@ public class SignatureUnit {
         return isXML() && signatureParameters.getContainer() != null;
     }
 
+    public boolean isBinary() {
+        return !(isXML()) && !(isPDF());
+    }
+
     public void transformToXDC() {
         var transformer = XDCTransformer.newInstance(signatureParameters);
         var transformedContent = transformer.transform(document.getContent(), XDCTransformer.Mode.IDEMPOTENT);

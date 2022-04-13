@@ -1,6 +1,6 @@
 package com.octosign.whitelabel.communication;
 
-import static com.octosign.whitelabel.communication.SignatureParameters.CanonicalizationMethod.INCLUSIVE;
+import static com.octosign.whitelabel.communication.SignatureParameters.CanonicalizationMethod.*;
 
 /**
  * Immutable parameters for signature creation
@@ -8,7 +8,8 @@ import static com.octosign.whitelabel.communication.SignatureParameters.Canonica
 public class SignatureParameters {
     public enum Format {
         XADES,
-        PADES
+        PADES,
+        CADES
     }
 
     public enum Level {
