@@ -3,6 +3,7 @@ package com.octosign.whitelabel.preprocessing;
 import com.google.common.collect.ImmutableMap;
 import com.octosign.whitelabel.communication.MimeType;
 import com.octosign.whitelabel.communication.SignatureParameters;
+import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.*;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
@@ -24,7 +25,8 @@ public class SignatureParameterMapper {
         ImmutableMap.of(
             BASELINE_B, ImmutableMap.of(
                             XADES, XAdES_BASELINE_B,
-                            PADES, PAdES_BASELINE_B
+                            PADES, PAdES_BASELINE_B,
+                            CADES, CAdES_BASELINE_B
                         )
         );
 
@@ -120,6 +122,20 @@ public class SignatureParameterMapper {
 
         return parameters;
     }
+
+    /*
+        Parameter mapping for CADES signatures
+    */
+    public static ASiCWithCAdESSignatureParameters mapASiCWithCAdESParameters(SignatureParameters sp) {
+        var parameters = new ASiCWithCAdESSignatureParameters();
+
+        parameters.aSiC().setContainerType(map(sp.getContainer()));
+        parameters.setSignatureLevel(map(sp.getLevel(), CADES));
+        parameters.setSignaturePackaging(map(sp.getPackaging()));
+        parameters.setDigestAlgorithm(map(sp.getDigestAlgorithm()));
+        return parameters;
+    }
+
 
     /*
         Parameter mapping for PADES signatures
