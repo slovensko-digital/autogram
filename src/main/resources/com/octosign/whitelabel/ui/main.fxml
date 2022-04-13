@@ -16,7 +16,7 @@
         <!-- Native visualization -->
         <HBox fx:id="nativeViewPrompt" alignment="CENTER" managed="false" visible="false" VBox.vgrow="ALWAYS">
             <VBox alignment="CENTER" spacing="20" HBox.hgrow="ALWAYS">
-                <Label styleClass="text-centered, panel, secondary" text="%text.noVisualizationInfo" />
+                <Label text="%text.noVisualizationInfo" />
                 <Button fx:id="nativeVisualizationButton" mnemonicParsing="false" onAction="#onNativeVisualizationButtonAction" styleClass="primary" text="%btn.openFile" />
             </VBox>
         </HBox>

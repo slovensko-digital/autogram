@@ -131,10 +131,3 @@ Button:hover {
 .scroll-bar:horizontal:focused {
     -fx-background-color: transparent, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5);
 }
-
-/**
- * Text alignment
- */
-.text-centered {
-    -fx-text-alignment: center;
-}
