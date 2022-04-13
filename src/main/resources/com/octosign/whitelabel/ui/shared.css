@@ -13,6 +13,7 @@
     -secondary-color: #1a1f33;
     -light-text-color: #ffffff;
     -dark-text-color: #0a0d14;
+    -fx-font-smoothing-type: gray;
 }
 
 /**
