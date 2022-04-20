@@ -1,8 +1,14 @@
 package com.octosign.whitelabel.ui.utils;
 
+import com.google.common.io.Files;
 import com.sun.net.httpserver.HttpExchange;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.Base64;
 
@@ -15,7 +21,7 @@ public class Utils {
         return collection == null || collection.isEmpty();
     }
 
-    public static boolean isNullOrEmpty(char[] array) {
+    public static <T> boolean isNullOrEmpty(T[] array) {
         return array == null || array.length == 0;
     }
 
@@ -65,6 +71,47 @@ public class Utils {
             return null;
 
         return new String(decoded, StandardCharsets.UTF_8);
+    }
+
+    public static String encodeBase64SafeChars(byte[] value) {
+        byte[] decoded = Base64.getUrlEncoder().encode(value);
+
+        return new String(decoded, StandardCharsets.UTF_8);
+    }
+
+    public static boolean areEqual(File file1, File file2) {
+        try (InputStream is1 = new FileInputStream(file1);
+             InputStream is2 = new FileInputStream(file2)) {
+
+            if (Files.equal(file1, file2)) {
+                return Arrays.equals(is1.readAllBytes(), is2.readAllBytes());
+            }
+        } catch (IOException e) {
+            System.out.println("Unable to open and/or compare these two files.");
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static boolean fileExists(Path path) {
+        return path != null && path.toFile().exists() && path.toFile().canRead();
+    }
+
+    public static boolean fileExists(File file) {
+        return file != null && file.exists();
+    }
+
+    public static byte[] readBytes(Path path) {
+        try (var stream = new FileInputStream(path.toFile())) {
+            return stream.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Unable to read from file: %s", path));
+        }
+    }
+
+    public static byte[] readBytes(File file) {
+        return readBytes(file.toPath());
     }
 
     private static HttpExchange currentExchange;

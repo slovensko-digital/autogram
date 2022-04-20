@@ -15,7 +15,6 @@ import com.octosign.whitelabel.signing.SigningManager;
 import com.octosign.whitelabel.ui.status.*;
 import com.octosign.whitelabel.ui.utils.*;
 
-import com.octosign.whitelabel.ui.utils.Utils;
 import javafx.application.*;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -23,9 +22,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.*;
 import org.slf4j.LoggerFactory;
 
+import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
 import static com.octosign.whitelabel.ui.utils.FXUtils.*;
 import static com.octosign.whitelabel.ui.I18n.*;
 import static java.util.Objects.*;
+
 
 public class Main extends Application {
 
@@ -85,11 +86,9 @@ public class Main extends Application {
         server.start();
         System.out.println(translate("app.runningOn", server.getAddress()));
 
-        if (server.isDevMode()) {
-            var protocol = server.isHttps() ? "https" : "http";
-            var docsAddress = protocol + ":/" + server.getAddress().toString() + "/documentation";
-            System.out.println(translate("text.docsAvailableAt", docsAddress));
-        }
+        var protocol = server.isHttps() ? "https" : "http";
+        var docsAddress = protocol + ":/" + server.getAddress().toString() + "/documentation";
+        System.out.println(translate("text.docsAvailableAt", docsAddress));
 
         server.setOnSign((SignatureUnit unit) -> {
             var future = new CompletableFuture<SignedData>();
@@ -97,7 +96,7 @@ public class Main extends Application {
             Platform.runLater(() -> {
                 openWindow(unit, (byte[] signedContent) -> {
                     Document d = unit.getDocument();
-                    Document signedDocument = new Document(d.getId(), d.getTitle(), signedContent, d.getLegalEffect());
+                    Document signedDocument = new Document(d.getId(), d.getFilename(), signedContent);
                     String certificateDN = signingManager.getActiveCertificate().getDistinguishedName();
                     SignedData signedData = new SignedData(signedDocument, unit.getMimeType(), unit.isPlainOldXML(), certificateDN);
 
@@ -121,7 +120,7 @@ public class Main extends Application {
             throw new UnexpectedActionException(Code.CANCELLED_BY_USER, "User canceled");
         });
 
-        var fxmlLoader = loadWindow("main");
+        var fxmlLoader = loadFXML("main.fxml");
         VBox root = fxmlLoader.getRoot();
 
         MainController controller = fxmlLoader.getController();
@@ -134,18 +133,15 @@ public class Main extends Application {
         controller.loadDocument();
 
         var scene = new Scene(root, 720, 540);
-        stage.setTitle(translate("app.name"));
+        stage.setTitle(getProperty("app.name"));
         stage.setScene(scene);
 
-        stage.setAlwaysOnTop(true);
         stage.show();
-        stage.toFront();
-        stage.requestFocus();
-        delayedTask(() -> stage.setAlwaysOnTop(false), 42);
+        bringToForeground(stage);
     }
 
-    public static FXMLLoader loadWindow(String name) {
-        var fxmlLoader = new FXMLLoader(Main.class.getResource(name + ".fxml"), I18n.getBundle());
+    public static FXMLLoader loadFXML(String fxml) {
+        var fxmlLoader = new FXMLLoader(Main.class.getResource(fxml), I18n.getBundle());
         try {
             fxmlLoader.load();
         } catch (IOException e) {

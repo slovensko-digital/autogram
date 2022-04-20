@@ -12,6 +12,7 @@ import javafx.scene.layout.Region;
 
 import com.octosign.whitelabel.ui.Main;
 
+import static com.octosign.whitelabel.ui.ConfigurationProperties.*;
 import static com.octosign.whitelabel.ui.I18n.translate;
 
 public class AboutDialog extends Dialog<Boolean> {
@@ -38,7 +39,7 @@ public class AboutDialog extends Dialog<Boolean> {
 
         return String.join(
             "\n",
-            translate("app.name"),
+            getProperty("app.name"),
             appDescription,
             translate("app.authors"),
             translate("app.contributors"),
