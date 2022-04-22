@@ -4,6 +4,7 @@ import com.octosign.whitelabel.error_handling.Code;
 import com.octosign.whitelabel.error_handling.IntegrationException;
 import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.ui.Main;
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -222,7 +223,7 @@ public class FXUtils {
             try {
                 Thread.sleep(42);
             } catch (InterruptedException ignored) {}
-            stage.setAlwaysOnTop(false);
+            Platform.runLater(() -> stage.setAlwaysOnTop(false));
         }).start();
     }
 }
