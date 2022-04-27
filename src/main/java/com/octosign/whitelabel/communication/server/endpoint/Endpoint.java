@@ -1,14 +1,18 @@
 package com.octosign.whitelabel.communication.server.endpoint;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import com.octosign.whitelabel.communication.server.Response;
 import com.octosign.whitelabel.communication.server.Server;
-import com.octosign.whitelabel.error_handling.*;
+import com.octosign.whitelabel.error_handling.Code;
+import com.octosign.whitelabel.error_handling.IntegrationException;
+import com.octosign.whitelabel.error_handling.UserException;
 import com.octosign.whitelabel.ui.utils.Utils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static com.octosign.whitelabel.error_handling.Code.UNEXPECTED_ERROR;
 
@@ -18,6 +22,9 @@ import static com.octosign.whitelabel.error_handling.Code.UNEXPECTED_ERROR;
  * When writing a new endpoint, consider using high-level ReadEndpoint or WriteEndpoint.
  */
 abstract class Endpoint implements HttpHandler {
+    private static final List<String> CORS_HEADERS = Collections.unmodifiableList(
+            Arrays.asList("Access-control-request-method", "Access-control-request-headers") // lower-cased by server library
+    );
 
     protected final Server server;
 
@@ -28,9 +35,14 @@ abstract class Endpoint implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) {
         Utils.setExchange(exchange);
+
         try {
-            if (verifyHTTPMethod(exchange) && verifyOrigin(exchange))
+            if (isCorsPreflightRequest(exchange)) {
+                handleCorsPreflightRequest(exchange);
+
+            } else if (verifyHTTPMethod(exchange) && verifyOrigin(exchange)) {
                 handleRequest(exchange);
+            }
         } catch (UserException e) {
             throw e;
         } catch (IntegrationException e) {
@@ -54,6 +66,27 @@ abstract class Endpoint implements HttpHandler {
      * When writing a new endpoint, consider high-level Response<U> handleRequest(request, response).
      */
     protected abstract void handleRequest(HttpExchange exchange) throws Throwable;
+
+    private boolean isCorsPreflightRequest(HttpExchange exchange) {
+        if (!exchange.getRequestMethod().equalsIgnoreCase("OPTIONS"))
+            return false;
+
+        for (String header : CORS_HEADERS) {
+            if (exchange.getRequestHeaders().containsKey(header))
+                return true;
+        }
+
+        return false;
+    }
+
+    protected void handleCorsPreflightRequest(HttpExchange exchange) throws IOException {
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", String.join(", ", getAllowedMethods()));
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Private-Network", "true");
+
+        exchange.sendResponseHeaders(204, -1);
+    }
 
     /**
      * List of allowed HTTP methods
