@@ -219,13 +219,11 @@ public class FXUtils {
         stage.setAlwaysOnTop(true);
         stage.toFront();
 
-        Platform.runLater(() -> {
+        new Thread(() -> {
             try {
                 Thread.sleep(42);
-                stage.setAlwaysOnTop(false);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
+            } catch (InterruptedException ignored) {}
+            Platform.runLater(() -> stage.setAlwaysOnTop(false));
+        }).start();
     }
 }
