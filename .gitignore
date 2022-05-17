@@ -21,3 +21,5 @@ whitelabel.iml
 
 # macOS-specific
 .DS_Store
+
+.java-version

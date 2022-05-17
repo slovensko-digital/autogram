@@ -17,13 +17,14 @@ jobs:
 
       - name: Update version in pom if tag pushed
         if: startsWith(github.ref, 'refs/tags/')
-        run: mvn versions:set -DnewVersion=$(git describe --tags --abbrev=0)
+        run: ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0)
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'adopt'
+          distribution: 'liberica'
+          java-package: 'jdk+fx'
 
       - name: Cache local Maven repository and JDK cache
         uses: actions/cache@v2
@@ -36,7 +37,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Package with Maven
-        run: mvn -B -C -V package
+        run: ./mvnw -B -C -V package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
