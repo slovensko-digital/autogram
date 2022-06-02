@@ -1,0 +1,5 @@
+# this forces git to use LF endings on patch files in this folder.
+# It's necessary for npm patch-package on Windows, otherwise patch files use CRLF and npm patch-package fails.
+.mvn/wrapper/maven-wrapper.properties		text eol=lf
+mvnw                                		text eol=lf
+
