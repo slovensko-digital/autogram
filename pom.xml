@@ -323,6 +323,7 @@
                         <argument>${project.version}</argument>
                         <argument>${project.build.directory}</argument>
                     </arguments>
+                    <useMavenLogger>true</useMavenLogger>
                 </configuration>
                 <executions>
                     <execution>
