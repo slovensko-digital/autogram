@@ -17,7 +17,7 @@ jobs:
 
       - name: Update version in pom if tag pushed
         if: startsWith(github.ref, 'refs/tags/')
-        run: ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0)
+        run: ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
         shell: bash
 
       - name: Set up JDK 17
