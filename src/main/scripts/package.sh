@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 jpackage=$1
 appDirectory=$2
 jdkDirectory=$3
@@ -6,6 +6,13 @@ resourcesDir=$4
 platform=$5
 version=$6
 output=$7
+
+function checkExitCode() {
+    exitValue=$1
+    if [[ $exitValue -ne 0 ]]; then
+        exit $exitValue
+    fi
+}
 
 IFS="="
 while read -r key value
@@ -72,6 +79,7 @@ if [[ "$platform" == "win" ]]; then
     fi
 
     $jpackage "${arguments[@]}"
+    checkExitCode $?
 fi
 
 if [[ "$platform" == "linux" ]]; then
@@ -113,12 +121,14 @@ if [[ "$platform" == "linux" ]]; then
         "--type" "rpm"
     )
     $jpackage "${arguments[@]}"
+    checkExitCode $?
 
     if [[ -f "/etc/lsb-release" ]]; then
         arguments+=(
             "--type" "deb"
         )
         $jpackage "${arguments[@]}"
+        checkExitCode $?
     fi
 fi
 
@@ -157,7 +167,9 @@ if [[ "$platform" == "mac" ]]; then
     fi
 
     $jpackage "${arguments[@]}"
-
+    exitValue=$?
     # See --temp argument above
     rm -rf ./DTempFiles
+
+    checkExitCode $exitValue
 fi
