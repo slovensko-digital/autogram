@@ -80,6 +80,13 @@ public abstract class Token {
                       .tokenType(translate("text.idCard"))
                       .file(WINDOWS, "C:\\Program Files (x86)\\EAC MW klient\\pkcs11_x64.dll")
                       .file(LINUX, "/usr/lib/eac_mw_klient/libpkcs11_x64.so")
+                      .file(MAC, "/Applications/Aplikacia_pre_eID.app/Contents/pkcs11/libPkcs11.dylib")
+                      .keystore(PKCS11),
+
+                Driver.name("eIDv4")
+                        .tokenType(translate("text.idCard"))
+                        .file(WINDOWS, "C:\\Program Files (x86)\\eID_klient\\pkcs11_x64.dll")
+                        .file(LINUX, "/usr/lib/eID_klient/libpkcs11_x64.so")
                       .file(MAC, "/Applications/eID_klient.app/Contents/Frameworks/libPkcs11.dylib")
                       .keystore(PKCS11),
 
