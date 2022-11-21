@@ -18,8 +18,6 @@
         <gson.version>2.8.9</gson.version>
         <apache.httpcomponents.version>4.5.13</apache.httpcomponents.version>
         <pdfjs.version>2.10.377</pdfjs.version>
-        <saxon.version>10.6</saxon.version>
-        <xerces.version>2.12.1</xerces.version>
         <main.class>com.octosign.whitelabel.ui.Main</main.class>
     </properties>
 
@@ -79,19 +77,27 @@
             <version>${apache.httpcomponents.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.saxon</groupId>
-            <artifactId>Saxon-HE</artifactId>
-            <version>${saxon.version}</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.9.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
-            <version>${xerces.version}</version>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.0.0-M7</version>
+            <type>maven-plugin</type>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M7</version>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -108,7 +114,7 @@
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>versions-maven-plugin</artifactId>
+                <artifactId>versions-maven-plugin</artifactId>
                 <version>2.9.0</version>
             </plugin>
 
@@ -186,7 +192,8 @@
                         <configuration>
                             <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
                             <fromDir>cmaps</fromDir>
-                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs/cmaps</toDir>
+                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs/cmaps
+                            </toDir>
                         </configuration>
                     </execution>
                 </executions>
@@ -308,13 +315,18 @@
                 <version>3.0.0</version>
                 <configuration>
                     <executable>bash</executable>
-                    <workingDirectory>${project.build.scriptSourceDirectory}${file.separator}resources</workingDirectory>
+                    <workingDirectory>${project.build.scriptSourceDirectory}${file.separator}resources
+                    </workingDirectory>
                     <arguments>
                         <argument>${project.build.scriptSourceDirectory}${file.separator}package.sh</argument>
                         <argument>${jlink.jdk.path}${file.separator}bin${file.separator}jpackage</argument>
-                        <argument>${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}</argument>
+                        <argument>
+                            ${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}
+                        </argument>
                         <argument>${project.build.directory}${file.separator}preparedJDK</argument>
-                        <argument>${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}com${file.separator}octosign${file.separator}whitelabel</argument>
+                        <argument>
+                            ${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}com${file.separator}octosign${file.separator}whitelabel
+                        </argument>
                         <argument>${platform}</argument>
                         <argument>${project.version}</argument>
                         <argument>${project.build.directory}</argument>
