@@ -96,7 +96,14 @@ public abstract class Token {
                       .file(WINDOWS, "C:\\Windows\\System32\\SecureStorePkcs11.dll")
                       .file(LINUX, "/usr/lib/pkcs11/libICASecureStorePkcs11.so")
                       .file(MAC, "/usr/local/lib/pkcs11/libICASecureStorePkcs11.dylib")
-                      .keystore(PKCS11)
+                      .keystore(PKCS11),
+
+                Driver.name("Disig")
+                        .tokenType(translate("text.mandateCertificate"))
+                        .file(WINDOWS, "C:\\Windows\\System32\\eTPKCS11.dll")
+                        .file(LINUX, "/usr/lib/libIDPrimePKCS11.so")
+                        .file(MAC, "/usr/local/lib/libIDPrimePKCS11.dylib")
+                        .keystore(PKCS11)
                 )
         );
     }
