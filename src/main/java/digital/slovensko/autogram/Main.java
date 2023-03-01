@@ -1,25 +1,27 @@
 package digital.slovensko.autogram;
 
+import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
 import javafx.application.Application;
 
 public class Main {
     public static void main(String[] args) {
-        //Thread.setDefaultUncaughtExceptionHandler(new com.octosign.whitelabel.ui.Main.ExceptionHandler());
+        var ui = new CliUI();
 
-        SignRequestListener mode;
-        // if some parameter
-        // cli mode
-        mode = new CliSignRequestListener(args);
-        // or
-        // api mode
-        mode = new ApiSignRequestListener(args);
+        var autogram = new Autogram(ui);
+        var document = new FileDocument("pom.xml");
 
-        // gui frontend or cli frontend
+        var parameters = new SigningParameters();
+        var responder = new CLIResponder();
 
-        FrontendMode frontend = null;
-        frontend = new CliFrontendMode();
-        frontend = new GuiFrontendMode();
+        var job = new SigningJob(document, parameters, responder);
 
-        Autogram.start(frontend, mode, args);
+        autogram.showSigningDialog(job);
+
+        // sign another without picking cert again and no BOK entered
+        document = new FileDocument("pom.xml");
+        job = new SigningJob(document, parameters, responder);
+
+        autogram.showSigningDialog(job);
     }
 }
