@@ -1,6 +1,8 @@
 package digital.slovensko.autogram;
 
-import eu.europa.esig.dss.model.DSSDocument;
+import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -11,10 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.util.List;
-import java.util.Objects;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -41,6 +41,11 @@ class AutogramTests {
     }
 
     private class DummyUIPickingFakeTestTokenDriver implements UI {
+        @Override
+        public void start(String[] args) {
+
+        }
+
         @Override
         public void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
             callback.call(keys.get(0));

@@ -1,15 +1,13 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.token.PasswordInputCallback;
-import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -60,6 +58,10 @@ public class Autogram {
     private void setActiveSigningKey(SigningKey newKey) {
         activeKey = newKey;
         ui.refreshSigningKey(activeKey);
+    }
+
+    public SigningKey getActiveSigningKey() {
+        return activeKey;
     }
 
     private DSSDocument signDocument(SigningJob job, SigningKey key) {

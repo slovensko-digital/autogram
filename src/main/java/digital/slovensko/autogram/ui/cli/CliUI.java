@@ -1,10 +1,18 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.ui.cli;
 
+import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.util.List;
 
 public class CliUI implements UI {
+    @Override
+    public void start(String[] args) {
+        System.out.println("Starting CLI with args " + args.toString());
+    }
+
     @Override
     public void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
         System.out.println("Found " + keys.size() + " keys, picking first!");

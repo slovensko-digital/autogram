@@ -1,10 +1,13 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.ui.cli;
 
+import digital.slovensko.autogram.core.Responder;
+import digital.slovensko.autogram.core.SigningError;
+import digital.slovensko.autogram.core.SigningJob;
 import eu.europa.esig.dss.model.DSSDocument;
 
 import java.io.IOException;
 
-public class CLIResponder extends Responder {
+public class CliResponder extends Responder {
     public void onDocumentSigned(DSSDocument d) {
         System.out.println("Sign success for document " + d.toString());
         try {
@@ -14,7 +17,7 @@ public class CLIResponder extends Responder {
         }
     }
 
-    public void onDocumentSignFailed(SigningJob job, Error error) {
+    public void onDocumentSignFailed(SigningJob job, SigningError error) {
         System.err.println("Sign failed error occurred: " + error.toString());
     }
 }

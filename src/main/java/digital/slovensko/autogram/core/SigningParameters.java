@@ -1,4 +1,4 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.core;
 
 public class SigningParameters {
     public Format format;

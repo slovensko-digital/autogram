@@ -1,4 +1,4 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.core;
 
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 

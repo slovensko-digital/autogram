@@ -1,4 +1,4 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.drivers;
 
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.PasswordInputCallback;

@@ -1,8 +1,7 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.core;
 
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.FileDocument;
 
 public class SigningJob {
     private final Responder responder;
@@ -20,7 +19,11 @@ public class SigningJob {
     }
 
     public SigningParameters getParameters() {
-        return this.parameters;
+        return parameters;
+    }
+
+    public void onDocumentSignFailed(SigningJob job, SigningError e) {
+        responder.onDocumentSignFailed(job, e);
     }
 
     public void onDocumentSigned(DSSDocument signedDocument) {
