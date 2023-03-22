@@ -5,9 +5,6 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
 import eu.europa.esig.dss.model.FileDocument;
 import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-
-import java.awt.*;
 
 public class MainMenuController {
     private GUI ui;

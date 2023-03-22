@@ -31,36 +31,34 @@ public class Autogram {
     }
 
     public void sign(SigningJob job) {
-        withActiveSigningKeyDo((key) -> {
-            var signedDocument = signDocument(job, key);
-            // TODO error handling
-            job.onDocumentSigned(signedDocument);
-        });
+        var signedDocument = signDocument(job, activeKey);
+        // TODO error handling
+        job.onDocumentSigned(signedDocument);
+        ui.hideSigningDialog(job, this);
     }
 
-    private void withActiveSigningKeyDo(SigningKeyLambda signingKeyCallback) {
-        if (activeKey != null) {
-            signingKeyCallback.call(activeKey);
-        } else {
-            var drivers = TokenDriver.getAvailableDrivers(); // TODO move up?
-            ui.pickTokenDriverAndDo(drivers, (driver) -> {
-                try {
-                    var token = driver.createToken();
-                    var keys = token.getKeys();
-                    ui.pickKeyAndDo(keys, (privateKey) -> {
-                        setActiveSigningKey(new SigningKey(token, privateKey));
-                        signingKeyCallback.call(activeKey);
-                    });
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
+    public void start(String[] args) {
+        ui.start(this, args);
+    }
+
+    public void pickSigningKey() {
+        var drivers = TokenDriver.getAvailableDrivers(); // TODO move up?
+        ui.pickTokenDriverAndDo(drivers, (driver) -> {
+            try {
+                var token = driver.createToken();
+                var keys = token.getKeys();
+                ui.pickKeyAndDo(keys, (privateKey) -> {
+                    setActiveSigningKey(new SigningKey(token, privateKey));
+                });
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private void setActiveSigningKey(SigningKey newKey) {
         activeKey = newKey;
-        ui.refreshSigningKey(activeKey);
+        ui.refreshSigningKey();
     }
 
     public SigningKey getActiveSigningKey() {
@@ -91,9 +89,5 @@ public class Autogram {
         var signatureValue = key.sign(dataToSign, DigestAlgorithm.SHA256);
 
         return service.signDocument(job.getDocument(), parameters, signatureValue);
-    }
-
-    public void start(String[] args) {
-        ui.start(this, args);
     }
 }

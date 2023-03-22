@@ -14,20 +14,18 @@ public class Main {
         var ui = new CliUI();
 
         var autogram = new Autogram(ui);
-        var document = new FileDocument("pom.xml");
 
+        var document = new FileDocument("pom.xml");
         var parameters = new SigningParameters();
         var responder = new CliResponder();
 
-        var job = new SigningJob(document, parameters, responder);
-
-        autogram.showSigningDialog(job);
+        autogram.pickSigningKey();
+        autogram.showSigningDialog(new SigningJob(document, parameters, responder));
 
         // sign another without picking cert again and no BOK entered
         document = new FileDocument("pom.xml");
-        job = new SigningJob(document, parameters, responder);
 
-        autogram.showSigningDialog(job);
+        autogram.showSigningDialog(new SigningJob(document, parameters, responder));
     }
 
     public static void main(String[] args) {

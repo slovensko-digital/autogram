@@ -15,5 +15,7 @@ public interface UI {
 
     void showSigningDialog(SigningJob job, Autogram autogram);
 
-    void refreshSigningKey(SigningKey key);
+    void hideSigningDialog(SigningJob job, Autogram autogram);
+
+    void refreshSigningKey();
 }

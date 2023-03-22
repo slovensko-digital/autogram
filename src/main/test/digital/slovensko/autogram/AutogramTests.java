@@ -27,6 +27,7 @@ class AutogramTests {
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 
+        autogram.pickSigningKey();
         autogram.sign(new SigningJob(document, parameters, responder));
 
         verify(responder).onDocumentSigned(any());
@@ -42,7 +43,7 @@ class AutogramTests {
 
     private class DummyUIPickingFakeTestTokenDriver implements UI {
         @Override
-        public void start(String[] args) {
+        public void start(Autogram autogram, String[] args) {
 
         }
 
@@ -61,7 +62,12 @@ class AutogramTests {
         }
 
         @Override
-        public void refreshSigningKey(SigningKey key) {
+        public void hideSigningDialog(SigningJob job, Autogram autogram) {
+
+        }
+
+        @Override
+        public void refreshSigningKey() {
         }
     }
 

@@ -13,8 +13,12 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class GUI implements UI {
+    private Map<SigningJob, SigningDialogController> jobs = new WeakHashMap<>();
+
     @Override
     public void start(Autogram autogram, String[] args) {
         GUIApp.autogram = autogram; // use singleton for passing since javafx instantiation is tricky
@@ -41,7 +45,6 @@ public class GUI implements UI {
         Platform.runLater(() -> {
             var controller = new PickKeyDialogController(keys, callback);
             var root = GUI.loadFXML(controller, "pick-key-dialog.fxml");
-
             var scene = new Scene(root, 720, 540);
 
             var stage = new Stage();
@@ -56,12 +59,9 @@ public class GUI implements UI {
     public void showSigningDialog(SigningJob job, Autogram autogram) {
         Platform.runLater(() -> {
             var controller = new SigningDialogController(job, autogram);
-            var root = GUI.loadFXML(controller,"signing-dialog.fxml");
+            jobs.put(job, controller);
 
-            var key = autogram.getActiveSigningKey();
-            if(key != null) {
-                controller.mainButton.setText(key.getCertificate().getSubject().getPrettyPrintRFC2253());
-            }
+            var root = GUI.loadFXML(controller, "signing-dialog.fxml");
 
             var scene = new Scene(root, 720, 540);
 
@@ -78,8 +78,20 @@ public class GUI implements UI {
     }
 
     @Override
-    public void refreshSigningKey(SigningKey key) {
-        // TODO loop through active jobs and set signing keys
+    public void hideSigningDialog(SigningJob job, Autogram autogram) {
+        Platform.runLater(() -> {
+            jobs.get(job).hide();
+        });
+    }
+
+    @Override
+    public void refreshSigningKey() {
+        Platform.runLater(() -> {
+            // TODO maybe use binding?
+            for (SigningDialogController controller : jobs.values()) {
+                controller.refreshSigningKey();
+            }
+        });
     }
 
     static Parent loadFXML(Object controller, String fxml) {

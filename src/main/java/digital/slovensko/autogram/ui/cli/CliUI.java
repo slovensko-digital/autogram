@@ -33,7 +33,12 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void refreshSigningKey(SigningKey key) {
+    public void hideSigningDialog(SigningJob job, Autogram autogram) {
+        System.out.println("Dialog for signing " + job.getDocument().toString() + " closed!");
+    }
+
+    @Override
+    public void refreshSigningKey() {
         System.out.println("Showing new signing key on all dialogs!");
     }
 }
