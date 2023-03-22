@@ -13,11 +13,8 @@ public class SigningDialogController {
     @FXML
     public Button mainButton;
 
-    public void setSigningJob(SigningJob signingJob) {
+    public SigningDialogController(SigningJob signingJob, Autogram autogram) {
         this.signingJob = signingJob;
-    }
-
-    public void setAutogram(Autogram autogram) {
         this.autogram = autogram;
     }
 

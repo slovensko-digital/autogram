@@ -13,7 +13,7 @@ public class MainMenuController {
     private GUI ui;
     private Autogram autogram;
 
-    public void initialize(GUI ui, Autogram autogram) {
+    public MainMenuController(GUI ui, Autogram autogram) {
         this.ui = ui;
         this.autogram = autogram;
     }

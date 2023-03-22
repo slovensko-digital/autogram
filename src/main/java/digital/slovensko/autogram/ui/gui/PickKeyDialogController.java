@@ -13,12 +13,20 @@ import javafx.stage.Stage;
 import java.util.List;
 
 public class PickKeyDialogController {
-    public PrivateKeyLambda callback;
-    public List<TokenDriver> drivers;
-    public List<DSSPrivateKeyEntry> keys;
+    private PrivateKeyLambda callback;
+    private List<DSSPrivateKeyEntry> keys;
 
     @FXML
     Label keyLabel;
+
+    public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
+        this.keys = keys;
+        this.callback = callback;
+    }
+
+    public void initialize() {
+        keyLabel.setText(keys.get(0).getCertificate().getSubject().getPrettyPrintRFC2253());
+    }
 
     public void onPickCertificateButtonAction(ActionEvent actionEvent) {
         ((Stage) keyLabel.getScene().getWindow()).close(); // TODO refactor

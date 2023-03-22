@@ -34,10 +34,6 @@ public class Main {
         var ui = new GUI();
         var autogram = new Autogram(ui);
 
-        // TODO move to different singleton?
-        GUI.autogram = autogram;
-        GUI.ui = ui;
-
-        ui.start(args);
+        autogram.start(args);
     }
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class CliUI implements UI {
     @Override
-    public void start(String[] args) {
+    public void start(Autogram autogram, String[] args) {
         System.out.println("Starting CLI with args " + args.toString());
     }
 

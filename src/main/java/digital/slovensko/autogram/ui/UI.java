@@ -7,7 +7,7 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import java.util.List;
 
 public interface UI {
-    void start(String[] args);
+    void start(Autogram autogram, String[] args);
 
     void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback);
 

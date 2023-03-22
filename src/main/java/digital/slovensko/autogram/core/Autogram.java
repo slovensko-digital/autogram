@@ -14,13 +14,16 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.io.IOException;
 
 public class Autogram {
-
     private final UI ui;
 
     private SigningKey activeKey;
 
     public Autogram(UI ui) {
         this.ui = ui;
+    }
+
+    public UI getUI() {
+        return this.ui;
     }
 
     public void showSigningDialog(SigningJob job) {
@@ -88,5 +91,9 @@ public class Autogram {
         var signatureValue = key.sign(dataToSign, DigestAlgorithm.SHA256);
 
         return service.signDocument(job.getDocument(), parameters, signatureValue);
+    }
+
+    public void start(String[] args) {
+        ui.start(this, args);
     }
 }

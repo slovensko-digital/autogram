@@ -8,7 +8,6 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="digital.slovensko.autogram.ui.gui.SigningDialogController"
             prefHeight="400.0" prefWidth="600.0">
 
     <Button fx:id="mainButton" text="Load signatures" onAction="#onMainButtonAction" />
