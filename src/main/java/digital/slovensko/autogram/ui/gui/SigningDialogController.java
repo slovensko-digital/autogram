@@ -15,6 +15,9 @@ public class SigningDialogController {
     @FXML
     public Button mainButton;
 
+    @FXML
+    public Button changeKeyButton;
+
     public SigningDialogController(SigningJob signingJob, Autogram autogram) {
         this.signingJob = signingJob;
         this.autogram = autogram;
@@ -25,7 +28,7 @@ public class SigningDialogController {
     }
 
     public void onMainButtonPressed(ActionEvent event) {
-        if(autogram.getActiveSigningKey() == null) {
+        if (autogram.getActiveSigningKey() == null) {
             new Thread(() -> {
                 autogram.pickSigningKey();
             }).start();
@@ -36,18 +39,27 @@ public class SigningDialogController {
         }
     }
 
+    public void onChangeKeyButtonPressed(ActionEvent event) {
+        new Thread(() -> {
+            autogram.resetSigningKey();
+            autogram.pickSigningKey();
+        }).start();
+    }
+
     public void refreshSigningKey() {
         mainButton.setDisable(false);
-        if(autogram.getActiveSigningKey() == null) {
+        if (autogram.getActiveSigningKey() == null) {
             mainButton.setText("Načítať certifikáty");
+            changeKeyButton.setVisible(false);
         } else {
             mainButton.setText("Podpísať ako " + DSSUtils.parseCN(autogram.getActiveSigningKey().getCertificate().getSubject().getRFC2253()));
+            changeKeyButton.setVisible(true);
         }
     }
 
     public void hide() {
         var window = mainButton.getScene().getRoot().getScene().getWindow();
-        if(window instanceof Stage) {
+        if (window instanceof Stage) {
             ((Stage) window).close();
         }
     }

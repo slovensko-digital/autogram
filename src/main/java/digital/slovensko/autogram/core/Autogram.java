@@ -65,6 +65,10 @@ public class Autogram {
         return activeKey;
     }
 
+    public void resetSigningKey() {
+        setActiveSigningKey(null);
+    }
+
     private DSSDocument signDocument(SigningJob job, SigningKey key) {
         return signDocumentAsAsiCWithXAdeS(job, key);
     }

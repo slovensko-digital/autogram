@@ -10,6 +10,8 @@
             xmlns:fx="http://javafx.com/fxml"
             prefHeight="400.0" prefWidth="600.0">
 
-    <Button fx:id="mainButton" text="Načítať certifikáty" onAction="#onMainButtonPressed" />
-
+    <HBox>
+        <Button fx:id="mainButton" text="Načítať certifikáty" onAction="#onMainButtonPressed"/>
+        <Button fx:id="changeKeyButton" text="Zmeniť" visible="false" onAction="#onChangeKeyButtonPressed"/>
+    </HBox>
 </AnchorPane>
