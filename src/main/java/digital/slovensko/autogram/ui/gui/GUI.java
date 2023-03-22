@@ -6,10 +6,12 @@ import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,6 +20,12 @@ import java.util.WeakHashMap;
 
 public class GUI implements UI {
     private Map<SigningJob, SigningDialogController> jobs = new WeakHashMap<>();
+
+    private final EventHandler<WindowEvent> refreshKeyOnAllJobs = e -> {
+        for (SigningDialogController c : jobs.values()) {
+            c.refreshSigningKey();
+        }
+    };
 
     @Override
     public void start(Autogram autogram, String[] args) {
@@ -28,6 +36,9 @@ public class GUI implements UI {
     @Override
     public void pickTokenDriverAndDo(List<TokenDriver> drivers, TokenDriverLambda callback) {
         Platform.runLater(() -> {
+            for(SigningDialogController c : jobs.values()) {
+                c.disableKeyPicking();
+            }
             PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
             var root = GUI.loadFXML(controller, "pick-driver-dialog.fxml");
 
@@ -35,6 +46,7 @@ public class GUI implements UI {
             var stage = new Stage();
             stage.setTitle("Pick driver");
             stage.setScene(scene);
+            stage.setOnCloseRequest(refreshKeyOnAllJobs);
 
             stage.show();
         });
@@ -50,6 +62,7 @@ public class GUI implements UI {
             var stage = new Stage();
             stage.setTitle("Pick key");
             stage.setScene(scene);
+            stage.setOnCloseRequest(refreshKeyOnAllJobs);
 
             stage.show();
         });

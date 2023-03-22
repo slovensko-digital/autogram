@@ -37,6 +37,7 @@ public class SigningDialogController {
     }
 
     public void refreshSigningKey() {
+        mainButton.setDisable(false);
         if(autogram.getActiveSigningKey() == null) {
             mainButton.setText("Načítať certifikáty");
         } else {
@@ -51,4 +52,8 @@ public class SigningDialogController {
         }
     }
 
+    public void disableKeyPicking() {
+        mainButton.setText("Načítavam certifikáty...");
+        mainButton.setDisable(true);
+    }
 }
