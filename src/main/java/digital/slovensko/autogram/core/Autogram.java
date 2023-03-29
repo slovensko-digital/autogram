@@ -33,7 +33,7 @@ public class Autogram {
     public void sign(SigningJob job) {
         var signedDocument = signDocument(job, activeKey);
         // TODO error handling
-        job.onDocumentSigned(signedDocument);
+        job.onDocumentSigned(signedDocument, activeKey);
         ui.hideSigningDialog(job, this);
     }
 
