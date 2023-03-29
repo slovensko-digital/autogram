@@ -2,7 +2,6 @@ package digital.slovensko.autogram.server;
 
 import com.google.gson.Gson;
 import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
-import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
@@ -35,7 +34,7 @@ public class SignEndpoint implements HttpHandler {
         Gson gson = new Gson();
         SignRequestBody body;
         InMemoryDocument document;
-        
+
         try {
             body = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), SignRequestBody.class);
             document = body.getDocument();
@@ -51,7 +50,7 @@ public class SignEndpoint implements HttpHandler {
             exchange.getResponseBody().close();
             return;
         }
-         
+
         var parameters = body.getParameters();
         var responder = new ServerResponder(exchange);
 

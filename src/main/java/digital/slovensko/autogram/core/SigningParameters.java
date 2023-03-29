@@ -6,41 +6,41 @@ public class SigningParameters {
     public Format format;
 
     public enum Format {
-      XADES,
-      PADES,
-      CADES
+        XADES,
+        PADES,
+        CADES
     }
-  
+
     public enum Level {
-      BASELINE_B,
-      BASELINE_T,
-      BASELINE_LT,
-      BASELINE_LTA
+        BASELINE_B,
+        BASELINE_T,
+        BASELINE_LT,
+        BASELINE_LTA
     }
-  
+
     public enum Container {
-      ASICS,
-      ASICE
+        ASICS,
+        ASICE
     }
-  
+
     public enum Packaging {
-      ENVELOPED,
-      ENVELOPING,
-      DETACHED,
-      INTERNALLY_DETACHED
+        ENVELOPED,
+        ENVELOPING,
+        DETACHED,
+        INTERNALLY_DETACHED
     }
-  
+
     public enum DigestAlgorithm {
-      SHA256,
-      SHA384,
-      SHA512
+        SHA256,
+        SHA384,
+        SHA512
     }
-  
+
     public enum CanonicalizationMethod {
-      INCLUSIVE,
-      EXCLUSIVE
+        INCLUSIVE,
+        EXCLUSIVE
     }
-  
+
     private final Level level;
     private final Packaging packaging;
     private final CanonicalizationMethod infoCanonicalization;
@@ -51,16 +51,20 @@ public class SigningParameters {
     private final String schema;
     private final String transformation;
     private final MimeType transformationOutputMimeType;
-    
-    
+
     private final Container container;
     private final String containerFilename;
     private final String containerXmlns;
     private final DigestAlgorithm digestAlgorithm;
     private final Boolean en319132;
     private final MimeType fileMimeType;
-    
-    public SigningParameters(Format format, Level level, MimeType fileMimeType, Container container, String containerFilename, String containerXmlns, Packaging packaging, DigestAlgorithm digestAlgorithm, Boolean en319132, CanonicalizationMethod infoCanonicalization, CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization, String signaturePolicyId, String signaturePolicyContent, String schema, String transformation, MimeType transformationOutputMimeType) {
+
+    public SigningParameters(Format format, Level level, MimeType fileMimeType, Container container,
+            String containerFilename, String containerXmlns, Packaging packaging, DigestAlgorithm digestAlgorithm,
+            Boolean en319132, CanonicalizationMethod infoCanonicalization,
+            CanonicalizationMethod propertiesCanonicalization, CanonicalizationMethod keyInfoCanonicalization,
+            String signaturePolicyId, String signaturePolicyContent, String schema, String transformation,
+            MimeType transformationOutputMimeType) {
         this.format = format;
         this.level = level;
         this.fileMimeType = fileMimeType;
@@ -81,74 +85,74 @@ public class SigningParameters {
     }
 
     public Format getFormat() {
-      return format;
+        return format;
     }
-  
+
     public Level getLevel() {
-      return level != null ? level : Level.BASELINE_B;
+        return level != null ? level : Level.BASELINE_B;
     }
-  
+
     public MimeType getFileMimeType() {
-      return fileMimeType;
+        return fileMimeType;
     }
-  
+
     public Container getContainer() {
-      return container;
+        return container;
     }
-  
+
     public String getContainerFilename() {
-      return containerFilename;
+        return containerFilename;
     }
-  
+
     public String getContainerXmlns() {
-      return containerXmlns;
+        return containerXmlns;
     }
-  
+
     public String getIdentifier() {
-      return identifier;
+        return identifier;
     }
-  
+
     public Packaging getPackaging() {
-      return packaging != null ? packaging : Packaging.ENVELOPED;
+        return packaging != null ? packaging : Packaging.ENVELOPED;
     }
-  
+
     public DigestAlgorithm getDigestAlgorithm() {
-      return digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
+        return digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
     }
-  
+
     public Boolean isEn319132() {
-      return en319132 != null ? en319132 : true;
+        return en319132 != null ? en319132 : true;
     }
-  
+
     public CanonicalizationMethod getInfoCanonicalization() {
-      return infoCanonicalization != null ? infoCanonicalization : INCLUSIVE;
+        return infoCanonicalization != null ? infoCanonicalization : INCLUSIVE;
     }
-  
+
     public CanonicalizationMethod getPropertiesCanonicalization() {
-      return propertiesCanonicalization != null ? propertiesCanonicalization : INCLUSIVE;
+        return propertiesCanonicalization != null ? propertiesCanonicalization : INCLUSIVE;
     }
-  
+
     public CanonicalizationMethod getKeyInfoCanonicalization() {
-      return keyInfoCanonicalization != null ? keyInfoCanonicalization : INCLUSIVE;
+        return keyInfoCanonicalization != null ? keyInfoCanonicalization : INCLUSIVE;
     }
-  
+
     public String getSignaturePolicyId() {
-      return signaturePolicyId;
+        return signaturePolicyId;
     }
-  
+
     public String getSignaturePolicyContent() {
-      return signaturePolicyContent;
+        return signaturePolicyContent;
     }
-  
+
     public String getSchema() {
-      return schema;
+        return schema;
     }
-  
+
     public String getTransformation() {
-      return transformation;
+        return transformation;
     }
-  
+
     public MimeType getTransformationOutputMimeType() {
-      return transformationOutputMimeType;
+        return transformationOutputMimeType;
     }
 }

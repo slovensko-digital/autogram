@@ -12,7 +12,7 @@ public class InfoEndpoint implements HttpHandler {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Content-Type", "application/json");
         exchange.sendResponseHeaders(200, 0);
-        
+
         var msg = "{\"version\": \"1.2.3\",\"status\": \"READY\"}";
         exchange.getResponseBody().write(msg.getBytes());
         exchange.getResponseBody().close();
