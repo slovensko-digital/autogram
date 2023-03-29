@@ -19,8 +19,8 @@ public abstract class TokenDriver {
 
     public static List<TokenDriver> getAvailableDrivers() {
         return Arrays.asList(
-                new PKCS11TokenDriver("eID", "/usr/lib/eID_klient/libpkcs11_x64.so"),
-                new PKCS11TokenDriver("ICASecureStore", "/usr/lib/pkcs11/libICASecureStorePkcs11.so")
+                new PKCS11TokenDriver("Občiansky preukaz (eID klient)", "/usr/lib/eID_klient/libpkcs11_x64.so"),
+                new PKCS11TokenDriver("I.CA SecureStore", "/usr/lib/pkcs11/libICASecureStorePkcs11.so")
         );
     }
 

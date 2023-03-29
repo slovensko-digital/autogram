@@ -168,7 +168,7 @@ public class MainController {
                 engine.getDocument().getElementById("frame").setAttribute("srcdoc", visualisation);
             }
         });
-        engine.load(Main.class.getResource("visualization.html").toExternalForm());
+        engine.load(Main.class.getResource("visualization-html.html").toExternalForm());
     }
 
     private void displayPDFVisualisation(Document document) {
@@ -185,7 +185,7 @@ public class MainController {
                 }
             });
 
-            engine.load(Main.class.getResource("pdf.html").toExternalForm());
+            engine.load(Main.class.getResource("visualization-pdf.html").toExternalForm());
         });
     }
 

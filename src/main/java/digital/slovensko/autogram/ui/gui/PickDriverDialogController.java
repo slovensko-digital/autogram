@@ -1,12 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.PrivateKeyLambda;
 import digital.slovensko.autogram.core.TokenDriverLambda;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
@@ -19,6 +15,12 @@ public class PickDriverDialogController {
     private TokenDriverLambda callback;
     private List<TokenDriver> drivers;
 
+    @FXML
+    VBox formGroup;
+    @FXML
+    Label error;
+    @FXML
+    VBox radios;
     @FXML
     VBox mainBox;
     private ToggleGroup toggleGroup;
@@ -34,15 +36,20 @@ public class PickDriverDialogController {
             var radioButton = new RadioButton(driver.getName());
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(driver);
-            mainBox.getChildren().add(radioButton);
+            radios.getChildren().add(radioButton);
         }
     }
 
-    public void onPickDriverButtonAction(ActionEvent event) {
-        ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
-        new Thread(()-> {
-            var driver = (TokenDriver) toggleGroup.getSelectedToggle().getUserData();
-            callback.call(driver);
-        }).start();
+    public void onPickDriverButtonAction() {
+        if(toggleGroup.getSelectedToggle() == null) {
+            error.setManaged(true);
+            formGroup.getStyleClass().add("autogram-form-group--error");
+        } else {
+            ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
+            new Thread(() -> {
+                var driver = (TokenDriver) toggleGroup.getSelectedToggle().getUserData();
+                callback.call(driver);
+            }).start();
+        }
     }
 }

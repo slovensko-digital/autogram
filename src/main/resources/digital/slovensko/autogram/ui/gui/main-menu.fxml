@@ -12,5 +12,5 @@
 
     <Label fx:id="statusLabel" text="Pick a file" />
 
-    <Button fx:id="mainButton" onAction="#onTestButtonAction" text="test.xml" />
+    <Button fx:id="mainButton" onAction="#onTestButtonAction" text="Otestovat podpisovanie" />
 </VBox>

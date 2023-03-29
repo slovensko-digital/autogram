@@ -54,7 +54,7 @@ class AutogramTests {
 
         @Override
         public void pickTokenDriverAndDo(List<TokenDriver> drivers, TokenDriverLambda callback) {
-            callback.call(new FakeTokenDriver());
+            callback.call(new FakeTokenDriver("fake"));
         }
 
         @Override
@@ -72,6 +72,10 @@ class AutogramTests {
     }
 
     private class FakeTokenDriver extends TokenDriver {
+        public FakeTokenDriver(String name) {
+            super(name);
+        }
+
         @Override
         public AbstractKeyStoreTokenConnection createToken() throws IOException {
             return new Pkcs12SignatureToken(new File("test.keystore"), new KeyStore.PasswordProtection("".toCharArray()));

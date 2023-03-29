@@ -1,11 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.PrivateKeyLambda;
-import digital.slovensko.autogram.core.TokenDriverLambda;
-import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -21,8 +18,15 @@ public class PickKeyDialogController {
     private List<DSSPrivateKeyEntry> keys;
 
     @FXML
+    VBox formGroup;
+    @FXML
+    Label error;
+    @FXML
     VBox mainBox;
+    @FXML
+    VBox radios;
     private ToggleGroup toggleGroup;
+
 
     public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
         this.keys = keys;
@@ -31,19 +35,24 @@ public class PickKeyDialogController {
 
     public void initialize() {
         toggleGroup = new ToggleGroup();
-        for (DSSPrivateKeyEntry key: keys) {
+        for (DSSPrivateKeyEntry key : keys) {
             var radioButton = new RadioButton(DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(key);
-            mainBox.getChildren().add(radioButton);
+            radios.getChildren().add(radioButton);
         }
     }
 
     public void onPickCertificateButtonAction(ActionEvent actionEvent) {
-        ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
-        new Thread(() -> {
-            var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
-            callback.call(key);
-        }).start();
+        if (toggleGroup.getSelectedToggle() == null) {
+            error.setManaged(true);
+            formGroup.getStyleClass().add("autogram-form-group--error");
+        } else {
+            ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
+            new Thread(() -> {
+                var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
+                callback.call(key);
+            }).start();
+        }
     }
 }
