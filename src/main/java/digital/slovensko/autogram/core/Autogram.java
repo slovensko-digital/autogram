@@ -2,15 +2,11 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
-import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 
-import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.io.IOException;
 
 public class Autogram {
@@ -70,28 +66,55 @@ public class Autogram {
     }
 
     private DSSDocument signDocument(SigningJob job, SigningKey key) {
-        return signDocumentAsAsiCWithXAdeS(job, key);
+        switch (job.getParameters().getSignatureType()) {
+            case ASIC_XADES:
+                return signDocumentAsAsiCWithXAdeS(job, key);
+            case XADES:
+                return signDocumentAsXAdeS(job, key);
+            case CADES:
+                return signDocumentAsCAdeS(job, key);
+            case PADES:
+                return signDocumentAsPAdeS(job, key);
+            default:
+                throw new RuntimeException("Unsupported signature type: " + job.getParameters().getSignatureType());
+        }
     }
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningJob job, SigningKey key) {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         var service = new ASiCWithXAdESService(commonCertificateVerifier);
+        var jobParameters = job.getParameters();
+        var signatureParameters = job.getParameters().getASiCWithXAdESSignatureParameters();
 
-        // TODO load from params actually
-        var parameters = new ASiCWithXAdESSignatureParameters();
-        parameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
-        parameters.setSignatureLevel(SignatureLevel.XAdES_BASELINE_B);
-        parameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
-        parameters.setSigningCertificate(key.getCertificate());
-        parameters.setSigningCertificateDigestMethod(DigestAlgorithm.SHA256);
-        parameters.setCertificateChain(key.getCertificateChain());
-        parameters.setSignedInfoCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE);
-        parameters.setSignedPropertiesCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE);
-        parameters.setEn319132(false);
+        signatureParameters.setSigningCertificate(key.getCertificate());
+        signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(job.getDocument(), parameters);
-        var signatureValue = key.sign(dataToSign, DigestAlgorithm.SHA256);
+        var dataToSign = service.getDataToSign(job.getDocument(), signatureParameters);
+        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(job.getDocument(), parameters, signatureValue);
+        return service.signDocument(job.getDocument(), signatureParameters, signatureValue);
+    }
+
+    private DSSDocument signDocumentAsXAdeS(SigningJob job, SigningKey key) {
+        return null;
+    }
+
+    private DSSDocument signDocumentAsCAdeS(SigningJob job, SigningKey key) {
+        return null;
+    }
+
+    private DSSDocument signDocumentAsPAdeS(SigningJob job, SigningKey key) {
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        var service = new PAdESService(commonCertificateVerifier);
+        var jobParameters = job.getParameters();
+        var signatureParameters = job.getParameters().getPAdESSignatureParameters();
+
+        signatureParameters.setSigningCertificate(key.getCertificate());
+        signatureParameters.setCertificateChain(key.getCertificateChain());
+
+        var dataToSign = service.getDataToSign(job.getDocument(), signatureParameters);
+        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
+
+        return service.signDocument(job.getDocument(), signatureParameters, signatureValue);
     }
 }

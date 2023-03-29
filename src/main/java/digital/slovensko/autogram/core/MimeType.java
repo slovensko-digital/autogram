@@ -15,7 +15,7 @@ import static java.util.stream.Collectors.*;
  * Inspired by Spring Framework's
  * https://docs.spring.io/spring-framework/docs/3.0.x/javadoc-api/org/springframework/http/MediaType.html
  */
-public record MimeType(String type, String subType, Map<String, String> parameters) {
+public class MimeType {
 
     public final static MimeType ANY = new MimeType("*", "*");
     public final static MimeType JSON = new MimeType("application", "json");
@@ -26,6 +26,17 @@ public record MimeType(String type, String subType, Map<String, String> paramete
     public final static MimeType YAML = new MimeType("text", "yaml");
     public final static MimeType XML = new MimeType("application", "xml");
     public final static MimeType PNG = new MimeType("image", "png");
+
+    private final String type;
+    private final String subType;
+    private final Map<String, String> parameters;
+
+    public MimeType(String str) throws MalformedMimetypeException {
+        var mime = parse(str);
+        this.type = mime.type;
+        this.subType = mime.subType;
+        this.parameters = mime.parameters;
+    }
 
     public MimeType(String type, String subType) {
         this(type, subType, new HashMap<>());
