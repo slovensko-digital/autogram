@@ -4,9 +4,18 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 
-public class EIDTokenDriver extends TokenDriver {
-    public AbstractKeyStoreTokenConnection createToken() {
-        var pkcsPath = "/usr/lib/eID_klient/libpkcs11_x64.so"; // Slovak eID default installation directory
+import java.io.IOException;
+
+public class PKCS11TokenDriver extends TokenDriver {
+    private final String pkcsPath;
+
+    public PKCS11TokenDriver(String name, String pkcsPath) {
+        super(name);
+        this.pkcsPath = pkcsPath;
+    }
+
+    @Override
+    public AbstractKeyStoreTokenConnection createToken() throws IOException {
         PasswordInputCallback passwordCallback = new DummyPasswordCallback();
         return new Pkcs11SignatureToken(pkcsPath, passwordCallback, -1);
     }

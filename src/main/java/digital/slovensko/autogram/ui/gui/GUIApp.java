@@ -21,9 +21,12 @@ public class GUIApp extends Application {
 
         var windowStage = new Stage();
 
-        var root = GUI.loadFXML(new MainMenuController((GUI) GUIApp.autogram.getUI(), GUIApp.autogram), "main-menu.fxml");
+        var controller = new MainMenuController((GUI) GUIApp.autogram.getUI(), GUIApp.autogram);
+        var root = GUI.loadFXML(controller, "main-menu.fxml");
 
-        var scene = new Scene(root, 320, 160);
+        var scene = new Scene(root, 620, 360);
+        scene.getStylesheets().add(controller.getClass().getResource("idsk.css").toExternalForm());
+
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);
         //windowStage.setIconified(true);

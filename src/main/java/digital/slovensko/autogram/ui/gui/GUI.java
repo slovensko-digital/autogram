@@ -43,6 +43,8 @@ public class GUI implements UI {
             var root = GUI.loadFXML(controller, "pick-driver-dialog.fxml");
 
             var scene = new Scene(root, 720, 540);
+            scene.getStylesheets().add(controller.getClass().getResource("idsk.css").toExternalForm());
+
             var stage = new Stage();
             stage.setTitle("Pick driver");
             stage.setScene(scene);
@@ -58,6 +60,7 @@ public class GUI implements UI {
             var controller = new PickKeyDialogController(keys, callback);
             var root = GUI.loadFXML(controller, "pick-key-dialog.fxml");
             var scene = new Scene(root, 720, 540);
+            scene.getStylesheets().add(controller.getClass().getResource("idsk.css").toExternalForm());
 
             var stage = new Stage();
             stage.setTitle("Pick key");

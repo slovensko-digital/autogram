@@ -7,11 +7,13 @@
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            prefHeight="400.0" prefWidth="600.0">
+      xmlns:fx="http://javafx.com/fxml"
+      prefHeight="400.0" prefWidth="600.0">
 
-    <Label fx:id="driverLabel" text="driverLabel"/>
+    <VBox fx:id="mainBox">
+    </VBox>
 
-    <Button fx:id="mainButton" text="Pick driver" onAction="#onPickDriverButtonAction" />
-
+    <HBox alignment="BOTTOM_LEFT">
+        <Button fx:id="mainButton" text="Pick driver" onAction="#onPickDriverButtonAction"/>
+    </HBox>
 </VBox>
