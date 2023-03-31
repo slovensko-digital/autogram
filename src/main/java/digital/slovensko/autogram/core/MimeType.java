@@ -1,9 +1,10 @@
 package digital.slovensko.autogram.core;
 
-import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
 
 import java.util.*;
 import java.util.stream.*;
+
+import digital.slovensko.autogram.core.errors.MalformedMimetypeException;
 
 import static java.util.stream.Collectors.*;
 
