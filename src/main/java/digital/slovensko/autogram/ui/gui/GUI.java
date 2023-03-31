@@ -46,35 +46,43 @@ public class GUI implements UI {
             for (SigningDialogController c : jobs.values()) {
                 c.disableKeyPicking();
             }
-            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
-            var root = GUI.loadFXML(controller, "pick-driver-dialog.fxml");
+            if (drivers.size() == 1) {
+                callback.call(drivers.get(0)); // short-circuit if only one driver present
+            } else {
 
-            var scene = new Scene(root);
+                PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
+                var root = GUI.loadFXML(controller, "pick-driver-dialog.fxml");
 
-            var stage = new Stage();
-            stage.setTitle("Výber úložiska certifikátu");
-            stage.setScene(scene);
-            stage.setOnCloseRequest(refreshKeyOnAllJobs);
+                var scene = new Scene(root);
 
-            stage.sizeToScene();
+                var stage = new Stage();
+                stage.setTitle("Výber úložiska certifikátu");
+                stage.setScene(scene);
+                stage.setOnCloseRequest(refreshKeyOnAllJobs);
 
+                stage.sizeToScene();
 
-            stage.show();
+                stage.show();
+            }
         });
     }
 
     @Override
     public void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
         Platform.runLater(() -> {
-            var controller = new PickKeyDialogController(keys, callback);
-            var root = GUI.loadFXML(controller, "pick-key-dialog.fxml");
+            if (keys.size() == 1) {
+                callback.call(keys.get(0)); // short-circuit if only one key present
+            } else {
+                var controller = new PickKeyDialogController(keys, callback);
+                var root = GUI.loadFXML(controller, "pick-key-dialog.fxml");
 
-            var stage = new Stage();
-            stage.setTitle("Výber certifikátu");
-            stage.setScene(new Scene(root));
-            stage.setOnCloseRequest(refreshKeyOnAllJobs);
+                var stage = new Stage();
+                stage.setTitle("Výber certifikátu");
+                stage.setScene(new Scene(root));
+                stage.setOnCloseRequest(refreshKeyOnAllJobs);
 
-            stage.show();
+                stage.show();
+            }
         });
     }
 

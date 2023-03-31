@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
 
@@ -69,11 +70,15 @@ class AutogramTests {
         @Override
         public void refreshSigningKey() {
         }
+
+        @Override
+        public void showError(AutogramException e) {
+        }
     }
 
     private class FakeTokenDriver extends TokenDriver {
         public FakeTokenDriver(String name) {
-            super(name);
+            super(name, Path.of(""));
         }
 
         @Override

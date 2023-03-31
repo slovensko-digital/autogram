@@ -13,7 +13,7 @@ import java.util.List;
 
 public class PickDriverDialogController {
     private TokenDriverLambda callback;
-    private List<TokenDriver> drivers;
+    private List<? extends TokenDriver> drivers;
 
     @FXML
     VBox formGroup;
@@ -25,7 +25,7 @@ public class PickDriverDialogController {
     VBox mainBox;
     private ToggleGroup toggleGroup;
 
-    public PickDriverDialogController(List<TokenDriver> drivers, TokenDriverLambda callback) {
+    public PickDriverDialogController(List<? extends TokenDriver> drivers, TokenDriverLambda callback) {
         this.callback = callback;
         this.drivers = drivers;
     }

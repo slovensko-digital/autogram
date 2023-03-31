@@ -43,7 +43,7 @@ public class Autogram {
     }
 
     public void pickSigningKey() {
-        var drivers = TokenDriver.getAvailableDrivers(); // TODO move up?
+        var drivers = TokenDriver.getAvailableDrivers(); // TODO handle empty driver list with ui.showError?
         ui.pickTokenDriverAndDo(drivers, (driver) -> {
             try {
                 var token = driver.createToken();
