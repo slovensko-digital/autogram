@@ -10,7 +10,6 @@ import eu.europa.esig.dss.model.DSSDocument;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.Map;
 
 import javax.naming.InvalidNameException;
 
@@ -23,14 +22,13 @@ public class ServerResponder extends Responder {
 
     @Override
     public void onDocumentSigned(DSSDocument r, SigningKey signingKey) {
-        Map<String, String> map;
+        String signer = "unknown";
+
         try {
-            map = signingKey.getCertificateDetails();
+            signer = signingKey.prettyPrintCertificateDetails();
         } catch (InvalidNameException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
-        var signer = ",CN=" + map.get("name") + ", C=" + map.get("country") + ", L=" + map.get("city") + ", STREET="
-                + map.get("street");
 
         try {
             var b64document = Base64.getEncoder().encodeToString(r.openStream().readAllBytes());

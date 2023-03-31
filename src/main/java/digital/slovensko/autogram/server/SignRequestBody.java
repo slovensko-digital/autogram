@@ -10,13 +10,13 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 
 public class SignRequestBody {
     private Document document;
-    private SigningParameters parameters;
+    private ServerSigningParameters parameters;
     private String payloadMimeType;
 
     public SignRequestBody() {
     }
 
-    public SignRequestBody(Document document, SigningParameters parameters, String payloadMimeType) {
+    public SignRequestBody(Document document, ServerSigningParameters parameters, String payloadMimeType) {
         this.document = document;
         this.parameters = parameters;
         this.payloadMimeType = payloadMimeType;
@@ -38,7 +38,7 @@ public class SignRequestBody {
     }
 
     public SigningParameters getParameters() {
-        return parameters;
+        return parameters.getSigningParameters();
     }
 
     public MimeType getPayloadMimeType() throws MalformedMimetypeException {

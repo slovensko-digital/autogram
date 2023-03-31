@@ -2,10 +2,13 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
+import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
+import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.xades.signature.XAdESService;
 
 import java.io.IOException;
 
@@ -71,8 +74,8 @@ public class Autogram {
                 return signDocumentAsAsiCWithXAdeS(job, key);
             case XADES:
                 return signDocumentAsXAdeS(job, key);
-            case CADES:
-                return signDocumentAsCAdeS(job, key);
+            case ASIC_CADES:
+                return signDocumentAsASiCWithCAdeS(job, key);
             case PADES:
                 return signDocumentAsPAdeS(job, key);
             default:
@@ -96,11 +99,33 @@ public class Autogram {
     }
 
     private DSSDocument signDocumentAsXAdeS(SigningJob job, SigningKey key) {
-        return null;
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        var service = new XAdESService(commonCertificateVerifier);
+        var jobParameters = job.getParameters();
+        var signatureParameters = job.getParameters().getXAdESSignatureParameters();
+
+        signatureParameters.setSigningCertificate(key.getCertificate());
+        signatureParameters.setCertificateChain(key.getCertificateChain());
+
+        var dataToSign = service.getDataToSign(job.getDocument(), signatureParameters);
+        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
+
+        return service.signDocument(job.getDocument(), signatureParameters, signatureValue);
     }
 
-    private DSSDocument signDocumentAsCAdeS(SigningJob job, SigningKey key) {
-        return null;
+    private DSSDocument signDocumentAsASiCWithCAdeS(SigningJob job, SigningKey key) {
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        var service = new ASiCWithCAdESService(commonCertificateVerifier);
+        var jobParameters = job.getParameters();
+        var signatureParameters = job.getParameters().getASiCWithCAdESSignatureParameters();
+
+        signatureParameters.setSigningCertificate(key.getCertificate());
+        signatureParameters.setCertificateChain(key.getCertificateChain());
+
+        var dataToSign = service.getDataToSign(job.getDocument(), signatureParameters);
+        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
+
+        return service.signDocument(job.getDocument(), signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsPAdeS(SigningJob job, SigningKey key) {

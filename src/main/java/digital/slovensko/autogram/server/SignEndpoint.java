@@ -43,19 +43,19 @@ public class SignEndpoint implements HttpHandler {
             exchange.getResponseBody().write("Malformed MIME Type".getBytes());
             exchange.getResponseBody().close();
             return;
-
+            
         } catch (Exception e) {
             exchange.sendResponseHeaders(422, 0);
             exchange.getResponseBody().write(e.getMessage().getBytes());
             exchange.getResponseBody().close();
             return;
         }
-
+        
         var parameters = body.getParameters();
         var responder = new ServerResponder(exchange);
-
+        
         var job = new SigningJob(document, parameters, responder);
-
+        
         autogram.showSigningDialog(job);
     }
 }
