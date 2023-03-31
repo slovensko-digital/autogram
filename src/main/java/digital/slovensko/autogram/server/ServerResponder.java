@@ -3,10 +3,9 @@ package digital.slovensko.autogram.server;
 import com.sun.net.httpserver.HttpExchange;
 
 import digital.slovensko.autogram.core.Responder;
+import digital.slovensko.autogram.core.SignedDocument;
 import digital.slovensko.autogram.core.SigningError;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningKey;
-import eu.europa.esig.dss.model.DSSDocument;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -21,17 +20,17 @@ public class ServerResponder extends Responder {
     }
 
     @Override
-    public void onDocumentSigned(DSSDocument r, SigningKey signingKey) {
+    public void onDocumentSigned(SignedDocument signedDocument) {
         String signer = "unknown";
 
         try {
-            signer = signingKey.prettyPrintCertificateDetails();
+            signer = signedDocument.getKey().prettyPrintCertificateDetails();
         } catch (InvalidNameException e) {
             e.printStackTrace();
         }
 
         try {
-            var b64document = Base64.getEncoder().encodeToString(r.openStream().readAllBytes());
+            var b64document = Base64.getEncoder().encodeToString(signedDocument.getDocument().openStream().readAllBytes());
             var msg = "{\"content\": \"" + b64document + "\", \"signedBy\": \"" + signer + "\"}";
 
             exchange.getResponseHeaders().add("Content-Type", "application/json");

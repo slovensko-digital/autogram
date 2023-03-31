@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.server;
+package digital.slovensko.autogram.server.dto;
 
 public class Document {
     private String filename;

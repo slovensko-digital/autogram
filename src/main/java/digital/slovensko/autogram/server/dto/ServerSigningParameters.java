@@ -1,4 +1,6 @@
-package digital.slovensko.autogram.server;
+package digital.slovensko.autogram.server.dto;
+
+import static digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod.*;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
@@ -7,8 +9,6 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
-
-import static digital.slovensko.autogram.server.ServerSigningParameters.LocalCanonicalizationMethod.*;
 
 public class ServerSigningParameters {
     private enum Format {

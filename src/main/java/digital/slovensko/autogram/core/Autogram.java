@@ -32,7 +32,7 @@ public class Autogram {
     public void sign(SigningJob job) {
         var signedDocument = signDocument(job, activeKey);
         // TODO error handling
-        job.onDocumentSigned(signedDocument, activeKey);
+        job.onDocumentSigned(signedDocument);
         ui.hideSigningDialog(job, this);
     }
 
@@ -68,16 +68,16 @@ public class Autogram {
         setActiveSigningKey(null);
     }
 
-    private DSSDocument signDocument(SigningJob job, SigningKey key) {
+    private SignedDocument signDocument(SigningJob job, SigningKey key) {
         switch (job.getParameters().getSignatureType()) {
             case ASIC_XADES:
-                return signDocumentAsAsiCWithXAdeS(job, key);
+                return new SignedDocument(signDocumentAsAsiCWithXAdeS(job, key), key);
             case XADES:
-                return signDocumentAsXAdeS(job, key);
+                return new SignedDocument(signDocumentAsXAdeS(job, key), key);
             case ASIC_CADES:
-                return signDocumentAsASiCWithCAdeS(job, key);
+                return new SignedDocument(signDocumentAsASiCWithCAdeS(job, key), key);
             case PADES:
-                return signDocumentAsPAdeS(job, key);
+                return new SignedDocument(signDocumentAsPAdeS(job, key), key);
             default:
                 throw new RuntimeException("Unsupported signature type: " + job.getParameters().getSignatureType());
         }

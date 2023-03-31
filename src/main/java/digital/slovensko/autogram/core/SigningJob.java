@@ -26,7 +26,7 @@ public class SigningJob {
         responder.onDocumentSignFailed(job, e);
     }
 
-    public void onDocumentSigned(DSSDocument signedDocument, SigningKey signingKey) {
-        responder.onDocumentSigned(signedDocument, signingKey);
+    public void onDocumentSigned(SignedDocument signedDocument) {
+        responder.onDocumentSigned(signedDocument);
     }
 }

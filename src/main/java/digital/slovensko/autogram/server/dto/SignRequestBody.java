@@ -1,9 +1,8 @@
-package digital.slovensko.autogram.server;
+package digital.slovensko.autogram.server.dto;
 
 import java.util.Base64;
 
-import com.octosign.whitelabel.error_handling.MalformedMimetypeException;
-
+import digital.slovensko.autogram.core.errors.MalformedMimetypeException;
 import digital.slovensko.autogram.core.MimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import eu.europa.esig.dss.model.InMemoryDocument;

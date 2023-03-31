@@ -6,6 +6,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.server.dto.SignRequestBody;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
 import java.io.IOException;
