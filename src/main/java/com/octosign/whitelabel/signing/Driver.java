@@ -1,6 +1,7 @@
 package com.octosign.whitelabel.signing;
 
 import com.octosign.whitelabel.ui.picker.SelectableItem;
+import digital.slovensko.autogram.util.OperatingSystem;
 
 import java.nio.file.Path;
 import java.util.*;

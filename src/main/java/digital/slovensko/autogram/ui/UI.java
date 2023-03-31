@@ -18,4 +18,6 @@ public interface UI {
     void hideSigningDialog(SigningJob job, Autogram autogram);
 
     void refreshSigningKey();
+
+    void showError(AutogramException e);
 }

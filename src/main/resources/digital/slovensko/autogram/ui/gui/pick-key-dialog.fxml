@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            prefHeight="400.0" prefWidth="600.0">
+      xmlns:fx="http://javafx.com/fxml"
+      prefHeight="420" prefWidth="450" minWidth="450"
+      fx:id="mainBox">
 
-    <Label fx:id="keyLabel" text="keyLabel" wrapText="true"/>
+    <VBox fx:id="formGroup" styleClass="autogram-form-group">
+        <Label styleClass="autogram-heading-l">Ktorým certifikátom chcete podpisovať?</Label>
+        <Label fx:id="error" styleClass="autogram-error-message" managed="false">Vyberte certifikát, ktorým budete podpisovať</Label>
+        <VBox fx:id="radios" styleClass="autogram-radios"></VBox>
+    </VBox>
 
-    <Button fx:id="mainButton" text="Pick key" onAction="#onPickCertificateButtonAction" />
-
+    <Button fx:id="mainButton" text="Vybrať certifikát" onAction="#onPickCertificateButtonAction" />
 </VBox>

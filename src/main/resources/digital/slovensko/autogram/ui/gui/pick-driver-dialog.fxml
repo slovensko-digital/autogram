@@ -6,12 +6,19 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            prefHeight="400.0" prefWidth="600.0">
+      xmlns:fx="http://javafx.com/fxml"
+      prefHeight="420" prefWidth="450" minWidth="450"
+      fx:id="mainBox">
 
-    <Label fx:id="driverLabel" text="driverLabel"/>
+    <VBox fx:id="formGroup" styleClass="autogram-form-group">
+        <Label styleClass="autogram-heading-l" VBox.vgrow="ALWAYS">Kde je uložený podpisový certifikát?</Label>
+        <Label fx:id="error" styleClass="autogram-error-message" managed="false">Vyberte úložisko certifikátov</Label>
+        <VBox fx:id="radios" styleClass="autogram-radios"></VBox>
+    </VBox>
 
-    <Button fx:id="mainButton" text="Pick driver" onAction="#onPickDriverButtonAction" />
+    <Button fx:id="mainButton" text="Vybrať úložisko" onAction="#onPickDriverButtonAction"/>
 
 </VBox>
