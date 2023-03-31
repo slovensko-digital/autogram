@@ -41,4 +41,9 @@ public class CliUI implements UI {
     public void refreshSigningKey() {
         System.out.println("Showing new signing key on all dialogs!");
     }
+
+    @Override
+    public void showError(AutogramException e) {
+        System.out.println("Error " + e.toString() + " closed!");
+    }
 }

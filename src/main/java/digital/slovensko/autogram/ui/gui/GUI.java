@@ -118,6 +118,22 @@ public class GUI implements UI {
         });
     }
 
+    @Override
+    public void showError(AutogramException e) {
+        Platform.runLater(() -> {
+            var controller = new ErrorController(e);
+            var root = GUI.loadFXML(controller, "error-dialog.fxml");
+
+            var stage = new Stage();
+            stage.setTitle("Nastala chyba"); // TODO
+            stage.setScene(new Scene(root));
+
+            stage.sizeToScene();
+            stage.show();
+            GUI.setUserFriendlyPosition(stage);
+        });
+    }
+
     public void showPickFileDialog(Autogram autogram) {
         Platform.runLater(() -> {
             var chooser = new FileChooser();
