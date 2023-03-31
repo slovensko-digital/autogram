@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.drivers;
 
-import com.octosign.whitelabel.signing.OperatingSystem;
+import digital.slovensko.autogram.util.OperatingSystem;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 
 import java.io.IOException;
