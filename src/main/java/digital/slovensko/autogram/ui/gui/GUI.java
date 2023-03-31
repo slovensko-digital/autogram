@@ -3,19 +3,26 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.ui.cli.CliResponder;
+import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.WeakHashMap;
 
 public class GUI implements UI {
@@ -36,18 +43,21 @@ public class GUI implements UI {
     @Override
     public void pickTokenDriverAndDo(List<TokenDriver> drivers, TokenDriverLambda callback) {
         Platform.runLater(() -> {
-            for(SigningDialogController c : jobs.values()) {
+            for (SigningDialogController c : jobs.values()) {
                 c.disableKeyPicking();
             }
             PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
             var root = GUI.loadFXML(controller, "pick-driver-dialog.fxml");
 
-            var scene = new Scene(root, 720, 540);
+            var scene = new Scene(root);
 
             var stage = new Stage();
             stage.setTitle("Výber úložiska certifikátu");
             stage.setScene(scene);
             stage.setOnCloseRequest(refreshKeyOnAllJobs);
+
+            stage.sizeToScene();
+
 
             stage.show();
         });
@@ -58,11 +68,10 @@ public class GUI implements UI {
         Platform.runLater(() -> {
             var controller = new PickKeyDialogController(keys, callback);
             var root = GUI.loadFXML(controller, "pick-key-dialog.fxml");
-            var scene = new Scene(root, 720, 540);
 
             var stage = new Stage();
             stage.setTitle("Výber certifikátu");
-            stage.setScene(scene);
+            stage.setScene(new Scene(root));
             stage.setOnCloseRequest(refreshKeyOnAllJobs);
 
             stage.show();
@@ -77,19 +86,20 @@ public class GUI implements UI {
 
             var root = GUI.loadFXML(controller, "signing-dialog.fxml");
 
-            var scene = new Scene(root, 720, 650);
-
             var stage = new Stage();
             stage.setTitle("Podpisovanie dokumentu"); // TODO use document name?
-            stage.setScene(scene);
+            stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 var error = new SigningError();
                 job.onDocumentSignFailed(job, error);
             });
 
+            stage.sizeToScene();
             stage.show();
+            GUI.setUserFriendlyPosition(stage);
         });
     }
+
 
     @Override
     public void hideSigningDialog(SigningJob job, Autogram autogram) {
@@ -108,6 +118,24 @@ public class GUI implements UI {
         });
     }
 
+    public void showPickFileDialog(Autogram autogram) {
+        Platform.runLater(() -> {
+            var chooser = new FileChooser();
+            var list = chooser.showOpenMultipleDialog(new Stage());
+
+            if (list != null) {
+                for (File f : list) {
+                    var document = new FileDocument(f.getPath());
+                    var parameters = new SigningParameters();
+                    var responder = new CliResponder(); // TODO
+
+                    var job = new SigningJob(document, parameters, responder);
+                    autogram.showSigningDialog(job);
+                }
+            }
+        });
+    }
+
     static Parent loadFXML(Object controller, String fxml) {
         try {
             var loader = new FXMLLoader();
@@ -117,5 +145,14 @@ public class GUI implements UI {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static void setUserFriendlyPosition(Stage stage) {
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        double x = bounds.getMinX() + (bounds.getWidth() - stage.getScene().getWidth()) / 2 + (new Random()).nextInt(100) - 50;
+        double y = bounds.getMinY() + (bounds.getHeight() - stage.getScene().getHeight()) / 2 + (new Random()).nextInt(100) - 50;
+
+        stage.setX(x);
+        stage.setY(y);
     }
 }

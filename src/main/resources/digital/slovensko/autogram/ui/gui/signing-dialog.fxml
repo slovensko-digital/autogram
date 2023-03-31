@@ -6,9 +6,9 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      prefHeight="450.0" prefWidth="600.0"
+      prefHeight="650" prefWidth="600" minWidth="600"
       fx:id="mainBox">
-    <Label styleClass="autogram-heading">Dokument na podpísanie</Label>
+    <Label styleClass="autogram-heading-l">Dokument na podpísanie</Label>
 
     <!-- HTML/PDF visualization -->
     <WebView fx:id="webView" managed="false" visible="false" VBox.vgrow="ALWAYS" />
@@ -17,7 +17,7 @@
     <TextArea styleClass="autogram-visualizer-plaintext" fx:id="plainTextArea" managed="false" visible="false" editable="false" minHeight="250" VBox.vgrow="ALWAYS"></TextArea>
 
     <HBox styleClass="autogram-actions">
-        <Button fx:id="mainButton" text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed"/>
+        <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary" text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed"/>
         <Button fx:id="changeKeyButton" styleClass="autogram-link" text="Zmeniť" visible="false" onAction="#onChangeKeyButtonPressed"/>
     </HBox>
 </VBox>

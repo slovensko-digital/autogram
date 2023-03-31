@@ -7,13 +7,14 @@
 <?import javafx.scene.layout.*?>
 
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      prefHeight="350.0" prefWidth="600.0"
+      prefHeight="420" prefWidth="450" minWidth="450"
       fx:id="mainBox">
 
     <VBox fx:id="formGroup" styleClass="autogram-form-group">
-        <Label styleClass="autogram-heading">Kde je uložený podpisový certifikát?</Label>
+        <Label styleClass="autogram-heading-l" VBox.vgrow="ALWAYS">Kde je uložený podpisový certifikát?</Label>
         <Label fx:id="error" styleClass="autogram-error-message" managed="false">Vyberte úložisko certifikátov</Label>
         <VBox fx:id="radios" styleClass="autogram-radios"></VBox>
     </VBox>

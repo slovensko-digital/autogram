@@ -66,9 +66,11 @@ public class SigningDialogController {
         mainButton.setDisable(false);
         if (autogram.getActiveSigningKey() == null) {
             mainButton.setText("Vybrať podpisový certifikát");
+            mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
         } else {
             mainButton.setText("Podpísať ako " + DSSUtils.parseCN(autogram.getActiveSigningKey().getCertificate().getSubject().getRFC2253()));
+            mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
         }
     }

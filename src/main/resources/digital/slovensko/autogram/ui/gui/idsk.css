@@ -1,3 +1,31 @@
+/* Main styling */
+@font-face {
+/* TODO    src: url('fonts/SourceSansPro-Light.ttf'); */
+}
+
+.root {
+    -autogram-text-colour: #0b0c0c;
+
+    -autogram-border-colour: #b1b4b6;
+    -autogram-input-border-colour: #0b0c0c;
+
+    -autogram-focus-colour: #ffdd00;
+
+    -autogram-error-colour:	#d4351c;
+
+    -autogram-success-colour: #00703c;
+
+    -fx-font-family: 'Source Sans Pro', 'Arial', sans-serif;
+    -fx-font-size: 16px;
+}
+
+#mainBox {
+    -fx-border-width: 40px 0 0 0, 3px 0 0 0;
+    -fx-border-color: #003183, linear-gradient(from 0 0 to 150px 0, repeat, #ffffff 0%, #ffffff 33.3%, #003183 33.3%, #003183 66.6%, #d0190f 66.6%, #d0190f 100%);
+    -fx-padding: 30px;
+    -fx-spacing: 30px;
+}
+
 /* Radio buttons */
 .radio-button {
     -fx-cursor: hand;
@@ -8,7 +36,7 @@
 }
 
 .radio-button .radio {
-    -fx-background-color: #000000, #ffffff;
+    -fx-background-color: -autogram-input-border-colour, #ffffff;
     -fx-background-insets: 0, 2;
     -fx-background-radius: 25px;
     -fx-pref-height: 40px;
@@ -18,7 +46,7 @@
 }
 
 .radio-button:focused .radio {
-     -fx-background-color: #ffdd00, #000000, #ffffff;
+     -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour, #ffffff;
      -fx-background-insets: -4, 0, 4;
      -fx-background-radius: 25px;
 }
@@ -30,10 +58,11 @@
 }
 
 .radio-button:selected .radio .dot {
-    -fx-background-color: #000000;
+    -fx-background-color: -autogram-input-border-colour;
 }
 
 .radio-button .text {
+    -fx-fill: -autogram-text-colour;
     -fx-font-size: 1.1875em;
 }
 
@@ -68,7 +97,7 @@
 
 .autogram-link:hover {
     -fx-background-color: transparent;
-    -fx-text-fill: #003078;
+    -fx-text-fill: #003078 !important;
 }
 
 .autogram-link:hover .text {
@@ -77,27 +106,46 @@
     -fx-border-color: #003078;
 }
 
-
-/* Main styling */
-@font-face {
-/* TODO    src: url('fonts/SourceSansPro-Light.ttf'); */
+.button.autogram-button--secondary {
+    -fx-text-fill: -autogram-text-colour;
+    -fx-background-color: #f3f2f1;
+    -fx-border-color: #929191;
+}
+.button.autogram-button--secondary:hover {
+    -fx-background-color: #dbdad9;
 }
 
-.root {
-    -fx-font-family: 'Source Sans Pro', 'Arial', sans-serif;
-    -fx-font-size: 16px;
-}
 
-#mainBox {
-    -fx-border-width: 40px 0 0 0, 3px 0 0 0;
-    -fx-border-color: #003183, linear-gradient(from 0 0 to 150px 0, repeat, #ffffff 0%, #ffffff 33.3%, #003183 33.3%, #003183 66.6%, #d0190f 66.6%, #d0190f 100%);
-    -fx-padding: 30px;
-    -fx-spacing: 30px;
-}
+/* Text styling */
 
-.autogram-heading {
+.autogram-heading-l {
+    -fx-text-fill: -autogram-text-colour;
+
     -fx-font-size: 2.25em;
     -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.autogram-heading-m {
+    -fx-text-fill: -autogram-text-colour;
+
+    -fx-font-size: 1.5em;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
+.autogram-body {
+    -fx-text-fill: -autogram-text-colour;
+
+    -fx-font-size: 1.1875em;
+    -fx-wrap-text: true;
+
+}
+
+.autogram-body-l {
+    -fx-text-fill: -autogram-text-colour;
+
+    -fx-font-size: 1.5em;
     -fx-wrap-text: true;
 }
 
@@ -140,10 +188,40 @@
 
 .autogram-visualizer-plaintext {
     -fx-wrap-text: true;
-
 }
 
+.autogram-dropzone {
+    -fx-spacing: 2em;
+    -fx-border-color: -autogram-border-colour;
+    -fx-border-width: 2px;
+    -fx-border-style: dashed;
+    -fx-border-radius: 0.5em;
 
+    -fx-padding: 4em;
+    -fx-alignment: center;
+}
+
+.autogram-dropzone--entered {
+    -fx-border-color: -autogram-input-border-colour;
+    -fx-border-width: 2px;
+    -fx-background-color: -autogram-focus-colour, #ffffff;
+    -fx-background-insets: -3, 0;
+    -fx-background-radius: 0.5em;
+}
+
+.autogram-footer {
+    -fx-border-width: 1px 0 0 0;
+    -fx-border-color: -autogram-border-colour;
+    -fx-background-color: #f3f2f1;
+    -fx-padding: 15px 30px;
+}
+
+.autogram-footer .autogram-link {
+    -fx-font-size: 1em;
+    -fx-text-fill: -autogram-text-colour;
+}
+
+/* Scrollbar */
 .scroll-bar:horizontal .track,
 .scroll-bar:vertical .track {
     -fx-background-color: transparent;
@@ -190,4 +268,17 @@
 .scroll-bar:horizontal .thumb:hover,
 .scroll-bar:vertical .thumb:hover {
     -fx-background-color :derive(#4D4C4F,10.0%);
+}
+
+.autogram-icon {
+    -fx-fill: transparent;
+    -fx-stroke: -autogram-border-colour;
+    -fx-stroke-width: 1.5;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+
+.autogram-icon--big {
+    -fx-scale-x: 2;
+    -fx-scale-y: 2;
 }
