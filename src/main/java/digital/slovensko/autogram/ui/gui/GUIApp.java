@@ -30,6 +30,7 @@ public class GUIApp extends Application {
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);
         windowStage.sizeToScene();
+        windowStage.setResizable(false);
         //windowStage.setIconified(true);
         windowStage.show();
     }
