@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            prefHeight="400.0" prefWidth="600.0">
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      prefHeight="650" prefWidth="600" minWidth="600"
+      fx:id="mainBox">
+    <Label styleClass="autogram-heading-l">Dokument na podpísanie</Label>
 
-    <HBox>
-        <Button fx:id="mainButton" text="Načítať certifikáty" onAction="#onMainButtonPressed"/>
-        <Button fx:id="changeKeyButton" text="Zmeniť" visible="false" onAction="#onChangeKeyButtonPressed"/>
+    <!-- HTML/PDF visualization -->
+    <WebView fx:id="webView" managed="false" visible="false" VBox.vgrow="ALWAYS" />
+
+    <!-- Plaintext visualization -->
+    <TextArea styleClass="autogram-visualizer-plaintext" fx:id="plainTextArea" managed="false" visible="false" editable="false" minHeight="250" VBox.vgrow="ALWAYS"></TextArea>
+
+    <HBox styleClass="autogram-actions">
+        <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary" text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed"/>
+        <Button fx:id="changeKeyButton" styleClass="autogram-link" text="Zmeniť" visible="false" onAction="#onChangeKeyButtonPressed"/>
     </HBox>
-</AnchorPane>
+</VBox>

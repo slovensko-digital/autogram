@@ -171,7 +171,7 @@
                         </goals>
                         <configuration>
                             <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.min.js</url>
-                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs</toDir>
+                            <toDir>${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs</toDir>
                             <skipIfExists>true</skipIfExists>
                         </configuration>
                     </execution>
@@ -183,7 +183,7 @@
                         </goals>
                         <configuration>
                             <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js</url>
-                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs</toDir>
+                            <toDir>${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs</toDir>
                             <skipIfExists>true</skipIfExists>
                         </configuration>
                     </execution>
@@ -196,7 +196,7 @@
                         <configuration>
                             <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
                             <fromDir>cmaps</fromDir>
-                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs/cmaps</toDir>
+                            <toDir>${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs/cmaps</toDir>
                         </configuration>
                     </execution>
                 </executions>

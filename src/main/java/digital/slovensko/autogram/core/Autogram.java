@@ -8,6 +8,7 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -42,7 +43,7 @@ public class Autogram {
     }
 
     public void pickSigningKey() {
-        var drivers = TokenDriver.getAvailableDrivers(); // TODO move up?
+        var drivers = TokenDriver.getAvailableDrivers(); // TODO handle empty driver list with ui.showError?
         ui.pickTokenDriverAndDo(drivers, (driver) -> {
             try {
                 var token = driver.createToken();
@@ -52,6 +53,9 @@ public class Autogram {
                 });
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            } catch (DSSException e) {
+                resetSigningKey();
+                ui.showError(AutogramException.createFromDSSException(e));
             }
         });
     }
