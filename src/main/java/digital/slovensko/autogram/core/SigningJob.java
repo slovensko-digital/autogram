@@ -2,10 +2,19 @@ package digital.slovensko.autogram.core;
 
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
+import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Objects;
 
 public class SigningJob {
     private final Responder responder;
@@ -35,31 +44,46 @@ public class SigningJob {
     }
 
     public boolean isPlainText() {
-        return false; // TODO
+        return Objects.equals(parameters.getTransformationOutputMimeType(), "text/plain");
     }
 
     public boolean isHTML() {
-        return false; // TODO
+        return Objects.equals(parameters.getTransformationOutputMimeType(), "text/html");
     }
 
     public boolean isPDF() {
-        return true; // TODO
+        return parameters.getSignatureType() == SigningParameters.SignatureType.PADES;
     }
 
     public String getDocumentAsPlainText() {
+        return transform();
+    }
+
+    private String transform() {
+        // TODO probably move this logic into signing job creation
         try {
-            return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+            var document = builderFactory.newDocumentBuilder().parse(new InputSource(this.document.openStream()));
+            document.setXmlStandalone(true);
+            var xmlSource = new DOMSource(document);
+            var outputTarget = new StreamResult(new StringWriter());
+
+            var transformer = TransformerFactory.newInstance().newTransformer(
+                    new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes()))
+            );
+
+            transformer.transform(xmlSource, outputTarget);
+
+            var result = outputTarget.getWriter().toString();
+            return result;
+        } catch (Exception e) {
+            return null; // TODO
         }
     }
 
     public String getDocumentAsHTML() {
-        try {
-            return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return transform();
     }
 
     public String getDocumentAsBase64Encoded() {

@@ -91,7 +91,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(infoCanonicalization),
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
-                signaturePolicyId, signaturePolicyContent, schema, transformation);
+                signaturePolicyId, signaturePolicyContent, schema, transformation, transformationOutputMimeType);
     }
 
     private static String getCanonicalizationMethodString(LocalCanonicalizationMethod method) {

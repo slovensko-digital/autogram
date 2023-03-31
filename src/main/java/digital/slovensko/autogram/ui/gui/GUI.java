@@ -103,7 +103,7 @@ public class GUI implements UI {
             });
 
             stage.sizeToScene();
-            stage.show();
+            GUI.showOnTop(stage);
             GUI.setUserFriendlyPosition(stage);
         });
     }
@@ -150,7 +150,7 @@ public class GUI implements UI {
             if (list != null) {
                 for (File f : list) {
                     var document = new FileDocument(f.getPath());
-                    var parameters = new SigningParameters();
+                    var parameters = SigningParameters.buildForPDF();
                     var responder = new CliResponder(); // TODO
 
                     var job = new SigningJob(document, parameters, responder);
@@ -178,5 +178,22 @@ public class GUI implements UI {
 
         stage.setX(x);
         stage.setY(y);
+    }
+
+    private static void showOnTop(Stage stage) {
+        stage.requestFocus();
+        stage.setAlwaysOnTop(true);
+        stage.toFront();
+        stage.show();
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(42);
+            } catch (InterruptedException ignored) {
+                // noop
+            }
+
+            Platform.runLater(() -> stage.setAlwaysOnTop(false));
+        }).start();
     }
 }

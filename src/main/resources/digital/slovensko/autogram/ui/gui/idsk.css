@@ -186,8 +186,15 @@
     visibility: true;
 }
 
-.autogram-visualizer-plaintext {
+.autogram-visualizer-html {
+    -fx-border-color: -autogram-input-colour;
+    -fx-border-width: 2px;
+    -fx-border-style: solid;
     -fx-wrap-text: true;
+}
+
+.autogram-visualizer-plaintext {
+    -fx-padding: 5px;
 }
 
 .autogram-dropzone {

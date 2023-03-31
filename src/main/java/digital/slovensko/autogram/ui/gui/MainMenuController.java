@@ -13,17 +13,15 @@ import javafx.stage.Stage;
 import java.io.File;
 
 public class MainMenuController {
-    private final Stage primaryStage;
     private final GUI ui;
     private final Autogram autogram;
 
     @FXML
     VBox dropZone;
 
-    public MainMenuController(GUI ui, Autogram autogram, Stage primaryStage) {
+    public MainMenuController(GUI ui, Autogram autogram) {
         this.ui = ui;
         this.autogram = autogram;
-        this.primaryStage = primaryStage;
     }
 
     public void initialize() {
@@ -46,7 +44,7 @@ public class MainMenuController {
 
             for(File file: event.getDragboard().getFiles()) {
                 var document = new FileDocument(file.getPath());
-                var parameters = new SigningParameters(); // TODO
+                var parameters = SigningParameters.buildForPDF();
                 var responder = new CliResponder(); // TODO
                 autogram.showSigningDialog(new SigningJob(document, parameters, responder));
             }

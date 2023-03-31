@@ -4,7 +4,6 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
-import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -27,6 +26,7 @@ public class SigningParameters {
     private final String signaturePolicyContent;
     private final String signaturePolicyId;
     private final String transformation;
+    private final String transformationOutputMimeType;
     private final SignatureLevel level;
     private final SignaturePackaging packaging;
     private final DigestAlgorithm digestAlgorithm;
@@ -50,6 +50,7 @@ public class SigningParameters {
         infoCanonicalization = CanonicalizationMethod.INCLUSIVE;
         propertiesCanonicalization = CanonicalizationMethod.INCLUSIVE;
         keyInfoCanonicalization = CanonicalizationMethod.INCLUSIVE;
+        transformationOutputMimeType = null;
     }
 
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
@@ -57,7 +58,7 @@ public class SigningParameters {
             DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization,
             String propertiesCanonicalization, String keyInfoCanonicalization,
-            String signaturePolicyId, String signaturePolicyContent, String schema, String transformation) {
+            String signaturePolicyId, String signaturePolicyContent, String schema, String transformation, String transformationOutputMimeType) {
         this.level = level;
         this.asicContainer = container;
         this.containerFilename = containerFilename;
@@ -72,6 +73,11 @@ public class SigningParameters {
         this.signaturePolicyContent = signaturePolicyContent;
         this.schema = schema;
         this.transformation = transformation;
+        this.transformationOutputMimeType = transformationOutputMimeType;
+    }
+
+    public String getTransformationOutputMimeType() {
+        return transformationOutputMimeType;
     }
 
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
@@ -213,5 +219,18 @@ public class SigningParameters {
 
     public String getKeyInfoCanonicalization() {
         return keyInfoCanonicalization != null ? keyInfoCanonicalization : CanonicalizationMethod.INCLUSIVE;
+    }
+
+    public static SigningParameters buildForPDF() {
+        return new SigningParameters(
+                SignatureLevel.PAdES_BASELINE_B,
+                null,
+                null, null,
+                null,
+                DigestAlgorithm.SHA256,
+                false, null,
+                null, null,
+                null, null, null, null, null
+        );
     }
 }
