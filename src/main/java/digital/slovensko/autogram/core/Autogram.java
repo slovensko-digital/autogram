@@ -75,13 +75,13 @@ public class Autogram {
     private SignedDocument signDocument(SigningJob job, SigningKey key) {
         switch (job.getParameters().getSignatureType()) {
             case ASIC_XADES:
-                return new SignedDocument(signDocumentAsAsiCWithXAdeS(job, key), key);
+                return new SignedDocument(signDocumentAsAsiCWithXAdeS(job, key), key.getCertificate());
             case XADES:
-                return new SignedDocument(signDocumentAsXAdeS(job, key), key);
+                return new SignedDocument(signDocumentAsXAdeS(job, key), key.getCertificate());
             case ASIC_CADES:
-                return new SignedDocument(signDocumentAsASiCWithCAdeS(job, key), key);
+                return new SignedDocument(signDocumentAsASiCWithCAdeS(job, key), key.getCertificate());
             case PADES:
-                return new SignedDocument(signDocumentAsPAdeS(job, key), key);
+                return new SignedDocument(signDocumentAsPAdeS(job, key), key.getCertificate());
             default:
                 throw new RuntimeException("Unsupported signature type: " + job.getParameters().getSignatureType());
         }

@@ -23,11 +23,7 @@ public class ServerResponder extends Responder {
     public void onDocumentSigned(SignedDocument signedDocument) {
         String signer = "unknown";
 
-        try {
-            signer = signedDocument.getKey().prettyPrintCertificateDetails();
-        } catch (InvalidNameException e) {
-            e.printStackTrace();
-        }
+        signer = signedDocument.getCertificate().getSubject().getPrettyPrintRFC2253();
 
         try {
             var b64document = Base64.getEncoder().encodeToString(signedDocument.getDocument().openStream().readAllBytes());
