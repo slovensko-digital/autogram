@@ -7,6 +7,7 @@ import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
@@ -91,6 +92,7 @@ public class Autogram {
         if (job.getParameters().shouldCreateDatacontainer()) {
             var transformer = XDCTransformer.newInstance(job.getParameters());
             doc = transformer.transform(job.getDocument(), XDCTransformer.Mode.IDEMPOTENT);
+            doc.setMimeType(MimeType.fromMimeTypeString("application/xml"));
         }
 
         var commonCertificateVerifier = new CommonCertificateVerifier();

@@ -91,7 +91,7 @@ public class XDCTransformer {
 
         try {
             var content = getDocumentContent().getBytes(StandardCharsets.UTF_8);
-            return new InMemoryDocument(content, dssDocument.getName(), dssDocument.getMimeType());
+            return new InMemoryDocument(content, dssDocument.getName());
         } catch (TransformerException e) {
             throw new RuntimeException(e);
         }
