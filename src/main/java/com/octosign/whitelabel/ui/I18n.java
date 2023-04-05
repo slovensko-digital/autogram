@@ -1,10 +1,10 @@
 package com.octosign.whitelabel.ui;
 
-import com.octosign.whitelabel.signing.OperatingSystem;
+import digital.slovensko.autogram.util.OperatingSystem;
 
 import java.util.*;
 
-import static com.octosign.whitelabel.signing.OperatingSystem.MAC;
+import static digital.slovensko.autogram.util.OperatingSystem.MAC;
 
 public class I18n {
     private static final String PATH = I18n.class.getCanonicalName().toLowerCase();

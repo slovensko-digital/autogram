@@ -3,6 +3,10 @@ package digital.slovensko.autogram.core;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
@@ -28,5 +32,41 @@ public class SigningJob {
 
     public void onDocumentSigned(DSSDocument signedDocument) {
         responder.onDocumentSigned(signedDocument);
+    }
+
+    public boolean isPlainText() {
+        return false; // TODO
+    }
+
+    public boolean isHTML() {
+        return false; // TODO
+    }
+
+    public boolean isPDF() {
+        return true; // TODO
+    }
+
+    public String getDocumentAsPlainText() {
+        try {
+            return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getDocumentAsHTML() {
+        try {
+            return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getDocumentAsBase64Encoded() {
+        try {
+            return new String(Base64.getEncoder().encode(document.openStream().readAllBytes()), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

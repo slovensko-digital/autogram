@@ -9,7 +9,7 @@ import java.util.List;
 
 public class CliUI implements UI {
     @Override
-    public void start(String[] args) {
+    public void start(Autogram autogram, String[] args) {
         System.out.println("Starting CLI with args " + args.toString());
     }
 
@@ -33,7 +33,17 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void refreshSigningKey(SigningKey key) {
+    public void hideSigningDialog(SigningJob job, Autogram autogram) {
+        System.out.println("Dialog for signing " + job.getDocument().toString() + " closed!");
+    }
+
+    @Override
+    public void refreshSigningKey() {
         System.out.println("Showing new signing key on all dialogs!");
+    }
+
+    @Override
+    public void showError(AutogramException e) {
+        System.out.println("Error " + e.toString() + " closed!");
     }
 }

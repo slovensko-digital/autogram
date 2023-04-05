@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
 
@@ -27,6 +28,7 @@ class AutogramTests {
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 
+        autogram.pickSigningKey();
         autogram.sign(new SigningJob(document, parameters, responder));
 
         verify(responder).onDocumentSigned(any());
@@ -42,7 +44,7 @@ class AutogramTests {
 
     private class DummyUIPickingFakeTestTokenDriver implements UI {
         @Override
-        public void start(String[] args) {
+        public void start(Autogram autogram, String[] args) {
 
         }
 
@@ -53,7 +55,7 @@ class AutogramTests {
 
         @Override
         public void pickTokenDriverAndDo(List<TokenDriver> drivers, TokenDriverLambda callback) {
-            callback.call(new FakeTokenDriver());
+            callback.call(new FakeTokenDriver("fake"));
         }
 
         @Override
@@ -61,11 +63,24 @@ class AutogramTests {
         }
 
         @Override
-        public void refreshSigningKey(SigningKey key) {
+        public void hideSigningDialog(SigningJob job, Autogram autogram) {
+
+        }
+
+        @Override
+        public void refreshSigningKey() {
+        }
+
+        @Override
+        public void showError(AutogramException e) {
         }
     }
 
-    private static class FakeTokenDriver extends TokenDriver {
+    private class FakeTokenDriver extends TokenDriver {
+        public FakeTokenDriver(String name) {
+            super(name, Path.of(""));
+        }
+
         @Override
         public AbstractKeyStoreTokenConnection createToken() throws IOException {
             return new Pkcs12SignatureToken(new File("test.keystore"), new KeyStore.PasswordProtection("".toCharArray()));

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      prefHeight="420" prefWidth="450" minWidth="450"
+      fx:id="mainBox">
+
+    <VBox spacing="15">
+        <Label fx:id="heading" styleClass="autogram-heading-l" VBox.vgrow="ALWAYS">Nastala chyba</Label>
+        <Label fx:id="subheading" styleClass="autogram-heading-m" managed="false">Miesto pre nazov informacie</Label>
+        <Label fx:id="description" styleClass="autogram-body">nejaka strasne dlha chyba a nejaka strasne dlha chyba a nejaka strasne dlha chyba a nejaka strasne dlha chyba a nejaka strasne dlha chyba a</Label>
+    </VBox>
+
+    <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary" text="Pokračovať" onAction="#onMainButtonAction"/>
+</VBox>

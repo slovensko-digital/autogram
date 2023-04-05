@@ -7,7 +7,7 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import java.util.List;
 
 public interface UI {
-    void start(String[] args);
+    void start(Autogram autogram, String[] args);
 
     void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback);
 
@@ -15,5 +15,9 @@ public interface UI {
 
     void showSigningDialog(SigningJob job, Autogram autogram);
 
-    void refreshSigningKey(SigningKey key);
+    void hideSigningDialog(SigningJob job, Autogram autogram);
+
+    void refreshSigningKey();
+
+    void showError(AutogramException e);
 }

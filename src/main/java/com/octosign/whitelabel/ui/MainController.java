@@ -10,6 +10,7 @@ import com.octosign.whitelabel.ui.about.*;
 
 import com.octosign.whitelabel.ui.picker.*;
 import com.octosign.whitelabel.ui.utils.FXUtils;
+import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;

@@ -8,13 +8,13 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.io.IOException;
 
 public class Autogram {
-
     private final UI ui;
 
     private SigningKey activeKey;
@@ -23,45 +23,54 @@ public class Autogram {
         this.ui = ui;
     }
 
+    public UI getUI() {
+        return this.ui;
+    }
+
     public void showSigningDialog(SigningJob job) {
         ui.showSigningDialog(job, this);
     }
 
     public void sign(SigningJob job) {
-        withActiveSigningKeyDo((key) -> {
-            var signedDocument = signDocument(job, key);
-            // TODO error handling
-            job.onDocumentSigned(signedDocument);
-        });
+        var signedDocument = signDocument(job, activeKey);
+        // TODO error handling
+        job.onDocumentSigned(signedDocument);
+        ui.hideSigningDialog(job, this);
     }
 
-    private void withActiveSigningKeyDo(SigningKeyLambda signingKeyCallback) {
-        if (activeKey != null) {
-            signingKeyCallback.call(activeKey);
-        } else {
-            var drivers = TokenDriver.getAvailableDrivers(); // TODO move up?
-            ui.pickTokenDriverAndDo(drivers, (driver) -> {
-                try {
-                    var token = driver.createToken();
-                    var keys = token.getKeys();
-                    ui.pickKeyAndDo(keys, (privateKey) -> {
-                        setActiveSigningKey(new SigningKey(token, privateKey));
-                        signingKeyCallback.call(activeKey);
-                    });
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        }
+    public void start(String[] args) {
+        ui.start(this, args);
+    }
+
+    public void pickSigningKey() {
+        var drivers = TokenDriver.getAvailableDrivers(); // TODO handle empty driver list with ui.showError?
+        ui.pickTokenDriverAndDo(drivers, (driver) -> {
+            try {
+                var token = driver.createToken();
+                var keys = token.getKeys();
+                ui.pickKeyAndDo(keys, (privateKey) -> {
+                    setActiveSigningKey(new SigningKey(token, privateKey));
+                });
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (DSSException e) {
+                resetSigningKey();
+                ui.showError(AutogramException.createFromDSSException(e));
+            }
+        });
     }
 
     private void setActiveSigningKey(SigningKey newKey) {
         activeKey = newKey;
-        ui.refreshSigningKey(activeKey);
+        ui.refreshSigningKey();
     }
 
     public SigningKey getActiveSigningKey() {
         return activeKey;
+    }
+
+    public void resetSigningKey() {
+        setActiveSigningKey(null);
     }
 
     private DSSDocument signDocument(SigningJob job, SigningKey key) {
