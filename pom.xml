@@ -13,16 +13,12 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <main.class>digital.slovensko.autogram.Main</main.class>
         <java.version>17</java.version>
         <dss.version>5.11.1</dss.version>
-        <gson.version>2.10</gson.version>
+        <gson.version>2.8.9</gson.version>
         <apache.httpcomponents.version>4.5.13</apache.httpcomponents.version>
         <pdfjs.version>2.10.377</pdfjs.version>
-        <saxon.version>10.6</saxon.version>
-        <xerces.version>2.12.1</xerces.version>
-        <junit.version>5.9.2</junit.version>
-        <mockito.version>4.8.0</mockito.version>
+        <main.class>com.octosign.whitelabel.ui.Main</main.class>
     </properties>
 
     <dependencyManagement>
@@ -82,51 +78,61 @@
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.version}</version>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.9.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.0.0-M7</version>
+            <type>maven-plugin</type>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <version>11.4</version>
         </dependency>
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M9</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+        </testResources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M7</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.8.1</version>
 
                 <configuration>
                     <release>${java.version}</release>
                     <fork>true</fork>
                     <executable>${jlink.jdk.path}/bin/javac</executable>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.15.0</version>
+                <version>2.9.0</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.2.0</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -142,7 +148,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -197,7 +203,8 @@
                         <configuration>
                             <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
                             <fromDir>cmaps</fromDir>
-                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs/cmaps</toDir>
+                            <toDir>${project.resources[0].directory}/com/octosign/whitelabel/ui/vendor/pdfjs/cmaps
+                            </toDir>
                         </configuration>
                     </execution>
                 </executions>
@@ -206,7 +213,7 @@
             <plugin>
                 <groupId>com.igormaznitsa</groupId>
                 <artifactId>mvn-jlink-wrapper</artifactId>
-                <version>1.2.0</version>
+                <version>1.1.1</version>
                 <executions>
                     <execution>
                         <id>cache-jdk-11</id>
@@ -216,7 +223,9 @@
                         <configuration>
                             <jdkPathProperty>jlink.jdk.path</jdkPathProperty>
                             <jdkCachePath>${project.build.directory}${file.separator}jdkCache</jdkCachePath>
+
                             <authorization>${github.auth}</authorization>
+
                             <provider>BELLSOFT</provider>
                             <providerConfig>
                                 <type>jdk</type>
@@ -292,7 +301,7 @@
 
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.3.0</version>
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/scripts/bin.xml</descriptor>
@@ -314,16 +323,21 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.0.0</version>
                 <configuration>
                     <executable>bash</executable>
-                    <workingDirectory>${project.build.scriptSourceDirectory}${file.separator}resources</workingDirectory>
+                    <workingDirectory>${project.build.scriptSourceDirectory}${file.separator}resources
+                    </workingDirectory>
                     <arguments>
                         <argument>${project.build.scriptSourceDirectory}${file.separator}package.sh</argument>
                         <argument>${jlink.jdk.path}${file.separator}bin${file.separator}jpackage</argument>
-                        <argument>${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}</argument>
+                        <argument>
+                            ${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}
+                        </argument>
                         <argument>${project.build.directory}${file.separator}preparedJDK</argument>
-                        <argument>${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}com${file.separator}octosign${file.separator}whitelabel</argument>
+                        <argument>
+                            ${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}com${file.separator}octosign${file.separator}whitelabel
+                        </argument>
                         <argument>${platform}</argument>
                         <argument>${project.version}</argument>
                         <argument>${project.build.directory}</argument>
