@@ -1,10 +1,11 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
-import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.model.DSSException;
@@ -31,10 +32,14 @@ public class Autogram {
     }
 
     public void sign(SigningJob job) {
-        var signedDocument = signDocument(job, activeKey);
-        // TODO error handling
-        job.onDocumentSigned(signedDocument);
-        ui.hideSigningDialog(job, this);
+        try {
+            var signedDocument = signDocument(job, activeKey);
+            job.onDocumentSigned(signedDocument);
+            ui.hideSigningDialog(job, this);
+        } catch (DSSException e) {
+            ui.showError(AutogramException.createFromDSSException(e));
+        }
+
     }
 
     public void start(String[] args) {
@@ -50,11 +55,12 @@ public class Autogram {
                 ui.pickKeyAndDo(keys, (privateKey) -> {
                     setActiveSigningKey(new SigningKey(token, privateKey));
                 });
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             } catch (DSSException e) {
                 resetSigningKey();
-                ui.showError(AutogramException.createFromDSSException(e));
+                AutogramException ae = AutogramException.createFromDSSException(e);
+                ui.showError(ae);
+            } catch (IOException e) {
+                ui.showError(new UnrecognizedException(e));
             }
         });
     }

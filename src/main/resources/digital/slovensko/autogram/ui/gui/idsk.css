@@ -6,6 +6,9 @@
 .root {
     -autogram-text-colour: #0b0c0c;
 
+    -autogram-link-colour: #1d70b8;
+    -autogram-link-hover-colour: #003078;
+
     -autogram-border-colour: #b1b4b6;
     -autogram-input-border-colour: #0b0c0c;
 
@@ -91,19 +94,19 @@
     -fx-padding: 7px 0 7px 0;
     -fx-background-color: transparent;
     -fx-border-width: 0;
-    -fx-text-fill: #1d70b8;
+    -fx-text-fill: -autogram-link-colour;
     -fx-underline: true;
 }
 
 .autogram-link:hover {
     -fx-background-color: transparent;
-    -fx-text-fill: #003078 !important;
+    -fx-text-fill: -autogram-link-hover-colour !important;
 }
 
 .autogram-link:hover .text {
     -fx-background-color: red;
     -fx-border-width: 0 0 3px 0;
-    -fx-border-color: #003078;
+    -fx-border-color: -autogram-link-hover-colour;
 }
 
 .button.autogram-button--secondary {
@@ -111,6 +114,7 @@
     -fx-background-color: #f3f2f1;
     -fx-border-color: #929191;
 }
+
 .button.autogram-button--secondary:hover {
     -fx-background-color: #dbdad9;
 }
@@ -120,33 +124,47 @@
 
 .autogram-heading-l {
     -fx-text-fill: -autogram-text-colour;
+    -fx-fill: -autogram-text-colour;
 
     -fx-font-size: 2.25em;
     -fx-font-weight: bold;
-    -fx-wrap-text: true;
 }
 
 .autogram-heading-m {
     -fx-text-fill: -autogram-text-colour;
+    -fx-fill: -autogram-text-colour;
 
     -fx-font-size: 1.5em;
     -fx-font-weight: bold;
-    -fx-wrap-text: true;
+}
+
+.autogram-heading-s {
+    -fx-text-fill: -autogram-text-colour;
+    -fx-fill: -autogram-text-colour;
+
+    -fx-font-size: 1.1875em;
+    -fx-font-weight: bold;
 }
 
 .autogram-body {
     -fx-text-fill: -autogram-text-colour;
+    -fx-fill: -autogram-text-colour;
 
     -fx-font-size: 1.1875em;
-    -fx-wrap-text: true;
-
 }
 
 .autogram-body-l {
     -fx-text-fill: -autogram-text-colour;
+    -fx-fill: -autogram-text-colour;
 
     -fx-font-size: 1.5em;
-    -fx-wrap-text: true;
+}
+
+.autogram-body-s {
+    -fx-text-fill: -autogram-text-colour;
+    -fx-fill: -autogram-text-colour;
+
+    -fx-font-size: 1em;
 }
 
 .autogram-radios {
@@ -161,21 +179,20 @@
     -fx-spacing: 15px;
 }
 
+
 .autogram-form-group--error {
     -fx-border-width: 0 0 0 5px;
     -fx-border-insets: 5;
-    -fx-border-color: #d4351c;
+    -fx-border-color: -autogram-error-colour;
     -fx-border-style: solid inside;
     -fx-padding: 0 0 0 15px;
 }
-
 
 .autogram-error-message {
     -fx-managed: false;
     -fx-font-size: 1.1875em;
     -fx-font-weight: bold;
-    -fx-text-fill: #d4351c;
-    -fx-wrap-text: true;
+    -fx-fill: -autogram-error-colour;
 }
 
 .autogram-form-group .autogram-error-message {
@@ -186,8 +203,81 @@
     visibility: true;
 }
 
+.autogram-error-summary {
+    -fx-padding: 20px;
+    -fx-border-width: 5px;
+    -fx-border-color: -autogram-error-colour;
+}
+
+.autogram-error-summary__title {
+    -fx-font-size: 1.5em;
+    -fx-font-weight: bold;
+
+    -fx-padding: 0 0 20px 0;
+    -fx-border-insets: 0 0 20px 0;
+    -fx-background-insets: 0 0 20px 0;
+}
+
+.autogram-error-summary__title > Text {
+    -fx-fill: -autogram-text-colour;
+}
+
+.autogram-error-summary__error {
+    -fx-font-size: 1.1875em;
+    -fx-font-weight: bold;
+
+    -fx-padding: 0 0 20px 0;
+    -fx-border-insets: 0 0 20px 0;
+    -fx-background-insets: 0 0 20px 0;
+}
+
+.autogram-error-summary__error > Text {
+    -fx-fill: -autogram-error-colour;
+}
+
+.autogram-details .title .text {
+    -fx-font-size: 1.1875em;
+
+    -fx-fill: -autogram-link-colour;
+    -fx-underline: true;
+}
+
+.autogram-details .title .text:hover {
+    -fx-fill: -autogram-link-hover-colour;
+}
+
+.autogram-details .title {
+    -fx-padding: 0 0 5px 0;
+    -fx-border-insets: 0 0 5px 0;
+    -fx-background-insets: 0 0 5px 0;
+}
+
+.autogram-details__text {
+    -fx-padding: 15px 10px 15px 20px;
+    -fx-border-color: -autogram-border-colour;
+    -fx-border-width: 0 0 0 5px;
+
+    -fx-wrap-text: true;
+}
+
+.autogram-details .arrow-button {
+    -fx-padding: 0 10px 0 0;
+}
+
+.autogram-details .arrow-button .arrow {
+    -fx-background-color: -autogram-link-colour;
+
+    -fx-padding: 0.5em 0.42em 0.25em 0.42em; /* 3 3.75 3 3.75 */
+    -fx-shape: "M 0 0 h 7 l -3.5 4 z";
+}
+
+.autogram-details .title:hover .arrow {
+    -fx-background-color: -autogram-link-hover-colour;
+}
+
+
 .autogram-visualizer-html {
-    -fx-border-color: -autogram-input-colour;
+    -fx-border-color: -autogram-input-border-colour;
     -fx-border-width: 2px;
     -fx-border-style: solid;
     -fx-wrap-text: true;
