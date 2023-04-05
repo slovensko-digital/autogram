@@ -92,7 +92,7 @@ public class Autogram {
         if (job.getParameters().shouldCreateDatacontainer()) {
             var transformer = XDCTransformer.newInstance(job.getParameters());
             doc = transformer.transform(job.getDocument(), XDCTransformer.Mode.IDEMPOTENT);
-            doc.setMimeType(MimeType.fromMimeTypeString("application/xml"));
+            doc.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
         }
 
         var commonCertificateVerifier = new CommonCertificateVerifier();
