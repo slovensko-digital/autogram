@@ -53,6 +53,8 @@ public class SignEndpoint implements HttpHandler {
             exchange.getResponseBody().write(e.getMessage().getBytes());
             exchange.getResponseBody().close();
             System.out.println(e.getMessage());
+            // print stack trace
+            e.printStackTrace();
             return;
         }
         

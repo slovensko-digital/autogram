@@ -10,8 +10,6 @@ import digital.slovensko.autogram.core.SigningJob;
 import java.io.IOException;
 import java.util.Base64;
 
-import javax.naming.InvalidNameException;
-
 public class ServerResponder extends Responder {
     private final HttpExchange exchange;
 

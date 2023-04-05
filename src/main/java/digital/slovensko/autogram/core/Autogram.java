@@ -4,7 +4,6 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
-import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.model.DSSException;
@@ -88,18 +87,23 @@ public class Autogram {
     }
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningJob job, SigningKey key) {
+        DSSDocument doc = job.getDocument();
+        if (job.getParameters().shouldCreateDatacontainer()) {
+            var transformer = XDCTransformer.newInstance(job.getParameters());
+            doc = transformer.transform(job.getDocument(), XDCTransformer.Mode.IDEMPOTENT);
+        }
+
         var commonCertificateVerifier = new CommonCertificateVerifier();
         var service = new ASiCWithXAdESService(commonCertificateVerifier);
-        var jobParameters = job.getParameters();
         var signatureParameters = job.getParameters().getASiCWithXAdESSignatureParameters();
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(job.getDocument(), signatureParameters);
-        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
+        var dataToSign = service.getDataToSign(doc, signatureParameters);
+        var signatureValue = key.sign(dataToSign, job.getParameters().getDigestAlgorithm());
 
-        return service.signDocument(job.getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(doc, signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsXAdeS(SigningJob job, SigningKey key) {
