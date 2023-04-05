@@ -2,6 +2,8 @@ package digital.slovensko.autogram.server.dto;
 
 import static digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod.*;
 
+import java.util.Base64;
+
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.SigningParameters;
@@ -82,7 +84,7 @@ public class ServerSigningParameters {
         this.transformationOutputMimeType = transformationOutputMimeType;
     }
 
-    public SigningParameters getSigningParameters() {
+    public SigningParameters getSigningParameters(boolean isBase64) {
         return new SigningParameters(
                 getSignatureLevel(), getContainer(),
                 containerFilename, containerXmlns, packaging,
@@ -91,7 +93,30 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(infoCanonicalization),
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
-                signaturePolicyId, signaturePolicyContent, schema, transformation, transformationOutputMimeType);
+                signaturePolicyId, signaturePolicyContent,
+                getSchema(isBase64),
+                getTransformation(isBase64),
+                transformationOutputMimeType);
+    }
+
+    private String getTransformation(boolean isBase64) {
+        if (transformation == null)
+            return null;
+
+        if (isBase64)
+            return new String(Base64.getDecoder().decode(transformation));
+
+        return transformation;
+    }
+
+    private String getSchema(boolean isBase64) {
+        if (schema == null)
+            return null;
+
+        if (isBase64)
+            return new String(Base64.getDecoder().decode(schema));
+
+        return schema;
     }
 
     private static String getCanonicalizationMethodString(LocalCanonicalizationMethod method) {

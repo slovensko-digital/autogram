@@ -36,8 +36,8 @@ public class SignRequestBody {
         }
     }
 
-    public SigningParameters getParameters() {
-        return parameters.getSigningParameters();
+    public SigningParameters getParameters() throws MalformedMimetypeException {
+        return parameters.getSigningParameters(MimeType.parse(payloadMimeType).isBase64());
     }
 
     public MimeType getPayloadMimeType() throws MalformedMimetypeException {

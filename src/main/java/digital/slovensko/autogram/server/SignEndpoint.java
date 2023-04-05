@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.MalformedMimetypeException;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -35,10 +36,12 @@ public class SignEndpoint implements HttpHandler {
         Gson gson = new Gson();
         SignRequestBody body;
         InMemoryDocument document;
+        SigningParameters parameters;
 
         try {
             body = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), SignRequestBody.class);
             document = body.getDocument();
+            parameters = body.getParameters();
         } catch (MalformedMimetypeException e) {
             exchange.sendResponseHeaders(422, 0);
             exchange.getResponseBody().write("Malformed MIME Type".getBytes());
@@ -49,12 +52,11 @@ public class SignEndpoint implements HttpHandler {
             exchange.sendResponseHeaders(422, 0);
             exchange.getResponseBody().write(e.getMessage().getBytes());
             exchange.getResponseBody().close();
+            System.out.println(e.getMessage());
             return;
         }
         
-        var parameters = body.getParameters();
         var responder = new ServerResponder(exchange);
-        
         var job = new SigningJob(document, parameters, responder);
         
         autogram.showSigningDialog(job);
