@@ -2,7 +2,7 @@
 <!-- The only exception are the following scripts allowed using hash -->
 <!-- You can update the hash by looking at the exception message in the browser that mentions the new hash -->
 <!-- If you don't want to be bothered during the dev, just comment it out  -->
-<!-- TODO: Make this more strict so the whole file:// is not accessible - wors-case scenario using custom URL handler -->
+<!-- TODO: Make this more strict so the whole file:// is not accessible - worst-case scenario using custom URL handler -->
 
 <script src="./vendor/pdfjs/pdf.min.js"></script>
 
@@ -30,64 +30,125 @@
 </style>
 
 <body>
-    <!-- Contains a <canvas> for each page -->
-    <div id="container"></div>
 
-    <script>
-        const pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.js';
+<div id="container"></div>
 
-        let currentResizeListener;
-        window.displayPdf = async function (data) {
-            const pdf = await pdfjsLib.getDocument({
-                data: atob(data),
-                cMapUrl: './vendor/pdfjs/cmaps/',
-                cMapPacked: true,
-                isEvalSupported: false,
-            }).promise;
+<script type="text/javascript">
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.js';
+
+    let currentResizeListener;
+    window.displayPdf = function (data) {
+        pdfjsLib.getDocument({
+            data: atob(data),
+            cMapUrl: './vendor/pdfjs/cmaps/',
+            cMapPacked: true,
+            isEvalSupported: false,
+        }).promise.then(function (pdf) {
             renderPdf(pdf);
 
             if (currentResizeListener) {
                 window.removeEventListener('resize', currentResizeListener);
             }
+
+            // TODO resize only if width changes & do this better
             currentResizeListener = debounce(() => renderPdf(pdf), 1000);
             window.addEventListener('resize', currentResizeListener);
-        };
+        });
+    };
 
-        const renderPdf = async function (pdf) {
-            const container = document.querySelector('#container');
-            container.innerHTML = '';
-
-            for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-                page = await pdf.getPage(pageNumber);
-
-                console.log(page.getViewport({ scale: 1 }).width);
-                const viewport = page.getViewport({
-                    scale: (document.body.clientWidth - 32) / page.getViewport({ scale: 1, }).width,
-                });
-
-                // Prepare canvas using PDF page dimensions
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                page.render({
-                    canvasContext: context,
-                    viewport: viewport
-                });
-
-                container.appendChild(canvas);
-            }
-        }
-
-        function debounce(callback, time) {
-            let timer;
-            return () => {
-              if (timer) clearTimeout(timer);
-
-              timer = setTimeout(callback, time, event);
+    const renderPdf = async function (pdf) {
+        let pages = new Set();
+        const checkVisibility = function (elements, callback) {
+            const options = {
+                root: null,
             };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(e => {
+                    const pageNumber = Number(e.target.dataset.pageNumber);
+                    e.isIntersecting ? pages.add(pageNumber) : pages.delete(pageNumber);
+                });
+
+                if (pages.size > 0) {
+                    const first = Math.max(1, Math.min(...pages) - 2);
+                    const last = Math.min(pdf.numPages, Math.max(...pages) + 2)
+                    callback(first, last); // TODO debounce?
+                }
+            }, options);
+
+            elements.forEach(e => observer.observe(e));
         }
-    </script>
+
+        const container = document.querySelector('#container');
+        container.innerHTML = '';
+
+        console.log("Pages: " + pdf.numPages);
+        let pageElms = [];
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+            const pageElm = document.createElement('div');
+            pageElm.style.width = document.body.clientWidth - 32 + "px";
+            pageElm.style.height = (document.body.clientWidth - 32) * 1.41 + "px";
+            pageElm.dataset.pageNumber = pageNumber;
+
+            container.appendChild(pageElm);
+            pageElms.push(pageElm);
+        }
+
+        checkVisibility(pageElms,
+            function (firstVisiblePageNumber, lastVisiblePageNumber) {
+                console.log("Trigger render! " + firstVisiblePageNumber + " - " + lastVisiblePageNumber);
+                pageElms.forEach(function (elm, index) {
+                    const pageNumber = index + 1;
+                    if (pageNumber >= firstVisiblePageNumber && pageNumber <= lastVisiblePageNumber) {
+                        if (elm.hasChildNodes()) return;
+
+                        pdf.getPage(pageNumber).then(function (page) {
+                            const viewport = page.getViewport({
+                                scale: (document.body.clientWidth - 32) / page.getViewport({scale: 1,}).width,
+                            });
+
+                            // Prepare canvas using PDF page dimensions
+                            // Support HiDPI-screens.
+                            const outputScale = window.devicePixelRatio || 1;
+
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.width = Math.floor(viewport.width * outputScale);
+                            canvas.height = Math.floor(viewport.height * outputScale);
+                            canvas.style.width = Math.floor(viewport.width) + "px";
+                            canvas.style.height = Math.floor(viewport.height) + "px";
+                            elm.style.height = viewport.height + 'px';
+                            elm.style.width = viewport.width + 'px';
+                            const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
+
+                            page.render({
+                                canvasContext: context,
+                                transform: transform,
+                                viewport: viewport
+                            });
+
+                            elm.replaceChildren(canvas);
+                        });
+                    } else {
+                        if (!elm.hasChildNodes()) return;
+
+                        console.log("removing page " + pageNumber);
+
+                        elm.replaceChildren();
+                    }
+                });
+            }
+        );
+    }
+
+    function debounce(callback, time) {
+        let timer;
+        return () => {
+            if (timer) clearTimeout(timer);
+
+            timer = setTimeout(callback, time, event);
+        };
+    }
+</script>
 </body>

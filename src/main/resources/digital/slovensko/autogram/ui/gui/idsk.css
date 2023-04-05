@@ -134,12 +134,19 @@
     -fx-wrap-text: true;
 }
 
+.autogram-heading-s {
+    -fx-text-fill: -autogram-text-colour;
+
+    -fx-font-size: 1.1875em;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+
 .autogram-body {
     -fx-text-fill: -autogram-text-colour;
 
     -fx-font-size: 1.1875em;
     -fx-wrap-text: true;
-
 }
 
 .autogram-body-l {
@@ -186,8 +193,9 @@
     visibility: true;
 }
 
+.autogram-visualizer-plaintext,
 .autogram-visualizer-html {
-    -fx-border-color: -autogram-input-colour;
+    -fx-border-color: -autogram-input-border-colour;
     -fx-border-width: 2px;
     -fx-border-style: solid;
     -fx-wrap-text: true;
@@ -276,6 +284,8 @@
 .scroll-bar:vertical .thumb:hover {
     -fx-background-color :derive(#4D4C4F,10.0%);
 }
+
+/* Icons */
 
 .autogram-icon {
     -fx-fill: transparent;
