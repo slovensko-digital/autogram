@@ -83,7 +83,6 @@
         const container = document.querySelector('#container');
         container.innerHTML = '';
 
-        console.log("Pages: " + pdf.numPages);
         let pageElms = [];
         for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
             const pageElm = document.createElement('div');
@@ -97,7 +96,6 @@
 
         checkVisibility(pageElms,
             function (firstVisiblePageNumber, lastVisiblePageNumber) {
-                console.log("Trigger render! " + firstVisiblePageNumber + " - " + lastVisiblePageNumber);
                 pageElms.forEach(function (elm, index) {
                     const pageNumber = index + 1;
                     if (pageNumber >= firstVisiblePageNumber && pageNumber <= lastVisiblePageNumber) {
@@ -132,8 +130,6 @@
                         });
                     } else {
                         if (!elm.hasChildNodes()) return;
-
-                        console.log("removing page " + pageNumber);
 
                         elm.replaceChildren();
                     }
