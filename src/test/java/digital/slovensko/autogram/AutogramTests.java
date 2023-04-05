@@ -65,7 +65,7 @@ class AutogramTests {
         }
     }
 
-    private class FakeTokenDriver extends TokenDriver {
+    private static class FakeTokenDriver extends TokenDriver {
         @Override
         public AbstractKeyStoreTokenConnection createToken() throws IOException {
             return new Pkcs12SignatureToken(new File("test.keystore"), new KeyStore.PasswordProtection("".toCharArray()));
