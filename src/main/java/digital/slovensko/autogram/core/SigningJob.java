@@ -80,7 +80,7 @@ public class SigningJob {
 
             transformer.transform(xmlSource, outputTarget);
 
-            var result = outputTarget.getWriter().toString();
+            var result = outputTarget.getWriter().toString().trim();
             return result;
         } catch (Exception e) {
             return null; // TODO
