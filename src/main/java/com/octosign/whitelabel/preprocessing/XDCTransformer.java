@@ -152,24 +152,21 @@ public class XDCTransformer {
         var xmlSource = new DOMSource(document);
         var outputTarget = new StreamResult(new StringWriter());
 
-        var transformerFactory= TransformerFactory.newInstance();
+        var transformerFactory = TransformerFactory.newInstance();
         transformerFactory.newTransformer().transform(xmlSource, outputTarget);
 
         return outputTarget.getWriter().toString();
     }
 
     private Element createXMLDataContainer() {
-        var element = document.createElement("XMLDataContainer");
+        var element = document.createElementNS(containerXmlns, "XMLDataContainer");
         element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
         element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        if (containerXmlns != null)
-            element.setAttribute("xmlns", containerXmlns);
-
         return element;
     }
 
     private Element createXMLData() {
-        var element = document.createElement("XMLData");
+        var element = document.createElementNS(containerXmlns, "XMLData");
         element.setAttribute("ContentType", "application/xml; charset=UTF-8");
         element.setAttribute("Identifier", identifierUri);
         element.setAttribute("Version", identifierVersion);
@@ -178,7 +175,7 @@ public class XDCTransformer {
     }
 
     private Element createUsedSchemasReferenced() {
-        var element = document.createElement("UsedSchemasReferenced");
+        var element = document.createElementNS(containerXmlns, "UsedSchemasReferenced");
         if (isPresent(xsdSchema) || isPresent(xsltSchema)) {
             var documentXmlnsNode = document.getFirstChild().getAttributes().getNamedItem("xmlns");
             if (documentXmlnsNode != null)
@@ -224,7 +221,7 @@ public class XDCTransformer {
     }
 
     private Element createUsedXSDReference() {
-        var element = document.createElement("UsedXSDReference");
+        var element = document.createElementNS(containerXmlns,"UsedXSDReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue", computeDigest(xsdSchema));
@@ -234,7 +231,7 @@ public class XDCTransformer {
     }
 
     private Element createUsedPresentationSchemaReference() {
-        var element = document.createElement("UsedPresentationSchemaReference");
+        var element = document.createElementNS(containerXmlns, "UsedPresentationSchemaReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue", computeDigest(xsltSchema));
