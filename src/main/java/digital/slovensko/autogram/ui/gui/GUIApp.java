@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -27,12 +27,26 @@ public class GUIApp extends Application {
 
         var scene = new Scene(root);
 
+        var server = new AutogramServer(GUIApp.autogram); // TODO based on args?
+        server.start(); // TODO args
+
+        if (getParameters().getNamed().containsKey("url")) {
+            // started from external
+            windowStage.setIconified(true);
+        }
+
+        windowStage.setOnCloseRequest(event -> {
+            new Thread(() -> {
+                server.stop();
+            }).start();
+
+            Platform.exit();
+        });
 
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);
         windowStage.sizeToScene();
         windowStage.setResizable(false);
-        //windowStage.setIconified(true);
         windowStage.show();
     }
 }

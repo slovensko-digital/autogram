@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.Autogram;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AutogramServer {
@@ -34,5 +35,10 @@ public class AutogramServer {
             throw new RuntimeException(e);
         }
         return server;
+    }
+
+    public void stop() {
+        ((ExecutorService) server.getExecutor()).shutdown(); // TODO find out why requests hang
+        server.stop(1);
     }
 }

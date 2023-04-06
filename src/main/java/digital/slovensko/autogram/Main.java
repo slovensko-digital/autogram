@@ -9,6 +9,8 @@ import digital.slovensko.autogram.ui.cli.CliUI;
 import digital.slovensko.autogram.ui.gui.GUI;
 import eu.europa.esig.dss.model.FileDocument;
 
+import java.util.Arrays;
+
 public class Main {
     public static void main2(String[] args) {
         var ui = new CliUI();
@@ -29,11 +31,9 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        System.out.println("Starting with args: " + Arrays.toString(args));
         var ui = new GUI();
         var autogram = new Autogram(ui);
-
-        var server = new AutogramServer(autogram); // TODO based on args?
-        server.start(); // TODO args
 
         autogram.start(args);
     }
