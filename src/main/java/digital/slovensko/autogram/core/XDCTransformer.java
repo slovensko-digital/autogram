@@ -157,7 +157,7 @@ public class XDCTransformer {
 
     private Element createXMLData() {
         var element = document.createElement("xdc:XMLData");
-        element.setAttribute("ContentType", "application/xml; charset=utf-8");
+        element.setAttribute("ContentType", "application/xml; charset=UTF-8");
         element.setAttribute("Identifier", identifierUri);
         element.setAttribute("Version", identifierVersion);
 
