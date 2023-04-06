@@ -1,11 +1,13 @@
 package digital.slovensko.autogram.server;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
 import digital.slovensko.autogram.core.SigningError;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.server.dto.SignResponse;
 
 import java.io.IOException;
 import java.util.Base64;
@@ -19,18 +21,23 @@ public class ServerResponder extends Responder {
 
     @Override
     public void onDocumentSigned(SignedDocument signedDocument) {
+        var gson = new Gson();
         var signer = signedDocument.getCertificate().getSubject().getPrincipal().toString();
         var issuer = signedDocument.getCertificate().getIssuer().getPrincipal().toString();
+        String b64document = null;
 
         try {
-            var b64document = Base64.getEncoder()
-                    .encodeToString(signedDocument.getDocument().openStream().readAllBytes());
-            var msg = String.format("{\"content\": \"%s\", \"signedBy\": \"%s\", \"issuedBy\": \"%s\"}", b64document,
-                    signer, issuer);
+            b64document = Base64.getEncoder().encodeToString(signedDocument.getDocument().openStream().readAllBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
+        var response = new SignResponse(b64document, signer, issuer);
+
+        try {
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, 0);
-            exchange.getResponseBody().write(msg.getBytes());
+            exchange.getResponseBody().write(gson.toJson(response).getBytes());
             exchange.getResponseBody().close();
         } catch (IOException e) {
             throw new RuntimeException(e);
