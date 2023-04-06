@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;

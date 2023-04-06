@@ -3,16 +3,24 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      prefHeight="420" prefWidth="450" minWidth="450"
+      prefWidth="450" minWidth="450"
       fx:id="mainBox">
 
-    <VBox spacing="15">
-        <Label fx:id="heading" styleClass="autogram-heading-l" VBox.vgrow="ALWAYS">Nastala chyba</Label>
-        <Label fx:id="subheading" styleClass="autogram-heading-m" managed="false">Miesto pre nazov informacie</Label>
-        <Label fx:id="description" styleClass="autogram-body">nejaka strasne dlha chyba a nejaka strasne dlha chyba a nejaka strasne dlha chyba a nejaka strasne dlha chyba a nejaka strasne dlha chyba a</Label>
+    <VBox styleClass="autogram-error-summary">
+        <TextFlow styleClass="autogram-error-summary__title"><Text fx:id="heading">Nastala chyba</Text></TextFlow>
+        <TextFlow styleClass="autogram-error-summary__error"><Text fx:id="subheading">Miesto pre nazov informacie</Text></TextFlow>
+        <TextFlow styleClass="autogram-error-summary__description"><Text fx:id="description">description</Text></TextFlow>
     </VBox>
 
-    <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary" text="Pokračovať" onAction="#onMainButtonAction"/>
+    <HBox styleClass="autogram-actions">
+        <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary" text="Pokračovať" onAction="#onMainButtonAction"/>
+        <Button fx:id="showErrorDetailsButton" styleClass="autogram-link" text="Zobraziť detail chyby" visible="false" onAction="#onShowErrorDetailsButtonAction" />
+    </HBox>
+
+    <TextArea fx:id="errorDetails" styleClass="autogram-details__text" editable="false" visible="false" managed="false">Error details</TextArea>
 </VBox>
