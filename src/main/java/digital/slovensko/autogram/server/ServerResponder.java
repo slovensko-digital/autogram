@@ -19,13 +19,14 @@ public class ServerResponder extends Responder {
 
     @Override
     public void onDocumentSigned(SignedDocument signedDocument) {
-        String signer = "unknown";
-
-        signer = signedDocument.getCertificate().getSubject().getPrincipal().toString();
+        var signer = signedDocument.getCertificate().getSubject().getPrincipal().toString();
+        var issuer = signedDocument.getCertificate().getIssuer().getPrincipal().toString();
 
         try {
-            var b64document = Base64.getEncoder().encodeToString(signedDocument.getDocument().openStream().readAllBytes());
-            var msg = "{\"content\": \"" + b64document + "\", \"signedBy\": \"" + signer + "\"}";
+            var b64document = Base64.getEncoder()
+                    .encodeToString(signedDocument.getDocument().openStream().readAllBytes());
+            var msg = String.format("{\"content\": \"%s\", \"signedBy\": \"%s\", \"issuedBy\": \"%s\"}", b64document,
+                    signer, issuer);
 
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, 0);

@@ -222,11 +222,16 @@ components:
           description: 'Signed content of the original document - either in plaintext or in Base64 format.'
         signedBy:
           type: string
-          example: 'CN=John Smith, OU=Test, O=IBM, C=GB, ...'
+          example: 'SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith'
           description: 'Distinguished name of the certificate used/attempting to sign the document.'
+        issuedBy:
+          type: string
+          example: 'CN=SVK eID ACA2, O=Disig a.s., OID.2.5.4.97=NTRSK-12345678, L=Bratislava, C=SK'
+          description: 'Distinguished name of the issuer of the certificate used/attempting to sign the document.'
       required:
         - content
         - signedBy
+        - issuedBy
 
     SignatureParameters:
       type: object
