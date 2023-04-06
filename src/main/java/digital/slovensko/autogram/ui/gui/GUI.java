@@ -1,6 +1,9 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.cli.CliResponder;
@@ -13,10 +16,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.stage.FileChooser;
-import javafx.stage.Screen;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
+import javafx.stage.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,13 +26,7 @@ import java.util.Random;
 import java.util.WeakHashMap;
 
 public class GUI implements UI {
-    private Map<SigningJob, SigningDialogController> jobs = new WeakHashMap<>();
-
-    private final EventHandler<WindowEvent> refreshKeyOnAllJobs = e -> {
-        for (SigningDialogController c : jobs.values()) {
-            c.refreshSigningKey();
-        }
-    };
+    private final Map<SigningJob, SigningDialogController> jobs = new WeakHashMap<>();
 
     @Override
     public void start(Autogram autogram, String[] args) {
@@ -46,22 +40,25 @@ public class GUI implements UI {
             for (SigningDialogController c : jobs.values()) {
                 c.disableKeyPicking();
             }
-            if (drivers.size() == 1) {
-                callback.call(drivers.get(0)); // short-circuit if only one driver present
-            } else {
 
+            if (drivers.isEmpty()) {
+                showError(new NoDriversDetectedException());
+                refreshKeyOnAllJobs();
+            } else if (drivers.size() == 1) {
+                // short-circuit if only one driver present
+                callback.call(drivers.get(0));
+            } else {
                 PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
                 var root = GUI.loadFXML(controller, "pick-driver-dialog.fxml");
 
-                var scene = new Scene(root);
-
                 var stage = new Stage();
                 stage.setTitle("Výber úložiska certifikátu");
-                stage.setScene(scene);
-                stage.setOnCloseRequest(refreshKeyOnAllJobs);
+                stage.setScene(new Scene(root));
+                stage.setOnCloseRequest(event -> refreshKeyOnAllJobs());
 
                 stage.sizeToScene();
-
+                stage.setResizable(false);
+                stage.initModality(Modality.APPLICATION_MODAL);
                 stage.show();
             }
         });
@@ -70,8 +67,12 @@ public class GUI implements UI {
     @Override
     public void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
         Platform.runLater(() -> {
-            if (keys.size() == 1) {
-                callback.call(keys.get(0)); // short-circuit if only one key present
+            if (keys.isEmpty()) {
+                showError(new NoKeysDetectedException());
+                refreshKeyOnAllJobs();
+            } else if (keys.size() == 1) {
+                // short-circuit if only one key present
+                callback.call(keys.get(0));
             } else {
                 var controller = new PickKeyDialogController(keys, callback);
                 var root = GUI.loadFXML(controller, "pick-key-dialog.fxml");
@@ -79,8 +80,9 @@ public class GUI implements UI {
                 var stage = new Stage();
                 stage.setTitle("Výber certifikátu");
                 stage.setScene(new Scene(root));
-                stage.setOnCloseRequest(refreshKeyOnAllJobs);
-
+                stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
+                stage.setResizable(false);
+                stage.initModality(Modality.APPLICATION_MODAL);
                 stage.show();
             }
         });
@@ -103,7 +105,7 @@ public class GUI implements UI {
             });
 
             stage.sizeToScene();
-            stage.show();
+            GUI.showOnTop(stage);
             GUI.setUserFriendlyPosition(stage);
         });
     }
@@ -118,12 +120,13 @@ public class GUI implements UI {
 
     @Override
     public void refreshSigningKey() {
-        Platform.runLater(() -> {
-            // TODO maybe use binding?
-            for (SigningDialogController controller : jobs.values()) {
-                controller.refreshSigningKey();
-            }
-        });
+        Platform.runLater(this::refreshKeyOnAllJobs);
+    }
+
+    private void refreshKeyOnAllJobs() {
+        for (SigningDialogController c : jobs.values()) {
+            c.refreshSigningKey();
+        }
     }
 
     @Override
@@ -133,12 +136,14 @@ public class GUI implements UI {
             var root = GUI.loadFXML(controller, "error-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Nastala chyba"); // TODO
+            stage.setTitle(e.getHeading());
             stage.setScene(new Scene(root));
 
             stage.sizeToScene();
+            stage.setResizable(false);
+            stage.initModality(Modality.APPLICATION_MODAL);
+
             stage.show();
-            GUI.setUserFriendlyPosition(stage);
         });
     }
 
@@ -150,7 +155,7 @@ public class GUI implements UI {
             if (list != null) {
                 for (File f : list) {
                     var document = new FileDocument(f.getPath());
-                    var parameters = new SigningParameters();
+                    var parameters = SigningParameters.buildForPDF();
                     var responder = new CliResponder(); // TODO
 
                     var job = new SigningJob(document, parameters, responder);
@@ -178,5 +183,22 @@ public class GUI implements UI {
 
         stage.setX(x);
         stage.setY(y);
+    }
+
+    private static void showOnTop(Stage stage) {
+        stage.requestFocus();
+        stage.setAlwaysOnTop(true);
+        stage.toFront();
+        stage.show();
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(42);
+            } catch (InterruptedException ignored) {
+                // noop
+            }
+
+            Platform.runLater(() -> stage.setAlwaysOnTop(false));
+        }).start();
     }
 }

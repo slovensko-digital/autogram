@@ -1,9 +1,9 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Responder;
+import digital.slovensko.autogram.core.SignedDocument;
 import digital.slovensko.autogram.core.SigningError;
 import digital.slovensko.autogram.core.SigningJob;
-import eu.europa.esig.dss.model.DSSDocument;
 
 public class GUIResponder extends Responder {
     private final GUI ui;
@@ -13,8 +13,8 @@ public class GUIResponder extends Responder {
     }
 
     @Override
-    public void onDocumentSigned(DSSDocument signedDocument) {
-        System.out.println("Signing DONE for document " + signedDocument.toString());
+    public void onDocumentSigned(SignedDocument signedDocument) {
+        System.out.println("Signing DONE for document " + signedDocument.getDocument().toString());
     }
 
     @Override

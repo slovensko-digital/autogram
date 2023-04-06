@@ -1,12 +1,14 @@
 package digital.slovensko.autogram.server;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.ui.cli.CliResponder;
-import eu.europa.esig.dss.model.FileDocument;
+import digital.slovensko.autogram.core.errors.MalformedMimetypeException;
+import digital.slovensko.autogram.server.dto.SignRequestBody;
+import eu.europa.esig.dss.model.InMemoryDocument;
 
 import java.io.IOException;
 
@@ -19,16 +21,46 @@ public class SignEndpoint implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, OPTIONS");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+        // Allow preflight requests
+        if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
         System.out.println("Received a HTTP sign request");
 
-        // TODO replace with actual data
-        var document = new FileDocument("pom.xml");
+        Gson gson = new Gson();
+        SignRequestBody body;
+        InMemoryDocument document;
+        SigningParameters parameters;
 
-        var parameters = new SigningParameters();
+        try {
+            body = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), SignRequestBody.class);
+            document = body.getDocument();
+            parameters = body.getParameters();
+        } catch (MalformedMimetypeException e) {
+            exchange.sendResponseHeaders(422, 0);
+            exchange.getResponseBody().write("Malformed MIME Type".getBytes());
+            exchange.getResponseBody().close();
+            return;
+            
+        } catch (Exception e) {
+            exchange.sendResponseHeaders(422, 0);
+            exchange.getResponseBody().write(e.getMessage().getBytes());
+            exchange.getResponseBody().close();
+            System.out.println(e.getMessage());
+            // print stack trace
+            e.printStackTrace();
+            return;
+        }
+        
         var responder = new ServerResponder(exchange);
-
         var job = new SigningJob(document, parameters, responder);
-
+        
         autogram.showSigningDialog(job);
     }
 }

@@ -4,17 +4,22 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
 
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.text.Text?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      prefHeight="650" prefWidth="600" minWidth="600"
+      minHeight="400" prefWidth="600" minWidth="600"
       fx:id="mainBox">
-    <Label styleClass="autogram-heading-l">Dokument na podpísanie</Label>
+
+    <TextFlow><Text styleClass="autogram-heading-m" text="Dokument na&#160;podpísanie"/></TextFlow>
 
     <!-- HTML/PDF visualization -->
-    <WebView fx:id="webView" managed="false" visible="false" VBox.vgrow="ALWAYS" />
+    <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
+        <WebView fx:id="webView" VBox.vgrow="ALWAYS" />
+    </VBox>
 
     <!-- Plaintext visualization -->
-    <TextArea styleClass="autogram-visualizer-plaintext" fx:id="plainTextArea" managed="false" visible="false" editable="false" minHeight="250" VBox.vgrow="ALWAYS"></TextArea>
+    <TextArea fx:id="plainTextArea" styleClass="autogram-visualizer-plaintext" managed="false" visible="false" editable="false" VBox.vgrow="ALWAYS"/>
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary" text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed"/>

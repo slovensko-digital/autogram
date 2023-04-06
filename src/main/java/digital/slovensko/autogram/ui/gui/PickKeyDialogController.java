@@ -5,10 +5,10 @@ import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public class PickKeyDialogController {
     @FXML
     VBox formGroup;
     @FXML
-    Label error;
+    Text error;
     @FXML
     VBox mainBox;
     @FXML
@@ -47,6 +47,7 @@ public class PickKeyDialogController {
         if (toggleGroup.getSelectedToggle() == null) {
             error.setManaged(true);
             formGroup.getStyleClass().add("autogram-form-group--error");
+            formGroup.getScene().getWindow().sizeToScene();
         } else {
             ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
             new Thread(() -> {

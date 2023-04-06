@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
@@ -22,6 +23,8 @@ public class SigningDialogController {
     TextArea plainTextArea;
     @FXML
     WebView webView;
+    @FXML
+    VBox webViewContainer;
     @FXML
     public Button mainButton;
     @FXML
@@ -40,6 +43,8 @@ public class SigningDialogController {
             showHTMLVisualization();
         } else if (signingJob.isPDF()) {
             showPDFVisualization();
+        } else {
+            throw new RuntimeException("Don't know how to visualize document!");
         }
     }
 
@@ -104,8 +109,9 @@ public class SigningDialogController {
             }
         });
         engine.load(getClass().getResource("visualization-html.html").toExternalForm());
-        webView.setVisible(true);
-        webView.setManaged(true);
+        webViewContainer.getStyleClass().add("autogram-visualizer-html");
+        webViewContainer.setVisible(true);
+        webViewContainer.setManaged(true);
     }
 
     private void showPDFVisualization() {
@@ -118,7 +124,8 @@ public class SigningDialogController {
             }
         });
         engine.load(getClass().getResource("visualization-pdf.html").toExternalForm());
-        webView.setVisible(true);
-        webView.setManaged(true);
+        webViewContainer.getStyleClass().add("autogram-visualizer-pdf");
+        webViewContainer.setVisible(true);
+        webViewContainer.setManaged(true);
     }
 }

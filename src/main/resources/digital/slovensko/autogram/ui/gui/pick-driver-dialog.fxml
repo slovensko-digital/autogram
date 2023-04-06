@@ -14,9 +14,9 @@
       fx:id="mainBox">
 
     <VBox fx:id="formGroup" styleClass="autogram-form-group">
-        <Label styleClass="autogram-heading-l" VBox.vgrow="ALWAYS">Kde je uložený podpisový certifikát?</Label>
-        <Label fx:id="error" styleClass="autogram-error-message" managed="false">Vyberte úložisko certifikátov</Label>
-        <VBox fx:id="radios" styleClass="autogram-radios"></VBox>
+        <TextFlow><Text styleClass="autogram-heading-l" VBox.vgrow="ALWAYS">Kde je uložený podpisový certifikát?</Text></TextFlow>
+        <TextFlow><Text fx:id="error" styleClass="autogram-error-message" managed="false">Vyberte úložisko certifikátov</Text></TextFlow>
+        <VBox fx:id="radios" styleClass="autogram-radios"/>
     </VBox>
 
     <Button fx:id="mainButton" text="Vybrať úložisko" onAction="#onPickDriverButtonAction"/>
