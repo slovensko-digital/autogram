@@ -21,7 +21,7 @@ public class ServerResponder extends Responder {
     public void onDocumentSigned(SignedDocument signedDocument) {
         String signer = "unknown";
 
-        signer = signedDocument.getCertificate().getSubject().getPrettyPrintRFC2253();
+        signer = signedDocument.getCertificate().getSubject().getPrincipal().toString();
 
         try {
             var b64document = Base64.getEncoder().encodeToString(signedDocument.getDocument().openStream().readAllBytes());

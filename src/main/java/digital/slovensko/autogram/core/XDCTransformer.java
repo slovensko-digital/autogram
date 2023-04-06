@@ -145,10 +145,6 @@ public class XDCTransformer {
 
     private Element createXMLDataContainer() {
         var element = document.createElement("xdc:XMLDataContainer");
-        // element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsd",
-        // "http://www.w3.org/2001/XMLSchema");
-        // element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi",
-        // "http://www.w3.org/2001/XMLSchema-instance");
         if (containerXmlns != null)
             element.setAttribute("xmlns:xdc", containerXmlns);
 
