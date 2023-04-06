@@ -63,7 +63,7 @@ public class XDCTransformer {
         if (lastSlashIndex == -1)
             throw new RuntimeException("Identifier contains no slash: " + identifier);
 
-        this.identifierUri = identifier.substring(0, lastSlashIndex + 1);
+        this.identifierUri = identifier;
         this.identifierVersion = identifier.substring(lastSlashIndex + 1);
         this.containerXmlns = containerXmlns;
         this.canonicalizationMethod = canonicalizationMethod;
@@ -144,19 +144,20 @@ public class XDCTransformer {
     }
 
     private Element createXMLDataContainer() {
-        var element = document.createElement("XMLDataContainer");
-        element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
-        element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi",
-                "http://www.w3.org/2001/XMLSchema-instance");
+        var element = document.createElement("xdc:XMLDataContainer");
+        // element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsd",
+        // "http://www.w3.org/2001/XMLSchema");
+        // element.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi",
+        // "http://www.w3.org/2001/XMLSchema-instance");
         if (containerXmlns != null)
-            element.setAttribute("xmlns", containerXmlns);
+            element.setAttribute("xmlns:xdc", containerXmlns);
 
         return element;
     }
 
     private Element createXMLData() {
-        var element = document.createElement("XMLData");
-        element.setAttribute("ContentType", "application/xml; charset=UTF-8");
+        var element = document.createElement("xdc:XMLData");
+        element.setAttribute("ContentType", "application/xml; charset=utf-8");
         element.setAttribute("Identifier", identifierUri);
         element.setAttribute("Version", identifierVersion);
 
@@ -164,7 +165,7 @@ public class XDCTransformer {
     }
 
     private Element createUsedSchemasReferenced() {
-        var element = document.createElement("UsedSchemasReferenced");
+        var element = document.createElement("xdc:UsedSchemasReferenced");
         if ((!isNullOrBlank(xsdSchema)) || (!isNullOrBlank(xsltSchema))) {
             var documentXmlnsNode = document.getFirstChild().getAttributes().getNamedItem("xmlns");
             if (documentXmlnsNode != null)
@@ -210,7 +211,7 @@ public class XDCTransformer {
     }
 
     private Element createUsedXSDReference() {
-        var element = document.createElement("UsedXSDReference");
+        var element = document.createElement("xdc:UsedXSDReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue", computeDigest(xsdSchema));
@@ -220,12 +221,13 @@ public class XDCTransformer {
     }
 
     private Element createUsedPresentationSchemaReference() {
-        var element = document.createElement("UsedPresentationSchemaReference");
+        var element = document.createElement("xdc:UsedPresentationSchemaReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue", computeDigest(xsltSchema));
         element.setAttribute("ContentType", "application/xslt+xml");
         element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription.name());
+        element.setAttribute("Language", "sk");
         element.setTextContent(buildXSLTReference());
 
         return element;
