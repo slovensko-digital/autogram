@@ -222,11 +222,16 @@ components:
           description: 'Signed content of the original document - either in plaintext or in Base64 format.'
         signedBy:
           type: string
-          example: 'CN=John Smith, OU=Test, O=IBM, C=GB, ...'
+          example: 'SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith'
           description: 'Distinguished name of the certificate used/attempting to sign the document.'
+        issuedBy:
+          type: string
+          example: 'CN=SVK eID ACA2, O=Disig a.s., OID.2.5.4.97=NTRSK-12345678, L=Bratislava, C=SK'
+          description: 'Distinguished name of the issuer of the certificate used/attempting to sign the document.'
       required:
         - content
         - signedBy
+        - issuedBy
 
     SignatureParameters:
       type: object
@@ -441,6 +446,7 @@ components:
           format: XADES
           fileMimeType: application/lor.ip.xmldatacontainer+xml
           container: ASICE
+          identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9"
           containerFilename: General_Agenda.xml
           containerXmlns: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
           schema: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHhzOnNjaGVtYSBlbGVtZW50Rm9ybURlZmF1bHQ9InF1YWxpZmllZCIgYXR0cmlidXRlRm9ybURlZmF1bHQ9InVucXVhbGlmaWVkIiB4bWxuczp4cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHRhcmdldE5hbWVzcGFjZT0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45IiB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45Ij4KPHhzOnNpbXBsZVR5cGUgbmFtZT0idGV4dEFyZWEiPgo8eHM6cmVzdHJpY3Rpb24gYmFzZT0ieHM6c3RyaW5nIj4KPC94czpyZXN0cmljdGlvbj4KPC94czpzaW1wbGVUeXBlPgo8eHM6c2ltcGxlVHlwZSBuYW1lPSJtZW5vIj4KPHhzOnJlc3RyaWN0aW9uIGJhc2U9InhzOnN0cmluZyI+CjwveHM6cmVzdHJpY3Rpb24+CjwveHM6c2ltcGxlVHlwZT4KPHhzOmVsZW1lbnQgbmFtZT0iR2VuZXJhbEFnZW5kYSI+Cjx4czpjb21wbGV4VHlwZT4KPHhzOnNlcXVlbmNlPgo8eHM6ZWxlbWVudCBuYW1lPSJzdWJqZWN0IiB0eXBlPSJtZW5vIiBtaW5PY2N1cnM9IjAiIG5pbGxhYmxlPSJ0cnVlIiAvPgo8eHM6ZWxlbWVudCBuYW1lPSJ0ZXh0IiB0eXBlPSJ0ZXh0QXJlYSIgbWluT2NjdXJzPSIwIiBuaWxsYWJsZT0idHJ1ZSIgLz4KPC94czpzZXF1ZW5jZT4KPC94czpjb21wbGV4VHlwZT4KPC94czplbGVtZW50Pgo8L3hzOnNjaGVtYT4K"
@@ -456,6 +462,7 @@ components:
           format: XADES
           fileMimeType: application/lor.ip.xmldatacontainer+xml
           container: ASICE
+          identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9"
           containerFilename: General_Agenda.xml
           containerXmlns: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
           schema: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHhzOnNjaGVtYSBlbGVtZW50Rm9ybURlZmF1bHQ9InF1YWxpZmllZCIgYXR0cmlidXRlRm9ybURlZmF1bHQ9InVucXVhbGlmaWVkIiB4bWxuczp4cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHRhcmdldE5hbWVzcGFjZT0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45IiB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45Ij4KPHhzOnNpbXBsZVR5cGUgbmFtZT0idGV4dEFyZWEiPgo8eHM6cmVzdHJpY3Rpb24gYmFzZT0ieHM6c3RyaW5nIj4KPC94czpyZXN0cmljdGlvbj4KPC94czpzaW1wbGVUeXBlPgo8eHM6c2ltcGxlVHlwZSBuYW1lPSJtZW5vIj4KPHhzOnJlc3RyaWN0aW9uIGJhc2U9InhzOnN0cmluZyI+CjwveHM6cmVzdHJpY3Rpb24+CjwveHM6c2ltcGxlVHlwZT4KPHhzOmVsZW1lbnQgbmFtZT0iR2VuZXJhbEFnZW5kYSI+Cjx4czpjb21wbGV4VHlwZT4KPHhzOnNlcXVlbmNlPgo8eHM6ZWxlbWVudCBuYW1lPSJzdWJqZWN0IiB0eXBlPSJtZW5vIiBtaW5PY2N1cnM9IjAiIG5pbGxhYmxlPSJ0cnVlIiAvPgo8eHM6ZWxlbWVudCBuYW1lPSJ0ZXh0IiB0eXBlPSJ0ZXh0QXJlYSIgbWluT2NjdXJzPSIwIiBuaWxsYWJsZT0idHJ1ZSIgLz4KPC94czpzZXF1ZW5jZT4KPC94czpjb21wbGV4VHlwZT4KPC94czplbGVtZW50Pgo8L3hzOnNjaGVtYT4K"
@@ -471,6 +478,7 @@ components:
           format: XADES
           fileMimeType: application/lor.ip.xmldatacontainer+xml
           container: ASICE
+          identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9"
           containerFilename: General_Agenda.xml
           containerXmlns: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
           schema: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>\n"
@@ -481,11 +489,12 @@ components:
     XAdES-ASICE-TXT-TXT:
       value:
         document:
-          content: "<?xml version=\"1.0\"encoding=\"UTF-8\"?><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</GeneralAgenda>"
+          content: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</GeneralAgenda>"
         parameters:
           format: XADES
           fileMimeType: application/lor.ip.xmldatacontainer+xml
           container: ASICE
+          identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9"
           containerFilename: General_Agenda.xml
           containerXmlns: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
           schema: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>\n"

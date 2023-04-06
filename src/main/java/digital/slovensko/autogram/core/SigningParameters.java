@@ -26,7 +26,7 @@ public class SigningParameters {
     private final String signaturePolicyContent;
     private final String signaturePolicyId;
     private final String transformation;
-    private final String transformationOutputMimeType;
+    private final MimeType transformationOutputMimeType;
     private final SignatureLevel level;
     private final SignaturePackaging packaging;
     private final DigestAlgorithm digestAlgorithm;
@@ -34,6 +34,8 @@ public class SigningParameters {
     private final String infoCanonicalization;
     private final String propertiesCanonicalization;
     private final String keyInfoCanonicalization;
+    private final String identifier;
+    private final MimeType fileMimeType;
 
     public SigningParameters() {
         asicContainer = ASiCContainerType.ASiC_E;
@@ -51,6 +53,8 @@ public class SigningParameters {
         propertiesCanonicalization = CanonicalizationMethod.INCLUSIVE;
         keyInfoCanonicalization = CanonicalizationMethod.INCLUSIVE;
         transformationOutputMimeType = null;
+        identifier = "";
+        fileMimeType = null;
     }
 
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
@@ -58,7 +62,7 @@ public class SigningParameters {
             DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization,
             String propertiesCanonicalization, String keyInfoCanonicalization,
-            String signaturePolicyId, String signaturePolicyContent, String schema, String transformation, String transformationOutputMimeType) {
+            String signaturePolicyId, String signaturePolicyContent, String schema, String transformation, MimeType transformationOutputMimeType, String identifier, MimeType fileMimeType) {
         this.level = level;
         this.asicContainer = container;
         this.containerFilename = containerFilename;
@@ -74,9 +78,11 @@ public class SigningParameters {
         this.schema = schema;
         this.transformation = transformation;
         this.transformationOutputMimeType = transformationOutputMimeType;
+        this.identifier = identifier;
+        this.fileMimeType = fileMimeType;
     }
 
-    public String getTransformationOutputMimeType() {
+    public MimeType getTransformationOutputMimeType() {
         return transformationOutputMimeType;
     }
 
@@ -90,6 +96,7 @@ public class SigningParameters {
         parameters.setSignedInfoCanonicalizationMethod(getInfoCanonicalization());
         parameters.setSignedPropertiesCanonicalizationMethod(getPropertiesCanonicalization());
         parameters.setEn319132(isEn319132());
+        parameters.setSignaturePackaging(packaging);
 
         return parameters;
     }
@@ -230,7 +237,15 @@ public class SigningParameters {
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, null, null, null
+                null, null, null, null, null, "", null
         );
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public boolean shouldCreateDatacontainer() {
+        return getContainerXmlns() != null && getContainerXmlns().contains("xmldatacontainer");
     }
 }

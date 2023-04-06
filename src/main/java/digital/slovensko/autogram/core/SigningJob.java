@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.Objects;
 
 public class SigningJob {
     private final Responder responder;
@@ -44,11 +43,17 @@ public class SigningJob {
     }
 
     public boolean isPlainText() {
-        return Objects.equals(parameters.getTransformationOutputMimeType(), "text/plain");
+        if (parameters.getTransformationOutputMimeType() != null)
+            return parameters.getTransformationOutputMimeType().is(MimeType.PLAIN);
+
+        return false;
     }
 
     public boolean isHTML() {
-        return Objects.equals(parameters.getTransformationOutputMimeType(), "text/html");
+        if (parameters.getTransformationOutputMimeType() != null)
+            return parameters.getTransformationOutputMimeType().is(MimeType.HTML);
+
+        return false;
     }
 
     public boolean isPDF() {
@@ -75,7 +80,7 @@ public class SigningJob {
 
             transformer.transform(xmlSource, outputTarget);
 
-            var result = outputTarget.getWriter().toString();
+            var result = outputTarget.getWriter().toString().trim();
             return result;
         } catch (Exception e) {
             return null; // TODO

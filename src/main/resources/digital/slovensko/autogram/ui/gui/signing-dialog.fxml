@@ -10,15 +10,16 @@
       xmlns:fx="http://javafx.com/fxml"
       minHeight="400" prefWidth="600" minWidth="600"
       fx:id="mainBox">
+
     <TextFlow><Text styleClass="autogram-heading-m" text="Dokument na&#160;podpísanie"/></TextFlow>
 
     <!-- HTML/PDF visualization -->
-    <VBox fx:id="webViewContainer" managed="false" visible="false">
+    <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
         <WebView fx:id="webView" VBox.vgrow="ALWAYS" />
     </VBox>
 
     <!-- Plaintext visualization -->
-    <TextArea fx:id="plainTextArea" styleClass="autogram-visualizer-plaintext" managed="false" visible="false" editable="false" />
+    <TextArea fx:id="plainTextArea" styleClass="autogram-visualizer-plaintext" managed="false" visible="false" editable="false" VBox.vgrow="ALWAYS"/>
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary" text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed"/>

@@ -275,7 +275,7 @@
     -fx-background-color: -autogram-link-hover-colour;
 }
 
-
+.autogram-visualizer-plaintext,
 .autogram-visualizer-html {
     -fx-border-color: -autogram-input-border-colour;
     -fx-border-width: 2px;
