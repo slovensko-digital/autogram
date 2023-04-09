@@ -135,17 +135,19 @@
                     </execution>
                     <execution>
                         <id>jacoco-report</id>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>default-check</id>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>
                         <configuration>
-                            <!-- uncomment for build failing when coverage check do not pass -->
+                            <!-- uncomment for maven build failing when coverage check do not pass -->
                             <haltOnFailure>false</haltOnFailure>
                             <rules>
                                 <rule>
