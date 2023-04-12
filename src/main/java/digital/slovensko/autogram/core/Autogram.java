@@ -148,7 +148,6 @@ public class Autogram {
         var jobParameters = job.getParameters();
         var signatureParameters = job.getParameters().getPAdESSignatureParameters();
 
-        signatureParameters.setSignWithExpiredCertificate(true); // TODO remove
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
