@@ -123,6 +123,55 @@
             </plugin>
 
             <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.9</version>
+                <executions>
+                    <execution>
+                        <id>jacoco-initialize</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jacoco-report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-check</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <!-- uncomment for maven build failing when coverage check do not pass -->
+                            <haltOnFailure>false</haltOnFailure>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>CLASS</counter>
+                                            <value>MISSEDCOUNT</value>
+                                            <maximum>0</maximum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
                 <version>2.9.0</version>
