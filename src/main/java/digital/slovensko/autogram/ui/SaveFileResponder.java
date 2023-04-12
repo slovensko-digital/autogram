@@ -17,13 +17,8 @@ public class SaveFileResponder extends Responder {
     }
 
     public void onDocumentSigned(SignedDocument signedDocument) {
-        var saveName = getSaveName();
-
-        System.out.println("Sign success for document " + signedDocument.getDocument().toString());
-        System.out.println("Saving signed document as " + saveName);
-
         try {
-            signedDocument.getDocument().save(saveName);
+            signedDocument.getDocument().save(getSaveName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -33,6 +28,7 @@ public class SaveFileResponder extends Responder {
         System.err.println("Sign failed error occurred: " + error.toString());
     }
 
+    // TODO: move elsewhere and solve the problem with existing files
     private String getSaveName() {
         var name = Files.getNameWithoutExtension(filename);
         if (filename.endsWith(".pdf"))
