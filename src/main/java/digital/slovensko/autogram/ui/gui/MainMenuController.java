@@ -3,7 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.ui.cli.CliResponder;
+import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.model.FileDocument;
 import javafx.fxml.FXML;
 import javafx.scene.input.TransferMode;
@@ -43,9 +43,9 @@ public class MainMenuController {
             event.getDragboard().getFiles();
 
             for(File file: event.getDragboard().getFiles()) {
-                var document = new FileDocument(file.getPath());
-                var parameters = SigningParameters.buildForPDF();
-                var responder = new CliResponder(); // TODO
+                var document = new FileDocument(file);
+                var parameters = SigningParameters.buildFromFilename(file.getName());
+                var responder = new SaveFileResponder(file.getName());
                 autogram.showSigningDialog(new SigningJob(document, parameters, responder));
             }
         });
