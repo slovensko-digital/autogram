@@ -155,7 +155,14 @@ public class GUI implements UI {
             if (list != null) {
                 for (File f : list) {
                     var document = new FileDocument(f.getPath());
-                    var parameters = SigningParameters.buildForPDF();
+                    document.setName(f.getName());
+                    SigningParameters parameters = null;
+
+                    if (f.getName().endsWith(".pdf"))
+                        parameters = SigningParameters.buildForPDF();
+                    else
+                        parameters = SigningParameters.buildForASiCWithXAdES(f.getName());
+
                     var responder = new CliResponder(); // TODO
 
                     var job = new SigningJob(document, parameters, responder);

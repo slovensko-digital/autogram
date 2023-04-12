@@ -98,4 +98,11 @@ public class SigningJob {
             throw new RuntimeException(e);
         }
     }
+
+    public String getOutputDocumentName() {
+        if (parameters.getContainerFilename() != null)
+            return parameters.getContainerFilename();
+
+        return document.getName();
+    }
 }

@@ -35,6 +35,7 @@ public class Autogram {
     public void sign(SigningJob job) {
         try {
             var signedDocument = signDocument(job, activeKey);
+            signedDocument.getDocument().setName(job.getOutputDocumentName());
             job.onDocumentSigned(signedDocument);
             ui.hideSigningDialog(job, this);
         } catch (DSSException e) {

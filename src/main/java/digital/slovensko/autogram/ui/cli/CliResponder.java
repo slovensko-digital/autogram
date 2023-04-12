@@ -11,7 +11,7 @@ public class CliResponder extends Responder {
     public void onDocumentSigned(SignedDocument signedDocument) {
         System.out.println("Sign success for document " + signedDocument.getDocument().toString());
         try {
-            signedDocument.getDocument().save("dummy.pdf");
+            signedDocument.getDocument().save(signedDocument.getDocument().getName());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

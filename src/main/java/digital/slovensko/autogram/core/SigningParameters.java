@@ -241,6 +241,23 @@ public class SigningParameters {
         );
     }
 
+    public static SigningParameters buildForASiCWithXAdES(String filename) {
+        var filenameWithoutExtension = filename.substring(0, filename.lastIndexOf('.'));
+        if (filenameWithoutExtension == null)
+            filenameWithoutExtension = "signed_file";
+
+        return new SigningParameters(
+                SignatureLevel.XAdES_BASELINE_B,
+                ASiCContainerType.ASiC_E,
+                filenameWithoutExtension + ".asice", null,
+                SignaturePackaging.ENVELOPING,
+                DigestAlgorithm.SHA256,
+                false, null,
+                null, null,
+                null, null, null, null, null, "", null
+        );
+    }
+
     public String getIdentifier() {
         return identifier;
     }

@@ -44,7 +44,14 @@ public class MainMenuController {
 
             for(File file: event.getDragboard().getFiles()) {
                 var document = new FileDocument(file.getPath());
-                var parameters = SigningParameters.buildForPDF();
+                document.setName(file.getName());
+                SigningParameters parameters = null;
+
+                if (file.getName().endsWith(".pdf"))
+                    parameters = SigningParameters.buildForPDF();
+                else
+                    parameters = SigningParameters.buildForASiCWithXAdES(file.getName());
+
                 var responder = new CliResponder(); // TODO
                 autogram.showSigningDialog(new SigningJob(document, parameters, responder));
             }
