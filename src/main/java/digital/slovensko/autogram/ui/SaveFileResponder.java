@@ -7,6 +7,8 @@ import digital.slovensko.autogram.core.SigningJob;
 
 import java.io.IOException;
 
+import com.google.common.io.Files;
+
 public class SaveFileResponder extends Responder {
     private final String filename;
 
@@ -15,9 +17,13 @@ public class SaveFileResponder extends Responder {
     }
 
     public void onDocumentSigned(SignedDocument signedDocument) {
+        var saveName = getSaveName();
+
         System.out.println("Sign success for document " + signedDocument.getDocument().toString());
+        System.out.println("Saving signed document as " + saveName);
+
         try {
-            signedDocument.getDocument().save(filename);
+            signedDocument.getDocument().save(saveName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -25,5 +31,13 @@ public class SaveFileResponder extends Responder {
 
     public void onDocumentSignFailed(SigningJob job, SigningError error) {
         System.err.println("Sign failed error occurred: " + error.toString());
+    }
+
+    private String getSaveName() {
+        var name = Files.getNameWithoutExtension(filename);
+        if (filename.endsWith(".pdf"))
+            return name + "_signed.pdf";
+
+        return name + "_signed.asice";
     }
 }

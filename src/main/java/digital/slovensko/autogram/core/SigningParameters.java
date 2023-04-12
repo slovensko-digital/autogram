@@ -232,11 +232,10 @@ public class SigningParameters {
     }
 
     public static SigningParameters buildForPDF(String filename) {
-        var filenameWithoutExtension = Files.getNameWithoutExtension(filename);
         return new SigningParameters(
                 SignatureLevel.PAdES_BASELINE_B,
                 null,
-                filenameWithoutExtension + "_signed.pdf", null,
+                null, null,
                 null,
                 DigestAlgorithm.SHA256,
                 false, null,
@@ -245,11 +244,10 @@ public class SigningParameters {
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
-        var filenameWithoutExtension = Files.getNameWithoutExtension(filename);
         return new SigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 ASiCContainerType.ASiC_E,
-                filenameWithoutExtension + "_signed.asice", null,
+                null, null,
                 SignaturePackaging.ENVELOPING,
                 DigestAlgorithm.SHA256,
                 false, null,

@@ -153,13 +153,11 @@ public class GUI implements UI {
             var list = chooser.showOpenMultipleDialog(new Stage());
 
             if (list != null) {
-                for (File f : list) {
-                    var document = new FileDocument(f.getPath());
-                    document.setName(f.getName());
-                    SigningParameters parameters = SigningParameters.buildFromFilename(f.getName());
-                    var responder = new SaveFileResponder(parameters.getContainerFilename());
-                    var job = new SigningJob(document, parameters, responder);
-                    autogram.showSigningDialog(job);
+                for (File file : list) {
+                    var document = new FileDocument(file);
+                    var parameters = SigningParameters.buildFromFilename(file.getName());
+                    var responder = new SaveFileResponder(file.getName());
+                    autogram.showSigningDialog(new SigningJob(document, parameters, responder));
                 }
             }
         });
