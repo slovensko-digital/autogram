@@ -43,6 +43,8 @@ public class GUIApp extends Application {
             Platform.exit();
         });
 
+        GUI.suppressDefaultFocus(windowStage, controller);
+
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);
         windowStage.sizeToScene();

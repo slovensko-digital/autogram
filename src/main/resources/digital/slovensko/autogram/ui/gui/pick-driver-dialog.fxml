@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx"
@@ -19,6 +15,6 @@
         <VBox fx:id="radios" styleClass="autogram-radios"/>
     </VBox>
 
-    <Button fx:id="mainButton" text="Vybrať úložisko" onAction="#onPickDriverButtonAction"/>
+    <Button styleClass="autogram-button" fx:id="mainButton" text="Vybrať úložisko" onAction="#onPickDriverButtonAction"/>
 
 </VBox>

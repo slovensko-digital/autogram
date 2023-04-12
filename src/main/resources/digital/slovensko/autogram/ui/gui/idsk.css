@@ -13,6 +13,7 @@
     -autogram-input-border-colour: #0b0c0c;
 
     -autogram-focus-colour: #ffdd00;
+    -autogram-focus-text-colour: #0b0c0c;
 
     -autogram-error-colour:	#d4351c;
 
@@ -71,7 +72,7 @@
 
 
 /* Buttons */
-.button {
+.autogram-button {
     -fx-cursor: hand;
     -fx-background-color: #00703c;
     -fx-border-color: #002d18;
@@ -82,40 +83,53 @@
     -fx-font-size: 1.1875em;
 }
 
-.button:hover {
+.autogram-button:hover {
     -fx-background-color: #204e2e;
 }
 
-.button:disabled {
+.autogram-button:focused,
+.autogram-button.autogram-button--secondary:focused {
+    -fx-background-color: -autogram-focus-colour !important;
+    -fx-text-fill: -autogram-text-colour;
+
+    -fx-border-color: -autogram-input-border-colour;
+}
+
+.autogram-button:disabled {
     -fx-opacity: 0.5;
 }
 
 .autogram-link {
-    -fx-padding: 7px 0 7px 0;
+    -fx-background-insets: 7px 0;
     -fx-background-color: transparent;
     -fx-border-width: 0;
     -fx-text-fill: -autogram-link-colour;
     -fx-underline: true;
+
+    -fx-font-size: 1.1875em;
 }
 
 .autogram-link:hover {
+    -fx-cursor: hand;
     -fx-background-color: transparent;
-    -fx-text-fill: -autogram-link-hover-colour !important;
+    -fx-text-fill: -autogram-link-hover-colour;
 }
 
-.autogram-link:hover .text {
-    -fx-background-color: red;
-    -fx-border-width: 0 0 3px 0;
-    -fx-border-color: -autogram-link-hover-colour;
+.autogram-link:focused,
+.autogram-link:focused:hover {
+    -fx-text-fill: -autogram-focus-text-colour;
+    -fx-background-color: -autogram-focus-text-colour, -autogram-focus-colour, transparent;
+    -fx-background-insets: 0 0 -4px 0, -4px 0 0 0, 0 0 0 0;
+    -fx-underline: false;
 }
 
-.button.autogram-button--secondary {
+.autogram-button.autogram-button--secondary {
     -fx-text-fill: -autogram-text-colour;
     -fx-background-color: #f3f2f1;
     -fx-border-color: #929191;
 }
 
-.button.autogram-button--secondary:hover {
+.autogram-button.autogram-button--secondary:hover {
     -fx-background-color: #dbdad9;
 }
 
@@ -167,18 +181,49 @@
     -fx-font-size: 1em;
 }
 
-.autogram-radios {
-    -fx-spacing: 10px;
+/* Tooltip */
+
+.tooltip {
+    -fx-background-color: -autogram-focus-colour;
+    -fx-padding: 10px;
+    -fx-font-size: 1.1875em;
 }
 
-.autogram-actions {
-    -fx-spacing: 15px;
+/* Form styling */
+
+.autogram-input {
+    -fx-text-fill: -autogram-text-colour;
+
+    -fx-padding: 5px;
+    -fx-border-width: 2px;
+    -fx-border-color: -autogram-input-border-colour;
+    -fx-font-size: 1.1875em;
+}
+
+.autogram-input:hover {
+    -fx-cursor: text;
+}
+
+.autogram-input:focused {
+    -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour, #ffffff;
+    -fx-background-insets: -3, 2, 4;
+}
+
+.autogram-input--error {
+    -fx-border-color: -autogram-error-colour;
+}
+
+.autogram-input--error:focused {
+    -fx-border-color: -autogram-input-border-colour;
+}
+
+.autogram-input--width-10 {
+    -fx-max-width: 11.5em;
 }
 
 .autogram-form-group {
     -fx-spacing: 15px;
 }
-
 
 .autogram-form-group--error {
     -fx-border-width: 0 0 0 5px;
@@ -303,7 +348,7 @@
     -fx-border-width: 2px;
     -fx-background-color: -autogram-focus-colour, #ffffff;
     -fx-background-insets: -3, 0;
-    -fx-background-radius: 0.5em;
+    -fx-background-radius: 13px, 10px;
 }
 
 .autogram-footer {
@@ -316,6 +361,17 @@
 .autogram-footer .autogram-link {
     -fx-font-size: 1em;
     -fx-text-fill: -autogram-text-colour;
+}
+
+.autogram-footer .autogram-link:hover {
+    -fx-underline: false;
+    -fx-background-color: -autogram-text-colour, #f3f2f1;
+    -fx-background-insets: 0 0 1px 0, 0 0 4px 0;
+}
+
+.autogram-footer .autogram-link:focused:hover {
+    -fx-background-color: -autogram-focus-text-colour, -autogram-focus-colour, transparent;
+    -fx-background-insets: 0 0 -4px 0, -4px 0 0 0, 0 0 0 0;
 }
 
 /* Scrollbar */
@@ -378,4 +434,20 @@
 .autogram-icon--big {
     -fx-scale-x: 2;
     -fx-scale-y: 2;
+}
+
+/* Custom styles */
+
+.autogram-claim {
+    -fx-background-color: -autogram-focus-colour, #ffffff;
+    -fx-background-insets: 0 0 2 0, 0 0 6 0;
+}
+
+.autogram-radios {
+    -fx-spacing: 10px;
+}
+
+.autogram-actions {
+    -fx-spacing: 15px;
+    -fx-alignment: center-left;
 }

@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
@@ -12,8 +11,6 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-
-import java.io.IOException;
 
 public class Autogram {
     private final UI ui;
@@ -50,19 +47,19 @@ public class Autogram {
     public void pickSigningKey() {
         var drivers = TokenDriver.getAvailableDrivers(); // TODO handle empty driver list with ui.showError?
         ui.pickTokenDriverAndDo(drivers, (driver) -> {
-            try {
-                var token = driver.createToken();
-                var keys = token.getKeys();
-                ui.pickKeyAndDo(keys, (privateKey) -> {
-                    setActiveSigningKey(new SigningKey(token, privateKey));
-                });
-            } catch (DSSException e) {
-                resetSigningKey();
-                AutogramException ae = AutogramException.createFromDSSException(e);
-                ui.showError(ae);
-            } catch (IOException e) {
-                ui.showError(new UnrecognizedException(e));
-            }
+            ui.showPasswordDialogAndThen(driver, password -> {
+                try {
+                    var token = driver.createTokenWithPassword(password);
+                    var keys = token.getKeys();
+                    ui.pickKeyAndDo(keys, (privateKey) -> {
+                        setActiveSigningKey(new SigningKey(token, privateKey));
+                    });
+                } catch (DSSException e) {
+                    resetSigningKey();
+                    AutogramException ae = AutogramException.createFromDSSException(e);
+                    ui.showError(ae);
+                }
+            });
         });
     }
 
@@ -151,6 +148,7 @@ public class Autogram {
         var jobParameters = job.getParameters();
         var signatureParameters = job.getParameters().getPAdESSignatureParameters();
 
+        signatureParameters.setSignWithExpiredCertificate(true); // TODO remove
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 

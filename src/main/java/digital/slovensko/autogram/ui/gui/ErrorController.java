@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
@@ -11,7 +12,7 @@ import javafx.stage.Stage;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public class ErrorController {
+public class ErrorController implements SuppressedFocusController {
     private final AutogramException exception;
     @FXML
     VBox mainBox;
@@ -74,5 +75,10 @@ public class ErrorController {
             showErrorDetailsButton.setText("Schovať detail chyby");
         }
         errorDetails.getScene().getWindow().sizeToScene();
+    }
+
+    @Override
+    public Node getNodeForLoosingFocus() {
+        return mainBox;
     }
 }

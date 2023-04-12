@@ -21,4 +21,6 @@ public interface UI {
     void refreshSigningKey();
 
     void showError(AutogramException e);
+
+    void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback);
 }
