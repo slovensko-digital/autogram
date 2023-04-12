@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.ui.cli;
+package digital.slovensko.autogram.ui;
 
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
@@ -7,11 +7,17 @@ import digital.slovensko.autogram.core.SigningJob;
 
 import java.io.IOException;
 
-public class CliResponder extends Responder {
+public class SaveFileResponder extends Responder {
+    private final String filename;
+
+    public SaveFileResponder(String filename) {
+        this.filename = filename;
+    }
+
     public void onDocumentSigned(SignedDocument signedDocument) {
         System.out.println("Sign success for document " + signedDocument.getDocument().toString());
         try {
-            signedDocument.getDocument().save(signedDocument.getDocument().getName());
+            signedDocument.getDocument().save(filename);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

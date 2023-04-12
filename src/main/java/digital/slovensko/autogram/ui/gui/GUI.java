@@ -5,8 +5,8 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.SaveFileResponder;
 import digital.slovensko.autogram.ui.UI;
-import digital.slovensko.autogram.ui.cli.CliResponder;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Application;
@@ -156,15 +156,8 @@ public class GUI implements UI {
                 for (File f : list) {
                     var document = new FileDocument(f.getPath());
                     document.setName(f.getName());
-                    SigningParameters parameters = null;
-
-                    if (f.getName().endsWith(".pdf"))
-                        parameters = SigningParameters.buildForPDF();
-                    else
-                        parameters = SigningParameters.buildForASiCWithXAdES(f.getName());
-
-                    var responder = new CliResponder(); // TODO
-
+                    SigningParameters parameters = SigningParameters.buildFromFilename(f.getName());
+                    var responder = new SaveFileResponder(parameters.getContainerFilename());
                     var job = new SigningJob(document, parameters, responder);
                     autogram.showSigningDialog(job);
                 }

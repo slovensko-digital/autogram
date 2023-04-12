@@ -2,6 +2,8 @@ package digital.slovensko.autogram.core;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
+import com.google.common.io.Files;
+
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
@@ -62,7 +64,8 @@ public class SigningParameters {
             DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization,
             String propertiesCanonicalization, String keyInfoCanonicalization,
-            String signaturePolicyId, String signaturePolicyContent, String schema, String transformation, MimeType transformationOutputMimeType, String identifier, MimeType fileMimeType) {
+            String signaturePolicyId, String signaturePolicyContent, String schema, String transformation,
+            MimeType transformationOutputMimeType, String identifier, MimeType fileMimeType) {
         this.level = level;
         this.asicContainer = container;
         this.containerFilename = containerFilename;
@@ -228,34 +231,30 @@ public class SigningParameters {
         return keyInfoCanonicalization != null ? keyInfoCanonicalization : CanonicalizationMethod.INCLUSIVE;
     }
 
-    public static SigningParameters buildForPDF() {
+    public static SigningParameters buildForPDF(String filename) {
+        var filenameWithoutExtension = Files.getNameWithoutExtension(filename);
         return new SigningParameters(
                 SignatureLevel.PAdES_BASELINE_B,
                 null,
-                null, null,
+                filenameWithoutExtension + "_signed.pdf", null,
                 null,
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, null, null, null, "", null
-        );
+                null, null, null, null, null, "", null);
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
-        var filenameWithoutExtension = filename.substring(0, filename.lastIndexOf('.'));
-        if (filenameWithoutExtension == null)
-            filenameWithoutExtension = "signed_file";
-
+        var filenameWithoutExtension = Files.getNameWithoutExtension(filename);
         return new SigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 ASiCContainerType.ASiC_E,
-                filenameWithoutExtension + ".asice", null,
+                filenameWithoutExtension + "_signed.asice", null,
                 SignaturePackaging.ENVELOPING,
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, null, null, null, "", null
-        );
+                null, null, null, null, null, "", null);
     }
 
     public String getIdentifier() {
@@ -264,5 +263,12 @@ public class SigningParameters {
 
     public boolean shouldCreateDatacontainer() {
         return getContainerXmlns() != null && getContainerXmlns().contains("xmldatacontainer");
+    }
+
+    public static SigningParameters buildFromFilename(String filename) {
+        if (filename.endsWith(".pdf"))
+            return SigningParameters.buildForPDF(filename);
+
+        return SigningParameters.buildForASiCWithXAdES(filename);
     }
 }
