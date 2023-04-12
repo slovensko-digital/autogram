@@ -44,7 +44,6 @@ public class MainMenuController {
 
             for(File file: event.getDragboard().getFiles()) {
                 var document = new FileDocument(file.getPath());
-                document.setName(file.getName());
                 SigningParameters parameters = SigningParameters.buildFromFilename(file.getName());
                 var responder = new SaveFileResponder(parameters.getContainerFilename());
                 autogram.showSigningDialog(new SigningJob(document, parameters, responder));
