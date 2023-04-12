@@ -13,7 +13,7 @@ jobs:
           - os: windows-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Update version in pom if tag pushed
         if: startsWith(github.ref, 'refs/tags/')
@@ -28,7 +28,7 @@ jobs:
           java-package: 'jdk+fx'
 
       - name: Cache local Maven repository and JDK cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.m2/repository
