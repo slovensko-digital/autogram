@@ -41,8 +41,10 @@ public class AutogramException extends RuntimeException {
                     return new FunctionCanceledException();
                 } else if (cause.getMessage().equals("CKR_TOKEN_NOT_RECOGNIZED") || cause.getMessage().contains("no such algorithm: PKCS11 for provider")) {
                     return new TokenNotRecognizedException();
-                } else if (cause.getMessage().equals("CKR_PIN_INCORRECT") || cause.getMessage().equals("CKR_FUNsCTION_FAILED")) {
+                } else if (cause.getMessage().equals("CKR_PIN_INCORRECT") || cause.getMessage().equals("CKR_FUNCTION_FAILED")) {
                     return new PINIncorrectException();
+                } else if (cause.getMessage().equals("CKR_PIN_LOCKED")) {
+                    return new PINLockedException();
                 } else if (cause.getMessage().equals("Token has been removed")) {
                     return new TokenRemovedException();
                 }
