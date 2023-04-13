@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.server;
+package digital.slovensko.autogram.util;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -10,8 +10,7 @@ public class ConfigurationProperties {
         PROPERTIES = new Properties();
         try {
             PROPERTIES.load(ConfigurationProperties.class.getResourceAsStream("configuration.properties"));
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Unable to load ConfigurationProperties", e);
         }
     }

@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.server.AutogramServer;
+import digital.slovensko.autogram.util.LaunchParameters;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -27,8 +28,10 @@ public class GUIApp extends Application {
 
         var scene = new Scene(root);
 
-        var server = new AutogramServer(GUIApp.autogram); // TODO based on args?
-        server.start(); // TODO args
+        var params = LaunchParameters.fromParameters(getParameters());
+        var server = new AutogramServer(GUIApp.autogram, params.getHost(), params.getPort(),
+                params.getProtocol().equals("https"));
+        server.start();
 
         if (getParameters().getNamed().containsKey("url")) {
             // started from external

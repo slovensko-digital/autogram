@@ -6,7 +6,8 @@ import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 
 import digital.slovensko.autogram.core.Autogram;
-import static digital.slovensko.autogram.server.ConfigurationProperties.getProperty;
+
+import static digital.slovensko.autogram.util.ConfigurationProperties.getProperty;
 
 import java.io.FileInputStream;
 import java.net.BindException;
@@ -24,9 +25,9 @@ public class AutogramServer {
     private final Autogram autogram;
     private final HttpServer server;
 
-    public AutogramServer(Autogram autogram) {
+    public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps) {
         this.autogram = autogram;
-        this.server = buildServer("localhost", 37200, true);
+        this.server = buildServer(hostname, port, isHttps);
     }
 
     public void start() {
@@ -39,24 +40,24 @@ public class AutogramServer {
 
     private HttpServer buildServer(String hostname, int port, boolean isHttps) {
         try {
-            HttpServer server = HttpsServer.create(new InetSocketAddress(hostname, port), 0);
             if (!isHttps)
-                return server;
+                return HttpServer.create(new InetSocketAddress(hostname, port), 0);
 
+            var server = HttpsServer.create(new InetSocketAddress(hostname, port), 0);
             var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert")).toFile();
             char[] password = "".toCharArray();
             var ks = KeyStore.getInstance("PKCS12");
             ks.load(new FileInputStream(p12file), password);
-            
+
             var kmf = KeyManagerFactory.getInstance("SunX509");
             kmf.init(ks, password);
             var tmf = TrustManagerFactory.getInstance("SunX509");
             tmf.init(ks);
-            
+
             var sslContext = SSLContext.getInstance("TLSv1.2");
             sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
 
-            ((HttpsServer) server).setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+            server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
                 public void configure(HttpsParameters params) {
                     try {
                         var c = SSLContext.getDefault();
