@@ -106,7 +106,7 @@ public class SigningJob {
         var document = new FileDocument(file);
 
         SigningParameters parameters;
-        String filename = file.getName();
+        var filename = file.getName();
 
         if (filename.endsWith(".pdf")) {
             parameters = SigningParameters.buildForPDF(filename);
@@ -114,7 +114,7 @@ public class SigningJob {
             parameters = SigningParameters.buildForASiCWithXAdES(filename);
         }
 
-        var responder = new SaveFileResponder(file.getName());
+        var responder = new SaveFileResponder(file);
         return new SigningJob(document, parameters, responder);
     }
 }
