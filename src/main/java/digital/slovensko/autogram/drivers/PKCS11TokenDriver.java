@@ -4,17 +4,16 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 public class PKCS11TokenDriver extends TokenDriver {
-    public PKCS11TokenDriver(String name, Path path) {
-        super(name, path);
+    public PKCS11TokenDriver(String name, Path path, boolean needsPassword) {
+        super(name, path, needsPassword);
     }
 
     @Override
-    public AbstractKeyStoreTokenConnection createToken() throws IOException {
-        PasswordInputCallback passwordCallback = new DummyPasswordCallback(); // TODO some drivers actually need password
+    public AbstractKeyStoreTokenConnection createTokenWithPassword(char[] password) {
+        PasswordInputCallback passwordCallback = new StaticPasswordCallback(password);
         return new Pkcs11SignatureToken(getPath().toString(), passwordCallback, -1);
     }
 }

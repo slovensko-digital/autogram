@@ -7,11 +7,16 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.List;
+
+import static digital.slovensko.autogram.util.DSSUtils.buildTooltipLabel;
+import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
 public class PickKeyDialogController {
     private PrivateKeyLambda callback;
@@ -36,10 +41,16 @@ public class PickKeyDialogController {
     public void initialize() {
         toggleGroup = new ToggleGroup();
         for (DSSPrivateKeyEntry key : keys) {
-            var radioButton = new RadioButton(DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+            var radioButton = new RadioButton(parseCN(key.getCertificate().getSubject().getRFC2253()));
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(key);
             radios.getChildren().add(radioButton);
+
+            Tooltip tooltip = new Tooltip(buildTooltipLabel(key));
+            tooltip.setShowDuration(Duration.seconds(10));
+            tooltip.setWrapText(true);
+            tooltip.setPrefWidth(400);
+            radioButton.setTooltip(tooltip);
         }
     }
 

@@ -5,13 +5,10 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.ui.SaveFileResponder;
 import digital.slovensko.autogram.ui.UI;
-import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
@@ -143,6 +140,29 @@ public class GUI implements UI {
             stage.setResizable(false);
             stage.initModality(Modality.APPLICATION_MODAL);
 
+            GUI.suppressDefaultFocus(stage, controller);
+
+            stage.show();
+        });
+    }
+
+    @Override
+    public void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback) {
+        if (!driver.needsPassword()) {
+            callback.call(null);
+            return;
+        }
+
+        Platform.runLater(() -> {
+            var controller = new PasswordController(callback);
+            var root = GUI.loadFXML(controller, "password-dialog.fxml");
+
+            var stage = new Stage();
+            stage.setTitle("Načítanie klúčov z úložiska");
+            stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
+            stage.setResizable(false);
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.show();
         });
     }
@@ -154,10 +174,7 @@ public class GUI implements UI {
 
             if (list != null) {
                 for (File file : list) {
-                    var document = new FileDocument(file);
-                    var parameters = SigningParameters.buildFromFilename(file.getName());
-                    var responder = new SaveFileResponder(file.getName());
-                    autogram.showSigningDialog(new SigningJob(document, parameters, responder));
+                    autogram.showSigningDialog(SigningJob.buildFromFile(file));
                 }
             }
         });
@@ -198,5 +215,11 @@ public class GUI implements UI {
 
             Platform.runLater(() -> stage.setAlwaysOnTop(false));
         }).start();
+    }
+
+    public static void suppressDefaultFocus(Stage windowStage, SuppressedFocusController controller) {
+        windowStage.focusedProperty().addListener(((observable, oldValue, newValue) -> {
+            if(newValue) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
+        }));
     }
 }

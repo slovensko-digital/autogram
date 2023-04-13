@@ -47,4 +47,9 @@ public class CliUI implements UI {
     public void showError(AutogramException e) {
         System.out.println("Error " + e.toString() + " closed!");
     }
+
+    @Override
+    public void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback) {
+        callback.call(null); // TODO
+    }
 }

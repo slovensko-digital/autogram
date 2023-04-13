@@ -1,7 +1,9 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.FileDocument;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -10,6 +12,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -97,5 +100,21 @@ public class SigningJob {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static SigningJob buildFromFile(File file) {
+        var document = new FileDocument(file);
+
+        SigningParameters parameters;
+        String filename = file.getName();
+
+        if (filename.endsWith(".pdf")) {
+            parameters = SigningParameters.buildForPDF(filename);
+        } else {
+            parameters = SigningParameters.buildForASiCWithXAdES(filename);
+        }
+
+        var responder = new SaveFileResponder(file.getName());
+        return new SigningJob(document, parameters, responder);
     }
 }

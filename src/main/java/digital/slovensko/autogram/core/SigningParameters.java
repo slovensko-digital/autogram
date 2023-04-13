@@ -2,8 +2,6 @@ package digital.slovensko.autogram.core;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
-import com.google.common.io.Files;
-
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
@@ -263,10 +261,4 @@ public class SigningParameters {
         return getContainerXmlns() != null && getContainerXmlns().contains("xmldatacontainer");
     }
 
-    public static SigningParameters buildFromFilename(String filename) {
-        if (filename.endsWith(".pdf"))
-            return SigningParameters.buildForPDF(filename);
-
-        return SigningParameters.buildForASiCWithXAdES(filename);
-    }
 }

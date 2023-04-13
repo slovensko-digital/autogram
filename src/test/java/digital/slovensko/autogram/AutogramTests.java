@@ -75,16 +75,25 @@ class AutogramTests {
         @Override
         public void showError(AutogramException e) {
         }
+
+        @Override
+        public void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback) {
+            callback.call(null);
+        }
     }
 
     private class FakeTokenDriver extends TokenDriver {
         public FakeTokenDriver(String name) {
-            super(name, Path.of(""));
+            super(name, Path.of(""), true);
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createToken() throws IOException {
-            return new Pkcs12SignatureToken(new File("test.keystore"), new KeyStore.PasswordProtection("".toCharArray()));
+        public AbstractKeyStoreTokenConnection createTokenWithPassword(char[] password) {
+            try {
+                return new Pkcs12SignatureToken(new File("test.keystore"), new KeyStore.PasswordProtection("".toCharArray()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
