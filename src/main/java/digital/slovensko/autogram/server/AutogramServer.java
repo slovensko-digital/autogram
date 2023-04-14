@@ -7,7 +7,7 @@ import com.sun.net.httpserver.HttpsServer;
 
 import digital.slovensko.autogram.core.Autogram;
 
-import static digital.slovensko.autogram.util.ConfigurationProperties.getProperty;
+import static digital.slovensko.autogram.core.Configuration.getProperty;
 
 import java.io.FileInputStream;
 import java.net.BindException;

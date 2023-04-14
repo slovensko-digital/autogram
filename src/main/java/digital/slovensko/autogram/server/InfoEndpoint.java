@@ -15,15 +15,12 @@ public class InfoEndpoint implements HttpHandler {
 
         // Allow preflight requests
         if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-            System.out.println("Received a HTTP info preflight request");
             exchange.sendResponseHeaders(204, -1);
             exchange.getResponseBody().close();
             return;
         }
 
-        System.out.println("Received a HTTP info request");
         exchange.sendResponseHeaders(200, 0);
-
         var msg = "{\"version\": \"1.2.3\",\"status\": \"READY\"}";
         try {
             exchange.getResponseBody().write(msg.getBytes());

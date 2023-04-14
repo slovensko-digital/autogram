@@ -1,15 +1,15 @@
-package digital.slovensko.autogram.util;
+package digital.slovensko.autogram.core;
 
 import java.io.IOException;
 import java.util.Properties;
 
-public class ConfigurationProperties {
+public class Configuration {
     private static final Properties PROPERTIES;
 
     static {
         PROPERTIES = new Properties();
         try {
-            PROPERTIES.load(ConfigurationProperties.class.getResourceAsStream("configuration.properties"));
+            PROPERTIES.load(Configuration.class.getResourceAsStream("configuration.properties"));
         } catch (IOException e) {
             throw new RuntimeException("Unable to load ConfigurationProperties", e);
         }

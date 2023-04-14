@@ -9,7 +9,7 @@ import org.apache.http.client.utils.URIBuilder;
 
 import javafx.application.Application.Parameters;
 
-import static digital.slovensko.autogram.util.ConfigurationProperties.getProperty;
+import static digital.slovensko.autogram.core.Configuration.getProperty;
 import static digital.slovensko.autogram.util.LaunchParameters.Validations.*;
 import static java.util.Optional.ofNullable;
 
@@ -25,11 +25,6 @@ public class LaunchParameters {
     private int initialNonce;
     private String language;
 
-    /**
-     * Parse command using JavaFX Application Parameters
-     *
-     * Used when the application is not launched using the custom protocol
-     */
     private LaunchParameters(Map<String, String> params) {
         this.parameters = params;
 
