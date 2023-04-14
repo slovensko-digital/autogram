@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import digital.slovensko.autogram.server.dto.InfoResponse;
+import static digital.slovensko.autogram.server.dto.InfoResponse.*;
 
 import java.io.IOException;
 
@@ -22,7 +23,7 @@ public class InfoEndpoint implements HttpHandler {
             return;
         }
 
-        var response = new InfoResponse();
+        var response = new InfoResponse(getVersion(), getStatus());
         var gson = new Gson();
 
         try {

@@ -7,16 +7,16 @@ public class InfoResponse {
     private final String version;
     private final String status;
 
-    public InfoResponse() {
-        this.version = getVersion();
-        this.status = getStatus();
+    public InfoResponse(String version, String status) {
+        this.version = version;
+        this.status = status;
     }
 
-    private static String getVersion() {
+    public static String getVersion() {
         return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
     }
 
-    private static String getStatus() {
+    public static String getStatus() {
         return "READY"; // TODO: check if server is ready
     }
 }
