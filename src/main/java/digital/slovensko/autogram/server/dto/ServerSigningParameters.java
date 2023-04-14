@@ -117,6 +117,10 @@ public class ServerSigningParameters {
         return transformationOutputMimeType != null ? new MimeType(transformationOutputMimeType) : null;
     }
 
+    public String getFileMimeTypeString() {
+        return fileMimeType;
+    }
+
     private String getTransformation(boolean isBase64) {
         if (transformation == null)
             return null;

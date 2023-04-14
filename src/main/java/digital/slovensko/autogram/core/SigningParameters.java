@@ -35,7 +35,6 @@ public class SigningParameters {
     private final String propertiesCanonicalization;
     private final String keyInfoCanonicalization;
     private final String identifier;
-    private final MimeType fileMimeType;
 
     public SigningParameters() {
         asicContainer = ASiCContainerType.ASiC_E;
@@ -54,16 +53,15 @@ public class SigningParameters {
         keyInfoCanonicalization = CanonicalizationMethod.INCLUSIVE;
         transformationOutputMimeType = null;
         identifier = "";
-        fileMimeType = null;
     }
 
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
-            String containerFilename, String containerXmlns, SignaturePackaging packaging,
-            DigestAlgorithm digestAlgorithm,
-            Boolean en319132, String infoCanonicalization,
-            String propertiesCanonicalization, String keyInfoCanonicalization,
-            String signaturePolicyId, String signaturePolicyContent, String schema, String transformation,
-            MimeType transformationOutputMimeType, String identifier, MimeType fileMimeType) {
+                             String containerFilename, String containerXmlns, SignaturePackaging packaging,
+                             DigestAlgorithm digestAlgorithm,
+                             Boolean en319132, String infoCanonicalization,
+                             String propertiesCanonicalization, String keyInfoCanonicalization,
+                             String signaturePolicyId, String signaturePolicyContent, String schema, String transformation,
+                             MimeType transformationOutputMimeType, String identifier, MimeType fileMimeType) {
         this.level = level;
         this.asicContainer = container;
         this.containerFilename = containerFilename;
@@ -80,7 +78,6 @@ public class SigningParameters {
         this.transformation = transformation;
         this.transformationOutputMimeType = transformationOutputMimeType;
         this.identifier = identifier;
-        this.fileMimeType = fileMimeType;
     }
 
     public MimeType getTransformationOutputMimeType() {
