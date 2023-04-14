@@ -3,12 +3,12 @@ package digital.slovensko.autogram;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.server.AutogramServer;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import digital.slovensko.autogram.ui.cli.CliUI;
 import digital.slovensko.autogram.ui.gui.GUI;
 import eu.europa.esig.dss.model.FileDocument;
 
+import java.io.File;
 import java.util.Arrays;
 
 public class Main {
@@ -19,7 +19,7 @@ public class Main {
 
         var document = new FileDocument("pom.xml");
         var parameters = new SigningParameters();
-        var responder = new SaveFileResponder("dummy.pdf");
+        var responder = new SaveFileResponder(new File("dummy.pdf"));
 
         autogram.pickSigningKey();
         autogram.showSigningDialog(new SigningJob(document, parameters, responder));
