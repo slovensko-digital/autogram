@@ -43,7 +43,6 @@ public class SaveFileResponder extends Responder {
         for (var count = 1; new File(newBaseName + extension).exists(); count++)
             newBaseName = baseName + " (" + count + ")";
 
-        System.out.println("newName: " + newBaseName + extension);
         return newBaseName + extension;
     }
 }
