@@ -3,9 +3,9 @@ package digital.slovensko.autogram.server.dto;
 import java.util.Base64;
 
 import digital.slovensko.autogram.core.errors.MalformedMimetypeException;
-import digital.slovensko.autogram.core.MimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.MimeType;
 
 public class SignRequestBody {
     private Document document;
@@ -21,26 +21,31 @@ public class SignRequestBody {
         this.payloadMimeType = payloadMimeType;
     }
 
-    public InMemoryDocument getDocument() throws MalformedMimetypeException {
+    public InMemoryDocument getDocument() {
         byte[] content;
-        if (MimeType.parse(payloadMimeType).isBase64()) {
+        if (isBase64()) {
             content = Base64.getDecoder().decode(document.getContent());
         } else {
             content = document.getContent().getBytes();
         }
 
-        if (document.getFilename() != null) {
-            return new InMemoryDocument(content, document.getFilename());
-        } else {
-            return new InMemoryDocument(content);
-        }
+        var filename = document.getFilename();
+        MimeType mimetype = null;
+
+        if (filename != null)
+            mimetype = MimeType.fromFileName(filename);
+
+        if (parameters.getFileMimeTypeString() != null)
+            mimetype = MimeType.fromMimeTypeString(parameters.getFileMimeTypeString());
+
+        return new InMemoryDocument(content, filename, mimetype);
     }
 
     public SigningParameters getParameters() throws MalformedMimetypeException {
-        return parameters.getSigningParameters(MimeType.parse(payloadMimeType).isBase64());
+        return parameters.getSigningParameters(isBase64());
     }
 
-    public MimeType getPayloadMimeType() throws MalformedMimetypeException {
-        return MimeType.parse(payloadMimeType);
+    private boolean isBase64() {
+        return payloadMimeType.contains("base64");
     }
 }
