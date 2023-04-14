@@ -11,7 +11,7 @@
       prefWidth="450" minWidth="450"
       fx:id="mainBox">
 
-    <VBox styleClass="autogram-error-summary" visible="false" managed="false">
+    <VBox styleClass="autogram-error-summary">
         <TextFlow styleClass="autogram-error-summary__title"><Text fx:id="heading">Nastala chyba</Text></TextFlow>
         <TextFlow styleClass="autogram-error-summary__error"><Text fx:id="subheading">Miesto pre nazov informacie</Text></TextFlow>
         <TextFlow styleClass="autogram-error-summary__description"><Text fx:id="description">description</Text></TextFlow>
