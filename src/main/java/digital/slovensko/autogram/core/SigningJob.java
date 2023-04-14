@@ -4,6 +4,7 @@ import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.model.MimeType;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,7 +19,6 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import eu.europa.esig.dss.model.MimeType;
 
 public class SigningJob {
     private final Responder responder;
@@ -66,7 +66,7 @@ public class SigningJob {
     }
 
     public String getDocumentAsPlainText() {
-        if(document.getMimeType().equals(MimeType.TEXT)) {
+        if (document.getMimeType().equals(MimeType.TEXT)) {
             try {
                 return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException e) {
@@ -88,8 +88,7 @@ public class SigningJob {
             var outputTarget = new StreamResult(new StringWriter());
 
             var transformer = TransformerFactory.newInstance().newTransformer(
-                    new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes()))
-            );
+                    new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes())));
 
             transformer.transform(xmlSource, outputTarget);
 
