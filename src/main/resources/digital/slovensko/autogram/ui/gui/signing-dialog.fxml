@@ -24,6 +24,7 @@
     <TextArea fx:id="plainTextArea" styleClass="autogram-visualizer-plaintext" managed="false" visible="false"
               editable="false" focusTraversable="false" VBox.vgrow="ALWAYS"/>
 
+    <!-- Image visualization -->
     <ScrollPane fx:id="imageVisualizationContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
         <VBox styleClass="autogram-visualizer-image" VBox.vgrow="ALWAYS">
             <ImageView fx:id="imageVisualization" />
