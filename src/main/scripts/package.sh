@@ -15,8 +15,7 @@ function checkExitCode() {
 }
 
 IFS="="
-while read -r key value
-do
+while read -r key value; do
     # Empty lines and comments
     if [[ -z "$key" ]] || [[ -z "$value" ]] || [[ $key == \#* ]]; then
         continue
@@ -25,14 +24,14 @@ do
     safekey=$(echo "$key" | tr . _)
     trimmedvalue=$(echo "$value" | sed 's/[[:space:]]*$//g' | sed 's/^[[:space:]]*//g')
     declare "properties_$safekey=$trimmedvalue"
-done < "$resourcesDir/build.properties"
+done <"$resourcesDir/build.properties"
 unset IFS
 
 jvmOptions="--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
 arguments=(
     "--input" "$appDirectory"
     "--runtime-image" "$jdkDirectory"
-    "--main-jar" "whitelabel.jar"
+    "--main-jar" "autogram.jar"
     "--name" "$properties_name"
     "--app-version" "${properties_version:-$version}"
     "--copyright" "$properties_copyright"
@@ -53,7 +52,7 @@ if [[ "$platform" == "win" ]]; then
         "--java-options" "$jvmOptions --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED"
     )
 
-    if [[ ! -z "$properties_win_upgradeUUID"  ]]; then
+    if [[ ! -z "$properties_win_upgradeUUID" ]]; then
         arguments+=(
             "--win-upgrade-uuid" "$properties_win_upgradeUUID"
         )
@@ -83,22 +82,22 @@ if [[ "$platform" == "win" ]]; then
 fi
 
 if [[ "$platform" == "linux" ]]; then
-    cp "./Octosign.template.desktop" "./Octosign.desktop"
-    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./Octosign.desktop"
+    cp "./Octosign.template.desktop" "./Autogram.desktop"
+    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./Autogram.desktop"
 
-    if [[ ! -z "$properties_linux_debMaintainer"  ]]; then
+    if [[ ! -z "$properties_linux_debMaintainer" ]]; then
         arguments+=(
             "--linux-deb-maintainer" "$properties_linux_debMaintainer"
         )
     fi
 
-    if [[ ! -z "$properties_linux_appCategory"  ]]; then
+    if [[ ! -z "$properties_linux_appCategory" ]]; then
         arguments+=(
             "--linux-app-category" "$properties_linux_appCategory"
         )
     fi
 
-    if [[ ! -z "$properties_linux_packageDeps"  ]]; then
+    if [[ ! -z "$properties_linux_packageDeps" ]]; then
         arguments+=(
             "--linux-package-deps" "$properties_linux_packageDeps"
         )
@@ -146,13 +145,13 @@ if [[ "$platform" == "mac" ]]; then
         "--temp" "./DTempFiles"
     )
 
-    if [[ ! -z "$properties_mac_identifier"  ]]; then
+    if [[ ! -z "$properties_mac_identifier" ]]; then
         arguments+=(
             "--mac-package-identifier" "$properties_mac_identifier"
         )
     fi
 
-    if [[ ! -z "$properties_mac_name"  ]]; then
+    if [[ ! -z "$properties_mac_name" ]]; then
         arguments+=(
             "--mac-package-name" "$properties_mac_name"
         )

@@ -13,6 +13,7 @@ info:
   version: 1.0.0
 servers:
   - url: http://localhost:37200
+  - url: https://localhost:37200
 tags:
 - name: Info
   description: Information and status of the server

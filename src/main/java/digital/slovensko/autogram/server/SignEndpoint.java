@@ -31,8 +31,6 @@ public class SignEndpoint implements HttpHandler {
             return;
         }
 
-        System.out.println("Received a HTTP sign request");
-
         Gson gson = new Gson();
         SignRequestBody body;
         InMemoryDocument document;
@@ -52,8 +50,7 @@ public class SignEndpoint implements HttpHandler {
             exchange.sendResponseHeaders(422, 0);
             exchange.getResponseBody().write(e.getMessage().getBytes());
             exchange.getResponseBody().close();
-            System.out.println(e.getMessage());
-            // print stack trace
+            // TODO: handle this better
             e.printStackTrace();
             return;
         }
