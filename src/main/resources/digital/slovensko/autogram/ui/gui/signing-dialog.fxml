@@ -16,7 +16,7 @@
 
     <!-- HTML/PDF visualization -->
     <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
-        <WebView fx:id="webView" VBox.vgrow="ALWAYS"/>
+        <WebView fx:id="webView" focusTraversable="false" VBox.vgrow="ALWAYS"/>
     </VBox>
 
     <!-- Plaintext visualization -->
