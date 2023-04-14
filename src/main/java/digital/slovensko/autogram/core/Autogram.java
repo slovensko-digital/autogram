@@ -64,6 +64,7 @@ public class Autogram {
     }
 
     private void setActiveSigningKey(SigningKey newKey) {
+        if(activeKey != null) activeKey.close();
         activeKey = newKey;
         ui.refreshSigningKey();
     }
