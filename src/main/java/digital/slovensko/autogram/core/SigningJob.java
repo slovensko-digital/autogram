@@ -18,6 +18,8 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static eu.europa.esig.dss.model.MimeType.TEXT;
+
 public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
@@ -49,7 +51,7 @@ public class SigningJob {
         if (parameters.getTransformationOutputMimeType() != null)
             return parameters.getTransformationOutputMimeType().is(MimeType.PLAIN);
 
-        return false;
+        return document.getMimeType() == TEXT;
     }
 
     public boolean isHTML() {
@@ -64,7 +66,15 @@ public class SigningJob {
     }
 
     public String getDocumentAsPlainText() {
-        return transform();
+        if(document.getMimeType() == TEXT) {
+            try {
+                return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return transform();
+        }
     }
 
     private String transform() {
