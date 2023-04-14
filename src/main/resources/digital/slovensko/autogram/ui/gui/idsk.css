@@ -22,7 +22,7 @@
     -fx-font-family: 'Source Sans Pro', 'Arial', sans-serif;
     -fx-font-size: 16px;
 
-    -fx-font-smoothing: gray;
+    -fx-font-smoothing-type: gray;
 }
 
 #mainBox {
@@ -322,7 +322,8 @@
 }
 
 .autogram-visualizer-plaintext,
-.autogram-visualizer-html {
+.autogram-visualizer-html,
+.autogram-visualizer-image {
     -fx-border-color: -autogram-input-border-colour;
     -fx-border-width: 2px;
     -fx-border-style: solid;

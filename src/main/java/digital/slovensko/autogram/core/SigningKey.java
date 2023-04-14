@@ -42,4 +42,8 @@ public class SigningKey {
     public CertificateToken[] getCertificateChain() {
         return privateKey.getCertificateChain();
     }
+
+    public void close() {
+        token.close();
+    }
 }

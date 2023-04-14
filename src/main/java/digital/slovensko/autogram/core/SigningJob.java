@@ -65,6 +65,10 @@ public class SigningJob {
         return parameters.getSignatureType() == SigningParameters.SignatureType.PADES;
     }
 
+    public boolean isImage() {
+        return document.getMimeType().equals(MimeType.JPEG) || document.getMimeType().equals(MimeType.PNG);
+    }
+
     public String getDocumentAsPlainText() {
         if (document.getMimeType().equals(MimeType.TEXT)) {
             try {
