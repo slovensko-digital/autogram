@@ -102,6 +102,7 @@ public class GUI implements UI {
             });
 
             stage.sizeToScene();
+            GUI.suppressDefaultFocus(stage, controller);
             GUI.showOnTop(stage);
             GUI.setUserFriendlyPosition(stage);
         });

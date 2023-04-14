@@ -8,6 +8,7 @@ import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.ContextMenuEvent;
@@ -15,16 +16,20 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-public class SigningDialogController {
+public class SigningDialogController implements SuppressedFocusController {
     private SigningJob signingJob;
     private Autogram autogram;
 
+    @FXML
+    VBox mainBox;
     @FXML
     TextArea plainTextArea;
     @FXML
     WebView webView;
     @FXML
     VBox webViewContainer;
+    @FXML
+    VBox unsupportedVisualizationInfoBox;
     @FXML
     public Button mainButton;
     @FXML
@@ -44,7 +49,7 @@ public class SigningDialogController {
         } else if (signingJob.isPDF()) {
             showPDFVisualization();
         } else {
-            throw new RuntimeException("Don't know how to visualize document!");
+            showUnsupportedVisualization();
         }
     }
 
@@ -127,5 +132,15 @@ public class SigningDialogController {
         webViewContainer.getStyleClass().add("autogram-visualizer-pdf");
         webViewContainer.setVisible(true);
         webViewContainer.setManaged(true);
+    }
+
+    private void showUnsupportedVisualization() {
+        unsupportedVisualizationInfoBox.setVisible(true);
+        unsupportedVisualizationInfoBox.setManaged(true);
+    }
+
+    @Override
+    public Node getNodeForLoosingFocus() {
+        return mainBox;
     }
 }

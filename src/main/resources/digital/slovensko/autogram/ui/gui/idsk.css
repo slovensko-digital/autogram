@@ -21,6 +21,8 @@
 
     -fx-font-family: 'Source Sans Pro', 'Arial', sans-serif;
     -fx-font-size: 16px;
+
+    -fx-font-smoothing: gray;
 }
 
 #mainBox {
@@ -234,7 +236,6 @@
 }
 
 .autogram-error-message {
-    -fx-managed: false;
     -fx-font-size: 1.1875em;
     -fx-font-weight: bold;
     -fx-fill: -autogram-error-colour;
@@ -423,6 +424,13 @@
     -fx-background-color :derive(#4D4C4F,10.0%);
 }
 
+/* Typography */
+.autogram-font-weight-bold {
+    -fx-font-weight: bold;
+}
+
+
+/* Icons */
 .autogram-icon {
     -fx-fill: transparent;
     -fx-stroke: -autogram-border-colour;
@@ -435,6 +443,11 @@
     -fx-scale-x: 2;
     -fx-scale-y: 2;
 }
+
+.autogram-icon--warning {
+    -fx-stroke: -autogram-error-colour;
+}
+
 
 /* Custom styles */
 
@@ -450,4 +463,21 @@
 .autogram-actions {
     -fx-spacing: 15px;
     -fx-alignment: center-left;
+}
+
+.autogram-unsupported-visualization {
+    -fx-border-width: 5px;
+    -fx-border-color: -autogram-error-colour;
+
+    -fx-spacing: 3em;
+    -fx-padding: 8em 4em 6em 4em;
+    -fx-alignment: center;
+}
+
+.autogram-unsupported-visualization VBox {
+    -fx-spacing: 20px;
+}
+
+.autogram-unsupported-visualization .autogram-error-summary__error {
+    -fx-padding: 0.5em 2em 0 2em;
 }
