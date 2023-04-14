@@ -1,8 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.LaunchParameters;
 import digital.slovensko.autogram.server.AutogramServer;
-import digital.slovensko.autogram.util.LaunchParameters;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;

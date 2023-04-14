@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.util;
+package digital.slovensko.autogram.core;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -10,7 +10,7 @@ import org.apache.http.client.utils.URIBuilder;
 import javafx.application.Application.Parameters;
 
 import static digital.slovensko.autogram.core.Configuration.getProperty;
-import static digital.slovensko.autogram.util.LaunchParameters.Validations.*;
+import static digital.slovensko.autogram.core.LaunchParameters.Validations.*;
 import static java.util.Optional.ofNullable;
 
 import java.net.URISyntaxException;
