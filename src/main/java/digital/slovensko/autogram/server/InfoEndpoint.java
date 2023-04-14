@@ -1,14 +1,16 @@
 package digital.slovensko.autogram.server;
 
+import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
+import digital.slovensko.autogram.server.dto.InfoResponse;
 
 import java.io.IOException;
 
 public class InfoEndpoint implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        // TODO wait for ready state and return if ready
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -20,14 +22,17 @@ public class InfoEndpoint implements HttpHandler {
             return;
         }
 
-        exchange.sendResponseHeaders(200, 0);
-        var msg = "{\"version\": \"1.2.3\",\"status\": \"READY\"}";
+        var response = new InfoResponse();
+        var gson = new Gson();
+
         try {
-            exchange.getResponseBody().write(msg.getBytes());
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, 0);
+            exchange.getResponseBody().write(gson.toJson(response).getBytes());
+            exchange.getResponseBody().close();
         } catch (Exception e) {
             e.printStackTrace();
-            return;
+            return; // TODO: handle error
         }
-        exchange.getResponseBody().close();
     }
 }
