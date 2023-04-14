@@ -18,6 +18,8 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static eu.europa.esig.dss.model.MimeType.PNG;
+import static eu.europa.esig.dss.model.MimeType.JPEG;
 import static eu.europa.esig.dss.model.MimeType.TEXT;
 
 public class SigningJob {
@@ -63,6 +65,10 @@ public class SigningJob {
 
     public boolean isPDF() {
         return parameters.getSignatureType() == SigningParameters.SignatureType.PADES;
+    }
+
+    public boolean isImage() {
+        return document.getMimeType() == JPEG || document.getMimeType() == PNG;
     }
 
     public String getDocumentAsPlainText() {
