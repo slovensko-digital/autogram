@@ -29,11 +29,10 @@ public class GUIApp extends Application {
         var scene = new Scene(root);
 
         var params = LaunchParameters.fromParameters(getParameters());
-        var server = new AutogramServer(GUIApp.autogram, params.getHost(), params.getPort(),
-                params.getProtocol().equals("https"));
+        var server = new AutogramServer(GUIApp.autogram, params.getHost(), params.getPort(), params.isProtocolHttps());
         server.start();
 
-        if (getParameters().getNamed().containsKey("url")) {
+        if (params.isUrl()) {
             // started from external
             windowStage.setIconified(true);
         }

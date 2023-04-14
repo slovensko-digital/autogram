@@ -24,9 +24,12 @@ public class LaunchParameters {
     private String secretKey;
     private int initialNonce;
     private String language;
+    private boolean isUrl;
 
-    private LaunchParameters(Map<String, String> params) {
+    private LaunchParameters(Map<String, String> params, boolean isUrl) {
         this.parameters = params;
+
+        this.isUrl = isUrl;
 
         var protocol = ofNullable(params.get("protocol")).orElse(getProperty("server.defaultProtocol"));
         var host = ofNullable(params.get("host")).orElse(getProperty("server.defaultAddress"));
@@ -61,7 +64,7 @@ public class LaunchParameters {
                 params = named;
             }
 
-            return new LaunchParameters(params);
+            return new LaunchParameters(params, urlParam != null);
 
         } catch (URISyntaxException e) {
             throw new RuntimeException(e); // TODO: handle exception
@@ -77,6 +80,10 @@ public class LaunchParameters {
             return Collections.unmodifiableMap(queryParams.stream()
                     .collect(toMap(NameValuePair::getName, NameValuePair::getValue)));
         }
+    }
+
+    public boolean isUrl() {
+        return isUrl;
     }
 
     public boolean isRequiredSSL() {
@@ -177,5 +184,9 @@ public class LaunchParameters {
                         "Input [" + input + "] is not a valid integer value. Details: " + e.getMessage());
             }
         }
+    }
+
+    public boolean isProtocolHttps() {
+        return protocol.equalsIgnoreCase("https");
     }
 }
