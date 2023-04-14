@@ -30,7 +30,7 @@ public class SignRequestBody {
         }
 
         var filename = document.getFilename();
-        MimeType mimetype = null;
+        var mimetype = MimeType.fromMimeTypeString(payloadMimeType.split(";")[0]);
 
         if (filename != null)
             mimetype = MimeType.fromFileName(filename);
