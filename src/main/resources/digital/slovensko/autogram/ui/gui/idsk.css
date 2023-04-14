@@ -22,7 +22,7 @@
     -fx-font-family: 'Source Sans Pro', 'Arial', sans-serif;
     -fx-font-size: 16px;
 
-    -fx-font-smoothing: gray;
+    -fx-font-smoothing-type: gray;
 }
 
 #mainBox {
