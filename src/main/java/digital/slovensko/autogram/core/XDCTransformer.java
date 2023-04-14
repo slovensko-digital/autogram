@@ -3,6 +3,7 @@ package digital.slovensko.autogram.core;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.xades.DSSXMLUtils;
 import org.w3c.dom.DOMException;
@@ -49,7 +50,7 @@ public class XDCTransformer {
     public static XDCTransformer newInstance(SigningParameters sp) {
         DestinationMediaType mediaType = DestinationMediaType.TXT;
 
-        if (sp.getTransformationOutputMimeType().is(MimeType.HTML))
+        if (sp.getTransformationOutputMimeType().equals(MimeType.HTML))
             mediaType = DestinationMediaType.HTML;
 
         return new XDCTransformer(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),
