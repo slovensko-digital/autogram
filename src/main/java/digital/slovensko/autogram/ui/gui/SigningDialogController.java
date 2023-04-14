@@ -8,9 +8,13 @@ import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
@@ -28,6 +32,10 @@ public class SigningDialogController implements SuppressedFocusController {
     WebView webView;
     @FXML
     VBox webViewContainer;
+    @FXML
+    ImageView imageVisualization;
+    @FXML
+    ScrollPane imageVisualizationContainer;
     @FXML
     VBox unsupportedVisualizationInfoBox;
     @FXML
@@ -48,6 +56,8 @@ public class SigningDialogController implements SuppressedFocusController {
             showHTMLVisualization();
         } else if (signingJob.isPDF()) {
             showPDFVisualization();
+        } else if (signingJob.isImage()) {
+            showImageVisualization();
         } else {
             showUnsupportedVisualization();
         }
@@ -132,6 +142,19 @@ public class SigningDialogController implements SuppressedFocusController {
         webViewContainer.getStyleClass().add("autogram-visualizer-pdf");
         webViewContainer.setVisible(true);
         webViewContainer.setManaged(true);
+    }
+
+    private void showImageVisualization() {
+        imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
+        imageVisualization.setImage(new Image(signingJob.getDocument().openStream()));
+        imageVisualization.setPreserveRatio(true);
+        imageVisualization.setSmooth(true);
+        imageVisualization.setCursor(Cursor.OPEN_HAND);
+        imageVisualizationContainer.setPannable(true);
+        imageVisualizationContainer.setFitToWidth(true);
+        imageVisualizationContainer.setVisible(true);
+        imageVisualizationContainer.setManaged(true);
+
     }
 
     private void showUnsupportedVisualization() {
