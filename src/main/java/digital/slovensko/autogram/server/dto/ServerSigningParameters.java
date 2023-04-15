@@ -6,13 +6,12 @@ import java.util.Base64;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
-import digital.slovensko.autogram.core.MimeType;
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.errors.MalformedMimetypeException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.model.MimeType;
 
 public class ServerSigningParameters {
     private enum Format {
@@ -44,7 +43,6 @@ public class ServerSigningParameters {
 
     private final Container container;
     private final Format format;
-    private final String fileMimeType;
     private final String transformationOutputMimeType;
     private final String containerFilename;
     private final String containerXmlns;
@@ -61,7 +59,7 @@ public class ServerSigningParameters {
     private final LocalCanonicalizationMethod keyInfoCanonicalization;
     private final String identifier;
 
-    public ServerSigningParameters(Format format, Level level, String fileMimeType, Container container,
+    public ServerSigningParameters(Format format, Level level, Container container,
             String containerFilename, String containerXmlns, SignaturePackaging packaging,
             DigestAlgorithm digestAlgorithm,
             Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
@@ -70,7 +68,6 @@ public class ServerSigningParameters {
             String transformationOutputMimeType, String Identifier) {
         this.format = format;
         this.level = level;
-        this.fileMimeType = fileMimeType;
         this.container = container;
         this.containerFilename = containerFilename;
         this.containerXmlns = containerXmlns;
@@ -88,7 +85,7 @@ public class ServerSigningParameters {
         this.identifier = Identifier;
     }
 
-    public SigningParameters getSigningParameters(boolean isBase64) throws MalformedMimetypeException {
+    public SigningParameters getSigningParameters(boolean isBase64) {
         return new SigningParameters(
                 getSignatureLevel(),
                 getContainer(),
@@ -105,20 +102,11 @@ public class ServerSigningParameters {
                 getSchema(isBase64),
                 getTransformation(isBase64),
                 getMimeType(),
-                identifier,
-                getFileMimeType());
+                identifier);
     }
 
-    private MimeType getFileMimeType() throws MalformedMimetypeException {
-        return fileMimeType != null ? new MimeType(fileMimeType) : null;
-    }
-
-    private MimeType getMimeType() throws MalformedMimetypeException {
-        return transformationOutputMimeType != null ? new MimeType(transformationOutputMimeType) : null;
-    }
-
-    public String getFileMimeTypeString() {
-        return fileMimeType;
+    private MimeType getMimeType() {
+        return transformationOutputMimeType != null ? MimeType.fromMimeTypeString(transformationOutputMimeType) : null;
     }
 
     private String getTransformation(boolean isBase64) {

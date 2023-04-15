@@ -8,6 +8,7 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
@@ -61,7 +62,7 @@ public class SigningParameters {
                              Boolean en319132, String infoCanonicalization,
                              String propertiesCanonicalization, String keyInfoCanonicalization,
                              String signaturePolicyId, String signaturePolicyContent, String schema, String transformation,
-                             MimeType transformationOutputMimeType, String identifier, MimeType fileMimeType) {
+                             MimeType transformationOutputMimeType, String identifier) {
         this.level = level;
         this.asicContainer = container;
         this.containerFilename = containerFilename;
@@ -235,7 +236,7 @@ public class SigningParameters {
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, null, null, null, "", null);
+                null, null, null, null, null, "");
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
@@ -247,7 +248,7 @@ public class SigningParameters {
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, null, null, null, "", null);
+                null, null, null, null, null, "");
     }
 
     public String getIdentifier() {

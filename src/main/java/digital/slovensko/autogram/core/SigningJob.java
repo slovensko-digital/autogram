@@ -4,6 +4,7 @@ import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.model.MimeType;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,9 +19,6 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static eu.europa.esig.dss.model.MimeType.PNG;
-import static eu.europa.esig.dss.model.MimeType.JPEG;
-import static eu.europa.esig.dss.model.MimeType.TEXT;
 
 public class SigningJob {
     private final Responder responder;
@@ -51,14 +49,14 @@ public class SigningJob {
 
     public boolean isPlainText() {
         if (parameters.getTransformationOutputMimeType() != null)
-            return parameters.getTransformationOutputMimeType().is(MimeType.PLAIN);
+            return parameters.getTransformationOutputMimeType().equals(MimeType.TEXT);
 
-        return document.getMimeType() == TEXT;
+        return document.getMimeType().equals(MimeType.TEXT);
     }
 
     public boolean isHTML() {
         if (parameters.getTransformationOutputMimeType() != null)
-            return parameters.getTransformationOutputMimeType().is(MimeType.HTML);
+            return parameters.getTransformationOutputMimeType().equals(MimeType.HTML);
 
         return false;
     }
@@ -68,11 +66,11 @@ public class SigningJob {
     }
 
     public boolean isImage() {
-        return document.getMimeType() == JPEG || document.getMimeType() == PNG;
+        return document.getMimeType().equals(MimeType.JPEG) || document.getMimeType().equals(MimeType.PNG);
     }
 
     public String getDocumentAsPlainText() {
-        if(document.getMimeType() == TEXT) {
+        if (document.getMimeType().equals(MimeType.TEXT)) {
             try {
                 return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException e) {
@@ -94,8 +92,7 @@ public class SigningJob {
             var outputTarget = new StreamResult(new StringWriter());
 
             var transformer = TransformerFactory.newInstance().newTransformer(
-                    new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes()))
-            );
+                    new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes())));
 
             transformer.transform(xmlSource, outputTarget);
 

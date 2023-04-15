@@ -2,7 +2,6 @@ package digital.slovensko.autogram.server.dto;
 
 import java.util.Base64;
 
-import digital.slovensko.autogram.core.errors.MalformedMimetypeException;
 import digital.slovensko.autogram.core.SigningParameters;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.MimeType;
@@ -30,18 +29,12 @@ public class SignRequestBody {
         }
 
         var filename = document.getFilename();
-        MimeType mimetype = null;
-
-        if (filename != null)
-            mimetype = MimeType.fromFileName(filename);
-
-        if (parameters.getFileMimeTypeString() != null)
-            mimetype = MimeType.fromMimeTypeString(parameters.getFileMimeTypeString());
+        var mimetype = MimeType.fromMimeTypeString(payloadMimeType.split(";")[0]);
 
         return new InMemoryDocument(content, filename, mimetype);
     }
 
-    public SigningParameters getParameters() throws MalformedMimetypeException {
+    public SigningParameters getParameters() {
         return parameters.getSigningParameters(isBase64());
     }
 
