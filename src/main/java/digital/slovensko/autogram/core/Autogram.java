@@ -16,8 +16,7 @@ public class Autogram {
         this.ui = ui;
     }
 
-    public void sign(SigningJob job) {
-        System.out.println("Starting signing for " + job);
+    public void sign(SigningJob job) {;
         ui.onUIThreadDo(()
         -> ui.startSigning(job, this));
     }
