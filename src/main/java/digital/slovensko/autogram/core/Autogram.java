@@ -40,7 +40,7 @@ public class Autogram {
     public void pickSigningKeyAndThen(SigningKeyLambda callback) {
         var drivers = TokenDriver.getAvailableDrivers(); // TODO handle empty driver list with ui.showError?
         ui.pickTokenDriverAndThen(drivers, (driver)
-        -> ui.requestPasswordAndThen(driver, password
+        -> ui.requestPasswordAndThen(driver, (password)
         -> ui.onWorkThreadDo(()
         -> fetchKeysAndThen(driver, password, (key)
         -> callback.call(key)))));
