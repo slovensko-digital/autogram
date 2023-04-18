@@ -16,7 +16,7 @@ public class CliUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing for " + job)
+        System.out.println("Starting signing for " + job);
         if (activeKey == null) {
             autogram.pickSigningKeyAndThen(key -> {
                 activeKey = key;
