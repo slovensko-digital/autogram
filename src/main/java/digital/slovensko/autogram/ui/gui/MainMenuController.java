@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.Autogram;
+import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import javafx.fxml.FXML;
 import javafx.scene.Node;

@@ -1,5 +1,6 @@
 package digital.slovensko.autogram;
 
+import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.ui.SaveFileResponder;

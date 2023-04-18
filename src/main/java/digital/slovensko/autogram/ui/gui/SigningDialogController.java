@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import com.octosign.whitelabel.ui.WebViewLogger;
-import digital.slovensko.autogram.Autogram;
+import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;

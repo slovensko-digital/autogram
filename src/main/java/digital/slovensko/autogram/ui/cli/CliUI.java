@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.ui.cli;
 
-import digital.slovensko.autogram.Autogram;
+import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
