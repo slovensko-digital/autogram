@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.PrivateKeyLambda;
-import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
