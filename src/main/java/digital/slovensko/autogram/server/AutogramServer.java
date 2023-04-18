@@ -5,7 +5,7 @@ import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 
-import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.ui.UI;
 
 import static digital.slovensko.autogram.core.Configuration.getProperty;
 
@@ -22,17 +22,18 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 public class AutogramServer {
-    private final Autogram autogram;
     private final HttpServer server;
+    private final UI ui;
 
-    public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps) {
-        this.autogram = autogram;
+
+    public AutogramServer(UI ui, String hostname, int port, boolean isHttps) {
+        this.ui = ui;
         this.server = buildServer(hostname, port, isHttps);
     }
 
     public void start() {
         server.createContext("/info", new InfoEndpoint());
-        server.createContext("/sign", new SignEndpoint(autogram));
+        server.createContext("/sign", new SignEndpoint(ui));
         server.createContext("/docs", new DocumentationEndpoint());
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
@@ -68,7 +69,7 @@ public class AutogramServer {
                         var defaultSSLParameters = c.getDefaultSSLParameters();
                         params.setSSLParameters(defaultSSLParameters);
                     } catch (Exception e) {
-                        throw new RuntimeException(e); // TODO
+                        throw new RuntimeException(e); //   TODO
                     }
                 }
             });

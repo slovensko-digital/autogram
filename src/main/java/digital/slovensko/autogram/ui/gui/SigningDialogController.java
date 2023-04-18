@@ -1,9 +1,13 @@
 package digital.slovensko.autogram.ui.gui;
 
 import com.octosign.whitelabel.ui.WebViewLogger;
-import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.SigningJob;
+    import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.util.DSSUtils;
+import eu.europa.esig.dss.model.DSSException;
+import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -21,8 +25,8 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 public class SigningDialogController implements SuppressedFocusController {
-    private SigningJob signingJob;
-    private Autogram autogram;
+    private final GUI gui;
+    private final SigningJob signingJob;
 
     @FXML
     VBox mainBox;
@@ -43,9 +47,9 @@ public class SigningDialogController implements SuppressedFocusController {
     @FXML
     public Button changeKeyButton;
 
-    public SigningDialogController(SigningJob signingJob, Autogram autogram) {
+    public SigningDialogController(SigningJob signingJob, GUI gui) {
         this.signingJob = signingJob;
-        this.autogram = autogram;
+        this.gui = gui;
     }
 
     public void initialize() {
@@ -64,32 +68,42 @@ public class SigningDialogController implements SuppressedFocusController {
     }
 
     public void onMainButtonPressed(ActionEvent event) {
-        if (autogram.getActiveSigningKey() == null) {
-            new Thread(() -> {
-                autogram.pickSigningKey();
-            }).start();
+        var signingKey = gui.getActiveSigningKey();
+        if (signingKey == null) {
+            gui.pickSigningKey();
         } else {
+            gui.disableSigning();
+            getNodeForLoosingFocus().requestFocus();
             new Thread(() -> {
-                autogram.sign(signingJob);
+                try {
+                    signingJob.signAndRespond(signingKey);
+                    Platform.runLater(() -> gui.hideSigningDialog(signingJob));
+                } catch (DSSException e) {
+                    Platform.runLater(() -> gui.showError(AutogramException.createFromDSSException(e)));
+                } catch (Exception e) {
+                    Platform.runLater(() -> gui.showError(new UnrecognizedException(e)));
+                } finally {
+                    Platform.runLater(gui::enableSigning);
+                }
             }).start();
         }
     }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
-        new Thread(() -> {
-            autogram.resetSigningKey();
-            autogram.pickSigningKey();
-        }).start();
+        gui.resetSigningKey();
+        gui.pickSigningKey();
     }
 
     public void refreshSigningKey() {
         mainButton.setDisable(false);
-        if (autogram.getActiveSigningKey() == null) {
+        SigningKey key = gui.getActiveSigningKey();
+        if (key == null) {
             mainButton.setText("Vybrať podpisový certifikát");
             mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
         } else {
-            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(autogram.getActiveSigningKey().getCertificate().getSubject().getRFC2253()));
+            // TODO maybe use/show different buttons/actions for pick/sign?
+            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
             mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
         }
@@ -104,6 +118,11 @@ public class SigningDialogController implements SuppressedFocusController {
 
     public void disableKeyPicking() {
         mainButton.setText("Načítavam certifikáty...");
+        mainButton.setDisable(true);
+    }
+
+    public void disableSigning() {
+        mainButton.setText("Prebieha podpisovanie...");
         mainButton.setDisable(true);
     }
 

@@ -1,58 +1,65 @@
-package digital.slovensko.autogram.ui.cli;
+package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.PasswordLambda;
+import digital.slovensko.autogram.core.PrivateKeyLambda;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.TokenDriverLambda;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import javafx.application.Platform;
 
 import java.util.List;
 
-public class CliUI implements UI {
-    public void start(String[] args) {
-        System.out.println("Starting CLI with args " + args.toString());
+public class RunLaterUI implements UI {
+    private final GUI gui;
+
+    public RunLaterUI(GUI gui) {
+        this.gui = gui;
     }
 
     @Override
     public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
-        System.out.println("Found " + keys.size() + " keys, picking first!");
-        callback.call(keys.get(0));
+
     }
 
     @Override
     public void pickTokenDriverAndThen(List<TokenDriver> drivers, TokenDriverLambda callback) {
-        System.out.println("Found " + drivers.size() + " drivers, picking first!");
-        callback.call(drivers.get(0));
+
     }
 
     @Override
     public void showSigningDialog(SigningJob job) {
-        System.out.println("Dialog for signing " + job.getDocument().toString() + " started!");
-        System.out.println("Assuming user clicked to sign it!");
+        Platform.runLater(() -> {
+            gui.showSigningDialog(job);
+        });
     }
 
     @Override
     public void hideSigningDialog(SigningJob job) {
-        System.out.println("Dialog for signing " + job.getDocument().toString() + " closed!");
+        Platform.runLater(() -> {
+            gui.hideSigningDialog(job);
+        });
     }
 
     @Override
     public void refreshSigningKey() {
-        System.out.println("Showing new signing key on all dialogs!");
+        throw new RuntimeException();
     }
 
     @Override
     public void showError(AutogramException e) {
-        System.out.println("Error " + e.toString() + " closed!");
+        throw new RuntimeException();
     }
 
     @Override
     public void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback) {
-        callback.call(null); // TODO
+        throw new RuntimeException();
     }
 
     @Override
     public void showPickFileDialog() {
-
+        throw new RuntimeException();
     }
 }

@@ -61,7 +61,7 @@ public class ErrorController implements SuppressedFocusController {
     }
 
     public void onMainButtonAction() {
-        ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
+        ((Stage) mainBox.getScene().getWindow()).close();
     }
 
     public void onShowErrorDetailsButtonAction() {

@@ -3,19 +3,19 @@ package digital.slovensko.autogram.server;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
+import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
 import java.io.IOException;
 
 public class SignEndpoint implements HttpHandler {
-    private final Autogram autogram;
+    private final UI ui;
 
-    public SignEndpoint(Autogram autogram) {
-        this.autogram = autogram;
+    public SignEndpoint(UI ui) {
+        this.ui = ui;
     }
 
     @Override
@@ -52,6 +52,6 @@ public class SignEndpoint implements HttpHandler {
         var responder = new ServerResponder(exchange);
         var job = new SigningJob(document, parameters, responder);
         
-        autogram.showSigningDialog(job);
+        ui.showSigningDialog(job);
     }
 }

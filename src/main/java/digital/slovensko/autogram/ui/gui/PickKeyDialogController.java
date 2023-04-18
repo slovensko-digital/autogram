@@ -61,10 +61,8 @@ public class PickKeyDialogController {
             formGroup.getScene().getWindow().sizeToScene();
         } else {
             ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
-            new Thread(() -> {
-                var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
-                callback.call(key);
-            }).start();
+            var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
+            callback.call(key);
         }
     }
 }

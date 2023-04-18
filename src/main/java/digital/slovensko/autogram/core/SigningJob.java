@@ -1,10 +1,15 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
+import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.model.MimeType;
+import eu.europa.esig.dss.pades.signature.PAdESService;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.xades.signature.XAdESService;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,14 +42,6 @@ public class SigningJob {
 
     public SigningParameters getParameters() {
         return parameters;
-    }
-
-    public void onDocumentSignFailed(SigningJob job, SigningError e) {
-        responder.onDocumentSignFailed(job, e);
-    }
-
-    public void onDocumentSigned(SignedDocument signedDocument) {
-        responder.onDocumentSigned(signedDocument);
     }
 
     public boolean isPlainText() {
@@ -114,6 +111,92 @@ public class SigningJob {
             throw new RuntimeException(e);
         }
     }
+
+    public SignedDocument signAndRespond(SigningKey key) {
+        SignedDocument signed = switch (getParameters().getSignatureType()) {
+            case ASIC_XADES ->
+                    new SignedDocument(signDocumentAsAsiCWithXAdeS(key), key.getCertificate());
+            case XADES -> new SignedDocument(signDocumentAsXAdeS(key), key.getCertificate());
+            case ASIC_CADES -> new SignedDocument(signDocumentAsASiCWithCAdeS(key), key.getCertificate());
+            case PADES -> new SignedDocument(signDocumentAsPAdeS(key), key.getCertificate());
+            default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
+        };
+
+        responder.onDocumentSigned(signed);
+
+        return signed;
+    }
+
+    public void onDocumentSignFailed(SigningError e) {
+        responder.onDocumentSignFailed(this, e);
+    }
+
+    private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
+        DSSDocument doc = getDocument();
+        if (getParameters().shouldCreateDatacontainer()) {
+            var transformer = XDCTransformer.newInstance(getParameters());
+            doc = transformer.transform(getDocument(), XDCTransformer.Mode.IDEMPOTENT);
+            doc.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+        }
+
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        var service = new ASiCWithXAdESService(commonCertificateVerifier);
+        var signatureParameters = getParameters().getASiCWithXAdESSignatureParameters();
+
+        signatureParameters.setSigningCertificate(key.getCertificate());
+        signatureParameters.setCertificateChain(key.getCertificateChain());
+
+        var dataToSign = service.getDataToSign(doc, signatureParameters);
+        var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
+
+        return service.signDocument(doc, signatureParameters, signatureValue);
+    }
+
+    private DSSDocument signDocumentAsXAdeS(SigningKey key) {
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        var service = new XAdESService(commonCertificateVerifier);
+        var jobParameters = getParameters();
+        var signatureParameters = getParameters().getXAdESSignatureParameters();
+
+        signatureParameters.setSigningCertificate(key.getCertificate());
+        signatureParameters.setCertificateChain(key.getCertificateChain());
+
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
+
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+    }
+
+    private DSSDocument signDocumentAsASiCWithCAdeS(SigningKey key) {
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        var service = new ASiCWithCAdESService(commonCertificateVerifier);
+        var jobParameters = getParameters();
+        var signatureParameters = getParameters().getASiCWithCAdESSignatureParameters();
+
+        signatureParameters.setSigningCertificate(key.getCertificate());
+        signatureParameters.setCertificateChain(key.getCertificateChain());
+
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
+
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+    }
+
+    private DSSDocument signDocumentAsPAdeS(SigningKey key) {
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        var service = new PAdESService(commonCertificateVerifier);
+        var jobParameters = getParameters();
+        var signatureParameters = getParameters().getPAdESSignatureParameters();
+
+        signatureParameters.setSigningCertificate(key.getCertificate());
+        signatureParameters.setCertificateChain(key.getCertificateChain());
+
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
+
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+    }
+
 
     public static SigningJob buildFromFile(File file) {
         var document = new FileDocument(file);

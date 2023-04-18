@@ -32,7 +32,7 @@ public class PickDriverDialogController {
 
     public void initialize() {
         toggleGroup = new ToggleGroup();
-        for (TokenDriver driver: drivers) {
+        for (TokenDriver driver : drivers) {
             var radioButton = new RadioButton(driver.getName());
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(driver);
@@ -41,16 +41,14 @@ public class PickDriverDialogController {
     }
 
     public void onPickDriverButtonAction() {
-        if(toggleGroup.getSelectedToggle() == null) {
+        if (toggleGroup.getSelectedToggle() == null) {
             error.setManaged(true);
             formGroup.getStyleClass().add("autogram-form-group--error");
             formGroup.getScene().getWindow().sizeToScene();
         } else {
             ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
-            new Thread(() -> {
-                var driver = (TokenDriver) toggleGroup.getSelectedToggle().getUserData();
-                callback.call(driver);
-            }).start();
+            var driver = (TokenDriver) toggleGroup.getSelectedToggle().getUserData();
+            callback.call(driver);
         }
     }
 }

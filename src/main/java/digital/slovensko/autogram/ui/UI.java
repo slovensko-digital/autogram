@@ -8,19 +8,19 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import java.util.List;
 
 public interface UI {
-    void start(Autogram autogram, String[] args);
+    void showPickFileDialog();
 
-    void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback);
+    void showSigningDialog(SigningJob job);
 
-    void pickTokenDriverAndDo(List<TokenDriver> drivers, TokenDriverLambda callback);
+    void pickTokenDriverAndThen(List<TokenDriver> drivers, TokenDriverLambda callback);
 
-    void showSigningDialog(SigningJob job, Autogram autogram);
+    void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback);
 
-    void hideSigningDialog(SigningJob job, Autogram autogram);
+    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback);
+
+    void hideSigningDialog(SigningJob job);
 
     void refreshSigningKey();
 
     void showError(AutogramException e);
-
-    void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback);
 }
