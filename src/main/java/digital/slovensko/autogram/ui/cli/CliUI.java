@@ -1,58 +1,93 @@
 package digital.slovensko.autogram.ui.cli;
 
+import digital.slovensko.autogram.Autogram;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CliUI implements UI {
-    public void start(String[] args) {
-        System.out.println("Starting CLI with args " + args.toString());
-    }
+    SigningKey activeKey;
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
-        System.out.println("Found " + keys.size() + " keys, picking first!");
-        callback.call(keys.get(0));
+    public void startSigning(SigningJob job, Autogram autogram) {
+        if (activeKey == null) {
+            autogram.pickSigningKeyAndThen(key -> {
+                activeKey = key;
+                autogram.sign(job, activeKey);
+            });
+        } else {
+            autogram.sign(job, activeKey);
+        }
+
     }
 
     @Override
     public void pickTokenDriverAndThen(List<TokenDriver> drivers, TokenDriverLambda callback) {
-        System.out.println("Found " + drivers.size() + " drivers, picking first!");
-        callback.call(drivers.get(0));
+        TokenDriver pickedDriver;
+        if (drivers.size() == 1) {
+            pickedDriver = drivers.get(0);
+        } else {
+            var i = new AtomicInteger(1);
+            System.out.println("Vyberte ulozisko certifikatov");
+            drivers.forEach(driver -> {
+                System.out.print("[" + i + "] ");
+                System.out.println(driver.getName());
+                i.addAndGet(1);
+            });
+            pickedDriver = drivers.get(CliUtils.readInteger() - 1);
+        }
+        callback.call(pickedDriver);
     }
 
     @Override
-    public void showSigningDialog(SigningJob job) {
-        System.out.println("Dialog for signing " + job.getDocument().toString() + " started!");
-        System.out.println("Assuming user clicked to sign it!");
+    public void requestPasswordAndThen(TokenDriver driver, PasswordLambda callback) {
+        if (!driver.needsPassword()) {
+            callback.call(null);
+            return;
+        }
+        System.out.println("Zadajte bezpecnostny kod k ulozisku certifikatov: ");
+        callback.call(CliUtils.readLine()); // TODO do not show pin
     }
 
     @Override
-    public void hideSigningDialog(SigningJob job) {
-        System.out.println("Dialog for signing " + job.getDocument().toString() + " closed!");
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
+        if(keys.size() > 1) {
+            System.out.println("Found multiple keys:");
+            keys.forEach(key -> System.out.println(DSSUtils.buildTooltipLabel(key)));
+        }
+
+        System.out.println("Picking key: " + DSSUtils.buildTooltipLabel(keys.get(0)));
+        callback.call(keys.get(0));
     }
 
     @Override
-    public void refreshSigningKey() {
-        System.out.println("Showing new signing key on all dialogs!");
+    public void onWorkThreadDo(Runnable callback) {
+        callback.run(); // no threads
     }
 
     @Override
-    public void showError(AutogramException e) {
-        System.out.println("Error " + e.toString() + " closed!");
+    public void onUIThreadDo(Runnable callback) {
+        callback.run(); // no threads
     }
 
     @Override
-    public void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback) {
-        callback.call(null); // TODO
+    public void onSigningSuccess(SigningJob job) {
+        System.out.println("Success for " + job);
     }
 
     @Override
-    public void showPickFileDialog() {
+    public void onSigningFailed(AutogramException e) {
+        System.err.println(e);
+    }
 
+    @Override
+    public void onPickSigningKeyFailed(AutogramException e) {
+        System.err.println(e);
     }
 }

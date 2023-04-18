@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
@@ -93,8 +94,7 @@ public class SigningJob {
 
             transformer.transform(xmlSource, outputTarget);
 
-            var result = outputTarget.getWriter().toString().trim();
-            return result;
+            return outputTarget.getWriter().toString().trim();
         } catch (Exception e) {
             return null; // TODO
         }
@@ -112,22 +112,19 @@ public class SigningJob {
         }
     }
 
-    public SignedDocument signAndRespond(SigningKey key) {
-        SignedDocument signed = switch (getParameters().getSignatureType()) {
-            case ASIC_XADES ->
-                    new SignedDocument(signDocumentAsAsiCWithXAdeS(key), key.getCertificate());
-            case XADES -> new SignedDocument(signDocumentAsXAdeS(key), key.getCertificate());
-            case ASIC_CADES -> new SignedDocument(signDocumentAsASiCWithCAdeS(key), key.getCertificate());
-            case PADES -> new SignedDocument(signDocumentAsPAdeS(key), key.getCertificate());
+    public void signWithKeyAndRespond(SigningKey key) {
+        var doc = switch (getParameters().getSignatureType()) {
+            case ASIC_XADES -> signDocumentAsAsiCWithXAdeS(key);
+            case XADES -> signDocumentAsXAdeS(key);
+            case ASIC_CADES -> signDocumentAsASiCWithCAdeS(key);
+            case PADES -> signDocumentAsPAdeS(key);
             default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
         };
 
-        responder.onDocumentSigned(signed);
-
-        return signed;
+        responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
     }
 
-    public void onDocumentSignFailed(SigningError e) {
+    public void onDocumentSignFailed(AutogramException e) {
         responder.onDocumentSignFailed(this, e);
     }
 

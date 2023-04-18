@@ -1,22 +1,24 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.ui.UI;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 import java.io.File;
 
 public class MainMenuController implements SuppressedFocusController {
-    private final UI ui;
+    private final Autogram autogram;
 
     @FXML
     VBox dropZone;
 
-    public MainMenuController(UI ui) {
-        this.ui = ui;
+    public MainMenuController(Autogram autogram) {
+        this.autogram = autogram;
     }
 
     public void initialize() {
@@ -35,13 +37,20 @@ public class MainMenuController implements SuppressedFocusController {
 
         dropZone.setOnDragDropped(event -> {
             for (File file : event.getDragboard().getFiles()) {
-                ui.showSigningDialog(SigningJob.buildFromFile(file));
+                autogram.sign(SigningJob.buildFromFile(file));
             }
         });
     }
 
     public void onUploadButtonAction() {
-        ui.showPickFileDialog();
+        var chooser = new FileChooser();
+        var list = chooser.showOpenMultipleDialog(new Stage());
+
+        if (list != null) {
+            for (File file : list) {
+                autogram.sign(SigningJob.buildFromFile(file));
+            }
+        }
     }
 
     public void onAboutButtonAction() {

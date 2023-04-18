@@ -4,11 +4,11 @@ import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
+import digital.slovensko.autogram.Autogram;
 
-import digital.slovensko.autogram.ui.UI;
-
-import static digital.slovensko.autogram.core.Configuration.getProperty;
-
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -17,23 +17,21 @@ import java.security.KeyStore;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
+import static digital.slovensko.autogram.core.Configuration.getProperty;
 
 public class AutogramServer {
     private final HttpServer server;
-    private final UI ui;
+    private final Autogram autogram;
 
 
-    public AutogramServer(UI ui, String hostname, int port, boolean isHttps) {
-        this.ui = ui;
+    public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps) {
+        this.autogram = autogram;
         this.server = buildServer(hostname, port, isHttps);
     }
 
     public void start() {
         server.createContext("/info", new InfoEndpoint());
-        server.createContext("/sign", new SignEndpoint(ui));
+        server.createContext("/sign", new SignEndpoint(autogram));
         server.createContext("/docs", new DocumentationEndpoint());
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();

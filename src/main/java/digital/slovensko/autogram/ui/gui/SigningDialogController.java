@@ -1,13 +1,10 @@
 package digital.slovensko.autogram.ui.gui;
 
 import com.octosign.whitelabel.ui.WebViewLogger;
-    import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.Autogram;
+import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.util.DSSUtils;
-import eu.europa.esig.dss.model.DSSException;
-import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -27,6 +24,7 @@ import javafx.stage.Stage;
 public class SigningDialogController implements SuppressedFocusController {
     private final GUI gui;
     private final SigningJob signingJob;
+    private final Autogram autogram;
 
     @FXML
     VBox mainBox;
@@ -47,9 +45,10 @@ public class SigningDialogController implements SuppressedFocusController {
     @FXML
     public Button changeKeyButton;
 
-    public SigningDialogController(SigningJob signingJob, GUI gui) {
+    public SigningDialogController(SigningJob signingJob, Autogram autogram, GUI gui) {
         this.signingJob = signingJob;
         this.gui = gui;
+        this.autogram = autogram;
     }
 
     public void initialize() {
@@ -70,28 +69,17 @@ public class SigningDialogController implements SuppressedFocusController {
     public void onMainButtonPressed(ActionEvent event) {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
-            gui.pickSigningKey();
+            autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
         } else {
             gui.disableSigning();
             getNodeForLoosingFocus().requestFocus();
-            new Thread(() -> {
-                try {
-                    signingJob.signAndRespond(signingKey);
-                    Platform.runLater(() -> gui.hideSigningDialog(signingJob));
-                } catch (DSSException e) {
-                    Platform.runLater(() -> gui.showError(AutogramException.createFromDSSException(e)));
-                } catch (Exception e) {
-                    Platform.runLater(() -> gui.showError(new UnrecognizedException(e)));
-                } finally {
-                    Platform.runLater(gui::enableSigning);
-                }
-            }).start();
+            autogram.sign(signingJob, signingKey);
         }
     }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
         gui.resetSigningKey();
-        gui.pickSigningKey();
+        autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
     }
 
     public void refreshSigningKey() {
@@ -109,7 +97,7 @@ public class SigningDialogController implements SuppressedFocusController {
         }
     }
 
-    public void hide() {
+    public void close() {
         var window = mainButton.getScene().getRoot().getScene().getWindow();
         if (window instanceof Stage) {
             ((Stage) window).close();

@@ -24,12 +24,12 @@ public class LaunchParameters {
     private String secretKey;
     private int initialNonce;
     private String language;
-    private boolean isUrl;
+    private boolean standaloneMode;
 
-    private LaunchParameters(Map<String, String> params, boolean isUrl) {
+    private LaunchParameters(Map<String, String> params, boolean standaloneMode) {
         this.parameters = params;
 
-        this.isUrl = isUrl;
+        this.standaloneMode = standaloneMode;
 
         var protocol = ofNullable(params.get("protocol")).orElse(getProperty("server.defaultProtocol"));
         var host = ofNullable(params.get("host")).orElse(getProperty("server.defaultAddress"));
@@ -64,7 +64,7 @@ public class LaunchParameters {
                 params = named;
             }
 
-            return new LaunchParameters(params, urlParam != null);
+            return new LaunchParameters(params, urlParam == null);
 
         } catch (URISyntaxException e) {
             throw new RuntimeException(e); // TODO: handle exception
@@ -82,8 +82,8 @@ public class LaunchParameters {
         }
     }
 
-    public boolean isUrl() {
-        return isUrl;
+    public boolean isStandaloneMode() {
+        return standaloneMode;
     }
 
     public boolean isRequiredSSL() {

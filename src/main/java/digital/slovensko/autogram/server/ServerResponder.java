@@ -2,11 +2,10 @@ package digital.slovensko.autogram.server;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
-
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
-import digital.slovensko.autogram.core.SigningError;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.dto.SignResponse;
 
 import java.io.IOException;
@@ -24,7 +23,7 @@ public class ServerResponder extends Responder {
         var gson = new Gson();
         var signer = signedDocument.getCertificate().getSubject().getPrincipal().toString();
         var issuer = signedDocument.getCertificate().getIssuer().getPrincipal().toString();
-        String b64document = null;
+        String b64document;
 
         try {
             b64document = Base64.getEncoder().encodeToString(signedDocument.getDocument().openStream().readAllBytes());
@@ -45,7 +44,9 @@ public class ServerResponder extends Responder {
     }
 
     @Override
-    public void onDocumentSignFailed(SigningJob job, SigningError error) {
+    public void onDocumentSignFailed(SigningJob job, AutogramException error) {
+        // TODO actually respond with correct response code
+
         try {
             exchange.sendResponseHeaders(500, 0);
             exchange.getResponseBody().close();

@@ -1,5 +1,5 @@
 package digital.slovensko.autogram.core;
 
 public interface SigningKeyLambda {
-    public void call(SigningKey key);
+    void call(SigningKey key);
 }
