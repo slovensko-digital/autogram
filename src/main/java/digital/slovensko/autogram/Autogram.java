@@ -22,12 +22,12 @@ public class Autogram {
         -> ui.startSigning(job, this));
     }
 
-    public void sign(SigningJob signingJob, SigningKey signingKey) {
+    public void sign(SigningJob job, SigningKey signingKey) {
         ui.onWorkThreadDo(() -> {
             try {
-                signingJob.signWithKeyAndRespond(signingKey);
+                job.signWithKeyAndRespond(signingKey);
                 ui.onUIThreadDo(()
-                -> ui.onSigningSuccess(signingJob));
+                -> ui.onSigningSuccess(job));
             } catch (DSSException e) {
                 ui.onUIThreadDo(()
                 -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
