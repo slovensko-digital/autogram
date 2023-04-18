@@ -1,6 +1,6 @@
-# White Label Signer
+# Autogram
 
-Customizable, simple, cross-platform (Windows, macOS, Linux) desktop app that can be used to create signatures compliant with the eIDAS Regulation and be integrated with your (web) application.
+Simple cross-platform (Windows, macOS, Linux) desktop app that can be used to create signatures compliant with the eIDAS Regulation and be integrated with your (web) application.
 
 ![Screenshot](https://github.com/octosign/branding/blob/main/screenshots/White%20Label.png?raw=true)
 
@@ -54,20 +54,16 @@ Prepares all essential application artifacts in `./target`:
 
 Assembles a directory and calls `jpackager` to create distributable packages (.msi/.exe, .dmg/.pkg, and .rpm/.deb).
 
-If you want to create installers, you additionally need:
+## Authors
 
-- Window: [WiX Toolset](https://wixtoolset.org/).
-- macOS: Xcode.
-- Linux: Distribution-specific tools for building rpm or deb packages, e.g., `rpm-build` on Fedora. This script expects to create both `rpm` and `deb` on distributions derived from Debian, which should be possible if you install `rpm`.
+Jakub Duras, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. and contributors.
 
 ## License
 
-This software is licensed under the MIT License.
-In short, you are free to do whatever you want with this code, including forking and bundling as a commercial proprietary application, as long as you include the original copyright, license notice, and accept that you cannot hold any of the authors liable.
+This software is licensed under the EUPL v1.2 license, originaly forked from Octosign White Label project by Jakub Duras that was licensed under the MIT License.
+In short, you are free to do whatever you want with this code, including forking and bundling as a commercial proprietary application, as long as you include the original copyright, license notice, open-source your changes and accept that you cannot hold any of the authors liable.
 
 This project uses exclusively Open Source Software (OSS) that is safe to bundle with permissive and proprietary software provided you comply with the license requirements.
 To comply with the requirements, make sure not to remove any copyright notices and info about used OSS.
 
 Specifically, this project uses OpenJDK and OpenJFX that are licensed under [GPLv2+Classpath Exception license](https://openjdk.java.net/legal/gplv2+ce.html), and EU Digital Signature Service under [LGPL-2.1](https://github.com/esig/dss/blob/4b82afb014f0836eb282e1e3498ab4bb843ef321/LICENSE).
-
-See [Octosign White Label Legal](https://whitelabel.octosign.com/legal) for more information.
