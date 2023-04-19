@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.function.Consumer;
 
 public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
@@ -48,7 +49,7 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickTokenDriverAndThen(List<TokenDriver> drivers, TokenDriverLambda callback) {
+    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
         disableKeyPicking();
 
         if (drivers.isEmpty()) {
@@ -56,7 +57,7 @@ public class GUI implements UI {
             refreshKeyOnAllJobs();
         } else if (drivers.size() == 1) {
             // short-circuit if only one driver present
-            callback.call(drivers.get(0));
+            callback.accept(drivers.get(0));
         } else {
             PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
@@ -74,9 +75,9 @@ public class GUI implements UI {
     }
 
     @Override
-    public void requestPasswordAndThen(TokenDriver driver, PasswordLambda callback) {
+    public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
         if (!driver.needsPassword()) {
-            callback.call(null);
+            callback.accept(null);
             return;
         }
 
@@ -93,13 +94,13 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
         if (keys.isEmpty()) {
             showError(new NoKeysDetectedException());
             refreshKeyOnAllJobs();
         } else if (keys.size() == 1) {
             // short-circuit if only one key present
-            callback.call(keys.get(0));
+            callback.accept(keys.get(0));
         } else {
             var controller = new PickKeyDialogController(keys, callback);
             var root = GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");

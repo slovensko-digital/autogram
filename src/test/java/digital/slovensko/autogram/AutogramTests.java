@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -68,18 +69,18 @@ class AutogramTests {
         }
 
         @Override
-        public void pickTokenDriverAndThen(List<TokenDriver> drivers, TokenDriverLambda callback) {
-            callback.call(new FakeTokenDriver("fake"));
+        public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
+            callback.accept(new FakeTokenDriver("fake"));
         }
 
         @Override
-        public void requestPasswordAndThen(TokenDriver driver, PasswordLambda callback) {
-            callback.call(null);
+        public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
+            callback.accept(null);
         }
 
         @Override
-        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
-            callback.call(keys.get(0));
+        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+            callback.accept(keys.get(0));
         }
 
         @Override
