@@ -11,9 +11,12 @@ import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+
+import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -66,6 +69,11 @@ public class SigningJob {
         return document.getMimeType().equals(MimeType.JPEG) || document.getMimeType().equals(MimeType.PNG);
     }
 
+    public boolean isXDC() {
+        return document.getMimeType()
+                .equals(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+    }
+
     public String getDocumentAsPlainText() {
         if (document.getMimeType().equals(MimeType.TEXT)) {
             try {
@@ -84,19 +92,38 @@ public class SigningJob {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
             var document = builderFactory.newDocumentBuilder().parse(new InputSource(this.document.openStream()));
-            document.setXmlStandalone(true);
-            var xmlSource = new DOMSource(document);
-            var outputTarget = new StreamResult(new StringWriter());
 
+            var xmlSource = new DOMSource(document);
+            if (isXDC())
+                xmlSource = extractFromXDC(document, builderFactory);
+
+            var outputTarget = new StreamResult(new StringWriter());
             var transformer = TransformerFactory.newInstance().newTransformer(
                     new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes())));
-
             transformer.transform(xmlSource, outputTarget);
 
             return outputTarget.getWriter().toString().trim();
         } catch (Exception e) {
             return null; // TODO
         }
+    }
+
+    private DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)
+            throws ParserConfigurationException {
+        var xdc = document.getDocumentElement();
+
+        var xmlData = xdc.getElementsByTagName("XMLData").item(0);
+        if (xmlData == null)
+            xmlData = xdc.getElementsByTagName("xdc:XMLData").item(0);
+
+        if (xmlData == null)
+            throw new RuntimeException("XMLData not found in XDC");
+
+        document = builderFactory.newDocumentBuilder().newDocument();
+        var node = document.importNode(xmlData.getFirstChild(), true);
+        document.appendChild(node);
+
+        return new DOMSource(document);
     }
 
     public String getDocumentAsHTML() {
@@ -129,9 +156,9 @@ public class SigningJob {
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
         DSSDocument doc = getDocument();
-        if (shouldTransformToXDC()) {
+        if (getParameters().shouldCreateDatacontainer() && !isXDC()) {
             var transformer = XDCTransformer.newInstance(getParameters());
-            doc = transformer.transform(getDocument(), XDCTransformer.Mode.IDEMPOTENT);
+            doc = transformer.transform(getDocument());
             doc.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
         }
 
@@ -146,11 +173,6 @@ public class SigningJob {
         var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
 
         return service.signDocument(doc, signatureParameters, signatureValue);
-    }
-
-    private boolean shouldTransformToXDC() {
-        return getParameters().shouldCreateDatacontainer() && !document.getMimeType()
-                .equals(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
     }
 
     private DSSDocument signDocumentAsXAdeS(SigningKey key) {
