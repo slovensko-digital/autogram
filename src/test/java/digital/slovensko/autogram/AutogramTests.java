@@ -23,66 +23,30 @@ import static org.mockito.Mockito.verify;
 class AutogramTests {
     @Test
     void testSignHappyScenario() {
-        var autogram = new Autogram(new DummyUIPickingFakeTestTokenDriver());
+        var newUI = new FakeUI();
+        var autogram = new Autogram(newUI);
 
         var parameters = new SigningParameters();
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 
-        autogram.pickSigningKey();
-        autogram.sign(new SigningJob(document, parameters, responder));
+        autogram.pickSigningKeyAndThen(key
+        -> autogram.sign(new SigningJob(document, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
+
     @Test
     void testSignCertificatePickFailed() {
 
     }
+
     @Test
     void testSignFailedAfterCertificatePick() {
 
     }
 
-    private class DummyUIPickingFakeTestTokenDriver implements UI {
-        @Override
-        public void start(Autogram autogram, String[] args) {
-
-        }
-
-        @Override
-        public void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
-            callback.call(keys.get(0));
-        }
-
-        @Override
-        public void pickTokenDriverAndDo(List<TokenDriver> drivers, TokenDriverLambda callback) {
-            callback.call(new FakeTokenDriver("fake"));
-        }
-
-        @Override
-        public void showSigningDialog(SigningJob job, Autogram autogram) {
-        }
-
-        @Override
-        public void hideSigningDialog(SigningJob job, Autogram autogram) {
-
-        }
-
-        @Override
-        public void refreshSigningKey() {
-        }
-
-        @Override
-        public void showError(AutogramException e) {
-        }
-
-        @Override
-        public void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback) {
-            callback.call(null);
-        }
-    }
-
-    private class FakeTokenDriver extends TokenDriver {
+    private static class FakeTokenDriver extends TokenDriver {
         public FakeTokenDriver(String name) {
             super(name, Path.of(""), true);
         }
@@ -94,6 +58,53 @@ class AutogramTests {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private static class FakeUI implements UI {
+        @Override
+        public void startSigning(SigningJob signingJob, Autogram autogram) {
+
+        }
+
+        @Override
+        public void pickTokenDriverAndThen(List<TokenDriver> drivers, TokenDriverLambda callback) {
+            callback.call(new FakeTokenDriver("fake"));
+        }
+
+        @Override
+        public void requestPasswordAndThen(TokenDriver driver, PasswordLambda callback) {
+            callback.call(null);
+        }
+
+        @Override
+        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
+            callback.call(keys.get(0));
+        }
+
+        @Override
+        public void onWorkThreadDo(Runnable callback) {
+            callback.run();
+        }
+
+        @Override
+        public void onUIThreadDo(Runnable callback) {
+            callback.run();
+        }
+
+        @Override
+        public void onSigningSuccess(SigningJob signingJob) {
+
+        }
+
+        @Override
+        public void onSigningFailed(AutogramException e) {
+
+        }
+
+        @Override
+        public void onPickSigningKeyFailed(AutogramException ae) {
+            throw new RuntimeException();
         }
     }
 }

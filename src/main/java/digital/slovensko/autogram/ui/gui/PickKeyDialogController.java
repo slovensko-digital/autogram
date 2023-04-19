@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.PrivateKeyLambda;
-import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -61,10 +60,8 @@ public class PickKeyDialogController {
             formGroup.getScene().getWindow().sizeToScene();
         } else {
             ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
-            new Thread(() -> {
-                var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
-                callback.call(key);
-            }).start();
+            var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
+            callback.call(key);
         }
     }
 }

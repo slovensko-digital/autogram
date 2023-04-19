@@ -1,226 +1,191 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.stage.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.WeakHashMap;
 
 public class GUI implements UI {
-    private final Map<SigningJob, SigningDialogController> jobs = new WeakHashMap<>();
+    private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
+    private SigningKey activeKey;
 
-    @Override
-    public void start(Autogram autogram, String[] args) {
-        GUIApp.autogram = autogram; // use singleton for passing since javafx instantiation is tricky
+    public void start(String[] args) {
+        // use singleton for passing since javafx instantiation is tricky
+        GUIApp.autogram = new Autogram(this);
         Application.launch(GUIApp.class, args);
     }
 
     @Override
-    public void pickTokenDriverAndDo(List<TokenDriver> drivers, TokenDriverLambda callback) {
-        Platform.runLater(() -> {
-            for (SigningDialogController c : jobs.values()) {
-                c.disableKeyPicking();
-            }
+    public void startSigning(SigningJob job, Autogram autogram) {
+        var controller = new SigningDialogController(job, autogram, this);
+        jobControllers.put(job, controller);
 
-            if (drivers.isEmpty()) {
-                showError(new NoDriversDetectedException());
-                refreshKeyOnAllJobs();
-            } else if (drivers.size() == 1) {
-                // short-circuit if only one driver present
-                callback.call(drivers.get(0));
-            } else {
-                PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
-                var root = GUI.loadFXML(controller, "pick-driver-dialog.fxml");
+        var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
 
-                var stage = new Stage();
-                stage.setTitle("Výber úložiska certifikátu");
-                stage.setScene(new Scene(root));
-                stage.setOnCloseRequest(event -> refreshKeyOnAllJobs());
+        var stage = new Stage();
+        stage.setTitle("Podpisovanie dokumentu"); // TODO use document name?
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> job.onDocumentSignFailed(new SigningCanceledByUserException()));
 
-                stage.sizeToScene();
-                stage.setResizable(false);
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.show();
-            }
-        });
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        GUIUtils.showOnTop(stage);
+        GUIUtils.setUserFriendlyPosition(stage);
     }
 
     @Override
-    public void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
-        Platform.runLater(() -> {
-            if (keys.isEmpty()) {
-                showError(new NoKeysDetectedException());
-                refreshKeyOnAllJobs();
-            } else if (keys.size() == 1) {
-                // short-circuit if only one key present
-                callback.call(keys.get(0));
-            } else {
-                var controller = new PickKeyDialogController(keys, callback);
-                var root = GUI.loadFXML(controller, "pick-key-dialog.fxml");
+    public void pickTokenDriverAndThen(List<TokenDriver> drivers, TokenDriverLambda callback) {
+        disableKeyPicking();
 
-                var stage = new Stage();
-                stage.setTitle("Výber certifikátu");
-                stage.setScene(new Scene(root));
-                stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
-                stage.setResizable(false);
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.show();
-            }
-        });
-    }
-
-    @Override
-    public void showSigningDialog(SigningJob job, Autogram autogram) {
-        Platform.runLater(() -> {
-            var controller = new SigningDialogController(job, autogram);
-            jobs.put(job, controller);
-
-            var root = GUI.loadFXML(controller, "signing-dialog.fxml");
+        if (drivers.isEmpty()) {
+            showError(new NoDriversDetectedException());
+            refreshKeyOnAllJobs();
+        } else if (drivers.size() == 1) {
+            // short-circuit if only one driver present
+            callback.call(drivers.get(0));
+        } else {
+            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
+            var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Podpisovanie dokumentu"); // TODO use document name?
+            stage.setTitle("Výber úložiska certifikátu");
             stage.setScene(new Scene(root));
-            stage.setOnCloseRequest(e -> {
-                var error = new SigningError();
-                job.onDocumentSignFailed(job, error);
-            });
-
-            stage.sizeToScene();
-            GUI.suppressDefaultFocus(stage, controller);
-            GUI.showOnTop(stage);
-            GUI.setUserFriendlyPosition(stage);
-        });
-    }
-
-
-    @Override
-    public void hideSigningDialog(SigningJob job, Autogram autogram) {
-        Platform.runLater(() -> {
-            jobs.get(job).hide();
-        });
-    }
-
-    @Override
-    public void refreshSigningKey() {
-        Platform.runLater(this::refreshKeyOnAllJobs);
-    }
-
-    private void refreshKeyOnAllJobs() {
-        for (SigningDialogController c : jobs.values()) {
-            c.refreshSigningKey();
-        }
-    }
-
-    @Override
-    public void showError(AutogramException e) {
-        Platform.runLater(() -> {
-            var controller = new ErrorController(e);
-            var root = GUI.loadFXML(controller, "error-dialog.fxml");
-
-            var stage = new Stage();
-            stage.setTitle(e.getHeading());
-            stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(event -> refreshKeyOnAllJobs());
 
             stage.sizeToScene();
             stage.setResizable(false);
             stage.initModality(Modality.APPLICATION_MODAL);
-
-            GUI.suppressDefaultFocus(stage, controller);
-
             stage.show();
-        });
+        }
     }
 
     @Override
-    public void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback) {
+    public void requestPasswordAndThen(TokenDriver driver, PasswordLambda callback) {
         if (!driver.needsPassword()) {
             callback.call(null);
             return;
         }
 
-        Platform.runLater(() -> {
-            var controller = new PasswordController(callback);
-            var root = GUI.loadFXML(controller, "password-dialog.fxml");
+        var controller = new PasswordController(callback);
+        var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Načítanie klúčov z úložiska");
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
+    }
+
+    @Override
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
+        if (keys.isEmpty()) {
+            showError(new NoKeysDetectedException());
+            refreshKeyOnAllJobs();
+        } else if (keys.size() == 1) {
+            // short-circuit if only one key present
+            callback.call(keys.get(0));
+        } else {
+            var controller = new PickKeyDialogController(keys, callback);
+            var root = GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Načítanie klúčov z úložiska");
+            stage.setTitle("Výber certifikátu");
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
             stage.setResizable(false);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.show();
-        });
-    }
-
-    public void showPickFileDialog(Autogram autogram) {
-        Platform.runLater(() -> {
-            var chooser = new FileChooser();
-            var list = chooser.showOpenMultipleDialog(new Stage());
-
-            if (list != null) {
-                for (File file : list) {
-                    autogram.showSigningDialog(SigningJob.buildFromFile(file));
-                }
-            }
-        });
-    }
-
-    static Parent loadFXML(Object controller, String fxml) {
-        try {
-            var loader = new FXMLLoader();
-            loader.setLocation(controller.getClass().getResource(fxml));
-            loader.setController(controller);
-            return loader.load();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
-    private static void setUserFriendlyPosition(Stage stage) {
-        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
-        double x = bounds.getMinX() + (bounds.getWidth() - stage.getScene().getWidth()) / 2 + (new Random()).nextInt(100) - 50;
-        double y = bounds.getMinY() + (bounds.getHeight() - stage.getScene().getHeight()) / 2 + (new Random()).nextInt(100) - 50;
-
-        stage.setX(x);
-        stage.setY(y);
+    private void refreshKeyOnAllJobs() {
+        for (SigningDialogController c : jobControllers.values()) {
+            c.refreshSigningKey();
+        }
     }
 
-    private static void showOnTop(Stage stage) {
-        stage.requestFocus();
-        stage.setAlwaysOnTop(true);
-        stage.toFront();
+    private void showError(AutogramException e) {
+        var controller = new ErrorController(e);
+        var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(e.getHeading());
+        stage.setScene(new Scene(root));
+
+        stage.sizeToScene();
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        GUIUtils.suppressDefaultFocus(stage, controller);
+
         stage.show();
-
-        new Thread(() -> {
-            try {
-                Thread.sleep(42);
-            } catch (InterruptedException ignored) {
-                // noop
-            }
-
-            Platform.runLater(() -> stage.setAlwaysOnTop(false));
-        }).start();
     }
 
-    public static void suppressDefaultFocus(Stage windowStage, SuppressedFocusController controller) {
-        windowStage.focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            if(newValue) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
-        }));
+    private void disableKeyPicking() {
+        for (SigningDialogController c : jobControllers.values()) {
+            c.disableKeyPicking();
+        }
+    }
+
+    @Override
+    public void onPickSigningKeyFailed(AutogramException e) {
+        showError(e);
+        resetSigningKey();
+    }
+
+    @Override
+    public void onSigningSuccess(SigningJob job) {
+        jobControllers.get(job).close();
+    }
+
+    @Override
+    public void onSigningFailed(AutogramException e) {
+        showError(e);
+    }
+
+    @Override
+    public void onWorkThreadDo(Runnable callback) {
+        new Thread(callback).start();
+    }
+
+    @Override
+    public void onUIThreadDo(Runnable callback) {
+        Platform.runLater(callback);
+    }
+
+    public SigningKey getActiveSigningKey() {
+        return activeKey;
+    }
+
+    public void setActiveSigningKey(SigningKey newKey) {
+        if (activeKey != null) activeKey.close();
+        activeKey = newKey;
+        refreshKeyOnAllJobs();
+    }
+
+    public void disableSigning() {
+        for (SigningDialogController c : jobControllers.values()) {
+            c.disableSigning();
+        }
+    }
+
+    public void resetSigningKey() {
+        setActiveSigningKey(null);
     }
 }
