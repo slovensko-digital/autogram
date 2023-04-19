@@ -25,7 +25,6 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-
 public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
@@ -130,7 +129,7 @@ public class SigningJob {
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
         DSSDocument doc = getDocument();
-        if (getParameters().shouldCreateDatacontainer()) {
+        if (shouldTransformToXDC()) {
             var transformer = XDCTransformer.newInstance(getParameters());
             doc = transformer.transform(getDocument(), XDCTransformer.Mode.IDEMPOTENT);
             doc.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
@@ -147,6 +146,11 @@ public class SigningJob {
         var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
 
         return service.signDocument(doc, signatureParameters, signatureValue);
+    }
+
+    private boolean shouldTransformToXDC() {
+        return getParameters().shouldCreateDatacontainer() && !document.getMimeType()
+                .equals(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
     }
 
     private DSSDocument signDocumentAsXAdeS(SigningKey key) {
@@ -193,7 +197,6 @@ public class SigningJob {
 
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
-
 
     public static SigningJob buildFromFile(File file) {
         var document = new FileDocument(file);
