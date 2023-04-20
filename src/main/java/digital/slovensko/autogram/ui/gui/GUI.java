@@ -153,11 +153,13 @@ public class GUI implements UI {
     @Override
     public void onSigningSuccess(SigningJob job) {
         jobControllers.get(job).close();
+        refreshKeyOnAllJobs();
     }
 
     @Override
     public void onSigningFailed(AutogramException e) {
         showError(e);
+        refreshKeyOnAllJobs();
     }
 
     @Override
