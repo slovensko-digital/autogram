@@ -63,7 +63,7 @@ public class SigningJob {
     }
 
     public boolean isPDF() {
-        return parameters.getSignatureType() == SignatureForm.PAdES;
+        return document.getMimeType().equals(MimeType.PDF);
     }
 
     public boolean isImage() {
