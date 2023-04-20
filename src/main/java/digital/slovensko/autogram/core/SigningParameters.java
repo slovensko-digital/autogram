@@ -1,11 +1,20 @@
 package digital.slovensko.autogram.core;
 
+import java.io.IOException;
+import java.io.StringReader;
+
 import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.MimeType;
@@ -13,21 +22,10 @@ import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
 public class SigningParameters {
-    public enum SignatureType {
-        ASIC_XADES,
-        XADES,
-        ASIC_CADES,
-        PADES
-    }
-
     private final ASiCContainerType asicContainer;
-    private final String containerFilename;
     private final String containerXmlns;
     private final String schema;
-    private final String signaturePolicyContent;
-    private final String signaturePolicyId;
     private final String transformation;
-    private final MimeType transformationOutputMimeType;
     private final SignatureLevel level;
     private final SignaturePackaging packaging;
     private final DigestAlgorithm digestAlgorithm;
@@ -37,35 +35,15 @@ public class SigningParameters {
     private final String keyInfoCanonicalization;
     private final String identifier;
 
-    public SigningParameters() {
-        asicContainer = ASiCContainerType.ASiC_E;
-        containerFilename = "document.asice";
-        containerXmlns = "";
-        schema = "";
-        signaturePolicyContent = "Dont't be evil.";
-        signaturePolicyId = "";
-        transformation = "";
-        level = SignatureLevel.XAdES_BASELINE_B;
-        packaging = SignaturePackaging.ENVELOPING;
-        digestAlgorithm = DigestAlgorithm.SHA256;
-        en319132 = false;
-        infoCanonicalization = CanonicalizationMethod.INCLUSIVE;
-        propertiesCanonicalization = CanonicalizationMethod.INCLUSIVE;
-        keyInfoCanonicalization = CanonicalizationMethod.INCLUSIVE;
-        transformationOutputMimeType = null;
-        identifier = "";
-    }
-
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
-                             String containerFilename, String containerXmlns, SignaturePackaging packaging,
-                             DigestAlgorithm digestAlgorithm,
-                             Boolean en319132, String infoCanonicalization,
-                             String propertiesCanonicalization, String keyInfoCanonicalization,
-                             String signaturePolicyId, String signaturePolicyContent, String schema, String transformation,
-                             MimeType transformationOutputMimeType, String identifier) {
+            String containerXmlns, SignaturePackaging packaging,
+            DigestAlgorithm digestAlgorithm,
+            Boolean en319132, String infoCanonicalization,
+            String propertiesCanonicalization, String keyInfoCanonicalization,
+            String schema, String transformation,
+            String identifier) {
         this.level = level;
         this.asicContainer = container;
-        this.containerFilename = containerFilename;
         this.containerXmlns = containerXmlns;
         this.packaging = packaging;
         this.digestAlgorithm = digestAlgorithm;
@@ -73,16 +51,37 @@ public class SigningParameters {
         this.infoCanonicalization = infoCanonicalization;
         this.propertiesCanonicalization = propertiesCanonicalization;
         this.keyInfoCanonicalization = keyInfoCanonicalization;
-        this.signaturePolicyId = signaturePolicyId;
-        this.signaturePolicyContent = signaturePolicyContent;
         this.schema = schema;
         this.transformation = transformation;
-        this.transformationOutputMimeType = transformationOutputMimeType;
         this.identifier = identifier;
     }
 
     public MimeType getTransformationOutputMimeType() {
-        return transformationOutputMimeType;
+        if (transformation == null)
+            return null;
+
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+            var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(transformation)));
+            var elem = document.getDocumentElement();
+            var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
+            var method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
+
+            if (method.equals("html"))
+                return MimeType.HTML;
+
+            if (method.equals("text"))
+                return MimeType.TEXT;
+
+                throw new RuntimeException("Unsupported transformation output method: " + method);
+
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return MimeType.TEXT;
     }
 
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
@@ -114,6 +113,17 @@ public class SigningParameters {
         return parameters;
     }
 
+    public ASiCWithCAdESSignatureParameters getCAdESSignatureParameters() {
+        var parameters = new ASiCWithCAdESSignatureParameters();
+
+        parameters.aSiC().setContainerType(getContainer());
+        parameters.setSignatureLevel(level);
+        parameters.setDigestAlgorithm(getDigestAlgorithm());
+        parameters.setSignaturePackaging(packaging);
+
+        return parameters;
+    }
+
     public PAdESSignatureParameters getPAdESSignatureParameters() {
         var parameters = new PAdESSignatureParameters();
 
@@ -135,60 +145,16 @@ public class SigningParameters {
         return parameters;
     }
 
-    public SignatureType getSignatureType() {
-        if (getContainer() != null) {
-            switch (getLevel()) {
-                case CAdES_BASELINE_B:
-                case CAdES_BASELINE_T:
-                case CAdES_BASELINE_LT:
-                case CAdES_BASELINE_LTA:
-                    return SignatureType.ASIC_CADES;
-                case XAdES_BASELINE_B:
-                case XAdES_BASELINE_T:
-                case XAdES_BASELINE_LT:
-                case XAdES_BASELINE_LTA:
-                    return SignatureType.ASIC_XADES;
-                default:
-                    throw new IllegalArgumentException("Unknown signature level: " + getLevel());
-            }
-        } else if (getLevel() != null) {
-            switch (getLevel()) {
-                case XAdES_BASELINE_B:
-                case XAdES_BASELINE_T:
-                case XAdES_BASELINE_LT:
-                case XAdES_BASELINE_LTA:
-                    return SignatureType.XADES;
-                case PAdES_BASELINE_B:
-                case PAdES_BASELINE_T:
-                case PAdES_BASELINE_LT:
-                case PAdES_BASELINE_LTA:
-                    return SignatureType.PADES;
-                default:
-                    throw new IllegalArgumentException("Unknown signature level: " + getLevel());
-            }
-        } else {
-            throw new IllegalArgumentException("Unknown signature type");
-        }
+    public SignatureForm getSignatureType() {
+        return level.getSignatureForm();
     }
 
     public ASiCContainerType getContainer() {
         return asicContainer;
     }
 
-    public String getContainerFilename() {
-        return containerFilename;
-    }
-
     public String getContainerXmlns() {
         return containerXmlns;
-    }
-
-    public String getSignaturePolicyId() {
-        return signaturePolicyId;
-    }
-
-    public String getSignaturePolicyContent() {
-        return signaturePolicyContent;
     }
 
     public String getSchema() {
@@ -232,23 +198,21 @@ public class SigningParameters {
                 SignatureLevel.PAdES_BASELINE_B,
                 null,
                 null, null,
-                null,
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, null, null, null, "");
+                null, null, "");
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
         return new SigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 ASiCContainerType.ASiC_E,
-                null, null,
+                null,
                 SignaturePackaging.ENVELOPING,
                 DigestAlgorithm.SHA256,
                 false, null,
-                null, null,
-                null, null, null, null, null, "");
+                null, null, null, null, "");
     }
 
     public String getIdentifier() {
@@ -258,5 +222,4 @@ public class SigningParameters {
     public boolean shouldCreateDatacontainer() {
         return getContainerXmlns() != null && getContainerXmlns().contains("xmldatacontainer");
     }
-
 }
