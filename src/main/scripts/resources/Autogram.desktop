@@ -6,4 +6,4 @@ Icon=APPLICATION_ICON
 Terminal=false
 Type=Application
 Categories=DEPLOY_BUNDLE_CATEGORY
-MimeType=x-scheme-handler/signer;
+MimeType=x-scheme-handler/autogram;

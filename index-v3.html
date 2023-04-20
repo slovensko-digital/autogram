@@ -7,7 +7,7 @@
             margin-bottom: 6px;
         }
     </style>
-    <title>Signer tutorial</title>
+    <title>Autogram tutorial</title>
 </head>
 <body>
 <ol><div>
@@ -17,7 +17,7 @@
     <li>Nainstalovat podpisovac</li>
     <li>Zapojit <b>citacku s kartou</b></li>
     <li>Vybrat si z moznosti</li>
-   <!--     
+   <!--
 	<h4>SSL (Mac + Safari)<br>
             <input type="checkbox" onclick="handleSslCheckbox(this);"/>
         </h4>
@@ -59,7 +59,7 @@
 	    } else {
 	        return "localhost";
 	    }
-	}	
+	}
 
 
 	const gprotocol = () => {
@@ -68,7 +68,7 @@
 	    } else {
 	        return "http";
 	    }
-	}	
+	}
 
 
         const updateLinks = () => {
@@ -76,7 +76,7 @@
         }
 
         const getCurrentUrl = () => {
-            return "signer://listen?protocol=" + gprotocol() + "&host=" + ghost() + "&port=" + gport + "&origin=*&language=sk"
+            return "autogram://listen?protocol=" + gprotocol() + "&host=" + ghost() + "&port=" + gport + "&origin=*&language=sk"
         }
 
 
