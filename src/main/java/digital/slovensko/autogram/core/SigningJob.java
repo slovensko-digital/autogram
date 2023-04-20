@@ -156,7 +156,7 @@ public class SigningJob {
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
         DSSDocument doc = getDocument();
         if (getParameters().shouldCreateDatacontainer() && !isXDC()) {
-            var transformer = XDCTransformer.newInstance(getParameters());
+            var transformer = XDCTransformer.buildFromSigningParameters(getParameters());
             doc = transformer.transform(getDocument());
             doc.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
         }

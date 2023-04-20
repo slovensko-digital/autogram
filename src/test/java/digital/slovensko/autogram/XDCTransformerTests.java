@@ -1,0 +1,50 @@
+package digital.slovensko.autogram;
+
+import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.XDCTransformer;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.MimeType;
+import org.junit.jupiter.api.Test;
+
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class XDCTransformerTests {
+    @Test
+    void testTransformsPlainHtmlWithoutAddingNamespaces() throws IOException {
+        var transformation = new String(this.getClass().getResourceAsStream("abc.xslt").readAllBytes());
+
+        var document = new InMemoryDocument(this.getClass().getResourceAsStream("abc.xml"));
+
+        var params = new SigningParameters(
+            SignatureLevel.XAdES_BASELINE_B,
+            ASiCContainerType.ASiC_E,
+            "document.asice",
+            "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+            SignaturePackaging.ENVELOPING,
+            DigestAlgorithm.SHA256,
+            false,
+            CanonicalizationMethod.INCLUSIVE,
+            CanonicalizationMethod.INCLUSIVE,
+            CanonicalizationMethod.INCLUSIVE,
+            "",
+            "Dont't be evil.",
+            null,
+            transformation,
+            MimeType.HTML,
+            "id1/asa"
+        );
+
+        var out = XDCTransformer.buildFromSigningParameters(params).transform(document);
+        var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        assertEquals(-1, transformed.lastIndexOf(":p>"));
+    }
+}

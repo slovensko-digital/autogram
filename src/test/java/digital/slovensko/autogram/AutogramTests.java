@@ -55,7 +55,8 @@ class AutogramTests {
         @Override
         public AbstractKeyStoreTokenConnection createTokenWithPassword(char[] password) {
             try {
-                return new Pkcs12SignatureToken(new File("test.keystore"), new KeyStore.PasswordProtection("".toCharArray()));
+                var keystore = this.getClass().getResource("test.keystore").getFile();
+                return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

@@ -12,6 +12,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -39,7 +40,7 @@ public class XDCTransformer {
     private Document document;
     private String documentXmlns;
 
-    public static XDCTransformer newInstance(SigningParameters sp) {
+    public static XDCTransformer buildFromSigningParameters(SigningParameters sp) {
         var mediaType = DestinationMediaType.TXT;
 
         if (sp.getTransformationOutputMimeType().equals(MimeType.HTML))
@@ -112,6 +113,7 @@ public class XDCTransformer {
         var xmlSource = new DOMSource(document);
         var outputTarget = new StreamResult(new StringWriter());
         var transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         transformerFactory.newTransformer().transform(xmlSource, outputTarget);
 
         return outputTarget.getWriter().toString();
