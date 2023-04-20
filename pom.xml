@@ -273,7 +273,7 @@
                 <version>1.2.0</version>
                 <executions>
                     <execution>
-                        <id>cache-jdk-11</id>
+                        <id>cache-jdk-17</id>
                         <goals>
                             <goal>cache-jdk</goal>
                         </goals>
@@ -296,6 +296,8 @@
                             <goal>jdeps</goal>
                         </goals>
                         <configuration>
+                            <!-- The output of jdeps is currently not used anywhere, modules are defined manually -->
+                            <skip>true</skip>
                             <output>${project.build.directory}${file.separator}jdeps.out</output>
                             <options>
                                 <option>--class-path</option>
