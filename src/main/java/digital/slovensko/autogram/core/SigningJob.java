@@ -114,10 +114,6 @@ public class SigningJob {
 
         var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
                 .item(0);
-        if (xmlData == null)
-            xmlData = xdc
-                    .getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "xdc:XMLData")
-                    .item(0);
 
         if (xmlData == null)
             throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere
