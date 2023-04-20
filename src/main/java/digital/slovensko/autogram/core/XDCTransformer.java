@@ -23,14 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class XDCTransformer {
-    public static boolean isNullOrBlank(String value) {
-        return value == null || value.isBlank();
-    }
-
-    public enum Mode {
-        IDEMPOTENT, RUSSIAN_DOLL
-    }
-
     public enum DestinationMediaType {
         TXT, HTML, XHTML
     }
@@ -48,7 +40,7 @@ public class XDCTransformer {
     private String documentXmlns;
 
     public static XDCTransformer newInstance(SigningParameters sp) {
-        DestinationMediaType mediaType = DestinationMediaType.TXT;
+        var mediaType = DestinationMediaType.TXT;
 
         if (sp.getTransformationOutputMimeType().equals(MimeType.HTML))
             mediaType = DestinationMediaType.HTML;
@@ -74,25 +66,20 @@ public class XDCTransformer {
         this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
-    public DSSDocument transform(DSSDocument dssDocument, Mode mode) {
+    public DSSDocument transform(DSSDocument dssDocument) {
         try {
             var xmlByteArrayInput = dssDocument.openStream().readAllBytes();
-            parseDOMDocument(xmlByteArrayInput);
+            parseDOMDocument(new String(xmlByteArrayInput, StandardCharsets.UTF_8));
+            transformDocument();
+            var content = getDocumentContent().getBytes(StandardCharsets.UTF_8);
+
+            return new InMemoryDocument(content, dssDocument.getName());
         } catch (SAXException | IOException e) {
             throw new RuntimeException(e);
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
-        }
-
-        try {
-            transformDocument(mode);
         } catch (DOMException e) {
             throw new RuntimeException(e);
-        }
-
-        try {
-            var content = getDocumentContent().getBytes(StandardCharsets.UTF_8);
-            return new InMemoryDocument(content, dssDocument.getName());
         } catch (TransformerException e) {
             throw new RuntimeException(e);
         }
@@ -106,38 +93,24 @@ public class XDCTransformer {
         this.document = builderFactory.newDocumentBuilder().parse(source);
     }
 
-    private void parseDOMDocument(byte[] xmlContent) throws ParserConfigurationException, IOException, SAXException {
-        parseDOMDocument(new String(xmlContent, StandardCharsets.UTF_8));
-    }
-
-    private void transformDocument(Mode mode) {
-        if (mode == Mode.IDEMPOTENT && isXDCAlreadyPresent())
-            return;
-
+    private void transformDocument() {
         var root = document.getDocumentElement();
-
         var xmlDataContainer = createXMLDataContainer();
         var xmlData = createXMLData();
         var usedSchemasReferenced = createUsedSchemasReferenced();
 
         xmlDataContainer.appendChild(xmlData);
         xmlData.appendChild(root);
-        if (usedSchemasReferenced != null) {
+        if (usedSchemasReferenced != null)
             xmlDataContainer.appendChild(usedSchemasReferenced);
-        }
 
         document.appendChild(xmlDataContainer);
-    }
-
-    private boolean isXDCAlreadyPresent() {
-        return document.getFirstChild().getNodeName().equalsIgnoreCase("XMLDataContainer");
     }
 
     private String getDocumentContent() throws TransformerException {
         document.setXmlStandalone(true);
         var xmlSource = new DOMSource(document);
         var outputTarget = new StreamResult(new StringWriter());
-
         var transformerFactory = TransformerFactory.newInstance();
         transformerFactory.newTransformer().transform(xmlSource, outputTarget);
 
@@ -161,6 +134,10 @@ public class XDCTransformer {
         return element;
     }
 
+    private static boolean isNullOrBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
     private Element createUsedSchemasReferenced() {
         var element = document.createElement("xdc:UsedSchemasReferenced");
         if ((!isNullOrBlank(xsdSchema)) || (!isNullOrBlank(xsltSchema))) {
@@ -170,23 +147,21 @@ public class XDCTransformer {
             else
                 documentXmlns = "";
         }
-        if (xsdSchema != null) {
-            var xsdSchemaReference = createUsedXSDReference();
-            element.appendChild(xsdSchemaReference);
-        }
-        if (xsltSchema != null) {
-            var xsltSchemaReference = createUsedPresentationSchemaReference();
-            element.appendChild(xsltSchemaReference);
-        }
+
+        if (xsdSchema != null)
+            element.appendChild(createUsedXSDReference());
+
+        if (xsltSchema != null)
+            element.appendChild(createUsedPresentationSchemaReference());
 
         return element;
     }
 
     private String computeDigest(String data) {
-        byte[] asBytes = data.getBytes(StandardCharsets.UTF_8);
-        byte[] canonicalizedData = DSSXMLUtils.canonicalize(canonicalizationMethod, asBytes);
-        byte[] digest = DSSUtils.digest(digestAlgorithm, canonicalizedData);
-        byte[] asBase64 = Base64.getEncoder().encode(digest);
+        var asBytes = data.getBytes(StandardCharsets.UTF_8);
+        var canonicalizedData = DSSXMLUtils.canonicalize(canonicalizationMethod, asBytes);
+        var digest = DSSUtils.digest(digestAlgorithm, canonicalizedData);
+        var asBase64 = Base64.getEncoder().encode(digest);
 
         return new String(asBase64, StandardCharsets.UTF_8);
     }
