@@ -11,8 +11,8 @@ import java.util.Map;
  * 2. Using traditional CLI interface with command, parameters, flags...
  *
  * EXAMPLE:
- * signer://listen?protocol=https&host=localhost&port=37200&origin=*&key=abc12&nonce=16&language=sk
- * where signer:// is any protocol configured for this application
+ * autogram://listen?protocol=https&host=localhost&port=37200&origin=*&key=abc12&nonce=16&language=sk
+ * where autogram:// is any protocol configured for this application
  * Used when the application is launched using the custom protocol
  */
 public abstract class Command {

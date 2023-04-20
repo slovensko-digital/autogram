@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Autogram Server
-  description: 'This documentation describes Autogram running in the server mode. If you have the custom protocol configured, you can launch it using the link [signer://launch/37200/*/key](signer://launch/37200/*/key).'
+  description: 'This documentation describes Autogram running in the server mode. If you have the custom protocol configured, you can launch it using the link [autogram://launch/37200/*/key](autogram://launch/37200/*/key).'
   termsOfService: https://sluzby.slovensko.digital/autogram
   contact:
     name: Autogram
