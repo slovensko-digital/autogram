@@ -6,7 +6,7 @@
 
     <groupId>digital.slovensko.autogram</groupId>
     <artifactId>autogram</artifactId>
-    <version>1.9.7</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>Autogram</name>
