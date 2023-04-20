@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.PrivateKeyLambda;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -13,13 +12,14 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import static digital.slovensko.autogram.util.DSSUtils.buildTooltipLabel;
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
 public class PickKeyDialogController {
-    private PrivateKeyLambda callback;
-    private List<DSSPrivateKeyEntry> keys;
+    private final Consumer<DSSPrivateKeyEntry> callback;
+    private final List<DSSPrivateKeyEntry> keys;
 
     @FXML
     VBox formGroup;
@@ -32,7 +32,7 @@ public class PickKeyDialogController {
     private ToggleGroup toggleGroup;
 
 
-    public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
+    public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
         this.keys = keys;
         this.callback = callback;
     }
@@ -61,7 +61,7 @@ public class PickKeyDialogController {
         } else {
             ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
             var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
-            callback.call(key);
+            callback.accept(key);
         }
     }
 }

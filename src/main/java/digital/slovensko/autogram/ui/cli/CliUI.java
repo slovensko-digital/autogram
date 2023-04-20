@@ -10,6 +10,7 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class CliUI implements UI {
     SigningKey activeKey;
@@ -29,7 +30,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void pickTokenDriverAndThen(List<TokenDriver> drivers, TokenDriverLambda callback) {
+    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
         TokenDriver pickedDriver;
         if (drivers.size() == 1) {
             pickedDriver = drivers.get(0);
@@ -43,28 +44,28 @@ public class CliUI implements UI {
             });
             pickedDriver = drivers.get(CliUtils.readInteger() - 1);
         }
-        callback.call(pickedDriver);
+        callback.accept(pickedDriver);
     }
 
     @Override
-    public void requestPasswordAndThen(TokenDriver driver, PasswordLambda callback) {
+    public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
         if (!driver.needsPassword()) {
-            callback.call(null);
+            callback.accept(null);
             return;
         }
         System.out.println("Zadajte bezpecnostny kod k ulozisku certifikatov: ");
-        callback.call(CliUtils.readLine()); // TODO do not show pin
+        callback.accept(CliUtils.readLine()); // TODO do not show pin
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
         if(keys.size() > 1) {
             System.out.println("Found multiple keys:");
             keys.forEach(key -> System.out.println(DSSUtils.buildTooltipLabel(key)));
         }
 
         System.out.println("Picking key: " + DSSUtils.buildTooltipLabel(keys.get(0)));
-        callback.call(keys.get(0));
+        callback.accept(keys.get(0));
     }
 
     @Override

@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.TokenDriverLambda;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import javafx.fxml.FXML;
 import javafx.scene.control.RadioButton;
@@ -10,10 +9,11 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class PickDriverDialogController {
-    private TokenDriverLambda callback;
-    private List<? extends TokenDriver> drivers;
+    private final Consumer<TokenDriver> callback;
+    private final List<? extends TokenDriver> drivers;
 
     @FXML
     VBox formGroup;
@@ -25,9 +25,9 @@ public class PickDriverDialogController {
     VBox mainBox;
     private ToggleGroup toggleGroup;
 
-    public PickDriverDialogController(List<? extends TokenDriver> drivers, TokenDriverLambda callback) {
-        this.callback = callback;
+    public PickDriverDialogController(List<? extends TokenDriver> drivers, Consumer<TokenDriver> callback) {
         this.drivers = drivers;
+        this.callback = callback;
     }
 
     public void initialize() {
@@ -48,7 +48,7 @@ public class PickDriverDialogController {
         } else {
             ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
             var driver = (TokenDriver) toggleGroup.getSelectedToggle().getUserData();
-            callback.call(driver);
+            callback.accept(driver);
         }
     }
 }
