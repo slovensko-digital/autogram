@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -62,7 +63,7 @@ public class SigningJob {
     }
 
     public boolean isPDF() {
-        return parameters.getSignatureType() == SigningParameters.SignatureType.PADES;
+        return parameters.getSignatureType() == SignatureForm.PAdES;
     }
 
     public boolean isImage() {
@@ -138,13 +139,20 @@ public class SigningJob {
     }
 
     public void signWithKeyAndRespond(SigningKey key) {
-        var doc = switch (getParameters().getSignatureType()) {
-            case ASIC_XADES -> signDocumentAsAsiCWithXAdeS(key);
-            case XADES -> signDocumentAsXAdeS(key);
-            case ASIC_CADES -> signDocumentAsASiCWithCAdeS(key);
-            case PADES -> signDocumentAsPAdeS(key);
-            default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
-        };
+        DSSDocument doc;
+        if (getParameters().getContainer() != null)
+            doc = switch (getParameters().getSignatureType()) {
+                case XAdES -> signDocumentAsAsiCWithXAdeS(key);
+                case CAdES -> signDocumentAsASiCWithCAdeS(key);
+                default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
+            };
+
+        else
+            doc = switch (getParameters().getSignatureType()) {
+                case XAdES -> signDocumentAsXAdeS(key);
+                case PAdES -> signDocumentAsPAdeS(key);
+                default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
+            };
 
         responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
     }

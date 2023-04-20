@@ -27,7 +27,7 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI);
 
-        var parameters = new SigningParameters();
+        var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml");
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 

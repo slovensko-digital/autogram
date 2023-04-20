@@ -11,27 +11,8 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.model.MimeType;
 
 public class ServerSigningParameters {
-    private enum Format {
-        XADES,
-        PADES,
-        CADES
-    }
-
-    private enum Level {
-        BASELINE_B,
-        BASELINE_T,
-        BASELINE_LT,
-        BASELINE_LTA
-    }
-
-    private enum Container {
-        ASICS,
-        ASICE
-    }
-
     public enum LocalCanonicalizationMethod {
         INCLUSIVE,
         EXCLUSIVE,
@@ -41,16 +22,11 @@ public class ServerSigningParameters {
         INCLUSIVE_11_WITH_COMMENTS
     }
 
-    private final Container container;
-    private final Format format;
-    private final String transformationOutputMimeType;
-    private final String containerFilename;
+    private final ASiCContainerType container;
+    private final SignatureLevel level;
     private final String containerXmlns;
     private final String schema;
-    private final String signaturePolicyContent;
-    private final String signaturePolicyId;
     private final String transformation;
-    private final Level level;
     private final SignaturePackaging packaging;
     private final DigestAlgorithm digestAlgorithm;
     private final Boolean en319132;
@@ -59,17 +35,15 @@ public class ServerSigningParameters {
     private final LocalCanonicalizationMethod keyInfoCanonicalization;
     private final String identifier;
 
-    public ServerSigningParameters(Format format, Level level, Container container,
+    public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerFilename, String containerXmlns, SignaturePackaging packaging,
             DigestAlgorithm digestAlgorithm,
             Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
             LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
-            String signaturePolicyId, String signaturePolicyContent, String schema, String transformation,
-            String transformationOutputMimeType, String Identifier) {
-        this.format = format;
+            String schema, String transformation,
+            String Identifier) {
         this.level = level;
         this.container = container;
-        this.containerFilename = containerFilename;
         this.containerXmlns = containerXmlns;
         this.packaging = packaging;
         this.digestAlgorithm = digestAlgorithm;
@@ -77,11 +51,8 @@ public class ServerSigningParameters {
         this.infoCanonicalization = infoCanonicalization;
         this.propertiesCanonicalization = propertiesCanonicalization;
         this.keyInfoCanonicalization = keyInfoCanonicalization;
-        this.signaturePolicyId = signaturePolicyId;
-        this.signaturePolicyContent = signaturePolicyContent;
         this.schema = schema;
         this.transformation = transformation;
-        this.transformationOutputMimeType = transformationOutputMimeType;
         this.identifier = Identifier;
     }
 
@@ -89,7 +60,6 @@ public class ServerSigningParameters {
         return new SigningParameters(
                 getSignatureLevel(),
                 getContainer(),
-                containerFilename,
                 containerXmlns,
                 packaging,
                 digestAlgorithm,
@@ -97,16 +67,9 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(infoCanonicalization),
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
-                signaturePolicyId,
-                signaturePolicyContent,
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                getMimeType(),
                 identifier);
-    }
-
-    private MimeType getMimeType() {
-        return transformationOutputMimeType != null ? MimeType.fromMimeTypeString(transformationOutputMimeType) : null;
     }
 
     private String getTransformation(boolean isBase64) {
@@ -147,56 +110,10 @@ public class ServerSigningParameters {
     }
 
     private SignatureLevel getSignatureLevel() {
-        switch (format) {
-            case XADES:
-                switch (getLevel()) {
-                    case BASELINE_B:
-                        return SignatureLevel.XAdES_BASELINE_B;
-                    case BASELINE_T:
-                        return SignatureLevel.XAdES_BASELINE_T;
-                    case BASELINE_LT:
-                        return SignatureLevel.XAdES_BASELINE_LT;
-                    case BASELINE_LTA:
-                        return SignatureLevel.XAdES_BASELINE_LTA;
-                }
-            case PADES:
-                switch (getLevel()) {
-                    case BASELINE_B:
-                        return SignatureLevel.PAdES_BASELINE_B;
-                    case BASELINE_T:
-                        return SignatureLevel.PAdES_BASELINE_T;
-                    case BASELINE_LT:
-                        return SignatureLevel.PAdES_BASELINE_LT;
-                    case BASELINE_LTA:
-                        return SignatureLevel.PAdES_BASELINE_LTA;
-                }
-            case CADES:
-                switch (getLevel()) {
-                    case BASELINE_B:
-                        return SignatureLevel.CAdES_BASELINE_B;
-                    case BASELINE_T:
-                        return SignatureLevel.CAdES_BASELINE_T;
-                    case BASELINE_LT:
-                        return SignatureLevel.CAdES_BASELINE_LT;
-                    case BASELINE_LTA:
-                        return SignatureLevel.CAdES_BASELINE_LTA;
-                }
-        }
-
-        return null;
+        return level;
     }
 
     private ASiCContainerType getContainer() {
-        if (container == Container.ASICE)
-            return ASiCContainerType.ASiC_E;
-
-        if (container == Container.ASICS)
-            return ASiCContainerType.ASiC_S;
-
-        return null;
-    }
-
-    private Level getLevel() {
-        return level != null ? level : Level.BASELINE_B;
+        return container;
     }
 }
