@@ -69,7 +69,7 @@ public class SigningJob {
         return document.getMimeType().equals(MimeType.JPEG) || document.getMimeType().equals(MimeType.PNG);
     }
 
-    public boolean isXDC() {
+    private boolean isXDC() {
         return document.getMimeType()
                 .equals(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
     }
@@ -112,12 +112,15 @@ public class SigningJob {
             throws ParserConfigurationException {
         var xdc = document.getDocumentElement();
 
-        var xmlData = xdc.getElementsByTagName("XMLData").item(0);
+        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
+                .item(0);
         if (xmlData == null)
-            xmlData = xdc.getElementsByTagName("xdc:XMLData").item(0);
+            xmlData = xdc
+                    .getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "xdc:XMLData")
+                    .item(0);
 
         if (xmlData == null)
-            throw new RuntimeException("XMLData not found in XDC");
+            throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere
 
         document = builderFactory.newDocumentBuilder().newDocument();
         var node = document.importNode(xmlData.getFirstChild(), true);
