@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import com.octosign.whitelabel.ui.WebViewLogger;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
@@ -141,7 +140,6 @@ public class SigningDialogController implements SuppressedFocusController {
         engine.setJavaScriptEnabled(true);
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                WebViewLogger.register(engine); // TODO remove?
                 engine.executeScript("displayPdf('" + signingJob.getDocumentAsBase64Encoded() + "')");
             }
         });
