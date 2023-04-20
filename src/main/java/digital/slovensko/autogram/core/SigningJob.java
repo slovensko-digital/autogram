@@ -72,7 +72,7 @@ public class SigningJob {
 
     private boolean isXDC() {
         return document.getMimeType()
-                .equals(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+            .equals(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
     }
 
     public String getDocumentAsPlainText() {
@@ -100,7 +100,7 @@ public class SigningJob {
 
             var outputTarget = new StreamResult(new StringWriter());
             var transformer = TransformerFactory.newInstance().newTransformer(
-                    new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes())));
+                new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes())));
             transformer.transform(xmlSource, outputTarget);
 
             return outputTarget.getWriter().toString().trim();
@@ -110,11 +110,11 @@ public class SigningJob {
     }
 
     private DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)
-            throws ParserConfigurationException {
+        throws ParserConfigurationException {
         var xdc = document.getDocumentElement();
 
         var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
-                .item(0);
+            .item(0);
 
         if (xmlData == null)
             throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere
@@ -139,21 +139,13 @@ public class SigningJob {
     }
 
     public void signWithKeyAndRespond(SigningKey key) {
-        DSSDocument doc;
-        if (getParameters().getContainer() != null)
-            doc = switch (getParameters().getSignatureType()) {
-                case XAdES -> signDocumentAsAsiCWithXAdeS(key);
-                case CAdES -> signDocumentAsASiCWithCAdeS(key);
-                default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
-            };
-
-        else
-            doc = switch (getParameters().getSignatureType()) {
-                case XAdES -> signDocumentAsXAdeS(key);
-                case PAdES -> signDocumentAsPAdeS(key);
-                default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
-            };
-
+        boolean isContainer = getParameters().getContainer() != null;
+        var doc = switch (getParameters().getSignatureType()) {
+            case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
+            case CAdES -> signDocumentAsASiCWithCAdeS(key);
+            case PAdES -> signDocumentAsPAdeS(key);
+            default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
+        };
         responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
     }
 
