@@ -74,7 +74,7 @@ public class SigningParameters {
             if (method.equals("text"))
                 return MimeType.TEXT;
 
-            throw new RuntimeException("Unsupported transformation output method: " + method);
+                throw new RuntimeException("Unsupported transformation output method: " + method);
 
         } catch (SAXException | IOException | ParserConfigurationException e) {
             // TODO Auto-generated catch block
@@ -109,6 +109,17 @@ public class SigningParameters {
         parameters.setSignedPropertiesCanonicalizationMethod(getPropertiesCanonicalization());
 
         parameters.setSignaturePackaging(getSignaturePackaging());
+
+        return parameters;
+    }
+
+    public ASiCWithCAdESSignatureParameters getCAdESSignatureParameters() {
+        var parameters = new ASiCWithCAdESSignatureParameters();
+
+        parameters.aSiC().setContainerType(getContainer());
+        parameters.setSignatureLevel(level);
+        parameters.setDigestAlgorithm(getDigestAlgorithm());
+        parameters.setSignaturePackaging(packaging);
 
         return parameters;
     }
@@ -211,5 +222,4 @@ public class SigningParameters {
     public boolean shouldCreateDatacontainer() {
         return getContainerXmlns() != null && getContainerXmlns().contains("xmldatacontainer");
     }
-
 }

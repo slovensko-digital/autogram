@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
+import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -142,7 +143,7 @@ public class SigningJob {
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
-            case CAdES -> signDocumentAsASiCWithCAdeS(key);
+            case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key) : signDocumentAsCAdeS(key);
             case PAdES -> signDocumentAsPAdeS(key);
             default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
         };
@@ -151,6 +152,21 @@ public class SigningJob {
 
     public void onDocumentSignFailed(AutogramException e) {
         responder.onDocumentSignFailed(this, e);
+    }
+
+    private DSSDocument signDocumentAsCAdeS(SigningKey key) {
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        var service = new CAdESService(commonCertificateVerifier);
+        var jobParameters = getParameters();
+        var signatureParameters = getParameters().getCAdESSignatureParameters();
+
+        signatureParameters.setSigningCertificate(key.getCertificate());
+        signatureParameters.setCertificateChain(key.getCertificateChain());
+
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
+
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
