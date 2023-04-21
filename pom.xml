@@ -130,6 +130,9 @@
                     <release>${java.version}</release>
                     <fork>true</fork>
                     <executable>${jlink.jdk.path}/bin/javac</executable>
+                    <source>17</source>
+                    <target>17</target>
+                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
 

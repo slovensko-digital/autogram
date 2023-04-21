@@ -8,8 +8,8 @@ import java.util.Base64;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.errors.RequestValidationException;
-import digital.slovensko.autogram.core.errors.UnsupportedSignatureLevelExceptionError;
+import digital.slovensko.autogram.server.errors.RequestValidationException;
+import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
