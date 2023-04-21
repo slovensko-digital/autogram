@@ -26,7 +26,6 @@ class XDCTransformerTests {
         var params = new SigningParameters(
             SignatureLevel.XAdES_BASELINE_B,
             ASiCContainerType.ASiC_E,
-            "document.asice",
             "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
             SignaturePackaging.ENVELOPING,
             DigestAlgorithm.SHA256,
@@ -34,11 +33,8 @@ class XDCTransformerTests {
             CanonicalizationMethod.INCLUSIVE,
             CanonicalizationMethod.INCLUSIVE,
             CanonicalizationMethod.INCLUSIVE,
-            "",
-            "Dont't be evil.",
             null,
             transformation,
-            MimeType.HTML,
             "id1/asa"
         );
 
