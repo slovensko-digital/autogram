@@ -40,7 +40,7 @@ public class ErrorResponse {
             case RequestValidationException e -> new ErrorResponse(422, "UNPROCESSABLE_INPUT", e);
             case MalformedBodyException e -> new ErrorResponse(400, "MALFORMED_INPUT", e);
             case AutogramException e -> new ErrorResponse(502, "SIGNING_FAILED", e);
-            case Exception e -> new ErrorResponse(500, "Internal_ERROR", "Unexpected exception signing document", e.getMessage());
+            case Exception e -> new ErrorResponse(500, "INTERNAL_ERROR", "Unexpected exception signing document", e.getMessage());
         };
     }
 }
