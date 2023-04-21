@@ -12,6 +12,7 @@ import org.xml.sax.SAXException;
 
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
+import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
@@ -113,13 +114,12 @@ public class SigningParameters {
         return parameters;
     }
 
-    public ASiCWithCAdESSignatureParameters getCAdESSignatureParameters() {
-        var parameters = new ASiCWithCAdESSignatureParameters();
+    public CAdESSignatureParameters getCAdESSignatureParameters() {
+        var parameters = new CAdESSignatureParameters();
 
-        parameters.aSiC().setContainerType(getContainer());
         parameters.setSignatureLevel(level);
         parameters.setDigestAlgorithm(getDigestAlgorithm());
-        parameters.setSignaturePackaging(packaging);
+        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);    // TODO: seems to be the only supported value
 
         return parameters;
     }
