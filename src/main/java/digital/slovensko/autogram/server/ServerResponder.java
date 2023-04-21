@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.server;
 
-import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
@@ -13,7 +12,6 @@ import java.util.Base64;
 
 public class ServerResponder extends Responder {
     private final HttpExchange exchange;
-    private final static Gson gson = new Gson();
 
     public ServerResponder(HttpExchange exchange) {
         this.exchange = exchange;
