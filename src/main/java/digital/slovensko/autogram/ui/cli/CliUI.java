@@ -16,6 +16,11 @@ public class CliUI implements UI {
     SigningKey activeKey;
 
     @Override
+    public void askIfShouldMakeCompliantAndThen(SigningJob job, Consumer<Boolean> callback) {
+
+    }
+
+    @Override
     public void startSigning(SigningJob job, Autogram autogram) {
         System.out.println("Starting signing for " + job);
         if (activeKey == null) {

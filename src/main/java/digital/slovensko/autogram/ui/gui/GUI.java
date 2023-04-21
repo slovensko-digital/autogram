@@ -31,6 +31,25 @@ public class GUI implements UI {
     }
 
     @Override
+    public void askIfShouldMakeCompliantAndThen(SigningJob job, Consumer<Boolean> callback) {
+        callback.accept(Boolean.TRUE); // always convert
+
+        var controller = new MakeCompliantDialogController(job, callback);
+
+        var root = GUIUtils.loadFXML(controller, "make-compliant-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Konverzia do PDFA/1a"); // TODO use document name?
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> job.onDocumentSignFailed(new SigningCanceledByUserException()));
+
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        GUIUtils.showOnTop(stage);
+        GUIUtils.setUserFriendlyPosition(stage);
+    }
+
+    @Override
     public void startSigning(SigningJob job, Autogram autogram) {
         var controller = new SigningDialogController(job, autogram, this);
         jobControllers.put(job, controller);

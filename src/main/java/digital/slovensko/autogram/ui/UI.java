@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface UI {
+    void askIfShouldMakeCompliantAndThen(SigningJob job, Consumer<Boolean> callback);
+
     void startSigning(SigningJob job, Autogram autogram);
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback);

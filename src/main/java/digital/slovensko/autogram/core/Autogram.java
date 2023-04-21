@@ -17,7 +17,18 @@ public class Autogram {
 
     public void sign(SigningJob job) {
         ui.onUIThreadDo(()
-        -> ui.startSigning(job, this));
+        -> optionallyMakeCompliantAndThen(job, (compliantJob)
+        -> ui.startSigning(compliantJob, this)));
+    }
+
+    private void optionallyMakeCompliantAndThen(SigningJob job, Consumer<SigningJob> callback) {
+        if (job.isCompliant()) {
+            callback.accept(job);
+            return;
+        }
+
+        ui.askIfShouldMakeCompliantAndThen(job, (answer)
+        -> callback.accept(answer ? job.makeCompliant() : job));
     }
 
     public void sign(SigningJob job, SigningKey signingKey) {

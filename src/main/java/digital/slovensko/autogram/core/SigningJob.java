@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import digital.slovensko.autogram.util.PDFAUtils;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -163,17 +164,17 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(document, signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(document, signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
-        DSSDocument doc = getDocument();
+        DSSDocument doc = document;
         if (getParameters().shouldCreateDatacontainer() && !isXDC()) {
             var transformer = XDCTransformer.buildFromSigningParameters(getParameters());
-            doc = transformer.transform(getDocument());
+            doc = transformer.transform(document);
             doc.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
         }
 
@@ -199,10 +200,10 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(document, signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(document, signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsASiCWithCAdeS(SigningKey key) {
@@ -214,10 +215,10 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(document, signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(document, signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsPAdeS(SigningKey key) {
@@ -229,10 +230,10 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(document, signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(document, signatureParameters, signatureValue);
     }
 
     public static SigningJob buildFromFile(File file) {
@@ -249,5 +250,23 @@ public class SigningJob {
 
         var responder = new SaveFileResponder(file);
         return new SigningJob(document, parameters, responder);
+    }
+
+    public boolean isCompliant() {
+        // checking only PDFs for compliance
+        if (!isPDF()) return true;
+
+        // TODO do we need to check if there is a signature?
+        return PDFAUtils.isCompliant(document);
+    }
+
+    public SigningJob makeCompliant() {
+        if (!isPDF()) {
+            return this;
+        } else {
+            // TODO actually convert
+            throw new RuntimeException();
+            //return this;
+        }
     }
 }

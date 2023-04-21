@@ -461,6 +461,10 @@
     -fx-spacing: 10px;
 }
 
+.autogram-radios.autogram-radios--inline {
+    -fx-spacing: 35px;
+}
+
 .autogram-actions {
     -fx-spacing: 15px;
     -fx-alignment: center-left;
