@@ -430,6 +430,26 @@
     -fx-font-weight: bold;
 }
 
+/* Tag */
+.autogram-tag {
+    -fx-font-size: 1em;
+    -fx-font-weight: bold;
+    -fx-background-color: -autogram-link-colour;
+    -fx-padding: 5px 8px 3px 8px;
+}
+
+.autogram-tag Text {
+    -fx-fill: #ffffff;
+}
+
+.autogram-tag.autogram-tag--grey {
+    -fx-background-color: #eeefef;
+}
+
+.autogram-tag.autogram-tag--grey Text {
+    -fx-fill: #383f43;
+}
+
 
 /* Icons */
 .autogram-icon {
@@ -485,4 +505,8 @@
 
 .autogram-unsupported-visualization .autogram-error-summary__error {
     -fx-padding: 0.5em 2em 0 2em;
+}
+
+.autogram-heading-holder--pdf {
+    -fx-padding: 0 30px 0 0;
 }

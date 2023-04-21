@@ -13,7 +13,17 @@
       minHeight="400" prefWidth="600" minWidth="600"
       fx:id="mainBox">
 
-    <TextFlow><Text styleClass="autogram-heading-m" text="Dokument na&#160;podpísanie"/></TextFlow>
+
+    <BorderPane styleClass="autogram-heading-holder--pdf">
+        <left>
+            <TextFlow><Text styleClass="autogram-heading-m" text="Dokument na&#160;podpísanie"/></TextFlow>
+        </left>
+
+        <right>
+            <TextFlow styleClass="autogram-tag,autogram-tag--grey"><Text text="➔ PDF/A-1a"/></TextFlow>
+        </right>
+    </BorderPane>
+
 
     <!-- HTML/PDF visualization -->
     <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
