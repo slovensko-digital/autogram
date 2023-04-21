@@ -15,7 +15,15 @@ public class ErrorResponse {
         this.statusCode = statusCode;
         this.body = body;
     }
-    
+
+    public ErrorResponse(int statusCode, String code, AutogramException e) {
+        this(statusCode, new ErrorResponseBody(code, e.getSubheading(), e.getDescription()));
+    }
+
+    public ErrorResponse(int statusCode, String code, String message, String details) {
+        this(statusCode, new ErrorResponseBody(code, message, details));
+    }
+
     public int getStatusCode() {
         return statusCode;
     }
@@ -25,40 +33,14 @@ public class ErrorResponse {
     }
 
     public static ErrorResponse buildFromException(Exception error) {
-        switch (error) {
-            case AutogramException e -> {
-                var statusCode = getStatusCodeFromException(e);
-                var code = getErrorCodeFromException(e);
-                var body = new ErrorResponseBody(code, e.getSubheading(), e.getDescription());
-                return new ErrorResponse(statusCode, body);
-            }
-            case Exception e -> {
-                var statusCode = 500;
-                var response = new ErrorResponseBody("INTERNAL_ERROR", "Unexpected exception signing document", e.getMessage());
-                return new ErrorResponse(statusCode, response);
-            }
-        }
-    }
-
-    private static int getStatusCodeFromException(AutogramException e) {
-        return switch (e) {
-            case SigningCanceledByUserException x -> 204;
-            case UnrecognizedException x -> 502;
-            case UnsupportedSignatureLevelExceptionError x -> 422;
-            case RequestValidationException x -> 422;
-            case MalformedBodyException x -> 400;
-            default -> 502;
-        };
-    }
-
-    private static String getErrorCodeFromException(AutogramException e) {
-        return switch (e) {
-            case SigningCanceledByUserException x -> "USER_CANCELLED";
-            case UnrecognizedException x -> "UNRECOGNIZED_DSS_ERROR";
-            case UnsupportedSignatureLevelExceptionError x -> "UNSUPPORTED_SIGNATURE_LEVEL";
-            case RequestValidationException x -> "UNPROCESSABLE_INPUT";
-            case MalformedBodyException x -> "MALFORMED_INPUT";
-            default -> "SIGNING_FAILED";
+        return switch (error) {
+            case SigningCanceledByUserException e -> new ErrorResponse(204, "USER_CANCELLED", e);
+            case UnrecognizedException e -> new ErrorResponse(502, "UNRECOGNIZED_DSS_ERROR", e);
+            case UnsupportedSignatureLevelExceptionError e -> new ErrorResponse(422, "UNSUPPORTED_SIGNATURE_LEVEL", e);
+            case RequestValidationException e -> new ErrorResponse(422, "UNPROCESSABLE_INPUT", e);
+            case MalformedBodyException e -> new ErrorResponse(400, "MALFORMED_INPUT", e);
+            case AutogramException e -> new ErrorResponse(502, "SIGNING_FAILED", e);
+            case Exception e -> new ErrorResponse(500, "Internal_ERROR", "Unexpected exception signing document", e.getMessage());
         };
     }
 }
