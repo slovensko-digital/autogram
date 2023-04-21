@@ -1,12 +1,9 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
-import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
-import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Application;
@@ -155,7 +152,11 @@ public class GUI implements UI {
     @Override
     public void onSigningFailed(AutogramException e) {
         showError(e);
-        refreshKeyOnAllJobs();
+        if(e instanceof TokenRemovedException) {
+            resetSigningKey();
+        } else {
+            refreshKeyOnAllJobs();
+        }
     }
 
     @Override
