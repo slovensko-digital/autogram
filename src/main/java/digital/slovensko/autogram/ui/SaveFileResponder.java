@@ -3,7 +3,6 @@ package digital.slovensko.autogram.ui;
 import com.google.common.io.Files;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
-import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
 
 import java.io.File;
@@ -25,7 +24,7 @@ public class SaveFileResponder extends Responder {
         }
     }
 
-    public void onDocumentSignFailed(SigningJob job, AutogramException error) {
+    public void onDocumentSignFailed(AutogramException error) {
         System.err.println("Sign failed error occurred: " + error.toString());
     }
 

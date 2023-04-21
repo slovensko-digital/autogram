@@ -3,14 +3,14 @@ package digital.slovensko.autogram.server.dto;
 import java.util.Base64;
 
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.errors.RequestValidationException;
+import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.MimeType;
 
 public class SignRequestBody {
-    private Document document;
-    private ServerSigningParameters parameters;
-    private String payloadMimeType;
+    private final Document document;
+    private final ServerSigningParameters parameters;
+    private final String payloadMimeType;
 
     public SignRequestBody(Document document, ServerSigningParameters parameters, String payloadMimeType) {
         this.document = document;

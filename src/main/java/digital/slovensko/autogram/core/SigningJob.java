@@ -5,7 +5,6 @@ import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -151,7 +150,7 @@ public class SigningJob {
     }
 
     public void onDocumentSignFailed(AutogramException e) {
-        responder.onDocumentSignFailed(this, e);
+        responder.onDocumentSignFailed(e);
     }
 
     private DSSDocument signDocumentAsCAdeS(SigningKey key) {
