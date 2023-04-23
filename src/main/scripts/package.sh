@@ -36,7 +36,7 @@ arguments=(
     "--app-version" "${properties_version:-$version}"
     "--copyright" "$properties_copyright"
     "--vendor" "$properties_vendor"
-    "--icon" "./Octosign.png"
+    "--icon" "./Autogram.png"
     "--license-file" "$appDirectory/LICENSE"
     "--resource-dir" "./"
     "--dest" "$output"
@@ -48,7 +48,7 @@ if [[ "$platform" == "win" ]]; then
 
     arguments+=(
         "--type" "msi"
-        "--icon" "./Octosign.ico"
+        "--icon" "./Autogram.ico"
         "--java-options" "$jvmOptions --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED"
     )
 
@@ -82,7 +82,7 @@ if [[ "$platform" == "win" ]]; then
 fi
 
 if [[ "$platform" == "linux" ]]; then
-    cp "./Octosign.template.desktop" "./Autogram.desktop"
+    cp "./Autogram.template.desktop" "./Autogram.desktop"
     sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./Autogram.desktop"
 
     if [[ ! -z "$properties_linux_debMaintainer" ]]; then
@@ -137,7 +137,7 @@ if [[ "$platform" == "mac" ]]; then
 
     arguments+=(
         "--type" "pkg"
-        "--icon" "./Octosign.icns"
+        "--icon" "./Autogram.icns"
         "--java-options" "$jvmOptions"
         "--mac-app-category" "${properties_mac_appCategory:-business}"
         # Building on mac requires modifying of image files
