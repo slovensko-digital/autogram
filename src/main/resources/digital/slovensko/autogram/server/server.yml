@@ -33,10 +33,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Info"
-        403:
-          description: "Request came from an unexpected origin."
-        405:
-          description: "Incorrect HTTP method."
   /sign:
     post:
       tags:
@@ -79,29 +75,29 @@ paths:
               ? XAdES (ASiC_E) Slovak XML Data Container with plaintext XML parameters and HTML transformation
               : $ref: "#/components/examples/XAdES-ASiC_E-SKXDC-TXT-HTML"
 
-              ? PAdES PDF
-              : $ref: "#/components/examples/PAdES-PDF"
+              PAdES PDF:
+                $ref: "#/components/examples/PAdES-PDF"
 
-              ? XAdES PDF
-              : $ref: "#/components/examples/XAdES-PDF"
+              XAdES PDF:
+                $ref: "#/components/examples/XAdES-PDF"
 
-              ? XAdES (ASiC_E) PDF
-              : $ref: "#/components/examples/XAdES-ASiC_E-PDF"
+              XAdES (ASiC_E) PDF:
+                $ref: "#/components/examples/XAdES-ASiC_E-PDF"
 
-              ? XAdES (ASiC_E) TXT
-              : $ref: "#/components/examples/XAdES-ASiC_E-TXT"
+              XAdES (ASiC_E) TXT:
+                $ref: "#/components/examples/XAdES-ASiC_E-TXT"
 
-              ? XAdES (ASiC_E) DOCX
-              : $ref: "#/components/examples/XAdES-ASiC_E-DOCX"
+              XAdES (ASiC_E) DOCX:
+                $ref: "#/components/examples/XAdES-ASiC_E-DOCX"
 
-              ? CAdES (ASiC_E) DOCX
-              : $ref: "#/components/examples/CAdES-ASiC_E-DOCX"
+              CAdES (ASiC_E) DOCX:
+                $ref: "#/components/examples/CAdES-ASiC_E-DOCX"
 
-              ? CAdES PNG
-              : $ref: "#/components/examples/CAdES-PNG"
+              CAdES PNG:
+                $ref: "#/components/examples/CAdES-PNG"
 
-              ? CAdES (ASiC_E) PNG
-              : $ref: "#/components/examples/CAdES-ASiC_E-PNG"
+              CAdES (ASiC_E) PNG:
+                $ref: "#/components/examples/CAdES-ASiC_E-PNG"
 
         required: true
       responses:
@@ -113,40 +109,91 @@ paths:
                 $ref: "#/components/schemas/SignResponseBody"
         204:
           description: The document was not signed because the user cancelled the signing process.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserCancelledBody"
-        403:
-          description: "Request came from an unexpected origin."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorBody"
-        405:
-          description: "Incorrect HTTP method."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorBody"
         400:
-          description: "The request body cannot be processed."
+          description: The request body cannot be processed.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorBody"
-        409:
-          description: "Server is not ready to process the request."
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - MALFORMED_INPUT
+                    example: MALFORMED_INPUT
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: JsonSyntaxException parsing request body.
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "JsonSyntaxException: Unexpected token END OF FILE at position 0."
+                    description: Optional details.
+        422:
+          description: The request body is valid but the document cannot be signed.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorBody"
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - UNPROCESSABLE_INPUT
+                      - UNSUPPORTED_SIGNATURE_LEVEL
+                    example: UNPROCESSABLE_INPUT
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: IllegalArgumentException parsing request body
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: PayloadMimeType must be PDF when using PAdES.
+                    description: Optional details.
         500:
-          description: "Request failed due to some unexpected error."
+          description: Request failed due to some unexpected error.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorBody"
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - INTERNAL_ERROR
+                    example: INTERNAL_ERROR
+                  message:
+                    type: string
+                    example: Unexpected exception signing document
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "java.lang.NullPointerException: null"
+                    description: Optional details.
+        502:
+          description: Request failed due to an error with the signing process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - UNRECOGNIZED_DSS_ERROR
+                      - SIGNING_FAILED
+                    example: UNRECOGNIZED_DSS_ERROR
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Unable to sign document
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "no such algorithm: PKCS11 for provider"
+                    description: Optional details.
 
 components:
   schemas:
@@ -187,7 +234,7 @@ components:
         filename:
           type: string
           example: "document.xml"
-          description: Filename of the original file to be signed. Is used inside ASiC container. If not provided with ASiC container, the file is named `detached-file` inside the container.
+          description: Filename of the original file to be signed. Is used to name the file inside ASiC container. If not provided with ASiC container, the file is named `detached-file` inside the container.
         content:
           type: string
           example: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>'
@@ -201,7 +248,7 @@ components:
         content:
           type: string
           example: "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvQDSdd57FueSBoYW5kcyBtYWtlIGxpZ2h0IHdvsRWdaAeSBoYW5kcyBtYW=="
-          description: "Signed content of the original document - either in plaintext or in Base64 format."
+          description: "Signed content of the original document in Base64 format."
         signedBy:
           type: string
           example: "SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith"
@@ -240,7 +287,7 @@ components:
           enum:
             - http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
           example: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
-          description: XML namespace for the ASiC container. Accepts http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 only.
+          description: XML namespace for the ASiC container. Specifies if xmldatacontainer should be created from XML. Doesn't create xmldatacontainer if payloadMimeType application/vnd.gov.sk.xmldatacontainer+xml already. Accepts http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 only.
 
         identifier:
           type: string
@@ -253,7 +300,7 @@ components:
             - ENVELOPED
             - ENVELOPING
           example: ENVELOPED
-          description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Defaults to ENVELOPED.
+          description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Defaults to ENVELOPED. Only applies to XAdES signatures. Must be ENVELOPING when used without ASiC container and with non XML documents.
 
         digestAlgorithm:
           type: string
@@ -316,49 +363,7 @@ components:
           description: "Optional XML transformation used to . Format is dictated by `payloadMimeType`."
 
       required:
-        - form
-
-    ErrorBody:
-      type: object
-      properties:
-        code:
-          type: string
-          enum:
-            - NOT_READY
-            - UNSUPPORTED_OPERATION
-            - MALFORMED_INPUT
-            - UNSUPPORTED_FORMAT
-            - SIGNING_FAILED
-            - UNEXPECTED_ORIGIN
-            - UNEXPECTED_ERROR
-          example: MALFORMED_INPUT
-          description: Code that can be used to identify the error.
-        message:
-          type: string
-          example: Malformed input body.
-          description: Mostly human readable error message.
-        details:
-          type: string
-          example: "Unable to switch to fourth dimension: java.lang.NullPointerException"
-          description: Optional details, likely not human readable, like raw exception message.
-
-    UserCancelledBody:
-      type: object
-      properties:
-        code:
-          type: string
-          enum:
-            - USER_CANCELLED
-          example: USER_CANCELLED
-          description: Code that can be used to identify the error.
-        message:
-          type: string
-          example: User cancelled the signing process.
-          description: Mostly human readable error message.
-        details:
-          type: string
-          example: "User cancelled the signing process."
-          description: Optional details, likely not human readable, like raw exception message.
+        - level
 
   examples:
     XAdES-XML-Base64-HTML:
@@ -465,8 +470,6 @@ components:
         parameters:
           level: XAdES_BASELINE_B
           container: ASiC_E
-          identifier: "http://schemas.gov.sk/form/App.GeneralAgenda/1.9"
-          containerXmlns: "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"
           schema: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHhzOnNjaGVtYSBlbGVtZW50Rm9ybURlZmF1bHQ9InF1YWxpZmllZCIgYXR0cmlidXRlRm9ybURlZmF1bHQ9InVucXVhbGlmaWVkIiB4bWxuczp4cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHRhcmdldE5hbWVzcGFjZT0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45IiB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45Ij4KPHhzOnNpbXBsZVR5cGUgbmFtZT0idGV4dEFyZWEiPgo8eHM6cmVzdHJpY3Rpb24gYmFzZT0ieHM6c3RyaW5nIj4KPC94czpyZXN0cmljdGlvbj4KPC94czpzaW1wbGVUeXBlPgo8eHM6c2ltcGxlVHlwZSBuYW1lPSJtZW5vIj4KPHhzOnJlc3RyaWN0aW9uIGJhc2U9InhzOnN0cmluZyI+CjwveHM6cmVzdHJpY3Rpb24+CjwveHM6c2ltcGxlVHlwZT4KPHhzOmVsZW1lbnQgbmFtZT0iR2VuZXJhbEFnZW5kYSI+Cjx4czpjb21wbGV4VHlwZT4KPHhzOnNlcXVlbmNlPgo8eHM6ZWxlbWVudCBuYW1lPSJzdWJqZWN0IiB0eXBlPSJtZW5vIiBtaW5PY2N1cnM9IjAiIG5pbGxhYmxlPSJ0cnVlIiAvPgo8eHM6ZWxlbWVudCBuYW1lPSJ0ZXh0IiB0eXBlPSJ0ZXh0QXJlYSIgbWluT2NjdXJzPSIwIiBuaWxsYWJsZT0idHJ1ZSIgLz4KPC94czpzZXF1ZW5jZT4KPC94czpjb21wbGV4VHlwZT4KPC94czplbGVtZW50Pgo8L3hzOnNjaGVtYT4K"
           transformation: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjx4c2w6c3R5bGVzaGVldCB2ZXJzaW9uPSIxLjAiICB4bWxuczp4c2w9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvWFNML1RyYW5zZm9ybSIgIHhtbG5zOmVnb25wPSJodHRwOi8vc2NoZW1hcy5nb3Yuc2svZm9ybS9BcHAuR2VuZXJhbEFnZW5kYS8xLjkiIGV4Y2x1ZGUtcmVzdWx0LXByZWZpeGVzPSJlZ29ucCI+DQo8eHNsOm91dHB1dCBtZXRob2Q9Imh0bWwiIGRvY3R5cGUtc3lzdGVtPSJodHRwOi8vd3d3LnczLm9yZy9UUi9odG1sNC9zdHJpY3QuZHRkIiBkb2N0eXBlLXB1YmxpYz0iLS8vVzNDLy9EVEQgSFRNTCA0LjAxLy9FTiIgaW5kZW50PSJubyIgb21pdC14bWwtZGVjbGFyYXRpb249InllcyIvPg0KPHhzbDp0ZW1wbGF0ZSBtYXRjaD0iLyI+DQo8aHRtbD4NCjxoZWFkPg0KPG1ldGEgaHR0cC1lcXVpdj0iWC1VQS1Db21wYXRpYmxlIiBjb250ZW50PSJJRT04IiAvPg0KPHRpdGxlPlbFoWVvYmVjbsOhIGFnZW5kYTwvdGl0bGU+DQo8bWV0YSBodHRwLWVxdWl2PSJDb250ZW50LVR5cGUiIGNvbnRlbnQ9InRleHQvaHRtbDsgY2hhcnNldD1VVEYtOCIvPg0KPG1ldGEgbmFtZT0ibGFuZ3VhZ2UiIGNvbnRlbnQ9InNrLVNLIi8+DQo8c3R5bGUgdHlwZT0idGV4dC9jc3MiPg0KYm9keSB7IA0KCWZvbnQtZmFtaWx5OiAnT3BlbiBTYW5zJywgJ1NlZ29lIFVJJywgJ1RyZWJ1Y2hldCBNUycsICdHZW5ldmEgQ0UnLCBsdWNpZGEsIHNhbnMtc2VyaWY7DQoJYmFja2dyb3VuZCA6ICNmZmZmZmYgIWltcG9ydGFudCA7DQp9DQoudWktdGFicyB7DQoJcGFkZGluZzogLjJlbTsNCglwb3NpdGlvbjogcmVsYXRpdmU7DQoJem9vbTogMTsNCn0JCQkJCQkJCQ0KLmNsZWFyIHsgY2xlYXI6IGJvdGg7IGhlaWdodDogMDt9DQoubGF5b3V0TWFpbiB7DQoJbWFyZ2luOiAwcHggYXV0bzsNCglwYWRkaW5nOiA1cHggNXB4IDVweCA1cHg7CQ0KfQkJCQkNCi5sYXlvdXRSb3cgeyBtYXJnaW4tYm90dG9tOiA1cHg7IH0JCQkJDQouY2FwdGlvbiB7IC8qd2lkdGg6IDEwMCU7IGJvcmRlci1ib3R0b206IHNvbGlkIDFweCBibGFjazsqLyB9DQoubm9jYXB0aW9uICZndDsgLmNhcHRpb24geyBib3JkZXI6IDBweCAhaW1wb3J0YW50OyB9DQoubm9jYXB0aW9uICZndDsgLmNhcHRpb24gc3BhbiB7DQoJYmFja2dyb3VuZDogbm9uZSAhaW1wb3J0YW50Ow0KCWRpc3BsYXk6IG5vbmU7DQp9IA0KLmNhcHRpb24gLnRpdGxlIHsgcGFkZGluZy1sZWZ0OiA1cHg7IH0NCi5oZWFkZXJjb3JyZWN0aW9uIHsJDQoJbWFyZ2luOiAwcHg7DQogICAgZm9udC1zaXplIDogMWVtOw0KICAgIGZvbnQtd2VpZ2h0OiBib2xkOw0KfQkJCQkNCi5sYWJlbFZpcyB7DQoJZmxvYXQ6IGxlZnQ7DQoJZm9udC13ZWlnaHQ6IGJvbGQ7DQoJZm9udC1mYW1pbHk6ICdPcGVuIFNhbnMnLCAnU2Vnb2UgVUknLCAnVHJlYnVjaGV0IE1TJywgJ0dlbmV2YSBDRScsIGx1Y2lkYSwgc2Fucy1zZXJpZjsNCglsaW5lLWhlaWdodDogMjVweDsNCgltYXJnaW46IDBweCAxOHB4IDBweCAwcHg7DQoJcGFkZGluZy1sZWZ0OiAzcHg7DQoJd2lkdGg6IDE5MHB4Ow0KCXdvcmQtd3JhcDogYnJlYWstd29yZDsNCiAgICBmb250LXNpemU6IDAuOGVtOw0KfQ0KLmNvbnRlbnRWaXMgeyAgICAJICAgICANCglmbG9hdDogbGVmdDsJDQoJbGluZS1oZWlnaHQ6IDI1cHg7DQoJbWFyZ2luOiAwcHg7DQoJcGFkZGluZzogMHB4Ow0KCXZlcnRpY2FsLWFsaWduOiB0b3A7DQogICAgZm9udC1zaXplOiAwLjc1ZW07CQkJDQp9DQoud29yZHdyYXAgeyANCiAgICB3aGl0ZS1zcGFjZTogcHJlLXdyYXA7ICAgICAgDQogICAgd2hpdGUtc3BhY2U6IC1tb3otcHJlLXdyYXA7IA0KICAgIHdoaXRlLXNwYWNlOiAtcHJlLXdyYXA7ICAgICANCiAgICB3aGl0ZS1zcGFjZTogLW8tcHJlLXdyYXA7ICAgDQogICAgd29yZC13cmFwOiBicmVhay13b3JkOyAgICAgIA0KfQkNCi51aS13aWRnZXQtY29udGVudCB7DQoJYmFja2dyb3VuZCA6IDUwJSA1MCUgcmVwZWF0LXggI2ZmZmZmZjsNCglib3JkZXIgOiAjZDRkNGQ0IHNvbGlkIDJweDsNCgljb2xvciA6ICM0ZjRlNGU7DQoJYm9yZGVyLXJhZGl1cyA6IDNweDsNCn0NCi51aS13aWRnZXQtaGVhZGVyIHsNCgljdXJzb3IgOiBwb2ludGVyOw0KCWZvbnQtc2l6ZSA6IDAuOGVtOw0KCWNvbG9yIDogIzQ5NDk0OTsNCglwYWRkaW5nLWxlZnQgOiAycHg7DQoJYm9yZGVyIDogI2VhZTllOCBzb2xpZCAxcHg7DQoJYmFja2dyb3VuZC1jb2xvciA6ICNlYWU5ZTg7DQoJbWFyZ2luLWJvdHRvbTogM3B4Ow0KCWJvcmRlci1yYWRpdXMgOiAzcHg7DQp9CQkJDQo8L3N0eWxlPg0KPC9oZWFkPg0KPGJvZHk+DQo8ZGl2IGlkPSJtYWluIiBjbGFzcz0ibGF5b3V0TWFpbiI+DQo8eHNsOmFwcGx5LXRlbXBsYXRlcy8+DQo8L2Rpdj4NCjwvYm9keT4NCjwvaHRtbD4NCjwveHNsOnRlbXBsYXRlPg0KPHhzbDp0ZW1wbGF0ZSBtYXRjaD0iL2Vnb25wOkdlbmVyYWxBZ2VuZGEiPg0KPGRpdiBjbGFzcz0ibGF5b3V0Um93IHVpLXRhYnMgdWktd2lkZ2V0LWNvbnRlbnQiID4NCjxkaXYgY2xhc3M9ImNhcHRpb24gdWktd2lkZ2V0LWhlYWRlciI+DQo8ZGl2IGNsYXNzPSJoZWFkZXJjb3JyZWN0aW9uIj5WxaFlb2JlY27DoSBhZ2VuZGE8L2Rpdj4NCjwvZGl2Pg0KPHhzbDphcHBseS10ZW1wbGF0ZXMgc2VsZWN0PSIuL2Vnb25wOnN1YmplY3QiLz4NCjx4c2w6YXBwbHktdGVtcGxhdGVzIHNlbGVjdD0iLi9lZ29ucDp0ZXh0Ii8+DQo8L2Rpdj4NCjwveHNsOnRlbXBsYXRlPg0KPHhzbDp0ZW1wbGF0ZSBtYXRjaD0iZWdvbnA6R2VuZXJhbEFnZW5kYS9lZ29ucDpzdWJqZWN0Ij4NCjx4c2w6aWYgdGVzdD0iLi90ZXh0KCkiPg0KPGRpdj48bGFiZWwgY2xhc3M9ImxhYmVsVmlzIj5QcmVkbWV0OiA8L2xhYmVsPjxzcGFuIGNsYXNzPSJjb250ZW50VmlzIHdvcmR3cmFwIj48eHNsOmNhbGwtdGVtcGxhdGUgbmFtZT0ic3RyaW5nLXJlcGxhY2UtYWxsIj48eHNsOndpdGgtcGFyYW0gbmFtZT0idGV4dCIgc2VsZWN0PSIuIiAvPjx4c2w6d2l0aC1wYXJhbSBuYW1lPSJyZXBsYWNlIiBzZWxlY3Q9IiclMEEnIiAvPjx4c2w6d2l0aC1wYXJhbSBuYW1lPSJieSIgc2VsZWN0PSInJiMxMzsmIzEwOyciIC8+PC94c2w6Y2FsbC10ZW1wbGF0ZT48L3NwYW4+PC9kaXY+PGRpdiBjbGFzcz0iY2xlYXIiPiYjeGEwOzwvZGl2PjwveHNsOmlmPg0KPC94c2w6dGVtcGxhdGU+DQo8eHNsOnRlbXBsYXRlIG1hdGNoPSJlZ29ucDpHZW5lcmFsQWdlbmRhL2Vnb25wOnRleHQiPg0KPHhzbDppZiB0ZXN0PSIuL3RleHQoKSI+DQo8ZGl2PjxsYWJlbCBjbGFzcz0ibGFiZWxWaXMiPlRleHQ6IDwvbGFiZWw+PHNwYW4gY2xhc3M9ImNvbnRlbnRWaXMgd29yZHdyYXAiPjx4c2w6Y2FsbC10ZW1wbGF0ZSBuYW1lPSJzdHJpbmctcmVwbGFjZS1hbGwiPjx4c2w6d2l0aC1wYXJhbSBuYW1lPSJ0ZXh0IiBzZWxlY3Q9Ii4iIC8+PHhzbDp3aXRoLXBhcmFtIG5hbWU9InJlcGxhY2UiIHNlbGVjdD0iJyUwQSciIC8+PHhzbDp3aXRoLXBhcmFtIG5hbWU9ImJ5IiBzZWxlY3Q9IicmIzEzOyYjMTA7JyIgLz48L3hzbDpjYWxsLXRlbXBsYXRlPjwvc3Bhbj48L2Rpdj48ZGl2IGNsYXNzPSJjbGVhciI+JiN4YTA7PC9kaXY+PC94c2w6aWY+DQo8L3hzbDp0ZW1wbGF0ZT4NCjx4c2w6dGVtcGxhdGUgbmFtZT0iZm9ybWF0VG9Ta0RhdGUiPg0KPHhzbDpwYXJhbSBuYW1lPSJkYXRlIiAvPg0KPHhzbDp2YXJpYWJsZSBuYW1lPSJkYXRlU3RyaW5nIiBzZWxlY3Q9InN0cmluZygkZGF0ZSkiIC8+DQo8eHNsOmNob29zZT4NCjx4c2w6d2hlbiB0ZXN0PSIkZGF0ZVN0cmluZyAhPSAnJyBhbmQgc3RyaW5nLWxlbmd0aCgkZGF0ZVN0cmluZyk9MTAgYW5kIHN0cmluZyhudW1iZXIoc3Vic3RyaW5nKCRkYXRlU3RyaW5nLCAxLCA0KSkpICE9ICdOYU4nICI+DQo8eHNsOnZhbHVlLW9mIHNlbGVjdD0iY29uY2F0KHN1YnN0cmluZygkZGF0ZVN0cmluZywgOSwgMiksICcuJywgc3Vic3RyaW5nKCRkYXRlU3RyaW5nLCA2LCAyKSwgJy4nLCBzdWJzdHJpbmcoJGRhdGVTdHJpbmcsIDEsIDQpKSIgLz4NCjwveHNsOndoZW4+DQo8eHNsOm90aGVyd2lzZT4NCjx4c2w6dmFsdWUtb2Ygc2VsZWN0PSIkZGF0ZVN0cmluZyI+PC94c2w6dmFsdWUtb2Y+DQo8L3hzbDpvdGhlcndpc2U+DQo8L3hzbDpjaG9vc2U+DQo8L3hzbDp0ZW1wbGF0ZT4NCjx4c2w6dGVtcGxhdGUgbmFtZT0iYm9vbGVhbkNoZWNrYm94VG9TdHJpbmciPg0KPHhzbDpwYXJhbSBuYW1lPSJib29sVmFsdWUiIC8+DQo8eHNsOnZhcmlhYmxlIG5hbWU9ImJvb2xWYWx1ZVN0cmluZyIgc2VsZWN0PSJzdHJpbmcoJGJvb2xWYWx1ZSkiIC8+DQo8eHNsOmNob29zZT4NCjx4c2w6d2hlbiB0ZXN0PSIkYm9vbFZhbHVlU3RyaW5nID0gJ3RydWUnICI+DQo8eHNsOnRleHQ+w4FubzwveHNsOnRleHQ+DQo8L3hzbDp3aGVuPg0KPHhzbDp3aGVuIHRlc3Q9IiRib29sVmFsdWVTdHJpbmcgPSAnZmFsc2UnICI+DQo8eHNsOnRleHQ+TmllPC94c2w6dGV4dD4NCjwveHNsOndoZW4+DQo8eHNsOndoZW4gdGVzdD0iJGJvb2xWYWx1ZVN0cmluZyA9ICcxJyAiPg0KPHhzbDp0ZXh0PsOBbm88L3hzbDp0ZXh0Pg0KPC94c2w6d2hlbj4NCjx4c2w6d2hlbiB0ZXN0PSIkYm9vbFZhbHVlU3RyaW5nID0gJzAnICI+DQo8eHNsOnRleHQ+TmllPC94c2w6dGV4dD4NCjwveHNsOndoZW4+DQo8eHNsOm90aGVyd2lzZT4NCjx4c2w6dmFsdWUtb2Ygc2VsZWN0PSIkYm9vbFZhbHVlU3RyaW5nIj48L3hzbDp2YWx1ZS1vZj4NCjwveHNsOm90aGVyd2lzZT4NCjwveHNsOmNob29zZT4NCjwveHNsOnRlbXBsYXRlPg0KPHhzbDp0ZW1wbGF0ZSBuYW1lPSJmb3JtYXRUaW1lVHJpbVNlY29uZHMiPg0KPHhzbDpwYXJhbSBuYW1lPSJ0aW1lIiAvPg0KPHhzbDp2YXJpYWJsZSBuYW1lPSJ0aW1lU3RyaW5nIiBzZWxlY3Q9InN0cmluZygkdGltZSkiIC8+DQo8eHNsOmlmIHRlc3Q9IiR0aW1lU3RyaW5nICE9ICcnIj4NCjx4c2w6dmFsdWUtb2Ygc2VsZWN0PSJzdWJzdHJpbmcoJHRpbWVTdHJpbmcsIDEsIDUpIiAvPg0KPC94c2w6aWY+DQo8L3hzbDp0ZW1wbGF0ZT4NCjx4c2w6dGVtcGxhdGUgbmFtZT0iZm9ybWF0VGltZSI+DQo8eHNsOnBhcmFtIG5hbWU9InRpbWUiIC8+DQo8eHNsOnZhcmlhYmxlIG5hbWU9InRpbWVTdHJpbmciIHNlbGVjdD0ic3RyaW5nKCR0aW1lKSIgLz4NCjx4c2w6aWYgdGVzdD0iJHRpbWVTdHJpbmcgIT0gJyciPg0KPHhzbDp2YWx1ZS1vZiBzZWxlY3Q9InN1YnN0cmluZygkdGltZVN0cmluZywgMSwgOCkiIC8+DQo8L3hzbDppZj4NCjwveHNsOnRlbXBsYXRlPg0KPHhzbDp0ZW1wbGF0ZSBuYW1lPSJzdHJpbmctcmVwbGFjZS1hbGwiPg0KPHhzbDpwYXJhbSBuYW1lPSJ0ZXh0Ii8+DQo8eHNsOnBhcmFtIG5hbWU9InJlcGxhY2UiLz4NCjx4c2w6cGFyYW0gbmFtZT0iYnkiLz4NCjx4c2w6Y2hvb3NlPg0KPHhzbDp3aGVuIHRlc3Q9ImNvbnRhaW5zKCR0ZXh0LCAkcmVwbGFjZSkiPg0KPHhzbDp2YWx1ZS1vZiBzZWxlY3Q9InN1YnN0cmluZy1iZWZvcmUoJHRleHQsJHJlcGxhY2UpIi8+DQo8eHNsOnZhbHVlLW9mIHNlbGVjdD0iJGJ5Ii8+DQo8eHNsOmNhbGwtdGVtcGxhdGUgbmFtZT0ic3RyaW5nLXJlcGxhY2UtYWxsIj4NCjx4c2w6d2l0aC1wYXJhbSBuYW1lPSJ0ZXh0IiBzZWxlY3Q9InN1YnN0cmluZy1hZnRlcigkdGV4dCwkcmVwbGFjZSkiLz4NCjx4c2w6d2l0aC1wYXJhbSBuYW1lPSJyZXBsYWNlIiBzZWxlY3Q9IiRyZXBsYWNlIi8+DQo8eHNsOndpdGgtcGFyYW0gbmFtZT0iYnkiIHNlbGVjdD0iJGJ5IiAvPg0KPC94c2w6Y2FsbC10ZW1wbGF0ZT4NCjwveHNsOndoZW4+DQo8eHNsOm90aGVyd2lzZT4NCjx4c2w6dmFsdWUtb2Ygc2VsZWN0PSIkdGV4dCIvPg0KPC94c2w6b3RoZXJ3aXNlPg0KPC94c2w6Y2hvb3NlPg0KPC94c2w6dGVtcGxhdGU+DQo8eHNsOnRlbXBsYXRlIG5hbWU9ImZvcm1hdFRvU2tEYXRlVGltZSI+DQo8eHNsOnBhcmFtIG5hbWU9ImRhdGVUaW1lIiAvPg0KPHhzbDp2YXJpYWJsZSBuYW1lPSJkYXRlVGltZVN0cmluZyIgc2VsZWN0PSJzdHJpbmcoJGRhdGVUaW1lKSIgLz4NCjx4c2w6Y2hvb3NlPg0KPHhzbDp3aGVuIHRlc3Q9IiRkYXRlVGltZVN0cmluZyE9ICcnIGFuZCBzdHJpbmctbGVuZ3RoKCRkYXRlVGltZVN0cmluZyk+MTggYW5kIHN0cmluZyhudW1iZXIoc3Vic3RyaW5nKCRkYXRlVGltZVN0cmluZywgMSwgNCkpKSAhPSAnTmFOJyAiPg0KPHhzbDp2YWx1ZS1vZiBzZWxlY3Q9ImNvbmNhdChzdWJzdHJpbmcoJGRhdGVUaW1lU3RyaW5nLCA5LCAyKSwgJy4nLCBzdWJzdHJpbmcoJGRhdGVUaW1lU3RyaW5nLCA2LCAyKSwgJy4nLCBzdWJzdHJpbmcoJGRhdGVUaW1lU3RyaW5nLCAxLCA0KSwnICcsIHN1YnN0cmluZygkZGF0ZVRpbWVTdHJpbmcsIDEyLCAyKSwnOicsIHN1YnN0cmluZygkZGF0ZVRpbWVTdHJpbmcsIDE1LCAyKSkiIC8+DQo8L3hzbDp3aGVuPg0KPHhzbDpvdGhlcndpc2U+DQo8eHNsOnZhbHVlLW9mIHNlbGVjdD0iJGRhdGVUaW1lU3RyaW5nIj48L3hzbDp2YWx1ZS1vZj4NCjwveHNsOm90aGVyd2lzZT4NCjwveHNsOmNob29zZT4NCjwveHNsOnRlbXBsYXRlPg0KPHhzbDp0ZW1wbGF0ZSBuYW1lPSJmb3JtYXRUb1NrRGF0ZVRpbWVTZWNvbmQiPg0KPHhzbDpwYXJhbSBuYW1lPSJkYXRlVGltZSIgLz4NCjx4c2w6dmFyaWFibGUgbmFtZT0iZGF0ZVRpbWVTdHJpbmciIHNlbGVjdD0ic3RyaW5nKCRkYXRlVGltZSkiIC8+DQo8eHNsOmNob29zZT4NCjx4c2w6d2hlbiB0ZXN0PSIkZGF0ZVRpbWVTdHJpbmchPSAnJyBhbmQgc3RyaW5nLWxlbmd0aCgkZGF0ZVRpbWVTdHJpbmcpPjE4IGFuZCBzdHJpbmcobnVtYmVyKHN1YnN0cmluZygkZGF0ZVRpbWVTdHJpbmcsIDEsIDQpKSkgIT0gJ05hTicgIj4NCjx4c2w6dmFsdWUtb2Ygc2VsZWN0PSJjb25jYXQoc3Vic3RyaW5nKCRkYXRlVGltZVN0cmluZywgOSwgMiksICcuJywgc3Vic3RyaW5nKCRkYXRlVGltZVN0cmluZywgNiwgMiksICcuJywgc3Vic3RyaW5nKCRkYXRlVGltZVN0cmluZywgMSwgNCksJyAnLCBzdWJzdHJpbmcoJGRhdGVUaW1lU3RyaW5nLCAxMiwgMiksJzonLCBzdWJzdHJpbmcoJGRhdGVUaW1lU3RyaW5nLCAxNSwgMiksJzonLCBzdWJzdHJpbmcoJGRhdGVUaW1lU3RyaW5nLCAxOCwgMikpIiAvPg0KPC94c2w6d2hlbj4NCjx4c2w6b3RoZXJ3aXNlPg0KPHhzbDp2YWx1ZS1vZiBzZWxlY3Q9IiRkYXRlVGltZVN0cmluZyI+PC94c2w6dmFsdWUtb2Y+DQo8L3hzbDpvdGhlcndpc2U+DQo8L3hzbDpjaG9vc2U+DQo8L3hzbDp0ZW1wbGF0ZT4NCjwveHNsOnN0eWxlc2hlZXQ+DQoNCg=="
         payloadMimeType: application/vnd.gov.sk.xmldatacontainer+xml; base64
@@ -479,8 +482,6 @@ components:
         parameters:
           level: XAdES_BASELINE_B
           container: ASiC_E
-          identifier: "http://schemas.gov.sk/form/App.GeneralAgenda/1.9"
-          containerXmlns: "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"
           schema: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>\n"
           transformation: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"  xmlns:egonp=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xsl:output method=\"text\" indent=\"yes\" omit-xml-declaration=\"yes\"/>\n<xsl:strip-space elements=\"*\" />\n<xsl:template match=\"egonp:GeneralAgenda\">\n<xsl:text>Všeobecná agenda</xsl:text>\n<xsl:apply-templates/>\n</xsl:template>\n<xsl:template match=\"egonp:GeneralAgenda/egonp:subject\">\n<xsl:if test=\"./text()\">\n<xsl:text>&#xA;</xsl:text>\n<xsl:text>&#09;</xsl:text><xsl:text>Predmet: </xsl:text><xsl:call-template name=\"string-replace-all\"><xsl:with-param name=\"text\" select=\".\" /><xsl:with-param name=\"replace\" select=\"'&#10;'\" /><xsl:with-param name=\"by\" select=\"'&#13;&#10;&#09;'\" /></xsl:call-template>\n</xsl:if>\n</xsl:template>\n<xsl:template match=\"egonp:GeneralAgenda/egonp:text\">\n<xsl:if test=\"./text()\">\n<xsl:text>&#xA;</xsl:text>\n<xsl:text>&#09;</xsl:text><xsl:text>Text: </xsl:text><xsl:call-template name=\"string-replace-all\"><xsl:with-param name=\"text\" select=\".\" /><xsl:with-param name=\"replace\" select=\"'&#10;'\" /><xsl:with-param name=\"by\" select=\"'&#13;&#10;&#09;'\" /></xsl:call-template>\n</xsl:if>\n</xsl:template>\n<xsl:template name=\"formatToSkDate\">\n<xsl:param name=\"date\" />\n<xsl:variable name=\"dateString\" select=\"string($date)\" />\n<xsl:choose>\n<xsl:when test=\"$dateString != '' and string-length($dateString)=10 and string(number(substring($dateString, 1, 4))) != 'NaN' \">\n<xsl:value-of select=\"concat(substring($dateString, 9, 2), '.', substring($dateString, 6, 2), '.', substring($dateString, 1, 4))\" />\n</xsl:when>\n<xsl:otherwise>\n<xsl:value-of select=\"$dateString\"></xsl:value-of>\n</xsl:otherwise>\n</xsl:choose>\n</xsl:template>\n<xsl:template name=\"booleanCheckboxToString\">\n<xsl:param name=\"boolValue\" />\n<xsl:variable name=\"boolValueString\" select=\"string($boolValue)\" />\n<xsl:choose>\n<xsl:when test=\"$boolValueString = 'true' \">\n<xsl:text>Áno</xsl:text>\n</xsl:when>\n<xsl:when test=\"$boolValueString = 'false' \">\n<xsl:text>Nie</xsl:text>\n</xsl:when>\n<xsl:when test=\"$boolValueString = '1' \">\n<xsl:text>Áno</xsl:text>\n</xsl:when>\n<xsl:when test=\"$boolValueString = '0' \">\n<xsl:text>Nie</xsl:text>\n</xsl:when>\n<xsl:otherwise>\n<xsl:value-of select=\"$boolValueString\"></xsl:value-of>\n</xsl:otherwise>\n</xsl:choose>\n</xsl:template>\n<xsl:template name=\"formatTimeTrimSeconds\">\n<xsl:param name=\"time\" />\n<xsl:variable name=\"timeString\" select=\"string($time)\" />\n<xsl:if test=\"$timeString != ''\">\n<xsl:value-of select=\"substring($timeString, 1, 5)\" />\n</xsl:if>\n</xsl:template>\n<xsl:template name=\"formatTime\">\n<xsl:param name=\"time\" />\n<xsl:variable name=\"timeString\" select=\"string($time)\" />\n<xsl:if test=\"$timeString != ''\">\n<xsl:value-of select=\"substring($timeString, 1, 8)\" />\n</xsl:if>\n</xsl:template>\n<xsl:template name=\"string-replace-all\">\n<xsl:param name=\"text\"/>\n<xsl:param name=\"replace\"/>\n<xsl:param name=\"by\"/>\n<xsl:choose>\n<xsl:when test=\"contains($text, $replace)\">\n<xsl:value-of select=\"substring-before($text,$replace)\"/>\n<xsl:value-of select=\"$by\"/>\n<xsl:call-template name=\"string-replace-all\">\n<xsl:with-param name=\"text\" select=\"substring-after($text,$replace)\"/>\n<xsl:with-param name=\"replace\" select=\"$replace\"/>\n<xsl:with-param name=\"by\" select=\"$by\" />\n</xsl:call-template>\n</xsl:when>\n<xsl:otherwise>\n<xsl:value-of select=\"$text\"/>\n</xsl:otherwise>\n</xsl:choose>\n</xsl:template>\n<xsl:template name=\"formatToSkDateTime\">\n<xsl:param name=\"dateTime\" />\n<xsl:variable name=\"dateTimeString\" select=\"string($dateTime)\" />\n<xsl:choose>\n<xsl:when test=\"$dateTimeString!= '' and string-length($dateTimeString)>18 and string(number(substring($dateTimeString, 1, 4))) != 'NaN' \">\n<xsl:value-of select=\"concat(substring($dateTimeString, 9, 2), '.', substring($dateTimeString, 6, 2), '.', substring($dateTimeString, 1, 4),' ', substring($dateTimeString, 12, 2),':', substring($dateTimeString, 15, 2))\" />\n</xsl:when>\n<xsl:otherwise>\n<xsl:value-of select=\"$dateTimeString\"></xsl:value-of>\n</xsl:otherwise>\n</xsl:choose>\n</xsl:template>\n<xsl:template name=\"formatToSkDateTimeSecond\">\n<xsl:param name=\"dateTime\" />\n<xsl:variable name=\"dateTimeString\" select=\"string($dateTime)\" />\n<xsl:choose>\n<xsl:when test=\"$dateTimeString!= '' and string-length($dateTimeString)>18 and string(number(substring($dateTimeString, 1, 4))) != 'NaN' \">\n<xsl:value-of select=\"concat(substring($dateTimeString, 9, 2), '.', substring($dateTimeString, 6, 2), '.', substring($dateTimeString, 1, 4),' ', substring($dateTimeString, 12, 2),':', substring($dateTimeString, 15, 2),':', substring($dateTimeString, 18, 2))\" />\n</xsl:when>\n<xsl:otherwise>\n<xsl:value-of select=\"$dateTimeString\"></xsl:value-of>\n</xsl:otherwise>\n</xsl:choose>\n</xsl:template>\n</xsl:stylesheet>\n"
         payloadMimeType: application/vnd.gov.sk.xmldatacontainer+xml
@@ -510,7 +511,6 @@ components:
           filename: PdfDocument.pdf
         parameters:
           level: XAdES_BASELINE_B
-          packaging: ENVELOPING
           container: ASiC_E
         payloadMimeType: "application/pdf; base64"
 
@@ -521,7 +521,6 @@ components:
           filename: TextDocument.txt
         parameters:
           level: XAdES_BASELINE_B
-          packaging: ENVELOPING
           container: ASiC_E
         payloadMimeType: "text/plain"
 
@@ -532,7 +531,6 @@ components:
           filename: WordDocument.docx
         parameters:
           level: XAdES_BASELINE_B
-          packaging: ENVELOPING
           container: ASiC_E
         payloadMimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document; base64"
 
@@ -543,7 +541,6 @@ components:
           filename: WordDocument.docx
         parameters:
           level: CAdES_BASELINE_B
-          packaging: ENVELOPING
           container: ASiC_E
         payloadMimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document; base64"
 
@@ -554,7 +551,6 @@ components:
           filename: "Image.png"
         parameters:
           level: CAdES_BASELINE_B
-          packaging: ENVELOPING
           container: ASiC_E
         payloadMimeType: "image/png; base64"
 
@@ -564,7 +560,6 @@ components:
           content: "iVBORw0KGgoAAAANSUhEUgAAAOEAAADgCAMAAADCMfHtAAAA0lBMVEX///86Z+gRERHMMzMAAAAwYec1ZOhFb+nKKCja4vv1+P5WfOvy9f3KIyONpfFnh+zhjY0mXOfy8vIZGRk8PDz1+fnqra1/f3+goKBIc+r/+vrY4Pru8f3JyclsjO3n7PzP2PmYq/GFne/Azfe3xPWYmJhOTk7QPj6MjIzRUVHo6Oj00tLWZWXvu7u2trYjWuceHh5zc3PJGxvfh4enufQUVOaUqPF2lO5bgu1SeuvF0viuvfSqqqpGRkZZWVnhkpItLS03Nzf76urd3d3HAADmpKSaLwkeAAADH0lEQVR4nO3c21IaQRCA4eG0CMhR0SAQBDQmIhI8BZMYjMb3f6Wgd9u9F1sVKrM9/t9l1y41f1Fu1YyrzgEAAAAAAAAAAAAAAAAAAAD/103zo9Co+l7TdjXaUVypuet7TdvVKOXiIgqtodA+Cu2j0D4K7aPQPgrtC79wcrsQaoEV7o6kge8l/YNqvyKM3EiONjM12sxsOL4txbVXrrEQs0XDldtydud76Skdt9VTRT9pSg3Xi+Rs7HvpKVFIYfZRSGH2UUhh9lFIYfZRGEDhQv1GW/+Wu/1aKK8zU1juCd/cTW0VVxu7lbysbKXwfTqZSOPg3jYRZzKlVWCnieGfCFNoH4X2UWgfhfZRaB+F9lFo3+S2HbcIbX846ksV30tKS78yUk1622SQ6m2TXadurfj+qge9stCr9CM5++jucmKUu3P38rLcdKBuLU99F5bFsW6U66sT4VK6E+GoNB0s5AMp8l8olpQr68LUZ966MEchhRRSSCGFFFJIIYUUvpNC+crIZveU8m0TdetroZ75LlzVhFWl3xOj+4n+vxjNG9eUt95/H8hbNzPPha6qJM+2e2sGTcfSDzNrT0f9VVA7tNPE8E+EKbSPQvsotI9C+yi0j0L7KLSvsRBvmwS3Pzw+kaaB7fEBAAAAAACQDZen0s+u7zVt17IoPXR8r2m7lsV8XPEThcZQaN9h8IXhf4cU2sfPoX0U2hd+IU8a+8LfHybs8S0XdhR3pCRdZuVgY1jci8v/6q4LZ3GFtXvMi+uKn30vPaWhfqp0r3cKcfWW21PXWS5sycKdlvuapzCrKKQw+yikMPsopDD7KKQw+4bqxGKze6qLwrfdk2Sm8HE/7veyu/4ird3Dvrzu1PfS0+oqLukYI+my7Ol8UM6fXg6EuZvJ0cHMqdHBU+dUfdyz58Jz9bNUHM7+1OOuLo6ur+Ss5Qp1OZsnfNyl70L5PMzvDWdX8rl54fSzdO3OCnK2KVTPVwoppJBCCimkkEIKKaSQwiAKE/eHO3H11/2hmL3tD+Usi/vDzqHy/HTdEl7cXI5ac7dWs1lnqT5u6LnQhr+aFu8uA6PcXwAAAABJRU5ErkJggg=="
         parameters:
           level: CAdES_BASELINE_B
-          packaging: ENVELOPING
         payloadMimeType: "image/png; base64"
 
     XmlContentGeneralAgendaAsPlaintext:
