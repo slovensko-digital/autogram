@@ -3,6 +3,7 @@ Name=APPLICATION_NAME
 Comment=APPLICATION_DESCRIPTION
 Exec=APPLICATION_LAUNCHER --url=%u
 Icon=APPLICATION_ICON
+StartupWMClass=digital.slovensko.autogram.ui.gui.GUIApp
 Terminal=false
 Type=Application
 Categories=DEPLOY_BUNDLE_CATEGORY
