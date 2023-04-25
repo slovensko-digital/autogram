@@ -16,9 +16,6 @@ public class GUIApp extends Application {
     public void start(Stage primaryStage) throws Exception {
         Platform.setImplicitExit(false);
 
-        // TODO how do we load fonts from CSS?
-        Font.loadFont(getClass().getResource("fonts/SourceSansPro-Regular.ttf").toExternalForm(), 16);
-        Font.loadFont(getClass().getResource("fonts/SourceSansPro-Bold.ttf").toExternalForm(), 16);
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
 
         var windowStage = new Stage();

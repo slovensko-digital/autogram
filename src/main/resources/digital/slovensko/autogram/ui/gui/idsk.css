@@ -1,6 +1,12 @@
 /* Main styling */
 @font-face {
-/* TODO    src: url('fonts/SourceSansPro-Light.ttf'); */
+  -fx-font-family: "Source Sans Pro";
+  src: url("fonts/SourceSansPro-Regular.ttf");
+}
+
+@font-face {
+  -fx-font-family: "Source Sans Pro";
+  src: url("fonts/SourceSansPro-Bold.ttf");
 }
 
 .root {
