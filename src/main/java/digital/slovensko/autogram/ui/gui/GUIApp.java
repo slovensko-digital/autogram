@@ -23,7 +23,7 @@ public class GUIApp extends Application {
 
         var windowStage = new Stage();
 
-        var controller = new MainMenuController(autogram);
+        var controller = new MainMenuController(autogram, getHostServices());
         var root = GUIUtils.loadFXML(controller, "main-menu.fxml");
 
         var scene = new Scene(root);
