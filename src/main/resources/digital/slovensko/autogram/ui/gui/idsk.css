@@ -426,6 +426,23 @@
 }
 
 /* Typography */
+TextFlow.autogram-heading-l,
+TextFlow.autogram-heading-m,
+TextFlow.autogram-heading-s {
+    -fx-padding: 0 0 15px 0;
+}
+
+.autogram-prose TextFlow.autogram-heading-l,
+.autogram-prose TextFlow.autogram-heading-m,
+.autogram-prose TextFlow.autogram-heading-s {
+    -fx-padding: 10px 0 15px 0;
+}
+
+TextFlow.autogram-body,
+TextFlow.autogram-body-s {
+    -fx-padding: 0 0 20px 0;
+}
+
 .autogram-font-weight-bold {
     -fx-font-weight: bold;
 }
