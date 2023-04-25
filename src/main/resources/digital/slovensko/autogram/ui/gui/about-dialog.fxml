@@ -14,7 +14,7 @@
             <Label styleClass="autogram-claim,autogram-heading-m">Autogram</Label>
         </TextFlow>
 
-        <VBox style="autogram-prose">
+        <VBox styleClass="autogram-prose">
             <TextFlow styleClass="autogram-body">
                 <Text styleClass="autogram-body"
                       text="Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a&#160;štandardov. Môžete ho používať komerčne aj nekomerčne a&#160;úplne zadarmo."/>
