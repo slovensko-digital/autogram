@@ -34,7 +34,7 @@ public class PasswordController {
             formGroup.getScene().getWindow().sizeToScene();
             passwordField.requestFocus();
         } else {
-            ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
+            GUIUtils.closeWindow(mainBox);
             new Thread(() -> {
                 callback.accept(passwordField.getText().toCharArray());
             }).start();

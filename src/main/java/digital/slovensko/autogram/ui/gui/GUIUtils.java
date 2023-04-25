@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -53,5 +54,9 @@ public class GUIUtils {
         windowStage.focusedProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
         }));
+    }
+
+    public static void closeWindow(Node node) {
+        ((Stage) node.getScene().getWindow()).close();
     }
 }

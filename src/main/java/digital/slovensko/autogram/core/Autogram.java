@@ -37,7 +37,7 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
-        var drivers = TokenDriver.getAvailableDrivers(); // TODO handle empty driver list with ui.showError?
+        var drivers = TokenDriver.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers, (driver)
         -> ui.requestPasswordAndThen(driver, (password)
         -> ui.onWorkThreadDo(()
