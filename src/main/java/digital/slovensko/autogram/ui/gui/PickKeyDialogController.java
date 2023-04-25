@@ -59,7 +59,7 @@ public class PickKeyDialogController {
             formGroup.getStyleClass().add("autogram-form-group--error");
             formGroup.getScene().getWindow().sizeToScene();
         } else {
-            ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
+            GUIUtils.closeWindow(mainBox);
             var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
             callback.accept(key);
         }

@@ -46,7 +46,7 @@ public class PickDriverDialogController {
             formGroup.getStyleClass().add("autogram-form-group--error");
             formGroup.getScene().getWindow().sizeToScene();
         } else {
-            ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
+            GUIUtils.closeWindow(mainBox);
             var driver = (TokenDriver) toggleGroup.getSelectedToggle().getUserData();
             callback.accept(driver);
         }
