@@ -1,14 +1,15 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.PasswordLambda;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.util.function.Consumer;
+
 public class PasswordController {
-    private final PasswordLambda callback;
+    private final Consumer<char[]> callback;
 
     @FXML
     PasswordField passwordField;
@@ -19,7 +20,7 @@ public class PasswordController {
     @FXML
     VBox mainBox;
 
-    public PasswordController(PasswordLambda callback) {
+    public PasswordController(Consumer<char[]> callback) {
         this.callback = callback;
     }
 
@@ -35,7 +36,7 @@ public class PasswordController {
         } else {
             ((Stage) mainBox.getScene().getWindow()).close(); // TODO refactor
             new Thread(() -> {
-                callback.call(passwordField.getText().toCharArray());
+                callback.accept(passwordField.getText().toCharArray());
             }).start();
         }
     }

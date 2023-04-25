@@ -3,16 +3,14 @@ package digital.slovensko.autogram.server.dto;
 import java.util.Base64;
 
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.MimeType;
 
 public class SignRequestBody {
-    private Document document;
-    private ServerSigningParameters parameters;
-    private String payloadMimeType;
-
-    public SignRequestBody() {
-    }
+    private final Document document;
+    private final ServerSigningParameters parameters;
+    private final String payloadMimeType;
 
     public SignRequestBody(Document document, ServerSigningParameters parameters, String payloadMimeType) {
         this.document = document;
@@ -20,7 +18,16 @@ public class SignRequestBody {
         this.payloadMimeType = payloadMimeType;
     }
 
-    public InMemoryDocument getDocument() {
+    public InMemoryDocument getDocument() throws RequestValidationException {
+        if (payloadMimeType == null)
+            throw new RequestValidationException("PayloadMimeType is required", "");
+
+        if (document == null)
+            throw new RequestValidationException("Document is required", "");
+
+        if (document.getContent() == null)
+            throw new RequestValidationException("Document.Content is required", "");
+
         byte[] content;
         if (isBase64()) {
             content = Base64.getDecoder().decode(document.getContent());
@@ -34,7 +41,12 @@ public class SignRequestBody {
         return new InMemoryDocument(content, filename, mimetype);
     }
 
-    public SigningParameters getParameters() {
+    public SigningParameters getParameters() throws RequestValidationException {
+        if (parameters == null)
+            throw new RequestValidationException("Parameters are required", "");
+
+        parameters.validate(getDocument().getMimeType());
+
         return parameters.getSigningParameters(isBase64());
     }
 

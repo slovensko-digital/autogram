@@ -10,7 +10,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class GUIApp extends Application {
-    static Autogram autogram;
+    public static Autogram autogram;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -23,29 +23,25 @@ public class GUIApp extends Application {
 
         var windowStage = new Stage();
 
-        var controller = new MainMenuController((GUI) GUIApp.autogram.getUI(), GUIApp.autogram);
-        var root = GUI.loadFXML(controller, "main-menu.fxml");
+        var controller = new MainMenuController(autogram);
+        var root = GUIUtils.loadFXML(controller, "main-menu.fxml");
 
         var scene = new Scene(root);
 
         var params = LaunchParameters.fromParameters(getParameters());
-        var server = new AutogramServer(GUIApp.autogram, params.getHost(), params.getPort(), params.isProtocolHttps());
+        var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps());
+
         server.start();
 
-        if (params.isUrl()) {
-            // started from external
-            windowStage.setIconified(true);
-        }
+        if (!params.isStandaloneMode()) windowStage.setIconified(true);
 
         windowStage.setOnCloseRequest(event -> {
-            new Thread(() -> {
-                server.stop();
-            }).start();
+            new Thread(server::stop).start();
 
             Platform.exit();
         });
 
-        GUI.suppressDefaultFocus(windowStage, controller);
+        GUIUtils.suppressDefaultFocus(windowStage, controller);
 
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);

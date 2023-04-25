@@ -1,8 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
-import com.octosign.whitelabel.ui.WebViewLogger;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -21,8 +21,9 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 public class SigningDialogController implements SuppressedFocusController {
-    private SigningJob signingJob;
-    private Autogram autogram;
+    private final GUI gui;
+    private final SigningJob signingJob;
+    private final Autogram autogram;
 
     @FXML
     VBox mainBox;
@@ -43,8 +44,9 @@ public class SigningDialogController implements SuppressedFocusController {
     @FXML
     public Button changeKeyButton;
 
-    public SigningDialogController(SigningJob signingJob, Autogram autogram) {
+    public SigningDialogController(SigningJob signingJob, Autogram autogram, GUI gui) {
         this.signingJob = signingJob;
+        this.gui = gui;
         this.autogram = autogram;
     }
 
@@ -64,38 +66,37 @@ public class SigningDialogController implements SuppressedFocusController {
     }
 
     public void onMainButtonPressed(ActionEvent event) {
-        if (autogram.getActiveSigningKey() == null) {
-            new Thread(() -> {
-                autogram.pickSigningKey();
-            }).start();
+        var signingKey = gui.getActiveSigningKey();
+        if (signingKey == null) {
+            autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
         } else {
-            new Thread(() -> {
-                autogram.sign(signingJob);
-            }).start();
+            gui.disableSigning();
+            getNodeForLoosingFocus().requestFocus();
+            autogram.sign(signingJob, signingKey);
         }
     }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
-        new Thread(() -> {
-            autogram.resetSigningKey();
-            autogram.pickSigningKey();
-        }).start();
+        gui.resetSigningKey();
+        autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
     }
 
     public void refreshSigningKey() {
         mainButton.setDisable(false);
-        if (autogram.getActiveSigningKey() == null) {
+        SigningKey key = gui.getActiveSigningKey();
+        if (key == null) {
             mainButton.setText("Vybrať podpisový certifikát");
             mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
         } else {
-            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(autogram.getActiveSigningKey().getCertificate().getSubject().getRFC2253()));
+            // TODO maybe use/show different buttons/actions for pick/sign?
+            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
             mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
         }
     }
 
-    public void hide() {
+    public void close() {
         var window = mainButton.getScene().getRoot().getScene().getWindow();
         if (window instanceof Stage) {
             ((Stage) window).close();
@@ -104,6 +105,11 @@ public class SigningDialogController implements SuppressedFocusController {
 
     public void disableKeyPicking() {
         mainButton.setText("Načítavam certifikáty...");
+        mainButton.setDisable(true);
+    }
+
+    public void disableSigning() {
+        mainButton.setText("Prebieha podpisovanie...");
         mainButton.setDisable(true);
     }
 
@@ -134,7 +140,6 @@ public class SigningDialogController implements SuppressedFocusController {
         engine.setJavaScriptEnabled(true);
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                WebViewLogger.register(engine); // TODO remove?
                 engine.executeScript("displayPdf('" + signingJob.getDocumentAsBase64Encoded() + "')");
             }
         });

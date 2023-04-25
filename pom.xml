@@ -21,6 +21,7 @@
         <pdfjs.version>2.10.377</pdfjs.version>
         <saxon.version>10.6</saxon.version>
         <xerces.version>2.12.1</xerces.version>
+        <slf4j.version>2.0.7</slf4j.version>
         <junit.version>5.9.2</junit.version>
         <mockito.version>4.8.0</mockito.version>
     </properties>
@@ -86,6 +87,16 @@
             <version>${saxon.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
@@ -119,6 +130,9 @@
                     <release>${java.version}</release>
                     <fork>true</fork>
                     <executable>${jlink.jdk.path}/bin/javac</executable>
+                    <source>17</source>
+                    <target>17</target>
+                    <compilerArgs>--enable-preview</compilerArgs>
                 </configuration>
             </plugin>
 
@@ -263,7 +277,7 @@
                 <version>1.2.0</version>
                 <executions>
                     <execution>
-                        <id>cache-jdk-11</id>
+                        <id>cache-jdk-17</id>
                         <goals>
                             <goal>cache-jdk</goal>
                         </goals>
@@ -286,6 +300,8 @@
                             <goal>jdeps</goal>
                         </goals>
                         <configuration>
+                            <!-- The output of jdeps is currently not used anywhere, modules are defined manually -->
+                            <skip>true</skip>
                             <output>${project.build.directory}${file.separator}jdeps.out</output>
                             <options>
                                 <option>--class-path</option>

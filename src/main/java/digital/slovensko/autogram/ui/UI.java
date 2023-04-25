@@ -1,26 +1,30 @@
 package digital.slovensko.autogram.ui;
 
+import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface UI {
-    void start(Autogram autogram, String[] args);
+    void startSigning(SigningJob job, Autogram autogram);
 
-    void pickKeyAndDo(List<DSSPrivateKeyEntry> keys, PrivateKeyLambda callback);
+    void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback);
 
-    void pickTokenDriverAndDo(List<TokenDriver> drivers, TokenDriverLambda callback);
+    void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback);
 
-    void showSigningDialog(SigningJob job, Autogram autogram);
+    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback);
 
-    void hideSigningDialog(SigningJob job, Autogram autogram);
+    void onPickSigningKeyFailed(AutogramException e);
 
-    void refreshSigningKey();
+    void onSigningSuccess(SigningJob job);
 
-    void showError(AutogramException e);
+    void onSigningFailed(AutogramException e);
 
-    void showPasswordDialogAndThen(TokenDriver driver, PasswordLambda callback);
+    void onWorkThreadDo(Runnable callback);
+
+    void onUIThreadDo(Runnable callback);
 }

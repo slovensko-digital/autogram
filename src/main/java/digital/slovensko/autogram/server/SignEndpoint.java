@@ -1,13 +1,13 @@
 package digital.slovensko.autogram.server;
 
-import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
-import eu.europa.esig.dss.model.InMemoryDocument;
+import digital.slovensko.autogram.server.errors.MalformedBodyException;
 
 import java.io.IOException;
 
@@ -30,28 +30,15 @@ public class SignEndpoint implements HttpHandler {
             return;
         }
 
-        Gson gson = new Gson();
-        SignRequestBody body;
-        InMemoryDocument document;
-        SigningParameters parameters;
-
         try {
-            body = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), SignRequestBody.class);
-            document = body.getDocument();
-            parameters = body.getParameters();
-            
+            var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
+            var job = new SigningJob(body.getDocument(), body.getParameters(), new ServerResponder(exchange));
+            autogram.sign(job);
+        } catch (JsonSyntaxException e) {
+            var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
+            EndpointUtils.respondWithError(response, exchange);
         } catch (Exception e) {
-            exchange.sendResponseHeaders(422, 0);
-            exchange.getResponseBody().write(e.getMessage().getBytes());
-            exchange.getResponseBody().close();
-            // TODO: handle this better
-            e.printStackTrace();
-            return;
+            EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
         }
-        
-        var responder = new ServerResponder(exchange);
-        var job = new SigningJob(document, parameters, responder);
-        
-        autogram.showSigningDialog(job);
     }
 }

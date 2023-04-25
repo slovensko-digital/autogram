@@ -12,8 +12,7 @@ public class DSSUtils {
             var ldapName = new LdapName(rfc2253);
             for (Rdn rdn : ldapName.getRdns()) {
                 if (rdn.getType().equalsIgnoreCase("CN")) {
-                    String cn = rdn.getValue().toString();
-                    return cn;
+                    return rdn.getValue().toString();
                 }
             }
         } catch (InvalidNameException e) {

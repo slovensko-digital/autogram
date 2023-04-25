@@ -4,11 +4,11 @@ import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
-
 import digital.slovensko.autogram.core.Autogram;
 
-import static digital.slovensko.autogram.core.Configuration.getProperty;
-
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -17,13 +17,12 @@ import java.security.KeyStore;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
+import static digital.slovensko.autogram.core.Configuration.getProperty;
 
 public class AutogramServer {
-    private final Autogram autogram;
     private final HttpServer server;
+    private final Autogram autogram;
+
 
     public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps) {
         this.autogram = autogram;
@@ -68,7 +67,7 @@ public class AutogramServer {
                         var defaultSSLParameters = c.getDefaultSSLParameters();
                         params.setSSLParameters(defaultSSLParameters);
                     } catch (Exception e) {
-                        throw new RuntimeException(e); // TODO
+                        throw new RuntimeException(e); //   TODO
                     }
                 }
             });
