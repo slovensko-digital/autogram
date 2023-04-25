@@ -64,7 +64,7 @@ public class LaunchParameters {
                 params = named;
             }
 
-            return new LaunchParameters(params, urlParam == null);
+            return new LaunchParameters(params, urlParam == null || urlParam.isBlank());
 
         } catch (URISyntaxException e) {
             throw new RuntimeException(e); // TODO: handle exception
