@@ -1,5 +1,5 @@
 # Created dynamically during build from *.template.*
 main.wxs
-Octosign.desktop
+Autogram.desktop
 Info.plist
 DTempFiles
