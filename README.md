@@ -1,6 +1,6 @@
 # Autogram
 
-Autogram je multi-platformová (Windows, macOS, Linux) desktopová JavaFX aplikácia, ktorá slúži na podpisovanie dokumentov v súlade s eIDAS reguláciou. Používateľ s ňou môže podpisovať súbory priamo alebo je možné aplikáciu jednoducho zaintegrovať do vlastného (webového) informačného systému pomocou HTTP API. 
+Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplikácia, ktorá slúži na podpisovanie dokumentov v súlade s eIDAS reguláciou. Používateľ ňou môže podpisovať súbory priamo alebo je možné aplikáciu jednoducho zaintegrovať do vlastného (webového) informačného systému pomocou HTTP API.
 
 **Inštalačné balíky pre Windows, MacOS a Linux sú dostupné v časti [Releases](https://github.com/slovensko-digital/autogram/releases).** Na použitie na existujúcich štátnych weboch bude potrebné doinštalovať aj [rozšírenie do prehliadača](https://github.com/slovensko-digital/signer-switcher-extension).
 
@@ -8,9 +8,9 @@ Autogram je multi-platformová (Windows, macOS, Linux) desktopová JavaFX aplik�
 
 ## Integrácia
 
-Swagger dokumentácia pre HTTP API je [dostupná na githube](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml) alebo po spustení aplikácie je tiež dostupná na http://localhost:37200/docs. 
+Swagger dokumentácia pre HTTP API je [dostupná na githube](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml) alebo po spustení aplikácie je tiež dostupná na http://localhost:37200/docs.
 
-Vyvolať spustenie programu možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez [autogram://go](autogram://go). 
+Vyvolať spustenie programu je možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez [autogram://go](autogram://go).
 
 ### Štýlovanie
 
@@ -18,7 +18,7 @@ Aplikácia momentálne podporuje len jeden štýl - štátny IDSK dizajn. Ďalš
 
 ### Texty a preklady
 
-Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez properties súbory. Toto bude slúžiť aj ako zdroj pre preklady. 
+Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez properties súbory. Toto bude slúžiť aj ako zdroj pre preklady.
 
 ## Vývoj
 
@@ -28,7 +28,7 @@ Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez
 - Maven
 - Voliteľné: Visual Studio Code ako IDE alebo Intellij IDEA (stačí komunitná verzia).
 
-Odporúčame používať Liberica JDK, ktoré má v sebe JavaFX, všetko je potom jednoduchšie. Po zavolaní `mnvw initialize` by sa malo stiahnuť do `target/jdkCache`. 
+Odporúčame používať Liberica JDK, ktoré má v sebe JavaFX, všetko je potom jednoduchšie. Po zavolaní `mnvw initialize` by sa malo stiahnuť do `target/jdkCache`.
 
 
 ### Build cez `mvn package`
@@ -47,10 +47,10 @@ Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. a 
 
 ## Licencia
 
-Tento softvér je licencovaný pod licenciou EUPL v1.2, pôvodne vychádza z Octosign White Label projektu od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou a so súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2.
+Tento softvér je licencovaný pod licenciou EUPL v1.2, pôvodne vychádza z Octosign White Label projektu od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou, a so súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2.
 
-V skratke to znamená, že môžete tento softvér voľne používať v komerčne aj nekomerčne, môžete vytvárať vlastné verzie a to všetko za predpokladu, že prípadné vlastné zmeny a rozšírenia tiež zverejníte pod rovnakou licenciou a zachováte originálny copyright pôvodných autorov. Softvér sa poskytuje "ber ako je", bez záväzkov.
+V skratke to znamená, že tento softvér môžete voľne používať komerčne aj nekomerčne, môžete vytvárať vlastné verzie a to všetko za predpokladu, že prípadné vlastné zmeny a rozšírenia tiež zverejníte pod rovnakou licenciou a zachováte originálny copyright pôvodných autorov. Softvér sa poskytuje "ber ako je", bez záväzkov.
 
-Tento projekt je postavený výhradne na open-source softvéri, ktorý umožnuje jeho používanie  tiež komerčne, aj nekomerčne.
+Tento projekt je postavený výhradne na open-source softvéri, ktorý umožnuje jeho používanie tiež komerčne, aj nekomerčne.
 
-Konkrétne využívame najmä [GPLv2+Classpath Exception license](https://openjdk.java.net/legal/gplv2+ce.html), a EU Digital Signature Service pod licenciou [LGPL-2.1](https://github.com/esig/dss/blob/4b82afb014f0836eb282e1e3498ab4bb843ef321/LICENSE).
+Konkrétne využívame najmä [GPLv2+Classpath Exception license](https://openjdk.java.net/legal/gplv2+ce.html) a EU Digital Signature Service pod licenciou [LGPL-2.1](https://github.com/esig/dss/blob/4b82afb014f0836eb282e1e3498ab4bb843ef321/LICENSE).
