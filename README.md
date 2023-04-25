@@ -53,4 +53,4 @@ V skratke to znamená, že tento softvér môžete voľne používať komerčne 
 
 Tento projekt je postavený výhradne na open-source softvéri, ktorý umožnuje jeho používanie tiež komerčne, aj nekomerčne.
 
-Konkrétne využívame najmä [GPLv2+Classpath Exception license](https://openjdk.java.net/legal/gplv2+ce.html) a EU Digital Signature Service pod licenciou [LGPL-2.1](https://github.com/esig/dss/blob/4b82afb014f0836eb282e1e3498ab4bb843ef321/LICENSE).
+Konkrétne využívame najmä [GPLv2+Classpath Exception license](https://openjdk.java.net/legal/gplv2+ce.html) a EU Digital Signature Service pod licenciou [LGPL-2.1](https://github.com/esig/dss/blob/master/LICENSE).
