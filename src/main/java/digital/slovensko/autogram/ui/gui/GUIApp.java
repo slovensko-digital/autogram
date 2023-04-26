@@ -5,9 +5,11 @@ import digital.slovensko.autogram.core.LaunchParameters;
 import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.Event;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
+
+import java.util.Objects;
 
 public class GUIApp extends Application {
     public static Autogram autogram;
@@ -34,16 +36,13 @@ public class GUIApp extends Application {
             Platform.exit();
         });
 
-        windowStage.addEventHandler(Event.ANY, (e) -> {
-            System.out.println(e);
-            System.out.println(controller.getNodeForLoosingFocus().isFocused());
-        });
-
         if (params.isStandaloneMode()) {
             GUIUtils.suppressDefaultFocus(windowStage, controller);
         } else {
-            GUIUtils.makeIconified(windowStage, controller);
+            GUIUtils.setIconifiedWithSuppressingDefaultFocus(windowStage, controller);
         }
+
+        windowStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("Autogram.png"))));
 
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);

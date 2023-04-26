@@ -50,29 +50,21 @@ public class GUIUtils {
         }).start();
     }
 
-    public static void makeIconified(Stage windowStage, MainMenuController controller) {
-        if(OperatingSystem.current() != OperatingSystem.WINDOWS) {
-            GUIUtils.suppressDefaultFocus(windowStage, controller);
-        } else {
-            // WARNING! DO NOT TOUCH!
-            // no focus event is fired for first time (!) opened iconified stage & it shows only empty window
+    public static void setIconifiedWithSuppressingDefaultFocus(Stage windowStage, MainMenuController controller) {
+        // WARNING! DO NOT TOUCH!
+        // Windows behaves very differently.
+        // No focus event is fired for first time (!) iconified stage is opened & it shows only empty window
+        if (OperatingSystem.current() == OperatingSystem.WINDOWS) {
             windowStage.setOnShown((e) -> GUIUtils.suppressDefaultFocus(windowStage, controller));
+        } else {
+            GUIUtils.suppressDefaultFocus(windowStage, controller);
         }
         windowStage.setIconified(true);
     }
 
     public static void suppressDefaultFocus(Stage stage, SuppressedFocusController controller) {
-        stage.focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            var node = controller.getNodeForLoosingFocus();
-            System.out.println("focusedproperty");
-            System.out.println(newValue);
-            System.out.println(node.isFocused());
-            if (newValue && !node.isFocused()) {
-                Platform.runLater(() -> {
-                    System.out.println("running focused focusing");
-                    node.requestFocus(); // everything else looses focus
-                });
-            }
+        stage.focusedProperty().addListener(((observable, old, isFocused) -> {
+            if (isFocused) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
         }));
     }
 
