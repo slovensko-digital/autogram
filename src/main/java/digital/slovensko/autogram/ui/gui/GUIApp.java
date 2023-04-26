@@ -6,7 +6,6 @@ import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class GUIApp extends Application {
@@ -30,15 +29,20 @@ public class GUIApp extends Application {
 
         server.start();
 
-        if (!params.isStandaloneMode()) windowStage.setIconified(true);
-
         windowStage.setOnCloseRequest(event -> {
             new Thread(server::stop).start();
 
             Platform.exit();
         });
 
-        GUIUtils.suppressDefaultFocus(windowStage, controller);
+        if (params.isStandaloneMode()) {
+            GUIUtils.suppressDefaultFocus(windowStage, controller);
+        } else {
+            windowStage.setOnShown((e) -> {
+                windowStage.setIconified(true);
+                GUIUtils.suppressDefaultFocus(windowStage, controller);
+            });
+        }
 
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);
