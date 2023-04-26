@@ -5,6 +5,8 @@ import digital.slovensko.autogram.core.LaunchParameters;
 import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.Event;
+import javafx.event.EventType;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -33,10 +35,17 @@ public class GUIApp extends Application {
             Platform.exit();
         });
 
+        windowStage.addEventHandler(Event.ANY, (e) -> {
+            System.out.println(e);
+        });
+
+        GUIUtils.suppressDefaultFocus(windowStage, controller);
+
         if (params.isStandaloneMode()) {
-            GUIUtils.suppressDefaultFocus(windowStage, controller);
+
         } else {
             windowStage.setOnShown((e) -> {
+                System.out.println("Shown EVENT");
                 windowStage.setIconified(true);
             });
         }
@@ -46,7 +55,5 @@ public class GUIApp extends Application {
         windowStage.sizeToScene();
         windowStage.setResizable(false);
         windowStage.show();
-
-        GUIUtils.suppressDefaultFocus(windowStage, controller);
     }
 }

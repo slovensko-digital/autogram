@@ -61,6 +61,17 @@ public class GUIUtils {
                 node.requestFocus(); // everything else looses focus
             }
         }));
+
+        stage.iconifiedProperty().addListener(((observable, oldValue, newValue) -> {
+            var node = controller.getNodeForLoosingFocus();
+            System.out.println("iconifiedproperty");
+            System.out.println(newValue);
+            System.out.println(node.isFocused());
+            if (newValue) {
+                System.out.println("running iconified focusing");
+                node.requestFocus(); // everything else looses focus
+            }
+        }));
     }
 
     public static void closeWindow(Node node) {
