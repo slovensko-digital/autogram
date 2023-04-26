@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -9,7 +10,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Random;
 
 public class GUIUtils {
@@ -50,28 +50,26 @@ public class GUIUtils {
         }).start();
     }
 
+    public static void makeIconified(Stage windowStage, MainMenuController controller) {
+        if(OperatingSystem.current() != OperatingSystem.WINDOWS) {
+            GUIUtils.suppressDefaultFocus(windowStage, controller);
+        } else {
+            // WARNING! DO NOT TOUCH!
+            // no focus event is fired for first time (!) opened iconified stage & it shows only empty window
+            windowStage.setOnShown((e) -> GUIUtils.suppressDefaultFocus(windowStage, controller));
+        }
+        windowStage.setIconified(true);
+    }
+
     public static void suppressDefaultFocus(Stage stage, SuppressedFocusController controller) {
         stage.focusedProperty().addListener(((observable, oldValue, newValue) -> {
             var node = controller.getNodeForLoosingFocus();
             System.out.println("focusedproperty");
             System.out.println(newValue);
             System.out.println(node.isFocused());
-            if (newValue) {
+            if (newValue && !node.isFocused()) {
                 Platform.runLater(() -> {
                     System.out.println("running focused focusing");
-                    node.requestFocus(); // everything else looses focus
-                });
-            }
-        }));
-
-        stage.iconifiedProperty().addListener(((observable, oldValue, newValue) -> {
-            var node = controller.getNodeForLoosingFocus();
-            System.out.println("iconifiedproperty");
-            System.out.println(newValue);
-            System.out.println(node.isFocused());
-            if (!newValue) {
-                Platform.runLater(() -> {
-                    System.out.println("running iconified focusing");
                     node.requestFocus(); // everything else looses focus
                 });
             }

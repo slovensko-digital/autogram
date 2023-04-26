@@ -3,11 +3,9 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
 import digital.slovensko.autogram.server.AutogramServer;
-import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.Event;
-import javafx.event.EventType;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
@@ -38,15 +36,13 @@ public class GUIApp extends Application {
 
         windowStage.addEventHandler(Event.ANY, (e) -> {
             System.out.println(e);
+            System.out.println(controller.getNodeForLoosingFocus().isFocused());
         });
 
         if (params.isStandaloneMode()) {
             GUIUtils.suppressDefaultFocus(windowStage, controller);
         } else {
-            windowStage.setIconified(true);
-            windowStage.setOnShown((ignored) -> {
-                GUIUtils.suppressDefaultFocus(windowStage, controller);
-            });
+            GUIUtils.makeIconified(windowStage, controller);
         }
 
         windowStage.setTitle("Autogram");
