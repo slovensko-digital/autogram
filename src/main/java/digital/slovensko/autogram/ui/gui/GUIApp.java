@@ -42,8 +42,6 @@ public class GUIApp extends Application {
             GUIUtils.setIconifiedWithSuppressingDefaultFocus(windowStage, controller);
         }
 
-        windowStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("Autogram.png"))));
-
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);
         windowStage.sizeToScene();

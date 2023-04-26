@@ -6,10 +6,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Random;
 
 public class GUIUtils {
@@ -53,9 +55,12 @@ public class GUIUtils {
     public static void setIconifiedWithSuppressingDefaultFocus(Stage windowStage, MainMenuController controller) {
         // WARNING! DO NOT TOUCH!
         // Windows behaves very differently.
-        // No focus event is fired for first time (!) iconified stage is opened & it shows only empty window
+        // No focus event is fired for first time (!) iconified windowStage is opened/focused & it shows only empty window
         if (OperatingSystem.current() == OperatingSystem.WINDOWS) {
-            windowStage.setOnShown((e) -> GUIUtils.suppressDefaultFocus(windowStage, controller));
+            windowStage.setOnShown(e -> GUIUtils.suppressDefaultFocus(windowStage, controller));
+
+            // do this only on windows since it flickers on Linux
+            windowStage.getIcons().add(new Image(Objects.requireNonNull(GUIApp.class.getResourceAsStream("Autogram.png"))));
         } else {
             GUIUtils.suppressDefaultFocus(windowStage, controller);
         }
