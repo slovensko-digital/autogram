@@ -57,8 +57,10 @@ public class GUIUtils {
             System.out.println(newValue);
             System.out.println(node.isFocused());
             if (newValue) {
-                System.out.println("running focused focusing");
-                node.requestFocus(); // everything else looses focus
+                Platform.runLater(() -> {
+                    System.out.println("running focused focusing");
+                    node.requestFocus(); // everything else looses focus
+                });
             }
         }));
 
@@ -67,9 +69,11 @@ public class GUIUtils {
             System.out.println("iconifiedproperty");
             System.out.println(newValue);
             System.out.println(node.isFocused());
-            if (newValue) {
-                System.out.println("running iconified focusing");
-                node.requestFocus(); // everything else looses focus
+            if (!newValue) {
+                Platform.runLater(() -> {
+                    System.out.println("running iconified focusing");
+                    node.requestFocus(); // everything else looses focus
+                });
             }
         }));
     }
