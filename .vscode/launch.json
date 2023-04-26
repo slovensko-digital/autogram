@@ -3,14 +3,19 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Debug (Launch)-App<whitelabel>",
+            "name": "Main",
             "request": "launch",
-            "mainClass": "com.octosign.whitelabel.ui.Main",
-            "projectName": "whitelabel",
-            // Windows requires additional argument if using MSCAPI
-            // "vmArgs": "--add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED",
+            "mainClass": "digital.slovensko.autogram.Main",
+            "projectName": "autogram"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-App<autogram>",
+            "request": "launch",
+            "mainClass": "digital.slovensko.autogram.Main",
+            "projectName": "autogram",
             "vmArgs": "--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED",
-            "args": "--url=\"signer://listen?protocol=http&host=localhost&port=37200&origin=*&language=sk\""
+            "args": "--url=\"autogram://listen?protocol=http&host=localhost&port=37200&origin=*&language=sk\""
         }
     ]
 }
