@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.Hyperlink?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      prefWidth="500" minWidth="450"
+      fx:id="mainBox">
+    <VBox>
+        <TextFlow styleClass="autogram-heading-m">
+            <Text styleClass="autogram-heading-m" text="Je dostupná nová verzia "/>
+            <Label styleClass="autogram-claim,autogram-heading-m">Autogramu</Label>
+        </TextFlow>
+
+        <VBox styleClass="autogram-prose">
+            <TextFlow styleClass="autogram-body">
+                <Text styleClass="autogram-body"
+                      text="Našli sme novú verziu Autogramu."/>
+            </TextFlow>
+
+            <TextFlow>
+                <Text styleClass="autogram-body-s" text="Inštalačné súbory sú dostupné na "/>
+                <Hyperlink styleClass="autogram-body-s,autogram-link" text="GitHub-e" onAction="#githubLinkAction"/>
+                <Text styleClass="autogram-body-s" text="."/>
+            </TextFlow>
+        </VBox>
+    </VBox>
+</VBox>

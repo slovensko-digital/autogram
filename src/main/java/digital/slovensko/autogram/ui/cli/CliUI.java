@@ -7,6 +7,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import javafx.application.HostServices;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -91,5 +92,13 @@ public class CliUI implements UI {
     @Override
     public void onPickSigningKeyFailed(AutogramException e) {
         System.err.println(e);
+    }
+
+    @Override
+    public void checkForUpdates(HostServices hostServices) {
+        onWorkThreadDo(() -> {
+            if (Updater.newerVersionExists())
+                System.out.println("Newer version of Autogram exists. Visit ");
+        });
     }
 }

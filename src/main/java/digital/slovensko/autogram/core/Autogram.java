@@ -57,4 +57,8 @@ public class Autogram {
             -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         }
     }
+
+    public UI getUI() {
+        return ui;
+    }
 }

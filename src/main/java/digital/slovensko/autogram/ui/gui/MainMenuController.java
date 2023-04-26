@@ -46,6 +46,8 @@ public class MainMenuController implements SuppressedFocusController {
                 autogram.sign(SigningJob.buildFromFile(file));
             }
         });
+
+        autogram.getUI().checkForUpdates(hostServices);
     }
 
     public void onUploadButtonAction() {

@@ -8,6 +8,8 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import javafx.application.HostServices;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -107,6 +109,11 @@ class AutogramTests {
         @Override
         public void onPickSigningKeyFailed(AutogramException ae) {
             throw new RuntimeException();
+        }
+
+        @Override
+        public void checkForUpdates(HostServices hostServices) {
+
         }
     }
 }

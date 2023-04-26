@@ -7,6 +7,7 @@ import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -130,6 +131,31 @@ public class GUI implements UI {
 
         GUIUtils.suppressDefaultFocus(stage, controller);
 
+        stage.show();
+    }
+
+    @Override
+    public void checkForUpdates(HostServices hostServices) {
+        onWorkThreadDo(() -> {
+            if (!Updater.newerVersionExists())
+                return;
+
+            onUIThreadDo(() -> {
+                showUpdates(hostServices);
+            });
+        });
+    }
+
+    private void showUpdates(HostServices hostServices) {
+        var controller = new UpdateController(hostServices);
+        var root = GUIUtils.loadFXML(controller, "update-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Dostupná aktualizácia");
+        stage.setScene(new Scene(root));
+        stage.sizeToScene();
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
         stage.show();
     }
 
