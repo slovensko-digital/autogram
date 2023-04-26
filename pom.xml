@@ -17,7 +17,7 @@
         <java.version>17</java.version>
         <dss.version>5.11.1</dss.version>
         <gson.version>2.10</gson.version>
-        <apache.httpcomponents.version>4.5.13</apache.httpcomponents.version>
+        <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <pdfjs.version>2.10.377</pdfjs.version>
         <saxon.version>12.1</saxon.version>
         <xerces.version>2.12.1</xerces.version>
