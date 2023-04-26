@@ -22,7 +22,7 @@
         <saxon.version>12.1</saxon.version>
         <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.7</slf4j.version>
-        <junit.version>5.9.2</junit.version>
+        <junit.version>5.9.3</junit.version>
         <mockito.version>5.3.1</mockito.version>
     </properties>
 
