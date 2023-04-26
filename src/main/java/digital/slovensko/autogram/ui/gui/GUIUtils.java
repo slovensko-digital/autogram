@@ -50,9 +50,16 @@ public class GUIUtils {
         }).start();
     }
 
-    public static void suppressDefaultFocus(Stage windowStage, SuppressedFocusController controller) {
-        windowStage.focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
+    public static void suppressDefaultFocus(Stage stage, SuppressedFocusController controller) {
+        stage.focusedProperty().addListener(((observable, oldValue, newValue) -> {
+            var node = controller.getNodeForLoosingFocus();
+            System.out.println("focusedproperty");
+            System.out.println(newValue);
+            System.out.println(node.isFocused());
+            if (newValue) {
+                System.out.println("running focused focusing");
+                node.requestFocus(); // everything else looses focus
+            }
         }));
     }
 

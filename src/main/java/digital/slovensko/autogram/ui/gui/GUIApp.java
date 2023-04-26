@@ -12,12 +12,10 @@ public class GUIApp extends Application {
     public static Autogram autogram;
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage windowStage) throws Exception {
         Platform.setImplicitExit(false);
 
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
-
-        var windowStage = new Stage();
 
         var controller = new MainMenuController(autogram, getHostServices());
         var root = GUIUtils.loadFXML(controller, "main-menu.fxml");
@@ -40,7 +38,6 @@ public class GUIApp extends Application {
         } else {
             windowStage.setOnShown((e) -> {
                 windowStage.setIconified(true);
-                GUIUtils.suppressDefaultFocus(windowStage, controller);
             });
         }
 
@@ -49,5 +46,7 @@ public class GUIApp extends Application {
         windowStage.sizeToScene();
         windowStage.setResizable(false);
         windowStage.show();
+
+        GUIUtils.suppressDefaultFocus(windowStage, controller);
     }
 }
