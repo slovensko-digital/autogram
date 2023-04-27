@@ -12,10 +12,6 @@ public class InfoResponse {
         this.status = status;
     }
 
-    public static String getVersion() {
-        return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
-    }
-
     public static String getStatus() {
         return "READY"; // TODO: check if server is ready
     }

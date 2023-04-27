@@ -57,4 +57,18 @@ public class Autogram {
             -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         }
     }
+
+    public void checkForUpdate() {
+        ui.onWorkThreadDo(() -> {
+            if (!Updater.newVersionAvailable())
+                return;
+
+            ui.onUIThreadDo(()
+            -> ui.onUpdateAvailable());
+        });
+    }
+
+    public void onAboutInfo() {
+        ui.onAboutInfo();
+    }
 }
