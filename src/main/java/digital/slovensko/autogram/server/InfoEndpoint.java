@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.server.dto.InfoResponse;
 import static digital.slovensko.autogram.server.dto.InfoResponse.*;
 
@@ -23,7 +24,7 @@ public class InfoEndpoint implements HttpHandler {
             return;
         }
 
-        var response = new InfoResponse(getVersion(), getStatus());
+        var response = new InfoResponse(Main.getVersion(), getStatus());
         var gson = new Gson();
 
         try {

@@ -58,7 +58,17 @@ public class Autogram {
         }
     }
 
-    public UI getUI() {
-        return ui;
+    public void checkForUpdate() {
+        ui.onWorkThreadDo(() -> {
+            if (!Updater.newVersionAvailable())
+                return;
+
+            ui.onUIThreadDo(()
+            -> ui.onUpdateAvailable());
+        });
+    }
+
+    public void onAboutInfo() {
+        ui.onAboutInfo();
     }
 }

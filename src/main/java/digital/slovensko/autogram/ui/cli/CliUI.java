@@ -60,7 +60,7 @@ public class CliUI implements UI {
 
     @Override
     public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
-        if(keys.size() > 1) {
+        if (keys.size() > 1) {
             System.out.println("Found multiple keys:");
             keys.forEach(key -> System.out.println(DSSUtils.buildTooltipLabel(key)));
         }
@@ -95,10 +95,12 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void checkForUpdates(HostServices hostServices) {
-        onWorkThreadDo(() -> {
-            if (Updater.newerVersionExists())
-                System.out.println("Newer version of Autogram exists. Visit ");
-        });
+    public void onUpdateAvailable() {
+        System.out.println("Newer version of Autogram exists. Visit ");
+    }
+
+    @Override
+    public void onAboutInfo() {
+        System.out.println("About autograms");
     }
 }

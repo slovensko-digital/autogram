@@ -29,5 +29,7 @@ public interface UI {
 
     void onUIThreadDo(Runnable callback);
 
-    void checkForUpdates(HostServices hostServices);
+    void onUpdateAvailable();
+
+    void onAboutInfo();
 }

@@ -16,14 +16,12 @@ import java.io.File;
 
 public class MainMenuController implements SuppressedFocusController {
     private final Autogram autogram;
-    private final HostServices hostServices;
 
     @FXML
     VBox dropZone;
 
-    public MainMenuController(Autogram autogram, HostServices hostServices) {
+    public MainMenuController(Autogram autogram) {
         this.autogram = autogram;
-        this.hostServices = hostServices;
     }
 
 
@@ -46,8 +44,6 @@ public class MainMenuController implements SuppressedFocusController {
                 autogram.sign(SigningJob.buildFromFile(file));
             }
         });
-
-        autogram.getUI().checkForUpdates(hostServices);
     }
 
     public void onUploadButtonAction() {
@@ -62,16 +58,7 @@ public class MainMenuController implements SuppressedFocusController {
     }
 
     public void onAboutButtonAction() {
-        var controller = new AboutDialogController(hostServices);
-        var root = GUIUtils.loadFXML(controller, "about-dialog.fxml");
-
-        var stage = new Stage();
-        stage.setTitle("O projekte Autogram");
-        stage.setScene(new Scene(root));
-        stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        GUIUtils.suppressDefaultFocus(stage, controller);
-        stage.show();
+        autogram.onAboutInfo();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.Updater;
 import javafx.application.HostServices;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,8 +18,12 @@ public class UpdateController implements SuppressedFocusController {
         this.hostServices = hostServices;
     }
 
-    public void githubLinkAction(ActionEvent ignored) {
-        hostServices.showDocument("https://github.com/slovensko-digital/autogram/releases/latest");
+    public void downloadAction(ActionEvent ignored) {
+        hostServices.showDocument(Updater.LATEST_RELEASE_URL);
+    }
+
+    public void onCancelButtonPressed(ActionEvent ignored) {
+        GUIUtils.closeWindow(mainBox);
     }
 
     @Override

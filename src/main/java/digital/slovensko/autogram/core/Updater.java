@@ -10,19 +10,17 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.NoSuchElementException;
 
-import static java.util.Objects.requireNonNullElse;
-
 public class Updater {
-    private static final String RELEASES_URL = "https://github.com/slovensko-digital/autogram/releases";
+    public static final String LATEST_RELEASE_URL = "https://github.com/slovensko-digital/autogram/releases/latest";
 
-    public static boolean newerVersionExists() {
-        if (currentVersion().equals("dev")) {
+    public static boolean newVersionAvailable() {
+        if (Main.getVersion().equals("dev")) {
             return false;
         }
 
         String latestVersion = "";
         try {
-            var request = HttpRequest.newBuilder().uri(new URI(RELEASES_URL + "/latest"))
+            var request = HttpRequest.newBuilder().uri(new URI(LATEST_RELEASE_URL))
                     .header("Accept", "application/vnd.github.v3+json").GET().build();
 
             var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
@@ -41,13 +39,6 @@ public class Updater {
         if (latestVersion.equals(""))
             return false;
 
-        if (!currentVersion().equals(latestVersion))
-            return true;
-
-        return false;
-    }
-
-    private static String currentVersion() {
-        return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
+        return !Main.getVersion().equals(latestVersion);
     }
 }

@@ -1,10 +1,12 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.Main;
 import javafx.application.HostServices;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.text.Text;
 
 public class AboutDialogController implements SuppressedFocusController {
     private final HostServices hostServices;
@@ -12,9 +14,15 @@ public class AboutDialogController implements SuppressedFocusController {
     Node mainBox;
     @FXML
     Hyperlink link;
+    @FXML
+    Text versionText;
 
     public AboutDialogController(HostServices hostServices) {
         this.hostServices = hostServices;
+    }
+
+    public void initialize() {
+        versionText.setText(Main.getVersion());
     }
 
     public void githubLinkAction(ActionEvent ignored) {
