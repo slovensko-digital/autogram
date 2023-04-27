@@ -7,6 +7,7 @@ import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -20,11 +21,10 @@ import java.util.function.Consumer;
 public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
+    private final HostServices hostServices;
 
-    public void start(String[] args) {
-        // use singleton for passing since javafx instantiation is tricky
-        GUIApp.autogram = new Autogram(this);
-        Application.launch(GUIApp.class, args);
+    public GUI(HostServices hostServices) {
+        this.hostServices = hostServices;
     }
 
     @Override
@@ -130,6 +130,34 @@ public class GUI implements UI {
 
         GUIUtils.suppressDefaultFocus(stage, controller);
 
+        stage.show();
+    }
+
+    @Override
+    public void onUpdateAvailable() {
+        var controller = new UpdateController(hostServices);
+        var root = GUIUtils.loadFXML(controller, "update-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Dostupná aktualizácia");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
+    }
+
+    @Override
+    public void onAboutInfo() {
+        var controller = new AboutDialogController(hostServices);
+        var root = GUIUtils.loadFXML(controller, "about-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("O projekte Autogram");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
         stage.show();
     }
 

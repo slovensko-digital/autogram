@@ -43,7 +43,8 @@ public class XDCTransformer {
     public static XDCTransformer buildFromSigningParameters(SigningParameters sp) {
         var mediaType = DestinationMediaType.TXT;
 
-        if (sp.getTransformationOutputMimeType().equals(MimeType.HTML))
+        var outputMime = sp.getTransformationOutputMimeType();
+        if (outputMime != null && outputMime.equals(MimeType.HTML))
             mediaType = DestinationMediaType.HTML;
 
         return new XDCTransformer(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),

@@ -7,6 +7,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import javafx.application.HostServices;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,7 +60,7 @@ public class CliUI implements UI {
 
     @Override
     public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
-        if(keys.size() > 1) {
+        if (keys.size() > 1) {
             System.out.println("Found multiple keys:");
             keys.forEach(key -> System.out.println(DSSUtils.buildTooltipLabel(key)));
         }
@@ -91,5 +92,15 @@ public class CliUI implements UI {
     @Override
     public void onPickSigningKeyFailed(AutogramException e) {
         System.err.println(e);
+    }
+
+    @Override
+    public void onUpdateAvailable() {
+        System.out.println("Newer version of Autogram exists. Visit ");
+    }
+
+    @Override
+    public void onAboutInfo() {
+        System.out.println("About autograms");
     }
 }

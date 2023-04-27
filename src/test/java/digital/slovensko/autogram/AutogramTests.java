@@ -1,6 +1,9 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.Responder;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
@@ -10,11 +13,11 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -55,7 +58,7 @@ class AutogramTests {
         @Override
         public AbstractKeyStoreTokenConnection createTokenWithPassword(char[] password) {
             try {
-                var keystore = this.getClass().getResource("test.keystore").getFile();
+                var keystore = Objects.requireNonNull(this.getClass().getResource("test.keystore")).getFile();
                 return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -92,6 +95,16 @@ class AutogramTests {
         @Override
         public void onUIThreadDo(Runnable callback) {
             callback.run();
+        }
+
+        @Override
+        public void onUpdateAvailable() {
+
+        }
+
+        @Override
+        public void onAboutInfo() {
+
         }
 
         @Override
