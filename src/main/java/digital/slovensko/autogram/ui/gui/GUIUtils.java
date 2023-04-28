@@ -52,21 +52,6 @@ public class GUIUtils {
         }).start();
     }
 
-    public static void setIconifiedWithSuppressingDefaultFocus(Stage windowStage, MainMenuController controller) {
-        // WARNING! DO NOT TOUCH!
-        // Windows behaves very differently.
-        // No focus event is fired for first time (!) iconified windowStage is opened/focused & it shows only empty window
-        if (OperatingSystem.current() == OperatingSystem.WINDOWS) {
-            windowStage.setOnShown(e -> GUIUtils.suppressDefaultFocus(windowStage, controller));
-
-            // do this only on windows since it flickers on Linux
-            windowStage.getIcons().add(new Image(Objects.requireNonNull(GUIApp.class.getResourceAsStream("Autogram.png"))));
-        } else {
-            GUIUtils.suppressDefaultFocus(windowStage, controller);
-        }
-        windowStage.setIconified(true);
-    }
-
     public static void suppressDefaultFocus(Stage stage, SuppressedFocusController controller) {
         stage.focusedProperty().addListener(((observable, old, isFocused) -> {
             if (isFocused) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
