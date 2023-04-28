@@ -66,23 +66,20 @@ DNS.1=loopback.autogram.slovensko.digital
     rm $SSL_CONFIG_TMP
 }
 
+function remove_cert(){
+    TLS_DIR="$HOME/Library/Application Support/Autogram/tls"
+    security delete-certificate -Z $(openssl x509 -in "$TLS_DIR/autogram-cert.pem" -outform DER | shasum -a 1 ) "$HOME/Library/Keychains/login.keychain-db"
+}
+
 function sudo_create_cert() {
 
     # Write out functions into variable
     FUNC=$(declare -f)
 
     # Run function create_cert in "unpriviledged" environment - with real user env
-    sudo -u "$USER" bash -c "$FUNC; create_cert"
+    sudo -u "$USER" bash -c "$FUNC; remove_cert; create_cert"
 
 }
 
-if [ ! -f "$HOME/Library/Application Support/Autogram/tls/autogram-pkcs12-cert.p12" ]; then
-    sudo_create_cert
-    exit 0
-fi
-
-osascript -e 'return display dialog "Máte už existujúci SSL certifikát. Prajete si ho vygenerovať nanovo?"  buttons {"Áno", "Nie"} default button "Nie" cancel button "Áno"'
-if [ $? -ne 0 ]; then    
-    sudo_create_cert
-fi
+sudo_create_cert
 exit 0
