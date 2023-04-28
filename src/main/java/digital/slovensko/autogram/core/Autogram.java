@@ -19,7 +19,7 @@ public class Autogram {
 
     public void sign(SigningJob job) {
         ui.onUIThreadDo(()
-            -> ui.startSigning(job, this));
+        -> ui.startSigning(job, this));
 
         if (job.shouldCheckPDFCompliance()) {
             ui.onWorkThreadDo(()
