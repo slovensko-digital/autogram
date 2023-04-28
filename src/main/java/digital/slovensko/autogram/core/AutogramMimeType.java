@@ -26,10 +26,10 @@ public record AutogramMimeType(
         if (!mimeType.equals(MimeTypeEnum.BINARY))
             return mimeType;
 
-        var withoutSemicolon = mimeTypeString.split(";")[0];
-        var string = withoutSemicolon.split("/")[0];
-        var extension = withoutSemicolon.split("/")[1];
+        var string = mimeTypeString.split(";")[0];
+        if (mimeTypeString.split(";").length == 1)
+            return new AutogramMimeType(string, null);
 
-		return new AutogramMimeType(string, extension);
+		return new AutogramMimeType(string, mimeTypeString.split(";")[1]);
 	}
 }
