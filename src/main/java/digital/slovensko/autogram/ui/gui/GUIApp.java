@@ -36,15 +36,8 @@ public class GUIApp extends Application {
             Platform.exit();
         });
 
-        if (!params.isStandaloneMode()) {
-            windowStage.setOpacity(0); // prevents startup blink
-            windowStage.setOnShown((e) -> Platform.runLater(() -> {
-                        windowStage.setIconified(true);
-                        windowStage.setOpacity(1);
-                    }
-            ));
-        }
-
+        if (!params.isStandaloneMode())
+            GUIUtils.startIconified(windowStage);
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);
         windowStage.setResizable(false);

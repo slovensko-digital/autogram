@@ -61,4 +61,17 @@ public class GUIUtils {
     public static void closeWindow(Node node) {
         ((Stage) node.getScene().getWindow()).close();
     }
+
+    public static void startIconified(Stage stage) {
+        if (OperatingSystem.current() != OperatingSystem.LINUX) {
+            stage.setIconified(true);
+        } else {
+            // WINDOWS & MAC need to set iconified after showing primary stage, otherwise it starts blank
+            stage.setOpacity(0); // prevents startup blink
+            stage.setOnShown((e) -> Platform.runLater(() -> {
+                stage.setIconified(true);
+                stage.setOpacity(1);
+            }));
+        }
+    }
 }
