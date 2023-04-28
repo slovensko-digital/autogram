@@ -2,14 +2,11 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
-import javafx.application.HostServices;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -41,7 +38,7 @@ public class MainMenuController implements SuppressedFocusController {
 
         dropZone.setOnDragDropped(event -> {
             for (File file : event.getDragboard().getFiles()) {
-                autogram.sign(SigningJob.buildFromFile(file));
+                autogram.sign(SigningJob.buildFromFile(file, autogram));
             }
         });
     }
@@ -52,7 +49,7 @@ public class MainMenuController implements SuppressedFocusController {
 
         if (list != null) {
             for (File file : list) {
-                autogram.sign(SigningJob.buildFromFile(file));
+                autogram.sign(SigningJob.buildFromFile(file, autogram));
             }
         }
     }

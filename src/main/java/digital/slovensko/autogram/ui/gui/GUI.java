@@ -6,13 +6,13 @@ import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -185,6 +185,19 @@ public class GUI implements UI {
         } else {
             refreshKeyOnAllJobs();
         }
+    }
+
+    @Override
+    public void onDocumentSaved(File targetFile) {
+        var controller = new SigningSuccessDialogController(targetFile, hostServices);
+        var root = GUIUtils.loadFXML(controller, "signing-success-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Dokument bol úspešne podpísaný");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
     }
 
     @Override

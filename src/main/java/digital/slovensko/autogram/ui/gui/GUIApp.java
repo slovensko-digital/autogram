@@ -6,10 +6,7 @@ import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
-
-import java.util.Objects;
 
 public class GUIApp extends Application {
     @Override

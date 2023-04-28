@@ -13,6 +13,7 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.KeyStore;
@@ -114,6 +115,11 @@ class AutogramTests {
 
         @Override
         public void onSigningFailed(AutogramException e) {
+
+        }
+
+        @Override
+        public void onDocumentSaved(File targetFile) {
 
         }
 

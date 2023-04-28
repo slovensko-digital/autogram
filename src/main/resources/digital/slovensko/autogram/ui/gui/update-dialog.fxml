@@ -21,7 +21,7 @@
             <TextFlow styleClass="autogram-body">
                 <Text styleClass="autogram-body" text="Je dostupná nová verzia a odporúčame stiahnuť aktualizáciu. Najnovšiu verziu si možete vždy stiahnuť na "/>
                 <Hyperlink styleClass="autogram-body,autogram-link" text="GitHub-e" onAction="#downloadAction"/>
-                <Text styleClass="autogram-body-s" text="."/>
+                <Text styleClass="autogram-body" text="."/>
             </TextFlow>
         </VBox>
         <HBox styleClass="autogram-actions">

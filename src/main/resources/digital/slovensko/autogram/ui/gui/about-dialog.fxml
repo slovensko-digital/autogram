@@ -9,47 +9,50 @@
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" prefWidth="500" minWidth="450">
     <center>
         <VBox fx:id="mainBox">
-            <TextFlow styleClass="autogram-heading-m">
-                <Text styleClass="autogram-heading-m" text="O projekte "/>
-                <Label styleClass="autogram-claim,autogram-heading-m">Autogram</Label>
-            </TextFlow>
-
-            <VBox styleClass="autogram-prose">
-                <TextFlow styleClass="autogram-body">
-                    <Text styleClass="autogram-body"
-                          text="Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a&#160;štandardov. Môžete ho používať komerčne aj nekomerčne a&#160;úplne zadarmo."/>
+            <VBox>
+                <TextFlow styleClass="autogram-heading-m">
+                    <Text styleClass="autogram-heading-m" text="O projekte "/>
+                    <Label styleClass="autogram-claim,autogram-heading-m">Autogram</Label>
                 </TextFlow>
 
-                <TextFlow styleClass="autogram-heading-s">
-                    <Text styleClass="autogram-heading-s" text="Autori a sponzori"/>
-                </TextFlow>
+                <VBox styleClass="autogram-prose">
+                    <TextFlow styleClass="autogram-body">
+                        <Text styleClass="autogram-body"
+                              text="Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a&#160;štandardov. Môžete ho používať komerčne aj nekomerčne a&#160;úplne zadarmo."/>
+                    </TextFlow>
 
-                <TextFlow styleClass="autogram-body-s">
-                    <Text styleClass="autogram-body-s"
-                          text="Autormi tohto projektu sú Jakub Ďuraš, Slovensko.Digital, CRYSTAL&#160;CONSULTING,&#160;s.r.o, Solver&#160;IT&#160;s.r.o. a ďalší spoluautori."/>
-                </TextFlow>
+                    <TextFlow styleClass="autogram-heading-s">
+                        <Text styleClass="autogram-heading-s" text="Autori a sponzori"/>
+                    </TextFlow>
 
-                <TextFlow styleClass="autogram-heading-s">
-                    <Text styleClass="autogram-heading-s" text="Licencia a zdrojové kódy"/>
-                </TextFlow>
-                <TextFlow styleClass="autogram-body-s">
-                    <Text styleClass="autogram-body-s"
-                          text="Tento softvér pôvodne vychádza projektu z Octosign White Label od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou. So súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2."/>
-                </TextFlow>
+                    <TextFlow styleClass="autogram-body-s">
+                        <Text styleClass="autogram-body-s"
+                              text="Autormi tohto projektu sú Jakub Ďuraš, Slovensko.Digital, CRYSTAL&#160;CONSULTING,&#160;s.r.o, Solver&#160;IT&#160;s.r.o. a ďalší spoluautori."/>
+                    </TextFlow>
 
-                <TextFlow>
-                    <Text styleClass="autogram-body-s" text="Zdrojové kódy sú dostupné na "/>
-                    <Hyperlink styleClass="autogram-body-s,autogram-link" text="GitHub-e" onAction="#githubLinkAction"/>
-                    <Text styleClass="autogram-body-s" text="."/>
-                </TextFlow>
+                    <TextFlow styleClass="autogram-heading-s">
+                        <Text styleClass="autogram-heading-s" text="Licencia a zdrojové kódy"/>
+                    </TextFlow>
+                    <TextFlow styleClass="autogram-body-s">
+                        <Text styleClass="autogram-body-s"
+                              text="Tento softvér pôvodne vychádza projektu z Octosign White Label od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou. So súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2."/>
+                    </TextFlow>
+
+                    <TextFlow>
+                        <Text styleClass="autogram-body-s" text="Zdrojové kódy sú dostupné na "/>
+                        <Hyperlink styleClass="autogram-body-s,autogram-link" text="GitHub-e" onAction="#githubLinkAction"/>
+                        <Text styleClass="autogram-body-s" text="."/>
+                    </TextFlow>
+                </VBox>
             </VBox>
-
-            <HBox styleClass="autogram-footer">
-                <TextFlow>
-                    <Text styleClass="autogram-body-s" text="Verzia: "/>
-                    <Text styleClass="autogram-body-s" text="dev" fx:id="versionText"/>
-                </TextFlow>
-            </HBox>
         </VBox>
     </center>
+    <bottom>
+        <HBox styleClass="autogram-footer">
+            <TextFlow>
+                <Text styleClass="autogram-body-s" text="Verzia: "/>
+                <Text styleClass="autogram-body-s" text="dev" fx:id="versionText"/>
+            </TextFlow>
+        </HBox>
+    </bottom>
 </BorderPane>
