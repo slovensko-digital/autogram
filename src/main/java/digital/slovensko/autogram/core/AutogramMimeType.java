@@ -9,6 +9,9 @@ public record AutogramMimeType(
     String string,
     String extension
 ) implements MimeType {
+    public static final AutogramMimeType XML_DATACONTAINER = new AutogramMimeType("application/vnd.gov.sk.xmldatacontainer+xml", null);
+    public static final AutogramMimeType APPLICATION_XML = new AutogramMimeType("application/xml", null);
+
     @Override
     public String getMimeTypeString() {
         return string;
@@ -26,10 +29,6 @@ public record AutogramMimeType(
         if (!mimeType.equals(MimeTypeEnum.BINARY))
             return mimeType;
 
-        var string = mimeTypeString.split(";")[0];
-        if (mimeTypeString.split(";").length == 1)
-            return new AutogramMimeType(string, null);
-
-		return new AutogramMimeType(string, mimeTypeString.split(";")[1]);
+		return new AutogramMimeType(mimeTypeString.split(";")[0], null);
 	}
 }

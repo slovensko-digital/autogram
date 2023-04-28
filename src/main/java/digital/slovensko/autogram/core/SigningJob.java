@@ -73,7 +73,7 @@ public class SigningJob {
 
     private boolean isXDC() {
         return document.getMimeType()
-            .equals(AutogramMimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+            .equals(AutogramMimeType.XML_DATACONTAINER);
     }
 
     public String getDocumentAsPlainText() {
@@ -174,7 +174,7 @@ public class SigningJob {
         if (getParameters().shouldCreateDatacontainer() && !isXDC()) {
             var transformer = XDCTransformer.buildFromSigningParameters(getParameters());
             doc = transformer.transform(getDocument());
-            doc.setMimeType(AutogramMimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+            doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
         }
 
         var commonCertificateVerifier = new CommonCertificateVerifier();

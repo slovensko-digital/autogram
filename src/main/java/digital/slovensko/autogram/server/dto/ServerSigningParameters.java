@@ -172,10 +172,10 @@ public class ServerSigningParameters {
     }
 
     private static boolean isXMLMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(AutogramMimeType.fromMimeTypeString("application/xml"));
+        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(AutogramMimeType.APPLICATION_XML);
     }
 
     private static boolean isXDCMimeType(MimeType mimeType) {
-        return mimeType.equals(AutogramMimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+        return mimeType.equals(AutogramMimeType.XML_DATACONTAINER);
     }
 }
