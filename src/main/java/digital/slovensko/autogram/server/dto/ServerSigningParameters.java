@@ -10,12 +10,7 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureForm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.model.MimeType;
+import eu.europa.esig.dss.enumerations.*;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
@@ -135,7 +130,7 @@ public class ServerSigningParameters {
             throw new UnsupportedSignatureLevelExceptionError(level.name());
 
         if (level.getSignatureForm() == SignatureForm.PAdES) {
-            if (!mimeType.equals(MimeType.PDF))
+            if (!mimeType.equals(MimeTypeEnum.PDF))
                 throw new RequestValidationException("PayloadMimeType and Parameters.Level mismatch",
                         "Parameters.Level: PAdES is not supported for this payload: " + mimeType.getMimeTypeString());
 
@@ -176,7 +171,7 @@ public class ServerSigningParameters {
     }
 
     private static boolean isXMLMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeType.XML) || mimeType.equals(MimeType.fromMimeTypeString("application/xml"));
+        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(MimeType.fromMimeTypeString("application/xml"));
     }
 
     private static boolean isXDCMimeType(MimeType mimeType) {
