@@ -1,10 +1,12 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -50,9 +52,24 @@ public class GUIUtils {
         }).start();
     }
 
-    public static void suppressDefaultFocus(Stage windowStage, SuppressedFocusController controller) {
-        windowStage.focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
+    public static void setIconifiedWithSuppressingDefaultFocus(Stage windowStage, MainMenuController controller) {
+        // WARNING! DO NOT TOUCH!
+        // Windows behaves very differently.
+        // No focus event is fired for first time (!) iconified windowStage is opened/focused & it shows only empty window
+        if (OperatingSystem.current() == OperatingSystem.WINDOWS) {
+            windowStage.setOnShown(e -> GUIUtils.suppressDefaultFocus(windowStage, controller));
+
+            // do this only on windows since it flickers on Linux
+            windowStage.getIcons().add(new Image(Objects.requireNonNull(GUIApp.class.getResourceAsStream("Autogram.png"))));
+        } else {
+            GUIUtils.suppressDefaultFocus(windowStage, controller);
+        }
+        windowStage.setIconified(true);
+    }
+
+    public static void suppressDefaultFocus(Stage stage, SuppressedFocusController controller) {
+        stage.focusedProperty().addListener(((observable, old, isFocused) -> {
+            if (isFocused) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
         }));
     }
 

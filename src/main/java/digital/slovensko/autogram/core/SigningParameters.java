@@ -72,9 +72,13 @@ public class SigningParameters {
 
                 throw new RuntimeException("Unsupported transformation output method: " + method);
 
-        } catch (SAXException | IOException | ParserConfigurationException e) {
+        } catch (IOException | ParserConfigurationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO log error in more JAVA way
+            System.out.println("Error parsing transformation");
+            return null;
         }
 
         return MimeTypeEnum.TEXT;
