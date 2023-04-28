@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
+import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -24,7 +25,13 @@ public interface UI {
 
     void onSigningFailed(AutogramException e);
 
+    void onDocumentSaved(File targetFile);
+
     void onWorkThreadDo(Runnable callback);
 
     void onUIThreadDo(Runnable callback);
+
+    void onUpdateAvailable();
+
+    void onAboutInfo();
 }

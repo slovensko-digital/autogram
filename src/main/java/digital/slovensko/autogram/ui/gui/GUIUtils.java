@@ -1,10 +1,12 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.image.Image;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
@@ -50,13 +52,26 @@ public class GUIUtils {
         }).start();
     }
 
-    public static void suppressDefaultFocus(Stage windowStage, SuppressedFocusController controller) {
-        windowStage.focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
+    public static void suppressDefaultFocus(Stage stage, SuppressedFocusController controller) {
+        stage.focusedProperty().addListener(((observable, old, isFocused) -> {
+            if (isFocused) controller.getNodeForLoosingFocus().requestFocus(); // everything else looses focus
         }));
     }
 
     public static void closeWindow(Node node) {
         ((Stage) node.getScene().getWindow()).close();
+    }
+
+    public static void startIconified(Stage stage) {
+        if (OperatingSystem.current() == OperatingSystem.LINUX) {
+            stage.setIconified(true);
+        } else {
+            // WINDOWS & MAC need to set iconified after showing primary stage, otherwise it starts blank
+            stage.setOpacity(0); // prevents startup blink
+            stage.setOnShown((e) -> Platform.runLater(() -> {
+                stage.setIconified(true);
+                stage.setOpacity(1);
+            }));
+        }
     }
 }

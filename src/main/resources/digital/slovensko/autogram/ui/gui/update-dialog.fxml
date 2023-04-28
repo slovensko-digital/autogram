@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      prefWidth="500" minWidth="450"
+      fx:id="mainBox">
+    <VBox>
+        <TextFlow styleClass="autogram-heading-m">
+            <Text styleClass="autogram-heading-m" text="Nová verzia "/>
+            <Label styleClass="autogram-claim,autogram-heading-m">Autogram</Label>
+            <Text styleClass="autogram-heading-m" text="u"/>
+        </TextFlow>
+
+        <VBox styleClass="autogram-prose">
+            <TextFlow styleClass="autogram-body">
+                <Text styleClass="autogram-body" text="Je dostupná nová verzia a odporúčame stiahnuť aktualizáciu. Najnovšiu verziu si možete vždy stiahnuť na "/>
+                <Hyperlink styleClass="autogram-body,autogram-link" text="GitHub-e" onAction="#downloadAction"/>
+                <Text styleClass="autogram-body" text="."/>
+            </TextFlow>
+        </VBox>
+        <HBox styleClass="autogram-actions">
+            <Button fx:id="mainButton" styleClass="autogram-button" text="Stiahnuť novú verziu" onAction="#downloadAction"/>
+            <Button fx:id="cancelButton" styleClass="autogram-link" text="Teraz nie" onAction="#onCancelButtonPressed"/>
+        </HBox>
+    </VBox>
+</VBox>

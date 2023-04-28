@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "java (build)",
+      "paths": ["${workspace}"],
+      "isFullBuild": true,
+      "group": "build",
+      "problemMatcher": [],
+      "label": "java (build): Build Workspace",
+      "detail": "$(tools) Build all the Java projects in workspace."
+    },
+    {
+      "label": "Open signer with listen URL",
+      "command": "open \"autogram://listen?protocol=http&host=localhost&port=37200&origin=*&language=sk\"",
+      "problemMatcher": [],
+      "type": "shell"
+    },
+    {
+      "label": "Open signer with go URL",
+      "command": "open \"autogram://go\"",
+      "problemMatcher": [],
+      "type": "shell"
+    },
+    {
+      "label": "Package using mvnw",
+      "command": "./mvnw -B -C -V package",
+      "options": {
+        "env": {
+          "JAVA_HOME": "${workspaceFolder}/target/jdkCache/LIBERICA_jdk17.0.7+7_macos_amd64-full/"
+        }
+      },
+      "problemMatcher": [],
+      "type": "shell"
+    }
+  ]
+}

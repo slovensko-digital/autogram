@@ -7,18 +7,13 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import eu.europa.esig.dss.enumerations.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureForm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
@@ -70,19 +65,23 @@ public class SigningParameters {
             var method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
 
             if (method.equals("html"))
-                return MimeType.HTML;
+                return MimeTypeEnum.HTML;
 
             if (method.equals("text"))
-                return MimeType.TEXT;
+                return MimeTypeEnum.TEXT;
 
                 throw new RuntimeException("Unsupported transformation output method: " + method);
 
-        } catch (SAXException | IOException | ParserConfigurationException e) {
+        } catch (IOException | ParserConfigurationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        } catch (SAXException e) {
+            // TODO log error in more JAVA way
+            System.out.println("Error parsing transformation");
+            return null;
         }
 
-        return MimeType.TEXT;
+        return MimeTypeEnum.TEXT;
     }
 
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {

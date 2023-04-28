@@ -6,12 +6,13 @@ import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -20,11 +21,10 @@ import java.util.function.Consumer;
 public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
+    private final HostServices hostServices;
 
-    public void start(String[] args) {
-        // use singleton for passing since javafx instantiation is tricky
-        GUIApp.autogram = new Autogram(this);
-        Application.launch(GUIApp.class, args);
+    public GUI(HostServices hostServices) {
+        this.hostServices = hostServices;
     }
 
     @Override
@@ -133,6 +133,34 @@ public class GUI implements UI {
         stage.show();
     }
 
+    @Override
+    public void onUpdateAvailable() {
+        var controller = new UpdateController(hostServices);
+        var root = GUIUtils.loadFXML(controller, "update-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Dostupná aktualizácia");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
+    }
+
+    @Override
+    public void onAboutInfo() {
+        var controller = new AboutDialogController(hostServices);
+        var root = GUIUtils.loadFXML(controller, "about-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("O projekte Autogram");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
+    }
+
     private void disableKeyPicking() {
         jobControllers.values().forEach(SigningDialogController::disableKeyPicking);
     }
@@ -157,6 +185,19 @@ public class GUI implements UI {
         } else {
             refreshKeyOnAllJobs();
         }
+    }
+
+    @Override
+    public void onDocumentSaved(File targetFile) {
+        var controller = new SigningSuccessDialogController(targetFile, hostServices);
+        var root = GUIUtils.loadFXML(controller, "signing-success-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Dokument bol úspešne podpísaný");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
     }
 
     @Override

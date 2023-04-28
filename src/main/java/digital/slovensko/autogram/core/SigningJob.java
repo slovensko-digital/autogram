@@ -2,13 +2,15 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.enumerations.MimeType;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
-import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
@@ -50,24 +52,24 @@ public class SigningJob {
 
     public boolean isPlainText() {
         if (parameters.getTransformationOutputMimeType() != null)
-            return parameters.getTransformationOutputMimeType().equals(MimeType.TEXT);
+            return parameters.getTransformationOutputMimeType().equals(MimeTypeEnum.TEXT);
 
-        return document.getMimeType().equals(MimeType.TEXT);
+        return document.getMimeType().equals(MimeTypeEnum.TEXT);
     }
 
     public boolean isHTML() {
         if (parameters.getTransformationOutputMimeType() != null)
-            return parameters.getTransformationOutputMimeType().equals(MimeType.HTML);
+            return parameters.getTransformationOutputMimeType().equals(MimeTypeEnum.HTML);
 
         return false;
     }
 
     public boolean isPDF() {
-        return document.getMimeType().equals(MimeType.PDF);
+        return document.getMimeType().equals(MimeTypeEnum.PDF);
     }
 
     public boolean isImage() {
-        return document.getMimeType().equals(MimeType.JPEG) || document.getMimeType().equals(MimeType.PNG);
+        return document.getMimeType().equals(MimeTypeEnum.JPEG) || document.getMimeType().equals(MimeTypeEnum.PNG);
     }
 
     private boolean isXDC() {
@@ -76,7 +78,7 @@ public class SigningJob {
     }
 
     public String getDocumentAsPlainText() {
-        if (document.getMimeType().equals(MimeType.TEXT)) {
+        if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
             try {
                 return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException e) {
@@ -234,7 +236,7 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static SigningJob buildFromFile(File file) {
+    public static SigningJob buildFromFile(File file, Autogram autogram) {
         var document = new FileDocument(file);
 
         SigningParameters parameters;
@@ -246,7 +248,7 @@ public class SigningJob {
             parameters = SigningParameters.buildForASiCWithXAdES(filename);
         }
 
-        var responder = new SaveFileResponder(file);
+        var responder = new SaveFileResponder(file, autogram);
         return new SigningJob(document, parameters, responder);
     }
 }

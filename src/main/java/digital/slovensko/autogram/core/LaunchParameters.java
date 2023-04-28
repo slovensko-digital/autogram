@@ -39,6 +39,7 @@ public class LaunchParameters {
         var key = params.get("key");
         var nonce = params.get("nonce");
 
+
         this.protocol = validateProtocol(protocol);
         this.host = validateHost(host);
         this.port = validatePort(port);

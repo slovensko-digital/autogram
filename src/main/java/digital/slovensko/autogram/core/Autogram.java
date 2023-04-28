@@ -6,6 +6,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.DSSException;
 
+import java.io.File;
 import java.util.function.Consumer;
 
 public class Autogram {
@@ -56,5 +57,24 @@ public class Autogram {
             ui.onUIThreadDo(()
             -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         }
+    }
+
+    public void checkForUpdate() {
+        ui.onWorkThreadDo(() -> {
+            if (!Updater.newVersionAvailable())
+                return;
+
+            ui.onUIThreadDo(()
+            -> ui.onUpdateAvailable());
+        });
+    }
+
+    public void onAboutInfo() {
+        ui.onAboutInfo();
+    }
+
+    public void onDocumentSaved(File targetFile) {
+        ui.onUIThreadDo(()
+        -> ui.onDocumentSaved(targetFile));
     }
 }
