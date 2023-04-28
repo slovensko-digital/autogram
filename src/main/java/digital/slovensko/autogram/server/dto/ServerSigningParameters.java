@@ -7,6 +7,7 @@ import java.util.Base64;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
+import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
@@ -171,10 +172,10 @@ public class ServerSigningParameters {
     }
 
     private static boolean isXMLMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(MimeType.fromMimeTypeString("application/xml"));
+        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(AutogramMimeType.fromMimeTypeString("application/xml"));
     }
 
     private static boolean isXDCMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+        return mimeType.equals(AutogramMimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
     }
 }

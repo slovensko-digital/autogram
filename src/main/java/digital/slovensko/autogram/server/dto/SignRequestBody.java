@@ -2,10 +2,10 @@ package digital.slovensko.autogram.server.dto;
 
 import java.util.Base64;
 
+import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.enumerations.MimeType;
 
 public class SignRequestBody {
     private final Document document;
@@ -36,7 +36,7 @@ public class SignRequestBody {
         }
 
         var filename = document.getFilename();
-        var mimetype = MimeType.fromMimeTypeString(payloadMimeType.split(";")[0]);
+        var mimetype = AutogramMimeType.fromMimeTypeString(payloadMimeType.split(";")[0]);
 
         return new InMemoryDocument(content, filename, mimetype);
     }
