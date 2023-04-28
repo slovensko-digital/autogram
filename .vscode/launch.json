@@ -10,7 +10,7 @@
         },
         {
             "type": "java",
-            "name": "Debug (Launch)-App<autogram>",
+            "name": "Autogram URL",
             "request": "launch",
             "mainClass": "digital.slovensko.autogram.Main",
             "projectName": "autogram",
@@ -18,9 +18,21 @@
             "args": "--url=\"autogram://listen?protocol=http&host=localhost&port=37200&origin=*&language=sk\"",
             "osx": {
                 // this is because of some escaping problem with zsh
-                "console": "externalTerminal" 
-            },
-            
+                "console": "externalTerminal"
+            }
+        },
+        {
+            "type": "java",
+            "name": "Autogram URL HTTPS",
+            "request": "launch",
+            "mainClass": "digital.slovensko.autogram.Main",
+            "projectName": "autogram",
+            "vmArgs": "--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED",
+            "args": "--url=\"autogram://listen?protocol=https&host=localhost&port=37200&origin=*&language=sk\"",
+            "osx": {
+                // this is because of some escaping problem with zsh
+                "console": "externalTerminal"
+            }
         }
     ]
 }
