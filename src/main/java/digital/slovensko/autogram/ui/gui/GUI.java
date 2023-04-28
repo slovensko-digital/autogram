@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.io.File;
 import java.util.List;
@@ -161,6 +162,21 @@ public class GUI implements UI {
         stage.show();
     }
 
+    @Override
+    public void onPDFAComplianceCheckFailed(SigningJob job) {
+        var controller = new PDFAComplianceDialogController(job, this);
+        var root = GUIUtils.loadFXML(controller, "pdfa-compliance-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Dokument nie je vo formáte PDF/A");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(getJobWindow(job));
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
+    }
+
     private void disableKeyPicking() {
         jobControllers.values().forEach(SigningDialogController::disableKeyPicking);
     }
@@ -226,5 +242,18 @@ public class GUI implements UI {
 
     public void resetSigningKey() {
         setActiveSigningKey(null);
+    }
+
+    public void cancelJob(SigningJob job) {
+        job.onDocumentSignFailed(new SigningCanceledByUserException());
+        jobControllers.get(job).close();
+    }
+
+    public void focusJob(SigningJob job) {
+        getJobWindow(job).requestFocus();
+    }
+
+    private Window getJobWindow(SigningJob job) {
+        return jobControllers.get(job).mainBox.getScene().getWindow();
     }
 }

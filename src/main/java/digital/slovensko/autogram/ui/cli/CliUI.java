@@ -108,4 +108,9 @@ public class CliUI implements UI {
     public void onAboutInfo() {
         System.out.println("About autograms");
     }
+
+    @Override
+    public void onPDFAComplianceCheckFailed(SigningJob job) {
+
+    }
 }

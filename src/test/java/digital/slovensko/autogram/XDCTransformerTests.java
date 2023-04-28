@@ -34,8 +34,8 @@ class XDCTransformerTests {
             CanonicalizationMethod.INCLUSIVE,
             null,
             transformation,
-            "id1/asa"
-        );
+            "id1/asa",
+            false);
 
         var out = XDCTransformer.buildFromSigningParameters(params).transform(document);
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);

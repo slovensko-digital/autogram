@@ -2,7 +2,6 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
-import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -250,5 +249,9 @@ public class SigningJob {
 
         var responder = new SaveFileResponder(file, autogram);
         return new SigningJob(document, parameters, responder);
+    }
+
+    public boolean shouldCheckPDFCompliance() {
+        return parameters.getCheckPDFACompliance();
     }
 }
