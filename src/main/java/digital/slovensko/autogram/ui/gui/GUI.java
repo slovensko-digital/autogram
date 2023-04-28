@@ -38,7 +38,7 @@ public class GUI implements UI {
         var stage = new Stage();
         stage.setTitle("Podpisovanie dokumentu"); // TODO use document name?
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> job.onDocumentSignFailed(new SigningCanceledByUserException()));
+        stage.setOnCloseRequest(e -> cancelJob(job));
 
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, controller);
@@ -63,7 +63,7 @@ public class GUI implements UI {
             var stage = new Stage();
             stage.setTitle("Výber úložiska certifikátu");
             stage.setScene(new Scene(root));
-            stage.setOnCloseRequest(event -> refreshKeyOnAllJobs());
+            stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
 
             stage.sizeToScene();
             stage.setResizable(false);
