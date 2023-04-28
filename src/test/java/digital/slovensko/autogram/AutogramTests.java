@@ -109,6 +109,11 @@ class AutogramTests {
         }
 
         @Override
+        public void onPDFAComplianceCheckFailed(SigningJob job) {
+
+        }
+
+        @Override
         public void onSigningSuccess(SigningJob signingJob) {
 
         }

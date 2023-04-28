@@ -30,14 +30,15 @@ public class SigningParameters {
     private final String propertiesCanonicalization;
     private final String keyInfoCanonicalization;
     private final String identifier;
+    private final boolean checkPDFACompliance;
 
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
-            String containerXmlns, SignaturePackaging packaging,
-            DigestAlgorithm digestAlgorithm,
-            Boolean en319132, String infoCanonicalization,
-            String propertiesCanonicalization, String keyInfoCanonicalization,
-            String schema, String transformation,
-            String identifier) {
+                             String containerXmlns, SignaturePackaging packaging,
+                             DigestAlgorithm digestAlgorithm,
+                             Boolean en319132, String infoCanonicalization,
+                             String propertiesCanonicalization, String keyInfoCanonicalization,
+                             String schema, String transformation,
+                             String identifier, boolean checkPDFACompliance) {
         this.level = level;
         this.asicContainer = container;
         this.containerXmlns = containerXmlns;
@@ -50,6 +51,7 @@ public class SigningParameters {
         this.schema = schema;
         this.transformation = transformation;
         this.identifier = identifier;
+        this.checkPDFACompliance = checkPDFACompliance;
     }
 
     public MimeType getTransformationOutputMimeType() {
@@ -200,7 +202,7 @@ public class SigningParameters {
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, "");
+                null, null, "", false);
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
@@ -211,7 +213,7 @@ public class SigningParameters {
                 SignaturePackaging.ENVELOPING,
                 DigestAlgorithm.SHA256,
                 false, null,
-                null, null, null, null, "");
+                null, null, null, null, "", false);
     }
 
     public String getIdentifier() {
@@ -220,5 +222,9 @@ public class SigningParameters {
 
     public boolean shouldCreateDatacontainer() {
         return getContainerXmlns() != null && getContainerXmlns().contains("xmldatacontainer");
+    }
+
+    public boolean getCheckPDFACompliance() {
+        return checkPDFACompliance;
     }
 }

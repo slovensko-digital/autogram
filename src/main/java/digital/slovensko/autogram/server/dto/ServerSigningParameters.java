@@ -35,14 +35,15 @@ public class ServerSigningParameters {
     private final LocalCanonicalizationMethod propertiesCanonicalization;
     private final LocalCanonicalizationMethod keyInfoCanonicalization;
     private final String identifier;
+    private final boolean checkPDFACompliance;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
-            String containerFilename, String containerXmlns, SignaturePackaging packaging,
-            DigestAlgorithm digestAlgorithm,
-            Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
-            LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
-            String schema, String transformation,
-            String Identifier) {
+                                   String containerFilename, String containerXmlns, SignaturePackaging packaging,
+                                   DigestAlgorithm digestAlgorithm,
+                                   Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
+                                   LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
+                                   String schema, String transformation,
+                                   String Identifier, boolean checkPDFACompliance) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -55,6 +56,7 @@ public class ServerSigningParameters {
         this.schema = schema;
         this.transformation = transformation;
         this.identifier = Identifier;
+        this.checkPDFACompliance = checkPDFACompliance;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64) {
@@ -70,7 +72,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier);
+                identifier, checkPDFACompliance);
     }
 
     private String getTransformation(boolean isBase64) {
