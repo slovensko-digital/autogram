@@ -37,7 +37,12 @@ public class GUIApp extends Application {
         });
 
         if (!params.isStandaloneMode()) {
-            windowStage.setIconified(true);
+            windowStage.setOpacity(0); // prevents startup blink
+            windowStage.setOnShown((e) -> Platform.runLater(() -> {
+                        windowStage.setIconified(true);
+                        windowStage.setOpacity(1);
+                    }
+            ));
         }
 
         windowStage.setTitle("Autogram");
