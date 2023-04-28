@@ -106,6 +106,7 @@ public class SigningJob {
 
             return outputTarget.getWriter().toString().trim();
         } catch (Exception e) {
+            e.printStackTrace();
             return null; // TODO
         }
     }
