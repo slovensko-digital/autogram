@@ -39,9 +39,6 @@ public class LaunchParameters {
         var key = params.get("key");
         var nonce = params.get("nonce");
 
-        if (host.equalsIgnoreCase("loopback.autogram.slovensko.digital")) {
-            host = "localhost";
-        }
 
         this.protocol = validateProtocol(protocol);
         this.host = validateHost(host);
