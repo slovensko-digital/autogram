@@ -37,6 +37,8 @@ public class GUIApp extends Application {
 
         if (!params.isStandaloneMode())
             GUIUtils.startIconified(windowStage);
+
+        GUIUtils.suppressDefaultFocus(windowStage, controller);
         windowStage.setTitle("Autogram");
         windowStage.setScene(scene);
         windowStage.setResizable(false);
