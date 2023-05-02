@@ -34,4 +34,6 @@ public interface UI {
     void onUpdateAvailable();
 
     void onAboutInfo();
+
+    void onPDFAComplianceCheckFailed(SigningJob job);
 }

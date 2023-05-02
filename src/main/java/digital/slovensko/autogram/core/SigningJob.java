@@ -2,11 +2,9 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
-import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -74,7 +72,7 @@ public class SigningJob {
 
     private boolean isXDC() {
         return document.getMimeType()
-            .equals(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+            .equals(AutogramMimeType.XML_DATACONTAINER);
     }
 
     public String getDocumentAsPlainText() {
@@ -107,6 +105,7 @@ public class SigningJob {
 
             return outputTarget.getWriter().toString().trim();
         } catch (Exception e) {
+            e.printStackTrace();
             return null; // TODO
         }
     }
@@ -175,7 +174,7 @@ public class SigningJob {
         if (getParameters().shouldCreateDatacontainer() && !isXDC()) {
             var transformer = XDCTransformer.buildFromSigningParameters(getParameters());
             doc = transformer.transform(getDocument());
-            doc.setMimeType(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+            doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
         }
 
         var commonCertificateVerifier = new CommonCertificateVerifier();
@@ -250,5 +249,9 @@ public class SigningJob {
 
         var responder = new SaveFileResponder(file, autogram);
         return new SigningJob(document, parameters, responder);
+    }
+
+    public boolean shouldCheckPDFCompliance() {
+        return parameters.getCheckPDFACompliance();
     }
 }

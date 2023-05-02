@@ -7,6 +7,7 @@ import java.util.Base64;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
+import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
@@ -34,14 +35,15 @@ public class ServerSigningParameters {
     private final LocalCanonicalizationMethod propertiesCanonicalization;
     private final LocalCanonicalizationMethod keyInfoCanonicalization;
     private final String identifier;
+    private final boolean checkPDFACompliance;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
-            String containerFilename, String containerXmlns, SignaturePackaging packaging,
-            DigestAlgorithm digestAlgorithm,
-            Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
-            LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
-            String schema, String transformation,
-            String Identifier) {
+                                   String containerFilename, String containerXmlns, SignaturePackaging packaging,
+                                   DigestAlgorithm digestAlgorithm,
+                                   Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
+                                   LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
+                                   String schema, String transformation,
+                                   String Identifier, boolean checkPDFACompliance) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -54,6 +56,7 @@ public class ServerSigningParameters {
         this.schema = schema;
         this.transformation = transformation;
         this.identifier = Identifier;
+        this.checkPDFACompliance = checkPDFACompliance;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64) {
@@ -69,7 +72,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier);
+                identifier, checkPDFACompliance);
     }
 
     private String getTransformation(boolean isBase64) {
@@ -171,10 +174,10 @@ public class ServerSigningParameters {
     }
 
     private static boolean isXMLMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(MimeType.fromMimeTypeString("application/xml"));
+        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(AutogramMimeType.APPLICATION_XML);
     }
 
     private static boolean isXDCMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeType.fromMimeTypeString("application/vnd.gov.sk.xmldatacontainer+xml"));
+        return mimeType.equals(AutogramMimeType.XML_DATACONTAINER);
     }
 }
