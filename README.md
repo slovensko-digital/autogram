@@ -20,6 +20,16 @@ Aplikácia momentálne podporuje len jeden štýl - štátny IDSK dizajn. Ďalš
 
 Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez properties súbory. Toto bude slúžiť aj ako zdroj pre preklady.
 
+## Podporované karty
+
+Momentálne podporujeme na Slovensku bežne používané karty a ich ovládače:
+- občiansky preukaz (eID klient)
+- I.CA SecureStore
+- MONET+ ProID+Q
+- Gemalto IDPrime 940
+
+Doplniť ďalšie je pomerne ľahké pokiaľ používajú PKCS#11.
+
 ## Vývoj
 
 ### Predpoklady
