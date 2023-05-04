@@ -10,7 +10,7 @@ Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplik�
 
 Swagger dokumentácia pre HTTP API je [dostupná na githube](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml) alebo po spustení aplikácie je tiež dostupná na http://localhost:37200/docs.
 
-Vyvolať spustenie programu je možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez [autogram://go](autogram://go).
+Vyvolať spustenie programu je možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez `autogram://go`.
 
 ### Štýlovanie
 
