@@ -19,7 +19,7 @@ public class UpdateController implements SuppressedFocusController {
     }
 
     public void downloadAction(ActionEvent ignored) {
-        hostServices.showDocument(Updater.LATEST_RELEASE_URL);
+        hostServices.showDocument("https://github.com/slovensko-digital/autogram/releases/latest");
     }
 
     public void onCancelButtonPressed(ActionEvent ignored) {

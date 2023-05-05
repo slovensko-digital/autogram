@@ -10,35 +10,37 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.NoSuchElementException;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 public class Updater {
-    public static final String LATEST_RELEASE_URL = "https://github.com/slovensko-digital/autogram/releases/latest";
+    public static final String LATEST_RELEASE_URL = "https://api.github.com/repos/slovensko-digital/autogram/releases/latest";
 
     public static boolean newVersionAvailable() {
-        if (Main.getVersion().equals("dev")) {
-            return false;
-        }
+        // if (Main.getVersion().equals("dev")) {
+        //     return false;
+        // }
 
-        String latestVersion = "";
+        String latestVersionTag = "";
         try {
             var request = HttpRequest.newBuilder().uri(new URI(LATEST_RELEASE_URL))
                     .header("Accept", "application/vnd.github.v3+json").GET().build();
 
             var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
             var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 302)
-                return false;
-
-            var location = response.headers().firstValue("Location").orElseThrow();
-            latestVersion = location.substring(location.lastIndexOf('/') + 1);
+            var gson = new Gson();
+            var json = gson.fromJson(response.body(), JsonObject.class);
+            latestVersionTag = json.get("tag_name").getAsString();
 
         } catch (IOException | InterruptedException | URISyntaxException | NoSuchElementException ignored) {
             ignored.printStackTrace(); // TODO handle error
             return false;
         }
 
-        if (latestVersion.equals(""))
+        if (latestVersionTag.equals(""))
             return false;
 
-        return !Main.getVersion().equals(latestVersion);
+        latestVersionTag = latestVersionTag.replaceAll("v", "");
+        return !Main.getVersion().equals(latestVersionTag);
     }
 }
