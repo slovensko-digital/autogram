@@ -17,9 +17,9 @@ public class Updater {
     public static final String LATEST_RELEASE_URL = "https://api.github.com/repos/slovensko-digital/autogram/releases/latest";
 
     public static boolean newVersionAvailable() {
-        // if (Main.getVersion().equals("dev")) {
-        //     return false;
-        // }
+        if (Main.getVersion().equals("dev")) {
+            return false;
+        }
 
         String latestVersionTag = "";
         try {
