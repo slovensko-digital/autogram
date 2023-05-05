@@ -18,7 +18,7 @@ public class Updater {
             return false;
         }
 
-        String latestVersion = "";
+        String latestVersionTag = "";
         try {
             var request = HttpRequest.newBuilder().uri(new URI(LATEST_RELEASE_URL))
                     .header("Accept", "application/vnd.github.v3+json").GET().build();
@@ -29,16 +29,17 @@ public class Updater {
                 return false;
 
             var location = response.headers().firstValue("Location").orElseThrow();
-            latestVersion = location.substring(location.lastIndexOf('/') + 1);
+            latestVersionTag = location.substring(location.lastIndexOf('/') + 1);
 
         } catch (IOException | InterruptedException | URISyntaxException | NoSuchElementException ignored) {
             ignored.printStackTrace(); // TODO handle error
             return false;
         }
 
-        if (latestVersion.equals(""))
+        if (latestVersionTag.equals(""))
             return false;
 
-        return !Main.getVersion().equals(latestVersion);
+        var runningVersionTag = "v" + Main.getVersion();
+        return !runningVersionTag.equals(latestVersionTag);
     }
 }
