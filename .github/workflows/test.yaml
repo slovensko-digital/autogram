@@ -53,6 +53,3 @@ jobs:
           minimum_coverage: 80
           fail_below_threshold: false # set to true for Github CI build failing when coverage check do not pass
           publish_only_summary: false
-
-      - name: Add Coverage Job Summary
-        run: echo "${{ steps.jacoco_report.outputs.coverageSummary }}" >> $GITHUB_STEP_SUMMARY
