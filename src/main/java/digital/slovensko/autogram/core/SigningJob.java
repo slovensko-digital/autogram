@@ -12,7 +12,6 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -77,8 +76,8 @@ public class SigningJob {
 
     public String getDocumentAsPlainText() {
         if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            try {
-                return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
+            try (var is = document.openStream()){
+                return new String(is.readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -89,18 +88,21 @@ public class SigningJob {
 
     private String transform() {
         // TODO probably move this logic into signing job creation
-        try {
+        try (var is = this.document.openStream()){
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(this.document.openStream()));
+            
+            var inputSource = new InputSource(is);
+            inputSource.setEncoding(StandardCharsets.UTF_8.name());
+            var document = builderFactory.newDocumentBuilder().parse(inputSource);
 
             var xmlSource = new DOMSource(document);
             if (isXDC())
                 xmlSource = extractFromXDC(document, builderFactory);
 
             var outputTarget = new StreamResult(new StringWriter());
-            var transformer = TransformerFactory.newInstance().newTransformer(
-                new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes())));
+            var transformer = TransformerFactory.newDefaultInstance().newTransformer(
+                new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes(StandardCharsets.UTF_8))));
             transformer.transform(xmlSource, outputTarget);
 
             return outputTarget.getWriter().toString().trim();
@@ -132,8 +134,8 @@ public class SigningJob {
     }
 
     public String getDocumentAsBase64Encoded() {
-        try {
-            return new String(Base64.getEncoder().encode(document.openStream().readAllBytes()), StandardCharsets.UTF_8);
+        try (var is = document.openStream()){
+            return new String(Base64.getEncoder().encode(is.readAllBytes()), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
