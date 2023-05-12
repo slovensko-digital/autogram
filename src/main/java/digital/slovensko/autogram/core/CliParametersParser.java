@@ -1,16 +1,18 @@
 package digital.slovensko.autogram.core;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CliParametersParser {
-    
+
     public static CliParameters parse(String[] args) {
         return init(Arrays.asList(args));
     }
 
     private static CliParameters init(List<String> args) {
-        CliParameters cliParameters = new CliParameters();
+        Map<String, String> cliParameters = new HashMap<String, String>();
         for (String arg : args) {
             if (isNamedParam(arg)) {
                 final int eqIdx = arg.indexOf('=');
@@ -19,7 +21,7 @@ public class CliParametersParser {
                 cliParameters.put(key, value);
             }
         }
-        return cliParameters;
+        return new CliParameters(cliParameters);
     }
 
     private static boolean isNamedParam(String arg) {

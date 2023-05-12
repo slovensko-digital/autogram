@@ -15,16 +15,11 @@ public class Main {
         System.out.println("Starting with args: " + Arrays.toString(args));
 
         CliParameters cliParameters = CliParametersParser.parse(args);
-        if (isCLIMode(cliParameters)) {
+        if (cliParameters.isCli()) {
             CliApp.start(cliParameters);
         } else {
             Application.launch(GUIApp.class, args);
         }
-    }
-
-    private static boolean isCLIMode(CliParameters cliParameters) {
-        String cli = cliParameters.get("cli");
-        return cli != null && Boolean.valueOf(cli);
     }
 
     public static String getVersion() {
