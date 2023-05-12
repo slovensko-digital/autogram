@@ -23,6 +23,8 @@ public class CliParameters {
 
     private TokenDriver driver;
 
+    private boolean rewriteFile;
+
     public CliParameters(Map<String, String> namedParams) {
         this.namedParams = namedParams;
 
@@ -31,12 +33,14 @@ public class CliParameters {
         var sourceFile = namedParams.get("sourceFile");
         var cli = namedParams.get("cli");
         var driver = namedParams.get("driver");
+        var rewriteFile = namedParams.get("rewriteFile");
 
         this.targetDirectory = validateTargetDirectory(targetDirectory);
         this.sourceDirectory = validateSourceDirectory(sourceDirectory);
         this.sourceFile = validateSourceFile(sourceFile);
         this.cli = validateCli(cli);
         this.driver = validateTokenDriver(driver);
+        this.rewriteFile = validateRewriteFile(rewriteFile);
     }
 
     public File getSourceFile() {
@@ -57,6 +61,10 @@ public class CliParameters {
 
     public TokenDriver getDriver() {
         return driver;
+    }
+
+    public boolean isRewriteFile() {
+        return rewriteFile;
     }
 
     public static class Validations {
@@ -96,6 +104,10 @@ public class CliParameters {
                 }
             }
             throw new IllegalArgumentException(String.format("Token driver %s not found", driver));
+        }
+
+        public static boolean validateRewriteFile(String rewriteFile) {
+            return rewriteFile == null ? true : Boolean.valueOf(rewriteFile);
         }
     }
 }

@@ -18,21 +18,21 @@ public class CliApp {
         }
 
         if (cliParameters.getSourceDirectory() != null) {
-            signDocuments(autogram, cliParameters.getSourceDirectory(), cliParameters.getTargetDirectory());
+            signDocuments(autogram, cliParameters.getSourceDirectory(), cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
         }
 
         if (cliParameters.getSourceFile() != null) {
-            signDocument(autogram, cliParameters.getSourceFile(), cliParameters.getTargetDirectory());
+            signDocument(autogram, cliParameters.getSourceFile(), cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
         }
     }
 
-    private static void signDocuments(Autogram autogram, File sourceDirectory, String targetDirectory) {
+    private static void signDocuments(Autogram autogram, File sourceDirectory, String targetDirectory, boolean rewriteFile) {
         for (File file : sourceDirectory.listFiles()) {
-            signDocument(autogram, file, targetDirectory);
+            signDocument(autogram, file, targetDirectory, rewriteFile);
         }
     }
 
-    private static void signDocument(Autogram autogram, File file, String targetDirectory) {
-        autogram.sign(SigningJob.buildFromFile(file, autogram, targetDirectory));
+    private static void signDocument(Autogram autogram, File file, String targetDirectory, boolean rewriteFile) {
+        autogram.sign(SigningJob.buildFromFile(file, autogram, targetDirectory, rewriteFile));
     }
 }
