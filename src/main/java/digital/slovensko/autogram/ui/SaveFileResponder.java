@@ -13,10 +13,18 @@ import java.nio.file.Paths;
 public class SaveFileResponder extends Responder {
     private final File file;
     private final Autogram autogram;
+    private final String targetDirectory;
 
     public SaveFileResponder(File file, Autogram autogram) {
         this.file = file;
         this.autogram = autogram;
+        this.targetDirectory = null;
+    }
+
+    public SaveFileResponder(File file, Autogram autogram, String targetDirectory) {
+        this.file = file;
+        this.autogram = autogram;
+        this.targetDirectory = targetDirectory;
     }
 
     public void onDocumentSigned(SignedDocument signedDocument) {
@@ -34,7 +42,7 @@ public class SaveFileResponder extends Responder {
     }
 
     private File getTargetFile() {
-        var directory = file.getParent();
+        var directory = targetDirectory == null ? file.getParent() : targetDirectory;
         var name = Files.getNameWithoutExtension(file.getName());
 
         var extension = ".asice";
