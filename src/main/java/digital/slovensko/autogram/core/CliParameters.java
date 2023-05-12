@@ -1,7 +1,10 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.drivers.TokenDriver;
+
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static digital.slovensko.autogram.core.CliParameters.Validations.*;
@@ -18,6 +21,8 @@ public class CliParameters {
 
     private boolean cli;
 
+    private TokenDriver driver;
+
     public CliParameters(Map<String, String> namedParams) {
         this.namedParams = namedParams;
 
@@ -25,11 +30,13 @@ public class CliParameters {
         var sourceDirectory = namedParams.get("sourceDirectory");
         var sourceFile = namedParams.get("sourceFile");
         var cli = namedParams.get("cli");
+        var driver = namedParams.get("driver");
 
         this.targetDirectory = validateTargetDirectory(targetDirectory);
         this.sourceDirectory = validateSourceDirectory(sourceDirectory);
         this.sourceFile = validateSourceFile(sourceFile);
         this.cli = validateCli(cli);
+        this.driver = validateTokenDriver(driver);
     }
 
     public File getSourceFile() {
@@ -46,6 +53,10 @@ public class CliParameters {
 
     public boolean isCli() {
         return cli;
+    }
+
+    public TokenDriver getDriver() {
+        return driver;
     }
 
     public static class Validations {
@@ -72,6 +83,19 @@ public class CliParameters {
 
         public static boolean validateCli(String cli) {
             return cli != null && Boolean.valueOf(cli);
+        }
+
+        public static TokenDriver validateTokenDriver(String driver) {
+            if (driver == null) {
+               return null;
+            }
+            List<TokenDriver> drivers = TokenDriver.getAvailableDrivers();
+            for (TokenDriver tokenDriver : drivers) {
+                if (tokenDriver.getName().toLowerCase().contains(driver)) {
+                    return tokenDriver;
+                }
+            }
+            throw new IllegalArgumentException(String.format("Token driver %s not found", driver));
         }
     }
 }

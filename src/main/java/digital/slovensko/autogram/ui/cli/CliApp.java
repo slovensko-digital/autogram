@@ -8,7 +8,7 @@ import java.io.File;
 
 public class CliApp {
     public static void start(CliParameters cliParameters) {
-        var ui = new CliUI();
+        var ui = new CliUI(cliParameters.getDriver());
         var autogram = new Autogram(ui);
 
         autogram.checkForUpdate();

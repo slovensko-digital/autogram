@@ -16,6 +16,12 @@ import java.util.function.Consumer;
 public class CliUI implements UI {
     SigningKey activeKey;
 
+    TokenDriver driver;
+
+    public CliUI (TokenDriver driver) {
+        this.driver = driver;
+    }
+
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
         System.out.println("Starting signing for " + job);
@@ -33,7 +39,9 @@ public class CliUI implements UI {
     @Override
     public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
         TokenDriver pickedDriver;
-        if (drivers.size() == 1) {
+        if (driver != null) {
+            pickedDriver = driver;
+        } else if (drivers.size() == 1) {
             pickedDriver = drivers.get(0);
         } else {
             var i = new AtomicInteger(1);
