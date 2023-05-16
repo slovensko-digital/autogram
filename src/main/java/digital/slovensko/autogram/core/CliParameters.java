@@ -1,17 +1,16 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.drivers.TokenDriver;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static digital.slovensko.autogram.core.CliParameters.Validations.*;
 
 public class CliParameters {
-
-    private Map<String, String> namedParams;
 
     private File sourceFile;
 
@@ -25,15 +24,14 @@ public class CliParameters {
 
     private boolean rewriteFile;
 
-    public CliParameters(Map<String, String> namedParams) {
-        this.namedParams = namedParams;
+    public CliParameters(CommandLine cmd) {
 
-        var targetDirectory = namedParams.get("targetDirectory");
-        var sourceDirectory = namedParams.get("sourceDirectory");
-        var sourceFile = namedParams.get("sourceFile");
-        var cli = namedParams.get("cli");
-        var driver = namedParams.get("driver");
-        var rewriteFile = namedParams.get("rewriteFile");
+        var targetDirectory = cmd.getOptionValue("td");
+        var sourceDirectory = cmd.getOptionValue("sd");
+        var sourceFile = cmd.getOptionValue("sf");
+        var cli = cmd.getOptionValue("c");
+        var driver = cmd.getOptionValue("d");
+        var rewriteFile = cmd.getOptionValue("rf");
 
         this.targetDirectory = validateTargetDirectory(targetDirectory);
         this.sourceDirectory = validateSourceDirectory(sourceDirectory);
