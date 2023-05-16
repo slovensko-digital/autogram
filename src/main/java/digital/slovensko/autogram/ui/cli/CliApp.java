@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.CliParameters;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.errors.AutogramException;
 
 import java.io.File;
 
@@ -17,12 +18,16 @@ public class CliApp {
             throw new IllegalArgumentException("Neither source file nor source directory is defined");
         }
 
-        if (cliParameters.getSourceDirectory() != null) {
-            signDocuments(autogram, cliParameters.getSourceDirectory(), cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
-        }
+        try {
+            if (cliParameters.getSourceDirectory() != null) {
+                signDocuments(autogram, cliParameters.getSourceDirectory(), cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
+            }
 
-        if (cliParameters.getSourceFile() != null) {
-            signDocument(autogram, cliParameters.getSourceFile(), cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
+            if (cliParameters.getSourceFile() != null) {
+                signDocument(autogram, cliParameters.getSourceFile(), cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
+            }
+        } catch (AutogramException e) {
+            ui.showError(e);
         }
     }
 

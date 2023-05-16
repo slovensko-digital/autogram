@@ -103,7 +103,7 @@ public class CliUI implements UI {
 
     @Override
     public void onSigningFailed(AutogramException e) {
-        showError(e);
+        throw e;
     }
 
     @Override
@@ -142,7 +142,7 @@ public class CliUI implements UI {
         System.err.println("Dokument nie je vo formáte PDF/A");
     }
 
-    private void showError(AutogramException e) {
+    public void showError(AutogramException e) {
         System.err.println(e.getHeading());
         System.err.println("");
         System.err.println(e.getSubheading());
