@@ -1,8 +1,11 @@
 package digital.slovensko.autogram.ui.cli;
 
+import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.DSSUtils;
@@ -41,6 +44,9 @@ public class CliUI implements UI {
         TokenDriver pickedDriver;
         if (driver != null) {
             pickedDriver = driver;
+        } else if (drivers.isEmpty()) {
+            showError(new NoDriversDetectedException());
+            return;
         } else if (drivers.size() == 1) {
             pickedDriver = drivers.get(0);
         } else {
@@ -68,7 +74,10 @@ public class CliUI implements UI {
 
     @Override
     public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
-        if (keys.size() > 1) {
+        if (keys.isEmpty()) {
+            showError(new NoKeysDetectedException());
+            return;
+        } else if (keys.size() > 1) {
             System.out.println("Found multiple keys:");
             keys.forEach(key -> System.out.println(DSSUtils.buildTooltipLabel(key)));
         }
@@ -94,31 +103,50 @@ public class CliUI implements UI {
 
     @Override
     public void onSigningFailed(AutogramException e) {
-        System.err.println(e);
+        showError(e);
     }
 
     @Override
     public void onDocumentSaved(File filename) {
-
+        System.out.println("Dokument bol úspešne podpísaný");
+        System.out.println("");
+        System.out.println(String.format("Podpísaný súbor je uložený ako %s v priečinku %s.", filename.getName(), filename.getParent()));
     }
 
     @Override
     public void onPickSigningKeyFailed(AutogramException e) {
-        System.err.println(e);
+        showError(e);
     }
 
     @Override
     public void onUpdateAvailable() {
-        System.out.println("Newer version of Autogram exists. Visit ");
+        System.out.println("Nová verzia");
+        System.out.println(String.format("Je dostupná nová verzia a odporúčame stiahnuť aktualizáciu. Najnovšiu verziu si možete vždy stiahnuť na %s.", Updater.LATEST_RELEASE_URL));
     }
 
     @Override
     public void onAboutInfo() {
-        System.out.println("About autograms");
+        System.out.println("O projekte Autogram");
+        System.out.println("Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a štandardov. Môžete ho používať komerčne aj nekomerčne a úplne zadarmo.");
+        System.out.println("Autori a sponzori");
+        System.out.println("Autormi tohto projektu sú Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. a ďalší spoluautori.");
+        System.out.println("Licencia a zdrojové kódy");
+        System.out.println("Tento softvér pôvodne vychádza projektu z Octosign White Label od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou. So súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2.");
+        System.out.println("Zdrojové kódy sú dostupné na https://github.com/slovensko-digital/autogram.");
+        System.out.println(String.format("Verzia: %s", Main.getVersion()));
     }
 
     @Override
     public void onPDFAComplianceCheckFailed(SigningJob job) {
+        System.err.println("Nastala chyba");
+        System.err.println("Dokument nie je vo formáte PDF/A");
+    }
 
+    private void showError(AutogramException e) {
+        System.err.println(e.getHeading());
+        System.err.println("");
+        System.err.println(e.getSubheading());
+        System.err.println("");
+        System.err.println(e.getDescription());
     }
 }
