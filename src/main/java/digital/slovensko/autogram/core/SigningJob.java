@@ -12,12 +12,12 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -26,18 +26,23 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Properties;
 
 public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
     private final SigningParameters parameters;
 
+    private final Charset encoding;
+
     public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
+        this.encoding = StandardCharsets.UTF_8;
     }
 
     public DSSDocument getDocument() {
@@ -77,8 +82,8 @@ public class SigningJob {
 
     public String getDocumentAsPlainText() {
         if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            try {
-                return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
+            try (var is = document.openStream()){
+                return new String(is.readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -89,18 +94,26 @@ public class SigningJob {
 
     private String transform() {
         // TODO probably move this logic into signing job creation
-        try {
+        try (var is = this.document.openStream()){
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(this.document.openStream()));
+
+            var inputSource = new InputSource(is);
+            inputSource.setEncoding(encoding.displayName());
+            var document = builderFactory.newDocumentBuilder().parse(inputSource);
 
             var xmlSource = new DOMSource(document);
             if (isXDC())
                 xmlSource = extractFromXDC(document, builderFactory);
 
             var outputTarget = new StreamResult(new StringWriter());
-            var transformer = TransformerFactory.newInstance().newTransformer(
-                new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes())));
+            var transformer = TransformerFactory
+                    .newDefaultInstance().newTransformer(
+                            new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding)))
+                    );
+            var outputProperties = new Properties();
+            outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
+            transformer.setOutputProperties(outputProperties);
             transformer.transform(xmlSource, outputTarget);
 
             return outputTarget.getWriter().toString().trim();
@@ -132,8 +145,8 @@ public class SigningJob {
     }
 
     public String getDocumentAsBase64Encoded() {
-        try {
-            return new String(Base64.getEncoder().encode(document.openStream().readAllBytes()), StandardCharsets.UTF_8);
+        try (var is = document.openStream()){
+            return new String(Base64.getEncoder().encode(is.readAllBytes()), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
