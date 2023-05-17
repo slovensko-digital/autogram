@@ -14,11 +14,14 @@ import java.io.File;
 public class MainMenuController implements SuppressedFocusController {
     private final Autogram autogram;
 
+    private final GUI ui;
+
     @FXML
     VBox dropZone;
 
-    public MainMenuController(Autogram autogram) {
+    public MainMenuController(Autogram autogram, GUI ui) {
         this.autogram = autogram;
+        this.ui = ui;
     }
 
 
@@ -38,7 +41,7 @@ public class MainMenuController implements SuppressedFocusController {
 
         dropZone.setOnDragDropped(event -> {
             for (File file : event.getDragboard().getFiles()) {
-                autogram.sign(SigningJob.buildFromFile(file, autogram));
+                ui.sign(file, autogram);
             }
         });
     }
@@ -49,7 +52,7 @@ public class MainMenuController implements SuppressedFocusController {
 
         if (list != null) {
             for (File file : list) {
-                autogram.sign(SigningJob.buildFromFile(file, autogram));
+                ui.sign(file, autogram);
             }
         }
     }

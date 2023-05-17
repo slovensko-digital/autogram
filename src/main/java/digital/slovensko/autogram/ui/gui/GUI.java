@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -255,5 +256,18 @@ public class GUI implements UI {
 
     private Window getJobWindow(SigningJob job) {
         return jobControllers.get(job).mainBox.getScene().getWindow();
+    }
+
+    public void sign(File file, Autogram autogram) {
+        SigningJob job = SigningJob.buildFromFile(file, autogram);
+        sign(autogram, job);
+    }
+
+    public void sign(Autogram autogram, SigningJob job) {
+        autogram.sign(job);
+        if (job.shouldCheckPDFCompliance()) {
+            onWorkThreadDo(()
+                    -> autogram.checkPDFACompliance(job));
+        }
     }
 }

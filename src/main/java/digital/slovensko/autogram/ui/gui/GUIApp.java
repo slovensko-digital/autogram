@@ -19,13 +19,13 @@ public class GUIApp extends Application {
 
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
 
-        var controller = new MainMenuController(autogram);
+        var controller = new MainMenuController(autogram, ui);
         var root = GUIUtils.loadFXML(controller, "main-menu.fxml");
 
         var scene = new Scene(root);
 
         var params = LaunchParameters.fromParameters(getParameters());
-        var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps());
+        var server = new AutogramServer(autogram, ui, params.getHost(), params.getPort(), params.isProtocolHttps());
 
         server.start();
 

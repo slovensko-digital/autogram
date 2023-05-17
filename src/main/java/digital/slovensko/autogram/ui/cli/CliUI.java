@@ -12,9 +12,11 @@ import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class CliUI implements UI {
     SigningKey activeKey;
@@ -148,5 +150,25 @@ public class CliUI implements UI {
         System.err.println(e.getSubheading());
         System.err.println("");
         System.err.println(e.getDescription());
+    }
+
+    public void sign(File file, Autogram autogram) {
+        List<SigningJob> jobs = buildSigningJobs(file, autogram);
+        jobs
+            .stream()
+            .forEach(job -> autogram.checkPDFACompliance(job));
+
+        jobs
+            .stream()
+            .forEach(job -> autogram.sign(job));
+    }
+
+    private List<SigningJob> buildSigningJobs(File file, Autogram autogram) {
+        return file.isDirectory() ?
+                Arrays
+                    .stream(file.listFiles())
+                    .map(f -> SigningJob.buildFromFile(f, autogram))
+                    .collect(Collectors.toList())
+                : Arrays.asList(SigningJob.buildFromFile(file, autogram));
     }
 }
