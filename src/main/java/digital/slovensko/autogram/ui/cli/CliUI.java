@@ -152,8 +152,8 @@ public class CliUI implements UI {
         System.err.println(e.getDescription());
     }
 
-    public void sign(File file, Autogram autogram) {
-        List<SigningJob> jobs = buildSigningJobs(file, autogram);
+    public void sign(File file, Autogram autogram, String targetDirectory, boolean rewriteFile) {
+        List<SigningJob> jobs = buildSigningJobs(file, autogram, targetDirectory, rewriteFile);
         jobs
             .stream()
             .forEach(job -> autogram.checkPDFACompliance(job));
@@ -163,12 +163,12 @@ public class CliUI implements UI {
             .forEach(job -> autogram.sign(job));
     }
 
-    private List<SigningJob> buildSigningJobs(File file, Autogram autogram) {
+    private List<SigningJob> buildSigningJobs(File file, Autogram autogram, String targetDirectory, boolean rewriteFile) {
         return file.isDirectory() ?
                 Arrays
                     .stream(file.listFiles())
-                    .map(f -> SigningJob.buildFromFile(f, autogram))
+                    .map(f -> SigningJob.buildFromFile(f, autogram, targetDirectory, rewriteFile))
                     .collect(Collectors.toList())
-                : Arrays.asList(SigningJob.buildFromFile(file, autogram));
+                : Arrays.asList(SigningJob.buildFromFile(file, autogram, targetDirectory, rewriteFile));
     }
 }
