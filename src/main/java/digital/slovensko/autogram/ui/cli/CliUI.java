@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
+import digital.slovensko.autogram.core.errors.PDFAComplianceException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.DSSUtils;
@@ -140,8 +141,7 @@ public class CliUI implements UI {
 
     @Override
     public void onPDFAComplianceCheckFailed(SigningJob job) {
-        System.err.println("Nastala chyba");
-        System.err.println("Dokument nie je vo formáte PDF/A");
+        throw new PDFAComplianceException();
     }
 
     public void showError(AutogramException e) {
