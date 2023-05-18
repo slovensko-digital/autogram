@@ -12,8 +12,6 @@ public class CliApp {
         var ui = new CliUI(cliParameters.getDriver());
         var autogram = new Autogram(ui);
 
-        autogram.checkForUpdate();
-
         if (cliParameters.getSourceDirectory() == null && cliParameters.getSourceFile() == null) {
             throw new IllegalArgumentException("Neither source file nor source directory is defined");
         }
@@ -32,9 +30,7 @@ public class CliApp {
     }
 
     private static void signDocuments(CliUI ui, Autogram autogram, File sourceDirectory, String targetDirectory, boolean rewriteFile) {
-        for (File file : sourceDirectory.listFiles()) {
-            signDocument(ui, autogram, file, targetDirectory, rewriteFile);
-        }
+        ui.sign(sourceDirectory, autogram, targetDirectory, rewriteFile);
     }
 
     private static void signDocument(CliUI ui, Autogram autogram, File file, String targetDirectory, boolean rewriteFile) {
