@@ -17,22 +17,14 @@ public class CliApp {
 
         try {
             if (cliParameters.getSourceDirectory() != null) {
-                signDocuments(ui, autogram, cliParameters.getSourceDirectory(), cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
+                ui.sign(cliParameters.getSourceDirectory(), autogram, cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
             }
 
             if (cliParameters.getSourceFile() != null) {
-                signDocument(ui, autogram, cliParameters.getSourceFile(), cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
+                ui.sign(cliParameters.getSourceFile(), autogram, cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
             }
         } catch (AutogramException e) {
             ui.showError(e);
         }
-    }
-
-    private static void signDocuments(CliUI ui, Autogram autogram, File sourceDirectory, String targetDirectory, boolean rewriteFile) {
-        ui.sign(sourceDirectory, autogram, targetDirectory, rewriteFile);
-    }
-
-    private static void signDocument(CliUI ui, Autogram autogram, File file, String targetDirectory, boolean rewriteFile) {
-        ui.sign(file, autogram, targetDirectory, rewriteFile);
     }
 }
