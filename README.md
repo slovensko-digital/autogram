@@ -17,7 +17,7 @@ Dostupné argumenty sú:
 - sourceDirectory <adresár> alebo -sd <adresár>: Určuje zdrojový adresár, kde sa nachádzajú súbory, ktoré chcete podpísať.
 - targetDirectory <adresár> alebo -td <adresár>: Určuje cieľový adresár, do ktorého sa uložia podpísané súbory. Ak nie je definovaný, podpísaný súbor sa uloží do zdrojového adresáru.
 - sourceFile <súbor> alebo -sf <súbor>: Určuje konkrétny súbor, ktorý chcete podpísať.
-- rewriteFile alebo -rf: Parameter typu boolean, indikuje, či sa má prepísať existujúci podpísaný súbor v prípade, že už existuje v cieľovom adresári.
+- rewriteFile alebo -rf: Parameter indikuje, či sa má prepísať existujúci podpísaný súbor v prípade, že už existuje v cieľovom adresári.
 - cli alebo -c: Parameter indikuje, že aplikácia sa spúšťa v CLI móde. 
 - driver <názov> alebo -d <názov>: Určuje konkrétny ovládač, ktorý sa má použiť pri podpisovaní. Ak nie je definovaný vyberá sa z dostupných ovládačov.
 
