@@ -155,8 +155,12 @@ public class CliUI implements UI {
     public void sign(File file, Autogram autogram, String targetDirectory, boolean rewriteFile) {
         List<SigningJob> jobs = buildSigningJobs(file, autogram, targetDirectory, rewriteFile);
         jobs
-            .stream()
-            .forEach(job -> autogram.checkPDFACompliance(job));
+                .stream()
+                .forEach(job -> {
+                    if (job.shouldCheckPDFCompliance()) {
+                        autogram.checkPDFACompliance(job);
+                    }
+                });
 
         jobs
             .stream()
