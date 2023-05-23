@@ -53,7 +53,7 @@ class AutogramTests {
 
     private static class FakeTokenDriver extends TokenDriver {
         public FakeTokenDriver(String name) {
-            super(name, Path.of(""), true);
+            super(name, Path.of(""), true, "fake");
         }
 
         @Override
