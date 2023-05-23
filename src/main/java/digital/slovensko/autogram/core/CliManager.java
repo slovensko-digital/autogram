@@ -16,8 +16,8 @@ public class CliManager {
         options.addOption("sd", "sourceDirectory", true, "Specifies the source directory for the application. This option sets the directory from which the application should read the necessary files for signing.");
         options.addOption("td", "targetDirectory", true, "Specifies the target directory for the application. This option determines the directory where the application should output or save the signed files.");
         options.addOption("sf", "sourceFile", true, "Specifies the source file for the application. This option allows you to provide a specific file that the application should sign.");
-        options.addOption("rf", "rewriteFile", true, "Specifies the file to be rewritten by the application. This option instructs the application to modify or overwrite the content of file if file with the same name exists.");
-        options.addOption("c", "cli", true, "Specifies the CLI (Command Line Interface) to be used by the application. This option allows you to specify mode of application. If not set GUI application starts.");
+        options.addOption("rf", "rewriteFile", false, "Specifies the file to be rewritten by the application. This option instructs the application to modify or overwrite the content of file if file with the same name exists.");
+        options.addOption("c", "cli", false, "Specifies the CLI (Command Line Interface) to be used by the application. This option allows you to specify mode of application. If not set GUI application starts.");
         options.addOption("d", "driver", true, "Specifies the driver for the application. This option sets the driver for signing.");
     }
 

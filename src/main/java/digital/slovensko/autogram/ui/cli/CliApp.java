@@ -2,7 +2,6 @@ package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.CliParameters;
-import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
 
 import java.io.File;

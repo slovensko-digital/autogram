@@ -29,9 +29,9 @@ public class CliParameters {
         var targetDirectory = cmd.getOptionValue("td");
         var sourceDirectory = cmd.getOptionValue("sd");
         var sourceFile = cmd.getOptionValue("sf");
-        var cli = cmd.getOptionValue("c");
+        var cli = cmd.hasOption("c");
         var driver = cmd.getOptionValue("d");
-        var rewriteFile = cmd.getOptionValue("rf");
+        var rewriteFile = cmd.hasOption("rf");
 
         this.targetDirectory = validateTargetDirectory(targetDirectory);
         this.sourceDirectory = validateSourceDirectory(sourceDirectory);
@@ -87,8 +87,8 @@ public class CliParameters {
             return sourceFile == null ? null : new File(sourceFile);
         }
 
-        public static boolean validateCli(String cli) {
-            return cli != null && Boolean.valueOf(cli);
+        public static boolean validateCli(boolean cli) {
+            return cli;
         }
 
         public static TokenDriver validateTokenDriver(String driver) {
@@ -104,8 +104,8 @@ public class CliParameters {
             throw new IllegalArgumentException(String.format("Token driver %s not found", driver));
         }
 
-        public static boolean validateRewriteFile(String rewriteFile) {
-            return rewriteFile == null ? true : Boolean.valueOf(rewriteFile);
+        public static boolean validateRewriteFile(boolean rewriteFile) {
+            return rewriteFile;
         }
     }
 }

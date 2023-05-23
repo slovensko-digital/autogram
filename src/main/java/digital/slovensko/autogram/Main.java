@@ -23,7 +23,7 @@ public class Main {
                 cliManager.printHelp();
             } else if (cmd.hasOption("u")) {
                 cliManager.printUsage();
-            } else if (cmd.hasOption("c") && Boolean.valueOf(cmd.getOptionValue("c"))) {
+            } else if (cmd.hasOption("c")) {
                 CliApp.start(new CliParameters(cmd));
             } else {
                 Application.launch(GUIApp.class, args);
