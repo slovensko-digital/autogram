@@ -15,11 +15,11 @@ Dostupné argumenty sú:
 - help alebo -h: Zobrazí nápovedu a informácie o dostupných argumentoch.
 - usage alebo -u: Zobrazí príklady použitia aplikácie v CLI móde.
 - sourceDirectory <adresár> alebo -sd <adresár>: Určuje zdrojový adresár, kde sa nachádzajú súbory, ktoré chcete podpísať.
-- targetDirectory <adresár> alebo -td <adresár>: Určuje cieľový adresár, do ktorého sa uložia podpísané súbory.
+- targetDirectory <adresár> alebo -td <adresár>: Určuje cieľový adresár, do ktorého sa uložia podpísané súbory. Ak nie je definovaný, podpísaný súbor sa uloží do zdrojového adresáru.
 - sourceFile <súbor> alebo -sf <súbor>: Určuje konkrétny súbor, ktorý chcete podpísať.
 - rewriteFile alebo -rf: Parameter typu boolean, indikuje, či sa má prepísať existujúci podpísaný súbor v prípade, že už existuje v cieľovom adresári.
-- cli alebo -c: Parameter typu boolean, indikuje, že aplikácia sa spúšťa v CLI móde.
-- driver <názov> alebo -d <názov>: Určuje konkrétny ovládač, ktorý sa má použiť pri podpisovaní.
+- cli alebo -c: Parameter indikuje, že aplikácia sa spúšťa v CLI móde. 
+- driver <názov> alebo -d <názov>: Určuje konkrétny ovládač, ktorý sa má použiť pri podpisovaní. Ak nie je definovaný vyberá sa z dostupných ovládačov.
 
 ## Integrácia
 
