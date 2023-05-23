@@ -7,6 +7,8 @@ import org.apache.commons.cli.Options;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import static digital.slovensko.autogram.core.CliParameters.Validations.*;
 
@@ -95,13 +97,17 @@ public class CliParameters {
             if (driver == null) {
                return null;
             }
-            List<TokenDriver> drivers = TokenDriver.getAvailableDrivers();
-            for (TokenDriver tokenDriver : drivers) {
-                if (tokenDriver.getName().toLowerCase().contains(driver)) {
-                    return tokenDriver;
-                }
+
+            Optional<TokenDriver> tokenDriver = TokenDriver
+                    .getAvailableDrivers()
+                    .stream()
+                    .filter(new TokenDriverPredicate(driver))
+                    .findFirst();
+
+            if (!tokenDriver.isPresent()) {
+                throw new IllegalArgumentException(String.format("Token driver %s not found", driver));
             }
-            throw new IllegalArgumentException(String.format("Token driver %s not found", driver));
+            return tokenDriver.get();
         }
 
         public static boolean validateRewriteFile(boolean rewriteFile) {

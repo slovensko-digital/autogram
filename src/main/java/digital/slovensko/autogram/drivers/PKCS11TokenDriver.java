@@ -7,8 +7,8 @@ import java.nio.file.Path;
 import java.security.KeyStore;
 
 public class PKCS11TokenDriver extends TokenDriver {
-    public PKCS11TokenDriver(String name, Path path, boolean needsPassword) {
-        super(name, path, needsPassword);
+    public PKCS11TokenDriver(String name, Path path, boolean needsPassword, String shortname) {
+        super(name, path, needsPassword, shortname);
     }
 
     @Override
