@@ -14,6 +14,11 @@ public class TokenDriverPredicate implements Predicate<TokenDriver> {
 
     @Override
     public boolean test(TokenDriver tokenDriver) {
+        if (tokenDriver == null && driver == null) {
+            return true;
+        } else if (tokenDriver == null || driver == null) {
+            return false;
+        }
         return tokenDriver.getShortname().toLowerCase().equals(driver.toLowerCase());
     }
 }
