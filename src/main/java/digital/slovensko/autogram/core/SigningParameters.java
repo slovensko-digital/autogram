@@ -231,6 +231,6 @@ public class SigningParameters {
     }
 
     public int getPreviewWidth() {
-        return (previewWidth > 0) ? previewWidth : 600;
+        return (previewWidth > 0) ? previewWidth : 640;
     }
 }

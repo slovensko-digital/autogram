@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.server.dto;
 
 import static digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod.*;
+import static digital.slovensko.autogram.server.dto.ServerSigningParameters.PreviewWidthEnum.*;
 
 import java.util.Arrays;
 import java.util.Base64;
@@ -23,6 +24,14 @@ public class ServerSigningParameters {
         INCLUSIVE_11_WITH_COMMENTS
     }
 
+    public enum PreviewWidthEnum {
+        sm,
+        md,
+        lg,
+        xl,
+        xxl
+    }
+
     private final ASiCContainerType container;
     private final SignatureLevel level;
     private final String containerXmlns;
@@ -36,7 +45,7 @@ public class ServerSigningParameters {
     private final LocalCanonicalizationMethod keyInfoCanonicalization;
     private final String identifier;
     private final boolean checkPDFACompliance;
-    private final int previewWidth;
+    private final PreviewWidthEnum previewWidth;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
                                    String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -44,7 +53,7 @@ public class ServerSigningParameters {
                                    Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
                                    LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
                                    String schema, String transformation,
-                                   String Identifier, boolean checkPDFACompliance, int previewWidth) {
+                                   String Identifier, boolean checkPDFACompliance, PreviewWidthEnum previewWidth) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -74,7 +83,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, previewWidth);
+                identifier, checkPDFACompliance, getPreviewWidth());
     }
 
     private String getTransformation(boolean isBase64) {
@@ -112,6 +121,20 @@ public class ServerSigningParameters {
             return CanonicalizationMethod.INCLUSIVE_11_WITH_COMMENTS;
 
         return null;
+    }
+
+    private int getPreviewWidth() {
+        if (previewWidth == null)
+            return 0;
+
+        return switch (previewWidth) {
+            case sm -> 640;
+            case md -> 768;
+            case lg -> 1024;
+            case xl -> 1280;
+            case xxl -> 1536;
+            default -> 0;
+        };
     }
 
     private SignatureLevel getSignatureLevel() {
