@@ -39,8 +39,4 @@ public class CliManager {
         formatter.printUsage(pw, 80, syntax, options);
         pw.flush();
     }
-
-    public Options getOptions() {
-        return options;
-    }
 }

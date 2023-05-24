@@ -4,8 +4,6 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.CliParameters;
 import digital.slovensko.autogram.core.errors.AutogramException;
 
-import java.io.File;
-
 public class CliApp {
     public static void start(CliParameters cliParameters) {
         var ui = new CliUI(cliParameters.getDriver());

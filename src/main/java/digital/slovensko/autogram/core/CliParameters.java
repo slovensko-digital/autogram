@@ -2,13 +2,9 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.drivers.TokenDriver;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import static digital.slovensko.autogram.core.CliParameters.Validations.*;
 
