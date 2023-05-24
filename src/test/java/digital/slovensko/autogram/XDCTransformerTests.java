@@ -35,7 +35,7 @@ class XDCTransformerTests {
             null,
             transformation,
             "id1/asa",
-            false);
+            false, 800);
 
         var out = XDCTransformer.buildFromSigningParameters(params).transform(document);
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);

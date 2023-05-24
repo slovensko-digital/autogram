@@ -36,6 +36,7 @@ public class ServerSigningParameters {
     private final LocalCanonicalizationMethod keyInfoCanonicalization;
     private final String identifier;
     private final boolean checkPDFACompliance;
+    private final int previewWidth;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
                                    String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -43,7 +44,7 @@ public class ServerSigningParameters {
                                    Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
                                    LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
                                    String schema, String transformation,
-                                   String Identifier, boolean checkPDFACompliance) {
+                                   String Identifier, boolean checkPDFACompliance, int previewWidth) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -57,6 +58,7 @@ public class ServerSigningParameters {
         this.transformation = transformation;
         this.identifier = Identifier;
         this.checkPDFACompliance = checkPDFACompliance;
+        this.previewWidth = previewWidth;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64) {
@@ -72,7 +74,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance);
+                identifier, checkPDFACompliance, previewWidth);
     }
 
     private String getTransformation(boolean isBase64) {
