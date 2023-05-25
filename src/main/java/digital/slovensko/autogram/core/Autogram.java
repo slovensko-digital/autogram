@@ -43,6 +43,9 @@ public class Autogram {
             } catch (DSSException e) {
                 ui.onUIThreadDo(()
                 -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
+            } catch (IllegalArgumentException e) {
+                ui.onUIThreadDo(()
+                        -> ui.onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
             } catch (Exception e) {
                 ui.onUIThreadDo(()
                 -> ui.onSigningFailed(new UnrecognizedException(e)));
