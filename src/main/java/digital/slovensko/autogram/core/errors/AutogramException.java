@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core.errors;
 
+import digital.slovensko.autogram.core.SigningCertificateExpiredMessagePredicate;
 import eu.europa.esig.dss.model.DSSException;
 
 public class AutogramException extends RuntimeException {
@@ -51,6 +52,10 @@ public class AutogramException extends RuntimeException {
             }
         }
 
+        return new UnrecognizedException(e);
+    }
+
+    public static AutogramException createFromIllegalArgumentException(IllegalArgumentException e) {
         return new UnrecognizedException(e);
     }
 }
