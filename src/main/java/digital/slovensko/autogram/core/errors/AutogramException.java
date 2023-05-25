@@ -56,6 +56,14 @@ public class AutogramException extends RuntimeException {
     }
 
     public static AutogramException createFromIllegalArgumentException(IllegalArgumentException e) {
+        for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
+            if (cause.getMessage() != null) {
+                if (new SigningCertificateExpiredMessagePredicate().test(cause.getMessage())) {
+                    return new SigningWithExpiredCertificateException();
+                }
+            }
+        }
+
         return new UnrecognizedException(e);
     }
 }
