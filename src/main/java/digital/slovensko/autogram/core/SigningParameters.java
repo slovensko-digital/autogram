@@ -31,7 +31,7 @@ public class SigningParameters {
     private final String keyInfoCanonicalization;
     private final String identifier;
     private final boolean checkPDFACompliance;
-    private final int previewWidth;
+    private final int preferredPreviewWidth;
 
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
                              String containerXmlns, SignaturePackaging packaging,
@@ -39,7 +39,7 @@ public class SigningParameters {
                              Boolean en319132, String infoCanonicalization,
                              String propertiesCanonicalization, String keyInfoCanonicalization,
                              String schema, String transformation,
-                             String identifier, boolean checkPDFACompliance, int previewWidth) {
+                             String identifier, boolean checkPDFACompliance, int preferredPreviewWidth) {
         this.level = level;
         this.asicContainer = container;
         this.containerXmlns = containerXmlns;
@@ -53,7 +53,7 @@ public class SigningParameters {
         this.transformation = transformation;
         this.identifier = identifier;
         this.checkPDFACompliance = checkPDFACompliance;
-        this.previewWidth = previewWidth;
+        this.preferredPreviewWidth = preferredPreviewWidth;
     }
 
     public MimeType getTransformationOutputMimeType() {
@@ -230,7 +230,7 @@ public class SigningParameters {
         return checkPDFACompliance;
     }
 
-    public int getPreviewWidth() {
-        return (previewWidth > 0) ? previewWidth : 640;
+    public int getPreferredPreviewWidth() {
+        return (preferredPreviewWidth > 0) ? preferredPreviewWidth : 640;
     }
 }

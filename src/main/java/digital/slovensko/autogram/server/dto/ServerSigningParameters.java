@@ -1,8 +1,5 @@
 package digital.slovensko.autogram.server.dto;
 
-import static digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod.*;
-import static digital.slovensko.autogram.server.dto.ServerSigningParameters.PreviewWidthEnum.*;
-
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -45,7 +42,7 @@ public class ServerSigningParameters {
     private final LocalCanonicalizationMethod keyInfoCanonicalization;
     private final String identifier;
     private final boolean checkPDFACompliance;
-    private final PreviewWidthEnum previewWidth;
+    private final PreviewWidthEnum preferredPreviewWidth;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
                                    String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -53,7 +50,7 @@ public class ServerSigningParameters {
                                    Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
                                    LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
                                    String schema, String transformation,
-                                   String Identifier, boolean checkPDFACompliance, PreviewWidthEnum previewWidth) {
+                                   String Identifier, boolean checkPDFACompliance, PreviewWidthEnum preferredPreviewWidth) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -67,7 +64,7 @@ public class ServerSigningParameters {
         this.transformation = transformation;
         this.identifier = Identifier;
         this.checkPDFACompliance = checkPDFACompliance;
-        this.previewWidth = previewWidth;
+        this.preferredPreviewWidth = preferredPreviewWidth;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64) {
@@ -83,7 +80,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, getPreviewWidth());
+                identifier, checkPDFACompliance, getPreferredPreviewWidth());
     }
 
     private String getTransformation(boolean isBase64) {
@@ -107,27 +104,24 @@ public class ServerSigningParameters {
     }
 
     private static String getCanonicalizationMethodString(LocalCanonicalizationMethod method) {
-        if (method == INCLUSIVE)
-            return CanonicalizationMethod.INCLUSIVE;
-        if (method == EXCLUSIVE)
-            return CanonicalizationMethod.EXCLUSIVE;
-        if (method == INCLUSIVE_WITH_COMMENTS)
-            return CanonicalizationMethod.INCLUSIVE_WITH_COMMENTS;
-        if (method == EXCLUSIVE_WITH_COMMENTS)
-            return CanonicalizationMethod.EXCLUSIVE_WITH_COMMENTS;
-        if (method == INCLUSIVE_11)
-            return CanonicalizationMethod.INCLUSIVE_11;
-        if (method == INCLUSIVE_11_WITH_COMMENTS)
-            return CanonicalizationMethod.INCLUSIVE_11_WITH_COMMENTS;
+        if (method == null)
+            return null;
 
-        return null;
+        return switch (method) {
+            case INCLUSIVE -> CanonicalizationMethod.INCLUSIVE;
+            case EXCLUSIVE -> CanonicalizationMethod.EXCLUSIVE;
+            case INCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_WITH_COMMENTS;
+            case EXCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.EXCLUSIVE_WITH_COMMENTS;
+            case INCLUSIVE_11 -> CanonicalizationMethod.INCLUSIVE_11;
+            case INCLUSIVE_11_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_11_WITH_COMMENTS;
+        };
     }
 
-    private int getPreviewWidth() {
-        if (previewWidth == null)
+    private int getPreferredPreviewWidth() {
+        if (preferredPreviewWidth == null)
             return 0;
 
-        return switch (previewWidth) {
+        return switch (preferredPreviewWidth) {
             case sm -> 640;
             case md -> 768;
             case lg -> 1024;

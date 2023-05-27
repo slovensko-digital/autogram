@@ -53,7 +53,7 @@ public class SigningDialogController implements SuppressedFocusController {
     public void initialize() {
         refreshSigningKey();
 
-        mainBox.setPrefWidth(signingJob.getPreviewWidth());
+        mainBox.setPrefWidth(signingJob.getPreferredPreviewWidth());
 
         if (signingJob.isPlainText()) {
             showPlainTextVisualization();
