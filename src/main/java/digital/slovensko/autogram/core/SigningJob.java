@@ -62,8 +62,8 @@ public class SigningJob {
         return false;
     }
 
-    public int getPreferredPreviewWidth() {
-        return parameters.getPreferredPreviewWidth();
+    public int getVisualizationWidth() {
+        return parameters.getVisualizationWidth();
     }
 
     public boolean isPDF() {

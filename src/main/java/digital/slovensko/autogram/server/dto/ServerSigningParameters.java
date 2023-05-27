@@ -21,7 +21,7 @@ public class ServerSigningParameters {
         INCLUSIVE_11_WITH_COMMENTS
     }
 
-    public enum PreviewWidthEnum {
+    public enum VisualizationWidthEnum {
         sm,
         md,
         lg,
@@ -42,7 +42,7 @@ public class ServerSigningParameters {
     private final LocalCanonicalizationMethod keyInfoCanonicalization;
     private final String identifier;
     private final boolean checkPDFACompliance;
-    private final PreviewWidthEnum preferredPreviewWidth;
+    private final VisualizationWidthEnum visualizationWidth;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
                                    String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -50,7 +50,7 @@ public class ServerSigningParameters {
                                    Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
                                    LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
                                    String schema, String transformation,
-                                   String Identifier, boolean checkPDFACompliance, PreviewWidthEnum preferredPreviewWidth) {
+                                   String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -64,7 +64,7 @@ public class ServerSigningParameters {
         this.transformation = transformation;
         this.identifier = Identifier;
         this.checkPDFACompliance = checkPDFACompliance;
-        this.preferredPreviewWidth = preferredPreviewWidth;
+        this.visualizationWidth = preferredPreviewWidth;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64) {
@@ -80,7 +80,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, getPreferredPreviewWidth());
+                identifier, checkPDFACompliance, getVisualizationWidth());
     }
 
     private String getTransformation(boolean isBase64) {
@@ -117,11 +117,11 @@ public class ServerSigningParameters {
         };
     }
 
-    private int getPreferredPreviewWidth() {
-        if (preferredPreviewWidth == null)
+    private int getVisualizationWidth() {
+        if (visualizationWidth == null)
             return 0;
 
-        return switch (preferredPreviewWidth) {
+        return switch (visualizationWidth) {
             case sm -> 640;
             case md -> 768;
             case lg -> 1024;
