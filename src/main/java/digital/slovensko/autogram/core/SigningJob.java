@@ -62,6 +62,10 @@ public class SigningJob {
         return false;
     }
 
+    public int getVisualizationWidth() {
+        return parameters.getVisualizationWidth();
+    }
+
     public boolean isPDF() {
         return document.getMimeType().equals(MimeTypeEnum.PDF);
     }
