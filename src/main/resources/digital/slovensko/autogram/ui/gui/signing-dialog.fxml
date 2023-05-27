@@ -11,6 +11,7 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       minHeight="400"
+      minWidth="640"
       fx:id="mainBox">
 
     <TextFlow><Text styleClass="autogram-heading-m" text="Dokument na&#160;podpísanie"/></TextFlow>
