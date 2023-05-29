@@ -8,13 +8,22 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class Autogram {
     private final UI ui;
 
+    private final List<TokenDriver> drivers;
+
     public Autogram(UI ui) {
         this.ui = ui;
+        this.drivers = null;
+    }
+
+    public Autogram(UI ui, List<TokenDriver> drivers) {
+        this.ui = ui;
+        this.drivers = drivers;
     }
 
     public void sign(SigningJob job) {
@@ -54,7 +63,7 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
-        var drivers = TokenDriver.getAvailableDrivers();
+        var drivers = this.drivers != null ? this.drivers : TokenDriver.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers, (driver)
         -> ui.requestPasswordAndThen(driver, (password)
         -> ui.onWorkThreadDo(()

@@ -11,7 +11,6 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,20 +28,17 @@ class AutogramTests {
     @Test
     void testSignHappyScenario() {
         var newUI = new FakeUI();
-        var autogram = new Autogram(newUI);
+        List<TokenDriver> drivers = Arrays.asList(new FakeTokenDriver("fake"));
+        var autogram = new Autogram(newUI, drivers);
 
         var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml");
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 
-        try (MockedStatic<TokenDriver> mockedStatic = mockStatic(TokenDriver.class)) {
-            mockedStatic.when(TokenDriver::getAvailableDrivers).thenReturn(Arrays.asList(new FakeTokenDriver("fake")));
+        autogram.pickSigningKeyAndThen(key
+        -> autogram.sign(new SigningJob(document, parameters, responder), key));
 
-            autogram.pickSigningKeyAndThen(key
-                    -> autogram.sign(new SigningJob(document, parameters, responder), key));
-
-            verify(responder).onDocumentSigned(any());
-        }
+        verify(responder).onDocumentSigned(any());
     }
 
     @Test
@@ -58,19 +54,17 @@ class AutogramTests {
     @Test
     void testSignWithExpiredCertificate() {
         var newUI = new FakeUI();
-        var autogram = new Autogram(newUI);
+        List<TokenDriver> drivers = Arrays.asList(new FakeTokenDriverWithExpiredCertificate());
+        var autogram = new Autogram(newUI, drivers);
 
         var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml");
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 
-        try (MockedStatic<TokenDriver> mockedStatic = mockStatic(TokenDriver.class)) {
-            mockedStatic.when(TokenDriver::getAvailableDrivers).thenReturn(Arrays.asList(new FakeTokenDriverWithExpiredCertificate()));
 
-            Assertions.assertThrows(SigningWithExpiredCertificateException.class, () ->
+        Assertions.assertThrows(SigningWithExpiredCertificateException.class, () ->
                 autogram.pickSigningKeyAndThen(key -> autogram.sign(new SigningJob(document, parameters, responder), key)
-            ));
-        }
+        ));
     }
 
     private static class FakeTokenDriver extends TokenDriver {
