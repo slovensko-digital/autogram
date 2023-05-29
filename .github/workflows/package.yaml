@@ -3,7 +3,7 @@ name: Package
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   build:
@@ -26,9 +26,9 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '17.0.7+7'
-          distribution: 'liberica'
-          java-package: 'jdk+fx'
+          java-version: "17.0.7+7"
+          distribution: "liberica"
+          java-package: "jdk+fx"
 
       - name: Cache local Maven repository and JDK cache
         uses: actions/cache@v3
@@ -40,10 +40,44 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Install an Apple keychain
+        if: matrix.os == 'macos-latest'
+        # based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development#add-a-step-to-your-workflow
+        env:
+          APPLE_KEYCHAIN_BASE64: ${{ secrets.APPLE_KEYCHAIN_BASE64 }}
+          APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+        run: |
+          # create variables
+          APPLE_KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          # share to rest of steps
+          echo "APPLE_KEYCHAIN_PATH=$APPLE_KEYCHAIN_PATH" >> "$GITHUB_ENV"
+
+          # import keychain from secrets
+          echo -n "$APPLE_KEYCHAIN_BASE64" | base64 --decode -o $APPLE_KEYCHAIN_PATH
+
+          # unlock, set timeout and set as used keychain
+          security set-keychain-settings -lut 21600 $APPLE_KEYCHAIN_PATH
+          security unlock-keychain -p "$APPLE_KEYCHAIN_PASSWORD" $APPLE_KEYCHAIN_PATH
+          security list-keychain -d user -s $APPLE_KEYCHAIN_PATH
+          security default-keychain -s $APPLE_KEYCHAIN_PATH
+
       - name: Package with Maven
         run: ./mvnw -B -C -V package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
+          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+
+      - name: Notarize release with Apple
+        if: matrix.os == 'macos-latest'
+        env:
+          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
+        run: |
+          # run notarization
+          xcrun notarytool submit --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --progress --wait target/Autogram-*.pkg
+          # staple
+          xcrun stapler staple target/Autogram-*.pkg
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@v1
