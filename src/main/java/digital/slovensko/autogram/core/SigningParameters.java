@@ -194,7 +194,7 @@ public class SigningParameters {
         return keyInfoCanonicalization != null ? keyInfoCanonicalization : CanonicalizationMethod.INCLUSIVE;
     }
 
-    public static SigningParameters     buildForPDF(String filename) {
+    public static SigningParameters buildForPDF(String filename) {
         return new SigningParameters(
                 SignatureLevel.PAdES_BASELINE_B,
                 null,
