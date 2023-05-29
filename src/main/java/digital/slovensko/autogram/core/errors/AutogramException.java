@@ -1,12 +1,13 @@
 package digital.slovensko.autogram.core.errors;
 
-import digital.slovensko.autogram.core.SigningCertificateExpiredMessagePredicate;
 import eu.europa.esig.dss.model.DSSException;
 
 public class AutogramException extends RuntimeException {
     private final String heading;
     private final String subheading;
     private final String description;
+
+    private static final String SIGNING_CERTIFICATE_EXPIRED_EXCEPTION_MESSAGE_REGEX = ".*The signing certificate.*is expired.*";
 
     public AutogramException(String heading, String subheading, String description, Throwable e) {
         super(e);
@@ -58,7 +59,7 @@ public class AutogramException extends RuntimeException {
     public static AutogramException createFromIllegalArgumentException(IllegalArgumentException e) {
         for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
             if (cause.getMessage() != null) {
-                if (new SigningCertificateExpiredMessagePredicate().test(cause.getMessage())) {
+                if (cause.getMessage().matches(SIGNING_CERTIFICATE_EXPIRED_EXCEPTION_MESSAGE_REGEX)) {
                     return new SigningWithExpiredCertificateException();
                 }
             }
