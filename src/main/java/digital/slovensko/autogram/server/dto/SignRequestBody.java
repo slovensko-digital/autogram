@@ -50,7 +50,11 @@ public class SignRequestBody {
         return parameters.getSigningParameters(isBase64());
     }
 
-    private boolean isBase64() {
+    public boolean isBase64() {
         return payloadMimeType.contains("base64");
+    }
+
+    public String getContent() {
+        return this.document.getContent();
     }
 }
