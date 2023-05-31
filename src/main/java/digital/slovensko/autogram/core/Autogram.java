@@ -15,8 +15,7 @@ public class Autogram {
     private final DriverDetector driverDetector;
 
     public Autogram(UI ui) {
-        this.ui = ui;
-        this.driverDetector = new DefaultDriverDetector();
+        this(ui, new DefaultDriverDetector());
     }
 
     public Autogram(UI ui, DriverDetector driverDetector) {
