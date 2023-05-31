@@ -28,8 +28,8 @@ class AutogramTests {
     @Test
     void testSignHappyScenario() {
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = Arrays.asList(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, drivers);
+        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
+        var autogram = new Autogram(newUI, new FakeDriverDetector(drivers));
 
         var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml");
         var document = new FileDocument("pom.xml");
@@ -54,18 +54,25 @@ class AutogramTests {
     @Test
     void testSignWithExpiredCertificate() {
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = Arrays.asList(new FakeTokenDriverWithExpiredCertificate());
-        var autogram = new Autogram(newUI, drivers);
+        List<TokenDriver> drivers = List.of(new FakeTokenDriverWithExpiredCertificate());
+        var autogram = new Autogram(newUI, new FakeDriverDetector(drivers));
 
         var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml");
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 
 
-        Assertions.assertThrows(SigningWithExpiredCertificateException.class, () ->
-                autogram.pickSigningKeyAndThen(key -> autogram.sign(new SigningJob(document, parameters, responder), key)
+        Assertions.assertThrows(SigningWithExpiredCertificateException.class, ()
+            -> autogram.pickSigningKeyAndThen(key -> autogram.sign(new SigningJob(document, parameters, responder), key)
         ));
     }
+
+    private record FakeDriverDetector(List<TokenDriver> drivers) implements DriverDetector {
+        @Override
+            public List<TokenDriver> getAvailableDrivers() {
+                return drivers;
+            }
+        }
 
     private static class FakeTokenDriver extends TokenDriver {
         public FakeTokenDriver(String name) {

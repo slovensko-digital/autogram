@@ -13,17 +13,16 @@ import java.util.function.Consumer;
 
 public class Autogram {
     private final UI ui;
-
-    private final List<TokenDriver> drivers;
+    private final DriverDetector driverDetector;
 
     public Autogram(UI ui) {
         this.ui = ui;
-        this.drivers = null;
+        this.driverDetector = new DefaultDriverDetector();
     }
 
-    public Autogram(UI ui, List<TokenDriver> drivers) {
+    public Autogram(UI ui, DriverDetector driverDetector) {
         this.ui = ui;
-        this.drivers = drivers;
+        this.driverDetector = driverDetector;
     }
 
     public void sign(SigningJob job) {
@@ -63,7 +62,7 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
-        var drivers = this.drivers != null ? this.drivers : TokenDriver.getAvailableDrivers();
+        var drivers = driverDetector.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers, (driver)
         -> ui.requestPasswordAndThen(driver, (password)
         -> ui.onWorkThreadDo(()
