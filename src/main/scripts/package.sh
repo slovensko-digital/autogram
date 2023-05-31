@@ -36,10 +36,11 @@ arguments=(
     "--app-version" "${properties_version:-$version}"
     "--copyright" "$properties_copyright"
     "--vendor" "$properties_vendor"
-    "--icon" "./Autogram.png"
+    "--icon" "./autogram.png"
     "--license-file" "$appDirectory/LICENSE"
     "--resource-dir" "./"
     "--dest" "$output"
+    "--description" "$properties_description"
 )
 
 if [[ "$platform" == "win" ]]; then
@@ -48,7 +49,7 @@ if [[ "$platform" == "win" ]]; then
 
     arguments+=(
         "--type" "msi"
-        "--icon" "./Autogram.ico"
+        "--icon" "./autogram.ico"
         "--java-options" "$jvmOptions --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED"
     )
 
@@ -82,8 +83,8 @@ if [[ "$platform" == "win" ]]; then
 fi
 
 if [[ "$platform" == "linux" ]]; then
-    cp "./Autogram.template.desktop" "./Autogram.desktop"
-    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./Autogram.desktop"
+    cp "./autogram.template.desktop" "./autogram.desktop"
+    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./autogram.desktop"
 
     if [[ ! -z "$properties_linux_debMaintainer" ]]; then
         arguments+=(
@@ -100,6 +101,12 @@ if [[ "$platform" == "linux" ]]; then
     if [[ ! -z "$properties_linux_packageDeps" ]]; then
         arguments+=(
             "--linux-package-deps" "$properties_linux_packageDeps"
+        )
+    fi
+
+    if [[ ! -z "$properties_linux_installDir" ]]; then
+        arguments+=(
+            "--install-dir" "$properties_linux_installDir"
         )
     fi
 
@@ -137,7 +144,7 @@ if [[ "$platform" == "mac" ]]; then
 
     arguments+=(
         "--type" "pkg"
-        "--icon" "./Autogram.icns"
+        "--icon" "./autogram.icns"
         "--java-options" "$jvmOptions"
         "--mac-app-category" "${properties_mac_appCategory:-business}"
         # Building on mac requires modifying of image files

@@ -1,5 +1,5 @@
 # Created dynamically during build from *.template.*
 main.wxs
-Autogram.desktop
+autogram.desktop
 Info.plist
 DTempFiles
