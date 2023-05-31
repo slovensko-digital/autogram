@@ -272,6 +272,7 @@
                             <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
                             <fromDir>cmaps</fromDir>
                             <toDir>${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs/cmaps</toDir>
+                            <!-- <skip>true</skip> -->
                         </configuration>
                     </execution>
                 </executions>

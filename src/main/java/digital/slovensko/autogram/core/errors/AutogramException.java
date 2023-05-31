@@ -7,6 +7,8 @@ public class AutogramException extends RuntimeException {
     private final String subheading;
     private final String description;
 
+    private static final String SIGNING_CERTIFICATE_EXPIRED_EXCEPTION_MESSAGE_REGEX = ".*The signing certificate.*is expired.*";
+
     public AutogramException(String heading, String subheading, String description, Throwable e) {
         super(e);
         this.heading = heading;
@@ -47,6 +49,18 @@ public class AutogramException extends RuntimeException {
                     return new PINLockedException();
                 } else if (cause.getMessage().equals("Token has been removed")) {
                     return new TokenRemovedException();
+                }
+            }
+        }
+
+        return new UnrecognizedException(e);
+    }
+
+    public static AutogramException createFromIllegalArgumentException(IllegalArgumentException e) {
+        for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
+            if (cause.getMessage() != null) {
+                if (cause.getMessage().matches(SIGNING_CERTIFICATE_EXPIRED_EXCEPTION_MESSAGE_REGEX)) {
+                    return new SigningWithExpiredCertificateException();
                 }
             }
         }

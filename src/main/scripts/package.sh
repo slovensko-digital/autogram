@@ -147,6 +147,7 @@ if [[ "$platform" == "mac" ]]; then
         "--icon" "./autogram.icns"
         "--java-options" "$jvmOptions"
         "--mac-app-category" "${properties_mac_appCategory:-business}"
+        "--mac-entitlements" "./Autogram.entitlements"     
         # Building on mac requires modifying of image files
         # So the temp files have to be on relative path
         "--temp" "./DTempFiles"
@@ -165,13 +166,20 @@ if [[ "$platform" == "mac" ]]; then
     fi
 
     if [[ "$properties_mac_sign" == "1" ]]; then
+        if [[ -z "$APPLE_DEVELOPER_IDENTITY" ]] || [[ -z "$APPLE_KEYCHAIN_PATH" ]]; then
+            echo "Missing APPLE_DEVELOPER_IDENTITY or APPLE_KEYCHAIN_PATH env variable"
+            exit 1
+        fi
+
+        mac_signingKeyUserName=$(echo $APPLE_DEVELOPER_IDENTITY | sed -ne 's/Developer ID Application\:[[:space:]]\(.*\)[[:space:]]([0-9A-Z]*)/\1/p')
         arguments+=(
             "--mac-sign"
-            "--mac-signing-keychain" "$properties_mac_signingKeychain"
-            "--mac-signing-key-user-name" "$properties_mac_signingKeyUserName"
+            "--mac-signing-keychain" "$APPLE_KEYCHAIN_PATH"
+            "--mac-signing-key-user-name" "$mac_signingKeyUserName"
         )
     fi
 
+    # cwd je ./src/main/scripts/resources
     $jpackage "${arguments[@]}"
     exitValue=$?
     # See --temp argument above
