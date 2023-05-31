@@ -8,7 +8,6 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class Autogram {
