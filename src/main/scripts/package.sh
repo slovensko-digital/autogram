@@ -140,6 +140,7 @@ if [[ "$platform" == "mac" ]]; then
         "--icon" "./Autogram.icns"
         "--java-options" "$jvmOptions"
         "--mac-app-category" "${properties_mac_appCategory:-business}"
+        "--mac-entitlements" "./Autogram.entitlements"     
         # Building on mac requires modifying of image files
         # So the temp files have to be on relative path
         "--temp" "./DTempFiles"
