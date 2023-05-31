@@ -10,5 +10,6 @@ cp -r "$SOURCE/MacOS" "$TARGET"
 chmod +x "$TARGET/MacOS/Autogram"
 
 # codesign changed executables
-codesign -s "$APPLE_DEVELOPER_IDENTITY" --keychain $APPLE_KEYCHAIN_PATH --options=runtime --deep --timestamp --force "$TARGET/MacOS/Autogram"
-codesign -s "$APPLE_DEVELOPER_IDENTITY" --keychain $APPLE_KEYCHAIN_PATH --options=runtime --deep --timestamp --force "$TARGET/MacOS/AutogramApp"
+ENTITLEMENTS=../../Autogram.entitlements
+codesign -s "$APPLE_DEVELOPER_IDENTITY" --keychain $APPLE_KEYCHAIN_PATH --entitlements "$ENTITLEMENTS" --options=runtime --deep --timestamp --force "$TARGET/MacOS/Autogram"
+codesign -s "$APPLE_DEVELOPER_IDENTITY" --keychain $APPLE_KEYCHAIN_PATH --entitlements "$ENTITLEMENTS" --options=runtime --deep --timestamp --force "$TARGET/MacOS/AutogramApp"
