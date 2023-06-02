@@ -14,9 +14,15 @@ import java.util.function.Consumer;
 public class Autogram {
     private final UI ui;
     private final BatchManager batchManager = new BatchManager();
+    private final DriverDetector driverDetector;
 
     public Autogram(UI ui) {
+        this(ui, new DefaultDriverDetector());
+    }
+
+    public Autogram(UI ui, DriverDetector driverDetector) {
         this.ui = ui;
+        this.driverDetector = driverDetector;
     }
 
     public void sign(SigningJob job) {
@@ -45,6 +51,9 @@ public class Autogram {
             } catch (DSSException e) {
                 ui.onUIThreadDo(()
                 -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
+            } catch (IllegalArgumentException e) {
+                ui.onUIThreadDo(()
+                -> ui.onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
             } catch (Exception e) {
                 ui.onUIThreadDo(()
                 -> ui.onSigningFailed(new UnrecognizedException(e)));
@@ -83,7 +92,7 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
-        var drivers = TokenDriver.getAvailableDrivers();
+        var drivers = driverDetector.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers, (driver)
         -> ui.requestPasswordAndThen(driver, (password)
         -> ui.onWorkThreadDo(()
