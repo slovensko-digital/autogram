@@ -142,7 +142,7 @@ public class GUI implements UI {
     }
 
     private void refreshKeyOnAllJobs() {
-        jobControllers.values().forEach(v -> v.refreshSigningKey());
+        jobControllers.values().forEach(SigningDialogController::refreshSigningKey);
     }
 
     private void showError(AutogramException e) {
@@ -206,7 +206,7 @@ public class GUI implements UI {
     }
 
     private void disableKeyPicking() {
-        jobControllers.values().forEach(v -> v.disableKeyPicking());
+        jobControllers.values().forEach(SigningDialogController::disableKeyPicking);
     }
 
     @Override
@@ -265,7 +265,7 @@ public class GUI implements UI {
     }
 
     public void disableSigning() {
-        jobControllers.values().forEach(v -> v.disableSigning());
+        jobControllers.values().forEach(SigningDialogController::disableSigning);
     }
 
     public void resetSigningKey() {
