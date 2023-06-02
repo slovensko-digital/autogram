@@ -53,6 +53,9 @@ public class BatchDialogController implements SuppressedFocusController {
     @FXML
     public Text progressBarText;
 
+    @FXML
+    public Button cancelBatchButton;
+
     public BatchDialogController(BatchManager batchManager, Consumer<SigningKey> callback, Autogram autogram, GUI gui) {
 
         this.gui = gui;
@@ -89,6 +92,12 @@ public class BatchDialogController implements SuppressedFocusController {
     public void onChangeKeyButtonPressed(ActionEvent event) {
         gui.resetSigningKey();
         autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
+    }
+
+    public void onCancelBatchButtonPressed(ActionEvent event) {
+        // TODO
+        // batchManager.stop();
+        close();
     }
 
     public void refreshSigningKey() {

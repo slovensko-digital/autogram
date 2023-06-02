@@ -23,16 +23,21 @@
         visible="false"
         editable="false" focusTraversable="false" VBox.vgrow="ALWAYS" />
 
-    <!-- <ProgressBar fx:id="progressBar"  styleClass="autogram-progress-bar,progress-bar" prefWidth="200.0" progress="3.3">
+    <!-- <ProgressBar fx:id="progressBar"  styleClass="autogram-progress-bar,progress-bar"
+    prefWidth="200.0" progress="3.3">
     </ProgressBar> -->
-    <ProgressBar fx:id="progressBar" styleClass="autogram-progress-bar,progress-bar" layoutX="100.0" layoutY="20.0" prefHeight="20.0" prefWidth="400.0" progress="0.0" />
+    <ProgressBar fx:id="progressBar" styleClass="autogram-progress-bar,progress-bar" layoutX="100.0"
+        layoutY="20.0" prefHeight="20.0" prefWidth="400.0" progress="0.0" />
 
-    <Text fx:id="progressBarText"  styleClass="autogram-heading-m" text="YY/XXX" />
+    <Text fx:id="progressBarText" styleClass="autogram-heading-m" text="YY/XXX" />
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary"
             text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed" />
         <Button fx:id="changeKeyButton" styleClass="autogram-link" text="Zmeniť" visible="false"
             onAction="#onChangeKeyButtonPressed" />
+        <Button fx:id="cancelBatchButton" styleClass="autogram-link"
+            text="Prerušiť hromadné podpisovanie" visible="false"
+            onAction="#onCancelBatchButtonPressed" />
     </HBox>
 </VBox>
