@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.cli;
 
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -28,6 +27,16 @@ public class CliUI implements UI {
             autogram.sign(job, activeKey);
         }
 
+    }
+
+    @Override
+    public void startBatch(BatchManager batchManager, Autogram autogram, Consumer<SigningKey> callback) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void signBatch(SigningJob job, Autogram autogram) {
+        // TODO Auto-generated method stub
     }
 
     @Override

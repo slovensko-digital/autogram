@@ -3,6 +3,7 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.server.ServerBatchStartResponder;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
@@ -12,6 +13,7 @@ import java.util.function.Consumer;
 
 public class Autogram {
     private final UI ui;
+    private final BatchManager batchManager = new BatchManager();
 
     public Autogram(UI ui) {
         this.ui = ui;
@@ -48,6 +50,36 @@ public class Autogram {
                 -> ui.onSigningFailed(new UnrecognizedException(e)));
             }
         });
+    }
+
+    /**
+     * Starts a batch
+     * - ask user
+     * - get signing key
+     * - start batch
+     * - return batch ID
+     * 
+     * @param batchIdCallback
+     */
+    public void batchStart(int totalNumberOfDocuments, ServerBatchStartResponder responder) {
+        batchManager.initialize(totalNumberOfDocuments);
+        ui.onUIThreadDo(() -> {
+            ui.startBatch(batchManager, this, (signingKey) -> {
+                batchManager.start(signingKey);
+                responder.onBatchStartSuccess(batchManager.getBatchId());
+            });
+        });
+    }
+
+    public void batchSign(SigningJob job, String batchId) {
+        batchManager.addJob(batchId, job);
+        ui.onWorkThreadDo(() -> {
+            ui.signBatch(job, this);
+        });
+    }
+
+    public void batchSessionEnd(String batchId) {
+        batchManager.end(batchId);
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {

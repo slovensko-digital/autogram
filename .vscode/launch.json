@@ -3,7 +3,7 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Main",
+            "name": "Run Main class",
             "request": "launch",
             "mainClass": "digital.slovensko.autogram.Main",
             "projectName": "autogram"

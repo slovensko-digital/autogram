@@ -1,8 +1,10 @@
 package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.BatchManager;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -71,6 +73,14 @@ class AutogramTests {
         @Override
         public void startSigning(SigningJob signingJob, Autogram autogram) {
 
+        }
+        
+        @Override
+        public void startBatch(BatchManager batchManager, Autogram autogram, Consumer<SigningKey> callback) {
+        }
+
+        @Override
+        public void signBatch(SigningJob job, Autogram autogram) {
         }
 
         @Override

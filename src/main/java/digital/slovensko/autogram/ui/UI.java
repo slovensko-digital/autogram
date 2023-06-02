@@ -13,6 +13,10 @@ import java.util.function.Consumer;
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
 
+    void startBatch(BatchManager batchManager, Autogram autogram, Consumer<SigningKey> callback);
+
+    void signBatch(SigningJob job, Autogram autogram);
+
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback);
 
     void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback);

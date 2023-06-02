@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.image.ImageView?>
+<VBox xmlns="http://javafx.com/javafx"
+    xmlns:fx="http://javafx.com/fxml"
+    minHeight="400"
+    minWidth="640"
+    fx:id="mainBox">
+
+    <TextFlow>
+        <Text styleClass="autogram-heading-m" text="Hromadné podpisovanie" />
+    </TextFlow>
+
+    <!-- Plaintext visualization -->
+    <TextArea fx:id="plainTextArea" styleClass="autogram-visualizer-plaintext" managed="false"
+        visible="false"
+        editable="false" focusTraversable="false" VBox.vgrow="ALWAYS" />
+
+    <!-- <ProgressBar fx:id="progressBar"  styleClass="autogram-progress-bar,progress-bar" prefWidth="200.0" progress="3.3">
+    </ProgressBar> -->
+    <ProgressBar fx:id="progressBar" styleClass="autogram-progress-bar,progress-bar" layoutX="100.0" layoutY="20.0" prefHeight="20.0" prefWidth="400.0" progress="0.0" />
+
+    <Text fx:id="progressBarText"  styleClass="autogram-heading-m" text="YY/XXX" />
+
+    <HBox styleClass="autogram-actions">
+        <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary"
+            text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed" />
+        <Button fx:id="changeKeyButton" styleClass="autogram-link" text="Zmeniť" visible="false"
+            onAction="#onChangeKeyButtonPressed" />
+    </HBox>
+</VBox>

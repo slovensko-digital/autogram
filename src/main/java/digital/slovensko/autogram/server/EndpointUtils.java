@@ -33,6 +33,12 @@ public class EndpointUtils {
     }
 
     public static <T> T loadFromJsonExchange(HttpExchange exchange, Class<T> classOfT) throws IOException {
-        return gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), classOfT);
+        var content = new String(exchange.getRequestBody().readAllBytes());
+        if (content == null || content.isEmpty())
+            throw new IOException("Empty body");
+        var ret = gson.fromJson(content, classOfT);
+        if (ret == null)
+            throw new IOException("Failed to parse JSON body");
+        return ret;
     }
 }

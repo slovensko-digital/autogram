@@ -1,5 +1,13 @@
 # Info for developers
 
+# How to use FakeTokenDriver
+
+create empty file (in cwd - so in project root when developing) depending on platform:
+
+- Windows `fakeTokenDriver.dll`
+- Linux `fakeTokenDriver.so`
+- MacOS `fakeTokenDriver.dylib`
+
 # More info about inner workings of builds for MacOS
 
 To run signed mac build add follwing to `.vscode/settings.json` (or you can do unsigned build by setting `mac.sign=0` in `build.properties`)

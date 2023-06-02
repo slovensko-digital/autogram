@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
@@ -23,6 +22,7 @@ public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
     private final HostServices hostServices;
+    private BatchDialogController batchController;
 
     public GUI(HostServices hostServices) {
         this.hostServices = hostServices;
@@ -44,6 +44,34 @@ public class GUI implements UI {
         GUIUtils.suppressDefaultFocus(stage, controller);
         GUIUtils.showOnTop(stage);
         GUIUtils.setUserFriendlyPosition(stage);
+    }
+
+    @Override
+    public void startBatch(BatchManager batchManager, Autogram autogram, Consumer<SigningKey> callback) {
+
+        System.out.println("Starting batch session");
+
+        batchController = new BatchDialogController(batchManager, callback, autogram, this);
+        var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Hromadné podpisovanie"); // TODO use document name?
+        stage.setScene(new Scene(root));
+        // stage.setOnCloseRequest(e -> cancelJob(job));
+
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, batchController);
+        GUIUtils.showOnTop(stage);
+        GUIUtils.setUserFriendlyPosition(stage);
+    }
+
+    @Override
+    public void signBatch(SigningJob job, Autogram autogram) {
+        System.out.println("Signing batch document");
+        var signingKey = getActiveSigningKey();
+        job.signWithKeyAndRespond(signingKey);
+        refreshKeyOnAllJobs();
+        onUIThreadDo(batchController::update);
     }
 
     @Override
@@ -114,7 +142,7 @@ public class GUI implements UI {
     }
 
     private void refreshKeyOnAllJobs() {
-        jobControllers.values().forEach(SigningDialogController::refreshSigningKey);
+        jobControllers.values().forEach(v -> v.refreshSigningKey());
     }
 
     private void showError(AutogramException e) {
@@ -178,7 +206,7 @@ public class GUI implements UI {
     }
 
     private void disableKeyPicking() {
-        jobControllers.values().forEach(SigningDialogController::disableKeyPicking);
+        jobControllers.values().forEach(v -> v.disableKeyPicking());
     }
 
     @Override
@@ -196,7 +224,7 @@ public class GUI implements UI {
     @Override
     public void onSigningFailed(AutogramException e) {
         showError(e);
-        if(e instanceof TokenRemovedException) {
+        if (e instanceof TokenRemovedException) {
             resetSigningKey();
         } else {
             refreshKeyOnAllJobs();
@@ -237,7 +265,7 @@ public class GUI implements UI {
     }
 
     public void disableSigning() {
-        jobControllers.values().forEach(SigningDialogController::disableSigning);
+        jobControllers.values().forEach(v -> v.disableSigning());
     }
 
     public void resetSigningKey() {

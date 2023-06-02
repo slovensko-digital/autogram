@@ -23,7 +23,6 @@ public class AutogramServer {
     private final HttpServer server;
     private final Autogram autogram;
 
-
     public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps) {
         this.autogram = autogram;
         this.server = buildServer(hostname, port, isHttps);
@@ -33,6 +32,9 @@ public class AutogramServer {
         server.createContext("/info", new InfoEndpoint());
         server.createContext("/sign", new SignEndpoint(autogram));
         server.createContext("/docs", new DocumentationEndpoint());
+        server.createContext("/batch/start", new BatchSessionStartEndpoint(autogram));
+        server.createContext("/batch/sign", new BatchSignEndpoint(autogram));
+        server.createContext("/batch/end", new BatchSessionEndEndpoint(autogram));
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
     }
@@ -67,7 +69,7 @@ public class AutogramServer {
                         var defaultSSLParameters = c.getDefaultSSLParameters();
                         params.setSSLParameters(defaultSSLParameters);
                     } catch (Exception e) {
-                        throw new RuntimeException(e); //   TODO
+                        throw new RuntimeException(e); // TODO
                     }
                 }
             });

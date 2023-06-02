@@ -514,3 +514,21 @@ TextFlow.autogram-body-s {
 .autogram-unsupported-visualization .autogram-error-summary__error {
     -fx-padding: 0.5em 2em 0 2em;
 }
+
+.autogram-progress-bar {
+    -fx-border-color: -autogram-input-border-colour;
+    /* -fx-background-color: -autogram-focus-colour; */
+    -fx-background-insets: 0 0 0 0;
+}
+
+.autogram-progress-bar > .track {
+    -fx-text-box-border: forestgreen;
+    -fx-control-inner-background: palegreen;
+  }
+
+.autogram-progress-bar > .bar {
+    -fx-background-color: #003183;
+}
+.autogram-progress-bar > .track {
+      -fx-background-color: transparent;
+}
