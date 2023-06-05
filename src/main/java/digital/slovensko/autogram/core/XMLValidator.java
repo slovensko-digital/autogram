@@ -31,7 +31,7 @@ public class XMLValidator {
             Validator validator = schema.newValidator();
             validator.validate(new StreamSource(new StringReader(xmlContent)));
         } catch (SAXException | IOException e) {
-            throw new RequestValidationException("XML validation against XSD scheme failed", "");
+            throw new RequestValidationException("XML validation against XSD scheme failed", e.getMessage());
         }
     }
 }
