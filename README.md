@@ -10,16 +10,7 @@ Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplik�
 
 Aplikácia Autogram poskytuje aj možnosť spustenia v príkazovom riadku (CLI móde), čo umožňuje automatizované podpisovanie súborov.
 
-Dostupné argumenty sú:
-
-- help alebo -h: Zobrazí nápovedu a informácie o dostupných argumentoch.
-- usage alebo -u: Zobrazí príklady použitia aplikácie v CLI móde.
-- sourceDirectory <adresár> alebo -sd <adresár>: Určuje zdrojový adresár, kde sa nachádzajú súbory, ktoré chcete podpísať.
-- targetDirectory <adresár> alebo -td <adresár>: Určuje cieľový adresár, do ktorého sa uložia podpísané súbory. Ak nie je definovaný, podpísaný súbor sa uloží do zdrojového adresáru.
-- sourceFile <súbor> alebo -sf <súbor>: Určuje konkrétny súbor, ktorý chcete podpísať.
-- rewriteFile alebo -rf: Parameter indikuje, či sa má prepísať existujúci podpísaný súbor v prípade, že už existuje v cieľovom adresári.
-- cli alebo -c: Parameter indikuje, že aplikácia sa spúšťa v CLI móde. 
-- driver <názov> alebo -d <názov>: Určuje konkrétny ovládač, ktorý sa má použiť pri podpisovaní. Ak nie je definovaný vyberá sa z dostupných ovládačov.
+Pri spustení aplikácie s prepínačom --help je možné dozvedieť sa viac. Zobrazené sú informácie o funkciách Autogramu ako je hromadné podpisovanie a nápoveda pre použitie dostupných prepínačov.
 
 ## Integrácia
 
