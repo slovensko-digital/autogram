@@ -49,7 +49,7 @@ Pripraví všetko do `./target`:
 - `preparedJDK/` - JLink JDK (JRE) pripravené pre bundling s aplikáciou.
 - `autogram-*.jar` - JAR s aplikáciou
 
-Následne pomocou `jpackager` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, and .rpm/.deb).
+Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, and .rpm/.deb).
 
 ## Autori a sponzori
 

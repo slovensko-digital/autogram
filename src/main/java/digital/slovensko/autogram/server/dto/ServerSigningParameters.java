@@ -1,5 +1,10 @@
 package digital.slovensko.autogram.server.dto;
 
+import java.util.Arrays;
+import java.util.Base64;
+
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
@@ -23,6 +28,14 @@ public class ServerSigningParameters {
         INCLUSIVE_11_WITH_COMMENTS
     }
 
+    public enum VisualizationWidthEnum {
+        sm,
+        md,
+        lg,
+        xl,
+        xxl
+    }
+
     private final ASiCContainerType container;
     private final SignatureLevel level;
     private final String containerXmlns;
@@ -36,6 +49,7 @@ public class ServerSigningParameters {
     private final LocalCanonicalizationMethod keyInfoCanonicalization;
     private final String identifier;
     private final boolean checkPDFACompliance;
+    private final VisualizationWidthEnum visualizationWidth;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
                                    String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -43,7 +57,7 @@ public class ServerSigningParameters {
                                    Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
                                    LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
                                    String schema, String transformation,
-                                   String Identifier, boolean checkPDFACompliance) {
+                                   String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -57,6 +71,7 @@ public class ServerSigningParameters {
         this.transformation = transformation;
         this.identifier = Identifier;
         this.checkPDFACompliance = checkPDFACompliance;
+        this.visualizationWidth = preferredPreviewWidth;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64) {
@@ -72,7 +87,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance);
+                identifier, checkPDFACompliance, getVisualizationWidth());
     }
 
     private String getTransformation(boolean isBase64) {
@@ -96,20 +111,31 @@ public class ServerSigningParameters {
     }
 
     private static String getCanonicalizationMethodString(LocalCanonicalizationMethod method) {
-        if (method == INCLUSIVE)
-            return CanonicalizationMethod.INCLUSIVE;
-        if (method == EXCLUSIVE)
-            return CanonicalizationMethod.EXCLUSIVE;
-        if (method == INCLUSIVE_WITH_COMMENTS)
-            return CanonicalizationMethod.INCLUSIVE_WITH_COMMENTS;
-        if (method == EXCLUSIVE_WITH_COMMENTS)
-            return CanonicalizationMethod.EXCLUSIVE_WITH_COMMENTS;
-        if (method == INCLUSIVE_11)
-            return CanonicalizationMethod.INCLUSIVE_11;
-        if (method == INCLUSIVE_11_WITH_COMMENTS)
-            return CanonicalizationMethod.INCLUSIVE_11_WITH_COMMENTS;
+        if (method == null)
+            return null;
 
-        return null;
+        return switch (method) {
+            case INCLUSIVE -> CanonicalizationMethod.INCLUSIVE;
+            case EXCLUSIVE -> CanonicalizationMethod.EXCLUSIVE;
+            case INCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_WITH_COMMENTS;
+            case EXCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.EXCLUSIVE_WITH_COMMENTS;
+            case INCLUSIVE_11 -> CanonicalizationMethod.INCLUSIVE_11;
+            case INCLUSIVE_11_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_11_WITH_COMMENTS;
+        };
+    }
+
+    private int getVisualizationWidth() {
+        if (visualizationWidth == null)
+            return 0;
+
+        return switch (visualizationWidth) {
+            case sm -> 640;
+            case md -> 768;
+            case lg -> 1024;
+            case xl -> 1280;
+            case xxl -> 1536;
+            default -> 0;
+        };
     }
 
     private SignatureLevel getSignatureLevel() {
