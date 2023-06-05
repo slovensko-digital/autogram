@@ -21,20 +21,21 @@ public class SigningJobTests {
     @Test
     void testEnd2EndHtmlTransformationEncoding() throws IOException {
         var ssParams = new ServerSigningParameters(
-                SignatureLevel.XAdES_BASELINE_B,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                transformation,
-                null,
-                false
+            SignatureLevel.XAdES_BASELINE_B,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            transformation,
+            null,
+            false,
+            ServerSigningParameters.VisualizationWidthEnum.sm
         );
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
