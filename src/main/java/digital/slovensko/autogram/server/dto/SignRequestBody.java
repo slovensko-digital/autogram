@@ -55,6 +55,6 @@ public class SignRequestBody {
     }
 
     public String getContent() {
-        return this.document.getContent();
+        return document.getContent();
     }
 }
