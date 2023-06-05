@@ -35,7 +35,6 @@ public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
     private final SigningParameters parameters;
-
     private final Charset encoding;
 
     public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
