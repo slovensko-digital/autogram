@@ -1,9 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.util.function.Consumer;
-
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.BatchManager;
+import digital.slovensko.autogram.core.AutogramBatchStartCallback;
+import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
 import javafx.event.ActionEvent;
@@ -24,9 +23,9 @@ import javafx.stage.Window;
 
 public class BatchDialogController implements SuppressedFocusController {
     private final GUI gui;
-    private final BatchManager batchManager;
+    private final Batch batch;
     private final Autogram autogram;
-    private final Consumer<SigningKey> callback;
+    private final AutogramBatchStartCallback startBatchCallback;
 
     @FXML
     VBox mainBox;
@@ -43,7 +42,9 @@ public class BatchDialogController implements SuppressedFocusController {
     @FXML
     VBox unsupportedVisualizationInfoBox;
     @FXML
-    public Button mainButton;
+    public Button chooseKeyButton;
+    @FXML
+    public Button signButton;
     @FXML
     public Button changeKeyButton;
 
@@ -56,12 +57,13 @@ public class BatchDialogController implements SuppressedFocusController {
     @FXML
     public Button cancelBatchButton;
 
-    public BatchDialogController(BatchManager batchManager, Consumer<SigningKey> callback, Autogram autogram, GUI gui) {
+    public BatchDialogController(Batch batch, AutogramBatchStartCallback startBatchCallback,
+            Autogram autogram, GUI gui) {
 
         this.gui = gui;
         this.autogram = autogram;
-        this.batchManager = batchManager;
-        this.callback = callback;
+        this.batch = batch;
+        this.startBatchCallback = startBatchCallback;
     }
 
     public void initialize() {
@@ -74,77 +76,103 @@ public class BatchDialogController implements SuppressedFocusController {
         updateProgressBar();
     }
 
-    public void onMainButtonPressed(ActionEvent event) {
+    public void onChooseKeyButtonPressed(ActionEvent event) {
+        autogram.pickSigningKeyAndThen(key -> {
+            gui.setActiveSigningKey(key);
+            refreshSigningKey();
+            enableKeyChange();
+        });
+    }
+
+    public void onSignButtonPressed(ActionEvent event) {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
-
-            autogram.pickSigningKeyAndThen(key -> {
-                gui.setActiveSigningKey(key);
-                refreshSigningKey();
-            });
-        } else {
-            disableSigning();
-            getNodeForLoosingFocus().requestFocus();
-            callback.accept(signingKey);
+            return;
         }
+        disableSigning();
+        disableKeyChange();
+        getNodeForLoosingFocus().requestFocus();
+        gui.onWorkThreadDo(startBatchCallback);
     }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
-        gui.resetSigningKey();
-        autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
+        if (batch.isKeyChangeAllowed()) {
+            gui.resetSigningKey();
+            autogram.pickSigningKeyAndThen((key) -> {
+                gui.setActiveSigningKey(key);
+                refreshSigningKey();
+            });
+        }
     }
 
     public void onCancelBatchButtonPressed(ActionEvent event) {
-        // TODO
-        // batchManager.stop();
+        batch.end();
         close();
     }
 
     public void refreshSigningKey() {
-        mainButton.setDisable(false);
         SigningKey key = gui.getActiveSigningKey();
         if (key == null) {
-            mainButton.setText("Vybrať podpisový certifikát");
-            mainButton.getStyleClass().add("autogram-button--secondary");
-            changeKeyButton.setVisible(false);
+            signButton.setVisible(false);
+            signButton.setManaged(false);
+
+            chooseKeyButton.setVisible(true);
+            chooseKeyButton.setManaged(true);
+            chooseKeyButton.setDisable(false);
         } else {
-            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
-            mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
+            signButton.setVisible(true);
+            signButton.setManaged(true);
+
+            chooseKeyButton.setVisible(false);
+            chooseKeyButton.setManaged(false);
+
+            signButton.setDisable(false);
+            signButton.setText("Podpísať ako "
+                    + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+
             changeKeyButton.setVisible(true);
         }
     }
 
     public void close() {
-        var window = mainButton.getScene().getRoot().getScene().getWindow();
+        var window = mainBox.getScene().getRoot().getScene().getWindow();
         if (window instanceof Stage) {
             ((Stage) window).close();
         }
     }
 
     public void disableKeyPicking() {
-        mainButton.setText("Načítavam certifikáty...");
-        mainButton.setDisable(true);
+        chooseKeyButton.setText("Načítavam certifikáty...");
+        chooseKeyButton.setDisable(true);
     }
 
     public void disableSigning() {
-        mainButton.setText("Prebieha hromadné podpisovanie...");
-        mainButton.setDisable(true);
+        signButton.setText("Prebieha hromadné podpisovanie...");
+        signButton.setDisable(true);
+    }
+
+    public void disableKeyChange() {
+        changeKeyButton.setVisible(false);
+    }
+
+    public void enableKeyChange() {
+        changeKeyButton.setVisible(true);
     }
 
     private void showPlainTextVisualization() {
         plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
         plainTextArea.setText(String.format(
                 "Tu sa bude nachadzat nejaky text o tom co sa ide diat, pripadne ine informacie (popis originu?)",
-                batchManager.getProcessedDocumentsCount(), batchManager.getTotalNumberOfDocuments()));
+                batch.getProcessedDocumentsCount(), batch.getTotalNumberOfDocuments()));
         plainTextArea.setVisible(true);
         plainTextArea.setManaged(true);
     }
 
     private void updateProgressBar() {
         progressBar.setProgress(
-                (double) batchManager.getProcessedDocumentsCount() / batchManager.getTotalNumberOfDocuments());
-        progressBarText.setText(String.format("%d / %d", batchManager.getProcessedDocumentsCount(),
-                batchManager.getTotalNumberOfDocuments()));
+                (double) batch.getProcessedDocumentsCount() / batch.getTotalNumberOfDocuments());
+        progressBarText.setText(String.format("%d / %d", batch.getProcessedDocumentsCount(),
+                batch.getTotalNumberOfDocuments()));
     }
 
     @Override

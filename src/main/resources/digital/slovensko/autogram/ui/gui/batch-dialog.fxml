@@ -32,8 +32,10 @@
     <Text fx:id="progressBarText" styleClass="autogram-heading-m" text="YY/XXX" />
 
     <HBox styleClass="autogram-actions">
-        <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary"
-            text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed" />
+        <Button fx:id="chooseKeyButton" styleClass="autogram-button,autogram-button--secondary"
+            text="Vybrať podpisový certifikát" onAction="#onChooseKeyButtonPressed" />
+        <Button fx:id="signButton" styleClass="autogram-button"
+            text="Podpísať" onAction="#onSignButtonPressed" />
         <Button fx:id="changeKeyButton" styleClass="autogram-link" text="Zmeniť" visible="false"
             onAction="#onChangeKeyButtonPressed" />
         <Button fx:id="cancelBatchButton" styleClass="autogram-link"

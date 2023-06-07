@@ -30,12 +30,17 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void startBatch(BatchManager batchManager, Autogram autogram, Consumer<SigningKey> callback) {
+    public void startBatch(Batch batch, Autogram autogram, AutogramBatchStartCallback callback) {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void signBatch(SigningJob job, Autogram autogram) {
+    public void signBatch(SigningJob job) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void cancelBatch(Batch batch, AutogramBatchStartCallback callback) {
         // TODO Auto-generated method stub
     }
 

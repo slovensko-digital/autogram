@@ -1,19 +1,21 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchConflictException;
+import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.ServerBatchStartResponder;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
-
 import java.io.File;
 import java.util.function.Consumer;
 
 public class Autogram {
     private final UI ui;
-    private final BatchManager batchManager = new BatchManager();
+    /** Current batch, should be null if no batch was started yet */
+    private Batch batch = null;
     private final DriverDetector driverDetector;
 
     public Autogram(UI ui) {
@@ -26,6 +28,7 @@ public class Autogram {
     }
 
     public void sign(SigningJob job) {
+        // TODO toto je divne kedze autogram->UI(thread)->Dialog->Autogram
         ui.onUIThreadDo(()
         -> ui.startSigning(job, this));
 
@@ -62,33 +65,77 @@ public class Autogram {
     }
 
     /**
-     * Starts a batch
-     * - ask user
-     * - get signing key
-     * - start batch
-     * - return batch ID
+     * Starts a batch - ask user - get signing key - start batch - return batch ID
      * 
-     * @param batchIdCallback
+     * @param totalNumberOfDocuments - expected number of documents to be signed
+     * @param responder - callback for http response
      */
     public void batchStart(int totalNumberOfDocuments, ServerBatchStartResponder responder) {
-        batchManager.initialize(totalNumberOfDocuments);
+        if (batch != null && !batch.isEnded())
+            throw new BatchConflictException("Another batch is already running");
+        batch = new Batch(totalNumberOfDocuments);
+
+
+        var startBatchTask = new AutogramBatchStartCallback() {
+            @Override
+            protected Void call() throws Exception {
+                // System.out.println("Starting batch on thread " +
+                // Thread.currentThread().getName());
+                batch.start();
+                return null;
+            }
+
+            @Override
+            protected void failed() {
+                var e = getException();
+                if (e instanceof AutogramException)
+                    responder.onBatchStartFailure((AutogramException) e);
+                else {
+                    System.out.println("Batch start failed with exception: " + e);
+                    responder.onBatchStartFailure(
+                            new AutogramException("Unkown error occured while starting batch", "",
+                                    "Batch start failed with exception: " + e, e));
+                }
+            }
+
+            @Override
+            protected void succeeded() {
+                responder.onBatchStartSuccess(batch.getBatchId());
+            }
+        };
+
         ui.onUIThreadDo(() -> {
-            ui.startBatch(batchManager, this, (signingKey) -> {
-                batchManager.start(signingKey);
-                responder.onBatchStartSuccess(batchManager.getBatchId());
-            });
+            ui.startBatch(batch, this, startBatchTask);
         });
     }
 
+    /**
+     * Sign a single document
+     * 
+     * @param job
+     * @param batchId - current batch ID, used to authenticate the request
+     */
     public void batchSign(SigningJob job, String batchId) {
-        batchManager.addJob(batchId, job);
+        if (batch == null)
+            throw new BatchNotStartedException("Batch not running");
+
+        batch.addJob(batchId, job);
         ui.onWorkThreadDo(() -> {
-            ui.signBatch(job, this);
+            ui.signBatch(job);
         });
     }
 
-    public void batchSessionEnd(String batchId) {
-        batchManager.end(batchId);
+    /**
+     * End the batch
+     * 
+     * @param batchId - current batch ID, used to authenticate the request
+     */
+    public void batchEnd(String batchId) {
+        batch.validate(batchId);
+        batch.end();
+        if (!batch.isAllProcessed()) {
+            throw new IllegalStateException("Session didn't get all items");
+        }
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {

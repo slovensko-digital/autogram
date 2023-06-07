@@ -31,7 +31,7 @@ public class BatchSessionEndEndpoint implements HttpHandler {
 
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, BatchSessionEndRequestBody.class);
-            autogram.batchSessionEnd(body.getbatchId());
+            autogram.batchEnd(body.batchId());
         } catch (JsonSyntaxException e) {
             var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
             EndpointUtils.respondWithError(response, exchange);

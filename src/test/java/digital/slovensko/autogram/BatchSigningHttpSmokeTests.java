@@ -32,17 +32,16 @@ public class BatchSigningHttpSmokeTests {
 
             // print response
             System.out.println("Session Start Response:" + startResponse.getStatusLine());
-            System.out.println("Session Start Response:" + EntityUtils.toString(startResponse.getEntity()));
+            System.out.println(
+                    "Session Start Response:" + EntityUtils.toString(startResponse.getEntity()));
 
-            assertEquals(
-                    HttpStatus.SC_OK,
-                    startResponse.getStatusLine().getStatusCode());
+            assertEquals(HttpStatus.SC_OK, startResponse.getStatusLine().getStatusCode());
 
             var startData = new Gson().fromJson(EntityUtils.toString(startResponse.getEntity()),
                     BatchSessionStartResponseBody.class);
             System.out.println("Session Start Response:" + startData);
 
-            var batchId = startData.getBatchId();
+            var batchId = startData.batchId();
             System.out.println("Session Start BatchId:" + batchId);
 
         } catch (IOException e) {

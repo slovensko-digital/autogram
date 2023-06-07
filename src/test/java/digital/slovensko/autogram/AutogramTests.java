@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -113,11 +114,15 @@ class AutogramTests {
         }
         
         @Override
-        public void startBatch(BatchManager batchManager, Autogram autogram, Consumer<SigningKey> callback) {
+        public void startBatch(Batch batch, Autogram autogram,  AutogramBatchStartCallback callback) {
         }
 
         @Override
-        public void signBatch(SigningJob job, Autogram autogram) {
+        public void cancelBatch(Batch batch, AutogramBatchStartCallback callback) {
+        }
+
+        @Override
+        public void signBatch(SigningJob job) {
         }
 
         @Override

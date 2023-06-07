@@ -2,11 +2,7 @@
 
 # How to use FakeTokenDriver
 
-create empty file (in cwd - so in project root when developing) depending on platform:
-
-- Windows `fakeTokenDriver.dll`
-- Linux `fakeTokenDriver.so`
-- MacOS `fakeTokenDriver.dylib`
+create empty file `fakeTokenDriver` in cwd - so in project root when developing, to enable "Fake token driver"
 
 # More info about inner workings of builds for MacOS
 

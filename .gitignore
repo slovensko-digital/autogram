@@ -24,6 +24,4 @@ whitelabel.iml
 .java-version
 secret
 
-/fakeTokenDriver.dll
-/fakeTokenDriver.so
-/fakeTokenDriver.dylib
+/fakeTokenDriver

@@ -17,9 +17,6 @@ public class ServerBatchStartResponder {
     }
 
     public void onBatchStartSuccess(String batchId) {
-
-        System.out.println("BatchSessionStartEndpoint: batchId: " + batchId);
-
         var gson = new Gson();
 
         try {

@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public class GUI implements UI {
@@ -47,17 +48,14 @@ public class GUI implements UI {
     }
 
     @Override
-    public void startBatch(BatchManager batchManager, Autogram autogram, Consumer<SigningKey> callback) {
-
-        System.out.println("Starting batch session");
-
-        batchController = new BatchDialogController(batchManager, callback, autogram, this);
+    public void startBatch(Batch batch, Autogram autogram, AutogramBatchStartCallback callback) {
+        batchController = new BatchDialogController(batch, callback, autogram, this);
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Hromadné podpisovanie"); // TODO use document name?
+        stage.setTitle("Hromadné podpisovanie");
         stage.setScene(new Scene(root));
-        // stage.setOnCloseRequest(e -> cancelJob(job));
+        stage.setOnCloseRequest(e -> cancelBatch(batch, callback));
 
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, batchController);
@@ -66,11 +64,16 @@ public class GUI implements UI {
     }
 
     @Override
-    public void signBatch(SigningJob job, Autogram autogram) {
-        System.out.println("Signing batch document");
-        var signingKey = getActiveSigningKey();
-        job.signWithKeyAndRespond(signingKey);
+    public void cancelBatch(Batch batch, AutogramBatchStartCallback callback){
+        batchController.close();
+        batch.end();
         refreshKeyOnAllJobs();
+        onWorkThreadDo(callback);
+    }
+
+    @Override
+    public void signBatch(SigningJob job) {
+        job.signWithKeyAndRespond(getActiveSigningKey());
         onUIThreadDo(batchController::update);
     }
 

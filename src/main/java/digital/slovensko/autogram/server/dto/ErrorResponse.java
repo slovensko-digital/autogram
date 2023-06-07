@@ -41,6 +41,9 @@ public class ErrorResponse {
             case "RequestValidationException" -> new ErrorResponse(422, "UNPROCESSABLE_INPUT", (AutogramException) e);
             case "MalformedBodyException" -> new ErrorResponse(400, "MALFORMED_INPUT", (AutogramException) e);
             case "AutogramException" -> new ErrorResponse(502, "SIGNING_FAILED", (AutogramException) e);
+            case "BatchEndedException" -> new ErrorResponse(400, "BATCH_ENDED", (AutogramException) e);
+            case "BatchNotStartedException" -> new ErrorResponse(400, "BATCH_NOT_STARTED", (AutogramException) e);
+            case "BatchNotFoundException" -> new ErrorResponse(404, "BATCH_NOT_FOUND", (AutogramException) e);
             default -> new ErrorResponse(500, "INTERNAL_ERROR", "Unexpected exception signing document", e.getMessage());
         };
     }

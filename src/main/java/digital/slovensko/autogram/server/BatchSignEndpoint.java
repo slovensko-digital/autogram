@@ -34,7 +34,6 @@ public class BatchSignEndpoint implements HttpHandler {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, BatchSignRequestBody.class);
             var job = new SigningJob(body.getDocument(), body.getParameters(), new ServerResponder(exchange));
-            System.out.println("BatchSignEndpoint: body: " + body.getBatchId());
             autogram.batchSign(job, body.getBatchId());
         } catch (JsonSyntaxException e) {
             var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
