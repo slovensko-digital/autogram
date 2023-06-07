@@ -20,8 +20,6 @@ public class BatchEndpoint implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-
-
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "POST, DELETE, OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers",
@@ -32,8 +30,10 @@ public class BatchEndpoint implements HttpHandler {
         // Allow preflight requests
         if (requestMethod.equalsIgnoreCase("OPTIONS")) {
             exchange.sendResponseHeaders(204, -1);
+            exchange.close();
             return;
         }
+
         try {
             if (requestMethod.equalsIgnoreCase("POST")) {
                 // Start batch
@@ -45,12 +45,15 @@ public class BatchEndpoint implements HttpHandler {
                 // End batch
                 var body = EndpointUtils.loadFromJsonExchange(exchange,
                         BatchSessionEndRequestBody.class);
-                autogram.batchEnd(body.batchId());
+                var finished = autogram.batchEnd(body.batchId());
+                EndpointUtils.respondWith(finished ? new Object() {
+                    public String status = "FINISHED";
+                } : new Object() {
+                    public String status = "NOT_FINISHED";
+                }, exchange);
             } else {
                 exchange.sendResponseHeaders(405, -1);
             }
-
-
         } catch (JsonSyntaxException e) {
             var response =
                     ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));

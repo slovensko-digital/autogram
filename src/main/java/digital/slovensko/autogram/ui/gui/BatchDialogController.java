@@ -6,18 +6,12 @@ import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
@@ -29,18 +23,16 @@ public class BatchDialogController implements SuppressedFocusController {
 
     @FXML
     VBox mainBox;
+
     @FXML
-    TextArea plainTextArea;
+    VBox progressBarBox;
+
     @FXML
-    WebView webView;
+    VBox batchVisualization;
+
     @FXML
-    VBox webViewContainer;
-    @FXML
-    ImageView imageVisualization;
-    @FXML
-    ScrollPane imageVisualizationContainer;
-    @FXML
-    VBox unsupportedVisualizationInfoBox;
+    Text batchVisualizationCount;
+
     @FXML
     public Button chooseKeyButton;
     @FXML
@@ -68,12 +60,15 @@ public class BatchDialogController implements SuppressedFocusController {
 
     public void initialize() {
         refreshSigningKey();
-        showPlainTextVisualization();
-        updateProgressBar();
+        updateVisualizationCount();
     }
 
     public void update() {
         updateProgressBar();
+        if (batch.isAllProcessed()) {
+            batch.end();
+            close();
+        }
     }
 
     public void onChooseKeyButtonPressed(ActionEvent event) {
@@ -91,6 +86,8 @@ public class BatchDialogController implements SuppressedFocusController {
         }
         disableSigning();
         disableKeyChange();
+        hideVisualization();
+        showProgress();
         getNodeForLoosingFocus().requestFocus();
         gui.onWorkThreadDo(startBatchCallback);
     }
@@ -141,6 +138,17 @@ public class BatchDialogController implements SuppressedFocusController {
         }
     }
 
+    public void showProgress() {
+        progressBarBox.setVisible(true);
+        progressBarBox.setManaged(true);
+        updateProgressBar();
+    }
+
+    public void hideVisualization() {
+        batchVisualization.setVisible(false);
+        batchVisualization.setManaged(false);
+    }
+
     public void disableKeyPicking() {
         chooseKeyButton.setText("Načítavam certifikáty...");
         chooseKeyButton.setDisable(true);
@@ -159,13 +167,8 @@ public class BatchDialogController implements SuppressedFocusController {
         changeKeyButton.setVisible(true);
     }
 
-    private void showPlainTextVisualization() {
-        plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
-        plainTextArea.setText(String.format(
-                "Tu sa bude nachadzat nejaky text o tom co sa ide diat, pripadne ine informacie (popis originu?)",
-                batch.getProcessedDocumentsCount(), batch.getTotalNumberOfDocuments()));
-        plainTextArea.setVisible(true);
-        plainTextArea.setManaged(true);
+    private void updateVisualizationCount() {
+        batchVisualizationCount.setText(batch.getTotalNumberOfDocuments() + "");
     }
 
     private void updateProgressBar() {

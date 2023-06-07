@@ -532,3 +532,20 @@ TextFlow.autogram-body-s {
 .autogram-progress-bar > .track {
       -fx-background-color: transparent;
 }
+
+.autogram-batch-visualization {
+    -fx-border-width: 5px;
+    -fx-border-color: -autogram-focus-colour;
+
+    -fx-spacing: 3em;
+    -fx-padding: 6em 4em 4em 4em;
+    -fx-alignment: center;
+}
+
+.autogram-batch-visualization VBox {
+    -fx-spacing: 20px;
+}
+
+.autogram-batch-visualization .autogram-error-summary__error {
+    -fx-padding: 0.5em 2em 0 2em;
+}

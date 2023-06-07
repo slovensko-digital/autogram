@@ -3,7 +3,7 @@ package digital.slovensko.autogram.server;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
-
+import digital.slovensko.autogram.server.errors.EmptyBodyException;
 import java.io.IOException;
 
 public class EndpointUtils {
@@ -35,7 +35,7 @@ public class EndpointUtils {
     public static <T> T loadFromJsonExchange(HttpExchange exchange, Class<T> classOfT) throws IOException {
         var content = new String(exchange.getRequestBody().readAllBytes());
         if (content == null || content.isEmpty())
-            throw new IOException("Empty body");
+            throw new EmptyBodyException("Empty body");
         var ret = gson.fromJson(content, classOfT);
         if (ret == null)
             throw new IOException("Failed to parse JSON body");

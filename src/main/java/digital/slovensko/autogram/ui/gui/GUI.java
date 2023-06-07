@@ -64,7 +64,7 @@ public class GUI implements UI {
     }
 
     @Override
-    public void cancelBatch(Batch batch, AutogramBatchStartCallback callback){
+    public void cancelBatch(Batch batch, AutogramBatchStartCallback callback) {
         batchController.close();
         batch.end();
         refreshKeyOnAllJobs();
@@ -88,7 +88,8 @@ public class GUI implements UI {
             // short-circuit if only one driver present
             callback.accept(drivers.get(0));
         } else {
-            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
+            PickDriverDialogController controller =
+                    new PickDriverDialogController(drivers, callback);
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
             var stage = new Stage();
@@ -123,7 +124,8 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys,
+            Consumer<DSSPrivateKeyEntry> callback) {
         if (keys.isEmpty()) {
             showError(new NoKeysDetectedException());
             refreshKeyOnAllJobs();
@@ -262,7 +264,8 @@ public class GUI implements UI {
     }
 
     public void setActiveSigningKey(SigningKey newKey) {
-        if (activeKey != null) activeKey.close();
+        if (activeKey != null)
+            activeKey.close();
         activeKey = newKey;
         refreshKeyOnAllJobs();
     }
