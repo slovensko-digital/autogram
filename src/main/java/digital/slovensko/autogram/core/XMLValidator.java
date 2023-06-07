@@ -25,6 +25,9 @@ public class XMLValidator {
     }
 
     public void validate() {
+        if (xsdSchema == null) {
+            return;
+        }
         try {
             SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             Schema schema = factory.newSchema(new StreamSource(new StringReader(xsdSchema)));
