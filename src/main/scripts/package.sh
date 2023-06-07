@@ -32,11 +32,10 @@ arguments=(
     "--input" "$appDirectory"
     "--runtime-image" "$jdkDirectory"
     "--main-jar" "autogram.jar"
-    "--name" "$properties_name"
     "--app-version" "${properties_version:-$version}"
     "--copyright" "$properties_copyright"
     "--vendor" "$properties_vendor"
-    "--icon" "./autogram.png"
+    "--icon" "./Autogram.png"
     "--license-file" "$appDirectory/LICENSE"
     "--resource-dir" "./"
     "--dest" "$output"
@@ -48,8 +47,9 @@ if [[ "$platform" == "win" ]]; then
     sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./main.wxs"
 
     arguments+=(
+        "--name" "$properties_name"
         "--type" "msi"
-        "--icon" "./autogram.ico"
+        "--icon" "./Autogram.ico"
         "--java-options" "$jvmOptions --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED"
     )
 
@@ -104,16 +104,14 @@ if [[ "$platform" == "linux" ]]; then
         )
     fi
 
-    if [[ ! -z "$properties_linux_installDir" ]]; then
-        arguments+=(
-            "--install-dir" "$properties_linux_installDir"
-        )
-    fi
+    $lowercase_name=$(echo "$properties_name" | tr '[:upper:]' '[:lower:]')
 
     arguments+=(
+        "--name" "$lowercase_name"
         "--java-options" "$jvmOptions"
         "--linux-rpm-license-type" "${properties_linux_rpmLicenseType:-MIT}"
         "--linux-menu-group" "${properties_linux_menuGroup:-Office}"
+        "--install-dir" "$properties_linux_installDir"
     )
 
     if [[ "$properties_linux_shortcut" == "1" ]]; then
@@ -143,11 +141,12 @@ if [[ "$platform" == "mac" ]]; then
     sed -i.bak "s/PROTOCOL_NAME/$properties_protocol/g" "./Info.plist" && rm "./Info.plist.bak"
 
     arguments+=(
+        "--name" "$properties_name"
         "--type" "pkg"
-        "--icon" "./autogram.icns"
+        "--icon" "./Autogram.icns"
         "--java-options" "$jvmOptions"
         "--mac-app-category" "${properties_mac_appCategory:-business}"
-        "--mac-entitlements" "./Autogram.entitlements"     
+        "--mac-entitlements" "./Autogram.entitlements"
         # Building on mac requires modifying of image files
         # So the temp files have to be on relative path
         "--temp" "./DTempFiles"
