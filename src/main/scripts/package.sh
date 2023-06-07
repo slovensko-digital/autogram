@@ -104,7 +104,7 @@ if [[ "$platform" == "linux" ]]; then
         )
     fi
 
-    $lowercase_name=$(echo "$properties_name" | tr '[:upper:]' '[:lower:]')
+    lowercase_name=$(echo "$properties_name" | tr '[:upper:]' '[:lower:]')
 
     arguments+=(
         "--name" "$lowercase_name"
