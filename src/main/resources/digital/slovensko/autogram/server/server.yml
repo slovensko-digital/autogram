@@ -37,6 +37,7 @@ paths:
     post:
       tags:
         - Sign
+        - Batch
       summary: Sign a single document
       operationId: signDocument
       requestBody:
@@ -194,7 +195,39 @@ paths:
                     type: string
                     example: "no such algorithm: PKCS11 for provider"
                     description: Optional details.
-
+  /batch:
+    post:
+      tags:
+        - Batch
+      operationId: startBatch
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/BatchStartRequestBody"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchStartResponseBody"
+    delete:
+      tags:
+        - Batch
+      operationId: endBatch
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/BatchEndRequestBody"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchEndResponseBody"
 components:
   schemas:
     Info:
@@ -212,6 +245,13 @@ components:
     SignRequestBody:
       type: object
       properties:
+        batchId:
+          type: string
+          example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
+          description: |
+            Optional identifier of the batch. 
+            If not provided, document will be signed as single standalone document.
+            If provided, document will be signed inside batch.
         document:
           $ref: "#/components/schemas/Document"
         parameters:
@@ -261,6 +301,32 @@ components:
         - content
         - signedBy
         - issuedBy
+
+
+    BatchStartRequestBody:
+      type: object
+      properties:
+        totalNumberOfDocuments:
+          type: integer
+          example: 500
+          description: Total number of documents in the batch. Used to calculate the progress of the batch.
+
+
+    BatchStartResponseBody:
+      type: object
+      properties:
+        batchId: 
+          type: string
+          example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
+          description: Identifier of the batch. Used to identify the batch for signing and ending batch.
+
+    BatchEndRequestBody:
+      type: object
+      properties:
+        batchId: 
+          type: string
+          example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
+          description: Identifier of the batch.
 
     SignatureParameters:
       type: object
