@@ -65,5 +65,6 @@
             text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed" />
         <Button fx:id="changeKeyButton" styleClass="autogram-link" text="Zmeniť" visible="false"
             onAction="#onChangeKeyButtonPressed" />
+        <Button fx:id="addSignatureButton" styleClass="autogram-link" text="Pridať obrázok podpisu" visible="false" managed="false" onAction="#onAddSignatureButtonPressed"/>
     </HBox>
 </VBox>

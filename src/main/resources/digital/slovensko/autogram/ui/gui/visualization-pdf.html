@@ -7,144 +7,394 @@
 <script src="./vendor/pdfjs/pdf.min.js"></script>
 
 <style>
-    body {
-        margin: 0;
-        width: 100%;
-    }
+  body {
+    margin: 0;
+    width: 100%;
+  }
 
-    #container {
-        width: 100%;
+  .noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+  }
 
-        display: flex;
-        flex-direction: column;
-    }
+  #container {
+    width: 100%;
 
-    #container > * {
-        border: 2px solid #0b0c0c;
-        margin: 0 24px 15px 0;
-    }
+    display: flex;
+    flex-direction: column;
+  }
 
-    #container > *:last-child {
-        margin-bottom: 0;
-    }
+  #container > * {
+    border: 2px solid #0b0c0c;
+    margin: 0 24px 15px 0;
+  }
+
+  #container > *:last-child {
+    margin-bottom: 0;
+  }
+
+  #signature {
+    top: 100px;
+    left: 100px;
+    position: absolute;
+    display: none;
+  }
+  #signature img {
+    max-width: 100%;
+    max-height: 100%;
+    height: auto;
+    pointer-events: none;
+  }
+  #signature #handle-tl,
+  #handle-tr,
+  #handle-bl,
+  #handle-br {
+    position: absolute;
+    --handle-size: 10px;
+    --handle-offset: calc(-1 * var(--handle-size) / 2);
+    width: var(--handle-size);
+    height: var(--handle-size);
+    background-color: red;
+  }
+  #handle-tl {
+    top: var(--handle-offset);
+    left: var(--handle-offset);
+  }
+  #handle-tr {
+    top: var(--handle-offset);
+    right: var(--handle-offset);
+  }
+  #handle-bl {
+    bottom: var(--handle-offset);
+    left: var(--handle-offset);
+  }
+  #handle-br {
+    bottom: var(--handle-offset);
+    right: var(--handle-offset);
+  }
 </style>
 
-<body>
+<body class="noselect">
+  <div id="container"></div>
 
-<div id="container"></div>
+  <div id="signature">
+    <span id="handle-tl"></span>
+    <span id="handle-tr"></span>
+    <span id="handle-bl"></span>
+    <span id="handle-br"></span>
+    <img id="signature-image" />
+  </div>
 
-<script type="text/javascript">
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.js';
+  <script type="text/javascript">
+    "use strict";
+    const pdfjsLib = window["pdfjs-dist/build/pdf"];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "./vendor/pdfjs/pdf.worker.min.js";
+
+    const getJavaInterop = () =>
+      window["javaInterop"] || {
+        log: function (msg) {
+          console.warn("javaInterop missing");
+        },
+        setSignaturePosition: function (pageNumber, x, y, width, height) {
+          console.warn("javaInterop missing");
+        },
+      };
 
     let currentResizeListener;
     window.displayPdf = function (data) {
-        pdfjsLib.getDocument({
-            data: atob(data),
-            cMapUrl: './vendor/pdfjs/cmaps/',
-            cMapPacked: true,
-            isEvalSupported: false,
-        }).promise.then(function (pdf) {
-            renderPdf(pdf);
+      pdfjsLib
+        .getDocument({
+          data: atob(data),
+          cMapUrl: "./vendor/pdfjs/cmaps/",
+          cMapPacked: true,
+          isEvalSupported: false,
+        })
+        .promise.then(function (pdf) {
+          renderPdf(pdf);
 
-            if (currentResizeListener) {
-                window.removeEventListener('resize', currentResizeListener);
-            }
+          if (currentResizeListener) {
+            window.removeEventListener("resize", currentResizeListener);
+          }
 
-            // TODO resize only if width changes & do this better
-            currentResizeListener = debounce(() => renderPdf(pdf), 1000);
-            window.addEventListener('resize', currentResizeListener);
+          // TODO resize only if width changes & do this better
+          currentResizeListener = debounce(() => renderPdf(pdf), 250);
+          window.addEventListener("resize", currentResizeListener);
         });
     };
 
     const renderPdf = async function (pdf) {
-        let pages = new Set();
-        const checkVisibility = function (elements, callback) {
-            const options = {
-                root: null,
-            };
+      let pages = new Set();
+      const checkVisibility = function (elements, callback) {
+        const options = {
+          root: null,
+        };
 
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(e => {
-                    const pageNumber = Number(e.target.dataset.pageNumber);
-                    e.isIntersecting ? pages.add(pageNumber) : pages.delete(pageNumber);
+        const observer = new IntersectionObserver((entries, observer) => {
+          entries.forEach((e) => {
+            const pageNumber = Number(e.target.dataset.pageNumber);
+            e.isIntersecting ? pages.add(pageNumber) : pages.delete(pageNumber);
+          });
+
+          if (pages.size > 0) {
+            const first = Math.max(1, Math.min(...pages) - 2);
+            const last = Math.min(pdf.numPages, Math.max(...pages) + 2);
+            callback(first, last); // TODO debounce?
+          }
+        }, options);
+
+        elements.forEach((e) => observer.observe(e));
+      };
+
+      const container = document.querySelector("#container");
+      container.innerHTML = "";
+
+      let pageElms = [];
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+        const pageElm = document.createElement("div");
+        pageElm.style.width = document.body.clientWidth - 32 + "px";
+        pageElm.style.height = (document.body.clientWidth - 32) * 1.41 + "px";
+        pageElm.dataset.pageNumber = pageNumber;
+        container.appendChild(pageElm);
+        pageElms.push(pageElm);
+      }
+
+      /* Render only pages that are visible  */
+      checkVisibility(
+        pageElms,
+        function (firstVisiblePageNumber, lastVisiblePageNumber) {
+          pageElms.forEach(function (elm, index) {
+            const pageNumber = index + 1;
+            if (
+              pageNumber >= firstVisiblePageNumber &&
+              pageNumber <= lastVisiblePageNumber
+            ) {
+              if (elm.hasChildNodes()) return;
+
+              pdf.getPage(pageNumber).then(function (page) {
+                const viewportOriginal = page.getViewport({ scale: 1 });
+                const scale =
+                  (document.body.clientWidth - 32) / viewportOriginal.width;
+                const viewport = page.getViewport({
+                  scale: scale,
                 });
 
-                if (pages.size > 0) {
-                    const first = Math.max(1, Math.min(...pages) - 2);
-                    const last = Math.min(pdf.numPages, Math.max(...pages) + 2)
-                    callback(first, last); // TODO debounce?
-                }
-            }, options);
+                // Prepare canvas using PDF page dimensions
+                // Support HiDPI-screens.
+                const outputScale = window.devicePixelRatio || 1;
 
-            elements.forEach(e => observer.observe(e));
-        }
+                const canvas = document.createElement("canvas");
+                const context = canvas.getContext("2d");
+                canvas.width = Math.floor(viewport.width * outputScale);
+                canvas.height = Math.floor(viewport.height * outputScale);
+                canvas.style.width = Math.floor(viewport.width) + "px";
+                canvas.style.height = Math.floor(viewport.height) + "px";
+                elm.style.height = viewport.height + "px";
+                elm.style.width = viewport.width + "px";
+                elm.dataset.scale = scale;
+                const transform =
+                  outputScale !== 1
+                    ? [outputScale, 0, 0, outputScale, 0, 0]
+                    : null;
 
-        const container = document.querySelector('#container');
-        container.innerHTML = '';
-
-        let pageElms = [];
-        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-            const pageElm = document.createElement('div');
-            pageElm.style.width = document.body.clientWidth - 32 + "px";
-            pageElm.style.height = (document.body.clientWidth - 32) * 1.41 + "px";
-            pageElm.dataset.pageNumber = pageNumber;
-
-            container.appendChild(pageElm);
-            pageElms.push(pageElm);
-        }
-
-        checkVisibility(pageElms,
-            function (firstVisiblePageNumber, lastVisiblePageNumber) {
-                pageElms.forEach(function (elm, index) {
-                    const pageNumber = index + 1;
-                    if (pageNumber >= firstVisiblePageNumber && pageNumber <= lastVisiblePageNumber) {
-                        if (elm.hasChildNodes()) return;
-
-                        pdf.getPage(pageNumber).then(function (page) {
-                            const viewport = page.getViewport({
-                                scale: (document.body.clientWidth - 32) / page.getViewport({scale: 1,}).width,
-                            });
-
-                            // Prepare canvas using PDF page dimensions
-                            // Support HiDPI-screens.
-                            const outputScale = window.devicePixelRatio || 1;
-
-                            const canvas = document.createElement('canvas');
-                            const context = canvas.getContext('2d');
-                            canvas.width = Math.floor(viewport.width * outputScale);
-                            canvas.height = Math.floor(viewport.height * outputScale);
-                            canvas.style.width = Math.floor(viewport.width) + "px";
-                            canvas.style.height = Math.floor(viewport.height) + "px";
-                            elm.style.height = viewport.height + 'px';
-                            elm.style.width = viewport.width + 'px';
-                            const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
-
-                            page.render({
-                                canvasContext: context,
-                                transform: transform,
-                                viewport: viewport
-                            });
-
-                            elm.replaceChildren(canvas);
-                        });
-                    } else {
-                        if (!elm.hasChildNodes()) return;
-
-                        elm.replaceChildren();
-                    }
+                page.render({
+                  canvasContext: context,
+                  transform: transform,
+                  viewport: viewport,
                 });
+
+                elm.replaceChildren(canvas);
+              });
+            } else {
+              if (!elm.hasChildNodes()) return;
+
+              elm.replaceChildren();
             }
-        );
-    }
+          });
+        }
+      );
+    };
 
     function debounce(callback, time) {
-        let timer;
-        return () => {
-            if (timer) clearTimeout(timer);
+      let timer;
+      return () => {
+        if (timer) clearTimeout(timer);
 
-            timer = setTimeout(callback, time, event);
-        };
+        timer = setTimeout(callback, time, event);
+      };
     }
-</script>
+
+    let signatureInitialized = false;
+    function initSignature(imageSrc) {
+      const signature = document.getElementById("signature");
+      const signatureImage = document.getElementById("signature-image");
+      signatureImage.src = imageSrc;
+
+      if (signatureInitialized) {
+        // signature.style.width = null;
+        // signature.style.height = null;
+        return;
+      }
+      signatureInitialized = true;
+
+      const javaInterop = getJavaInterop();
+      signature.style.display = "block";
+      const handleTL = document.getElementById("handle-tl");
+      const handleTR = document.getElementById("handle-tr");
+      const handleBL = document.getElementById("handle-bl");
+      const handleBR = document.getElementById("handle-br");
+      let draggingSignature = false;
+      let draggingHandle = false;
+      let factorLeft = 0;
+      let factorRight = 0;
+      let factorTop = 0;
+      let factorBottom = 0;
+      let clientX = null;
+      let clientY = null;
+
+      const sendSignaturePosition = () => {
+        console.log("send");
+        const pages = document.querySelectorAll("div[data-page-number]");
+        const signaturePage = Array.from(pages).find((e) => {
+          const eBr = e.getBoundingClientRect();
+          const sBr = signature.getBoundingClientRect();
+          const threshold = (sBr.height * 2) / 3; // 2/3 because of margins between pages - could be improved by computing ratio of intersection
+          return (
+            eBr.top < sBr.top + threshold && eBr.bottom > sBr.bottom - threshold
+          );
+        });
+        if (signaturePage) {
+          const pBr = signaturePage.getBoundingClientRect();
+          const sBr = signature.getBoundingClientRect();
+          const signaturePageNumber = signaturePage.dataset.pageNumber;
+          const scale = signaturePage.dataset.scale;
+          const signatureTop =
+            (signature.offsetTop - signaturePage.offsetTop) * scale;
+          const signatureLeft =
+            (signature.offsetLeft - signaturePage.offsetLeft) * scale;
+          const signatureWidth = sBr.width * scale;
+          const signatureHeight = sBr.height * scale;
+          javaInterop.setSignaturePosition(
+            signaturePageNumber,
+            signatureLeft,
+            signatureTop,
+            signatureWidth,
+            signatureHeight
+          );
+        }
+      };
+
+      sendSignaturePosition();
+      // set listeners
+      handleTL.addEventListener("mousedown", (ev) => {
+        draggingHandle = true;
+        factorTop = 1;
+        factorLeft = 1;
+        ev.currentTarget.style.backgroundColor = "blue";
+        javaInterop.log(`mousedown ${ev.currentTarget.id}`);
+      });
+      handleTR.addEventListener("mousedown", (ev) => {
+        draggingHandle = true;
+        factorTop = 1;
+        factorRight = 1;
+        clientX = ev.clientX;
+        clientY = ev.clientY;
+        ev.currentTarget.style.backgroundColor = "blue";
+        javaInterop.log(`mousedown ${ev.currentTarget.id}`);
+      });
+      handleBL.addEventListener("mousedown", (ev) => {
+        draggingHandle = true;
+        factorBottom = 1;
+        factorLeft = 1;
+        clientX = ev.clientX;
+        clientY = ev.clientY;
+        ev.currentTarget.style.backgroundColor = "blue";
+      });
+      handleBR.addEventListener("mousedown", (ev) => {
+        draggingHandle = true;
+        factorBottom = 1;
+        factorRight = 1;
+        clientX = ev.clientX;
+        clientY = ev.clientY;
+        ev.currentTarget.style.backgroundColor = "blue";
+      });
+      signature.addEventListener("mousedown", (ev) => {
+        draggingSignature = true;
+        clientX = ev.clientX;
+        clientY = ev.clientY;
+
+        signature.style.width = Math.max(30, signature.offsetWidth) + "px";
+        signature.style.height = Math.max(30, signature.offsetHeight) + "px";
+      });
+      window.addEventListener("mouseup", (ev) => {
+        draggingHandle = false;
+        draggingSignature = false;
+        factorLeft = 0;
+        factorRight = 0;
+        factorTop = 0;
+        factorBottom = 0;
+        clientX = null;
+        clientY = null;
+        handleTL.style.backgroundColor = "red";
+        handleTR.style.backgroundColor = "red";
+        handleBL.style.backgroundColor = "red";
+        handleBR.style.backgroundColor = "red";
+      });
+      window.addEventListener("mousemove", (ev) => {
+        if (draggingHandle || draggingSignature) {
+          const movementX = ev.clientX - clientX || 0;
+          const movementY = ev.clientY - clientY || 0;
+          clientX = ev.clientX;
+          clientY = ev.clientY;
+
+          if (draggingHandle) {
+            /* idea is to take each "side" and move it
+            if you pick corner you move multiple sides at same time
+            */
+            const minSize = 30;
+            const sideLeft = Math.max(
+              0,
+              signature.offsetLeft + movementX * factorLeft
+            );
+            const sideRight = Math.min(
+              document.body.clientWidth,
+              signature.offsetLeft +
+                signature.offsetWidth +
+                movementX * factorRight
+            );
+            const sideTop = Math.max(
+              0,
+              signature.offsetTop + movementY * factorTop
+            );
+            const sideBottom = Math.min(
+              document.body.clientHeight,
+              signature.offsetTop +
+                signature.offsetHeight +
+                movementY * factorBottom
+            );
+
+            signature.style.top = sideTop + "px";
+            signature.style.left = sideLeft + "px";
+            signature.style.width =
+              Math.max(minSize, sideRight - sideLeft) + "px";
+            signature.style.height =
+              Math.max(minSize, sideBottom - sideTop) + "px";
+          } else if (draggingSignature) {
+            signature.style.top = signature.offsetTop + movementY + "px";
+            signature.style.left = signature.offsetLeft + movementX + "px";
+          }
+
+          debounce(sendSignaturePosition, 250)();
+        }
+      });
+    }
+
+    displayPdf(
+      "JVBERi0xLjMNCiXi48/TDQoNCjEgMCBvYmoNCjw8DQovVHlwZSAvQ2F0YWxvZw0KL091dGxpbmVzIDIgMCBSDQovUGFnZXMgMyAwIFINCj4+DQplbmRvYmoNCg0KMiAwIG9iag0KPDwNCi9UeXBlIC9PdXRsaW5lcw0KL0NvdW50IDANCj4+DQplbmRvYmoNCg0KMyAwIG9iag0KPDwNCi9UeXBlIC9QYWdlcw0KL0NvdW50IDINCi9LaWRzIFsgNCAwIFIgNiAwIFIgXSANCj4+DQplbmRvYmoNCg0KNCAwIG9iag0KPDwNCi9UeXBlIC9QYWdlDQovUGFyZW50IDMgMCBSDQovUmVzb3VyY2VzIDw8DQovRm9udCA8PA0KL0YxIDkgMCBSIA0KPj4NCi9Qcm9jU2V0IDggMCBSDQo+Pg0KL01lZGlhQm94IFswIDAgNjEyLjAwMDAgNzkyLjAwMDBdDQovQ29udGVudHMgNSAwIFINCj4+DQplbmRvYmoNCg0KNSAwIG9iag0KPDwgL0xlbmd0aCAxMDc0ID4+DQpzdHJlYW0NCjIgSg0KQlQNCjAgMCAwIHJnDQovRjEgMDAyNyBUZg0KNTcuMzc1MCA3MjIuMjgwMCBUZA0KKCBBIFNpbXBsZSBQREYgRmlsZSApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDY4OC42MDgwIFRkDQooIFRoaXMgaXMgYSBzbWFsbCBkZW1vbnN0cmF0aW9uIC5wZGYgZmlsZSAtICkgVGoNCkVUDQpCVA0KL0YxIDAwMTAgVGYNCjY5LjI1MDAgNjY0LjcwNDAgVGQNCigganVzdCBmb3IgdXNlIGluIHRoZSBWaXJ0dWFsIE1lY2hhbmljcyB0dXRvcmlhbHMuIE1vcmUgdGV4dC4gQW5kIG1vcmUgKSBUag0KRVQNCkJUDQovRjEgMDAxMCBUZg0KNjkuMjUwMCA2NTIuNzUyMCBUZA0KKCB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDYyOC44NDgwIFRkDQooIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlICkgVGoNCkVUDQpCVA0KL0YxIDAwMTAgVGYNCjY5LjI1MDAgNjE2Ljg5NjAgVGQNCiggdGV4dC4gQW5kIG1vcmUgdGV4dC4gQm9yaW5nLCB6enp6ei4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kICkgVGoNCkVUDQpCVA0KL0YxIDAwMTAgVGYNCjY5LjI1MDAgNjA0Ljk0NDAgVGQNCiggbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDU5Mi45OTIwIFRkDQooIEFuZCBtb3JlIHRleHQuIEFuZCBtb3JlIHRleHQuICkgVGoNCkVUDQpCVA0KL0YxIDAwMTAgVGYNCjY5LjI1MDAgNTY5LjA4ODAgVGQNCiggQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgKSBUag0KRVQNCkJUDQovRjEgMDAxMCBUZg0KNjkuMjUwMCA1NTcuMTM2MCBUZA0KKCB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBFdmVuIG1vcmUuIENvbnRpbnVlZCBvbiBwYWdlIDIgLi4uKSBUag0KRVQNCmVuZHN0cmVhbQ0KZW5kb2JqDQoNCjYgMCBvYmoNCjw8DQovVHlwZSAvUGFnZQ0KL1BhcmVudCAzIDAgUg0KL1Jlc291cmNlcyA8PA0KL0ZvbnQgPDwNCi9GMSA5IDAgUiANCj4+DQovUHJvY1NldCA4IDAgUg0KPj4NCi9NZWRpYUJveCBbMCAwIDYxMi4wMDAwIDc5Mi4wMDAwXQ0KL0NvbnRlbnRzIDcgMCBSDQo+Pg0KZW5kb2JqDQoNCjcgMCBvYmoNCjw8IC9MZW5ndGggNjc2ID4+DQpzdHJlYW0NCjIgSg0KQlQNCjAgMCAwIHJnDQovRjEgMDAyNyBUZg0KNTcuMzc1MCA3MjIuMjgwMCBUZA0KKCBTaW1wbGUgUERGIEZpbGUgMiApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDY4OC42MDgwIFRkDQooIC4uLmNvbnRpbnVlZCBmcm9tIHBhZ2UgMS4gWWV0IG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gKSBUag0KRVQNCkJUDQovRjEgMDAxMCBUZg0KNjkuMjUwMCA2NzYuNjU2MCBUZA0KKCBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSB0ZXh0LiBBbmQgbW9yZSApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDY2NC43MDQwIFRkDQooIHRleHQuIE9oLCBob3cgYm9yaW5nIHR5cGluZyB0aGlzIHN0dWZmLiBCdXQgbm90IGFzIGJvcmluZyBhcyB3YXRjaGluZyApIFRqDQpFVA0KQlQNCi9GMSAwMDEwIFRmDQo2OS4yNTAwIDY1Mi43NTIwIFRkDQooIHBhaW50IGRyeS4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gQW5kIG1vcmUgdGV4dC4gKSBUag0KRVQNCkJUDQovRjEgMDAxMCBUZg0KNjkuMjUwMCA2NDAuODAwMCBUZA0KKCBCb3JpbmcuICBNb3JlLCBhIGxpdHRsZSBtb3JlIHRleHQuIFRoZSBlbmQsIGFuZCBqdXN0IGFzIHdlbGwuICkgVGoNCkVUDQplbmRzdHJlYW0NCmVuZG9iag0KDQo4IDAgb2JqDQpbL1BERiAvVGV4dF0NCmVuZG9iag0KDQo5IDAgb2JqDQo8PA0KL1R5cGUgL0ZvbnQNCi9TdWJ0eXBlIC9UeXBlMQ0KL05hbWUgL0YxDQovQmFzZUZvbnQgL0hlbHZldGljYQ0KL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcNCj4+DQplbmRvYmoNCg0KMTAgMCBvYmoNCjw8DQovQ3JlYXRvciAoUmF2ZSBcKGh0dHA6Ly93d3cubmV2cm9uYS5jb20vcmF2ZVwpKQ0KL1Byb2R1Y2VyIChOZXZyb25hIERlc2lnbnMpDQovQ3JlYXRpb25EYXRlIChEOjIwMDYwMzAxMDcyODI2KQ0KPj4NCmVuZG9iag0KDQp4cmVmDQowIDExDQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAwMTkgMDAwMDAgbg0KMDAwMDAwMDA5MyAwMDAwMCBuDQowMDAwMDAwMTQ3IDAwMDAwIG4NCjAwMDAwMDAyMjIgMDAwMDAgbg0KMDAwMDAwMDM5MCAwMDAwMCBuDQowMDAwMDAxNTIyIDAwMDAwIG4NCjAwMDAwMDE2OTAgMDAwMDAgbg0KMDAwMDAwMjQyMyAwMDAwMCBuDQowMDAwMDAyNDU2IDAwMDAwIG4NCjAwMDAwMDI1NzQgMDAwMDAgbg0KDQp0cmFpbGVyDQo8PA0KL1NpemUgMTENCi9Sb290IDEgMCBSDQovSW5mbyAxMCAwIFINCj4+DQoNCnN0YXJ0eHJlZg0KMjcxNA0KJSVFT0YNCg=="
+    );
+  </script>
 </body>

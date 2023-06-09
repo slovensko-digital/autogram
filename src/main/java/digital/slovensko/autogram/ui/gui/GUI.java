@@ -184,7 +184,7 @@ public class GUI implements UI {
         stage.setScene(new Scene(root));
 
         stage.sizeToScene();
-        stage.setResizable(false);
+        stage.setResizable(true);
         stage.initModality(Modality.APPLICATION_MODAL);
 
         GUIUtils.suppressDefaultFocus(stage, controller);
