@@ -11,6 +11,13 @@ import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
 import eu.europa.esig.dss.enumerations.*;
 
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Base64;
+
+import static digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod.*;
+
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
         INCLUSIVE,
@@ -88,7 +95,7 @@ public class ServerSigningParameters {
             return null;
 
         if (isBase64)
-            return new String(Base64.getDecoder().decode(transformation));
+            return new String(Base64.getDecoder().decode(transformation), StandardCharsets.UTF_8);
 
         return transformation;
     }
@@ -98,7 +105,7 @@ public class ServerSigningParameters {
             return null;
 
         if (isBase64)
-            return new String(Base64.getDecoder().decode(schema));
+            return new String(Base64.getDecoder().decode(schema), StandardCharsets.UTF_8);
 
         return schema;
     }
