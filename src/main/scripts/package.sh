@@ -27,7 +27,7 @@ while read -r key value; do
 done <"$resourcesDir/build.properties"
 unset IFS
 
-jvmOptions="--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
+jvmOptions="-Dfile.encoding=UTF-8 --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
 arguments=(
     "--input" "$appDirectory"
     "--runtime-image" "$jdkDirectory"
