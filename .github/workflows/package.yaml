@@ -40,7 +40,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Install an Apple keychain
+      - name: Install an Apple keychain (MacOS)
         if: runner.os == 'macOS'
         # based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development#add-a-step-to-your-workflow
         env:
@@ -71,7 +71,7 @@ jobs:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
           APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
 
-      - name: Notarize release with Apple
+      - name: Notarize release with Apple (MacOS)
         if: runner.os == 'macOS'
         env:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
@@ -82,6 +82,13 @@ jobs:
           xcrun notarytool submit --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
           # staple
           xcrun stapler staple target/Autogram-*.pkg
+
+      - name: Sign Windows installer (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          dotnet tool install --global AzureSignTool 
+          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}"-kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v target/*.msi
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@v1
