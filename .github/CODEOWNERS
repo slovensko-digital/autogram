@@ -1,7 +1,7 @@
 # Only authorized users can change workflows and packaging
-.github @slovensko-digital/autogram-packaging
-/src/main/scripts @slovensko-digital/autogram-packaging
-/pom.xml @slovensko-digital/autogram-packaging
-/mvnw @slovensko-digital/autogram-packaging
-/mvnw.cmd @slovensko-digital/autogram-packaging
-/.mvn @slovensko-digital/autogram-packaging
+.github @slovensko-digital/autogram-release-team
+/src/main/scripts @slovensko-digital/autogram-release-team
+/pom.xml @slovensko-digital/autogram-release-team
+/mvnw @slovensko-digital/autogram-release-team
+/mvnw.cmd @slovensko-digital/autogram-release-team
+/.mvn @slovensko-digital/autogram-release-team
