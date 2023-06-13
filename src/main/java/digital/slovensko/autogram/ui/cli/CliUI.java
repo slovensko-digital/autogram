@@ -129,13 +129,14 @@ public class CliUI implements UI {
 
     @Override
     public void onAboutInfo() {
-        System.out.println("O projekte Autogram");
-        System.out.println("Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a štandardov. Môžete ho používať komerčne aj nekomerčne a úplne zadarmo.");
-        System.out.println("Autori a sponzori");
-        System.out.println("Autormi tohto projektu sú Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. a ďalší spoluautori.");
-        System.out.println("Licencia a zdrojové kódy");
-        System.out.println("Tento softvér pôvodne vychádza projektu z Octosign White Label od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou. So súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2.");
-        System.out.println("Zdrojové kódy sú dostupné na https://github.com/slovensko-digital/autogram.");
+        System.out.println("""
+        O projekte Autogram
+        Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a štandardov. Môžete ho používať komerčne aj nekomerčne a úplne zadarmo.
+        Autori a sponzori
+        Autormi tohto projektu sú Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. a ďalší spoluautori.
+        Licencia a zdrojové kódy
+        Tento softvér pôvodne vychádza projektu z Octosign White Label od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou. So súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2.
+        Zdrojové kódy sú dostupné na https://github.com/slovensko-digital/autogram.""");
         System.out.println(String.format("Verzia: %s", Main.getVersion()));
     }
 
