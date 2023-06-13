@@ -18,7 +18,7 @@ public class CliManager {
         options.addOption("sf", "sourceFile", true, "Specifies the source file for the application. This option allows you to provide a specific file that the application should sign.");
         options.addOption("rf", "rewriteFile", false, "Specifies the file to be rewritten by the application. This option instructs the application to modify or overwrite the content of file if file with the same name exists.");
         options.addOption("c", "cli", false, "Specifies the CLI (Command Line Interface) to be used by the application. This option allows you to specify mode of application. If not set GUI application starts.");
-        options.addOption("d", "driver", true, "Specifies the driver for the application. This option sets the driver for signing.");
+        options.addOption("d", "driver", true, "Specifies the driver for the application. This option sets the driver for signing. Supported drivers: EID, SECURE_STORE, MONET, GEMALTO");
     }
 
     public CommandLine parse(String[] args) throws ParseException {
@@ -28,15 +28,19 @@ public class CliManager {
 
     public void printHelp() {
         final HelpFormatter formatter = new HelpFormatter();
-        final String syntax = "java -jar Autogram.jar [options]";
+        final String syntax = "autogram [options]";
         formatter.printHelp(syntax, options);
     }
 
     public void printUsage() {
         final HelpFormatter formatter = new HelpFormatter();
-        final String syntax = "java -jar Autogram.jar [options]";
+        final String syntax = """
+        autogram [options]
+        autogram --url=http://localhost:32700
+        autogram --cli [options]
+        """;
         final PrintWriter pw  = new PrintWriter(System.out);
-        formatter.printUsage(pw, 80, syntax, options);
+        formatter.printUsage(pw, 80, syntax);
         pw.flush();
     }
 }
