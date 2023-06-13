@@ -41,7 +41,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Install an Apple keychain
+      - name: Install an Apple keychain (MacOS)
         if: runner.os == 'macOS'
         # based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development#add-a-step-to-your-workflow
         env:
@@ -72,7 +72,20 @@ jobs:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
           APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
 
-      - name: Notarize release with Apple
+      - name: JaCoCo Code Coverage Report
+        id: jacoco_report
+        uses: PavanMudigonda/jacoco-reporter@v4.8
+        with:
+          coverage_results_path: ${{ github.workspace }}/target/site/jacoco/jacoco.xml
+          coverage_report_name: Coverage
+          coverage_report_title: JaCoCo
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          skip_check_run: false
+          minimum_coverage: 80
+          fail_below_threshold: false # set to true for Github CI build failing when coverage check do not pass
+          publish_only_summary: false
+
+      - name: Notarize release with Apple (MacOS)
         if: runner.os == 'macOS'
         env:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
@@ -100,15 +113,36 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: JaCoCo Code Coverage Report
-        id: jacoco_report
-        uses: PavanMudigonda/jacoco-reporter@v4.8
+      - uses: actions/upload-artifact@master
         with:
-          coverage_results_path: ${{ github.workspace }}/target/site/jacoco/jacoco.xml
-          coverage_report_name: Coverage
-          coverage_report_title: JaCoCo
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          skip_check_run: false
-          minimum_coverage: 80
-          fail_below_threshold: false # set to true for Github CI build failing when coverage check do not pass
-          publish_only_summary: false
+          name: target
+          path: |
+            target/*.msi
+
+  sign_windows:
+    name: Sign Windows installer (Windows)
+    needs: build
+    runs-on: windows-latest
+    environment: sign-windows
+
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: target
+
+      - name: Sign on Azure
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          dotnet tool install --global AzureSignTool 
+          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}"-kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v target/*.msi
+
+      - name: Create release if tag pushed
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          prerelease: true
+          files: target/*.msi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
