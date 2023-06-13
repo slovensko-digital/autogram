@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
@@ -57,7 +56,8 @@ public class GUI implements UI {
             // short-circuit if only one driver present
             callback.accept(drivers.get(0));
         } else {
-            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
+            PickDriverDialogController controller =
+                    new PickDriverDialogController(drivers, callback);
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
             var stage = new Stage();
@@ -92,7 +92,8 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys,
+            Consumer<DSSPrivateKeyEntry> callback) {
         if (keys.isEmpty()) {
             showError(new NoKeysDetectedException());
             refreshKeyOnAllJobs();
@@ -131,6 +132,19 @@ public class GUI implements UI {
 
         GUIUtils.suppressDefaultFocus(stage, controller);
 
+        stage.show();
+    }
+
+    public void showKey() {
+        var controller = new ShowKeyController(this);
+        var root = GUIUtils.loadFXML(controller, "show-key-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Detaily certifikátu");
+        stage.setScene(new Scene(root));
+        stage.setResizable(true);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
         stage.show();
     }
 
@@ -196,7 +210,7 @@ public class GUI implements UI {
     @Override
     public void onSigningFailed(AutogramException e) {
         showError(e);
-        if(e instanceof TokenRemovedException) {
+        if (e instanceof TokenRemovedException) {
             resetSigningKey();
         } else {
             refreshKeyOnAllJobs();
@@ -231,7 +245,8 @@ public class GUI implements UI {
     }
 
     public void setActiveSigningKey(SigningKey newKey) {
-        if (activeKey != null) activeKey.close();
+        if (activeKey != null)
+            activeKey.close();
         activeKey = newKey;
         refreshKeyOnAllJobs();
     }

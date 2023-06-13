@@ -514,3 +514,14 @@ TextFlow.autogram-body-s {
 .autogram-unsupported-visualization .autogram-error-summary__error {
     -fx-padding: 0.5em 2em 0 2em;
 }
+
+.autogram-show-key {
+    -fx-background-image: url('Autogram.png');
+    -fx-background-size: 50px 50px;
+    -fx-background-position: center;
+    -fx-background-repeat: no-repeat;
+}
+
+.autogram-show-key:hover {
+    -fx-cursor: hand;
+}

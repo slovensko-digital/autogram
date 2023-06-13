@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      prefWidth="450" minWidth="450"
+      fx:id="mainBox">
+
+    <VBox styleClass="autogram-error-summary">
+        <TextFlow styleClass="autogram-error-summary__title"><Text fx:id="heading">Podpisový certifikát</Text></TextFlow>
+        <TextFlow styleClass="autogram-error-summary__error"><Text fx:id="subheading">Miesto pre nazov informacie</Text></TextFlow>
+        <TextFlow styleClass="autogram-error-summary__description"><Text fx:id="description">description</Text></TextFlow>
+    </VBox>
+
+    <HBox styleClass="autogram-actions">
+        <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary" text="Pokračovať" onAction="#onMainButtonAction"/>
+    </HBox>
+
+    <TextArea fx:id="errorDetails" styleClass="autogram-details__text" editable="false" visible="false" managed="false">Error details</TextArea>
+</VBox>

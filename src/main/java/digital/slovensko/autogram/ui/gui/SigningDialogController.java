@@ -43,6 +43,8 @@ public class SigningDialogController implements SuppressedFocusController {
     public Button mainButton;
     @FXML
     public Button changeKeyButton;
+    @FXML
+    public Button showKeyButton;
 
     public SigningDialogController(SigningJob signingJob, Autogram autogram, GUI gui) {
         this.signingJob = signingJob;
@@ -83,6 +85,9 @@ public class SigningDialogController implements SuppressedFocusController {
         gui.resetSigningKey();
         autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
     }
+    public void onShowKeyButtonPressed(ActionEvent event){
+        gui.showKey();
+    }
 
     public void refreshSigningKey() {
         mainButton.setDisable(false);
@@ -91,10 +96,14 @@ public class SigningDialogController implements SuppressedFocusController {
             mainButton.setText("Vybrať podpisový certifikát");
             mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
+            showKeyButton.setVisible(false);
+            showKeyButton.setManaged(false);
         } else {
             mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
             mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
+            showKeyButton.setVisible(true);
+            showKeyButton.setManaged(true);
         }
     }
 
