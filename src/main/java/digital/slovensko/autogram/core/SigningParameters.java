@@ -196,7 +196,7 @@ public class SigningParameters {
         return keyInfoCanonicalization != null ? keyInfoCanonicalization : CanonicalizationMethod.INCLUSIVE;
     }
 
-    public static SigningParameters buildForPDF(String filename) {
+    public static SigningParameters buildForPDF(String filename, boolean checkPDFACompliance) {
         return new SigningParameters(
                 SignatureLevel.PAdES_BASELINE_B,
                 null,
@@ -204,7 +204,7 @@ public class SigningParameters {
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, "", true, 600);
+                null, null, "", checkPDFACompliance, 600);
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {

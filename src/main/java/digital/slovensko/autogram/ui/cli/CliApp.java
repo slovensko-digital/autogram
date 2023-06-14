@@ -22,14 +22,14 @@ public class CliApp {
             var source = params.getSource();
             if (source.isDirectory()) {
                 var jobs = Arrays.stream(source.listFiles()).map(f ->
-                    SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, null, params.isForce()))
+                    SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, null, params.isForce()), params.shouldCheckPDFACompliance())
                 ).toList();
                 if (params.shouldCheckPDFACompliance()) {
                     jobs.forEach(autogram::checkPDFACompliance);
                 }
                 jobs.forEach(autogram::sign);
             } else {
-                var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, null, params.isForce()));
+                var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, null, params.isForce()), params.shouldCheckPDFACompliance());
                 if (params.shouldCheckPDFACompliance()) {
                     autogram.checkPDFACompliance(job);
                 }

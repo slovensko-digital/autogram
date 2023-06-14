@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -85,7 +84,7 @@ public class SigningJob {
 
     public String getDocumentAsPlainText() {
         if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            try (var is = document.openStream()){
+            try (var is = document.openStream()) {
                 return new String(is.readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -97,7 +96,7 @@ public class SigningJob {
 
     private String transform() {
         // TODO probably move this logic into signing job creation
-        try (var is = this.document.openStream()){
+        try (var is = this.document.openStream()) {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
 
@@ -111,9 +110,9 @@ public class SigningJob {
 
             var outputTarget = new StreamResult(new StringWriter());
             var transformer = TransformerFactory
-                    .newDefaultInstance().newTransformer(
-                            new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding)))
-                    );
+                .newDefaultInstance().newTransformer(
+                    new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding)))
+                );
             var outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
             transformer.setOutputProperties(outputProperties);
@@ -148,7 +147,7 @@ public class SigningJob {
     }
 
     public String getDocumentAsBase64Encoded() {
-        try (var is = document.openStream()){
+        try (var is = document.openStream()) {
             return new String(Base64.getEncoder().encode(is.readAllBytes()), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -251,18 +250,22 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static SigningJob buildFromFile(File file, Responder responder) {
+    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance) {
         var document = new FileDocument(file);
 
         SigningParameters parameters;
         var filename = file.getName();
 
         if (filename.endsWith(".pdf")) {
-            parameters = SigningParameters.buildForPDF(filename);
+            parameters = SigningParameters.buildForPDF(filename, checkPDFACompliance);
         } else {
             parameters = SigningParameters.buildForASiCWithXAdES(filename);
         }
 
         return new SigningJob(document, parameters, responder);
+    }
+
+    public boolean shouldCheckPDFCompliance() {
+        return parameters.getCheckPDFACompliance();
     }
 }

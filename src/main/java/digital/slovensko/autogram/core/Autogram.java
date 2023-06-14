@@ -30,6 +30,8 @@ public class Autogram {
     }
 
     public void checkPDFACompliance(SigningJob job) {
+        if(!job.shouldCheckPDFCompliance()) return;
+
         ui.onWorkThreadDo(() -> {
             var result = new PDFAStructureValidator().validate(job.getDocument());
             if (!result.isCompliant()) {
