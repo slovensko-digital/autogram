@@ -251,11 +251,7 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static SigningJob buildFromFile(File file, Autogram autogram) {
-        return buildFromFile(file, autogram, null, false);
-    }
-    
-    public static SigningJob buildFromFile(File file, Autogram autogram, String target, boolean overwrite) {
+    public static SigningJob buildFromFile(File file, Responder responder) {
         var document = new FileDocument(file);
 
         SigningParameters parameters;
@@ -267,11 +263,6 @@ public class SigningJob {
             parameters = SigningParameters.buildForASiCWithXAdES(filename);
         }
 
-        var responder = new SaveFileResponder(file, autogram, target, overwrite);
         return new SigningJob(document, parameters, responder);
-    }
-
-    public boolean shouldCheckPDFCompliance() {
-        return parameters.getCheckPDFACompliance();
     }
 }

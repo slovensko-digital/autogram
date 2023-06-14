@@ -16,6 +16,10 @@ public class SaveFileResponder extends Responder {
     private final String targetDirectory;
     private final boolean overwrite;
 
+    public SaveFileResponder(File file, Autogram autogram) {
+        this(file, autogram, null, false);
+    }
+
     public SaveFileResponder(File file, Autogram autogram, String targetDirectory, boolean overwrite) {
         this.file = file;
         this.autogram = autogram;

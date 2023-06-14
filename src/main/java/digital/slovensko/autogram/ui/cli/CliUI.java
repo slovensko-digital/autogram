@@ -144,17 +144,4 @@ public class CliUI implements UI {
         System.err.println("");
         System.err.println(e.getDescription());
     }
-
-    public void sign(File file, Autogram autogram, String targetDirectory, boolean rewriteFile) {
-
-    }
-
-    private List<SigningJob> buildSigningJobs(File file, Autogram autogram, String targetDirectory, boolean rewriteFile) {
-        return file.isDirectory() ?
-                Arrays
-                    .stream(file.listFiles())
-                    .map(f -> SigningJob.buildFromFile(f, autogram, targetDirectory, rewriteFile))
-                    .collect(Collectors.toList())
-                : Arrays.asList(SigningJob.buildFromFile(file, autogram, targetDirectory, rewriteFile));
-    }
 }
