@@ -141,8 +141,8 @@ jobs:
           echo "download path:"
           ls -la "${{steps.download.outputs.download-path}}"
           echo "file:"
-          ls -la "${{steps.download.outputs.download-path}}"*.msi
-          stat "${{steps.download.outputs.download-path}}"*.msi
+          ls -la "${{steps.download.outputs.download-path}}\"*.msi
+          stat "${{steps.download.outputs.download-path}}\"*.msi
 
 
 
@@ -151,7 +151,7 @@ jobs:
         shell: bash
         run: |
           dotnet tool install --global AzureSignTool 
-          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "${{steps.download.outputs.download-path}}"*.msi
+          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v "${{steps.download.outputs.download-path}}\"*.msi
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@v1
