@@ -5,7 +5,6 @@ import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.ui.gui.GUI;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
