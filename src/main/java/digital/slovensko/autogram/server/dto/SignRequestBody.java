@@ -59,7 +59,7 @@ public class SignRequestBody {
         SigningParameters signingParameters = parameters.getSigningParameters(isBase64());
 
         if (!validateXml(getDecodedContent(), signingParameters.getSchema()))
-            throw new RequestValidationException("XML validation against XSD scheme failed", "");
+            throw new RequestValidationException("XML validation against XSD failed", "");
 
         return signingParameters;
     }
