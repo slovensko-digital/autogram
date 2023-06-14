@@ -41,7 +41,8 @@ public class MainMenuController implements SuppressedFocusController {
 
         dropZone.setOnDragDropped(event -> {
             for (File file : event.getDragboard().getFiles()) {
-                ui.sign(file, autogram);
+                SigningJob job = SigningJob.buildFromFile(file, autogram);
+                autogram.sign(job);
             }
         });
     }
@@ -52,7 +53,8 @@ public class MainMenuController implements SuppressedFocusController {
 
         if (list != null) {
             for (File file : list) {
-                ui.sign(file, autogram);
+                SigningJob job = SigningJob.buildFromFile(file, autogram);
+                autogram.sign(job);
             }
         }
     }

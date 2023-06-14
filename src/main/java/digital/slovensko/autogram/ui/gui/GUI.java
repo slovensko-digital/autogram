@@ -256,17 +256,4 @@ public class GUI implements UI {
     private Window getJobWindow(SigningJob job) {
         return jobControllers.get(job).mainBox.getScene().getWindow();
     }
-
-    public void sign(File file, Autogram autogram) {
-        SigningJob job = SigningJob.buildFromFile(file, autogram);
-        sign(autogram, job);
-    }
-
-    public void sign(Autogram autogram, SigningJob job) {
-        autogram.sign(job);
-        if (job.shouldCheckPDFCompliance()) {
-            onWorkThreadDo(()
-                    -> autogram.checkPDFACompliance(job));
-        }
-    }
 }

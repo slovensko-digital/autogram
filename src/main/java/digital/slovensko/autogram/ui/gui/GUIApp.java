@@ -25,7 +25,7 @@ public class GUIApp extends Application {
         var scene = new Scene(root);
 
         var params = LaunchParameters.fromParameters(getParameters());
-        var server = new AutogramServer(autogram, ui, params.getHost(), params.getPort(), params.isProtocolHttps());
+        var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps());
 
         server.start();
 

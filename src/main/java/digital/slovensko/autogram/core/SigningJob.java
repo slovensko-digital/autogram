@@ -239,7 +239,7 @@ public class SigningJob {
         return buildFromFile(file, autogram, null, false);
     }
     
-    public static SigningJob buildFromFile(File file, Autogram autogram, String targetDirectory, boolean rewriteFile) {
+    public static SigningJob buildFromFile(File file, Autogram autogram, String target, boolean overwrite) {
         var document = new FileDocument(file);
 
         SigningParameters parameters;
@@ -251,7 +251,7 @@ public class SigningJob {
             parameters = SigningParameters.buildForASiCWithXAdES(filename);
         }
 
-        var responder = new SaveFileResponder(file, autogram, targetDirectory, rewriteFile);
+        var responder = new SaveFileResponder(file, autogram, target, overwrite);
         return new SigningJob(document, parameters, responder);
     }
 

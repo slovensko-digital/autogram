@@ -14,11 +14,9 @@ import java.io.IOException;
 
 public class SignEndpoint implements HttpHandler {
     private final Autogram autogram;
-    private final GUI ui;
 
-    public SignEndpoint(Autogram autogram, GUI ui) {
+    public SignEndpoint(Autogram autogram) {
         this.autogram = autogram;
-        this.ui = ui;
     }
 
     @Override
@@ -36,7 +34,7 @@ public class SignEndpoint implements HttpHandler {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
             var job = new SigningJob(body.getDocument(), body.getParameters(), new ServerResponder(exchange));
-            ui.sign(autogram, job);
+            autogram.sign(job);
         } catch (JsonSyntaxException e) {
             var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
             EndpointUtils.respondWithError(response, exchange);

@@ -14,20 +14,13 @@ public class SaveFileResponder extends Responder {
     private final File file;
     private final Autogram autogram;
     private final String targetDirectory;
-    private final boolean rewriteFile;
+    private final boolean overwrite;
 
-    public SaveFileResponder(File file, Autogram autogram) {
-        this.file = file;
-        this.autogram = autogram;
-        this.targetDirectory = null;
-        this.rewriteFile = false;
-    }
-
-    public SaveFileResponder(File file, Autogram autogram, String targetDirectory, boolean rewriteFile) {
+    public SaveFileResponder(File file, Autogram autogram, String targetDirectory, boolean overwrite) {
         this.file = file;
         this.autogram = autogram;
         this.targetDirectory = targetDirectory;
-        this.rewriteFile = rewriteFile;
+        this.overwrite = overwrite;
     }
 
     public void onDocumentSigned(SignedDocument signedDocument) {
@@ -55,7 +48,7 @@ public class SaveFileResponder extends Responder {
         var baseName = Paths.get(directory, name + "_signed").toString();
         var newBaseName = baseName;
 
-        if (rewriteFile) {
+        if (overwrite) {
             return new File(newBaseName + extension);
         } else {
             var count = 1;

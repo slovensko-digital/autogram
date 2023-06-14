@@ -23,18 +23,16 @@ import static digital.slovensko.autogram.core.Configuration.getProperty;
 public class AutogramServer {
     private final HttpServer server;
     private final Autogram autogram;
-    private final GUI ui;
 
 
-    public AutogramServer(Autogram autogram, GUI ui, String hostname, int port, boolean isHttps) {
+    public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps) {
         this.autogram = autogram;
-        this.ui = ui;
         this.server = buildServer(hostname, port, isHttps);
     }
 
     public void start() {
         server.createContext("/info", new InfoEndpoint());
-        server.createContext("/sign", new SignEndpoint(autogram, ui));
+        server.createContext("/sign", new SignEndpoint(autogram));
         server.createContext("/docs", new DocumentationEndpoint());
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();

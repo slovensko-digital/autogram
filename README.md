@@ -1,22 +1,20 @@
 # Autogram
 
-Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplikácia, ktorá slúži na podpisovanie dokumentov v súlade s eIDAS reguláciou. Používateľ ňou môže podpisovať súbory priamo alebo je možné aplikáciu jednoducho zaintegrovať do vlastného (webového) informačného systému pomocou HTTP API.
+Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplikácia, ktorá slúži na podpisovanie dokumentov v súlade s eIDAS reguláciou. Používateľ ňou môže podpisovať súbory priamo alebo je možné aplikáciu jednoducho zaintegrovať do vlastného (webového) informačného systému pomocou HTTP API. Podpisovanie je možné spúšať aj z príkazového riadku, čo je vhodné pre hromadné podpisovanie veľkého množstva súborov naraz.
 
 **Inštalačné balíky pre Windows, MacOS a Linux sú dostupné v časti [Releases](https://github.com/slovensko-digital/autogram/releases).** Na použitie na existujúcich štátnych weboch bude potrebné doinštalovať aj [rozšírenie do prehliadača](https://github.com/slovensko-digital/autogram-extension#readme).
 
 ![Screenshot](assets/autogram-screenshot.png?raw=true)
-
-## CLI mód
-
-Aplikácia Autogram poskytuje aj možnosť spustenia v príkazovom riadku (CLI móde), čo umožňuje automatizované podpisovanie súborov.
-
-Pri spustení aplikácie s prepínačom --help je možné dozvedieť sa viac. Zobrazené sú informácie o funkciách Autogramu ako je hromadné podpisovanie a nápoveda pre použitie dostupných prepínačov.
 
 ## Integrácia
 
 Swagger dokumentácia pre HTTP API je [dostupná na githube](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml) alebo po spustení aplikácie je tiež dostupná na http://localhost:37200/docs.
 
 Vyvolať spustenie programu je možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez [autogram://go](autogram://go).
+
+## Konzolový mód
+
+Autogram je možné spúšťať aj z príkazového riadku (CLI mód), ktoré umožňuje aj hromadné podpisovanie súborov. Detailné informácie o prepínačoch je možné vidieť v nápovede po spustení `autogram --help`
 
 ### Štýlovanie
 

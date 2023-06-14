@@ -20,12 +20,11 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class CliUI implements UI {
+    private final CliParameters params;
     SigningKey activeKey;
 
-    TokenDriver driver;
-
-    public CliUI (TokenDriver driver) {
-        this.driver = driver;
+    public CliUI (CliParameters params) {
+        this.params = params;
     }
 
     @Override
@@ -45,8 +44,8 @@ public class CliUI implements UI {
     @Override
     public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
         TokenDriver pickedDriver;
-        if (driver != null) {
-            pickedDriver = driver;
+        if (params.getDriver() != null) {
+            pickedDriver = params.getDriver();
         } else if (drivers.isEmpty()) {
             showError(new NoDriversDetectedException());
             return;
@@ -154,18 +153,7 @@ public class CliUI implements UI {
     }
 
     public void sign(File file, Autogram autogram, String targetDirectory, boolean rewriteFile) {
-        List<SigningJob> jobs = buildSigningJobs(file, autogram, targetDirectory, rewriteFile);
-        jobs
-                .stream()
-                .forEach(job -> {
-                    if (job.shouldCheckPDFCompliance()) {
-                        autogram.checkPDFACompliance(job);
-                    }
-                });
 
-        jobs
-            .stream()
-            .forEach(job -> autogram.sign(job));
     }
 
     private List<SigningJob> buildSigningJobs(File file, Autogram autogram, String targetDirectory, boolean rewriteFile) {

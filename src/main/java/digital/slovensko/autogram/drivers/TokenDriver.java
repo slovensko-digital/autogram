@@ -8,11 +8,11 @@ import java.util.List;
 
 public abstract class TokenDriver {
 
-    public class TokenDriverShortnames {
-        public static final String EID = "EID";
-        public static final String SECURE_STORE = "SECURE_STORE";
-        public static final String MONET = "MONET";
-        public static final String GEMALTO = "GEMALTO";
+    public static class TokenDriverShortnames {
+        public static final String EID = "eid";
+        public static final String SECURE_STORE = "secure_store";
+        public static final String MONET = "monet";
+        public static final String GEMALTO = "gemalto";
     }
 
     public static final List<TokenDriver> LINUX_DRIVERS = List.of(

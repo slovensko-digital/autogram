@@ -2,24 +2,30 @@ package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.CliParameters;
+import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class CliApp {
-    public static void start(CliParameters cliParameters) {
-        var ui = new CliUI(cliParameters.getDriver());
+    public static void start(CliParameters params) {
+        var ui = new CliUI(params);
         var autogram = new Autogram(ui);
 
-        if (cliParameters.getSourceDirectory() == null && cliParameters.getSourceFile() == null) {
-            throw new IllegalArgumentException("Neither source file nor source directory is defined");
+        if (params.getSource() == null) {
+            throw new IllegalArgumentException("Source is defined");
         }
 
         try {
-            if (cliParameters.getSourceDirectory() != null) {
-                ui.sign(cliParameters.getSourceDirectory(), autogram, cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
-            }
-
-            if (cliParameters.getSourceFile() != null) {
-                ui.sign(cliParameters.getSourceFile(), autogram, cliParameters.getTargetDirectory(), cliParameters.isRewriteFile());
+            var source = params.getSource();
+            if (source.isDirectory()) {
+                var jobs = Arrays.stream(source.listFiles()).map(f -> SigningJob.buildFromFile(f, autogram, params.getTarget(), params.isForce())).toList();
+                autogram.signMany(jobs, params.shouldCheckPDFACompliance());
+            } else {
+                autogram.sign(SigningJob.buildFromFile(source, autogram, null, params.isForce()));
             }
         } catch (AutogramException e) {
             ui.showError(e);

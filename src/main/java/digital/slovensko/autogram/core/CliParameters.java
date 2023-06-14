@@ -9,105 +9,71 @@ import java.util.Optional;
 import static digital.slovensko.autogram.core.CliParameters.Validations.*;
 
 public class CliParameters {
+    private final File source;
+    private final String target;
+    private final boolean force;
+    private final TokenDriver driver;
+    private final boolean checkPDFACompliance;
 
-    private File sourceFile;
-
-    private File sourceDirectory;
-
-    private String targetDirectory;
-
-    private boolean cli;
-
-    private TokenDriver driver;
-
-    private boolean rewriteFile;
 
     public CliParameters(CommandLine cmd) {
-
-        var targetDirectory = cmd.getOptionValue("td");
-        var sourceDirectory = cmd.getOptionValue("sd");
-        var sourceFile = cmd.getOptionValue("sf");
-        var cli = cmd.hasOption("c");
-        var driver = cmd.getOptionValue("d");
-        var rewriteFile = cmd.hasOption("rf");
-
-        this.targetDirectory = validateTargetDirectory(targetDirectory);
-        this.sourceDirectory = validateSourceDirectory(sourceDirectory);
-        this.sourceFile = validateSourceFile(sourceFile);
-        this.cli = validateCli(cli);
-        this.driver = validateTokenDriver(driver);
-        this.rewriteFile = validateRewriteFile(rewriteFile);
+        source = validateSource(cmd.getOptionValue("s"));
+        target = validateTarget(cmd.getOptionValue("t"));
+        driver = validateTokenDriver(cmd.getOptionValue("d"));
+        force = cmd.hasOption("f");
+        checkPDFACompliance = cmd.hasOption("pdfa");
     }
 
-    public File getSourceFile() {
-        return sourceFile;
-    }
-
-    public File getSourceDirectory() {
-        return sourceDirectory;
-    }
-
-    public String getTargetDirectory() {
-        return targetDirectory;
-    }
-
-    public boolean isCli() {
-        return cli;
+    public File getSource() {
+        return source;
     }
 
     public TokenDriver getDriver() {
         return driver;
     }
 
-    public boolean isRewriteFile() {
-        return rewriteFile;
+    public boolean isForce() {
+        return force;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public boolean shouldCheckPDFACompliance() {
+        return checkPDFACompliance;
     }
 
     public static class Validations {
-        public static String validateTargetDirectory(String targetDirectory) {
-            if (targetDirectory != null && !new File(targetDirectory).exists()) {
-                throw new IllegalArgumentException(String.format("Target directory %s does not exist", targetDirectory));
+        public static String validateTarget(String targetPath) {
+            if (targetPath != null && !new File(targetPath).exists()) {
+                throw new IllegalArgumentException(String.format("Target %s does not exist", targetPath));
             }
-            return targetDirectory;
+            return targetPath;
         }
 
-        public static File validateSourceDirectory(String sourceDirectory) {
-            if (sourceDirectory != null && !new File(sourceDirectory).exists()) {
-                throw new IllegalArgumentException(String.format("Source directory %s does not exist", sourceDirectory));
+        public static File validateSource(String sourcePath) {
+            if (sourcePath != null && !new File(sourcePath).exists()) {
+                throw new IllegalArgumentException(String.format("Source %s does not exist", sourcePath));
             }
-            return sourceDirectory == null ? null : new File(sourceDirectory);
+            return sourcePath == null ? null : new File(sourcePath);
         }
 
-        public static File validateSourceFile(String sourceFile) {
-            if (sourceFile != null && !new File(sourceFile).exists()) {
-                throw new IllegalArgumentException(String.format("Source file %s does not exist", sourceFile));
-            }
-            return sourceFile == null ? null : new File(sourceFile);
-        }
-
-        public static boolean validateCli(boolean cli) {
-            return cli;
-        }
-
-        public static TokenDriver validateTokenDriver(String driver) {
-            if (driver == null) {
-               return null;
+        public static TokenDriver validateTokenDriver(String driverName) {
+            if (driverName == null) {
+                return null;
             }
 
             Optional<TokenDriver> tokenDriver = TokenDriver
-                    .getAvailableDrivers()
-                    .stream()
-                    .filter(new TokenDriverPredicate(driver))
-                    .findFirst();
+                .getAvailableDrivers()
+                .stream()
+                .filter(d -> d.getShortname().equals(driverName))
+                .findFirst();
 
-            if (!tokenDriver.isPresent()) {
-                throw new IllegalArgumentException(String.format("Token driver %s not found", driver));
+            if (tokenDriver.isEmpty()) {
+                throw new IllegalArgumentException(String.format("Token driver %s not found", driverName));
             }
             return tokenDriver.get();
-        }
-
-        public static boolean validateRewriteFile(boolean rewriteFile) {
-            return rewriteFile;
         }
     }
 }
