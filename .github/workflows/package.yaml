@@ -159,6 +159,6 @@ jobs:
         with:
           draft: true
           prerelease: true
-          files: target/*.msi
+          files: *.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
