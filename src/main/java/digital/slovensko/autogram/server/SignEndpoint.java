@@ -33,7 +33,6 @@ public class SignEndpoint implements HttpHandler {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
             var job = new SigningJob(body.getDocument(), body.getParameters(), new ServerResponder(exchange));
-
             autogram.sign(job);
         } catch (JsonSyntaxException e) {
             var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
