@@ -12,8 +12,8 @@ jobs:
     strategy:
       matrix:
         config:
-          - os: ubuntu-latest
-          - os: macos-latest
+          # - os: ubuntu-latest
+          # - os: macos-latest
           - os: windows-latest
 
     steps:
@@ -127,6 +127,7 @@ jobs:
 
     steps:
       - uses: actions/download-artifact@v3
+        id: download
         with:
           name: target
 
@@ -135,7 +136,7 @@ jobs:
         shell: bash
         run: |
           dotnet tool install --global AzureSignTool 
-          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v target/*.msi
+          AzureSignTool sign -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v ${{steps.download.outputs.download-path}}/target/*.msi
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@v1
