@@ -14,6 +14,6 @@ public class Main {
     }
 
     public static String getVersion() {
-        return requireNonNullElse(Main.class.getPackage().getImplementationVersion(), "dev");
+        return requireNonNullElse(System.getProperty("jpackage.app-version"), "dev");
     }
 }

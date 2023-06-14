@@ -15,12 +15,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>digital.slovensko.autogram.Main</main.class>
         <java.version>17</java.version>
-        <dss.version>5.12</dss.version>
+        <dss.version>5.12.1</dss.version>
         <gson.version>2.10.1</gson.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <pdfjs.version>2.10.377</pdfjs.version>
-        <saxon.version>12.1</saxon.version>
-        <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.7</slf4j.version>
         <junit.version>5.9.3</junit.version>
         <mockito.version>5.3.1</mockito.version>
@@ -87,11 +85,6 @@
             <version>${apache.httpcomponents.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.saxon</groupId>
-            <artifactId>Saxon-HE</artifactId>
-            <version>${saxon.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
@@ -127,7 +120,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.1.2</version>
                     <configuration>
                         <jvm>${jlink.jdk.path}${file.separator}bin${file.separator}java</jvm>
                     </configuration>
@@ -162,14 +155,14 @@
                     </execution>
                     <execution>
                         <id>jacoco-report</id>
-                        <phase>prepare-package</phase>
+                        <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
                     </execution>
                     <execution>
                         <id>default-check</id>
-                        <phase>prepare-package</phase>
+                        <phase>test</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>
@@ -201,7 +194,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
-                <version>2.15.0</version>
+                <version>2.16.0</version>
             </plugin>
 
             <plugin>
@@ -223,7 +216,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -279,6 +272,7 @@
                             <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
                             <fromDir>cmaps</fromDir>
                             <toDir>${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs/cmaps</toDir>
+                            <!-- <skip>true</skip> -->
                         </configuration>
                     </execution>
                 </executions>
@@ -367,6 +361,7 @@
                                 <option>--strip-native-commands</option>
                                 <option>--add-modules</option>
                                 <option>${crypto.modules}</option>
+                                <option>--vm=${hotspot.vms}</option>
                             </options>
                         </configuration>
                     </execution>
@@ -375,7 +370,7 @@
 
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.0</version>
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/scripts/bin.xml</descriptor>
@@ -437,6 +432,7 @@
             <properties>
                 <platform>win</platform>
                 <crypto.modules>jdk.crypto.cryptoki,jdk.crypto.mscapi</crypto.modules>
+                <hotspot.vms>client</hotspot.vms>
             </properties>
         </profile>
 
@@ -451,6 +447,7 @@
             <properties>
                 <platform>linux</platform>
                 <crypto.modules>jdk.crypto.cryptoki</crypto.modules>
+                <hotspot.vms>minimal</hotspot.vms>
             </properties>
         </profile>
 
@@ -465,6 +462,7 @@
             <properties>
                 <platform>mac</platform>
                 <crypto.modules>jdk.crypto.cryptoki</crypto.modules>
+                <hotspot.vms>client</hotspot.vms>
             </properties>
         </profile>
 

@@ -10,7 +10,7 @@ Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplik�
 
 Swagger dokumentácia pre HTTP API je [dostupná na githube](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml) alebo po spustení aplikácie je tiež dostupná na http://localhost:37200/docs.
 
-Vyvolať spustenie programu je možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez [autogram://go](autogram://go).
+Vyvolať spustenie programu je možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez `autogram://go`.
 
 ## Konzolový mód
 
@@ -23,6 +23,16 @@ Aplikácia momentálne podporuje len jeden štýl - štátny IDSK dizajn. Ďalš
 ### Texty a preklady
 
 Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez properties súbory. Toto bude slúžiť aj ako zdroj pre preklady.
+
+## Podporované karty
+
+Momentálne podporujeme na Slovensku bežne používané karty a ich ovládače:
+- občiansky preukaz (eID klient)
+- I.CA SecureStore
+- MONET+ ProID+Q
+- Gemalto IDPrime 940
+
+Doplniť ďalšie je pomerne ľahké pokiaľ používajú PKCS#11.
 
 ## Vývoj
 
@@ -43,7 +53,7 @@ Pripraví všetko do `./target`:
 - `preparedJDK/` - JLink JDK (JRE) pripravené pre bundling s aplikáciou.
 - `autogram-*.jar` - JAR s aplikáciou
 
-Následne pomocou `jpackager` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, and .rpm/.deb).
+Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, and .rpm/.deb).
 
 ## Autori a sponzori
 

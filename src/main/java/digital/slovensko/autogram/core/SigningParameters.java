@@ -31,6 +31,7 @@ public class SigningParameters {
     private final String keyInfoCanonicalization;
     private final String identifier;
     private final boolean checkPDFACompliance;
+    private final int visualizationWidth;
 
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
                              String containerXmlns, SignaturePackaging packaging,
@@ -38,7 +39,7 @@ public class SigningParameters {
                              Boolean en319132, String infoCanonicalization,
                              String propertiesCanonicalization, String keyInfoCanonicalization,
                              String schema, String transformation,
-                             String identifier, boolean checkPDFACompliance) {
+                             String identifier, boolean checkPDFACompliance, int preferredPreviewWidth) {
         this.level = level;
         this.asicContainer = container;
         this.containerXmlns = containerXmlns;
@@ -52,6 +53,7 @@ public class SigningParameters {
         this.transformation = transformation;
         this.identifier = identifier;
         this.checkPDFACompliance = checkPDFACompliance;
+        this.visualizationWidth = preferredPreviewWidth;
     }
 
     public MimeType getTransformationOutputMimeType() {
@@ -202,7 +204,7 @@ public class SigningParameters {
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, "", true);
+                null, null, "", true, 600);
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
@@ -213,7 +215,7 @@ public class SigningParameters {
                 SignaturePackaging.ENVELOPING,
                 DigestAlgorithm.SHA256,
                 false, null,
-                null, null, null, null, "", false);
+                null, null, null, null, "", false, 600);
     }
 
     public String getIdentifier() {
@@ -226,5 +228,9 @@ public class SigningParameters {
 
     public boolean getCheckPDFACompliance() {
         return checkPDFACompliance;
+    }
+
+    public int getVisualizationWidth() {
+        return (visualizationWidth > 0) ? visualizationWidth : 640;
     }
 }
