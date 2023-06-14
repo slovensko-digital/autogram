@@ -25,39 +25,17 @@ public class Autogram {
     }
 
     public void sign(SigningJob job) {
-        signWithoutCheck(job);
-
-        if (job.shouldCheckPDFCompliance()) {
-            ui.onWorkThreadDo(()
-            -> checkPDFACompliance(job));
-        }
-    }
-
-    public void signMany(List<SigningJob> jobs, boolean shouldCheckPDFACompliance) {
-        if(shouldCheckPDFACompliance) {
-            ui.onWorkThreadDo(() ->
-                jobs.forEach(job -> {
-                    if (job.shouldCheckPDFCompliance()) {
-                        checkPDFACompliance(job);
-                    }
-                })
-            );
-        }
-
-        ui.onUIThreadDo(()
-        -> jobs.forEach(this::signWithoutCheck));
-    }
-
-    private void signWithoutCheck(SigningJob job) {
         ui.onUIThreadDo(()
         -> ui.startSigning(job, this));
     }
 
-    private void checkPDFACompliance(SigningJob job) {
-        var result = new PDFAStructureValidator().validate(job.getDocument());
-        if(!result.isCompliant()) {
-            ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
-        }
+    public void checkPDFACompliance(SigningJob job) {
+        ui.onWorkThreadDo(() -> {
+            var result = new PDFAStructureValidator().validate(job.getDocument());
+            if (!result.isCompliant()) {
+                ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
+            }
+        });
     }
 
     public void sign(SigningJob job, SigningKey signingKey) {

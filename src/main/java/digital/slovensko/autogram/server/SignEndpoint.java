@@ -8,7 +8,6 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
-import digital.slovensko.autogram.ui.gui.GUI;
 
 import java.io.IOException;
 

@@ -33,6 +33,8 @@ public class GUI implements UI {
         var controller = new SigningDialogController(job, autogram, this);
         jobControllers.put(job, controller);
 
+        autogram.checkPDFACompliance(job);
+
         var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
 
         var stage = new Stage();

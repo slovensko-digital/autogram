@@ -20,12 +20,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class CliUI implements UI {
-    private final CliParameters params;
     SigningKey activeKey;
-
-    public CliUI (CliParameters params) {
-        this.params = params;
-    }
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
@@ -44,9 +39,7 @@ public class CliUI implements UI {
     @Override
     public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
         TokenDriver pickedDriver;
-        if (params.getDriver() != null) {
-            pickedDriver = params.getDriver();
-        } else if (drivers.isEmpty()) {
+        if (drivers.isEmpty()) {
             showError(new NoDriversDetectedException());
             return;
         } else if (drivers.size() == 1) {

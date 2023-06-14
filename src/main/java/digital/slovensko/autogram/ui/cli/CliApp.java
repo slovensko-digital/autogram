@@ -5,27 +5,32 @@ import digital.slovensko.autogram.core.CliParameters;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
 
-import java.io.File;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collections;
 
 public class CliApp {
     public static void start(CliParameters params) {
-        var ui = new CliUI(params);
-        var autogram = new Autogram(ui);
+        var ui = new CliUI();
+        var autogram = params.getDriver() == null ? new Autogram(ui) : new Autogram(ui, () -> Collections.singletonList(params.getDriver()));
 
         if (params.getSource() == null) {
-            throw new IllegalArgumentException("Source is defined");
+            throw new IllegalArgumentException("Source is not defined");
         }
 
         try {
             var source = params.getSource();
             if (source.isDirectory()) {
                 var jobs = Arrays.stream(source.listFiles()).map(f -> SigningJob.buildFromFile(f, autogram, params.getTarget(), params.isForce())).toList();
-                autogram.signMany(jobs, params.shouldCheckPDFACompliance());
+                if(params.shouldCheckPDFACompliance()) {
+                    jobs.forEach(autogram::checkPDFACompliance);
+                }
+                jobs.forEach(autogram::sign);
             } else {
-                autogram.sign(SigningJob.buildFromFile(source, autogram, null, params.isForce()));
+                var job = SigningJob.buildFromFile(source, autogram, null, params.isForce());
+                if (params.shouldCheckPDFACompliance()) {
+                    autogram.checkPDFACompliance(job);
+                }
+                autogram.sign(job);
             }
         } catch (AutogramException e) {
             ui.showError(e);
