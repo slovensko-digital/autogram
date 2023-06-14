@@ -93,7 +93,7 @@ class AutogramTests {
     private static class FakeTokenDriverWithExpiredCertificate extends TokenDriver {
 
         public FakeTokenDriverWithExpiredCertificate() {
-            super("fake-token-driver-with-expired-certificate", Path.of(""), true);
+            super("fake-token-driver-with-expired-certificate", Path.of(""), true, "fake");
         }
 
         @Override
