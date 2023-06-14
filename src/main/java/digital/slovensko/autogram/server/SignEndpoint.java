@@ -5,7 +5,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.XMLValidator;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
@@ -34,9 +33,6 @@ public class SignEndpoint implements HttpHandler {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
             var job = new SigningJob(body.getDocument(), body.getParameters(), new ServerResponder(exchange));
-
-            XMLValidator xmlValidator = new XMLValidator(body);
-            xmlValidator.validate();
 
             autogram.sign(job);
         } catch (JsonSyntaxException e) {
