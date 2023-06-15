@@ -3,10 +3,7 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.*;
-import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
-import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
-import digital.slovensko.autogram.core.errors.PDFAComplianceException;
+import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.DSSUtils;
@@ -24,7 +21,7 @@ public class CliUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
-        System.out.println("Spúšťa sa podpisovanie súboru " + job.getDocument().getName());
+        System.out.println("Starting signing file " + job.getDocument().getName());
         if (activeKey == null) {
             autogram.pickSigningKeyAndThen(key -> {
                 activeKey = key;
@@ -46,7 +43,7 @@ public class CliUI implements UI {
             pickedDriver = drivers.get(0);
         } else {
             var i = new AtomicInteger(1);
-            System.out.println("Vyberte úložisko certifikátov");
+            System.out.println("Pick driver");
             drivers.forEach(driver -> {
                 System.out.print("[" + i + "] ");
                 System.out.println(driver.getName());
@@ -63,7 +60,7 @@ public class CliUI implements UI {
             callback.accept(null);
             return;
         }
-        System.out.println("Zadajte bezpečnostný kód k úložisku certifikátov");
+        System.out.println("Enter security code");
         callback.accept(CliUtils.readLine()); // TODO do not show pin
     }
 
@@ -89,7 +86,7 @@ public class CliUI implements UI {
 
     @Override
     public void onSigningSuccess(SigningJob job) {
-        System.out.println("Súbor " + job.getDocument().getName() + " úspešne podpísaný");
+        System.out.println("File " + job.getDocument().getName() + " successfully signed");
     }
 
     @Override
@@ -99,7 +96,7 @@ public class CliUI implements UI {
 
     @Override
     public void onDocumentSaved(File file) {
-        System.out.println("Podpísaný súbor je uložený ako " + file.getName() + " v " + file.getParent());
+        System.out.println("Signed file saved as " + file.getName() + " in " + file.getParent());
     }
 
     @Override
@@ -132,6 +129,32 @@ public class CliUI implements UI {
     }
 
     public void showError(AutogramException e) {
-        System.err.println(e.getSubheading());
+        String errMessage = "";
+        if (e instanceof FunctionCanceledException) {
+            errMessage = "No security code entered";
+        } else if (e instanceof InitializationFailedException) {
+            errMessage = "Unable to read card";
+        } else if (e instanceof NoDriversDetectedException) {
+            errMessage = "No available drivers found";
+        } else if (e instanceof NoKeysDetectedException) {
+            errMessage = "No signing keys found";
+        } else if (e instanceof PDFAComplianceException) {
+            errMessage = "Document is not PDF/A compliant";
+        } else if (e instanceof PINIncorrectException) {
+            errMessage = "Incorrect security code";
+        } else if (e instanceof PINLockedException) {
+            errMessage = "PIN is blocked";
+        } else if (e instanceof SigningCanceledByUserException) {
+            errMessage = "Signing canceled by user";
+        } else if (e instanceof SigningWithExpiredCertificateException) {
+            errMessage = "Signing with expired certificate";
+        } else if (e instanceof TokenNotRecognizedException) {
+            errMessage = "Token not recognized";
+        } else if (e instanceof TokenRemovedException) {
+            errMessage = "Token removed";
+        } else {
+            errMessage = "Unknown error occurred";
+        }
+        System.err.println(errMessage);
     }
 }

@@ -26,7 +26,7 @@ public class CliApp {
                 ).toList();
                 if (params.shouldCheckPDFACompliance()) {
                     jobs.forEach(job -> {
-                        System.out.println("Prebieha kontrola PDF/A kompatiblity súboru " + job.getDocument().getName());
+                        System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
                         autogram.checkPDFACompliance(job);
                     });
                 }
@@ -34,7 +34,7 @@ public class CliApp {
             } else {
                 var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, null, params.isForce()), params.shouldCheckPDFACompliance());
                 if (params.shouldCheckPDFACompliance()) {
-                    System.out.println("Prebieha kontrola PDF/A kompatiblity súboru " + job.getDocument().getName());
+                    System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
                     autogram.checkPDFACompliance(job);
                 }
                 autogram.sign(job);
