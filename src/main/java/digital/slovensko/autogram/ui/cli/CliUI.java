@@ -24,7 +24,7 @@ public class CliUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing for " + job);
+        System.out.println("Spúšťa sa podpisovanie súboru " + job.getDocument().getName());
         if (activeKey == null) {
             autogram.pickSigningKeyAndThen(key -> {
                 activeKey = key;
@@ -46,7 +46,7 @@ public class CliUI implements UI {
             pickedDriver = drivers.get(0);
         } else {
             var i = new AtomicInteger(1);
-            System.out.println("Vyberte ulozisko certifikatov");
+            System.out.println("Vyberte úložisko certifikátov");
             drivers.forEach(driver -> {
                 System.out.print("[" + i + "] ");
                 System.out.println(driver.getName());
@@ -63,7 +63,7 @@ public class CliUI implements UI {
             callback.accept(null);
             return;
         }
-        System.out.println("Zadajte bezpecnostny kod k ulozisku certifikatov: ");
+        System.out.println("Zadajte bezpečnostný kód k úložisku certifikátov");
         callback.accept(CliUtils.readLine()); // TODO do not show pin
     }
 
@@ -72,12 +72,8 @@ public class CliUI implements UI {
         if (keys.isEmpty()) {
             showError(new NoKeysDetectedException());
             return;
-        } else if (keys.size() > 1) {
-            System.out.println("Found multiple keys:");
-            keys.forEach(key -> System.out.println(DSSUtils.buildTooltipLabel(key)));
         }
 
-        System.out.println("Picking key: " + DSSUtils.buildTooltipLabel(keys.get(0)));
         callback.accept(keys.get(0));
     }
 
@@ -93,7 +89,7 @@ public class CliUI implements UI {
 
     @Override
     public void onSigningSuccess(SigningJob job) {
-        System.out.println("Success for " + job);
+        System.out.println("Súbor " + job.getDocument().getName() + " úspešne podpísaný");
     }
 
     @Override
@@ -102,10 +98,8 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void onDocumentSaved(File filename) {
-        System.out.println("Dokument bol úspešne podpísaný");
-        System.out.println("");
-        System.out.println(String.format("Podpísaný súbor je uložený ako %s v priečinku %s.", filename.getName(), filename.getParent()));
+    public void onDocumentSaved(File file) {
+        System.out.println("Podpísaný súbor je uložený ako " + file.getName() + " v " + file.getParent());
     }
 
     @Override
@@ -138,10 +132,6 @@ public class CliUI implements UI {
     }
 
     public void showError(AutogramException e) {
-        System.err.println(e.getHeading());
-        System.err.println("");
         System.err.println(e.getSubheading());
-        System.err.println("");
-        System.err.println(e.getDescription());
     }
 }

@@ -25,12 +25,16 @@ public class CliApp {
                     SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, null, params.isForce()), params.shouldCheckPDFACompliance())
                 ).toList();
                 if (params.shouldCheckPDFACompliance()) {
-                    jobs.forEach(autogram::checkPDFACompliance);
+                    jobs.forEach(job -> {
+                        System.out.println("Prebieha kontrola PDF/A kompatiblity súboru " + job.getDocument().getName());
+                        autogram.checkPDFACompliance(job);
+                    });
                 }
                 jobs.forEach(autogram::sign);
             } else {
                 var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, null, params.isForce()), params.shouldCheckPDFACompliance());
                 if (params.shouldCheckPDFACompliance()) {
+                    System.out.println("Prebieha kontrola PDF/A kompatiblity súboru " + job.getDocument().getName());
                     autogram.checkPDFACompliance(job);
                 }
                 autogram.sign(job);
