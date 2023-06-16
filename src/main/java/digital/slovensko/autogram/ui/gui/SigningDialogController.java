@@ -171,7 +171,6 @@ public class SigningDialogController implements SuppressedFocusController {
                     webViewContainer.setVisible(false);
                     webViewContainer.setManaged(false);
                     showFailedTransformationError(e);
-                    System.out.println("transformation failed");
                 }
             }
         });
@@ -179,7 +178,6 @@ public class SigningDialogController implements SuppressedFocusController {
         webViewContainer.getStyleClass().add("autogram-visualizer-html");
         webViewContainer.setVisible(true);
         webViewContainer.setManaged(true);
-        System.out.println("view");
     }
 
     private void showPDFVisualization() {
@@ -240,7 +238,6 @@ public class SigningDialogController implements SuppressedFocusController {
             errorDetails.setVisible(true);
             showErrorDetailsButton.setText("Schovať detail chyby");
         }
-        // errorDetails.getScene().getWindow().sizeToScene();
     }
 
     @Override

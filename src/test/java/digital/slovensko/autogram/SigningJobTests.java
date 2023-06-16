@@ -37,6 +37,7 @@ public class SigningJobTests {
                 var expected = new String(this.getClass().getResourceAsStream("transformed.html")
                                 .readAllBytes(), StandardCharsets.UTF_8);
 
-                assertEquals(expected, htmlTransformed);
+                assertEquals(expected.replaceAll("\\r\\n?", "\n"),
+                                htmlTransformed.replaceAll("\\r\\n?", "\n"));
         }
 }
