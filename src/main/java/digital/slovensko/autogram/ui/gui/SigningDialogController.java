@@ -197,7 +197,7 @@ public class SigningDialogController implements SuppressedFocusController {
 
     private void showFailedTransformationError(Exception exception) {
         showUnsupportedVisualization();
-        gui.onTransformationFailed(signingJob, exception);
+        gui.onUIThreadDo(() -> gui.onTransformationFailed(signingJob, exception));        
     }
 
     @Override

@@ -68,7 +68,8 @@ public class SigningJob {
     }
 
     public boolean hasFailedTransformation() {
-        return parameters.getTransformationException() != null;
+        var mime = parameters.getTransformationOutputMimeType();
+        return mime == null && parameters.getTransformationException() != null;
     }
 
     public int getVisualizationWidth() {
