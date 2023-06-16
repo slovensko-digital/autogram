@@ -53,4 +53,8 @@ public class SaveFileResponder extends Responder {
             count++;
         }
     }
+
+    public File getFile() {
+        return file;
+    }
 }

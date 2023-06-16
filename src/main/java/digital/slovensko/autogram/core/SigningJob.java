@@ -22,10 +22,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -77,6 +74,10 @@ public class SigningJob {
     private boolean isXDC() {
         return document.getMimeType()
             .equals(AutogramMimeType.XML_DATACONTAINER);
+    }
+
+    public boolean isAsice() {
+        return document.getMimeType().equals(MimeTypeEnum.ASICE);
     }
 
     public String getDocumentAsPlainText() {
@@ -257,5 +258,15 @@ public class SigningJob {
 
     public boolean shouldCheckPDFCompliance() {
         return parameters.getCheckPDFACompliance();
+    }
+
+    public ExtractedFile getDocumentFromAsice() {
+        try {
+            File file = ((SaveFileResponder) responder).getFile();
+            return ZipProcessor.processZip(file.getPath());
+        } catch (IOException e) {
+            System.err.println("Error occurred during processing: " + e.getMessage());
+        }
+        return null;
     }
 }
