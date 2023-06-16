@@ -213,4 +213,21 @@ public class XDCTransformer {
     private static String toNamespacedString(DigestAlgorithm digestAlgorithm) {
         return "urn:oid:" + digestAlgorithm.getOid();
     }
+
+    public static DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)
+            throws ParserConfigurationException {
+        var xdc = document.getDocumentElement();
+
+        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
+                .item(0);
+
+        if (xmlData == null)
+            throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere
+
+        document = builderFactory.newDocumentBuilder().newDocument();
+        var node = document.importNode(xmlData.getFirstChild(), true);
+        document.appendChild(node);
+
+        return new DOMSource(document);
+    }
 }

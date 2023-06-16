@@ -2,15 +2,22 @@ package digital.slovensko.autogram.server.dto;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Base64;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.XDCTransformer;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.model.InMemoryDocument;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -58,10 +65,36 @@ public class SignRequestBody {
 
         SigningParameters signingParameters = parameters.getSigningParameters(isBase64());
 
-        if (!validateXml(getDecodedContent(), signingParameters.getSchema()))
+        if (!validateXml(getXmlContent(), signingParameters.getSchema()))
             throw new RequestValidationException("XML validation against XSD failed", "");
 
         return signingParameters;
+    }
+
+    private String getXmlContent() {
+        boolean isXdc = getDocument().getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
+        return isXdc ? getContentFromXdc() : getDecodedContent();
+    }
+
+    private String getContentFromXdc() {
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+            var document = builderFactory.newDocumentBuilder().parse(new InputSource(getDocument().openStream()));
+            var element = XDCTransformer.extractFromXDC(document, builderFactory);
+            return transformElementToString(element);
+        } catch (Exception e) {
+            throw new RequestValidationException("Unable to get XML content from XDC container", "");
+        }
+    }
+
+    private static String transformElementToString(DOMSource element) throws TransformerException {
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = factory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        StringWriter writer = new StringWriter();
+        transformer.transform(element, new StreamResult(writer));
+        return writer.toString();
     }
 
     private boolean validateXml(String xmlContent, String xsdSchema) {

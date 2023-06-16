@@ -100,7 +100,7 @@ public class SigningJob {
 
             var xmlSource = new DOMSource(document);
             if (isXDC())
-                xmlSource = extractFromXDC(document, builderFactory);
+                xmlSource = XDCTransformer.extractFromXDC(document, builderFactory);
 
             var outputTarget = new StreamResult(new StringWriter());
             var transformer = TransformerFactory.newInstance().newTransformer(
@@ -112,23 +112,6 @@ public class SigningJob {
             e.printStackTrace();
             return null; // TODO
         }
-    }
-
-    private DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)
-        throws ParserConfigurationException {
-        var xdc = document.getDocumentElement();
-
-        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
-            .item(0);
-
-        if (xmlData == null)
-            throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere
-
-        document = builderFactory.newDocumentBuilder().newDocument();
-        var node = document.importNode(xmlData.getFirstChild(), true);
-        document.appendChild(node);
-
-        return new DOMSource(document);
     }
 
     public String getDocumentAsHTML() {
