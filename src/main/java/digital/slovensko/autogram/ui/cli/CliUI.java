@@ -6,15 +6,12 @@ import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
-import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class CliUI implements UI {
     SigningKey activeKey;
@@ -43,7 +40,7 @@ public class CliUI implements UI {
             pickedDriver = drivers.get(0);
         } else {
             var i = new AtomicInteger(1);
-            System.out.println("Pick driver");
+            System.out.println("Pick driver:");
             drivers.forEach(driver -> {
                 System.out.print("[" + i + "] ");
                 System.out.println(driver.getName());
@@ -60,7 +57,7 @@ public class CliUI implements UI {
             callback.accept(null);
             return;
         }
-        System.out.println("Enter security code");
+        System.out.println("Enter security code for driver:");
         callback.accept(CliUtils.readLine()); // TODO do not show pin
     }
 
