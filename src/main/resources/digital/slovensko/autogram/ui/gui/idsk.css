@@ -514,3 +514,12 @@ TextFlow.autogram-body-s {
 .autogram-unsupported-visualization .autogram-error-summary__error {
     -fx-padding: 0.5em 2em 0 2em;
 }
+
+
+
+.autogram-error-summary__more-standalone {
+    -fx-margin: 2em;
+    -fx-border-insets: 2em;
+    -fx-background-insets: 2em;
+    -fx-font-size: 1em   
+}

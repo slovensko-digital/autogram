@@ -176,6 +176,20 @@ public class GUI implements UI {
         stage.show();
     }
 
+    public void onTransformationFailed(SigningJob job, Exception exception) {
+        var controller = new IgnorableExceptionDialogController(job, exception, this);
+        var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Chyba pri transformácii dokumentu");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(getJobWindow(job));
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
+    }
+
     private void disableKeyPicking() {
         jobControllers.values().forEach(SigningDialogController::disableKeyPicking);
     }
@@ -195,7 +209,7 @@ public class GUI implements UI {
     @Override
     public void onSigningFailed(AutogramException e) {
         showError(e);
-        if(e instanceof TokenRemovedException) {
+        if (e instanceof TokenRemovedException) {
             resetSigningKey();
         } else {
             refreshKeyOnAllJobs();
@@ -230,7 +244,8 @@ public class GUI implements UI {
     }
 
     public void setActiveSigningKey(SigningKey newKey) {
-        if (activeKey != null) activeKey.close();
+        if (activeKey != null)
+            activeKey.close();
         activeKey = newKey;
         refreshKeyOnAllJobs();
     }

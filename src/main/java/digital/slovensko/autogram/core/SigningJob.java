@@ -67,6 +67,10 @@ public class SigningJob {
         return false;
     }
 
+    public boolean hasFailedTransformation() {
+        return parameters.getTransformationException() != null;
+    }
+
     public int getVisualizationWidth() {
         return parameters.getVisualizationWidth();
     }
@@ -114,8 +118,7 @@ public class SigningJob {
 
         var outputTarget = new StreamResult(new StringWriter());
 
-        var transformerFactory =
-                TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
+        var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
 
         var transformer = transformerFactory.newTransformer(new StreamSource(
                 new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding))));

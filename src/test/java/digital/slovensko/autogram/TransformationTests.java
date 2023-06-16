@@ -2,8 +2,16 @@ package digital.slovensko.autogram;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.IOException;
+
 import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
 import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
 import digital.slovensko.autogram.core.SigningJob;
@@ -19,7 +27,8 @@ public class TransformationTests {
 
         Responder dummyResponder = new Responder() {
                 @Override
-                public void onDocumentSigned(SignedDocument signedDocument) {}
+                public void onDocumentSigned(SignedDocument signedDocument) {
+                }
 
                 @Override
                 public void onDocumentSignFailed(AutogramException error) {
@@ -27,90 +36,77 @@ public class TransformationTests {
                 }
         };
 
-
         @Test
-        void testSigningJobTransformToHtml() {
-                try {
-                        var transformation = new String(this.getClass().getResourceAsStream(
-                                        "crystal_test_data/PovolenieZdravotnictvo.html.xslt")
-                                        .readAllBytes());
+        void testSigningJobTransformToHtml() throws IOException, ParserConfigurationException,
+                        SAXException, TransformerException {
+                var transformation = new String(this.getClass().getResourceAsStream(
+                                "crystal_test_data/PovolenieZdravotnictvo.html.xslt")
+                                .readAllBytes());
 
-                        var document = new InMemoryDocument(this.getClass().getResourceAsStream(
-                                        "crystal_test_data/rozhodnutie_X4564-2.xml"),
-                                        "rozhodnutie_X4564-2.xml");
+                var document = new InMemoryDocument(
+                                this.getClass().getResourceAsStream(
+                                                "crystal_test_data/rozhodnutie_X4564-2.xml"),
+                                "rozhodnutie_X4564-2.xml");
 
-                        var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
-                                        ASiCContainerType.ASiC_E, null,
-                                        SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256,
-                                        false, CanonicalizationMethod.INCLUSIVE,
-                                        CanonicalizationMethod.INCLUSIVE,
-                                        CanonicalizationMethod.INCLUSIVE, null, transformation,
-                                        "id1/asa", false, 800);
+                var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
+                                ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
+                                DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
+                                CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
+                                null, transformation, "id1/asa", false, 800);
 
-                        SigningJob job = new SigningJob(document, params, dummyResponder);
+                SigningJob job = new SigningJob(document, params, dummyResponder);
 
-
-                        var xml = job.getDocumentAsHTML();
-                        assertFalse(xml.isEmpty());
-                } catch (Exception e) {
-                        fail("Should not have thrown any exception", e);
-                }
-        }
-
-
-        @Test
-        void testSigningJobTransformFo() {
-                try {
-                        var transformation = new String(this.getClass().getResourceAsStream(
-                                        "crystal_test_data/PovolenieZdravotnictvo.fo.xsl")
-                                        .readAllBytes());
-
-                        var document = new InMemoryDocument(this.getClass().getResourceAsStream(
-                                        "crystal_test_data/rozhodnutie_X4564-2.xml"),
-                                        "rozhodnutie_X4564-2.xml");
-
-                        var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
-                                        ASiCContainerType.ASiC_E, null,
-                                        SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256,
-                                        false, CanonicalizationMethod.INCLUSIVE,
-                                        CanonicalizationMethod.INCLUSIVE,
-                                        CanonicalizationMethod.INCLUSIVE, null, transformation,
-                                        "id1/asa", false, 800);
-
-                        SigningJob job = new SigningJob(document, params, dummyResponder);
-
-                        var xml = job.getDocumentAsHTML();
-                        assertFalse(xml.isEmpty());
-                } catch (Exception e) {
-                        fail("Should not have thrown any exception", e);
-                }
+                var xml = job.getDocumentAsHTML();
+                assertFalse(xml.isEmpty());
         }
 
         @Test
-        void testSigningJobTransformSb() {
-                try {
-                        var transformation = new String(this.getClass().getResourceAsStream(
-                                        "crystal_test_data/PovolenieZdravotnictvo.sb.xslt")
-                                        .readAllBytes());
+        void testSigningJobTransformFo() throws IOException, ParserConfigurationException,
+                        SAXException, TransformerException {
+                var transformation = new String(this.getClass()
+                                .getResourceAsStream(
+                                                "crystal_test_data/PovolenieZdravotnictvo.fo.xsl")
+                                .readAllBytes());
 
-                        var document = new InMemoryDocument(this.getClass().getResourceAsStream(
-                                        "crystal_test_data/rozhodnutie_X4564-2.xml"),
-                                        "rozhodnutie_X4564-2.xml");
+                var document = new InMemoryDocument(
+                                this.getClass().getResourceAsStream(
+                                                "crystal_test_data/rozhodnutie_X4564-2.xml"),
+                                "rozhodnutie_X4564-2.xml");
 
-                        var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
-                                        ASiCContainerType.ASiC_E, null,
-                                        SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256,
-                                        false, CanonicalizationMethod.INCLUSIVE,
-                                        CanonicalizationMethod.INCLUSIVE,
-                                        CanonicalizationMethod.INCLUSIVE, null, transformation,
-                                        "id1/asa", false, 800);
+                var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
+                                ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
+                                DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
+                                CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
+                                null, transformation, "id1/asa", false, 800);
 
-                        SigningJob job = new SigningJob(document, params, dummyResponder);
+                SigningJob job = new SigningJob(document, params, dummyResponder);
 
-                        var xml = job.getDocumentAsHTML();
-                        assertFalse(xml.isEmpty());
-                } catch (Exception e) {
-                        fail("Should not have thrown any exception", e);
-                }
+                var xml = job.getDocumentAsHTML();
+                assertFalse(xml.isEmpty());
+        }
+
+        @Test
+        void testSigningJobTransformSb() throws IOException, ParserConfigurationException,
+                        SAXException, TransformerException {
+                var transformation = new String(this.getClass()
+                                .getResourceAsStream(
+                                                "crystal_test_data/PovolenieZdravotnictvo.sb.xslt")
+                                .readAllBytes());
+
+                var document = new InMemoryDocument(
+                                this.getClass().getResourceAsStream(
+                                                "crystal_test_data/rozhodnutie_X4564-2.xml"),
+                                "rozhodnutie_X4564-2.xml");
+
+                var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
+                                ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
+                                DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
+                                CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
+                                null, transformation, "id1/asa", false, 800);
+
+                SigningJob job = new SigningJob(document, params, dummyResponder);
+
+                var xml = job.getDocumentAsHTML();
+                assertFalse(xml.isEmpty());
         }
 }

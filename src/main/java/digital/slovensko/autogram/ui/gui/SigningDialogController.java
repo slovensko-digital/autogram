@@ -1,8 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import org.xml.sax.SAXException;
@@ -22,16 +20,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.StrokeType;
-import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
@@ -53,21 +42,11 @@ public class SigningDialogController implements SuppressedFocusController {
     @FXML
     ScrollPane imageVisualizationContainer;
     @FXML
-    VBox unsupportedVisualizationInfoBox;
-    @FXML
     public Button mainButton;
     @FXML
     public Button changeKeyButton;
     @FXML
-    VBox unsupportedVisualizationReason;
-    @FXML
-    ScrollPane unsupportedVisualizationScrollPane;
-    @FXML
-    TextArea errorDetails;
-    @FXML
-    Button showErrorDetailsButton;
-
-
+    VBox unsupportedVisualizationInfoBox;
 
     public SigningDialogController(SigningJob signingJob, Autogram autogram, GUI gui) {
         this.signingJob = signingJob;
@@ -80,7 +59,9 @@ public class SigningDialogController implements SuppressedFocusController {
 
         mainBox.setPrefWidth(signingJob.getVisualizationWidth());
 
-        if (signingJob.isPlainText()) {
+        if (signingJob.hasFailedTransformation()) {
+            showFailedTransformationError(signingJob.getParameters().getTransformationException());
+        } else if (signingJob.isPlainText()) {
             showPlainTextVisualization();
         } else if (signingJob.isHTML()) {
             showHTMLVisualization();
@@ -216,28 +197,7 @@ public class SigningDialogController implements SuppressedFocusController {
 
     private void showFailedTransformationError(Exception exception) {
         showUnsupportedVisualization();
-        unsupportedVisualizationReason.setVisible(true);
-        unsupportedVisualizationReason.setManaged(true);
-
-        var writer = new StringWriter();
-        var printWriter = new PrintWriter(writer);
-        exception.printStackTrace(printWriter);
-        printWriter.flush();
-        errorDetails.setText(writer.toString());
-        mainBox.getScene().getWindow().sizeToScene();
-    }
-
-    public void onShowErrorDetailsButtonAction(ActionEvent event) {
-
-        if (errorDetails.isVisible()) {
-            errorDetails.setManaged(false);
-            errorDetails.setVisible(false);
-            showErrorDetailsButton.setText("Zobraziť detail chyby");
-        } else {
-            errorDetails.setManaged(true);
-            errorDetails.setVisible(true);
-            showErrorDetailsButton.setText("Schovať detail chyby");
-        }
+        gui.onTransformationFailed(signingJob, exception);
     }
 
     @Override
