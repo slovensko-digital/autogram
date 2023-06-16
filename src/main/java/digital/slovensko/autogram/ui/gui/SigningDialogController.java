@@ -1,5 +1,11 @@
 package digital.slovensko.autogram.ui.gui;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
@@ -16,7 +22,16 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.StrokeType;
+import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
@@ -43,6 +58,16 @@ public class SigningDialogController implements SuppressedFocusController {
     public Button mainButton;
     @FXML
     public Button changeKeyButton;
+    @FXML
+    VBox unsupportedVisualizationReason;
+    @FXML
+    ScrollPane unsupportedVisualizationScrollPane;
+    @FXML
+    TextArea errorDetails;
+    @FXML
+    Button showErrorDetailsButton;
+
+
 
     public SigningDialogController(SigningJob signingJob, Autogram autogram, GUI gui) {
         this.signingJob = signingJob;
@@ -92,8 +117,10 @@ public class SigningDialogController implements SuppressedFocusController {
             mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
         } else {
-            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
-            mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
+            mainButton.setText("Podpísať ako "
+                    + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+            mainButton.getStyleClass()
+                    .removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
         }
     }
@@ -117,9 +144,16 @@ public class SigningDialogController implements SuppressedFocusController {
 
     private void showPlainTextVisualization() {
         plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
-        plainTextArea.setText(signingJob.getDocumentAsPlainText());
-        plainTextArea.setVisible(true);
-        plainTextArea.setManaged(true);
+        try {
+            plainTextArea.setText(signingJob.getDocumentAsPlainText());
+            plainTextArea.setVisible(true);
+            plainTextArea.setManaged(true);
+        } catch (IOException | ParserConfigurationException | SAXException
+                | TransformerException e) {
+            plainTextArea.setVisible(false);
+            plainTextArea.setManaged(false);
+            showFailedTransformationError(e);
+        }
     }
 
     private void showHTMLVisualization() {
@@ -128,13 +162,24 @@ public class SigningDialogController implements SuppressedFocusController {
         var engine = webView.getEngine();
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                engine.getDocument().getElementById("frame").setAttribute("srcdoc", signingJob.getDocumentAsHTML());
+                try {
+                    engine.getDocument().getElementById("frame").setAttribute("srcdoc",
+                            signingJob.getDocumentAsHTML());
+                } catch (IOException | ParserConfigurationException | SAXException
+                        | TransformerException e) {
+
+                    webViewContainer.setVisible(false);
+                    webViewContainer.setManaged(false);
+                    showFailedTransformationError(e);
+                    System.out.println("transformation failed");
+                }
             }
         });
         engine.load(getClass().getResource("visualization-html.html").toExternalForm());
         webViewContainer.getStyleClass().add("autogram-visualizer-html");
         webViewContainer.setVisible(true);
         webViewContainer.setManaged(true);
+        System.out.println("view");
     }
 
     private void showPDFVisualization() {
@@ -142,7 +187,8 @@ public class SigningDialogController implements SuppressedFocusController {
         engine.setJavaScriptEnabled(true);
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                engine.executeScript("displayPdf('" + signingJob.getDocumentAsBase64Encoded() + "')");
+                engine.executeScript(
+                        "displayPdf('" + signingJob.getDocumentAsBase64Encoded() + "')");
             }
         });
         engine.load(getClass().getResource("visualization-pdf.html").toExternalForm());
@@ -152,7 +198,8 @@ public class SigningDialogController implements SuppressedFocusController {
     }
 
     private void showImageVisualization() {
-        imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
+        imageVisualization.fitWidthProperty()
+                .bind(imageVisualizationContainer.widthProperty().subtract(4));
         imageVisualization.setImage(new Image(signingJob.getDocument().openStream()));
         imageVisualization.setPreserveRatio(true);
         imageVisualization.setSmooth(true);
@@ -167,6 +214,33 @@ public class SigningDialogController implements SuppressedFocusController {
     private void showUnsupportedVisualization() {
         unsupportedVisualizationInfoBox.setVisible(true);
         unsupportedVisualizationInfoBox.setManaged(true);
+    }
+
+    private void showFailedTransformationError(Exception exception) {
+        showUnsupportedVisualization();
+        unsupportedVisualizationReason.setVisible(true);
+        unsupportedVisualizationReason.setManaged(true);
+
+        var writer = new StringWriter();
+        var printWriter = new PrintWriter(writer);
+        exception.printStackTrace(printWriter);
+        printWriter.flush();
+        errorDetails.setText(writer.toString());
+        mainBox.getScene().getWindow().sizeToScene();
+    }
+
+    public void onShowErrorDetailsButtonAction(ActionEvent event) {
+
+        if (errorDetails.isVisible()) {
+            errorDetails.setManaged(false);
+            errorDetails.setVisible(false);
+            showErrorDetailsButton.setText("Zobraziť detail chyby");
+        } else {
+            errorDetails.setManaged(true);
+            errorDetails.setVisible(true);
+            showErrorDetailsButton.setText("Schovať detail chyby");
+        }
+        // errorDetails.getScene().getWindow().sizeToScene();
     }
 
     @Override

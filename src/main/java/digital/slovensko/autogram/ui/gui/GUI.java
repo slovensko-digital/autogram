@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;

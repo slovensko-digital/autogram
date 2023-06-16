@@ -14,10 +14,11 @@ import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
-
+import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -75,17 +76,18 @@ public class SigningJob {
     }
 
     public boolean isImage() {
-        return document.getMimeType().equals(MimeTypeEnum.JPEG) || document.getMimeType().equals(MimeTypeEnum.PNG);
+        return document.getMimeType().equals(MimeTypeEnum.JPEG)
+                || document.getMimeType().equals(MimeTypeEnum.PNG);
     }
 
     private boolean isXDC() {
-        return document.getMimeType()
-            .equals(AutogramMimeType.XML_DATACONTAINER);
+        return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
     }
 
-    public String getDocumentAsPlainText() {
+    public String getDocumentAsPlainText()
+            throws IOException, ParserConfigurationException, SAXException, TransformerException {
         if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            try (var is = document.openStream()){
+            try (var is = document.openStream()) {
                 return new String(is.readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -95,43 +97,42 @@ public class SigningJob {
         }
     }
 
-    private String transform() {
+    private String transform()
+            throws IOException, ParserConfigurationException, SAXException, TransformerException {
         // TODO probably move this logic into signing job creation
-        try (var is = this.document.openStream()){
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
+        var is = this.document.openStream();
+        var builderFactory = DocumentBuilderFactory.newInstance();
+        builderFactory.setNamespaceAware(true);
 
-            var inputSource = new InputSource(is);
-            inputSource.setEncoding(encoding.displayName());
-            var document = builderFactory.newDocumentBuilder().parse(inputSource);
+        var inputSource = new InputSource(is);
+        inputSource.setEncoding(encoding.displayName());
+        var document = builderFactory.newDocumentBuilder().parse(inputSource);
 
-            var xmlSource = new DOMSource(document);
-            if (isXDC())
-                xmlSource = extractFromXDC(document, builderFactory);
+        var xmlSource = new DOMSource(document);
+        if (isXDC())
+            xmlSource = extractFromXDC(document, builderFactory);
 
-            var outputTarget = new StreamResult(new StringWriter());
-            var transformer = TransformerFactory
-                    .newDefaultInstance().newTransformer(
-                            new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding)))
-                    );
-            var outputProperties = new Properties();
-            outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
-            transformer.setOutputProperties(outputProperties);
-            transformer.transform(xmlSource, outputTarget);
+        var outputTarget = new StreamResult(new StringWriter());
 
-            return outputTarget.getWriter().toString().trim();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null; // TODO
-        }
+        var transformerFactory =
+                TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
+
+        var transformer = transformerFactory.newTransformer(new StreamSource(
+                new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding))));
+        var outputProperties = new Properties();
+        outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
+        transformer.setOutputProperties(outputProperties);
+        transformer.transform(xmlSource, outputTarget);
+
+        return outputTarget.getWriter().toString().trim();
     }
 
     private DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)
-        throws ParserConfigurationException {
+            throws ParserConfigurationException {
         var xdc = document.getDocumentElement();
 
-        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
-            .item(0);
+        var xmlData = xdc.getElementsByTagNameNS(
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData").item(0);
 
         if (xmlData == null)
             throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere
@@ -143,13 +144,15 @@ public class SigningJob {
         return new DOMSource(document);
     }
 
-    public String getDocumentAsHTML() {
+    public String getDocumentAsHTML()
+            throws IOException, ParserConfigurationException, SAXException, TransformerException {
         return transform();
     }
 
     public String getDocumentAsBase64Encoded() {
-        try (var is = document.openStream()){
-            return new String(Base64.getEncoder().encode(is.readAllBytes()), StandardCharsets.UTF_8);
+        try (var is = document.openStream()) {
+            return new String(Base64.getEncoder().encode(is.readAllBytes()),
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -161,7 +164,8 @@ public class SigningJob {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
             case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key) : signDocumentAsCAdeS(key);
             case PAdES -> signDocumentAsPAdeS(key);
-            default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
+            default -> throw new RuntimeException(
+                    "Unsupported signature type: " + getParameters().getSignatureType());
         };
         responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
     }

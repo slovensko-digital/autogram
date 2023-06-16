@@ -4709,6 +4709,7 @@ exampleTransformation = `<?xml version="1.0" encoding="UTF-8"?>
         const [documentName, setDocumentName] = React.useState("");
         const [transformation, setTransformation] = React.useState(exampleTransformation);
         const [errors, setErrors] = React.useState([]);
+        const [signedDocuments, setSignedDocuments] = React.useState([]);
 
         const sign = () => {
           API.sign({
@@ -4728,7 +4729,7 @@ exampleTransformation = `<?xml version="1.0" encoding="UTF-8"?>
               throw e;
             })
             .then((r) => {
-              setDocuments((documents) => [...documents, r]);
+              setSignedDocument((documents) => [...documents, r]);
             });
         };
 
