@@ -1,7 +1,8 @@
 package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.ISigningJob;
+import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
@@ -17,7 +18,7 @@ public class CliUI implements UI {
     SigningKey activeKey;
 
     @Override
-    public void startSigning(SigningJob job, Autogram autogram) {
+    public void startSigning(ISigningJob job, Autogram autogram) {
         System.out.println("Starting signing for " + job);
         if (activeKey == null) {
             autogram.pickSigningKeyAndThen(key -> {
@@ -80,7 +81,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void onSigningSuccess(SigningJob job) {
+    public void onSigningSuccess(ISigningJob job) {
         System.out.println("Success for " + job);
     }
 
@@ -110,7 +111,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void onPDFAComplianceCheckFailed(SigningJob job) {
+    public void onPDFAComplianceCheckFailed(ISigningJob job) {
 
     }
 }

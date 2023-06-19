@@ -1,7 +1,7 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.DefaultXdcTransformer;
+import digital.slovensko.autogram.core.SigningParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -10,14 +10,13 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class XDCTransformerTests {
     @Test
-    void testTransformsPlainHtmlWithoutAddingNamespaces() throws IOException {
+    void testTransformsPlainHtmlWithoutAddingNamespaces() throws Exception {
         var transformation = new String(this.getClass().getResourceAsStream("abc.xslt").readAllBytes());
 
         var document = new InMemoryDocument(this.getClass().getResourceAsStream("abc.xml"));

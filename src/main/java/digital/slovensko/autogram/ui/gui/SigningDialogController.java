@@ -2,8 +2,8 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.ISigningJob;
-import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.DSSUtils;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -117,10 +117,15 @@ public class SigningDialogController implements SuppressedFocusController {
     }
 
     private void showPlainTextVisualization() {
-        plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
-        plainTextArea.setText(signingJob.getDocumentAsPlainText());
-        plainTextArea.setVisible(true);
-        plainTextArea.setManaged(true);
+        try {
+            plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
+            plainTextArea.setText(signingJob.getDocumentAsPlainText());
+            plainTextArea.setVisible(true);
+            plainTextArea.setManaged(true);
+        } catch (AutogramException e) {
+            // TODO handle
+            throw new RuntimeException(e);
+        }
     }
 
     private void showHTMLVisualization() {
@@ -129,7 +134,12 @@ public class SigningDialogController implements SuppressedFocusController {
         var engine = webView.getEngine();
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                engine.getDocument().getElementById("frame").setAttribute("srcdoc", signingJob.getDocumentAsHTML());
+                try {
+                    engine.getDocument().getElementById("frame").setAttribute("srcdoc", signingJob.getDocumentAsHTML());
+                } catch (AutogramException e) {
+                    // TODO handle
+                    throw new RuntimeException(e);
+                }
             }
         });
         engine.load(getClass().getResource("visualization-html.html").toExternalForm());
@@ -143,7 +153,12 @@ public class SigningDialogController implements SuppressedFocusController {
         engine.setJavaScriptEnabled(true);
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                engine.executeScript("displayPdf('" + signingJob.getDocumentAsBase64Encoded() + "')");
+                try {
+                    engine.executeScript("displayPdf('" + signingJob.getDocumentAsBase64Encoded() + "')");
+                } catch (AutogramException e) {
+                    // TODO handle
+                    throw new RuntimeException(e);
+                }
             }
         });
         engine.load(getClass().getResource("visualization-pdf.html").toExternalForm());

@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.util;
 
-import digital.slovensko.autogram.core.errors.AutogramException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import javax.naming.InvalidNameException;
@@ -8,7 +7,7 @@ import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
 
 public class DSSUtils {
-    public static String parseCN(String rfc2253) throws AutogramException {
+    public static String parseCN(String rfc2253) {
         try {
             var ldapName = new LdapName(rfc2253);
             for (Rdn rdn : ldapName.getRdns()) {
@@ -17,7 +16,7 @@ public class DSSUtils {
                 }
             }
         } catch (InvalidNameException e) {
-            throw AutogramException.fromThrowable(e);
+            throw new IllegalArgumentException(e);
         }
         return null;
     }

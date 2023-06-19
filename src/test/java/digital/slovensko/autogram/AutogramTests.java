@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -62,9 +63,10 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
 
-        Assertions.assertThrows(SigningWithExpiredCertificateException.class, ()
+        var exception = Assertions.assertThrows(RuntimeException.class, ()
             -> autogram.pickSigningKeyAndThen(key -> autogram.sign(new SigningJob(document, parameters, responder), key)
         ));
+        assertEquals(SigningWithExpiredCertificateException.class, exception.getCause().getClass());
     }
 
     private record FakeDriverDetector(List<TokenDriver> drivers) implements DriverDetector {
@@ -109,7 +111,7 @@ class AutogramTests {
 
     private static class FakeUI implements UI {
         @Override
-        public void startSigning(SigningJob signingJob, Autogram autogram) {
+        public void startSigning(ISigningJob signingJob, Autogram autogram) {
 
         }
 
@@ -149,12 +151,12 @@ class AutogramTests {
         }
 
         @Override
-        public void onPDFAComplianceCheckFailed(SigningJob job) {
+        public void onPDFAComplianceCheckFailed(ISigningJob job) {
 
         }
 
         @Override
-        public void onSigningSuccess(SigningJob signingJob) {
+        public void onSigningSuccess(ISigningJob signingJob) {
 
         }
 
