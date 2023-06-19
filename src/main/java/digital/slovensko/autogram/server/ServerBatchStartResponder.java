@@ -4,12 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 
+import digital.slovensko.autogram.core.BatchStartResponder;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.dto.BatchSessionStartResponseBody;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 
-public class ServerBatchStartResponder {
+public class ServerBatchStartResponder extends BatchStartResponder {
     private final HttpExchange exchange;
 
     public ServerBatchStartResponder(HttpExchange exchange) {

@@ -104,7 +104,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void onDocumentSaved(File filename) {
+    public void onDocumentSaved(List<File> targetFiles) {
 
     }
 

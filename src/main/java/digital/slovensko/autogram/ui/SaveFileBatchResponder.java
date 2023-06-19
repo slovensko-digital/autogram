@@ -11,22 +11,23 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class SaveFileResponder extends Responder {
+public class SaveFileBatchResponder extends Responder {
     private final File file;
     private final Autogram autogram;
+    private final File targetDirectory;
 
-    public SaveFileResponder(File file, Autogram autogram) {
+    public SaveFileBatchResponder(File file, Autogram autogram, File targetDirectory) {
         this.file = file;
         this.autogram = autogram;
+        this.targetDirectory = targetDirectory;
     }
 
     public void onDocumentSigned(SignedDocument signedDocument) {
         try {
             var targetFile = getTargetFile();
             signedDocument.getDocument().save(targetFile.getPath());
-            // TODO co s tymto???? bud by mal sa ukazat jeden alebo viacero podla toho ci
-            // ide o batch alebo nie
-            autogram.onDocumentSaved(List.of(targetFile));
+            // TODO co s tymto???? bud by mal sa ukazat jeden alebo viacero podla toho ci ide o batch alebo nie
+            // autogram.onDocumentSaved(List.of(targetFile));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -38,7 +39,7 @@ public class SaveFileResponder extends Responder {
     }
 
     private File getTargetFile() {
-        var directory = file.getParentFile().getPath();
+        var directory = targetDirectory.getPath();
         var name = Files.getNameWithoutExtension(file.getName());
 
         var extension = ".asice";

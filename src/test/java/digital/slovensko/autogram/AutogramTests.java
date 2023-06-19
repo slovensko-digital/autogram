@@ -176,7 +176,7 @@ class AutogramTests {
         }
 
         @Override
-        public void onDocumentSaved(File targetFile) {
+        public void onDocumentSaved(List<File> targetFiles) {
 
         }
 

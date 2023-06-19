@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui;
 
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -31,7 +30,7 @@ public interface UI {
 
     void onSigningFailed(AutogramException e);
 
-    void onDocumentSaved(File targetFile);
+    void onDocumentSaved(List<File> targetFiles);
 
     void onWorkThreadDo(Runnable callback);
 

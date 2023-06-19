@@ -5,11 +5,11 @@ import digital.slovensko.autogram.core.errors.BatchConflictException;
 import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.server.ServerBatchStartResponder;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 import java.io.File;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class Autogram {
@@ -49,13 +49,11 @@ public class Autogram {
                 job.signWithKeyAndRespond(signingKey);
                 ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
             } catch (DSSException e) {
-                ui.onUIThreadDo(
-                        () -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
+                onSigningFailed(AutogramException.createFromDSSException(e));
             } catch (IllegalArgumentException e) {
-                ui.onUIThreadDo(() -> ui
-                        .onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
+                onSigningFailed(AutogramException.createFromIllegalArgumentException(e));
             } catch (Exception e) {
-                ui.onUIThreadDo(() -> ui.onSigningFailed(new UnrecognizedException(e)));
+                onSigningFailed(new UnrecognizedException(e));
             }
         });
     }
@@ -64,13 +62,12 @@ public class Autogram {
      * Starts a batch - ask user - get signing key - start batch - return batch ID
      * 
      * @param totalNumberOfDocuments - expected number of documents to be signed
-     * @param responder - callback for http response
+     * @param responder              - callback for http response
      */
-    public void batchStart(int totalNumberOfDocuments, ServerBatchStartResponder responder) {
+    public void batchStart(int totalNumberOfDocuments, BatchStartResponder responder) {
         if (batch != null && !batch.isEnded())
             throw new BatchConflictException("Another batch is already running");
         batch = new Batch(totalNumberOfDocuments);
-
 
         var startBatchTask = new AutogramBatchStartCallback() {
             @Override
@@ -168,7 +165,11 @@ public class Autogram {
         ui.onAboutInfo();
     }
 
-    public void onDocumentSaved(File targetFile) {
-        ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFile));
+    public void onDocumentSaved(List<File> targetFiles) {
+        ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFiles));
+    }
+
+    public void onSigningFailed(AutogramException e) {
+        ui.onUIThreadDo(() -> ui.onSigningFailed(e));
     }
 }

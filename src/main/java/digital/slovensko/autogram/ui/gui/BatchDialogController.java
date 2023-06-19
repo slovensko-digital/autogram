@@ -20,6 +20,7 @@ public class BatchDialogController implements SuppressedFocusController {
     private final Batch batch;
     private final Autogram autogram;
     private final AutogramBatchStartCallback startBatchCallback;
+    private boolean isOpenedFromGui = false;
 
     @FXML
     VBox mainBox;
@@ -65,7 +66,8 @@ public class BatchDialogController implements SuppressedFocusController {
 
     public void update() {
         updateProgressBar();
-        if (batch.isAllProcessed()) {
+        // TODO handle this differently when request came from GUI
+        if (!isOpenedFromGui && batch.isAllProcessed()) {
             batch.end();
             close();
         }

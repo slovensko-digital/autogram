@@ -75,6 +75,9 @@ Zatvori sa okno, pouzivatel bude mat moznost zopakovat vyber driveru.
 Vrati sa chyba sign requestu.
 (Ak je to chyba ktoru vieme opravit strojovo treba zvazit ci to chceme urobit - napr retry)
 
+Retry (navrh):
+Ak zlyha podpis jedneho zo suborov, na chybu ktora je temporary a nie je o nespravnom hesle, ci inej operacii, ktora by mohla zablokovat kartu, tak s malym timeoutom (1-2s) zopakujeme podpis jeden krat.
+
 ## 4. Pocas behu batchu
 
 ### 4.1 pride sign mimo batchu

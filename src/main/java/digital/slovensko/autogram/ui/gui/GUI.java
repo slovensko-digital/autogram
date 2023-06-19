@@ -16,7 +16,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 public class GUI implements UI {
@@ -237,8 +236,8 @@ public class GUI implements UI {
     }
 
     @Override
-    public void onDocumentSaved(File targetFile) {
-        var controller = new SigningSuccessDialogController(targetFile, hostServices);
+    public void onDocumentSaved(List<File> targetFiles) {
+        var controller = new SigningSuccessDialogController(targetFiles, hostServices);
         var root = GUIUtils.loadFXML(controller, "signing-success-dialog.fxml");
 
         var stage = new Stage();
