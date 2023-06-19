@@ -22,7 +22,7 @@ public class Autogram {
         this.driverDetector = driverDetector;
     }
 
-    public void sign(ISigningJob job) {
+    public void sign(SigningJob job) {
         ui.onUIThreadDo(()
         -> ui.startSigning(job, this));
 
@@ -32,14 +32,14 @@ public class Autogram {
         }
     }
 
-    private void checkPDFACompliance(ISigningJob job) {
+    private void checkPDFACompliance(SigningJob job) {
         var result = new PDFAStructureValidator().validate(job.getDocument());
         if(!result.isCompliant()) {
             ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
         }
     }
 
-    public void sign(ISigningJob job, SigningKey signingKey) {
+    public void sign(SigningJob job, SigningKey signingKey) {
         ui.onWorkThreadDo(() -> {
             try {
                 job.signWithKeyAndRespond(signingKey);
@@ -71,7 +71,7 @@ public class Autogram {
             -> callback.accept(new SigningKey(token, privateKey))));
         } catch (DSSException e) {
             ui.onUIThreadDo(()
-            -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
+            -> ui.onPickSigningKeyFailed(AutogramException.fromDSSException(e)));
         }
     }
 

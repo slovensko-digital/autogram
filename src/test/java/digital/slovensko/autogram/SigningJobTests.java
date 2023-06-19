@@ -1,6 +1,6 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.DefaultSigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.dto.Document;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
@@ -40,7 +40,7 @@ public class SigningJobTests {
         );
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-        var htmlTransformed = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null).getDocumentAsHTML();
+        var htmlTransformed = new DefaultSigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null).getDocumentAsHTML();
         var expected = new String(this.getClass().getResourceAsStream("transformed.html").readAllBytes(), StandardCharsets.UTF_8);
 
         assertEquals(expected, htmlTransformed);

@@ -37,7 +37,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(key
-        -> autogram.sign(new SigningJob(document, parameters, responder), key));
+        -> autogram.sign(new DefaultSigningJob(document, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -64,7 +64,7 @@ class AutogramTests {
 
 
         var exception = Assertions.assertThrows(RuntimeException.class, ()
-            -> autogram.pickSigningKeyAndThen(key -> autogram.sign(new SigningJob(document, parameters, responder), key)
+            -> autogram.pickSigningKeyAndThen(key -> autogram.sign(new DefaultSigningJob(document, parameters, responder), key)
         ));
         assertEquals(SigningWithExpiredCertificateException.class, exception.getCause().getClass());
     }
@@ -111,7 +111,7 @@ class AutogramTests {
 
     private static class FakeUI implements UI {
         @Override
-        public void startSigning(ISigningJob signingJob, Autogram autogram) {
+        public void startSigning(SigningJob signingJob, Autogram autogram) {
 
         }
 
@@ -151,12 +151,12 @@ class AutogramTests {
         }
 
         @Override
-        public void onPDFAComplianceCheckFailed(ISigningJob job) {
+        public void onPDFAComplianceCheckFailed(SigningJob job) {
 
         }
 
         @Override
-        public void onSigningSuccess(ISigningJob signingJob) {
+        public void onSigningSuccess(SigningJob signingJob) {
 
         }
 

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface UI {
-    void startSigning(ISigningJob job, Autogram autogram);
+    void startSigning(SigningJob job, Autogram autogram);
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback);
 
@@ -21,7 +21,7 @@ public interface UI {
 
     void onPickSigningKeyFailed(AutogramException e);
 
-    void onSigningSuccess(ISigningJob job);
+    void onSigningSuccess(SigningJob job);
 
     void onSigningFailed(AutogramException e);
 
@@ -35,5 +35,5 @@ public interface UI {
 
     void onAboutInfo();
 
-    void onPDFAComplianceCheckFailed(ISigningJob job);
+    void onPDFAComplianceCheckFailed(SigningJob job);
 }

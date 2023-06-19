@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.ISigningJob;
+import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.DSSUtils;
@@ -23,7 +23,7 @@ import javafx.stage.Stage;
 
 public class SigningDialogController implements SuppressedFocusController {
     private final GUI gui;
-    private final ISigningJob signingJob;
+    private final SigningJob signingJob;
     private final Autogram autogram;
 
     @FXML
@@ -45,7 +45,7 @@ public class SigningDialogController implements SuppressedFocusController {
     @FXML
     public Button changeKeyButton;
 
-    public SigningDialogController(ISigningJob signingJob, Autogram autogram, GUI gui) {
+    public SigningDialogController(SigningJob signingJob, Autogram autogram, GUI gui) {
         this.signingJob = signingJob;
         this.gui = gui;
         this.autogram = autogram;

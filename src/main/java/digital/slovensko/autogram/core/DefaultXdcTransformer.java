@@ -83,7 +83,7 @@ public class DefaultXdcTransformer implements XdcTransformer {
 
             return new InMemoryDocument(content, dssDocument.getName());
         } catch (DSSException e) {
-            throw AutogramException.createFromDSSException(e);
+            throw AutogramException.fromDSSException(e);
         } catch (Exception e) {
             throw AutogramException.fromThrowable(e);
         }

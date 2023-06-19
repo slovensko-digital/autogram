@@ -4,7 +4,7 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.DefaultSigningJob;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
@@ -32,7 +32,7 @@ public class SignEndpoint implements HttpHandler {
 
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
-            var job = new SigningJob(body.getDocument(), body.getParameters(), new ServerResponder(exchange));
+            var job = new DefaultSigningJob(body.getDocument(), body.getParameters(), new ServerResponder(exchange));
             autogram.sign(job);
         } catch (JsonSyntaxException e) {
             var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));

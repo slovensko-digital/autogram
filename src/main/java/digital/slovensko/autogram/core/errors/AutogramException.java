@@ -34,7 +34,7 @@ public class AutogramException extends Exception {
         return description;
     }
 
-    public static AutogramException createFromDSSException(DSSException e) {
+    public static AutogramException fromDSSException(DSSException e) {
         for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
             if (cause.getMessage() != null) {
                 if (cause instanceof java.security.ProviderException && cause.getMessage().contains("slotListIndex is 0 but token only has 0 slots")) {
