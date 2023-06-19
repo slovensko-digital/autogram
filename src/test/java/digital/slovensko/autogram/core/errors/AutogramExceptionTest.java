@@ -7,17 +7,17 @@ class AutogramExceptionTest {
 
     @Test
     void createFromIllegalArgumentExceptionNoMessageTest() {
-        Assertions.assertSame(UnrecognizedException.class, AutogramException.fromThrowable(new IllegalArgumentException()).getClass());
+        Assertions.assertSame(UnexpectedException.class, AutogramException.fromThrowable(new IllegalArgumentException()).getClass());
     }
 
     @Test
     void createFromIllegalArgumentExceptionEmptyMessageTest() {
-        Assertions.assertSame(UnrecognizedException.class, AutogramException.fromThrowable(new IllegalArgumentException("")).getClass());
+        Assertions.assertSame(UnexpectedException.class, AutogramException.fromThrowable(new IllegalArgumentException("")).getClass());
     }
 
     @Test
     void createFromIllegalArgumentExceptionUnknownMessageTest() {
-        Assertions.assertSame(UnrecognizedException.class, AutogramException.fromThrowable(new IllegalArgumentException("unknown-message")).getClass());
+        Assertions.assertSame(UnexpectedException.class, AutogramException.fromThrowable(new IllegalArgumentException("unknown-message")).getClass());
     }
 
     @Test

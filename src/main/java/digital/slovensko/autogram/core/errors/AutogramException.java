@@ -53,7 +53,7 @@ public class AutogramException extends Exception {
             }
         }
 
-        return new UnrecognizedException(e);
+        return new UnexpectedException(e);
     }
 
     public static AutogramException fromThrowable(Throwable e) {
@@ -65,6 +65,6 @@ public class AutogramException extends Exception {
             }
         }
 
-        return new UnrecognizedException(e);
+        return new UnexpectedException(e);
     }
 }

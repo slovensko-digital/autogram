@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import eu.europa.esig.dss.model.DSSDocument;
 
 public interface XdcTransformer {

@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.DSSException;

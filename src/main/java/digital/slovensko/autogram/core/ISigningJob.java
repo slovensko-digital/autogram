@@ -21,7 +21,7 @@ public interface ISigningJob {
 
     String getDocumentAsHTML() throws AutogramException;
 
-    String getDocumentAsBase64Encoded();
+    String getDocumentAsBase64Encoded() throws AutogramException;
 
     void signWithKeyAndRespond(SigningKey key) throws AutogramException;
 

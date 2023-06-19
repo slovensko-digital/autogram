@@ -1,11 +1,6 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.server.errors.MalformedBodyException;
-import digital.slovensko.autogram.server.errors.RequestValidationException;
-import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
 
 public class ErrorResponse {
     private final int statusCode;

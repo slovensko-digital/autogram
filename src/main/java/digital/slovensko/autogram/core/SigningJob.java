@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.core.errors.UnsupportedSignatureException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
@@ -57,8 +57,9 @@ public class SigningJob implements ISigningJob {
 
     @Override
     public boolean isPlainText() {
-        if (parameters.getTransformationOutputMimeType() != null)
-            return parameters.getTransformationOutputMimeType().equals(MimeTypeEnum.TEXT);
+        var transformationMimeType = parameters.getTransformationOutputMimeType();
+        if (transformationMimeType != null)
+            return MimeTypeEnum.TEXT.equals(transformationMimeType);
 
         return document.getMimeType().equals(MimeTypeEnum.TEXT);
     }
@@ -75,17 +76,16 @@ public class SigningJob implements ISigningJob {
 
     @Override
     public boolean isPDF() {
-        return document.getMimeType().equals(MimeTypeEnum.PDF);
+        return MimeTypeEnum.PDF.equals(document.getMimeType());
     }
 
     @Override
     public boolean isImage() {
-        return document.getMimeType().equals(MimeTypeEnum.JPEG) || document.getMimeType().equals(MimeTypeEnum.PNG);
+        return MimeTypeEnum.JPEG.equals(document.getMimeType()) || MimeTypeEnum.PNG.equals(document.getMimeType());
     }
 
     private boolean isXDC() {
-        return document.getMimeType()
-            .equals(AutogramMimeType.XML_DATACONTAINER);
+        return AutogramMimeType.XML_DATACONTAINER.equals(document.getMimeType());
     }
 
     @Override
@@ -146,7 +146,7 @@ public class SigningJob implements ISigningJob {
             document.appendChild(node);
 
             return new DOMSource(document);
-        } catch (ParserConfigurationException e) {
+        } catch (Exception e) {
             throw AutogramException.fromThrowable(e);
         }
     }
@@ -157,11 +157,11 @@ public class SigningJob implements ISigningJob {
     }
 
     @Override
-    public String getDocumentAsBase64Encoded() {
+    public String getDocumentAsBase64Encoded() throws AutogramException {
         try (var is = document.openStream()) {
             return new String(Base64.getEncoder().encode(is.readAllBytes()), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw AutogramException.fromThrowable(e);
         }
     }
 
@@ -173,7 +173,7 @@ public class SigningJob implements ISigningJob {
                 case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
                 case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key) : signDocumentAsCAdeS(key);
                 case PAdES -> signDocumentAsPAdeS(key);
-                default -> throw new IllegalArgumentException("Unsupported signature type: " + getParameters().getSignatureType());
+                default -> throw new UnsupportedSignatureException(getParameters().getSignatureType().name());
             };
             responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
         } catch (DSSException e) {
