@@ -70,7 +70,7 @@ public class LaunchParameters {
             return new LaunchParameters(params, urlParam == null || urlParam.isBlank());
 
         } catch (Exception e) {
-            throw new UnrecognizedException(e);
+            throw AutogramException.fromThrowable(e);
         }
     }
 

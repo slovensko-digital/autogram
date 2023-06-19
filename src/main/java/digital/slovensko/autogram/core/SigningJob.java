@@ -94,7 +94,7 @@ public class SigningJob implements ISigningJob {
             try (var is = document.openStream()) {
                 return new String(is.readAllBytes(), StandardCharsets.UTF_8);
             } catch (IOException e) {
-                throw new UnrecognizedException(e);
+                throw AutogramException.fromThrowable(e);
             }
         } else {
             return transform();
@@ -127,7 +127,7 @@ public class SigningJob implements ISigningJob {
 
             return outputTarget.getWriter().toString().trim();
         } catch (Exception e) {
-            throw new UnrecognizedException(e);
+            throw AutogramException.fromThrowable(e);
         }
     }
 

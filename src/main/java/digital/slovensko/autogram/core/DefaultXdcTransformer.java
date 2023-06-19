@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -86,7 +85,7 @@ public class DefaultXdcTransformer implements XdcTransformer {
         } catch (DSSException e) {
             throw AutogramException.createFromDSSException(e);
         } catch (Exception e) {
-            throw new UnrecognizedException(e);
+            throw AutogramException.fromThrowable(e);
         }
     }
 

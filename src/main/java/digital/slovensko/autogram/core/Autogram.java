@@ -49,12 +49,9 @@ public class Autogram {
             } catch (AutogramException e) {
                 ui.onUIThreadDo(() 
                 -> ui.onSigningFailed(e));
-            } catch (RuntimeException e) {
-                ui.onUIThreadDo(()
-                -> ui.onSigningFailed(AutogramException.fromThrowable(e)));
             } catch (Exception e) {
                 ui.onUIThreadDo(()
-                -> ui.onSigningFailed(new UnrecognizedException(e)));
+                -> ui.onSigningFailed(AutogramException.fromThrowable(e)));
             }
         });
     }
