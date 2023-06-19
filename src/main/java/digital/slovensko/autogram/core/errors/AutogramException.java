@@ -2,7 +2,7 @@ package digital.slovensko.autogram.core.errors;
 
 import eu.europa.esig.dss.model.DSSException;
 
-public class AutogramException extends RuntimeException {
+public class AutogramException extends Exception {
     private final String heading;
     private final String subheading;
     private final String description;
@@ -56,7 +56,7 @@ public class AutogramException extends RuntimeException {
         return new UnrecognizedException(e);
     }
 
-    public static AutogramException createFromIllegalArgumentException(IllegalArgumentException e) {
+    public static AutogramException fromThrowable(Throwable e) {
         for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
             if (cause.getMessage() != null) {
                 if (cause.getMessage().matches(SIGNING_CERTIFICATE_EXPIRED_EXCEPTION_MESSAGE_REGEX)) {

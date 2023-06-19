@@ -23,7 +23,7 @@ public class Autogram {
         this.driverDetector = driverDetector;
     }
 
-    public void sign(SigningJob job) {
+    public void sign(ISigningJob job) {
         ui.onUIThreadDo(()
         -> ui.startSigning(job, this));
 
@@ -33,25 +33,25 @@ public class Autogram {
         }
     }
 
-    private void checkPDFACompliance(SigningJob job) {
+    private void checkPDFACompliance(ISigningJob job) {
         var result = new PDFAStructureValidator().validate(job.getDocument());
         if(!result.isCompliant()) {
             ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
         }
     }
 
-    public void sign(SigningJob job, SigningKey signingKey) {
+    public void sign(ISigningJob job, SigningKey signingKey) {
         ui.onWorkThreadDo(() -> {
             try {
                 job.signWithKeyAndRespond(signingKey);
                 ui.onUIThreadDo(()
                 -> ui.onSigningSuccess(job));
-            } catch (DSSException e) {
+            } catch (AutogramException e) {
+                ui.onUIThreadDo(() 
+                -> ui.onSigningFailed(e));
+            } catch (RuntimeException e) {
                 ui.onUIThreadDo(()
-                -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
-            } catch (IllegalArgumentException e) {
-                ui.onUIThreadDo(()
-                -> ui.onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
+                -> ui.onSigningFailed(AutogramException.fromThrowable(e)));
             } catch (Exception e) {
                 ui.onUIThreadDo(()
                 -> ui.onSigningFailed(new UnrecognizedException(e)));
@@ -64,13 +64,11 @@ public class Autogram {
         ui.pickTokenDriverAndThen(drivers, (driver)
         -> ui.requestPasswordAndThen(driver, (password)
         -> ui.onWorkThreadDo(()
-        -> fetchKeysAndThen(driver, password, (key)
-        -> callback.accept(key)))));
+        -> fetchKeysAndThen(driver, password, callback))));
     }
 
     private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {
-        try {
-            var token = driver.createTokenWithPassword(password);
+        try (var token = driver.createTokenWithPassword(password)){
             var keys = token.getKeys();
             ui.onUIThreadDo(()
             -> ui.pickKeyAndThen(keys, (privateKey)
@@ -85,9 +83,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             if (!Updater.newVersionAvailable())
                 return;
-
-            ui.onUIThreadDo(()
-            -> ui.onUpdateAvailable());
+            ui.onUIThreadDo(ui::onUpdateAvailable);
         });
     }
 

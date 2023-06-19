@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.ISigningJob;
 import digital.slovensko.autogram.core.SigningJob;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -7,7 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 
 public class PDFAComplianceDialogController implements SuppressedFocusController {
-    private final SigningJob job;
+    private final ISigningJob job;
     private final GUI gui;
 
     @FXML
@@ -17,7 +18,7 @@ public class PDFAComplianceDialogController implements SuppressedFocusController
     @FXML
     Node mainBox;
 
-    public PDFAComplianceDialogController(SigningJob job, GUI gui) {
+    public PDFAComplianceDialogController(ISigningJob job, GUI gui) {
         this.job = job;
         this.gui = gui;
     }

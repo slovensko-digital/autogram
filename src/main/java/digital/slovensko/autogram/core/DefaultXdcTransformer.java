@@ -1,12 +1,14 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.xades.DSSXMLUtils;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -25,7 +27,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-public class XDCTransformer {
+public class DefaultXdcTransformer implements XdcTransformer {
     public enum DestinationMediaType {
         TXT, HTML, XHTML
     }
@@ -42,26 +44,28 @@ public class XDCTransformer {
     private Document document;
     private String documentXmlns;
 
-    public static XDCTransformer buildFromSigningParameters(SigningParameters sp) {
+    public static XdcTransformer buildFromSigningParameters(SigningParameters sp) {
         var mediaType = DestinationMediaType.TXT;
 
         var outputMime = sp.getTransformationOutputMimeType();
-        if (outputMime != null && outputMime.equals(MimeTypeEnum.HTML))
+        if (MimeTypeEnum.HTML.equals(outputMime))
             mediaType = DestinationMediaType.HTML;
 
-        return new XDCTransformer(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),
+        int lastSlashIndex = sp.getIdentifier().lastIndexOf("/");
+        if (lastSlashIndex == -1)
+            throw new IllegalArgumentException("Identifier contains no slash: " + sp.getIdentifier());
+
+        var identifierVersion = sp.getIdentifier().substring(lastSlashIndex + 1);
+
+        return new DefaultXdcTransformer(sp.getIdentifier(), identifierVersion, sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),
                 sp.getPropertiesCanonicalization(), sp.getDigestAlgorithm(), mediaType);
     }
 
-    private XDCTransformer(String identifier, String xsdSchema, String xsltSchema, String containerXmlns,
-            String canonicalizationMethod, DigestAlgorithm digestAlgorithm,
-            DestinationMediaType mediaDestinationTypeDescription) {
-        int lastSlashIndex = identifier.lastIndexOf("/");
-        if (lastSlashIndex == -1)
-            throw new RuntimeException("Identifier contains no slash: " + identifier);
-
+    private DefaultXdcTransformer(String identifier, String identifierVersion, String xsdSchema, String xsltSchema, String containerXmlns,
+                                  String canonicalizationMethod, DigestAlgorithm digestAlgorithm,
+                                  DestinationMediaType mediaDestinationTypeDescription) {
         this.identifierUri = identifier;
-        this.identifierVersion = identifier.substring(lastSlashIndex + 1);
+        this.identifierVersion = identifierVersion;
         this.containerXmlns = containerXmlns;
         this.canonicalizationMethod = canonicalizationMethod;
         this.xsdSchema = xsdSchema;
@@ -70,22 +74,19 @@ public class XDCTransformer {
         this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
-    public DSSDocument transform(DSSDocument dssDocument) {
-        try {
-            var xmlByteArrayInput = dssDocument.openStream().readAllBytes();
+    @Override
+    public DSSDocument transform(DSSDocument dssDocument) throws AutogramException {
+        try (var is = dssDocument.openStream()) {
+            var xmlByteArrayInput = is.readAllBytes();
             parseDOMDocument(new String(xmlByteArrayInput, StandardCharsets.UTF_8));
             transformDocument();
             var content = getDocumentContent().getBytes(StandardCharsets.UTF_8);
 
             return new InMemoryDocument(content, dssDocument.getName());
-        } catch (SAXException | IOException e) {
-            throw new RuntimeException(e);
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (DOMException e) {
-            throw new RuntimeException(e);
-        } catch (TransformerException e) {
-            throw new RuntimeException(e);
+        } catch (DSSException e) {
+            throw AutogramException.createFromDSSException(e);
+        } catch (Exception e) {
+            throw new UnrecognizedException(e);
         }
     }
 

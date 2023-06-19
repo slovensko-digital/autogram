@@ -1,7 +1,7 @@
 package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.XDCTransformer;
+import digital.slovensko.autogram.core.DefaultXdcTransformer;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -37,7 +37,7 @@ class XDCTransformerTests {
             "id1/asa",
             false, 800);
 
-        var out = XDCTransformer.buildFromSigningParameters(params).transform(document);
+        var out = DefaultXdcTransformer.buildFromSigningParameters(params).transform(document);
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
 
         assertEquals(-1, transformed.lastIndexOf(":p>"));

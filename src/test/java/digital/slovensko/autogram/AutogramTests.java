@@ -16,13 +16,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.KeyStore;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class AutogramTests {
     @Test
@@ -160,7 +160,7 @@ class AutogramTests {
 
         @Override
         public void onSigningFailed(AutogramException e) {
-            throw e;
+            throw new RuntimeException(e);
         }
 
         @Override

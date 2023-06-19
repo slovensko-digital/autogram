@@ -1,6 +1,7 @@
 package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.dto.Document;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
@@ -19,7 +20,7 @@ public class SigningJobTests {
     private static final String content = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48R2VuZXJhbEFnZW5kYSB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45Ij4KICA8c3ViamVjdD5Ob3bDqSBwb2RhbmllPC9zdWJqZWN0PgogIDx0ZXh0PlBvZMOhdmFtIHRvdG8gbm92w6kgcG9kYW5pZS48L3RleHQ+CjwvR2VuZXJhbEFnZW5kYT4=";
 
     @Test
-    void testEnd2EndHtmlTransformationEncoding() throws IOException {
+    void testEnd2EndHtmlTransformationEncoding() throws IOException, AutogramException {
         var ssParams = new ServerSigningParameters(
             SignatureLevel.XAdES_BASELINE_B,
             null,

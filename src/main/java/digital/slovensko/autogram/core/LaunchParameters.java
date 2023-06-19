@@ -1,19 +1,21 @@
 package digital.slovensko.autogram.core;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import static java.util.stream.Collectors.toMap;
-
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import javafx.application.Application.Parameters;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 
-import javafx.application.Application.Parameters;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import static digital.slovensko.autogram.core.Configuration.getProperty;
 import static digital.slovensko.autogram.core.LaunchParameters.Validations.*;
 import static java.util.Optional.ofNullable;
-
-import java.net.URISyntaxException;
+import static java.util.stream.Collectors.toMap;
 
 public class LaunchParameters {
     protected Map<String, String> parameters;
@@ -52,7 +54,7 @@ public class LaunchParameters {
             this.initialNonce = validateInitialNonce(nonce);
     }
 
-    public static LaunchParameters fromParameters(Parameters parameters) {
+    public static LaunchParameters fromParameters(Parameters parameters) throws AutogramException {
         var named = parameters.getNamed();
         var urlParam = named.get("url");
 
@@ -67,10 +69,8 @@ public class LaunchParameters {
 
             return new LaunchParameters(params, urlParam == null || urlParam.isBlank());
 
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e); // TODO: handle exception
         } catch (Exception e) {
-            throw new RuntimeException(e); // TODO: handle exception
+            throw new UnrecognizedException(e);
         }
     }
 

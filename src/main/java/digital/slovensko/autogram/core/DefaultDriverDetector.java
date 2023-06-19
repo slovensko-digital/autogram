@@ -5,6 +5,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.util.OperatingSystem;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 
 public class DefaultDriverDetector implements DriverDetector {
@@ -44,7 +45,9 @@ public class DefaultDriverDetector implements DriverDetector {
             case MAC -> {
                 return MAC_DRIVERS;
             }
-            default -> throw new IllegalStateException("Unexpected value: " + OperatingSystem.current());
+            default -> {
+                return Collections.emptyList();
+            }
         }
     }
 }

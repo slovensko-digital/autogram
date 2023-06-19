@@ -11,13 +11,13 @@ public class Configuration {
         try {
             PROPERTIES.load(Configuration.class.getResourceAsStream("configuration.properties"));
         } catch (IOException e) {
-            throw new RuntimeException("Unable to load ConfigurationProperties", e);
+            throw new IllegalArgumentException("Unable to load ConfigurationProperties", e);
         }
     }
 
     public static String getProperty(String key) {
         if (!PROPERTIES.containsKey(key))
-            throw new RuntimeException("Requested unknown property key: " + key);
+            throw new IllegalArgumentException("Requested unknown property key: " + key);
 
         return PROPERTIES.getProperty(key);
     }

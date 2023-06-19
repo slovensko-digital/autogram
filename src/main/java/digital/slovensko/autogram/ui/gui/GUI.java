@@ -20,7 +20,7 @@ import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
 public class GUI implements UI {
-    private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
+    private final Map<ISigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
     private final HostServices hostServices;
 
@@ -29,7 +29,7 @@ public class GUI implements UI {
     }
 
     @Override
-    public void startSigning(SigningJob job, Autogram autogram) {
+    public void startSigning(ISigningJob job, Autogram autogram) {
         var controller = new SigningDialogController(job, autogram, this);
         jobControllers.put(job, controller);
 
@@ -163,7 +163,7 @@ public class GUI implements UI {
     }
 
     @Override
-    public void onPDFAComplianceCheckFailed(SigningJob job) {
+    public void onPDFAComplianceCheckFailed(ISigningJob job) {
         var controller = new PDFAComplianceDialogController(job, this);
         var root = GUIUtils.loadFXML(controller, "pdfa-compliance-dialog.fxml");
 
@@ -188,7 +188,7 @@ public class GUI implements UI {
     }
 
     @Override
-    public void onSigningSuccess(SigningJob job) {
+    public void onSigningSuccess(ISigningJob job) {
         jobControllers.get(job).close();
         refreshKeyOnAllJobs();
     }
@@ -244,16 +244,16 @@ public class GUI implements UI {
         setActiveSigningKey(null);
     }
 
-    public void cancelJob(SigningJob job) {
+    public void cancelJob(ISigningJob job) {
         job.onDocumentSignFailed(new SigningCanceledByUserException());
         jobControllers.get(job).close();
     }
 
-    public void focusJob(SigningJob job) {
+    public void focusJob(ISigningJob job) {
         getJobWindow(job).requestFocus();
     }
 
-    private Window getJobWindow(SigningJob job) {
+    private Window getJobWindow(ISigningJob job) {
         return jobControllers.get(job).mainBox.getScene().getWindow();
     }
 }

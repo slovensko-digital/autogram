@@ -4,6 +4,7 @@ import java.util.Base64;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
@@ -41,7 +42,7 @@ public class SignRequestBody {
         return new InMemoryDocument(content, filename, mimetype);
     }
 
-    public SigningParameters getParameters() throws RequestValidationException {
+    public SigningParameters getParameters() throws AutogramException {
         if (parameters == null)
             throw new RequestValidationException("Parameters are required", "");
 
