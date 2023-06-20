@@ -62,7 +62,7 @@ if [[ "$platform" == "win" ]]; then
     if [[ -z "$properties_win_menu" ]] || [[ "$properties_win_menu" -ne "0" ]]; then
         arguments+=(
             "--win-menu"
-            "--win-menu-group" "${properties_win_menuGroup:-$properties_vendor}"
+            # "--win-menu-group" "${properties_win_menuGroup:-$properties_vendor}"
         )
     fi
 
