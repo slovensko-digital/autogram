@@ -104,6 +104,11 @@ public class SigningJob {
 
     private String transform()
             throws IOException, ParserConfigurationException, SAXException, TransformerException {
+        return transform_try_catch();
+    }
+
+    private String transform_try_with_resources()
+            throws IOException, ParserConfigurationException, SAXException, TransformerException {
         // TODO probably move this logic into signing job creation
         try (var is = this.document.openStream()) {
             var builderFactory = DocumentBuilderFactory.newInstance();
@@ -119,8 +124,9 @@ public class SigningJob {
 
             var outputTarget = new StreamResult(new StringWriter());
 
-            var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl",
-                    null);
+            var transformerFactory = TransformerFactory.newDefaultInstance();
+            // var transformerFactory =
+            // TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
 
             var transformer = transformerFactory.newTransformer(new StreamSource(
                     new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding))));
@@ -130,6 +136,58 @@ public class SigningJob {
             transformer.transform(xmlSource, outputTarget);
 
             return outputTarget.getWriter().toString().trim();
+        }
+    }
+
+    private String transform_try_catch()
+            throws IOException, ParserConfigurationException, SAXException, TransformerException {
+        // TODO probably move this logic into signing job creation
+        final var is = this.document.openStream();
+        Throwable originalException = null;
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+
+            var inputSource = new InputSource(is);
+            inputSource.setEncoding(encoding.displayName());
+            var document = builderFactory.newDocumentBuilder().parse(inputSource);
+
+            var xmlSource = new DOMSource(document);
+            if (isXDC())
+                xmlSource = extractFromXDC(document, builderFactory);
+
+            var outputTarget = new StreamResult(new StringWriter());
+
+            var transformerFactory = TransformerFactory.newDefaultInstance();
+            
+            // var transformerFactory =
+            // TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
+
+            var transformer = transformerFactory.newTransformer(new StreamSource(
+                    new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding))));
+            var outputProperties = new Properties();
+            outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
+            transformer.setOutputProperties(outputProperties);
+            transformer.transform(xmlSource, outputTarget);
+
+            return outputTarget.getWriter().toString().trim();
+        } catch (Exception transformationException) {
+            originalException = transformationException;
+            throw transformationException;
+        } finally {
+            if (is != null) {
+                if (originalException != null) {
+                    try {
+                        is.close();
+                    } catch (Throwable closeException) {
+                        System.out.println("adding suppressed exception");
+                        originalException.addSuppressed(closeException);
+                    }
+
+                } else {
+                    is.close();
+                }
+            }
         }
     }
 
