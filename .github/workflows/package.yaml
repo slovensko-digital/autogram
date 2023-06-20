@@ -130,22 +130,6 @@ jobs:
         id: download
         with:
           name: target
-
-        
-      - name: Sign on Azure
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          echo "ls:"
-          ls -la
-          echo "download path:"
-          ls -la "${{steps.download.outputs.download-path}}"
-          echo "file:"
-          ls -la *.msi
-          stat *.msi
-
-
-
       - name: Sign on Azure
         if: runner.os == 'Windows'
         shell: bash
