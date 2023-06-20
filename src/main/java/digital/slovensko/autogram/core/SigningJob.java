@@ -105,30 +105,32 @@ public class SigningJob {
     private String transform()
             throws IOException, ParserConfigurationException, SAXException, TransformerException {
         // TODO probably move this logic into signing job creation
-        var is = this.document.openStream();
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
+        try (var is = this.document.openStream()) {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
 
-        var inputSource = new InputSource(is);
-        inputSource.setEncoding(encoding.displayName());
-        var document = builderFactory.newDocumentBuilder().parse(inputSource);
+            var inputSource = new InputSource(is);
+            inputSource.setEncoding(encoding.displayName());
+            var document = builderFactory.newDocumentBuilder().parse(inputSource);
 
-        var xmlSource = new DOMSource(document);
-        if (isXDC())
-            xmlSource = extractFromXDC(document, builderFactory);
+            var xmlSource = new DOMSource(document);
+            if (isXDC())
+                xmlSource = extractFromXDC(document, builderFactory);
 
-        var outputTarget = new StreamResult(new StringWriter());
+            var outputTarget = new StreamResult(new StringWriter());
 
-        var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
+            var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl",
+                    null);
 
-        var transformer = transformerFactory.newTransformer(new StreamSource(
-                new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding))));
-        var outputProperties = new Properties();
-        outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
-        transformer.setOutputProperties(outputProperties);
-        transformer.transform(xmlSource, outputTarget);
+            var transformer = transformerFactory.newTransformer(new StreamSource(
+                    new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding))));
+            var outputProperties = new Properties();
+            outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
+            transformer.setOutputProperties(outputProperties);
+            transformer.transform(xmlSource, outputTarget);
 
-        return outputTarget.getWriter().toString().trim();
+            return outputTarget.getWriter().toString().trim();
+        }
     }
 
     private DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)

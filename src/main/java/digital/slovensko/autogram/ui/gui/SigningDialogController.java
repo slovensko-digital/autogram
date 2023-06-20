@@ -125,16 +125,24 @@ public class SigningDialogController implements SuppressedFocusController {
 
     private void showPlainTextVisualization() {
         plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
-        try {
-            plainTextArea.setText(signingJob.getDocumentAsPlainText());
-            plainTextArea.setVisible(true);
-            plainTextArea.setManaged(true);
-        } catch (IOException | ParserConfigurationException | SAXException
-                | TransformerException e) {
-            plainTextArea.setVisible(false);
-            plainTextArea.setManaged(false);
-            showFailedTransformationError(e);
-        }
+        gui.onWorkThreadDo(() -> {
+            try {
+                var text = signingJob.getDocumentAsPlainText();
+                gui.onUIThreadDo(() -> {
+                    plainTextArea.setText(text);
+                    plainTextArea.setVisible(true);
+                    plainTextArea.setManaged(true);
+                });
+
+            } catch (IOException | ParserConfigurationException | SAXException
+                    | TransformerException e) {
+                gui.onUIThreadDo(() -> {
+                    plainTextArea.setVisible(false);
+                    plainTextArea.setManaged(false);
+                    showFailedTransformationError(e);
+                });
+            }
+        });
     }
 
     private void showHTMLVisualization() {
@@ -143,16 +151,23 @@ public class SigningDialogController implements SuppressedFocusController {
         var engine = webView.getEngine();
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                try {
-                    engine.getDocument().getElementById("frame").setAttribute("srcdoc",
-                            signingJob.getDocumentAsHTML());
-                } catch (IOException | ParserConfigurationException | SAXException
-                        | TransformerException e) {
+                gui.onWorkThreadDo(() -> {
+                    try {
+                        var html = signingJob.getDocumentAsHTML();
+                        gui.onUIThreadDo(() -> {
+                            engine.getDocument().getElementById("frame").setAttribute("srcdoc",
+                                    html);
+                        });
+                    } catch (IOException | ParserConfigurationException | SAXException
+                            | TransformerException e) {
 
-                    webViewContainer.setVisible(false);
-                    webViewContainer.setManaged(false);
-                    showFailedTransformationError(e);
-                }
+                        gui.onUIThreadDo(() -> {
+                            webViewContainer.setVisible(false);
+                            webViewContainer.setManaged(false);
+                            showFailedTransformationError(e);
+                        });
+                    }
+                });
             }
         });
         engine.load(getClass().getResource("visualization-html.html").toExternalForm());
@@ -197,7 +212,7 @@ public class SigningDialogController implements SuppressedFocusController {
 
     private void showFailedTransformationError(Exception exception) {
         showUnsupportedVisualization();
-        gui.onUIThreadDo(() -> gui.onTransformationFailed(signingJob, exception));        
+        gui.onUIThreadDo(() -> gui.onTransformationFailed(signingJob, exception));
     }
 
     @Override
