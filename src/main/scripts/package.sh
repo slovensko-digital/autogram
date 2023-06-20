@@ -63,7 +63,6 @@ if [[ "$platform" == "win" ]]; then
         arguments+=(
             "--win-menu"
             "--win-menu-group" ""
-            "--win-shortcut-prompt"
             # "--win-menu-group" "${properties_win_menuGroup:-$properties_vendor}"
         )
     fi
