@@ -111,7 +111,7 @@ public class SigningJob {
 
             var outputTarget = new StreamResult(new StringWriter());
             var transformer = TransformerFactory
-                    .newDefaultInstance().newTransformer(
+                    .newInstance("net.sf.saxon.TransformerFactoryImpl", null).newTransformer(
                             new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes(encoding)))
                     );
             var outputProperties = new Properties();

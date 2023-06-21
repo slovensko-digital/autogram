@@ -19,9 +19,12 @@
         <gson.version>2.10.1</gson.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <pdfjs.version>2.10.377</pdfjs.version>
+        <saxon.version>12.1</saxon.version>
+        <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.7</slf4j.version>
         <junit.version>5.9.3</junit.version>
         <mockito.version>5.3.1</mockito.version>
+        <xmlunit.version>2.6.2</xmlunit.version>
     </properties>
 
     <dependencyManagement>
@@ -84,6 +87,11 @@
             <version>${apache.httpcomponents.version}</version>
         </dependency>
         <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <version>${saxon.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
@@ -103,6 +111,19 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.xmlunit/xmlunit-core -->
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <version>${xmlunit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-matchers</artifactId>
+            <version>${xmlunit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
