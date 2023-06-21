@@ -123,7 +123,7 @@ jobs:
     name: Sign Windows installer (Windows)
     needs: build
     runs-on: windows-latest
-    environment: sign-windows
+    environment: packaging-windows
 
     steps:
       - uses: actions/download-artifact@v3
