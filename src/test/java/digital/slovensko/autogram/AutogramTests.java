@@ -35,7 +35,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(new SigningJob(document, parameters, responder, null), key));
+                key -> autogram.sign(new SigningJob(document, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -61,7 +61,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         Assertions.assertThrows(SigningWithExpiredCertificateException.class, () -> autogram
-                .pickSigningKeyAndThen(key -> autogram.sign(new SigningJob(document, parameters, responder, null), key)));
+                .pickSigningKeyAndThen(key -> autogram.sign(new SigningJob(document, parameters, responder), key)));
     }
 
     private record FakeDriverDetector(List<TokenDriver> drivers) implements DriverDetector {

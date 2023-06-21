@@ -48,8 +48,7 @@ public class SigningJobTests {
                                 ServerSigningParameters.VisualizationWidthEnum.sm);
 
                 var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-                var job = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null,
-                                null);
+                var job = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null);
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job).build().getVisualizedDocument();
                 if (visualizedDocument instanceof HTMLVisualizedDocument d) {
                         var htmlTransformed = d.getDocument();

@@ -29,6 +29,13 @@ public class SigningJob {
         this.transformationOutputMimeTypeForXdc = transformationOutputMimeTypeForXdc;
     }
 
+    public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
+        this.document = document;
+        this.parameters = parameters;
+        this.responder = responder;
+        this.transformationOutputMimeTypeForXdc = null;
+    }
+
     public CommonDocument getDocument() {
         return this.document;
     }
@@ -79,7 +86,8 @@ public class SigningJob {
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
         DSSDocument doc = getDocument();
         if (getParameters().shouldCreateDatacontainer() && !isDocumentXDC()) {
-            var transformer = XDCTransformer.buildFromSigningParameters(getParameters(), transformationOutputMimeTypeForXdc);
+            var transformer = XDCTransformer.buildFromSigningParameters(getParameters(),
+                    transformationOutputMimeTypeForXdc);
             doc = transformer.transform(doc);
             doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
         }
@@ -155,7 +163,7 @@ public class SigningJob {
         }
 
         var responder = new SaveFileResponder(file, autogram);
-        return new SigningJob(document, parameters, responder, null);
+        return new SigningJob(document, parameters, responder);
     }
 
     public boolean shouldCheckPDFCompliance() {
