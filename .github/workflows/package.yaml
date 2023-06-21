@@ -98,7 +98,13 @@ jobs:
           xcrun stapler staple target/Autogram-*.pkg
           # lock all keychains
           security lock-keychain -a
-          
+
+      - name: Sign on Azure
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          dotnet tool install --global AzureSignTool 
+          AzureSignTool sign --description "Autogram" -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v target/*.msi
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@v1
@@ -113,39 +119,5 @@ jobs:
             target/*.deb
             target/*.pkg
             target/*.dmg
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: target
-          path: |
-            target/*.msi
-
-  sign_windows:
-    name: Sign Windows installer (Windows)
-    needs: build
-    runs-on: windows-latest
-    environment: packaging-windows
-
-    steps:
-      - uses: actions/download-artifact@v3
-        id: download
-        with:
-          name: target
-      - name: Sign on Azure
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          dotnet tool install --global AzureSignTool 
-          AzureSignTool sign --description "Autogram" -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v *.msi
-
-      - name: Create release if tag pushed
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          draft: true
-          prerelease: true
-          files: Autogram-*.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
