@@ -14,7 +14,7 @@ Vyvolať spustenie programu je možné priamo z webového prehliadača otvorení
 
 ## Konzolový mód
 
-Autogram je možné spúšťať aj z príkazového riadku (CLI mód), ktoré umožňuje aj hromadné podpisovanie súborov. Detailné informácie o prepínačoch je možné vidieť v nápovede po spustení `autogram --help`
+Autogram je možné spúšťať aj z príkazového riadku (CLI mód), ktoré umožňuje aj hromadné podpisovanie súborov. Detailné informácie o prepínačoch je sú popísané v nápovede po spustení `autogram --help`
 
 ### Štýlovanie
 

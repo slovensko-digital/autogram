@@ -19,7 +19,7 @@ public class AppStarter {
         addOption("t", "target", true, "Target file or directory for signed files.").
         addOption("f", "force", false, "Overwrite existing file(s).").
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
-        addOption("d", "driver", true, "PCKS driver for signing. Supported drivers: eid, secure_store, monet, gemalto. Default: autodetect");
+        addOption("d", "driver", true, "PCKS driver for signing. Supported drivers: eid, secure_store, monet, gemalto.");
 
     public static void start(String[] args) {
         try {
