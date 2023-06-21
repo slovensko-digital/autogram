@@ -12,22 +12,12 @@
     xmlns:fx="http://javafx.com/fxml"
     minHeight="400"
     minWidth="640"
+    prefWidth="640"
     fx:id="mainBox">
 
     <TextFlow>
         <Text styleClass="autogram-heading-m" text="Dokument na&#160;podpísanie" />
     </TextFlow>
-
-    <VBox fx:id="loadingContainer" styleClass="autogram-loading">
-
-        <Region styleClass="autogram-loading-icon"></Region>
-
-        <TextFlow styleClass="autogram-loading__text">
-            <Text styleClass="autogram-body" text="Načítavam dokument" />
-            <Text styleClass="autogram-body,autogram-body--light" text="..." />
-        </TextFlow>
-
-    </VBox>
 
     <!-- HTML/PDF visualization -->
     <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">

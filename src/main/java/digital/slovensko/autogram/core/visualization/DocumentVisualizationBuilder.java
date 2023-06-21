@@ -39,27 +39,13 @@ public class DocumentVisualizationBuilder {
         this.parameters = parameters;
     }
 
-    public static DocumentVisualizationBuilder fromJob(SigningJob job) {
-        return new DocumentVisualizationBuilder(job.getDocument(), job.getParameters());
+    public static Visualization fromJob(SigningJob job) throws IOException, ParserConfigurationException, TransformerException, SAXException {
+        return new DocumentVisualizationBuilder(job.getDocument(), job.getParameters()).build(job);
     }
 
-    public static DocumentVisualizationBuilder fromDocumentAndParams(CommonDocument document,
-            SigningParameters parameters) {
-        return new DocumentVisualizationBuilder(document, parameters);
-    }
-
-    public Visualization build() {
-        MimeType transformationOutputMime = null;
-        try {
-            transformationOutputMime = getTransformationOutputMimeType(getTransformation());
-            try {
-                return createVisualizedDocument(transformationOutputMime);
-            } catch (Exception e) {
-                return new FailedVisualization(e);
-            }
-        } catch (Exception e) {
-            return new FailedVisualization(e);
-        }
+    private Visualization build(SigningJob job) throws IOException, ParserConfigurationException, TransformerException, SAXException {
+        var transformationOutputMime = getTransformationOutputMimeType(getTransformation());
+        return createVisualization(job, transformationOutputMime);
     }
 
     // ------------------ PRIVATE ------------------
@@ -67,24 +53,24 @@ public class DocumentVisualizationBuilder {
     /**
      * Get document visualized by transformation or identity if transformation is
      * not supported
-     * 
-     * @param mime
+     *
+     * @param transformationOutputMimeType
      * @return
      * @throws IOException
      * @throws ParserConfigurationException
      * @throws SAXException
      * @throws TransformerException
      */
-    private Visualization createVisualizedDocument(MimeType transformationOutputMimeType)
-            throws IOException, ParserConfigurationException, SAXException, TransformerException {
+    private Visualization createVisualization(SigningJob job, MimeType transformationOutputMimeType)
+        throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
         if (isTranformationAvailable(getTransformation())) {
             if (isDocumentSupportingTransformation(document)) {
                 // Applying transformation
                 if (transformationOutputMimeType.equals(MimeTypeEnum.HTML)) {
-                    return new HTMLVisualization(transform());
+                    return new HTMLVisualization(transform(), job);
                 } else if (transformationOutputMimeType.equals(MimeTypeEnum.TEXT)) {
-                    return new PlainTextVisualization(transform());
+                    return new PlainTextVisualization(transform(), job);
                 }
             } else {
                 // TODO
@@ -95,17 +81,17 @@ public class DocumentVisualizationBuilder {
         }
 
         if (document.getMimeType().equals(MimeTypeEnum.HTML)) {
-            return new HTMLVisualization(transform());
+            return new HTMLVisualization(transform(), job);
         } else if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            return new PlainTextVisualization(transform());
+            return new PlainTextVisualization(transform(), job);
         } else if (document.getMimeType().equals(MimeTypeEnum.PDF)) {
-            return new PDFVisualization(document);
+            return new PDFVisualization(document, job);
         } else if (document.getMimeType().equals(MimeTypeEnum.JPEG)
-                || document.getMimeType().equals(MimeTypeEnum.PNG)) {
-            return new ImageVisualization(document);
+            || document.getMimeType().equals(MimeTypeEnum.PNG)) {
+            return new ImageVisualization(document, job);
         }
 
-        return new UnsupportedVisualization();
+        return new UnsupportedVisualization(job);
     }
 
     private String getTransformation() {
@@ -118,13 +104,13 @@ public class DocumentVisualizationBuilder {
 
     /**
      * Is document type which we can transform?
-     * 
+     *
      * @return
      */
     private boolean isDocumentSupportingTransformation(CommonDocument document) {
         return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER)
-                || document.getMimeType().equals(AutogramMimeType.APPLICATION_XML)
-                || document.getMimeType().equals(MimeTypeEnum.XML);
+            || document.getMimeType().equals(AutogramMimeType.APPLICATION_XML)
+            || document.getMimeType().equals(MimeTypeEnum.XML);
     }
 
     /**
@@ -135,14 +121,14 @@ public class DocumentVisualizationBuilder {
     }
 
     public static MimeType getTransformationOutputMimeType(String transformation)
-            throws SAXException, IOException, ParserConfigurationException {
+        throws SAXException, IOException, ParserConfigurationException {
         if (transformation == null)
             return null;
 
         var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
         var document = builderFactory.newDocumentBuilder()
-                .parse(new InputSource(new StringReader(transformation)));
+            .parse(new InputSource(new StringReader(transformation)));
         var elem = document.getDocumentElement();
         var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
         var method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
@@ -158,11 +144,11 @@ public class DocumentVisualizationBuilder {
 
     /**
      * Transform document (XML) using transformation (XSLT)
-     * 
+     *
      * @return transformed document string
      */
     private String transform()
-            throws IOException, ParserConfigurationException, SAXException, TransformerException {
+        throws IOException, ParserConfigurationException, SAXException, TransformerException {
         // We are using try catch instead of try-with-resources because
         // when debugging with VSCode on M2 MacOS, it throws self-suppression error
         // (which is weird)
@@ -187,7 +173,7 @@ public class DocumentVisualizationBuilder {
             var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
 
             var transformer = transformerFactory.newTransformer(new StreamSource(
-                    new ByteArrayInputStream(getTransformation().getBytes(encoding))));
+                new ByteArrayInputStream(getTransformation().getBytes(encoding))));
             var outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
             transformer.setOutputProperties(outputProperties);
@@ -214,11 +200,11 @@ public class DocumentVisualizationBuilder {
     }
 
     private DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)
-            throws ParserConfigurationException {
+        throws ParserConfigurationException {
         var xdc = document.getDocumentElement();
 
         var xmlData = xdc.getElementsByTagNameNS(
-                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData").item(0);
+            "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData").item(0);
 
         if (xmlData == null)
             throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere

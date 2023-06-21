@@ -38,12 +38,10 @@ public class SignEndpoint implements HttpHandler {
 
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
-            MimeType transformationOutputMimeTypeForXdc;
+            MimeType transformationOutputMimeTypeForXdc = null;
             if (body.getParameters().getContainer() != null) {
                 transformationOutputMimeTypeForXdc = DocumentVisualizationBuilder
                         .getTransformationOutputMimeType(body.getParameters().getTransformation());
-            } else {
-                transformationOutputMimeTypeForXdc = null;
             }
             var job = new SigningJob(body.getDocument(), body.getParameters(), new ServerResponder(exchange),
                     transformationOutputMimeTypeForXdc);

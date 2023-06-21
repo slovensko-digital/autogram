@@ -1,10 +1,12 @@
 package digital.slovensko.autogram.core.visualization;
-import digital.slovensko.autogram.ui.gui.SigningDialogController;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.ui.Visualizer;
 
 public class HTMLVisualization extends Visualization {
-    private String document;
+    private final String document;
 
-    public HTMLVisualization(String html) {
+    public HTMLVisualization(String html, SigningJob job) {
+        super(job);
         this.document = html;
     }
 
@@ -13,7 +15,8 @@ public class HTMLVisualization extends Visualization {
     }
 
     @Override
-    public void show(SigningDialogController controller) {
-        controller.showHTMLVisualization(document);
+    public void initialize(Visualizer visualizer) {
+        visualizer.setPrefWidth(getVisualizationWidth());
+        visualizer.showHTMLVisualization(document);
     }
 }

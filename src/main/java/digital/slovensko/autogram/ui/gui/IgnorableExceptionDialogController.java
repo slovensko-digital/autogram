@@ -3,24 +3,35 @@ package digital.slovensko.autogram.ui.gui;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 
 public class IgnorableExceptionDialogController implements SuppressedFocusController {
-    private final SigningJob job;
-    private final Exception exception;
-    private final GUI gui;
+    private final IgnorableException exception;
+
+    @FXML
+    VBox mainBox;
+
+    @FXML
+    Text heading;
+
+    @FXML
+    Text subheading;
+
+    @FXML
+    Text description;
 
     @FXML
     Button cancelButton;
+
     @FXML
     Button continueButton;
-    @FXML
-    Node mainBox;
 
     @FXML
     TextArea errorDetails;
@@ -28,20 +39,33 @@ public class IgnorableExceptionDialogController implements SuppressedFocusContro
     @FXML
     Button showErrorDetailsButton;
 
-    public IgnorableExceptionDialogController(SigningJob job, Exception exception, GUI gui) {
-        this.job = job;
+    public IgnorableExceptionDialogController(IgnorableException exception) {
         this.exception = exception;
-        this.gui = gui;
+    }
+
+    public void initialize() {
+        // TODO actually load these from i18n
+        heading.setText(exception.getHeading());
+        subheading.setText(exception.getSubheading());
+        if (exception.getSubheading() == null) {
+            subheading.setManaged(false);
+            subheading.setVisible(false);
+        }
+        description.setText(exception.getDescription());
+        if (exception.getCause() != null) {
+            errorDetails.setText(formatException(exception));
+            showErrorDetailsButton.setVisible(true);
+        }
     }
 
     public void onCancelAction(ActionEvent ignored) {
         GUIUtils.closeWindow(mainBox);
-        gui.cancelJob(job);
+        exception.getJob().onDocumentSignFailed(new SigningCanceledByUserException());
     }
 
     public void onContinueAction(ActionEvent ignored) {
         GUIUtils.closeWindow(mainBox);
-        gui.focusJob(job);
+        exception.getOnContinueCallback().run();
     }
 
     @Override
@@ -54,7 +78,7 @@ public class IgnorableExceptionDialogController implements SuppressedFocusContro
         if (errorDetails.isVisible()) {
             errorDetails.setManaged(false);
             errorDetails.setVisible(false);
-            showErrorDetailsButton.lookup("Polygon").setRotate(0);
+            showErrorDetailsButton.lookup("Polygon").setRotate(0); // TODO - we need to do this in css
             showErrorDetailsButton.setText("Zobraziť detail chyby");
         } else {
             errorDetails.setManaged(true);
