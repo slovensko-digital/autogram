@@ -96,6 +96,8 @@ jobs:
           xcrun notarytool submit --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
           # staple
           xcrun stapler staple target/Autogram-*.pkg
+          # lock all keychains
+          security lock-keychain -a
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@v1
