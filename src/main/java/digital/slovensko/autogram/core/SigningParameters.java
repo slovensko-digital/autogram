@@ -1,19 +1,15 @@
 package digital.slovensko.autogram.core;
 
-import java.io.IOException;
-import java.io.StringReader;
-
 import javax.xml.crypto.dsig.CanonicalizationMethod;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import eu.europa.esig.dss.enumerations.*;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
@@ -32,8 +28,6 @@ public class SigningParameters {
     private final String identifier;
     private final boolean checkPDFACompliance;
     private final int visualizationWidth;
-
-    private Exception transformationException = null;
 
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
@@ -56,38 +50,6 @@ public class SigningParameters {
         this.visualizationWidth = preferredPreviewWidth;
     }
 
-    public MimeType getTransformationOutputMimeType() {
-        if (transformation == null)
-            return null;
-
-        // TODO ak transformacia padne treba vratit error o tom ze sa transformacia
-        // nepodarila
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            var document = builderFactory.newDocumentBuilder()
-                    .parse(new InputSource(new StringReader(transformation)));
-            var elem = document.getDocumentElement();
-            var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
-            var method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
-
-            if (method.equals("html"))
-                return MimeTypeEnum.HTML;
-
-            if (method.equals("text"))
-                return MimeTypeEnum.TEXT;
-
-            throw new RuntimeException("Unsupported transformation output method: " + method);
-
-        } catch (IOException | ParserConfigurationException e) {
-            transformationException = e;
-            return null;
-        } catch (SAXException e) {
-            // TODO log error in more JAVA way
-            transformationException = e;
-            return null;
-        }
-    }
 
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
         var parameters = new ASiCWithXAdESSignatureParameters();
@@ -228,7 +190,4 @@ public class SigningParameters {
         return (visualizationWidth > 0) ? visualizationWidth : 640;
     }
 
-    public Exception getTransformationException() {
-        return transformationException;
-    }
 }

@@ -54,10 +54,12 @@ public class IgnorableExceptionDialogController implements SuppressedFocusContro
         if (errorDetails.isVisible()) {
             errorDetails.setManaged(false);
             errorDetails.setVisible(false);
+            showErrorDetailsButton.lookup("Polygon").setRotate(0);
             showErrorDetailsButton.setText("Zobraziť detail chyby");
         } else {
             errorDetails.setManaged(true);
             errorDetails.setVisible(true);
+            showErrorDetailsButton.lookup("Polygon").setRotate(90);
             showErrorDetailsButton.setText("Schovať detail chyby");
         }
         errorDetails.getScene().getWindow().sizeToScene();

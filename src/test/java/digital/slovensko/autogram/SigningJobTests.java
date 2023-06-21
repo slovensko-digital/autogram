@@ -1,6 +1,7 @@
 package digital.slovensko.autogram;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
+import digital.slovensko.autogram.core.visualization.HTMLVisualizedDocument;
 import digital.slovensko.autogram.server.dto.Document;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
@@ -45,12 +48,19 @@ public class SigningJobTests {
                                 ServerSigningParameters.VisualizationWidthEnum.sm);
 
                 var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-                var htmlTransformed = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(),
-                                null).getDocumentAsHTML();
-                var expected = new String(this.getClass().getResourceAsStream("transformed.html").readAllBytes(),
-                                StandardCharsets.UTF_8);
+                var job = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null,
+                                null);
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job).build().getVisualizedDocument();
+                if (visualizedDocument instanceof HTMLVisualizedDocument d) {
+                        var htmlTransformed = d.getDocument();
+                        var expected = new String(
+                                        this.getClass().getResourceAsStream("transformed.html").readAllBytes(),
+                                        StandardCharsets.UTF_8);
 
-                assertEquals(expected.replaceAll("\\r\\n?", "\n"),
-                                htmlTransformed.replaceAll("\\r\\n?", "\n"));
+                        assertEquals(expected.replaceAll("\\r\\n?", "\n"),
+                                        htmlTransformed.replaceAll("\\r\\n?", "\n"));
+                } else {
+                        fail("Not an HTMLVisualizedDocument");
+                }
         }
 }

@@ -34,8 +34,8 @@ class AutogramTests {
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 
-        autogram.pickSigningKeyAndThen(key
-        -> autogram.sign(new SigningJob(document, parameters, responder), key));
+        autogram.pickSigningKeyAndThen(
+                key -> autogram.sign(new SigningJob(document, parameters, responder, null), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -60,18 +60,16 @@ class AutogramTests {
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 
-
-        Assertions.assertThrows(SigningWithExpiredCertificateException.class, ()
-            -> autogram.pickSigningKeyAndThen(key -> autogram.sign(new SigningJob(document, parameters, responder), key)
-        ));
+        Assertions.assertThrows(SigningWithExpiredCertificateException.class, () -> autogram
+                .pickSigningKeyAndThen(key -> autogram.sign(new SigningJob(document, parameters, responder, null), key)));
     }
 
     private record FakeDriverDetector(List<TokenDriver> drivers) implements DriverDetector {
         @Override
-            public List<TokenDriver> getAvailableDrivers() {
-                return drivers;
-            }
+        public List<TokenDriver> getAvailableDrivers() {
+            return drivers;
         }
+    }
 
     private static class FakeTokenDriver extends TokenDriver {
         public FakeTokenDriver(String name) {
@@ -98,7 +96,8 @@ class AutogramTests {
         @Override
         public AbstractKeyStoreTokenConnection createTokenWithPassword(char[] password) {
             try {
-                var keystore = Objects.requireNonNull(this.getClass().getResource("expired_certificate.keystore")).getFile();
+                var keystore = Objects.requireNonNull(this.getClass().getResource("expired_certificate.keystore"))
+                        .getFile();
                 return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("test123".toCharArray()));
             } catch (IOException e) {
                 throw new RuntimeException(e);

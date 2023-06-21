@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.errors.*;
+import digital.slovensko.autogram.core.visualization.DocumentVisualizationResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -35,6 +36,15 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
 
         var stage = new Stage();
+
+        autogram.prepareVisualization(job, (DocumentVisualizationResult visualization) -> {
+            controller.updateVisualization(visualization);
+            stage.sizeToScene();
+            GUIUtils.suppressDefaultFocus(stage, controller);
+            GUIUtils.showOnTop(stage);
+            GUIUtils.setUserFriendlyPosition(stage);
+        });
+
         stage.setTitle("Podpisovanie dokumentu"); // TODO use document name?
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> cancelJob(job));
@@ -187,7 +197,12 @@ public class GUI implements UI {
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(getJobWindow(job));
         GUIUtils.suppressDefaultFocus(stage, controller);
+
+        GUIUtils.showOnTop(stage);
+        GUIUtils.setUserFriendlyPosition(stage);
+
         stage.show();
+
     }
 
     private void disableKeyPicking() {
