@@ -3,7 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.visualization.DocumentVisualizationResult;
+import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.CommonDocument;
 import javafx.animation.Interpolator;
@@ -63,16 +63,10 @@ public class SigningDialogController implements SuppressedFocusController {
         showLoading();
     }
 
-    public void updateVisualization(DocumentVisualizationResult visualization) {
+    public void updateVisualization(Visualization visualizedDocument) {
         hideLoading();
         mainBox.setPrefWidth(signingJob.getVisualizationWidth());
-        if (visualization.hasFailedTransformation()) {
-            showFailedTransformationError(visualization.getError());
-        }
-
-        var visualizedDocument = visualization.getVisualizedDocument();
         visualizedDocument.show(this);
-
     }
 
     public void onMainButtonPressed(ActionEvent event) {
@@ -206,7 +200,7 @@ public class SigningDialogController implements SuppressedFocusController {
         unsupportedVisualizationInfoBox.setManaged(true);
     }
 
-    private void showFailedTransformationError(Exception exception) {
+    public void showFailedTransformationError(Exception exception) {
         // showUnsupportedVisualization();
         exception.printStackTrace();
         gui.onTransformationFailed(signingJob, exception);

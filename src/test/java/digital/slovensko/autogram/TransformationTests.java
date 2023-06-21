@@ -18,7 +18,7 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
-import digital.slovensko.autogram.core.visualization.HTMLVisualizedDocument;
+import digital.slovensko.autogram.core.visualization.HTMLVisualization;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -58,16 +58,15 @@ public class TransformationTests {
 
                 SigningJob job = new SigningJob(document, params, dummyResponder);
 
-                var visualizationResult = DocumentVisualizationBuilder.fromJob(job).build();
-                var visualizedDocument = visualizationResult.getVisualizedDocument();
-                if (visualizedDocument instanceof HTMLVisualizedDocument d) {
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job).build();
+                if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());
                 } else {
                         if (visualizedDocument != null)
                                 fail("Expected HTMLVisualizedDocument but got"
                                                 + visualizedDocument.getClass().getName());
-                        fail("Expected HTMLVisualizedDocument but got error " + visualizationResult.getError());
+                        fail("Expected HTMLVisualizedDocument but got null");
                 }
         }
 
@@ -118,8 +117,8 @@ public class TransformationTests {
 
                 SigningJob job = new SigningJob(document, params, dummyResponder);
 
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job).build().getVisualizedDocument();
-                if (visualizedDocument instanceof HTMLVisualizedDocument d) {
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job).build();
+                if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());
                 } else {

@@ -1,13 +1,10 @@
 package digital.slovensko.autogram.core.visualization;
-
-import digital.slovensko.autogram.core.VisualizationType;
 import digital.slovensko.autogram.ui.gui.SigningDialogController;
 
-public class HTMLVisualizedDocument extends VisualizedDocument {
+public class HTMLVisualization extends Visualization {
     private String document;
-    VisualizationType type = VisualizationType.HTML;
 
-    public HTMLVisualizedDocument(String html) {
+    public HTMLVisualization(String html) {
         this.document = html;
     }
 

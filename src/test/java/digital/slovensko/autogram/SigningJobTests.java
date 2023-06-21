@@ -14,7 +14,7 @@ import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
-import digital.slovensko.autogram.core.visualization.HTMLVisualizedDocument;
+import digital.slovensko.autogram.core.visualization.HTMLVisualization;
 import digital.slovensko.autogram.server.dto.Document;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
@@ -49,8 +49,8 @@ public class SigningJobTests {
 
                 var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
                 var job = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null);
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job).build().getVisualizedDocument();
-                if (visualizedDocument instanceof HTMLVisualizedDocument d) {
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job).build();
+                if (visualizedDocument instanceof HTMLVisualization d) {
                         var htmlTransformed = d.getDocument();
                         var expected = new String(
                                         this.getClass().getResourceAsStream("transformed.html").readAllBytes(),

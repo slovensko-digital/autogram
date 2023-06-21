@@ -4,15 +4,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import digital.slovensko.autogram.core.VisualizationType;
 import digital.slovensko.autogram.ui.gui.SigningDialogController;
 import eu.europa.esig.dss.model.CommonDocument;
 
-public class PDFVisualizedDocument extends VisualizedDocument {
-    VisualizationType type = VisualizationType.PDF;
+public class PDFVisualization extends Visualization {
     CommonDocument document;
 
-    public PDFVisualizedDocument(CommonDocument document) {
+    public PDFVisualization(CommonDocument document) {
         this.document = document;
     }
 

@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.errors.*;
-import digital.slovensko.autogram.core.visualization.DocumentVisualizationResult;
+import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -37,8 +37,8 @@ public class GUI implements UI {
 
         var stage = new Stage();
 
-        autogram.prepareVisualization(job, (DocumentVisualizationResult visualization) -> {
-            controller.updateVisualization(visualization);
+        autogram.prepareVisualization(job, (Visualization visualizedDocument) -> {
+            controller.updateVisualization(visualizedDocument);
             stage.sizeToScene();
             GUIUtils.suppressDefaultFocus(stage, controller);
             GUIUtils.showOnTop(stage);

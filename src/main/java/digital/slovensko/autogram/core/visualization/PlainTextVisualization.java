@@ -1,13 +1,11 @@
 package digital.slovensko.autogram.core.visualization;
 
-import digital.slovensko.autogram.core.VisualizationType;
 import digital.slovensko.autogram.ui.gui.SigningDialogController;
 
-public class PlainTextVisualizedDocument extends VisualizedDocument {
+public class PlainTextVisualization extends Visualization {
     private String document;
-    VisualizationType type = VisualizationType.PlainText;
 
-    public PlainTextVisualizedDocument(String plainText) {
+    public PlainTextVisualization(String plainText) {
         this.document = plainText;
     }
 

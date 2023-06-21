@@ -48,22 +48,18 @@ public class DocumentVisualizationBuilder {
         return new DocumentVisualizationBuilder(document, parameters);
     }
 
-    public DocumentVisualizationResult build() {
+    public Visualization build() {
         MimeType transformationOutputMime = null;
-        Exception exception = null;
-        VisualizedDocument visualizedDocument = null;
         try {
             transformationOutputMime = getTransformationOutputMimeType(getTransformation());
             try {
-                visualizedDocument = createVisualizedDocument(transformationOutputMime);
+                return createVisualizedDocument(transformationOutputMime);
             } catch (Exception e) {
-                exception = e;
+                return new FailedVisualization(e);
             }
         } catch (Exception e) {
-            exception = e;
+            return new FailedVisualization(e);
         }
-
-        return new DocumentVisualizationResult(visualizedDocument, exception);
     }
 
     // ------------------ PRIVATE ------------------
@@ -79,16 +75,16 @@ public class DocumentVisualizationBuilder {
      * @throws SAXException
      * @throws TransformerException
      */
-    private VisualizedDocument createVisualizedDocument(MimeType transformationOutputMimeType)
+    private Visualization createVisualizedDocument(MimeType transformationOutputMimeType)
             throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
         if (isTranformationAvailable(getTransformation())) {
             if (isDocumentSupportingTransformation(document)) {
                 // Applying transformation
                 if (transformationOutputMimeType.equals(MimeTypeEnum.HTML)) {
-                    return new HTMLVisualizedDocument(transform());
+                    return new HTMLVisualization(transform());
                 } else if (transformationOutputMimeType.equals(MimeTypeEnum.TEXT)) {
-                    return new PlainTextVisualizedDocument(transform());
+                    return new PlainTextVisualization(transform());
                 }
             } else {
                 // TODO
@@ -99,17 +95,17 @@ public class DocumentVisualizationBuilder {
         }
 
         if (document.getMimeType().equals(MimeTypeEnum.HTML)) {
-            return new HTMLVisualizedDocument(transform());
+            return new HTMLVisualization(transform());
         } else if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            return new PlainTextVisualizedDocument(transform());
+            return new PlainTextVisualization(transform());
         } else if (document.getMimeType().equals(MimeTypeEnum.PDF)) {
-            return new PDFVisualizedDocument(document);
+            return new PDFVisualization(document);
         } else if (document.getMimeType().equals(MimeTypeEnum.JPEG)
                 || document.getMimeType().equals(MimeTypeEnum.PNG)) {
-            return new ImageVisualizedDocument(document);
+            return new ImageVisualization(document);
         }
 
-        return new UnsupportedVisualizedDocument();
+        return new UnsupportedVisualization();
     }
 
     private String getTransformation() {

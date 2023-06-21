@@ -3,7 +3,7 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
-import digital.slovensko.autogram.core.visualization.DocumentVisualizationResult;
+import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.DSSException;
@@ -89,7 +89,7 @@ public class Autogram {
         ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFile));
     }
 
-    public void prepareVisualization(SigningJob job, Consumer<DocumentVisualizationResult> callback) {
+    public void prepareVisualization(SigningJob job, Consumer<Visualization> callback) {
         ui.onWorkThreadDo(() -> {
             try {
                 var visualization = DocumentVisualizationBuilder.fromJob(job).build();
