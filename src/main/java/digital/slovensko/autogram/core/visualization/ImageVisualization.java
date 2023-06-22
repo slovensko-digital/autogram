@@ -4,7 +4,7 @@ import digital.slovensko.autogram.ui.Visualizer;
 import eu.europa.esig.dss.model.CommonDocument;
 
 public class ImageVisualization extends Visualization {
-    CommonDocument document;
+    private final CommonDocument document;
 
     public ImageVisualization(CommonDocument document, SigningJob job) {
         super(job);
