@@ -48,36 +48,19 @@ public class DocumentVisualizationBuilder {
         return createVisualization(job, transformationOutputMime);
     }
 
-    // ------------------ PRIVATE ------------------
-
-    /**
-     * Get document visualized by transformation or identity if transformation is
-     * not supported
-     *
-     * @param transformationOutputMimeType
-     * @return
-     * @throws IOException
-     * @throws ParserConfigurationException
-     * @throws SAXException
-     * @throws TransformerException
-     */
     private Visualization createVisualization(SigningJob job, MimeType transformationOutputMimeType)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
-        if (isTranformationAvailable(getTransformation())) {
-            if (isDocumentSupportingTransformation(document)) {
+        if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(document)) {
+
                 // Applying transformation
                 if (transformationOutputMimeType.equals(MimeTypeEnum.HTML)) {
                     return new HTMLVisualization(transform(), job);
                 } else if (transformationOutputMimeType.equals(MimeTypeEnum.TEXT)) {
                     return new PlainTextVisualization(transform(), job);
+                } else {
+                    return new UnsupportedVisualization(job);
                 }
-            } else {
-                // TODO
-                // We have transformation but document is not supporting it
-                // this should probably show error
-                throw new RuntimeException("Transformation not supported for this document");
-            }
         }
 
         if (document.getMimeType().equals(MimeTypeEnum.HTML)) {
