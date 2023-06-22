@@ -22,7 +22,7 @@ public class CliApp {
             var source = params.getSource();
             if (source.isDirectory()) {
                 var jobs = Arrays.stream(source.listFiles()).map(f ->
-                    SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, null, params.isForce()), params.shouldCheckPDFACompliance())
+                    SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, params.getTarget(), params.isForce()), params.shouldCheckPDFACompliance())
                 ).toList();
                 if (params.shouldCheckPDFACompliance()) {
                     jobs.forEach(job -> {
@@ -32,7 +32,7 @@ public class CliApp {
                 }
                 jobs.forEach(autogram::sign);
             } else {
-                var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, null, params.isForce()), params.shouldCheckPDFACompliance());
+                var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, params.getTarget(), params.isForce()), params.shouldCheckPDFACompliance());
                 if (params.shouldCheckPDFACompliance()) {
                     System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
                     autogram.checkPDFACompliance(job);

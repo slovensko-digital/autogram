@@ -1,9 +1,13 @@
 package digital.slovensko.autogram.core;
 
+import com.google.common.io.Files;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.codec.binary.StringUtils;
 
 import java.io.File;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import static digital.slovensko.autogram.core.CliParameters.Validations.*;
@@ -46,8 +50,14 @@ public class CliParameters {
 
     public static class Validations {
         public static String validateTarget(String targetPath) {
-            if (targetPath != null && !new File(targetPath).exists()) {
-                throw new IllegalArgumentException(String.format("Target %s does not exist", targetPath));
+            if (targetPath == null)
+                return null;
+
+            File target = new File(targetPath);
+            boolean isValidDirectory = target.isDirectory();
+            boolean isValidFile = target.getParentFile().isDirectory() && !Files.getFileExtension(targetPath).equals("");
+            if (!isValidDirectory && !isValidFile) {
+                throw new IllegalArgumentException(String.format("Invalid target %s", targetPath));
             }
             return targetPath;
         }

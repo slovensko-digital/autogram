@@ -13,17 +13,17 @@ import java.nio.file.Paths;
 public class SaveFileResponder extends Responder {
     private final File file;
     private final Autogram autogram;
-    private final String targetDirectory;
+    private final String target;
     private final boolean overwrite;
 
     public SaveFileResponder(File file, Autogram autogram) {
         this(file, autogram, null, false);
     }
 
-    public SaveFileResponder(File file, Autogram autogram, String targetDirectory, boolean overwrite) {
+    public SaveFileResponder(File file, Autogram autogram, String target, boolean overwrite) {
         this.file = file;
         this.autogram = autogram;
-        this.targetDirectory = targetDirectory;
+        this.target = target;
         this.overwrite = overwrite;
     }
 
@@ -42,7 +42,7 @@ public class SaveFileResponder extends Responder {
     }
 
     private File getTargetFile() {
-        var directory = targetDirectory == null ? file.getParent() : targetDirectory;
+        var directory = isValidTargetDirectory() ? target : file.getParent();
         var name = Files.getNameWithoutExtension(file.getName());
 
         var extension = ".asice";
@@ -52,17 +52,31 @@ public class SaveFileResponder extends Responder {
         var baseName = Paths.get(directory, name + "_signed").toString();
         var newBaseName = baseName;
 
+        String pathName = isValidTargetFile() ? target : newBaseName + extension;
+
         if (overwrite) {
-            return new File(newBaseName + extension);
+            return new File(pathName);
         } else {
             var count = 1;
             while(true) {
-                var targetFile = new File(newBaseName + extension);
+                var targetFile = new File(pathName);
                 if(!targetFile.exists()) return targetFile;
 
                 newBaseName = baseName + " (" + count + ")";
                 count++;
             }
         }
+    }
+
+    private boolean isValidTargetDirectory() {
+        return target != null && new File(target).isDirectory();
+    }
+
+    private boolean isValidTargetFile() {
+        if (target == null)
+            return false;
+
+        File targetFile = new File(target);
+        return targetFile.getParentFile().isDirectory() && !Files.getFileExtension(target).equals("");
     }
 }
