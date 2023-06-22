@@ -23,7 +23,7 @@
         <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.7</slf4j.version>
         <junit.version>5.9.3</junit.version>
-        <mockito.version>5.3.1</mockito.version>
+        <mockito.version>5.4.0</mockito.version>
         <xmlunit.version>2.6.2</xmlunit.version>
     </properties>
 

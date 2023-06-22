@@ -25,21 +25,21 @@ public class SigningJobTests {
     @Test
     void testEnd2EndHtmlTransformationEncoding() throws IOException, RequestValidationException {
         var ssParams = new ServerSigningParameters(
-            SignatureLevel.XAdES_BASELINE_B,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            transformation,
-            null,
-            false,
-            ServerSigningParameters.VisualizationWidthEnum.sm);
+                SignatureLevel.XAdES_BASELINE_B,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                transformation,
+                null,
+                false,
+                ServerSigningParameters.VisualizationWidthEnum.sm);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
         var job = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null);
@@ -51,8 +51,8 @@ public class SigningJobTests {
 
             var htmlTransformed = v.getDocument();
             var expected = new String(
-                this.getClass().getResourceAsStream("transformed.html").readAllBytes(),
-                StandardCharsets.UTF_8);
+                    this.getClass().getResourceAsStream("transformed.html").readAllBytes(),
+                    StandardCharsets.UTF_8);
 
             assertEquals(expected.replaceAll("\\r\\n?", "\n"), htmlTransformed.replaceAll("\\r\\n?", "\n"));
         } catch (Exception e) {
