@@ -524,11 +524,19 @@ TextFlow.autogram-body-s {
   -fx-padding: 0.5em 2em 0 2em;
 }
 
-.autogram-error-summary__more-standalone {
-  -fx-margin: 2em;
+.autogram-error-summary__more {
+  -fx-padding: 0 0 0 5px;
   -fx-border-insets: 2em;
   -fx-background-insets: 2em;
   -fx-font-size: 1em;
+}
+.autogram-error-summary__more Polygon {
+  -fx-rotate: 0;
+  -fx-fill: -fx-text-fill;
+}
+
+.autogram-error-summary__more.autogram-error-summary__more-open Polygon {
+  -fx-rotate: 90;
 }
 
 .autogram-loading {

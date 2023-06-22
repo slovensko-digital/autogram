@@ -1,47 +1,43 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
+import javafx.scene.layout.VBox;
 
 public class IgnorableExceptionDialogController implements SuppressedFocusController {
-    private final SigningJob job;
-    private final Exception exception;
-    private final GUI gui;
+    private final IgnorableException exception;
+
+    @FXML
+    VBox mainBox;
 
     @FXML
     Button cancelButton;
+
     @FXML
     Button continueButton;
-    @FXML
-    Node mainBox;
 
     @FXML
-    TextArea errorDetails;
+    ErrorSummaryComponentController errorSummaryComponentController;
 
-    @FXML
-    Button showErrorDetailsButton;
-
-    public IgnorableExceptionDialogController(SigningJob job, Exception exception, GUI gui) {
-        this.job = job;
+    public IgnorableExceptionDialogController(IgnorableException exception) {
         this.exception = exception;
-        this.gui = gui;
+    }
+
+    public void initialize() {
+        errorSummaryComponentController.setException(exception);
     }
 
     public void onCancelAction(ActionEvent ignored) {
         GUIUtils.closeWindow(mainBox);
-        gui.cancelJob(job);
+        exception.getJob().onDocumentSignFailed(new SigningCanceledByUserException());
     }
 
     public void onContinueAction(ActionEvent ignored) {
         GUIUtils.closeWindow(mainBox);
-        gui.focusJob(job);
+        exception.getOnContinueCallback().run();
     }
 
     @Override
@@ -49,28 +45,4 @@ public class IgnorableExceptionDialogController implements SuppressedFocusContro
         return mainBox;
     }
 
-    public void onShowErrorDetailsButtonAction() {
-        errorDetails.setText(formatException(exception));
-        if (errorDetails.isVisible()) {
-            errorDetails.setManaged(false);
-            errorDetails.setVisible(false);
-            showErrorDetailsButton.lookup("Polygon").setRotate(0);
-            showErrorDetailsButton.setText("Zobraziť detail chyby");
-        } else {
-            errorDetails.setManaged(true);
-            errorDetails.setVisible(true);
-            showErrorDetailsButton.lookup("Polygon").setRotate(90);
-            showErrorDetailsButton.setText("Schovať detail chyby");
-        }
-        errorDetails.getScene().getWindow().sizeToScene();
-    }
-
-    private String formatException(Exception exception) {
-        var writer = new StringWriter();
-        var printWriter = new PrintWriter(writer);
-        exception.printStackTrace(printWriter);
-        printWriter.flush();
-
-        return writer.toString();
-    }
 }

@@ -1,16 +1,19 @@
 package digital.slovensko.autogram.core.visualization;
 
-import digital.slovensko.autogram.ui.gui.SigningDialogController;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.ui.Visualizer;
 
 public class PlainTextVisualization extends Visualization {
-    private String document;
+    private final String document;
 
-    public PlainTextVisualization(String plainText) {
+    public PlainTextVisualization(String plainText, SigningJob job) {
+        super(job);
         this.document = plainText;
     }
 
     @Override
-    public void show(SigningDialogController controller) {
-        controller.showPlainTextVisualization(this.document);
+    public void initialize(Visualizer visualizer) {
+        visualizer.setPrefWidth(getVisualizationWidth());
+        visualizer.showPlainTextVisualization(document);
     }
 }

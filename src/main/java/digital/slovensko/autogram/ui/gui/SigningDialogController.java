@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.visualization.Visualization;
+import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.CommonDocument;
 import javafx.animation.Interpolator;
@@ -26,10 +27,10 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
-public class SigningDialogController implements SuppressedFocusController {
+public class SigningDialogController implements SuppressedFocusController, Visualizer {
     private final GUI gui;
-    private final SigningJob signingJob;
     private final Autogram autogram;
+    private final Visualization visualization;
 
     @FXML
     VBox mainBox;
@@ -49,24 +50,16 @@ public class SigningDialogController implements SuppressedFocusController {
     public Button changeKeyButton;
     @FXML
     VBox unsupportedVisualizationInfoBox;
-    @FXML
-    VBox loadingContainer;
 
-    public SigningDialogController(SigningJob signingJob, Autogram autogram, GUI gui) {
-        this.signingJob = signingJob;
+    public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui) {
+        this.visualization = visualization;
         this.gui = gui;
         this.autogram = autogram;
     }
 
     public void initialize() {
         refreshSigningKey();
-        showLoading();
-    }
-
-    public void updateVisualization(Visualization visualizedDocument) {
-        hideLoading();
-        mainBox.setPrefWidth(signingJob.getVisualizationWidth());
-        visualizedDocument.show(this);
+        visualization.initialize(this);
     }
 
     public void onMainButtonPressed(ActionEvent event) {
@@ -76,7 +69,7 @@ public class SigningDialogController implements SuppressedFocusController {
         } else {
             gui.disableSigning();
             getNodeForLoosingFocus().requestFocus();
-            autogram.sign(signingJob, signingKey);
+            autogram.sign(visualization.getJob(), signingKey);
         }
     }
 
@@ -118,29 +111,6 @@ public class SigningDialogController implements SuppressedFocusController {
         mainButton.setDisable(true);
     }
 
-    private void showLoading() {
-        loadingContainer.setVisible(true);
-        loadingContainer.setManaged(true);
-        mainButton.disableProperty().set(true);
-
-        var p = loadingContainer.lookup(".autogram-loading-icon");
-        RotateTransition rotate = new RotateTransition(javafx.util.Duration.millis(100), p);
-        rotate.setAxis(Rotate.Z_AXIS);
-        rotate.setCycleCount(RotateTransition.INDEFINITE);
-        rotate.setDuration(javafx.util.Duration.seconds(3));
-        rotate.setFromAngle(0);
-        rotate.setToAngle(180);
-        rotate.setInterpolator(Interpolator.LINEAR);
-        rotate.setCycleCount(Timeline.INDEFINITE);
-        rotate.play();
-    }
-
-    private void hideLoading() {
-        loadingContainer.setVisible(false);
-        loadingContainer.setManaged(false);
-        mainButton.disableProperty().set(false);
-    }
-
     public void showPlainTextVisualization(String text) {
         plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
         plainTextArea.setText(text);
@@ -154,9 +124,7 @@ public class SigningDialogController implements SuppressedFocusController {
         var engine = webView.getEngine();
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-
                 engine.getDocument().getElementById("frame").setAttribute("srcdoc", html);
-
             }
         });
         engine.load(getClass().getResource("visualization-html.html").toExternalForm());
@@ -180,11 +148,11 @@ public class SigningDialogController implements SuppressedFocusController {
         webViewContainer.setManaged(true);
     }
 
-    public void showImageVisualization(CommonDocument imageDocument) {
+    public void showImageVisualization(CommonDocument doc) {
         // TODO what about visualization
         imageVisualization.fitWidthProperty()
                 .bind(imageVisualizationContainer.widthProperty().subtract(4));
-        imageVisualization.setImage(new Image(imageDocument.openStream()));
+        imageVisualization.setImage(new Image(doc.openStream()));
         imageVisualization.setPreserveRatio(true);
         imageVisualization.setSmooth(true);
         imageVisualization.setCursor(Cursor.OPEN_HAND);
@@ -192,7 +160,6 @@ public class SigningDialogController implements SuppressedFocusController {
         imageVisualizationContainer.setFitToWidth(true);
         imageVisualizationContainer.setVisible(true);
         imageVisualizationContainer.setManaged(true);
-
     }
 
     public void showUnsupportedVisualization() {
@@ -200,14 +167,13 @@ public class SigningDialogController implements SuppressedFocusController {
         unsupportedVisualizationInfoBox.setManaged(true);
     }
 
-    public void showFailedTransformationError(Exception exception) {
-        // showUnsupportedVisualization();
-        exception.printStackTrace();
-        gui.onTransformationFailed(signingJob, exception);
-    }
-
     @Override
     public Node getNodeForLoosingFocus() {
         return mainBox;
+    }
+
+    @Override
+    public void setPrefWidth(double prefWidth) {
+        mainBox.setPrefWidth(prefWidth);
     }
 }

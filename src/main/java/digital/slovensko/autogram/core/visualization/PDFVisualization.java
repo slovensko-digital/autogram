@@ -4,13 +4,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import digital.slovensko.autogram.ui.gui.SigningDialogController;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.ui.Visualizer;
 import eu.europa.esig.dss.model.CommonDocument;
 
 public class PDFVisualization extends Visualization {
-    CommonDocument document;
+    private final CommonDocument document;
 
-    public PDFVisualization(CommonDocument document) {
+    public PDFVisualization(CommonDocument document, SigningJob job) {
+        super(job);
         this.document = document;
     }
 
@@ -24,7 +26,8 @@ public class PDFVisualization extends Visualization {
     }
 
     @Override
-    public void show(SigningDialogController controller) {
-        controller.showPDFVisualization(getBase64EncodedDocument());
+    public void initialize(Visualizer visualizer) {
+        visualizer.setPrefWidth(getVisualizationWidth());
+        visualizer.showPDFVisualization(getBase64EncodedDocument());
     }
 }

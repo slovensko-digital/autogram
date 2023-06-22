@@ -3,8 +3,10 @@ package digital.slovensko.autogram;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningWithExpiredCertificateException;
+import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -148,6 +150,16 @@ class AutogramTests {
 
         @Override
         public void onPDFAComplianceCheckFailed(SigningJob job) {
+
+        }
+
+        @Override
+        public void showVisualization(Visualization visualization, Autogram autogram) {
+
+        }
+
+        @Override
+        public void showIgnorableExceptionDialog(IgnorableException exception) {
 
         }
 

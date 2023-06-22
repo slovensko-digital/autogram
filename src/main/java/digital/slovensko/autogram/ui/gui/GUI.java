@@ -1,10 +1,12 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.Visualization;
-import digital.slovensko.autogram.ui.UI;
-import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -30,29 +32,7 @@ public class GUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
-        var controller = new SigningDialogController(job, autogram, this);
-        jobControllers.put(job, controller);
-
-        var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
-
-        var stage = new Stage();
-
-        autogram.prepareVisualization(job, (Visualization visualizedDocument) -> {
-            controller.updateVisualization(visualizedDocument);
-            stage.sizeToScene();
-            GUIUtils.suppressDefaultFocus(stage, controller);
-            GUIUtils.showOnTop(stage);
-            GUIUtils.setUserFriendlyPosition(stage);
-        });
-
-        stage.setTitle("Podpisovanie dokumentu"); // TODO use document name?
-        stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> cancelJob(job));
-
-        stage.sizeToScene();
-        GUIUtils.suppressDefaultFocus(stage, controller);
-        GUIUtils.showOnTop(stage);
-        GUIUtils.setUserFriendlyPosition(stage);
+        autogram.startVisualization(job);
     }
 
     @Override
@@ -186,23 +166,39 @@ public class GUI implements UI {
         stage.show();
     }
 
-    public void onTransformationFailed(SigningJob job, Exception exception) {
-        var controller = new IgnorableExceptionDialogController(job, exception, this);
+    @Override
+    public void showVisualization(Visualization visualization, Autogram autogram) {
+        var controller = new SigningDialogController(visualization, autogram, this);
+        jobControllers.put(visualization.getJob(), controller);
+
+        var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
+
+        var stage = new Stage();
+
+        stage.setTitle("Podpisovanie dokumentu"); // TODO use document name?
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> cancelJob(visualization.getJob()));
+
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        GUIUtils.showOnTop(stage);
+        GUIUtils.setUserFriendlyPosition(stage);
+    }
+
+
+    public void showIgnorableExceptionDialog(IgnorableException e) {
+        var controller = new IgnorableExceptionDialogController(e);
         var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Chyba pri transformácii dokumentu");
+        stage.setTitle("Chyba pri zobrazovaní dokumentu");
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.WINDOW_MODAL);
-        stage.initOwner(getJobWindow(job));
         GUIUtils.suppressDefaultFocus(stage, controller);
 
         GUIUtils.showOnTop(stage);
         GUIUtils.setUserFriendlyPosition(stage);
-
-        stage.show();
-
     }
 
     private void disableKeyPicking() {
