@@ -53,12 +53,11 @@ public class CliParameters {
             if (targetPath == null)
                 return null;
 
-            File target = new File(targetPath);
-            boolean isValidDirectory = target.isDirectory();
-            boolean isValidFile = target.getParentFile().isDirectory() && !Files.getFileExtension(targetPath).equals("");
-            if (!isValidDirectory && !isValidFile) {
-                throw new IllegalArgumentException(String.format("Invalid target %s", targetPath));
-            }
+            boolean isTargetFile = !Files.getFileExtension(targetPath).equals("");
+            File targetDirectory = isTargetFile ? new File(targetPath).getParentFile() : new File(targetPath);
+            if (!targetDirectory.exists())
+                targetDirectory.mkdirs();
+
             return targetPath;
         }
 

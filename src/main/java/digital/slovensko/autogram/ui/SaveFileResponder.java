@@ -42,41 +42,53 @@ public class SaveFileResponder extends Responder {
     }
 
     private File getTargetFile() {
-        var directory = isValidTargetDirectory() ? target : file.getParent();
-        var name = Files.getNameWithoutExtension(file.getName());
+        var directory = getDirectory();
+        var name = getName();
+        var extension = getExtension();
 
-        var extension = ".asice";
-        if (file.getName().endsWith(".pdf"))
-            extension = ".pdf";
-
-        var baseName = Paths.get(directory, name + "_signed").toString();
+        var baseName = Paths.get(directory, name).toString();
         var newBaseName = baseName;
 
-        String pathName = isValidTargetFile() ? target : newBaseName + extension;
-
         if (overwrite) {
-            return new File(pathName);
+            return new File(newBaseName + extension);
         } else {
             var count = 1;
             while(true) {
-                var targetFile = new File(pathName);
+                var targetFile = new File(newBaseName + extension);
                 if(!targetFile.exists()) return targetFile;
-
                 newBaseName = baseName + " (" + count + ")";
                 count++;
             }
         }
     }
 
-    private boolean isValidTargetDirectory() {
-        return target != null && new File(target).isDirectory();
+    private String getDirectory() {
+        if (target == null) {
+            return file.getParent();
+        } else if (isFile(target)) {
+            return new File(target).getParent();
+        } else {
+            return target;
+        }
     }
 
-    private boolean isValidTargetFile() {
-        if (target == null)
-            return false;
+    private String getName() {
+        if (target == null || !isFile(target)) {
+            return Files.getNameWithoutExtension(file.getName()) + "_signed";
+        } else {
+            return Files.getNameWithoutExtension(target);
+        }
+    }
 
-        File targetFile = new File(target);
-        return targetFile.getParentFile().isDirectory() && !Files.getFileExtension(target).equals("");
+    private String getExtension() {
+        if (target == null || !isFile(target)) {
+            return file.getName().endsWith(".pdf") ? ".pdf" : ".asice";
+        } else {
+            return "." + Files.getFileExtension(target);
+        }
+    }
+
+    private boolean isFile(String file) {
+        return !Files.getFileExtension(file).equals("");
     }
 }
