@@ -57,8 +57,10 @@ public class CliUI implements UI {
             callback.accept(null);
             return;
         }
-        System.out.println("Enter security code for driver:");
-        callback.accept(CliUtils.readLine()); // TODO do not show pin
+
+        // Read password from CLI
+        var password = System.console().readPassword("Enter security code for driver (hidden): ");
+        callback.accept(password);
     }
 
     @Override
@@ -93,7 +95,8 @@ public class CliUI implements UI {
 
     @Override
     public void onDocumentSaved(File file) {
-        System.out.println("File successfully signed. Signed file saved as " + file.getName() + " in " + file.getParent());
+        System.out.println(
+                "File successfully signed. Signed file saved as " + file.getName() + " in " + file.getParent());
     }
 
     @Override
@@ -104,19 +107,22 @@ public class CliUI implements UI {
     @Override
     public void onUpdateAvailable() {
         System.out.println("Nová verzia");
-        System.out.println(String.format("Je dostupná nová verzia a odporúčame stiahnuť aktualizáciu. Najnovšiu verziu si možete vždy stiahnuť na %s.", Updater.LATEST_RELEASE_URL));
+        System.out.println(String.format(
+                "Je dostupná nová verzia a odporúčame stiahnuť aktualizáciu. Najnovšiu verziu si možete vždy stiahnuť na %s.",
+                Updater.LATEST_RELEASE_URL));
     }
 
     @Override
     public void onAboutInfo() {
-        System.out.println("""
-        O projekte Autogram
-        Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a štandardov. Môžete ho používať komerčne aj nekomerčne a úplne zadarmo.
-        Autori a sponzori
-        Autormi tohto projektu sú Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. a ďalší spoluautori.
-        Licencia a zdrojové kódy
-        Tento softvér pôvodne vychádza projektu z Octosign White Label od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou. So súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2.
-        Zdrojové kódy sú dostupné na https://github.com/slovensko-digital/autogram.""");
+        System.out.println(
+                """
+                        O projekte Autogram
+                        Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a štandardov. Môžete ho používať komerčne aj nekomerčne a úplne zadarmo.
+                        Autori a sponzori
+                        Autormi tohto projektu sú Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. a ďalší spoluautori.
+                        Licencia a zdrojové kódy
+                        Tento softvér pôvodne vychádza projektu z Octosign White Label od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou. So súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2.
+                        Zdrojové kódy sú dostupné na https://github.com/slovensko-digital/autogram.""");
         System.out.println(String.format("Verzia: %s", Main.getVersion()));
     }
 
