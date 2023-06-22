@@ -1,10 +1,13 @@
 package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.ui.gui.IgnorableException;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
@@ -111,6 +114,15 @@ public class CliUI implements UI {
 
     @Override
     public void onPDFAComplianceCheckFailed(SigningJob job) {
+    }
+
+    @Override
+    public void showVisualization(Visualization visualization, Autogram autogram) {
+
+    }
+
+    @Override
+    public void showIgnorableExceptionDialog(IgnorableException exception) {
 
     }
 }

@@ -14,10 +14,9 @@
     <fx:include fx:id="errorSummaryComponent" source="error-summary-component.fxml" />
 
     <HBox styleClass="autogram-actions">
-        <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary"
-            text="Pokračovať" onAction="#onMainButtonAction" />
+        <Button fx:id="cancelButton" styleClass="autogram-button,autogram-button--warning"
+            text="Zrušiť podpisovanie" onAction="#onCancelAction" />
+        <Button fx:id="continueButton" styleClass="autogram-link" text="Pokračovať"
+            onAction="#onContinueAction" />
     </HBox>
-
-    <TextArea fx:id="errorDetails" styleClass="autogram-details__text" editable="false"
-        visible="false" managed="false">Error details</TextArea>
 </VBox>

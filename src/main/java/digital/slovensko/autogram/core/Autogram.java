@@ -2,6 +2,8 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
+import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.DSSException;
@@ -24,60 +26,62 @@ public class Autogram {
     }
 
     public void sign(SigningJob job) {
-        ui.onUIThreadDo(()
-        -> ui.startSigning(job, this));
+        ui.onUIThreadDo(() -> ui.startSigning(job, this));
 
         if (job.shouldCheckPDFCompliance()) {
-            ui.onWorkThreadDo(()
-            -> checkPDFACompliance(job));
+            ui.onWorkThreadDo(() -> checkPDFACompliance(job));
         }
     }
 
     private void checkPDFACompliance(SigningJob job) {
         var result = new PDFAStructureValidator().validate(job.getDocument());
-        if(!result.isCompliant()) {
+        if (!result.isCompliant()) {
             ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
         }
+    }
+
+    public void startVisualization(SigningJob job) {
+        ui.onWorkThreadDo(() -> {
+            try {
+                var visualization = DocumentVisualizationBuilder.fromJob(job);
+                ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
+            } catch (Exception e) {
+                Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
+
+                ui.onUIThreadDo(() -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+            }
+        });
     }
 
     public void sign(SigningJob job, SigningKey signingKey) {
         ui.onWorkThreadDo(() -> {
             try {
                 job.signWithKeyAndRespond(signingKey);
-                ui.onUIThreadDo(()
-                -> ui.onSigningSuccess(job));
+                ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
             } catch (DSSException e) {
-                ui.onUIThreadDo(()
-                -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
+                ui.onUIThreadDo(() -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
             } catch (IllegalArgumentException e) {
-                ui.onUIThreadDo(()
-                -> ui.onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
+                ui.onUIThreadDo(() -> ui.onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
             } catch (Exception e) {
-                ui.onUIThreadDo(()
-                -> ui.onSigningFailed(new UnrecognizedException(e)));
+                ui.onUIThreadDo(() -> ui.onSigningFailed(new UnrecognizedException(e)));
             }
         });
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
         var drivers = driverDetector.getAvailableDrivers();
-        ui.pickTokenDriverAndThen(drivers, (driver)
-        -> ui.requestPasswordAndThen(driver, (password)
-        -> ui.onWorkThreadDo(()
-        -> fetchKeysAndThen(driver, password, (key)
-        -> callback.accept(key)))));
+        ui.pickTokenDriverAndThen(drivers, (driver) -> ui.requestPasswordAndThen(driver, (password) -> ui
+            .onWorkThreadDo(() -> fetchKeysAndThen(driver, password, callback))));
     }
 
     private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {
         try {
             var token = driver.createTokenWithPassword(password);
             var keys = token.getKeys();
-            ui.onUIThreadDo(()
-            -> ui.pickKeyAndThen(keys, (privateKey)
-            -> callback.accept(new SigningKey(token, privateKey))));
+            ui.onUIThreadDo(
+                () -> ui.pickKeyAndThen(keys, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
         } catch (DSSException e) {
-            ui.onUIThreadDo(()
-            -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
+            ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         }
     }
 
@@ -86,8 +90,7 @@ public class Autogram {
             if (!Updater.newVersionAvailable())
                 return;
 
-            ui.onUIThreadDo(()
-            -> ui.onUpdateAvailable());
+            ui.onUIThreadDo(ui::onUpdateAvailable);
         });
     }
 
@@ -96,7 +99,6 @@ public class Autogram {
     }
 
     public void onDocumentSaved(File targetFile) {
-        ui.onUIThreadDo(()
-        -> ui.onDocumentSaved(targetFile));
+        ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFile));
     }
 }

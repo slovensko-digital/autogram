@@ -1,16 +1,20 @@
 package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
+import digital.slovensko.autogram.core.visualization.HTMLVisualization;
+import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.server.dto.Document;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
+import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SigningJobTests {
 
@@ -19,29 +23,40 @@ public class SigningJobTests {
     private static final String content = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48R2VuZXJhbEFnZW5kYSB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45Ij4KICA8c3ViamVjdD5Ob3bDqSBwb2RhbmllPC9zdWJqZWN0PgogIDx0ZXh0PlBvZMOhdmFtIHRvdG8gbm92w6kgcG9kYW5pZS48L3RleHQ+CjwvR2VuZXJhbEFnZW5kYT4=";
 
     @Test
-    void testEnd2EndHtmlTransformationEncoding() throws IOException {
+    void testEnd2EndHtmlTransformationEncoding() throws IOException, RequestValidationException {
         var ssParams = new ServerSigningParameters(
-            SignatureLevel.XAdES_BASELINE_B,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            transformation,
-            null,
-            false,
-            ServerSigningParameters.VisualizationWidthEnum.sm
-        );
+                SignatureLevel.XAdES_BASELINE_B,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                transformation,
+                null,
+                false,
+                ServerSigningParameters.VisualizationWidthEnum.sm);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-        var htmlTransformed = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null).getDocumentAsHTML();
-        var expected = new String(this.getClass().getResourceAsStream("transformed.html").readAllBytes(), StandardCharsets.UTF_8);
+        var job = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null);
+        Visualization visualization = null;
+        try {
+            visualization = DocumentVisualizationBuilder.fromJob(job);
+            assertInstanceOf(HTMLVisualization.class, visualization);
+            var v = (HTMLVisualization) visualization;
 
-        assertEquals(expected.replaceAll("\\r\\n?", "\n"), htmlTransformed.replaceAll("\\r\\n?", "\n"));
+            var htmlTransformed = v.getDocument();
+            var expected = new String(
+                    this.getClass().getResourceAsStream("transformed.html").readAllBytes(),
+                    StandardCharsets.UTF_8);
+
+            assertEquals(expected.replaceAll("\\r\\n?", "\n"), htmlTransformed.replaceAll("\\r\\n?", "\n"));
+        } catch (Exception e) {
+            fail();
+        }
     }
 }
