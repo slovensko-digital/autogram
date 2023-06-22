@@ -83,7 +83,7 @@ public class CliUI implements UI {
 
     @Override
     public void onSigningSuccess(SigningJob job) {
-        System.out.println("File " + job.getDocument().getName() + " successfully signed");
+
     }
 
     @Override
@@ -93,7 +93,7 @@ public class CliUI implements UI {
 
     @Override
     public void onDocumentSaved(File file) {
-        System.out.println("Signed file saved as " + file.getName() + " in " + file.getParent());
+        System.out.println("File successfully signed. Signed file saved as " + file.getName() + " in " + file.getParent());
     }
 
     @Override
