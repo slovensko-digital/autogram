@@ -55,8 +55,8 @@ public class CliParameters {
 
             boolean isTargetFile = !Files.getFileExtension(targetPath).equals("");
             File targetDirectory = isTargetFile ? new File(targetPath).getParentFile() : new File(targetPath);
-            if (!targetDirectory.exists())
-                targetDirectory.mkdirs();
+            if (!targetDirectory.exists() && !targetDirectory.mkdirs())
+                throw new IllegalArgumentException(String.format("Unable to create target directory %s", targetPath));
 
             return targetPath;
         }
