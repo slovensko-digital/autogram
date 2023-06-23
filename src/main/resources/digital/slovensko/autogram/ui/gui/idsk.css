@@ -10,507 +10,554 @@
 }
 
 .root {
-    -autogram-text-colour: #0b0c0c;
+  -autogram-text-colour: #0b0c0c;
 
-    -autogram-link-colour: #1d70b8;
-    -autogram-link-hover-colour: #003078;
+  -autogram-link-colour: #1d70b8;
+  -autogram-link-hover-colour: #003078;
 
-    -autogram-border-colour: #b1b4b6;
-    -autogram-input-border-colour: #0b0c0c;
+  -autogram-border-colour: #b1b4b6;
+  -autogram-input-border-colour: #0b0c0c;
 
-    -autogram-focus-colour: #ffdd00;
-    -autogram-focus-text-colour: #0b0c0c;
+  -autogram-focus-colour: #ffdd00;
+  -autogram-focus-text-colour: #0b0c0c;
 
-    -autogram-error-colour:	#d4351c;
+  -autogram-error-colour: #d4351c;
 
-    -autogram-success-colour: #00703c;
+  -autogram-success-colour: #00703c;
 
-    -fx-font-family: 'Source Sans Pro', 'Arial', sans-serif;
-    -fx-font-size: 16px;
+  -fx-font-family: "Source Sans Pro", "Arial", sans-serif;
+  -fx-font-size: 16px;
 
-    -fx-font-smoothing-type: gray;
+  -fx-font-smoothing-type: gray;
 }
 
 #mainBox {
-    -fx-border-width: 40px 0 0 0, 3px 0 0 0;
-    -fx-border-color: #003183, linear-gradient(from 0 0 to 150px 0, repeat, #ffffff 0%, #ffffff 33.3%, #003183 33.3%, #003183 66.6%, #d0190f 66.6%, #d0190f 100%);
-    -fx-padding: 30px;
-    -fx-spacing: 30px;
+  -fx-border-width: 40px 0 0 0, 3px 0 0 0;
+  -fx-border-color: #003183,
+    linear-gradient(
+      from 0 0 to 150px 0,
+      repeat,
+      #ffffff 0%,
+      #ffffff 33.3%,
+      #003183 33.3%,
+      #003183 66.6%,
+      #d0190f 66.6%,
+      #d0190f 100%
+    );
+  -fx-padding: 30px;
+  -fx-spacing: 30px;
 }
 
 /* Radio buttons */
 .radio-button {
-    -fx-cursor: hand;
+  -fx-cursor: hand;
 }
 
 .radio-button {
-    -fx-label-padding: 0 0 0 15px;
+  -fx-label-padding: 0 0 0 15px;
 }
 
 .radio-button .radio {
-    -fx-background-color: -autogram-input-border-colour, #ffffff;
-    -fx-background-insets: 0, 2;
-    -fx-background-radius: 25px;
-    -fx-pref-height: 40px;
-    -fx-pref-width: 40px;
-    -fx-min-height: 40px;
-    -fx-min-width: 40px;
+  -fx-background-color: -autogram-input-border-colour, #ffffff;
+  -fx-background-insets: 0, 2;
+  -fx-background-radius: 25px;
+  -fx-pref-height: 40px;
+  -fx-pref-width: 40px;
+  -fx-min-height: 40px;
+  -fx-min-width: 40px;
 }
 
 .radio-button:focused .radio {
-     -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour, #ffffff;
-     -fx-background-insets: -4, 0, 4;
-     -fx-background-radius: 25px;
+  -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour,
+    #ffffff;
+  -fx-background-insets: -4, 0, 4;
+  -fx-background-radius: 25px;
 }
 
 .radio-button .radio .dot {
-    -fx-background-color: #ffffff;
-    -fx-background-insets: 10;
-    -fx-background-radius: 25px;
+  -fx-background-color: #ffffff;
+  -fx-background-insets: 10;
+  -fx-background-radius: 25px;
 }
 
 .radio-button:selected .radio .dot {
-    -fx-background-color: -autogram-input-border-colour;
+  -fx-background-color: -autogram-input-border-colour;
 }
 
 .radio-button .text {
-    -fx-fill: -autogram-text-colour;
-    -fx-font-size: 1.1875em;
+  -fx-fill: -autogram-text-colour;
+  -fx-font-size: 1.1875em;
 }
-
 
 /* Buttons */
 .autogram-button {
-    -fx-cursor: hand;
-    -fx-background-color: #00703c;
-    -fx-border-color: #002d18;
-    -fx-border-width: 0 0 2px 0;
-    -fx-text-fill: #ffffff;
-    -fx-padding: 7px 10px 7px 10px;
+  -fx-cursor: hand;
+  -fx-background-color: #00703c;
+  -fx-border-color: #002d18;
+  -fx-border-width: 0 0 2px 0;
+  -fx-text-fill: #ffffff;
+  -fx-padding: 7px 10px 7px 10px;
 
-    -fx-font-size: 1.1875em;
+  -fx-font-size: 1.1875em;
 }
 
 .autogram-button:hover {
-    -fx-background-color: #204e2e;
+  -fx-background-color: #204e2e;
 }
 
 .autogram-button:focused,
 .autogram-button.autogram-button--secondary:focused,
 .autogram-button.autogram-button--warning:focused {
-    -fx-background-color: -autogram-focus-colour !important;
-    -fx-text-fill: -autogram-text-colour;
+  -fx-background-color: -autogram-focus-colour !important;
+  -fx-text-fill: -autogram-text-colour;
 
-    -fx-border-color: -autogram-input-border-colour;
+  -fx-border-color: -autogram-input-border-colour;
 }
 
 .autogram-button:disabled {
-    -fx-opacity: 0.5;
+  -fx-opacity: 0.5;
 }
 
 .autogram-link {
-    -fx-background-insets: 7px 0;
-    -fx-background-color: transparent;
-    -fx-border-width: 0;
-    -fx-text-fill: -autogram-link-colour;
-    -fx-underline: true;
+  -fx-background-insets: 7px 0;
+  -fx-background-color: transparent;
+  -fx-border-width: 0;
+  -fx-text-fill: -autogram-link-colour;
+  -fx-underline: true;
 
-    -fx-font-size: 1.1875em;
+  -fx-font-size: 1.1875em;
 }
 
 .autogram-link:hover {
-    -fx-cursor: hand;
-    -fx-background-color: transparent;
-    -fx-text-fill: -autogram-link-hover-colour;
+  -fx-cursor: hand;
+  -fx-background-color: transparent;
+  -fx-text-fill: -autogram-link-hover-colour;
 }
 
 .autogram-link:focused,
 .autogram-link:focused:hover {
-    -fx-text-fill: -autogram-focus-text-colour;
-    -fx-background-color: -autogram-focus-text-colour, -autogram-focus-colour, transparent;
-    -fx-background-insets: 0 0 -4px 0, -4px 0 0 0, 0 0 0 0;
-    -fx-underline: false;
+  -fx-text-fill: -autogram-focus-text-colour;
+  -fx-background-color: -autogram-focus-text-colour, -autogram-focus-colour,
+    transparent;
+  -fx-background-insets: 0 0 -4px 0, -4px 0 0 0, 0 0 0 0;
+  -fx-underline: false;
 }
 
 .autogram-button.autogram-button--secondary {
-    -fx-text-fill: -autogram-text-colour;
-    -fx-background-color: #f3f2f1;
-    -fx-border-color: #929191;
+  -fx-text-fill: -autogram-text-colour;
+  -fx-background-color: #f3f2f1;
+  -fx-border-color: #929191;
 }
 
 .autogram-button.autogram-button--secondary:hover {
-    -fx-background-color: #dbdad9;
+  -fx-background-color: #dbdad9;
 }
 
 .autogram-button.autogram-button--warning {
-    -fx-background-color: #d4351c;
-    -fx-border-color: #55150b;
+  -fx-background-color: #d4351c;
+  -fx-border-color: #55150b;
 }
 
 .autogram-button.autogram-button--warning:hover {
-    -fx-background-color: #aa2a16;
+  -fx-background-color: #aa2a16;
 }
 
 /* Text styling */
 
 .autogram-heading-l {
-    -fx-text-fill: -autogram-text-colour;
-    -fx-fill: -autogram-text-colour;
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
 
-    -fx-font-size: 2.25em;
-    -fx-font-weight: bold;
+  -fx-font-size: 2.25em;
+  -fx-font-weight: bold;
 }
 
 .autogram-heading-m {
-    -fx-text-fill: -autogram-text-colour;
-    -fx-fill: -autogram-text-colour;
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
 
-    -fx-font-size: 1.5em;
-    -fx-font-weight: bold;
+  -fx-font-size: 1.5em;
+  -fx-font-weight: bold;
 }
 
 .autogram-heading-s {
-    -fx-text-fill: -autogram-text-colour;
-    -fx-fill: -autogram-text-colour;
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
 
-    -fx-font-size: 1.1875em;
-    -fx-font-weight: bold;
+  -fx-font-size: 1.1875em;
+  -fx-font-weight: bold;
 }
 
 .autogram-body {
-    -fx-text-fill: -autogram-text-colour;
-    -fx-fill: -autogram-text-colour;
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
 
-    -fx-font-size: 1.1875em;
+  -fx-font-size: 1.1875em;
 }
 
 .autogram-body-l {
-    -fx-text-fill: -autogram-text-colour;
-    -fx-fill: -autogram-text-colour;
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
 
-    -fx-font-size: 1.5em;
+  -fx-font-size: 1.5em;
 }
 
 .autogram-body-s {
-    -fx-text-fill: -autogram-text-colour;
-    -fx-fill: -autogram-text-colour;
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
 
-    -fx-font-size: 1em;
+  -fx-font-size: 1em;
 }
 
 /* Tooltip */
 
 .tooltip {
-    -fx-background-color: -autogram-focus-colour;
-    -fx-padding: 10px;
-    -fx-font-size: 1.1875em;
+  -fx-background-color: -autogram-focus-colour;
+  -fx-padding: 10px;
+  -fx-font-size: 1.1875em;
 }
 
 /* Form styling */
 
 .autogram-input {
-    -fx-text-fill: -autogram-text-colour;
+  -fx-text-fill: -autogram-text-colour;
 
-    -fx-padding: 5px;
-    -fx-border-width: 2px;
-    -fx-border-color: -autogram-input-border-colour;
-    -fx-font-size: 1.1875em;
+  -fx-padding: 5px;
+  -fx-border-width: 2px;
+  -fx-border-color: -autogram-input-border-colour;
+  -fx-font-size: 1.1875em;
 }
 
 .autogram-input:hover {
-    -fx-cursor: text;
+  -fx-cursor: text;
 }
 
 .autogram-input:focused {
-    -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour, #ffffff;
-    -fx-background-insets: -3, 2, 4;
+  -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour,
+    #ffffff;
+  -fx-background-insets: -3, 2, 4;
 }
 
 .autogram-input--error {
-    -fx-border-color: -autogram-error-colour;
+  -fx-border-color: -autogram-error-colour;
 }
 
 .autogram-input--error:focused {
-    -fx-border-color: -autogram-input-border-colour;
+  -fx-border-color: -autogram-input-border-colour;
 }
 
 .autogram-input--width-10 {
-    -fx-max-width: 11.5em;
+  -fx-max-width: 11.5em;
 }
 
 .autogram-form-group {
-    -fx-spacing: 15px;
+  -fx-spacing: 15px;
 }
 
 .autogram-form-group--error {
-    -fx-border-width: 0 0 0 5px;
-    -fx-border-insets: 5;
-    -fx-border-color: -autogram-error-colour;
-    -fx-border-style: solid inside;
-    -fx-padding: 0 0 0 15px;
+  -fx-border-width: 0 0 0 5px;
+  -fx-border-insets: 5;
+  -fx-border-color: -autogram-error-colour;
+  -fx-border-style: solid inside;
+  -fx-padding: 0 0 0 15px;
 }
 
 .autogram-error-message {
-    -fx-font-size: 1.1875em;
-    -fx-font-weight: bold;
-    -fx-fill: -autogram-error-colour;
+  -fx-font-size: 1.1875em;
+  -fx-font-weight: bold;
+  -fx-fill: -autogram-error-colour;
 }
 
 .autogram-form-group .autogram-error-message {
-    visibility: false;
+  visibility: false;
 }
 
 .autogram-form-group.autogram-form-group--error .autogram-error-message {
-    visibility: true;
+  visibility: true;
 }
 
 .autogram-error-summary {
-    -fx-padding: 20px;
-    -fx-border-width: 5px;
-    -fx-border-color: -autogram-error-colour;
+  -fx-padding: 20px;
+  -fx-border-width: 5px;
+  -fx-border-color: -autogram-error-colour;
 }
 
 .autogram-error-summary__title {
-    -fx-font-size: 1.5em;
-    -fx-font-weight: bold;
+  -fx-font-size: 1.5em;
+  -fx-font-weight: bold;
 
-    -fx-padding: 0 0 20px 0;
-    -fx-border-insets: 0 0 20px 0;
-    -fx-background-insets: 0 0 20px 0;
+  -fx-padding: 0 0 20px 0;
+  -fx-border-insets: 0 0 20px 0;
+  -fx-background-insets: 0 0 20px 0;
 }
 
 .autogram-error-summary__title > Text {
-    -fx-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
 }
 
 .autogram-error-summary__error {
-    -fx-font-size: 1.1875em;
-    -fx-font-weight: bold;
+  -fx-font-size: 1.1875em;
+  -fx-font-weight: bold;
 
-    -fx-padding: 0 0 20px 0;
-    -fx-border-insets: 0 0 20px 0;
-    -fx-background-insets: 0 0 20px 0;
+  -fx-padding: 0 0 20px 0;
+  -fx-border-insets: 0 0 20px 0;
+  -fx-background-insets: 0 0 20px 0;
 }
 
 .autogram-error-summary__error > Text {
-    -fx-fill: -autogram-error-colour;
+  -fx-fill: -autogram-error-colour;
 }
 
 .autogram-details .title .text {
-    -fx-font-size: 1.1875em;
+  -fx-font-size: 1.1875em;
 
-    -fx-fill: -autogram-link-colour;
-    -fx-underline: true;
+  -fx-fill: -autogram-link-colour;
+  -fx-underline: true;
 }
 
 .autogram-details .title .text:hover {
-    -fx-fill: -autogram-link-hover-colour;
+  -fx-fill: -autogram-link-hover-colour;
 }
 
 .autogram-details .title {
-    -fx-padding: 0 0 5px 0;
-    -fx-border-insets: 0 0 5px 0;
-    -fx-background-insets: 0 0 5px 0;
+  -fx-padding: 0 0 5px 0;
+  -fx-border-insets: 0 0 5px 0;
+  -fx-background-insets: 0 0 5px 0;
 }
 
 .autogram-details__text {
-    -fx-padding: 15px 10px 15px 20px;
-    -fx-border-color: -autogram-border-colour;
-    -fx-border-width: 0 0 0 5px;
+  -fx-padding: 15px 10px 15px 20px;
+  -fx-border-color: -autogram-border-colour;
+  -fx-border-width: 0 0 0 5px;
 
-    -fx-wrap-text: true;
+  -fx-wrap-text: true;
 }
 
 .autogram-details .arrow-button {
-    -fx-padding: 0 10px 0 0;
+  -fx-padding: 0 10px 0 0;
 }
 
 .autogram-details .arrow-button .arrow {
-    -fx-background-color: -autogram-link-colour;
+  -fx-background-color: -autogram-link-colour;
 
-    -fx-padding: 0.5em 0.42em 0.25em 0.42em; /* 3 3.75 3 3.75 */
-    -fx-shape: "M 0 0 h 7 l -3.5 4 z";
+  -fx-padding: 0.5em 0.42em 0.25em 0.42em; /* 3 3.75 3 3.75 */
+  -fx-shape: "M 0 0 h 7 l -3.5 4 z";
 }
 
 .autogram-details .title:hover .arrow {
-    -fx-background-color: -autogram-link-hover-colour;
+  -fx-background-color: -autogram-link-hover-colour;
 }
 
 .autogram-visualizer-plaintext,
 .autogram-visualizer-html,
 .autogram-visualizer-image {
-    -fx-border-color: -autogram-input-border-colour;
-    -fx-border-width: 2px;
-    -fx-border-style: solid;
-    -fx-wrap-text: true;
+  -fx-border-color: -autogram-input-border-colour;
+  -fx-border-width: 2px;
+  -fx-border-style: solid;
+  -fx-wrap-text: true;
 }
 
 .autogram-visualizer-plaintext {
-    -fx-padding: 5px;
+  -fx-padding: 5px;
 }
 
 .autogram-dropzone {
-    -fx-spacing: 2em;
-    -fx-border-color: -autogram-border-colour;
-    -fx-border-width: 2px;
-    -fx-border-style: dashed;
-    -fx-border-radius: 0.5em;
+  -fx-spacing: 2em;
+  -fx-border-color: -autogram-border-colour;
+  -fx-border-width: 2px;
+  -fx-border-style: dashed;
+  -fx-border-radius: 0.5em;
 
-    -fx-padding: 4em;
-    -fx-alignment: center;
+  -fx-padding: 4em;
+  -fx-alignment: center;
 }
 
 .autogram-dropzone--entered {
-    -fx-border-color: -autogram-input-border-colour;
-    -fx-border-width: 2px;
-    -fx-background-color: -autogram-focus-colour, #ffffff;
-    -fx-background-insets: -3, 0;
-    -fx-background-radius: 13px, 10px;
+  -fx-border-color: -autogram-input-border-colour;
+  -fx-border-width: 2px;
+  -fx-background-color: -autogram-focus-colour, #ffffff;
+  -fx-background-insets: -3, 0;
+  -fx-background-radius: 13px, 10px;
 }
 
 .autogram-footer {
-    -fx-border-width: 1px 0 0 0;
-    -fx-border-color: -autogram-border-colour;
-    -fx-background-color: #f3f2f1;
-    -fx-padding: 15px 30px;
+  -fx-border-width: 1px 0 0 0;
+  -fx-border-color: -autogram-border-colour;
+  -fx-background-color: #f3f2f1;
+  -fx-padding: 15px 30px;
 }
 
 .autogram-footer .autogram-link {
-    -fx-font-size: 1em;
-    -fx-text-fill: -autogram-text-colour;
+  -fx-font-size: 1em;
+  -fx-text-fill: -autogram-text-colour;
 }
 
 .autogram-footer .autogram-link:hover {
-    -fx-underline: false;
-    -fx-background-color: -autogram-text-colour, #f3f2f1;
-    -fx-background-insets: 0 0 1px 0, 0 0 4px 0;
+  -fx-underline: false;
+  -fx-background-color: -autogram-text-colour, #f3f2f1;
+  -fx-background-insets: 0 0 1px 0, 0 0 4px 0;
 }
 
 .autogram-footer .autogram-link:focused:hover {
-    -fx-background-color: -autogram-focus-text-colour, -autogram-focus-colour, transparent;
-    -fx-background-insets: 0 0 -4px 0, -4px 0 0 0, 0 0 0 0;
+  -fx-background-color: -autogram-focus-text-colour, -autogram-focus-colour,
+    transparent;
+  -fx-background-insets: 0 0 -4px 0, -4px 0 0 0, 0 0 0 0;
 }
 
 /* Scrollbar */
 .scroll-bar:horizontal .track,
 .scroll-bar:vertical .track {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-background-radius: 0.0em;
-    -fx-border-radius: 2.0em;
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+  -fx-background-radius: 0em;
+  -fx-border-radius: 2em;
 }
 
-
-.scroll-bar:horizontal .increment-button ,
+.scroll-bar:horizontal .increment-button,
 .scroll-bar:horizontal .decrement-button {
-    -fx-background-color: transparent;
-    -fx-background-radius: 0;
-    -fx-padding: 0 0 10 0;
-
+  -fx-background-color: transparent;
+  -fx-background-radius: 0;
+  -fx-padding: 0 0 10 0;
 }
 
-.scroll-bar:vertical .increment-button ,
+.scroll-bar:vertical .increment-button,
 .scroll-bar:vertical .decrement-button {
-    -fx-background-color: red;
-    -fx-background-radius: 0.0em;
-    -fx-padding: 0 10 0 0;
+  -fx-background-color: red;
+  -fx-background-radius: 0em;
+  -fx-padding: 0 10 0 0;
 }
 
- .scroll-bar .increment-arrow,
- .scroll-bar .decrement-arrow{
-    -fx-shape: " ";
-    -fx-padding: 0.15em 0;
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+  -fx-shape: " ";
+  -fx-padding: 0.15em 0;
 }
 
- .scroll-bar:vertical .increment-arrow,
- .scroll-bar:vertical .decrement-arrow{
-    -fx-shape: " ";
-    -fx-padding: 0 0.15em;
+.scroll-bar:vertical .increment-arrow,
+.scroll-bar:vertical .decrement-arrow {
+  -fx-shape: " ";
+  -fx-padding: 0 0.15em;
 }
 
 .scroll-bar:horizontal .thumb,
 .scroll-bar:vertical .thumb {
-    -fx-background-color: derive(black,90.0%);
-    -fx-background-insets : 2, 0, 0;
-    -fx-background-radius : 2em;
+  -fx-background-color: derive(black, 90%);
+  -fx-background-insets: 2, 0, 0;
+  -fx-background-radius: 2em;
 }
 
 .scroll-bar:horizontal .thumb:hover,
 .scroll-bar:vertical .thumb:hover {
-    -fx-background-color :derive(#4D4C4F,10.0%);
+  -fx-background-color: derive(#4d4c4f, 10%);
 }
 
 /* Typography */
 TextFlow.autogram-heading-l,
 TextFlow.autogram-heading-m,
 TextFlow.autogram-heading-s {
-    -fx-padding: 0 0 15px 0;
+  -fx-padding: 0 0 15px 0;
 }
 
 .autogram-prose TextFlow.autogram-heading-l,
 .autogram-prose TextFlow.autogram-heading-m,
 .autogram-prose TextFlow.autogram-heading-s {
-    -fx-padding: 10px 0 15px 0;
+  -fx-padding: 10px 0 15px 0;
 }
 
 TextFlow.autogram-body,
 TextFlow.autogram-body-s {
-    -fx-padding: 0 0 20px 0;
+  -fx-padding: 0 0 20px 0;
 }
 
 .autogram-font-weight-bold {
-    -fx-font-weight: bold;
+  -fx-font-weight: bold;
 }
-
 
 /* Icons */
 .autogram-icon {
-    -fx-fill: transparent;
-    -fx-stroke: -autogram-border-colour;
-    -fx-stroke-width: 1.5;
-    -fx-stroke-line-cap: round;
-    -fx-stroke-line-join: round;
+  -fx-fill: transparent;
+  -fx-stroke: -autogram-border-colour;
+  -fx-stroke-width: 1.5;
+  -fx-stroke-line-cap: round;
+  -fx-stroke-line-join: round;
 }
 
 .autogram-icon--big {
-    -fx-scale-x: 2;
-    -fx-scale-y: 2;
+  -fx-scale-x: 2;
+  -fx-scale-y: 2;
 }
 
 .autogram-icon--warning {
-    -fx-stroke: -autogram-error-colour;
+  -fx-stroke: -autogram-error-colour;
 }
-
 
 /* Custom styles */
 
 .autogram-claim {
-    -fx-background-color: -autogram-focus-colour, #ffffff;
-    -fx-background-insets: 0 0 2 0, 0 0 6 0;
+  -fx-background-color: -autogram-focus-colour, #ffffff;
+  -fx-background-insets: 0 0 2 0, 0 0 6 0;
 }
 
 .autogram-radios {
-    -fx-spacing: 10px;
+  -fx-spacing: 10px;
 }
 
 .autogram-actions {
-    -fx-spacing: 15px;
-    -fx-alignment: center-left;
+  -fx-spacing: 15px;
+  -fx-alignment: center-left;
 }
 
 .autogram-unsupported-visualization {
-    -fx-border-width: 5px;
-    -fx-border-color: -autogram-error-colour;
+  -fx-border-width: 5px;
+  -fx-border-color: -autogram-error-colour;
 
-    -fx-spacing: 3em;
-    -fx-padding: 6em 4em 4em 4em;
-    -fx-alignment: center;
+  -fx-spacing: 3em;
+  -fx-padding: 6em 4em 4em 4em;
+  -fx-alignment: center;
 }
 
 .autogram-unsupported-visualization VBox {
-    -fx-spacing: 20px;
+  -fx-spacing: 20px;
 }
 
 .autogram-unsupported-visualization .autogram-error-summary__error {
-    -fx-padding: 0.5em 2em 0 2em;
+  -fx-padding: 0.5em 2em 0 2em;
+}
+
+.autogram-error-summary__more {
+  -fx-padding: 0 0 0 5px;
+  -fx-border-insets: 2em;
+  -fx-background-insets: 2em;
+  -fx-font-size: 1em;
+}
+.autogram-error-summary__more Polygon {
+  -fx-rotate: 0;
+  -fx-fill: -fx-text-fill;
+}
+
+.autogram-error-summary__more.autogram-error-summary__more-open Polygon {
+  -fx-rotate: 90;
+}
+
+.autogram-loading {
+  -fx-padding: 4em;
+  -fx-alignment: center;
+}
+
+.autogram-loading__text {
+  -fx-padding: 1em;
+  -fx-alignment: center;
+  -fx-text-alignment: center;
+}
+
+.autogram-loading-icon {
+  -fx-min-width: 76;
+  -fx-pref-width: 76;
+  -fx-max-width: 76;
+
+  -fx-min-height: 100;
+  -fx-pref-height: 100;
+  -fx-max-height: 100;
+  -fx-shape: "M571 512c118-85 197-240 197-384 0-71-172-128-384-128s-384 57-384 128c0 144 80 299 197 384-118 85-197 240-197 384 0 71 172 128 384 128s384-57 384-128c0-144-80-299-197-384z m-187-448c141 0 256 29 256 64s-115 64-256 64-256-29-256-64 115-64 256-64z m-64 706c-154 7-238 40-253 82 16-114 75-189 141-251 73-68 112-60 112-103v273z m-105-352c-70-55-122-130-142-215 70 32 183 53 311 53s241-21 311-53c-20 85-72 160-142 215-24-17-70-34-169-34s-145 17-169 34z m233 352v-273c0 43 39 35 112 103 66 62 125 138 141 251-14-41-99-75-253-82z";
+  -fx-background-color: -autogram-border-colour;
 }

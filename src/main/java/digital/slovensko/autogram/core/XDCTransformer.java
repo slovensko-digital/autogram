@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -42,11 +43,15 @@ public class XDCTransformer {
     private Document document;
     private String documentXmlns;
 
-    public static XDCTransformer buildFromSigningParameters(SigningParameters sp) {
+    /**
+     * 
+     * @param sp
+     * @param visualizationMimeType - this is because getting transformation mime type can throw
+     * @return
+     */
+    public static XDCTransformer buildFromSigningParameters(SigningParameters sp, MimeType visualizationMimeType) {
         var mediaType = DestinationMediaType.TXT;
-
-        var outputMime = sp.getTransformationOutputMimeType();
-        if (outputMime != null && outputMime.equals(MimeTypeEnum.HTML))
+        if (visualizationMimeType != null && visualizationMimeType.equals(MimeTypeEnum.HTML))
             mediaType = DestinationMediaType.HTML;
 
         return new XDCTransformer(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),

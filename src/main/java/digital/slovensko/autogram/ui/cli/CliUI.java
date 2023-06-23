@@ -6,6 +6,13 @@ import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
+
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.visualization.Visualization;
+import digital.slovensko.autogram.ui.gui.IgnorableException;
+
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
@@ -129,6 +136,16 @@ public class CliUI implements UI {
     @Override
     public void onPDFAComplianceCheckFailed(SigningJob job) {
         throw new PDFAComplianceException();
+    }
+
+    @Override
+    public void showVisualization(Visualization visualization, Autogram autogram) {
+
+    }
+
+    @Override
+    public void showIgnorableExceptionDialog(IgnorableException exception) {
+        throw exception;
     }
 
     public void showError(AutogramException e) {
