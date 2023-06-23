@@ -7,7 +7,6 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 

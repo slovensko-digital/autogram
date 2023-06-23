@@ -3,11 +3,8 @@ package digital.slovensko.autogram.core;
 import com.google.common.io.Files;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.codec.binary.StringUtils;
 
 import java.io.File;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import static digital.slovensko.autogram.core.CliParameters.Validations.*;

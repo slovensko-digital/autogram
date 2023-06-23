@@ -2,8 +2,6 @@ package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.AppStarter;
 
-import java.util.Arrays;
-
 import static java.util.Objects.requireNonNullElse;
 
 public class Main {
