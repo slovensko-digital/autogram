@@ -10,7 +10,7 @@ import java.io.PrintWriter;
 public class AppStarter {
     private static final Options options = new Options().
         addOptionGroup(new OptionGroup().
-            addOption(new Option("url", "url", true, "Start in server mode. Starts application minimized if URL is provided.")).
+            addOption(new Option(null, "url", true, "Start in GUI mode, with HTTP API server listening based on parameters from . Application starts minimised when is not empty.")).
             addOption(new Option("c", "cli", false, "Run application in CLI mode."))
         ).
         addOption("h", "help", false, "Print this command line help.").
