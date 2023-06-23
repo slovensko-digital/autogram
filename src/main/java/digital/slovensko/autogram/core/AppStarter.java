@@ -49,10 +49,14 @@ public class AppStarter {
     public static void printUsage() {
         final HelpFormatter formatter = new HelpFormatter();
         final String syntax = """
-            autogram [options]
-            autogram --url=http://localhost:32700
-            autogram --cli [options]
-            """;
+                autogram [options]
+                autogram --url=http://localhost:32700
+                autogram --cli [options]
+                autogram --cli -s target/directory-example/file-example.pdf -t target/output-example/out-example.pdf
+                autogram --cli -s target/directory-example -t target/output-example -f
+                autogram --cli -s target/directory-example/file-example.pdf -pdfa
+                autogram --cli -s target/directory-example/file-example.pdf -d eid
+                """;
         final PrintWriter pw = new PrintWriter(System.out);
         formatter.printUsage(pw, 80, syntax);
         pw.flush();
