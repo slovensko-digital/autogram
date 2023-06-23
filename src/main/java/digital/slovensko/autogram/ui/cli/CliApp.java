@@ -21,7 +21,7 @@ public class CliApp {
         try {
             var source = params.getSource();
             if (source.isDirectory()) {
-                var jobs = Arrays.stream(source.listFiles()).map(f ->
+                var jobs = Arrays.stream(source.listFiles()).filter(f -> f.isFile()).map(f ->
                     SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, params.getTarget(), params.isForce()), params.shouldCheckPDFACompliance())
                 ).toList();
                 if (params.shouldCheckPDFACompliance()) {
