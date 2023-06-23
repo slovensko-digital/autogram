@@ -1,11 +1,13 @@
 package digital.slovensko.autogram.ui.cli;
 
+import com.google.common.io.Files;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.CliParameters;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -16,6 +18,10 @@ public class CliApp {
 
         if (params.getSource() == null) {
             throw new IllegalArgumentException("Source is not defined");
+        }
+
+        if (params.getSource().isDirectory() && params.getTarget() != null && !Files.getFileExtension(params.getTarget()).equals("")) {
+            throw new IllegalArgumentException("If source is directory, target must be also directory");
         }
 
         try {
