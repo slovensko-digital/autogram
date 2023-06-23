@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.shape.Polygon?>
+
+
+<VBox xmlns="http://javafx.com/javafx"
+    xmlns:fx="http://javafx.com/fxml"
+    styleClass="autogram-error-summary"
+    fx:controller="digital.slovensko.autogram.ui.gui.ErrorSummaryComponentController"
+    >
+    <TextFlow styleClass="autogram-error-summary__title">
+        <Text fx:id="heading">Nastala chyba</Text>
+    </TextFlow>
+    <TextFlow styleClass="autogram-error-summary__error">
+        <Text fx:id="subheading">Miesto pre nazov informacie</Text>
+    </TextFlow>
+    <TextFlow styleClass="autogram-error-summary__description,autogram-body-s">
+        <Text fx:id="description">description</Text>
+    </TextFlow>
+
+
+    <TextFlow styleClass="autogram-body-s">
+        <Button fx:id="showErrorDetailsButton"
+            styleClass="autogram-link,autogram-error-summary__more"
+            text="Zobraziť detail chyby"
+            onAction="#onShowErrorDetailsButtonAction">
+            <graphic>
+                <Polygon points="0.0, 0.0, 9.0, 6.0, 0.0, 12.0">
+                </Polygon>
+            </graphic>
+        </Button>
+    </TextFlow>
+
+    <TextArea fx:id="errorDetails" styleClass="autogram-details__text,autogram-body-s"
+        editable="false"
+        visible="false" managed="false">Error details</TextArea>
+</VBox>

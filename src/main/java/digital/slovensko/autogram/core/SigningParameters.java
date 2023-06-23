@@ -1,19 +1,15 @@
 package digital.slovensko.autogram.core;
 
-import java.io.IOException;
-import java.io.StringReader;
-
 import javax.xml.crypto.dsig.CanonicalizationMethod;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import eu.europa.esig.dss.enumerations.*;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
@@ -34,12 +30,10 @@ public class SigningParameters {
     private final int visualizationWidth;
 
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
-                             String containerXmlns, SignaturePackaging packaging,
-                             DigestAlgorithm digestAlgorithm,
-                             Boolean en319132, String infoCanonicalization,
-                             String propertiesCanonicalization, String keyInfoCanonicalization,
-                             String schema, String transformation,
-                             String identifier, boolean checkPDFACompliance, int preferredPreviewWidth) {
+            String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
+            Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
+            String keyInfoCanonicalization, String schema, String transformation, String identifier,
+            boolean checkPDFACompliance, int preferredPreviewWidth) {
         this.level = level;
         this.asicContainer = container;
         this.containerXmlns = containerXmlns;
@@ -54,38 +48,6 @@ public class SigningParameters {
         this.identifier = identifier;
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
-    }
-
-    public MimeType getTransformationOutputMimeType() {
-        if (transformation == null)
-            return null;
-
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(transformation)));
-            var elem = document.getDocumentElement();
-            var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
-            var method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
-
-            if (method.equals("html"))
-                return MimeTypeEnum.HTML;
-
-            if (method.equals("text"))
-                return MimeTypeEnum.TEXT;
-
-                throw new RuntimeException("Unsupported transformation output method: " + method);
-
-        } catch (IOException | ParserConfigurationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (SAXException e) {
-            // TODO log error in more JAVA way
-            System.out.println("Error parsing transformation");
-            return null;
-        }
-
-        return MimeTypeEnum.TEXT;
     }
 
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
@@ -122,7 +84,8 @@ public class SigningParameters {
 
         parameters.setSignatureLevel(level);
         parameters.setDigestAlgorithm(getDigestAlgorithm());
-        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);    // TODO: seems to be the only supported value
+        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING); // TODO: seems to be the
+                                                                         // only supported value
 
         return parameters;
     }
@@ -185,15 +148,18 @@ public class SigningParameters {
     }
 
     public String getInfoCanonicalization() {
-        return infoCanonicalization != null ? infoCanonicalization : CanonicalizationMethod.INCLUSIVE;
+        return infoCanonicalization != null ? infoCanonicalization
+                : CanonicalizationMethod.INCLUSIVE;
     }
 
     public String getPropertiesCanonicalization() {
-        return propertiesCanonicalization != null ? propertiesCanonicalization : CanonicalizationMethod.INCLUSIVE;
+        return propertiesCanonicalization != null ? propertiesCanonicalization
+                : CanonicalizationMethod.INCLUSIVE;
     }
 
     public String getKeyInfoCanonicalization() {
-        return keyInfoCanonicalization != null ? keyInfoCanonicalization : CanonicalizationMethod.INCLUSIVE;
+        return keyInfoCanonicalization != null ? keyInfoCanonicalization
+                : CanonicalizationMethod.INCLUSIVE;
     }
 
     public static SigningParameters buildForPDF(String filename, boolean checkPDFACompliance) {
@@ -208,14 +174,9 @@ public class SigningParameters {
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
-        return new SigningParameters(
-                SignatureLevel.XAdES_BASELINE_B,
-                ASiCContainerType.ASiC_E,
-                null,
-                SignaturePackaging.ENVELOPING,
-                DigestAlgorithm.SHA256,
-                false, null,
-                null, null, null, null, "", false, 600);
+        return new SigningParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
+                null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, false, null, null,
+                null, null, null, "", false, 600);
     }
 
     public String getIdentifier() {
@@ -233,4 +194,5 @@ public class SigningParameters {
     public int getVisualizationWidth() {
         return (visualizationWidth > 0) ? visualizationWidth : 640;
     }
+
 }
