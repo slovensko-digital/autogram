@@ -19,8 +19,23 @@ public class CliApp {
             throw new IllegalArgumentException("Source is not defined");
         }
 
-        if (params.getSource().isDirectory() && params.getTarget() != null && !Files.getFileExtension(params.getTarget()).equals("")) {
-            throw new IllegalArgumentException("If source is directory, target must be also directory");
+        String sourceExtension = Files.getFileExtension(params.getSource().getName());
+        String targetExtension = params.getTarget() != null ? Files.getFileExtension(params.getTarget()) : "";
+
+        if (params.getSource().isDirectory()) {
+            if (params.getTarget() != null && !targetExtension.equals("")) {
+                throw new IllegalArgumentException("If source is directory, target must also be a directory");
+            }
+        } else {
+            if (!targetExtension.equals("") && !targetExtension.equals("pdf") && !targetExtension.equals("asice")) {
+                throw new IllegalArgumentException("Unsupported target file extension");
+            }
+
+            if (!targetExtension.equals("") &&
+                    ((sourceExtension.equals("pdf") && !targetExtension.equals("pdf")) ||
+                        (targetExtension.equals("pdf") && !sourceExtension.equals("pdf")))) {
+                throw new IllegalArgumentException("Source and target file types are not compatible");
+            }
         }
 
         try {
