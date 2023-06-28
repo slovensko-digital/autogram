@@ -7,6 +7,8 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -19,30 +21,42 @@ public class CliApp {
             throw new IllegalArgumentException("Source is not defined");
         }
 
-        String sourceExtension = Files.getFileExtension(params.getSource().getName());
-        String targetExtension = params.getTarget() != null ? Files.getFileExtension(params.getTarget()) : "";
+        if (params.getTarget() != null) {
+            if (params.getSource().isDirectory()) {
+//                File targetDir = new File(params.getTarget());
+//                if (!targetDir.exists() && !targetDir.mkdir()) {
+//                    throw new IllegalArgumentException("Unable to create target directory");
+//                }
+            } else {
+                File targetFile = new File(params.getTarget());
+                if (!targetFile.getParentFile().exists()) {
+                    throw new IllegalArgumentException("Invalid target path");
+                }
+            }
+        }
 
-        if (params.getSource().isDirectory()) {
-            if (params.getTarget() != null && !targetExtension.equals("")) {
-                throw new IllegalArgumentException("If source is directory, target must also be a directory");
-            }
-        } else {
-            if (!targetExtension.equals("") && !targetExtension.equals("pdf") && !targetExtension.equals("asice")) {
-                throw new IllegalArgumentException("Unsupported target file extension");
-            }
+        var shouldGenerateTarget = params.getTarget() == null;
+        var targetPath = shouldGenerateTarget ? generateTargetPath(params.getSource()) : params.getTarget();
 
-            if (!targetExtension.equals("") &&
-                    ((sourceExtension.equals("pdf") && !targetExtension.equals("pdf")) ||
-                        (targetExtension.equals("pdf") && !sourceExtension.equals("pdf")))) {
-                throw new IllegalArgumentException("Source and target file types are not compatible");
-            }
+        File targetFile = new File(targetPath);
+        if ((targetFile.isDirectory() != params.getSource().isDirectory()) && targetFile.exists() && !shouldGenerateTarget) {
+            throw new IllegalArgumentException("Source and target incompatible file types");
+        }
+
+        if (!params.isForce() && !shouldGenerateTarget && targetFile.exists()) {
+            throw new IllegalArgumentException("Target file already exists");
         }
 
         try {
             var source = params.getSource();
             if (source.isDirectory()) {
+                File targetDir = new File(targetPath);
+                if (!targetDir.exists() && !targetDir.mkdir()) {
+                    throw new IllegalArgumentException("Unable to create target directory");
+                }
                 var jobs = Arrays.stream(source.listFiles()).filter(f -> f.isFile()).map(f ->
-                    SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, params.getTarget(), params.isForce()), params.shouldCheckPDFACompliance())
+                    SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, targetFile.getPath(), null,
+                            params.isForce(), source.isDirectory()), params.shouldCheckPDFACompliance())
                 ).toList();
                 if (params.shouldCheckPDFACompliance()) {
                     jobs.forEach(job -> {
@@ -52,7 +66,8 @@ public class CliApp {
                 }
                 jobs.forEach(autogram::sign);
             } else {
-                var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, params.getTarget(), params.isForce()), params.shouldCheckPDFACompliance());
+                var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, targetFile.getParent(), targetFile.getName(),
+                        params.isForce(), source.isDirectory()), params.shouldCheckPDFACompliance());
                 if (params.shouldCheckPDFACompliance()) {
                     System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
                     autogram.checkPDFACompliance(job);
@@ -61,6 +76,18 @@ public class CliApp {
             }
         } catch (AutogramException e) {
             ui.showError(e);
+        }
+    }
+
+    private static String generateTargetPath(File source) {
+        var isSourceDirectory = source.isDirectory();
+        if (isSourceDirectory) {
+            return source.getPath() + "_signed";
+        } else {
+            var extension = source.getName().endsWith(".pdf") ? ".pdf" : ".asice";
+            var directory = source.getParent();
+            var name = Files.getNameWithoutExtension(source.getName()) + "_signed";
+            return directory + name + extension;
         }
     }
 }

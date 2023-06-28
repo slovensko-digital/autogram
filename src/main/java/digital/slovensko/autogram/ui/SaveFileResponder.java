@@ -13,18 +13,22 @@ import java.nio.file.Paths;
 public class SaveFileResponder extends Responder {
     private final File file;
     private final Autogram autogram;
-    private final String target;
+    private final String targetPath;
+    private final String targetName;
     private final boolean overwrite;
+    private final boolean isTargetGenerated;
 
     public SaveFileResponder(File file, Autogram autogram) {
-        this(file, autogram, null, false);
+        this(file, autogram, null, null, false, false);
     }
 
-    public SaveFileResponder(File file, Autogram autogram, String target, boolean overwrite) {
+    public SaveFileResponder(File file, Autogram autogram, String targetPath, String targetName, boolean overwrite, boolean isTargetGenerated) {
         this.file = file;
         this.autogram = autogram;
-        this.target = target;
+        this.targetPath = targetPath;
+        this.targetName = targetName;
         this.overwrite = overwrite;
+        this.isTargetGenerated = isTargetGenerated;
     }
 
     public void onDocumentSigned(SignedDocument signedDocument) {
@@ -42,53 +46,36 @@ public class SaveFileResponder extends Responder {
     }
 
     private File getTargetFile() {
-        var directory = getDirectory();
-        var name = getName();
-        var extension = getExtension();
-
-        var baseName = Paths.get(directory, name).toString();
-        var newBaseName = baseName;
+        var targetName = generateTargetName();
+        File targetFile = Paths.get(targetPath, targetName).toFile();
+        if (!targetFile.exists()) {
+           return targetFile;
+        }
 
         if (overwrite) {
-            return new File(newBaseName + extension);
-        } else {
+            return targetFile;
+        }
+
+        if (isTargetGenerated) {
             var count = 1;
+            var parent = targetFile.getParent();
+            var baseName = Files.getNameWithoutExtension(targetFile.getName());
+            var newBaseName = baseName;
+            var extension = Files.getFileExtension(targetFile.getName());
             while(true) {
-                var targetFile = new File(newBaseName + extension);
-                if(!targetFile.exists()) return targetFile;
+                var newTargetFile = Paths.get(parent, newBaseName + "." +extension).toFile();
+                if(!newTargetFile.exists()) return newTargetFile;
+
                 newBaseName = baseName + " (" + count + ")";
                 count++;
             }
         }
+
+        throw new IllegalArgumentException("Target file already exists");
     }
 
-    private String getDirectory() {
-        if (target == null) {
-            return file.getParent();
-        } else if (isFile(target)) {
-            return new File(target).getParent();
-        } else {
-            return target;
-        }
-    }
-
-    private String getName() {
-        if (target == null || !isFile(target)) {
-            return Files.getNameWithoutExtension(file.getName()) + "_signed";
-        } else {
-            return Files.getNameWithoutExtension(target);
-        }
-    }
-
-    private String getExtension() {
-        if (target == null || !isFile(target)) {
-            return file.getName().endsWith(".pdf") ? ".pdf" : ".asice";
-        } else {
-            return "." + Files.getFileExtension(target);
-        }
-    }
-
-    private boolean isFile(String file) {
-        return !Files.getFileExtension(file).equals("");
+    private String generateTargetName() {
+        var extension = file.getName().endsWith(".pdf") ? ".pdf" : ".asice";
+        return Files.getNameWithoutExtension(targetName == null ? file.getName() : targetName) + "_signed" + extension;
     }
 }
