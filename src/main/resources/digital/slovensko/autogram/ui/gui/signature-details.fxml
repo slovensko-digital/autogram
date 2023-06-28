@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.SVGPath?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      minHeight="800"
+      minWidth="1280"
+      fx:id="mainBox">
+
+    <TextFlow><Text styleClass="autogram-heading-m" text="Podpisy"/></TextFlow>
+
+    <!-- HTML/PDF visualization -->
+    <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
+        <WebView fx:id="webView" focusTraversable="false" VBox.vgrow="ALWAYS"/>
+    </VBox>
+
+</VBox>

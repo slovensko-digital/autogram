@@ -16,6 +16,11 @@
 
     <TextFlow><Text styleClass="autogram-heading-m" text="Dokument na&#160;podpísanie"/></TextFlow>
 
+    <HBox styleClass="autogram-actions">
+        <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="Hľadám podpisy..."></Text>
+        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť detail podpisov" onAction="#onSignatureDetailsButtonAction" />
+    </HBox>
+
     <!-- HTML/PDF visualization -->
     <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
         <WebView fx:id="webView" focusTraversable="false" VBox.vgrow="ALWAYS"/>

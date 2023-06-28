@@ -6,9 +6,12 @@ import digital.slovensko.autogram.core.errors.SigningWithExpiredCertificateExcep
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import eu.europa.esig.dss.validation.reports.Reports;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -171,6 +174,16 @@ class AutogramTests {
         @Override
         public void onPickSigningKeyFailed(AutogramException ae) {
             throw new RuntimeException();
+        }
+
+        @Override
+        public void onSignatureValidationCompleted(SigningJob job, Reports reports) {
+
+        }
+
+        @Override
+        public void onSignatureCheckCompleted(SigningJob job, int signaturesCount) {
+
         }
     }
 }

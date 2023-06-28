@@ -1,11 +1,12 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -177,6 +178,18 @@ public class GUI implements UI {
         stage.show();
     }
 
+    @Override
+    public void onSignatureValidationCompleted(SigningJob job, Reports reports) {
+        var controller = jobControllers.get(job);
+        controller.onSignatureValidationCompleted(reports);
+    }
+
+    @Override
+    public void onSignatureCheckCompleted(SigningJob job, int signaturesCount) {
+        var controller = jobControllers.get(job);
+        controller.showExistingSignatures(signaturesCount);
+    }
+
     private void disableKeyPicking() {
         jobControllers.values().forEach(SigningDialogController::disableKeyPicking);
     }
@@ -225,6 +238,21 @@ public class GUI implements UI {
     public void onUIThreadDo(Runnable callback) {
         Platform.runLater(callback);
     }
+
+    public void onSignatureDetails(SigningJob signingJob) {
+        var controller = new SignatureDetailsController(signingJob);
+        var root = GUIUtils.loadFXML(controller, "signature-details.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Detaily podpisov");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
+
+        controller.showHTMLVisualization();
+    }
+
 
     public SigningKey getActiveSigningKey() {
         return activeKey;

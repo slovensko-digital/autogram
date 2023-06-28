@@ -9,6 +9,9 @@ import static java.util.Objects.requireNonNullElse;
 
 public class Main {
     public static void main(String[] args) {
+        // var sv = new SignatureValidation();
+        // sv.isValid();
+
         System.out.println("Starting with args: " + Arrays.toString(args));
 
         Application.launch(GUIApp.class, args);

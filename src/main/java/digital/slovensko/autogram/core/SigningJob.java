@@ -3,15 +3,21 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
+import eu.europa.esig.dss.asic.cades.validation.ASiCContainerWithCAdESValidatorFactory;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
+import eu.europa.esig.dss.asic.xades.validation.ASiCContainerWithXAdESValidatorFactory;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
+import eu.europa.esig.dss.pades.validation.PDFDocumentValidatorFactory;
+import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import eu.europa.esig.dss.xades.validation.XMLDocumentValidatorFactory;
 
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -33,6 +39,7 @@ public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
     private final SigningParameters parameters;
+    private String simpleReportHTML;
 
     public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
@@ -257,5 +264,43 @@ public class SigningJob {
 
     public boolean shouldCheckPDFCompliance() {
         return parameters.getCheckPDFACompliance();
+    }
+
+    public SignedDocumentValidator getDocumentValidator() {
+        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document))
+            return new ASiCContainerWithXAdESValidatorFactory().create(document);
+
+        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document))
+            return new ASiCContainerWithCAdESValidatorFactory().create(document);
+
+        if (new PDFDocumentValidatorFactory().isSupported(document))
+            return new PDFDocumentValidatorFactory().create(document);
+
+        if (new XMLDocumentValidatorFactory().isSupported(document))
+            return new XMLDocumentValidatorFactory().create(document);
+
+        return null;
+    }
+
+    public boolean alreadySigned() {
+        return getDocumentValidator() != null;
+    }
+
+    public SimpleReport getSignatureReport() {
+        var validator = getDocumentValidator();
+        if (validator != null) {
+            validator.setCertificateVerifier(new CommonCertificateVerifier());
+            return validator.validateDocument().getSimpleReport();
+        }
+
+        return null;
+    }
+
+    public String getSimpleValidationReportAsHTML() {
+        return simpleReportHTML;
+    }
+
+    public void setSimpleValidationReportAsHTML(String simpleReportHTML) {
+        this.simpleReportHTML = simpleReportHTML;
     }
 }

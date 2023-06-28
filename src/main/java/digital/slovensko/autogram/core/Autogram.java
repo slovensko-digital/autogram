@@ -31,6 +31,23 @@ public class Autogram {
             ui.onWorkThreadDo(()
             -> checkPDFACompliance(job));
         }
+
+        ui.onWorkThreadDo(()
+        -> checkAndValidateSignatures(job));
+    }
+
+    private void checkAndValidateSignatures(SigningJob job) {
+        if (!job.alreadySigned()) {
+            ui.onUIThreadDo(() -> ui.onSignatureCheckCompleted(job, 0));
+
+            return;
+        }
+
+        var staticRes = job.getSignatureReport();
+        ui.onUIThreadDo(() -> ui.onSignatureCheckCompleted(job, staticRes.getSignaturesCount()));
+
+        var res = new SignatureValidator().validate(job.getDocument(), job.getDocumentValidator());
+        ui.onUIThreadDo(() -> ui.onSignatureValidationCompleted(job, res));
     }
 
     private void checkPDFACompliance(SigningJob job) {
