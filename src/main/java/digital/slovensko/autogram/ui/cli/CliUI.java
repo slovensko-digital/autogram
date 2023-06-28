@@ -106,7 +106,12 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void onDocumentSaved(List<File> targetFiles) {
+    public void onDocumentSaved(File targetFiles) {
+
+    }
+
+    @Override
+    public void onDocumentBatchSaved(List<File> targetFiles) {
 
     }
 

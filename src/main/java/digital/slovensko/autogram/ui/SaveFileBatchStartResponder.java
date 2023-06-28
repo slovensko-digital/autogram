@@ -28,7 +28,7 @@ public class SaveFileBatchStartResponder extends BatchStartResponder {
             autogram.batchSign(job, batchId);
         }
 
-        autogram.onDocumentSaved(list);
+        autogram.onDocumentBatchSaved(list);
     }
 
     @Override

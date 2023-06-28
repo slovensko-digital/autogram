@@ -115,7 +115,6 @@ public class Autogram {
         });
     }
 
-
     /**
      * Sign a single document
      * 
@@ -178,8 +177,12 @@ public class Autogram {
         ui.onAboutInfo();
     }
 
-    public void onDocumentSaved(List<File> targetFiles) {
-        ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFiles));
+    public void onDocumentSaved(File targetFile) {
+        ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFile));
+    }
+
+    public void onDocumentBatchSaved(List<File> targetFiles) {
+        ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(targetFiles));
     }
 
     public void onSigningFailed(AutogramException e) {

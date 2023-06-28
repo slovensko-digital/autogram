@@ -113,9 +113,9 @@ class AutogramTests {
         public void startSigning(SigningJob signingJob, Autogram autogram) {
 
         }
-        
+
         @Override
-        public void startBatch(Batch batch, Autogram autogram,  AutogramBatchStartCallback callback) {
+        public void startBatch(Batch batch, Autogram autogram, AutogramBatchStartCallback callback) {
         }
 
         @Override
@@ -187,7 +187,12 @@ class AutogramTests {
         }
 
         @Override
-        public void onDocumentSaved(List<File> targetFiles) {
+        public void onDocumentSaved(File targetFiles) {
+
+        }
+
+        @Override
+        public void onDocumentBatchSaved(List<File> targetFiles) {
 
         }
 

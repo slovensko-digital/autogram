@@ -24,7 +24,7 @@ public class SaveFileResponder extends Responder {
         try {
             var targetFile = getTargetFile();
             signedDocument.getDocument().save(targetFile.getPath());
-            autogram.onDocumentSaved(List.of(targetFile));
+            autogram.onDocumentSaved(targetFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
