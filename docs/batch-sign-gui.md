@@ -1,6 +1,5 @@
-# Scenare hromadneho podpisovania
+# Scenare hromadneho podpisovania cez GUI
 
-- id hromadneho podpisovania je zranitelna informacia, ak ju poznas vies podpisat hocico pocas behu batchu
 - moze existovat iba jedno aktivne hromadne podpisovanie
 - pocas hromadneho podpisovania sa nesmie dat zmenit token driver
 - pocas behu hromadneho podpisovania ostatne sign requesty cakaju
@@ -10,19 +9,12 @@
 - kym je aktivny session tak je otvorene okno (+ stav pred potvrdenim, po dokonceni)
 
 ## 1. Happy path
+z pohladu pouzivatela - UI
 
-z pohladu klienta
-
-- volanie `POST /batch` dostanem naspat `batchId`
-- volanie `POST /sign` s `batchId` nastavenym, dostanem naspat
-- volanie `DELETE /batch/:batchId` na ukoncenie podpisovania
-
-z pohladu UI
-
-- ukazat dialog o hromadnom podpisovani
-- vybrat token driver (optional - ak nie je vybrany kluc)
-- vybrat podpisovy kluc (optional)
-- potvrdit spustenie hromadneho podpisovania s vybranym podpisom
+- vidim main dialog, stlacim button "vybrat subor", vyberiem viacero suborov
+- otvori sa okno s hromadneho podpisovania, ktore upozornuje na rizika, vyberiem podpis, dam podpisat
+- pocas behu je ukazany progress bar
+- po skonceni sa zatvori, a ukaze sa dialog s vypisom suborov, ktore boli podpisane (v summary-detail) a cestou kam boli zapisane
 
 ```mermaid
 sequenceDiagram

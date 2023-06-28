@@ -24,8 +24,6 @@ public class SaveFileResponder extends Responder {
         try {
             var targetFile = getTargetFile();
             signedDocument.getDocument().save(targetFile.getPath());
-            // TODO co s tymto???? bud by mal sa ukazat jeden alebo viacero podla toho ci
-            // ide o batch alebo nie
             autogram.onDocumentSaved(List.of(targetFile));
         } catch (IOException e) {
             throw new RuntimeException(e);

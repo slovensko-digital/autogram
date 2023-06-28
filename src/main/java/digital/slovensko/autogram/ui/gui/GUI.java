@@ -87,8 +87,7 @@ public class GUI implements UI {
             // short-circuit if only one driver present
             callback.accept(drivers.get(0));
         } else {
-            PickDriverDialogController controller =
-                    new PickDriverDialogController(drivers, callback);
+            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
             var stage = new Stage();
@@ -236,12 +235,25 @@ public class GUI implements UI {
     }
 
     @Override
-    public void onDocumentSaved(List<File> targetFiles) {
-        var controller = new SigningSuccessDialogController(targetFiles, hostServices);
+    public void onDocumentSaved(File targetFile) {
+        var controller = new SigningSuccessDialogController(targetFile, hostServices);
         var root = GUIUtils.loadFXML(controller, "signing-success-dialog.fxml");
 
         var stage = new Stage();
         stage.setTitle("Dokument bol úspešne podpísaný");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
+    }
+
+    @Override
+    public void onDocumentBatchSaved(List<File> targetFiles) {
+        var controller = new BatchSigningSuccessDialogController(targetFiles, hostServices);
+        var root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Dokumenty boli úspešne podpísané");
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         GUIUtils.suppressDefaultFocus(stage, controller);

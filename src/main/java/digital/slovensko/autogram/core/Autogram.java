@@ -72,8 +72,6 @@ public class Autogram {
         var startBatchTask = new AutogramBatchStartCallback() {
             @Override
             protected Void call() throws Exception {
-                // System.out.println("Starting batch on thread " +
-                // Thread.currentThread().getName());
                 batch.start();
                 return null;
             }

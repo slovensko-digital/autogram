@@ -33,7 +33,7 @@ public class SaveFileBatchStartResponder extends BatchStartResponder {
 
     @Override
     public void onBatchStartFailure(AutogramException error) {
-
+        autogram.onSigningFailed(error);
     }
 
     private File getTargetDirectory() {

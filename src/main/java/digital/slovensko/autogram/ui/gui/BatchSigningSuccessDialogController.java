@@ -8,9 +8,10 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
 
 import java.io.File;
+import java.util.List;
 
-public class SigningSuccessDialogController implements SuppressedFocusController {
-    private final File targetFile;
+public class BatchSigningSuccessDialogController implements SuppressedFocusController {
+    private final List<File> targetFiles;
     private final File targetDirectory;
     private final HostServices hostServices;
     @FXML
@@ -20,19 +21,22 @@ public class SigningSuccessDialogController implements SuppressedFocusController
     @FXML
     Node mainBox;
 
-    public SigningSuccessDialogController(File targetFile, HostServices hostServices) {
-        this(targetFile, targetFile.getParentFile(), hostServices);
+    public BatchSigningSuccessDialogController(List<File> targetFiles, HostServices hostServices) {
+        this(targetFiles, targetFiles.get(0).getParentFile(), hostServices);
     }
 
-    public SigningSuccessDialogController(File targetFile, File targetDirectory, HostServices hostServices) {
-        this.targetFile = targetFile;
+    public BatchSigningSuccessDialogController(List<File> targetFiles, File targetDirectory,
+            HostServices hostServices) {
+        this.targetFiles = targetFiles;
         this.targetDirectory = targetDirectory;
         this.hostServices = hostServices;
     }
 
     public void initialize() {
-        filenameText.setText(targetFile.getName());
-        folderPathText.setText(targetFile.getParent());
+        // TODO handle list of files written
+        filenameText.setText("Všetky súbory boli úspešne podpísané.");
+        folderPathText.setText(targetDirectory.getPath());
+
     }
 
     public void onOpenFolderAction(ActionEvent ignored) {

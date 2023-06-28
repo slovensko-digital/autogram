@@ -30,7 +30,9 @@ public interface UI {
 
     void onSigningFailed(AutogramException e);
 
-    void onDocumentSaved(List<File> targetFiles);
+    void onDocumentSaved(File targetFiles);
+
+    void onDocumentBatchSaved(List<File> targetFiles);
 
     void onWorkThreadDo(Runnable callback);
 
