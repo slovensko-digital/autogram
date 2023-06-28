@@ -1,0 +1,2876 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OutputDocument xmlns="http://schemas.gov.sk/form/36126624.PovolenieZdravotnictvo.sk/1.9">
+    <IssuedBy>
+        <CorporateBody>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>7</ItemCode>
+                            <ItemName>IČO (Identifikačné číslo organizácie)</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>35788402</IdentifierValue>
+            </ID>
+            <CorporateBodyFullName>CRYSTAL CONSULTING, s.r.o.</CorporateBodyFullName>
+            <LegalForm>
+                <Codelist>
+                    <CodelistCode>CL000056</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>321</ItemCode>
+                        <ItemName>Rozpočtová organizácia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </LegalForm>
+            <TelephoneAddress>
+                <TelephoneType>
+                    <Codelist>
+                        <CodelistCode>CL004005</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>1</ItemCode>
+                            <ItemName>Pevná sieť</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </TelephoneType>
+                <Number>
+                    <FormattedNumber>032/ 610 212</FormattedNumber>
+                </Number>
+            </TelephoneAddress>
+            <InternetAddress>
+                <Address>mailto:info@2c.sk</Address>
+            </InternetAddress>
+            <InternetAddress>
+                <Address>www.crystalconsulting.sk</Address>
+            </InternetAddress>
+        </CorporateBody>
+        <PhysicalAddress>
+            <AddressLine>Jilemnického 7053/3, 91101 Trenčín</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229</ItemCode>
+                        <ItemName>Okres Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229505820</ItemCode>
+                        <ItemName>Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Jilemnického</StreetName>
+            <BuildingNumber>3</BuildingNumber>
+            <PropertyRegistrationNumber>7053</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>91101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <Building>
+                <BuildingName>oddelenie registrov</BuildingName>
+            </Building>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100101</ItemCode>
+                            <ItemName>Sídlo právnickej osoby</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>7</ItemCode>
+                        <ItemName>IČO (Identifikačné číslo organizácie)</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>35788402</IdentifierValue>
+        </ID>
+        <IDPovolovaciehoOrganu>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.41</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>98</ItemCode>
+                    <ItemName>neznáma hodnota</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </IDPovolovaciehoOrganu>
+    </IssuedBy>
+    <IssuedTo>
+        <CorporateBody>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>7</ItemCode>
+                            <ItemName>IČO (Identifikačné číslo organizácie)</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>55554444</IdentifierValue>
+            </ID>
+            <CorporateBodyFullName>CRYSTAL TESTOVACKA s.r.o.</CorporateBodyFullName>
+            <LegalForm>
+                <Codelist>
+                    <CodelistCode>CL000056</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>112</ItemCode>
+                        <ItemName>Spoločnosť s ručením obmedzeným</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </LegalForm>
+            <StatutoryBody>
+                <StatutoryBodyType>
+                    <NonCodelistData>konateľ</NonCodelistData>
+                </StatutoryBodyType>
+                <PersonData>
+                    <PhysicalPerson>
+                        <PersonName>
+                            <FormattedName>MUDr. Ing. Ján Mrkvička, CSc.</FormattedName>
+                            <GivenName>Ján</GivenName>
+                            <FamilyName primary="undefined">Mrkvička</FamilyName>
+                            <Affix type="qualification" position="prefix">
+                                <NonCodelistData>MUDr.</NonCodelistData>
+                            </Affix>
+                            <Affix type="qualification" position="prefix">
+                                <NonCodelistData>Ing.</NonCodelistData>
+                            </Affix>
+                            <Affix type="qualification" position="postfix">
+                                <NonCodelistData>CSc.</NonCodelistData>
+                            </Affix>
+                        </PersonName>
+                    </PhysicalPerson>
+                    <PhysicalAddress>
+                        <AddressLine>Zlatá 2014/41, 12301 Banská Bystrica, Slovenská republika</AddressLine>
+                        <Country>
+                            <Codelist>
+                                <CodelistCode>CL000086</CodelistCode>
+                                <CodelistItem>
+                                    <ItemCode>703</ItemCode>
+                                    <ItemName>Slovenská republika</ItemName>
+                                </CodelistItem>
+                            </Codelist>
+                        </Country>
+                        <County>
+                            <Codelist>
+                                <CodelistCode>CL000024</CodelistCode>
+                                <CodelistItem>
+                                    <ItemCode>SK0321</ItemCode>
+                                    <ItemName>Okres Banská Bystrica</ItemName>
+                                </CodelistItem>
+                            </Codelist>
+                        </County>
+                        <Municipality>
+                            <Codelist>
+                                <CodelistCode>CL000025</CodelistCode>
+                                <CodelistItem>
+                                    <ItemCode>SK0321508438</ItemCode>
+                                    <ItemName>Banská Bystrica</ItemName>
+                                </CodelistItem>
+                            </Codelist>
+                        </Municipality>
+                        <StreetName>Zlatá</StreetName>
+                        <BuildingNumber>41</BuildingNumber>
+                        <PropertyRegistrationNumber>2014</PropertyRegistrationNumber>
+                        <DeliveryAddress>
+                            <PostalCode>12301</PostalCode>
+                            <Recipient/>
+                        </DeliveryAddress>
+                        <AddressType>
+                            <AddressClass>
+                                <Codelist>
+                                    <CodelistCode>CL010139</CodelistCode>
+                                    <CodelistItem>
+                                        <ItemCode>100001</ItemCode>
+                                        <ItemName>Trvalý pobyt</ItemName>
+                                    </CodelistItem>
+                                </Codelist>
+                            </AddressClass>
+                        </AddressType>
+                    </PhysicalAddress>
+                </PersonData>
+            </StatutoryBody>
+            <StatutoryBody>
+                <StatutoryBodyType>
+                    <NonCodelistData>medicínsky riaditeľ</NonCodelistData>
+                </StatutoryBodyType>
+                <PersonData>
+                    <PhysicalPerson>
+                        <PersonName>
+                            <FormattedName>MUDr. Ján Hraško, MHA, MPH</FormattedName>
+                            <GivenName>Ján</GivenName>
+                            <FamilyName primary="undefined">Hraško</FamilyName>
+                            <Affix type="qualification" position="prefix">
+                                <NonCodelistData>MUDr.</NonCodelistData>
+                            </Affix>
+                            <Affix type="qualification" position="postfix">
+                                <NonCodelistData>MHA</NonCodelistData>
+                            </Affix>
+                            <Affix type="qualification" position="postfix">
+                                <NonCodelistData>MPH</NonCodelistData>
+                            </Affix>
+                        </PersonName>
+                    </PhysicalPerson>
+                    <PhysicalAddress>
+                        <AddressLine>Green Road 45/A1, 40WE45 Glasgow, Spojené kráľovstvo Veľkej Británie a Severného Írska</AddressLine>
+                        <Country>
+                            <Codelist>
+                                <CodelistCode>CL000086</CodelistCode>
+                                <CodelistItem>
+                                    <ItemCode>826</ItemCode>
+                                    <ItemName>Spojené kráľovstvo Veľkej Británie a Severného Írska</ItemName>
+                                </CodelistItem>
+                            </Codelist>
+                        </Country>
+                        <Municipality>
+                            <NonCodelistData>Glasgow</NonCodelistData>
+                        </Municipality>
+                        <StreetName>Green Road 45/A1</StreetName>
+                        <DeliveryAddress>
+                            <PostalCode>40WE45</PostalCode>
+                            <Recipient/>
+                        </DeliveryAddress>
+                        <AddressType>
+                            <AddressClass>
+                                <Codelist>
+                                    <CodelistCode>CL010139</CodelistCode>
+                                    <CodelistItem>
+                                        <ItemCode>100001</ItemCode>
+                                        <ItemName>Trvalý pobyt</ItemName>
+                                    </CodelistItem>
+                                </Codelist>
+                            </AddressClass>
+                        </AddressType>
+                    </PhysicalAddress>
+                </PersonData>
+            </StatutoryBody>
+        </CorporateBody>
+        <PhysicalAddress>
+            <AddressLine>Jilemnického 123/3, 91101 Trenčín, Slovenská republika</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229</ItemCode>
+                        <ItemName>Okres Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229505820</ItemCode>
+                        <ItemName>Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Jilemnického</StreetName>
+            <BuildingNumber>3</BuildingNumber>
+            <PropertyRegistrationNumber>123</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>91101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100101</ItemCode>
+                            <ItemName>Sídlo právnickej osoby</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <PhysicalAddress>
+            <AddressLine>Jilemnického 123/3, 91101 Trenčín, Slovenská republika</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229</ItemCode>
+                        <ItemName>Okres Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229505820</ItemCode>
+                        <ItemName>Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Jilemnického</StreetName>
+            <BuildingNumber>3</BuildingNumber>
+            <PropertyRegistrationNumber>123</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>91101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100001</ItemCode>
+                            <ItemName>Trvalý pobyt</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>7</ItemCode>
+                        <ItemName>IČO (Identifikačné číslo organizácie)</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>55554444</IdentifierValue>
+        </ID>
+    </IssuedTo>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0116649</ItemCode>
+                    <ItemName>ambulancia dopravnej zdravotnej služby</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>0,</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <PropertyRegistrationNumber>0</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <Recipient/>
+            </DeliveryAddress>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>649</ItemCode>
+                    <ItemName>dopravná zdravotná služba</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>99-55554444-A0099</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0103179</ItemCode>
+                    <ItemName>ambulancia rýchlej lekárskej pomoci</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>poliklinika Duslo, Trenčianska 11, 80012 Beluša</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0228</ItemCode>
+                        <ItemName>Okres Púchov</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0228512851</ItemCode>
+                        <ItemName>Beluša</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Trenčianska</StreetName>
+            <BuildingNumber>11</BuildingNumber>
+            <DeliveryAddress>
+                <PostalCode>80012</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <Building>
+                <BuildingName>poliklinika Duslo</BuildingName>
+            </Building>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>179</ItemCode>
+                    <ItemName>rýchla lekárska pomoc</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>99-55554444-A0008</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti>2019-12-31</DatumUkonceniaCinnosti>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0117647</ItemCode>
+                    <ItemName>mobilné odberové miesto</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>Unimobunka, Limbová 2644/3, 83101 Bratislava-Nové Mesto</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0103</ItemCode>
+                        <ItemName>Okres Bratislava III</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0103529346</ItemCode>
+                        <ItemName>Bratislava-Nové Mesto</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Limbová</StreetName>
+            <BuildingNumber>3</BuildingNumber>
+            <PropertyRegistrationNumber>2644</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>83101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <Building>
+                <BuildingName>Unimobunka</BuildingName>
+            </Building>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>Z38299</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0102037</ItemCode>
+                    <ItemName>ambulancia neurochirurgická</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>Kľak 112, 80012 Kľak</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK032C</ItemCode>
+                        <ItemName>Okres Žarnovica</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK032C516902</ItemCode>
+                        <ItemName>Kľak</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Kľak</StreetName>
+            <PropertyRegistrationNumber>112</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>80012</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>037</ItemCode>
+                    <ItemName>neurochirurgia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>076</ItemCode>
+                    <ItemName>letecké lekárstvo</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>Z33628</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0201001</ItemCode>
+                    <ItemName>všeobecná nemocnica</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>NsP, Jilemnického 3, 91101 Trenčín</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229</ItemCode>
+                        <ItemName>Okres Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229505820</ItemCode>
+                        <ItemName>Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Jilemnického</StreetName>
+            <BuildingNumber>3</BuildingNumber>
+            <DeliveryAddress>
+                <PostalCode>91101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <Building>
+                <BuildingName>NsP</BuildingName>
+            </Building>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>001</ItemCode>
+                    <ItemName>vnútorné lekárstvo</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>196</ItemCode>
+                    <ItemName>JIS interná</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>009</ItemCode>
+                    <ItemName>gynekológia a pôrodníctvo</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>609</ItemCode>
+                    <ItemName>JIS gynekologická</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>010</ItemCode>
+                    <ItemName>chirurgia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>202</ItemCode>
+                    <ItemName>JIS chirurgická</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>064</ItemCode>
+                    <ItemName>endokrinológia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>186</ItemCode>
+                    <ItemName>centrálna sterilizácia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>184</ItemCode>
+                    <ItemName>centrálny príjem</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <Ups>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>009</ItemCode>
+                    <ItemName>gynekológia a pôrodníctvo</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </Ups>
+        <Ups>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>609</ItemCode>
+                    <ItemName>JIS gynekologická</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </Ups>
+        <Ups>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>064</ItemCode>
+                    <ItemName>endokrinológia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </Ups>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>99-55554444-A0007</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+        <PodradeneZZ xsi:type="ZdravotnickeZariadenieCType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DruhZariadenia>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>0102009</ItemCode>
+                        <ItemName>gynekologicko-pôrodnícka ambulancia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </DruhZariadenia>
+            <PhysicalAddress>
+                <AddressLine>m.č. 24, NsP, Jilemnického 3, 91101 Trenčín</AddressLine>
+                <Country>
+                    <Codelist>
+                        <CodelistCode>CL000086</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>703</ItemCode>
+                            <ItemName>Slovenská republika</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Country>
+                <County>
+                    <Codelist>
+                        <CodelistCode>CL000024</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229</ItemCode>
+                            <ItemName>Okres Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </County>
+                <Municipality>
+                    <Codelist>
+                        <CodelistCode>CL000025</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229505820</ItemCode>
+                            <ItemName>Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Municipality>
+                <StreetName>Jilemnického</StreetName>
+                <BuildingNumber>3</BuildingNumber>
+                <DeliveryAddress>
+                    <PostalCode>91101</PostalCode>
+                    <Recipient/>
+                </DeliveryAddress>
+                <Building>
+                    <BuildingName>NsP</BuildingName>
+                </Building>
+                <AddressType>
+                    <AddressClass>
+                        <Codelist>
+                            <CodelistCode>CL010139</CodelistCode>
+                            <CodelistItem>
+                                <ItemCode>100201</ItemCode>
+                                <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                            </CodelistItem>
+                        </Codelist>
+                    </AddressClass>
+                </AddressType>
+                <Unit>m.č. 24</Unit>
+            </PhysicalAddress>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>009</ItemCode>
+                        <ItemName>gynekológia a pôrodníctvo</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0082</IdentifierValue>
+            </ID>
+            <DatumUkonceniaCinnosti xsi:nil="true"/>
+        </PodradeneZZ>
+        <PodradeneZZ xsi:type="ZdravotnickeZariadenieCType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DruhZariadenia>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>0102009</ItemCode>
+                        <ItemName>gynekologicko-pôrodnícka ambulancia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </DruhZariadenia>
+            <PhysicalAddress>
+                <AddressLine>m.č. 11, NsP, Jilemnického 3, 91101 Trenčín</AddressLine>
+                <Country>
+                    <Codelist>
+                        <CodelistCode>CL000086</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>703</ItemCode>
+                            <ItemName>Slovenská republika</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Country>
+                <County>
+                    <Codelist>
+                        <CodelistCode>CL000024</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229</ItemCode>
+                            <ItemName>Okres Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </County>
+                <Municipality>
+                    <Codelist>
+                        <CodelistCode>CL000025</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229505820</ItemCode>
+                            <ItemName>Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Municipality>
+                <StreetName>Jilemnického</StreetName>
+                <BuildingNumber>3</BuildingNumber>
+                <DeliveryAddress>
+                    <PostalCode>91101</PostalCode>
+                    <Recipient/>
+                </DeliveryAddress>
+                <Building>
+                    <BuildingName>NsP</BuildingName>
+                </Building>
+                <AddressType>
+                    <AddressClass>
+                        <Codelist>
+                            <CodelistCode>CL010139</CodelistCode>
+                            <CodelistItem>
+                                <ItemCode>100201</ItemCode>
+                                <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                            </CodelistItem>
+                        </Codelist>
+                    </AddressClass>
+                </AddressType>
+                <Unit>m.č. 11</Unit>
+            </PhysicalAddress>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>009</ItemCode>
+                        <ItemName>gynekológia a pôrodníctvo</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>271</ItemCode>
+                        <ItemName>mamológia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>312</ItemCode>
+                        <ItemName>gynekologická urológia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>130</ItemCode>
+                        <ItemName>materno-fetálna medicína</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>229</ItemCode>
+                        <ItemName>onkológia v gynekológii</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>289</ItemCode>
+                        <ItemName>reprodukčná medicína</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>247</ItemCode>
+                        <ItemName>ultrazvuk v gynekológii a pôrodníctve</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>067</ItemCode>
+                        <ItemName>gynekologická sexuológia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>595</ItemCode>
+                        <ItemName>mamodiagnostika v gynekológii</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>587</ItemCode>
+                        <ItemName>diagnostika a liečba imunopatologických stavov v gynekológii</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>303</ItemCode>
+                        <ItemName>abdominálna ultrasonografia u dospelých</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>076</ItemCode>
+                        <ItemName>letecké lekárstvo</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0081</IdentifierValue>
+            </ID>
+            <DatumUkonceniaCinnosti xsi:nil="true"/>
+        </PodradeneZZ>
+        <PodradeneZZ xsi:type="ZdravotnickeZariadenieCType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DruhZariadenia>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>0102009</ItemCode>
+                        <ItemName>gynekologicko-pôrodnícka ambulancia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </DruhZariadenia>
+            <PhysicalAddress>
+                <AddressLine>m.č. 26, NsP, Jilemnického 3, 91101 Trenčín</AddressLine>
+                <Country>
+                    <Codelist>
+                        <CodelistCode>CL000086</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>703</ItemCode>
+                            <ItemName>Slovenská republika</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Country>
+                <County>
+                    <Codelist>
+                        <CodelistCode>CL000024</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229</ItemCode>
+                            <ItemName>Okres Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </County>
+                <Municipality>
+                    <Codelist>
+                        <CodelistCode>CL000025</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229505820</ItemCode>
+                            <ItemName>Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Municipality>
+                <StreetName>Jilemnického</StreetName>
+                <BuildingNumber>3</BuildingNumber>
+                <DeliveryAddress>
+                    <PostalCode>91101</PostalCode>
+                    <Recipient/>
+                </DeliveryAddress>
+                <Building>
+                    <BuildingName>NsP</BuildingName>
+                </Building>
+                <AddressType>
+                    <AddressClass>
+                        <Codelist>
+                            <CodelistCode>CL010139</CodelistCode>
+                            <CodelistItem>
+                                <ItemCode>100201</ItemCode>
+                                <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                            </CodelistItem>
+                        </Codelist>
+                    </AddressClass>
+                </AddressType>
+                <Unit>m.č. 26</Unit>
+            </PhysicalAddress>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>009</ItemCode>
+                        <ItemName>gynekológia a pôrodníctvo</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>247</ItemCode>
+                        <ItemName>ultrazvuk v gynekológii a pôrodníctve</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0083</IdentifierValue>
+            </ID>
+            <DatumUkonceniaCinnosti xsi:nil="true"/>
+        </PodradeneZZ>
+        <PodradeneZZ xsi:type="ZdravotnickeZariadenieCType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DruhZariadenia>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>0101001</ItemCode>
+                        <ItemName>ambulancia všeobecnej ambulantnej zdravotnej starostlivosti</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </DruhZariadenia>
+            <PhysicalAddress>
+                <AddressLine>m.č. 23, NsP, Jilemnického 3, 91101 Trenčín</AddressLine>
+                <Country>
+                    <Codelist>
+                        <CodelistCode>CL000086</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>703</ItemCode>
+                            <ItemName>Slovenská republika</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Country>
+                <County>
+                    <Codelist>
+                        <CodelistCode>CL000024</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229</ItemCode>
+                            <ItemName>Okres Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </County>
+                <Municipality>
+                    <Codelist>
+                        <CodelistCode>CL000025</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229505820</ItemCode>
+                            <ItemName>Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Municipality>
+                <StreetName>Jilemnického</StreetName>
+                <BuildingNumber>3</BuildingNumber>
+                <DeliveryAddress>
+                    <PostalCode>91101</PostalCode>
+                    <Recipient/>
+                </DeliveryAddress>
+                <Building>
+                    <BuildingName>NsP</BuildingName>
+                </Building>
+                <AddressType>
+                    <AddressClass>
+                        <Codelist>
+                            <CodelistCode>CL010139</CodelistCode>
+                            <CodelistItem>
+                                <ItemCode>100201</ItemCode>
+                                <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                            </CodelistItem>
+                        </Codelist>
+                    </AddressClass>
+                </AddressType>
+                <Unit>m.č. 23</Unit>
+            </PhysicalAddress>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>007</ItemCode>
+                        <ItemName>pediatria</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0004</IdentifierValue>
+            </ID>
+            <DatumUkonceniaCinnosti xsi:nil="true"/>
+        </PodradeneZZ>
+        <PodradeneZZ xsi:type="ZdravotnickeZariadenieCType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DruhZariadenia>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>0108999</ItemCode>
+                        <ItemName>zariadenie spoločných vyšetrovacích a liečebných zložiek</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </DruhZariadenia>
+            <PhysicalAddress>
+                <AddressLine>m.č. 25, NsP, Jilemnického 3, 91101 Trenčín</AddressLine>
+                <Country>
+                    <Codelist>
+                        <CodelistCode>CL000086</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>703</ItemCode>
+                            <ItemName>Slovenská republika</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Country>
+                <County>
+                    <Codelist>
+                        <CodelistCode>CL000024</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229</ItemCode>
+                            <ItemName>Okres Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </County>
+                <Municipality>
+                    <Codelist>
+                        <CodelistCode>CL000025</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229505820</ItemCode>
+                            <ItemName>Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Municipality>
+                <StreetName>Jilemnického</StreetName>
+                <BuildingNumber>3</BuildingNumber>
+                <DeliveryAddress>
+                    <PostalCode>91101</PostalCode>
+                    <Recipient/>
+                </DeliveryAddress>
+                <Building>
+                    <BuildingName>NsP</BuildingName>
+                </Building>
+                <AddressType>
+                    <AddressClass>
+                        <Codelist>
+                            <CodelistCode>CL010139</CodelistCode>
+                            <CodelistItem>
+                                <ItemCode>100201</ItemCode>
+                                <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                            </CodelistItem>
+                        </Codelist>
+                    </AddressClass>
+                </AddressType>
+                <Unit>m.č. 25</Unit>
+            </PhysicalAddress>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>027</ItemCode>
+                        <ItemName>fyziatria, balneológia a liečebná rehabilitácia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>Z28478</IdentifierValue>
+            </ID>
+            <DatumUkonceniaCinnosti xsi:nil="true"/>
+        </PodradeneZZ>
+        <PodradeneZZ xsi:type="ZdravotnickeZariadenieCType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DruhZariadenia>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>0108999</ItemCode>
+                        <ItemName>zariadenie spoločných vyšetrovacích a liečebných zložiek</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </DruhZariadenia>
+            <PhysicalAddress>
+                <AddressLine>NsP, Jilemnického 3, 91101 Trenčín</AddressLine>
+                <Country>
+                    <Codelist>
+                        <CodelistCode>CL000086</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>703</ItemCode>
+                            <ItemName>Slovenská republika</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Country>
+                <County>
+                    <Codelist>
+                        <CodelistCode>CL000024</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229</ItemCode>
+                            <ItemName>Okres Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </County>
+                <Municipality>
+                    <Codelist>
+                        <CodelistCode>CL000025</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>SK0229505820</ItemCode>
+                            <ItemName>Trenčín</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Municipality>
+                <StreetName>Jilemnického</StreetName>
+                <BuildingNumber>3</BuildingNumber>
+                <DeliveryAddress>
+                    <PostalCode>91101</PostalCode>
+                    <Recipient/>
+                </DeliveryAddress>
+                <Building>
+                    <BuildingName>NsP</BuildingName>
+                </Building>
+                <AddressType>
+                    <AddressClass>
+                        <Codelist>
+                            <CodelistCode>CL010139</CodelistCode>
+                            <CodelistItem>
+                                <ItemCode>100201</ItemCode>
+                                <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                            </CodelistItem>
+                        </Codelist>
+                    </AddressClass>
+                </AddressType>
+            </PhysicalAddress>
+            <OdborneZameranie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>575</ItemCode>
+                        <ItemName>mamografia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </OdborneZameranie>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0005</IdentifierValue>
+            </ID>
+            <DatumUkonceniaCinnosti xsi:nil="true"/>
+        </PodradeneZZ>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0102010</ItemCode>
+                    <ItemName>chirurgická ambulancia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>1. poschodie, Nová poliklinika, Jilemnického 5301/3B, 91101 Trenčín</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229</ItemCode>
+                        <ItemName>Okres Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229505820</ItemCode>
+                        <ItemName>Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Jilemnického</StreetName>
+            <BuildingNumber>3B</BuildingNumber>
+            <PropertyRegistrationNumber>5301</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>91101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <Building>
+                <BuildingName>Nová poliklinika</BuildingName>
+            </Building>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+            <Unit>1. poschodie</Unit>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>010</ItemCode>
+                    <ItemName>chirurgia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>076</ItemCode>
+                    <ItemName>letecké lekárstvo</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>99-55554444-A0001</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0102802</ItemCode>
+                    <ItemName>ambulancia zubného lekárstva</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>Nová poliklinika, Jilemnického 5301/3B, 91101 Trenčín</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229</ItemCode>
+                        <ItemName>Okres Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229505820</ItemCode>
+                        <ItemName>Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Jilemnického</StreetName>
+            <BuildingNumber>3B</BuildingNumber>
+            <PropertyRegistrationNumber>5301</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>91101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <Building>
+                <BuildingName>Nová poliklinika</BuildingName>
+            </Building>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>802</ItemCode>
+                    <ItemName>zubné lekárstvo</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>Z33939</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0101001</ItemCode>
+                    <ItemName>ambulancia všeobecnej ambulantnej zdravotnej starostlivosti</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>Nová poliklinika, Jilemnického 5301/3B, 91101 Trenčín</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229</ItemCode>
+                        <ItemName>Okres Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229505820</ItemCode>
+                        <ItemName>Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Jilemnického</StreetName>
+            <BuildingNumber>3B</BuildingNumber>
+            <PropertyRegistrationNumber>5301</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>91101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <Building>
+                <BuildingName>Nová poliklinika</BuildingName>
+            </Building>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>020</ItemCode>
+                    <ItemName>všeobecné lekárstvo</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>Z33711</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0111188</ItemCode>
+                    <ItemName>tkanivové zariadenie</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>Nová poliklinika, Jilemnického 5301/3B, 91101 Trenčín</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229</ItemCode>
+                        <ItemName>Okres Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229505820</ItemCode>
+                        <ItemName>Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Jilemnického</StreetName>
+            <BuildingNumber>3B</BuildingNumber>
+            <PropertyRegistrationNumber>5301</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>91101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <Building>
+                <BuildingName>Nová poliklinika</BuildingName>
+            </Building>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>009</ItemCode>
+                    <ItemName>gynekológia a pôrodníctvo</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>010</ItemCode>
+                    <ItemName>chirurgia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>99-55554444-A0006</IdentifierValue>
+        </ID>
+        <TkanivoveZariadenie>
+            <EUKod>SK008540</EUKod>
+            <DruhCinnosti>
+                <NonCodelistData>odoberanie, testovanie, spracovanie, konzervovanie, skladovanie a distribuovanie ľudských tkanív a buniek na transplantáciu</NonCodelistData>
+            </DruhCinnosti>
+            <TypTkaniva>
+                <p>1. spermie - živé
+                    <br/>2. vajíčka - od domácich sliepok
+                    <br/>3. embryá
+                    <br/>4. rohovky</p>
+            </TypTkaniva>
+            <VyvozTypTkaniva>
+                <p>1. spermie - živé
+                    <br/>2. vajíčka - od domácich sliepok</p>
+            </VyvozTypTkaniva>
+            <DovozEUTypTkaniva>
+                <p>2. vajíčka - od domácich sliepok
+                    <br/>3. embryá
+                    <br/>4. rohovky</p>
+            </DovozEUTypTkaniva>
+            <DovozMimoEU>
+                <Country>
+                    <Codelist>
+                        <CodelistCode>CL000086</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>004</ItemCode>
+                            <ItemName>Afganská islamská republika</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Country>
+                <CorporateBodyFullName>Organs Ltd.</CorporateBodyFullName>
+                <AddressLine>za rohom 23F, Kandahár 42F45</AddressLine>
+                <TypTkaniva>
+                    <p>2. vajíčka - od domácich sliepok
+                        <br/>3. embryá
+                        <br/>4. rohovky</p>
+                </TypTkaniva>
+                <InternaCinnost>
+                    <NonCodelistData>odoberanie</NonCodelistData>
+                </InternaCinnost>
+                <ExternaCinnost>
+                    <NonCodelistData>testovanie</NonCodelistData>
+                </ExternaCinnost>
+                <ExternaCinnost>
+                    <NonCodelistData>konzervovanie</NonCodelistData>
+                </ExternaCinnost>
+                <ExternaCinnost>
+                    <NonCodelistData>skladovanie a distribuovanie ľudských tkanív a buniek na transplantáciu</NonCodelistData>
+                </ExternaCinnost>
+                <ExternaCinnost>
+                    <NonCodelistData>spracovanie</NonCodelistData>
+                </ExternaCinnost>
+                <OpisPohybuTkaniva>
+                    <p>Proste sa odoberie a naloží do termosky.
+                        <br/>Potom niečo ďalej.</p>
+                </OpisPohybuTkaniva>
+            </DovozMimoEU>
+            <DovozMimoEU>
+                <Country>
+                    <Codelist>
+                        <CodelistCode>CL000086</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>116</ItemCode>
+                            <ItemName>Kambodžské kráľovstvo</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </Country>
+                <CorporateBodyFullName>EYE to go</CorporateBodyFullName>
+                <AddressLine>Zelená míľa 23, GHJF56 Phnom Penh</AddressLine>
+                <TypTkaniva>
+                    <p>rohovky</p>
+                </TypTkaniva>
+                <InternaCinnost>
+                    <NonCodelistData>testovanie</NonCodelistData>
+                </InternaCinnost>
+                <InternaCinnost>
+                    <NonCodelistData>odoberanie</NonCodelistData>
+                </InternaCinnost>
+                <ExternaCinnost>
+                    <NonCodelistData>konzervovanie</NonCodelistData>
+                </ExternaCinnost>
+                <ExternaCinnost>
+                    <NonCodelistData>skladovanie a distribuovanie ľudských tkanív a buniek na transplantáciu</NonCodelistData>
+                </ExternaCinnost>
+                <ExternaCinnost>
+                    <NonCodelistData>spracovanie</NonCodelistData>
+                </ExternaCinnost>
+                <OpisPohybuTkaniva>
+                    <p>Vyberie sa oko, rohovka sa oddelí a naloží do ľadu a vloží do termosky.
+                        <br/>Termoska sa prenáša v ľavej ruke, prípadne na zadnom sedadle.
+                        <br/>Termoska sa odovzdáva z ľavej ruky dodávateľa do pravej ruky dovozcu.</p>
+                </OpisPohybuTkaniva>
+            </DovozMimoEU>
+            <OdberTkaniv>UDZS, ulica 123, Bratislava</OdberTkaniv>
+            <OdberTkaniv>Alfa medical, kukureliho1, Kosice</OdberTkaniv>
+            <TestovanieTkaniv>Test sro1, Pribinova 2, Zilina</TestovanieTkaniv>
+            <TestovanieTkaniv>Test sro2, Janosikova 123/43 Trencin</TestovanieTkaniv>
+        </TkanivoveZariadenie>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0113020</ItemCode>
+                    <ItemName>ambulancia pevnej ambulantnej pohotovostnej služby pre dospelých</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>Nová poliklinika, Jilemnického 5301/3B, 91101 Trenčín</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229</ItemCode>
+                        <ItemName>Okres Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0229505820</ItemCode>
+                        <ItemName>Trenčín</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Jilemnického</StreetName>
+            <BuildingNumber>3B</BuildingNumber>
+            <PropertyRegistrationNumber>5301</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>91101</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <Building>
+                <BuildingName>Nová poliklinika</BuildingName>
+            </Building>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>174</ItemCode>
+                    <ItemName>pevná ambulantná pohotovostná služba pre dospelých</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>99-55554444-A0009</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    </ZdravotnickeZariadenie>
+    <ZdravotnickeZariadenie>
+        <DruhZariadenia>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.38</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>0102009</ItemCode>
+                    <ItemName>gynekologicko-pôrodnícka ambulancia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhZariadenia>
+        <PhysicalAddress>
+            <AddressLine>Námestie Slobody 52/19, 02201 Čadca</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0312</ItemCode>
+                        <ItemName>Okres Čadca</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0312509132</ItemCode>
+                        <ItemName>Čadca</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Námestie Slobody</StreetName>
+            <BuildingNumber>19</BuildingNumber>
+            <PropertyRegistrationNumber>52</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>02201</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100201</ItemCode>
+                            <ItemName>Miesto prevádzkovania zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>009</ItemCode>
+                    <ItemName>gynekológia a pôrodníctvo</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>271</ItemCode>
+                    <ItemName>mamológia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>130</ItemCode>
+                    <ItemName>materno-fetálna medicína</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>247</ItemCode>
+                    <ItemName>ultrazvuk v gynekológii a pôrodníctve</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <OdborneZameranie>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.39</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>067</ItemCode>
+                    <ItemName>gynekologická sexuológia</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </OdborneZameranie>
+        <ID>
+            <IdentifierType>
+                <Codelist>
+                    <CodelistCode>CL004001</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>17</ItemCode>
+                        <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IdentifierType>
+            <IdentifierValue>99-55554444-A0003</IdentifierValue>
+        </ID>
+        <DatumUkonceniaCinnosti xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+    </ZdravotnickeZariadenie>
+    <OdbornyZastupca>
+        <PhysicalPerson>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>11</ItemCode>
+                            <ItemName>Registračné číslo zdravotníckeho pracovníka v komore</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>123</IdentifierValue>
+            </ID>
+            <PersonName>
+                <FormattedName>MUDr. Ján Hraško, MHA, MPH</FormattedName>
+                <GivenName>Ján</GivenName>
+                <FamilyName primary="undefined">Hraško</FamilyName>
+                <Affix type="qualification" position="prefix">
+                    <NonCodelistData>MUDr.</NonCodelistData>
+                </Affix>
+                <Affix type="qualification" position="postfix">
+                    <NonCodelistData>MHA</NonCodelistData>
+                </Affix>
+                <Affix type="qualification" position="postfix">
+                    <NonCodelistData>MPH</NonCodelistData>
+                </Affix>
+            </PersonName>
+            <Birth>
+                <DateOfBirth>1976-05-04</DateOfBirth>
+            </Birth>
+            <Citizenship>
+                <Codelist>
+                    <CodelistCode>CL010131</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Citizenship>
+            <ZdravotnickePovolanie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.40</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>A01</ItemCode>
+                        <ItemName>lekár</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </ZdravotnickePovolanie>
+            <StudijnyOdbor>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.34</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>801</ItemCode>
+                        <ItemName>všeobecné lekárstvo</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </StudijnyOdbor>
+            <SpecializacnyOdbor>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.34</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>009</ItemCode>
+                        <ItemName>gynekológia a pôrodníctvo</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </SpecializacnyOdbor>
+            <IDPovolovaciehoOrganu>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.41</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>01</ItemCode>
+                        <ItemName>Slovenská lekárska komora</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IDPovolovaciehoOrganu>
+        </PhysicalPerson>
+        <PhysicalAddress>
+            <AddressLine>Green Road 45/A1, 40WE45 Glasgow, Spojené kráľovstvo Veľkej Británie a Severného Írska</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>826</ItemCode>
+                        <ItemName>Spojené kráľovstvo Veľkej Británie a Severného Írska</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <Municipality>
+                <NonCodelistData>Glasgow</NonCodelistData>
+            </Municipality>
+            <StreetName>Green Road 45/A1</StreetName>
+            <DeliveryAddress>
+                <PostalCode>40WE45</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100001</ItemCode>
+                            <ItemName>Trvalý pobyt</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <PhysicalAddress>
+            <AddressLine>Drotárska cesta 11, 82103 Bratislava-Staré Mesto, Slovenská republika</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0101</ItemCode>
+                        <ItemName>Okres Bratislava I</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0101528595</ItemCode>
+                        <ItemName>Bratislava-Staré Mesto</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Drotárska cesta</StreetName>
+            <BuildingNumber>11</BuildingNumber>
+            <DeliveryAddress>
+                <PostalCode>82103</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100002</ItemCode>
+                            <ItemName>Prechodný pobyt</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0006</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0007</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0009</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0082</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0081</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0083</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0004</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0005</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <DruhOdbornehoZastupcu>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.235</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>20</ItemCode>
+                    <ItemName>odborný zástupca pre ambulancie záchrannej zdravotnej služby</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhOdbornehoZastupcu>
+    </OdbornyZastupca>
+    <OdbornyZastupca>
+        <PhysicalPerson>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>11</ItemCode>
+                            <ItemName>Registračné číslo zdravotníckeho pracovníka v komore</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>2314</IdentifierValue>
+            </ID>
+            <PersonName>
+                <FormattedName>MUDr. Ján Mrkvička, CSc.</FormattedName>
+                <GivenName>Ján</GivenName>
+                <FamilyName primary="undefined">Mrkvička</FamilyName>
+                <Affix type="qualification" position="prefix">
+                    <NonCodelistData>MUDr.</NonCodelistData>
+                </Affix>
+                <Affix type="qualification" position="postfix">
+                    <NonCodelistData>CSc.</NonCodelistData>
+                </Affix>
+            </PersonName>
+            <Birth>
+                <DateOfBirth>1973-01-01</DateOfBirth>
+            </Birth>
+            <Citizenship>
+                <Codelist>
+                    <CodelistCode>CL010131</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Citizenship>
+            <ZdravotnickePovolanie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.40</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>A01</ItemCode>
+                        <ItemName>lekár</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </ZdravotnickePovolanie>
+            <StudijnyOdbor>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.34</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>801</ItemCode>
+                        <ItemName>všeobecné lekárstvo</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </StudijnyOdbor>
+            <SpecializacnyOdbor>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.34</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>010</ItemCode>
+                        <ItemName>chirurgia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </SpecializacnyOdbor>
+            <SpecializacnyOdbor>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.34</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>076</ItemCode>
+                        <ItemName>letecké lekárstvo</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </SpecializacnyOdbor>
+            <SpecializacnyOdbor>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.34</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>720</ItemCode>
+                        <ItemName>magnetická rezonancia - MR</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </SpecializacnyOdbor>
+            <IDPovolovaciehoOrganu>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.41</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>01</ItemCode>
+                        <ItemName>Slovenská lekárska komora</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IDPovolovaciehoOrganu>
+        </PhysicalPerson>
+        <PhysicalAddress>
+            <AddressLine>Zlatá 1234/41, 12301 Banská Bystrica, Slovenská republika</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0321</ItemCode>
+                        <ItemName>Okres Banská Bystrica</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0321508438</ItemCode>
+                        <ItemName>Banská Bystrica</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Zlatá</StreetName>
+            <BuildingNumber>41</BuildingNumber>
+            <PropertyRegistrationNumber>1234</PropertyRegistrationNumber>
+            <DeliveryAddress>
+                <PostalCode>12301</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100001</ItemCode>
+                            <ItemName>Trvalý pobyt</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>Z33711</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>Z33939</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>Z33628</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0008</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0001</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>Z38299</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>Z28478</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <DruhOdbornehoZastupcu>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.235</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>20</ItemCode>
+                    <ItemName>odborný zástupca pre ambulancie záchrannej zdravotnej služby</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhOdbornehoZastupcu>
+    </OdbornyZastupca>
+    <OdbornyZastupca>
+        <PhysicalPerson>
+            <ID>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>11</ItemCode>
+                            <ItemName>Registračné číslo zdravotníckeho pracovníka v komore</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>13452</IdentifierValue>
+            </ID>
+            <PersonName>
+                <FormattedName>MUDr. Janko Petržlen</FormattedName>
+                <GivenName>Janko</GivenName>
+                <FamilyName primary="undefined">Petržlen</FamilyName>
+                <Affix type="qualification" position="prefix">
+                    <NonCodelistData>MUDr.</NonCodelistData>
+                </Affix>
+            </PersonName>
+            <Birth>
+                <DateOfBirth>1973-05-01</DateOfBirth>
+            </Birth>
+            <Citizenship>
+                <Codelist>
+                    <CodelistCode>CL010131</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Citizenship>
+            <ZdravotnickePovolanie>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.40</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>A01</ItemCode>
+                        <ItemName>lekár</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </ZdravotnickePovolanie>
+            <StudijnyOdbor>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.34</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>801</ItemCode>
+                        <ItemName>všeobecné lekárstvo</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </StudijnyOdbor>
+            <SpecializacnyOdbor>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.34</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>004</ItemCode>
+                        <ItemName>neurológia</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </SpecializacnyOdbor>
+            <IDPovolovaciehoOrganu>
+                <Codelist>
+                    <CodelistCode>1.3.158.00165387.100.10.41</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>01</ItemCode>
+                        <ItemName>Slovenská lekárska komora</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </IDPovolovaciehoOrganu>
+        </PhysicalPerson>
+        <PhysicalAddress>
+            <AddressLine>Rázusova 2A, 12345 Nitra, Slovenská republika</AddressLine>
+            <Country>
+                <Codelist>
+                    <CodelistCode>CL000086</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>703</ItemCode>
+                        <ItemName>Slovenská republika</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Country>
+            <County>
+                <Codelist>
+                    <CodelistCode>CL000024</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0233</ItemCode>
+                        <ItemName>Okres Nitra</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </County>
+            <Municipality>
+                <Codelist>
+                    <CodelistCode>CL000025</CodelistCode>
+                    <CodelistItem>
+                        <ItemCode>SK0233500011</ItemCode>
+                        <ItemName>Nitra</ItemName>
+                    </CodelistItem>
+                </Codelist>
+            </Municipality>
+            <StreetName>Rázusova</StreetName>
+            <BuildingNumber>2A</BuildingNumber>
+            <DeliveryAddress>
+                <PostalCode>12345</PostalCode>
+                <Recipient/>
+            </DeliveryAddress>
+            <AddressType>
+                <AddressClass>
+                    <Codelist>
+                        <CodelistCode>CL010139</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>100001</ItemCode>
+                            <ItemName>Trvalý pobyt</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </AddressClass>
+            </AddressType>
+        </PhysicalAddress>
+        <IDZZ>
+            <IDZZ>
+                <IdentifierType>
+                    <Codelist>
+                        <CodelistCode>CL004001</CodelistCode>
+                        <CodelistItem>
+                            <ItemCode>17</ItemCode>
+                            <ItemName>Identifikátor zdravotníckeho zariadenia</ItemName>
+                        </CodelistItem>
+                    </Codelist>
+                </IdentifierType>
+                <IdentifierValue>99-55554444-A0003</IdentifierValue>
+            </IDZZ>
+        </IDZZ>
+        <DruhOdbornehoZastupcu>
+            <Codelist>
+                <CodelistCode>1.3.158.00165387.100.10.235</CodelistCode>
+                <CodelistItem>
+                    <ItemCode>20</ItemCode>
+                    <ItemName>odborný zástupca pre ambulancie záchrannej zdravotnej služby</ItemName>
+                </CodelistItem>
+            </Codelist>
+        </DruhOdbornehoZastupcu>
+    </OdbornyZastupca>
+    <Rozhodnutie>
+        <DatumVydaniaRozhodnutia>2022-11-02</DatumVydaniaRozhodnutia>
+        <CisloRozhodnutia>X4564</CisloRozhodnutia>
+        <PredchCisloRozhodnutia>CC2016/0123</PredchCisloRozhodnutia>
+        <PredchDatumVydaniaRozhodnutia>2016-05-04</PredchDatumVydaniaRozhodnutia>
+        <PredchDatumNadobudnutiaPravoplatnosti>2016-05-20</PredchDatumNadobudnutiaPravoplatnosti>
+        <Subject>ROZHODNUTIE</Subject>
+        <UvodVyroku>
+            <p>Ministerstvo mágie (ďalej len „ministerstvo“) ako orgán príslušný na vydanie povolenia podľa ustanovenia § 21 ods. 1 písm. a) v spojení s ustanovením § 17 zákona č. 578/2004 Z. z. o poskytovateľoch zdravotnej starostlivosti, zdravotníckych pracovníkoch, stavovských organizáciách v zdravotníctve a o zmene a doplnení niektorých zákonov v znení neskorších predpisov (ďalej len „zákon o poskytovateľoch“) a v zmysle § 46 zákona č. 71/1967 Zb. o správnom konaní (správny poriadok) v znení neskorších predpisov (ďalej len „zákon o správnom konaní“) po zistení skutkového a právneho stavu rozhodlo takto:</p>
+        </UvodVyroku>
+        <ZaverVyroku>
+            <p>Prevádzkovateľ je povinný poskytovať zdravotnú starostlivosť v súlade so zákonom o poskytovateľoch, zákonom č. 576/2004 Z. z. o zdravotnej starostlivosti, službách súvisiacich s poskytovaním zdravotnej starostlivosti a o zmene a doplnení niektorých zákonov v znení neskorších predpisov a súvisiacimi právnymi predpismi.
+                <br/>Poskytovateľ zdravotnej starostlivosti má povinnosť do 90 dní od právoplatnosti povolenia požiadať príslušnú pobočku Úradu pre dohľad nad zdravotnou starostlivosťou v mieste svojho sídla o pridelenie kódu PZS v zmysle §79 ods. 7 zákona 578/2004 Z. z.</p>
+        </ZaverVyroku>
+        <Odovodnenie>
+            <p>Žiadateľ listom zo dňa 25. 5. 2018, ktorý bol ministerstvu doručený dňa 4. 6. 2018, požiadal o zmenu povolenia na prevádzkovanie zdravotníckeho zariadenia... bla...bla...bla... 
+                <br/>Podľa § 47 ods. 1 zákona o správnom konaní „rozhodnutie musí obsahovať výrok, odôvodnenie a poučenie o odvolaní (rozklade). Odôvodnenie nie je potrebné, ak sa všetkým účastníkom konania vyhovuje v plnom rozsahu“. 
+                <br/>Vzhľadom na to, že žiadateľ splnil podmienky na vydanie povolenia podľa § 12 a § 17 ods. 1 zákona o poskytovateľoch, ministerstvo rozhodlo tak, ako je uvedené vo výroku tohto rozhodnutia.</p>
+        </Odovodnenie>
+        <Poucenie>
+            <p>Proti tomuto rozhodnutiu je možné podať podľa § 61 ods. 1 zákona č. 71/1967 Zb. o správnom konaní v znení neskorších predpisov rozklad v lehote do 15 dní od jeho doručenia, a to na Ministerstvo zdravotníctva Slovenskej republiky, Limbová 2, 837 52 Bratislava. 
+                <br/>Toto rozhodnutie nie je preskúmateľné súdom podľa zákona č. 162/2015 Z. z. Správny súdny poriadok, pokiaľ nebol vyčerpaný riadny opravný prostriedok.</p>
+        </Poucenie>
+        <ResponsiblePerson>
+            <PersonData>
+                <PhysicalPerson>
+                    <PersonName>Albus Dumbledor</PersonName>
+                </PhysicalPerson>
+            </PersonData>
+            <Role>minister mágie</Role>
+        </ResponsiblePerson>
+        <DeliverTo>
+            <FormattedName>CRYSTAL TESTOVACKA s.r.o.</FormattedName>
+            <FormattedAddress>Jilemnického 123/3, 91101 Trenčín</FormattedAddress>
+        </DeliverTo>
+        <CarbonCopy>
+            <FormattedName>Všeobecná zdravotná poisťovňa, a.s. (OVM)</FormattedName>
+            <FormattedAddress>Všeobecná zdravotná poisťovňa, a.s. (OVM)</FormattedAddress>
+            <RecipientID>ico://sk/35937874_10001</RecipientID>
+        </CarbonCopy>
+        <CarbonCopy>
+            <FormattedName>Union zdravotná poisťovňa,a.s. (OVM)</FormattedName>
+            <FormattedAddress>Union zdravotná poisťovňa,a.s. (OVM)</FormattedAddress>
+            <RecipientID>ico://sk/36284831_10001</RecipientID>
+        </CarbonCopy>
+        <CarbonCopy>
+            <FormattedName>Úrad pre dohľad nad zdravotnou starostlivosťou</FormattedName>
+            <FormattedAddress>Úrad pre dohľad nad zdravotnou starostlivosťou</FormattedAddress>
+            <RecipientID>ico://sk/30796482</RecipientID>
+        </CarbonCopy>
+        <CarbonCopy>
+            <FormattedName>DȎVERA zdravotná poisťovňa, a.s. (OVM)</FormattedName>
+            <FormattedAddress>DȎVERA zdravotná poisťovňa, a.s. (OVM)</FormattedAddress>
+            <RecipientID>ico://sk/35942436_10001</RecipientID>
+        </CarbonCopy>
+        <CarbonCopy>
+            <FormattedName>Národné centrum zdravotníckych informácií, Bratislava</FormattedName>
+            <FormattedAddress>Národné centrum zdravotníckych informácií, Bratislava</FormattedAddress>
+            <RecipientID>ico://sk/00165387</RecipientID>
+        </CarbonCopy>
+        <CarbonCopy>
+            <FormattedName>Štatistický úrad Slovenskej republiky</FormattedName>
+            <FormattedAddress>Štatistický úrad Slovenskej republiky</FormattedAddress>
+            <RecipientID>ico://sk/00166197</RecipientID>
+        </CarbonCopy>
+        <CarbonCopy>
+            <FormattedName>Ministerstvo zdravotníctva SR</FormattedName>
+            <FormattedAddress>Ministerstvo zdravotníctva SR</FormattedAddress>
+            <RecipientID>ico://sk/00165565</RecipientID>
+        </CarbonCopy>
+        <MiestoVydania>V Trenčíne</MiestoVydania>
+        <TypPovolenia>578</TypPovolenia>
+        <DruhDokladu>NOVE_ROZHODNUTIE</DruhDokladu>
+        <Spravoplatnit>true</Spravoplatnit>
+    </Rozhodnutie>
+</OutputDocument>

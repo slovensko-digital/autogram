@@ -4,6 +4,8 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
 import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
+import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.ServerBatchStartResponder;
 import digital.slovensko.autogram.ui.UI;
@@ -28,7 +30,6 @@ public class Autogram {
     }
 
     public void sign(SigningJob job) {
-        // TODO toto je divne kedze autogram->UI(thread)->Dialog->Autogram
         ui.onUIThreadDo(() -> ui.startSigning(job, this));
 
         if (job.shouldCheckPDFCompliance()) {
@@ -43,17 +44,29 @@ public class Autogram {
         }
     }
 
+    public void startVisualization(SigningJob job) {
+        ui.onWorkThreadDo(() -> {
+            try {
+                var visualization = DocumentVisualizationBuilder.fromJob(job);
+                ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
+            } catch (Exception e) {
+                Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
+
+                ui.onUIThreadDo(
+                        () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+            }
+        });
+    }
+
     public void sign(SigningJob job, SigningKey signingKey) {
         ui.onWorkThreadDo(() -> {
             try {
                 job.signWithKeyAndRespond(signingKey);
                 ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
             } catch (DSSException e) {
-                ui.onUIThreadDo(
-                        () -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
+                ui.onUIThreadDo(() -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
             } catch (IllegalArgumentException e) {
-                ui.onUIThreadDo(() -> ui
-                        .onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
+                ui.onUIThreadDo(() -> ui.onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
             } catch (Exception e) {
                 ui.onUIThreadDo(() -> ui.onSigningFailed(new UnrecognizedException(e)));
             }
@@ -64,13 +77,12 @@ public class Autogram {
      * Starts a batch - ask user - get signing key - start batch - return batch ID
      * 
      * @param totalNumberOfDocuments - expected number of documents to be signed
-     * @param responder - callback for http response
+     * @param responder              - callback for http response
      */
     public void batchStart(int totalNumberOfDocuments, ServerBatchStartResponder responder) {
         if (batch != null && !batch.isEnded())
             throw new BatchConflictException("Another batch is already running");
         batch = new Batch(totalNumberOfDocuments);
-
 
         var startBatchTask = new AutogramBatchStartCallback() {
             @Override
@@ -104,6 +116,7 @@ public class Autogram {
             ui.startBatch(batch, this, startBatchTask);
         });
     }
+
 
     /**
      * Sign a single document
@@ -139,7 +152,7 @@ public class Autogram {
         var drivers = driverDetector.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers,
                 (driver) -> ui.requestPasswordAndThen(driver, (password) -> ui.onWorkThreadDo(
-                        () -> fetchKeysAndThen(driver, password, (key) -> callback.accept(key)))));
+                        () -> fetchKeysAndThen(driver, password, callback))));
     }
 
     private void fetchKeysAndThen(TokenDriver driver, char[] password,
@@ -147,11 +160,11 @@ public class Autogram {
         try {
             var token = driver.createTokenWithPassword(password);
             var keys = token.getKeys();
-            ui.onUIThreadDo(() -> ui.pickKeyAndThen(keys,
-                    (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
-        } catch (DSSException e) {
+
             ui.onUIThreadDo(
-                    () -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
+                    () -> ui.pickKeyAndThen(keys, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
+        } catch (DSSException e) {
+            ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         }
     }
 
@@ -159,8 +172,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             if (!Updater.newVersionAvailable())
                 return;
-
-            ui.onUIThreadDo(() -> ui.onUpdateAvailable());
+            ui.onUIThreadDo(ui::onUpdateAvailable);
         });
     }
 

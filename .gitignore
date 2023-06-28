@@ -17,6 +17,7 @@ whitelabel.iml
 .vscode/*
 !/.vscode/launch.json
 !/.vscode/tasks.json
+!/.vscode/intellij-default.xml
 
 # macOS-specific
 .DS_Store
