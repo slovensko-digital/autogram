@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.core;
 
-import com.google.common.io.Files;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import org.apache.commons.cli.CommandLine;
 
@@ -19,7 +18,7 @@ public class CliParameters {
 
     public CliParameters(CommandLine cmd) {
         source = validateSource(cmd.getOptionValue("s"));
-        target = validateTarget(cmd.getOptionValue("t"));
+        target = cmd.getOptionValue("t");
         driver = validateTokenDriver(cmd.getOptionValue("d"));
         force = cmd.hasOption("f");
         checkPDFACompliance = cmd.hasOption("pdfa");
@@ -46,12 +45,6 @@ public class CliParameters {
     }
 
     public static class Validations {
-        public static String validateTarget(String targetPath) {
-            if (targetPath == null)
-                return null;
-
-            return targetPath;
-        }
 
         public static File validateSource(String sourcePath) {
             if (sourcePath != null && !new File(sourcePath).exists()) {
