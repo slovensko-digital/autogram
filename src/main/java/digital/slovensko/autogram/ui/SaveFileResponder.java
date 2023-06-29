@@ -76,6 +76,6 @@ public class SaveFileResponder extends Responder {
 
     private String generateTargetName() {
         var extension = file.getName().endsWith(".pdf") ? ".pdf" : ".asice";
-        return Files.getNameWithoutExtension(targetName == null ? file.getName() : targetName) + "_signed" + extension;
+        return targetName == null ? Files.getNameWithoutExtension(file.getName()) + "_signed" + extension : Files.getNameWithoutExtension(targetName) + extension;
     }
 }

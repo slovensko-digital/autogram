@@ -67,7 +67,7 @@ public class CliApp {
                 jobs.forEach(autogram::sign);
             } else {
                 var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, targetFile.getParent(), targetFile.getName(),
-                        params.isForce(), source.isDirectory()), params.shouldCheckPDFACompliance());
+                        params.isForce(), source.isDirectory() || params.getTarget() == null), params.shouldCheckPDFACompliance());
                 if (params.shouldCheckPDFACompliance()) {
                     System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
                     autogram.checkPDFACompliance(job);
@@ -87,7 +87,7 @@ public class CliApp {
             var extension = source.getName().endsWith(".pdf") ? ".pdf" : ".asice";
             var directory = source.getParent();
             var name = Files.getNameWithoutExtension(source.getName()) + "_signed";
-            return directory + name + extension;
+            return Paths.get(directory, name + extension).toString();
         }
     }
 }
