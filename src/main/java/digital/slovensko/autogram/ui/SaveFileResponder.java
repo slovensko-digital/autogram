@@ -47,6 +47,7 @@ public class SaveFileResponder extends Responder {
 
     private File getTargetFile() {
         var targetName = generateTargetName();
+
         File targetFile = Paths.get(targetPath, targetName).toFile();
         if (!targetFile.exists()) {
            return targetFile;

@@ -21,18 +21,8 @@ public class CliApp {
             throw new IllegalArgumentException("Source is not defined");
         }
 
-        if (params.getTarget() != null) {
-            if (params.getSource().isDirectory()) {
-//                File targetDir = new File(params.getTarget());
-//                if (!targetDir.exists() && !targetDir.mkdir()) {
-//                    throw new IllegalArgumentException("Unable to create target directory");
-//                }
-            } else {
-                File targetFile = new File(params.getTarget());
-                if (!targetFile.getParentFile().exists()) {
-                    throw new IllegalArgumentException("Invalid target path");
-                }
-            }
+        if (params.getTarget() != null && params.getSource().isFile() && !new File(params.getTarget()).getParentFile().exists()) {
+            throw new IllegalArgumentException("Invalid target path");
         }
 
         var shouldGenerateTarget = params.getTarget() == null;
@@ -80,13 +70,12 @@ public class CliApp {
     }
 
     private static String generateTargetPath(File source) {
-        var isSourceDirectory = source.isDirectory();
-        if (isSourceDirectory) {
+        if (source.isDirectory()) {
             return source.getPath() + "_signed";
         } else {
-            var extension = source.getName().endsWith(".pdf") ? ".pdf" : ".asice";
             var directory = source.getParent();
             var name = Files.getNameWithoutExtension(source.getName()) + "_signed";
+            var extension = source.getName().endsWith(".pdf") ? ".pdf" : ".asice";
             return Paths.get(directory, name + extension).toString();
         }
     }
