@@ -40,7 +40,7 @@ public class BatchEndpoint implements HttpHandler {
                 var body = EndpointUtils.loadFromJsonExchange(exchange,
                         BatchSessionStartRequestBody.class);
                 autogram.batchStart(body.getTotalNumberOfDocuments(),
-                        new ServerBatchStartResponder(exchange));
+                        new BatchServerResponder(exchange));
             } else if (requestMethod.equalsIgnoreCase("DELETE")) {
                 // End batch
                 var body = EndpointUtils.loadFromJsonExchange(exchange,

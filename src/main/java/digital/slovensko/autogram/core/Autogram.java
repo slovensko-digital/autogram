@@ -79,7 +79,7 @@ public class Autogram {
      * @param totalNumberOfDocuments - expected number of documents to be signed
      * @param responder              - callback for http response
      */
-    public void batchStart(int totalNumberOfDocuments, BatchStartResponder responder) {
+    public void batchStart(int totalNumberOfDocuments, BatchResponder responder) {
         if (batch != null && !batch.isEnded())
             throw new BatchConflictException("Another batch is already running");
         batch = new Batch(totalNumberOfDocuments);
@@ -106,7 +106,7 @@ public class Autogram {
 
             @Override
             protected void succeeded() {
-                responder.onBatchStartSuccess(batch.getBatchId());
+                responder.onBatchStartSuccess(batch);
             }
         };
 
