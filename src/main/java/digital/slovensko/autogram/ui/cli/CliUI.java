@@ -172,6 +172,8 @@ public class CliUI implements UI {
             errMessage = "Token not recognized";
         } else if (e instanceof TokenRemovedException) {
             errMessage = "Token removed";
+        } else if (e instanceof TargetAlreadyExistsException) {
+            errMessage = AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE;
         } else {
             errMessage = "Unknown error occurred";
         }

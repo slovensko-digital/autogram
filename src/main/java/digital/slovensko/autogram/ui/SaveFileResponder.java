@@ -71,7 +71,7 @@ public class SaveFileResponder extends Responder {
             }
         }
 
-        throw new IllegalArgumentException("Target file already exists");
+        throw new IllegalArgumentException(AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE);
     }
 
     private String generateTargetName() {

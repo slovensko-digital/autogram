@@ -44,7 +44,7 @@ public class CliApp {
         }
 
         if (!params.isForce() && !shouldGenerateTarget && targetFile.exists()) {
-            throw new IllegalArgumentException("Target file already exists");
+            throw new IllegalArgumentException(AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE);
         }
 
         try {
