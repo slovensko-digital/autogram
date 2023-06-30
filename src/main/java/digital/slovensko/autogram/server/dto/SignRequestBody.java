@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -64,16 +65,59 @@ public class SignRequestBody {
         parameters.validate(getDocument().getMimeType());
 
         SigningParameters signingParameters = parameters.getSigningParameters(isBase64());
-
-        if (!validateXml(getXmlContent(), signingParameters.getSchema()))
-            throw new RequestValidationException("XML validation against XSD failed", "");
+        
+        validateXml(signingParameters);
 
         return signingParameters;
     }
 
-    private String getXmlContent() {
-        boolean isXdc = getDocument().getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
-        return isXdc ? getContentFromXdc() : getDecodedContent();
+    private boolean isBase64() {
+        return payloadMimeType.contains("base64");
+    }
+
+    private void validateXml(SigningParameters signingParameters) {
+        String xsdSchema = signingParameters.getSchema();
+        String xmlContent;
+
+        if (isXdc()) {
+            if (!validateXsdAndXsltHashes(signingParameters)) {
+                throw new RequestValidationException("XML validation failed", "Invalid xsd scheme or xslt transformation");
+            }
+
+            xmlContent = getContentFromXdc();
+            if (xmlContent == null) {
+                throw new RequestValidationException("XML validation failed", "Unable to get content from xdc container");
+            }
+        } else {
+            xmlContent = getDecodedContent();
+        }
+
+        if (!validateXmlContentAgainstXsd(xmlContent, xsdSchema)) {
+            throw new RequestValidationException("XML validation failed", "XML validation against XSD failed");
+        }
+    }
+
+    private boolean isXdc() {
+        return getDocument().getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
+    }
+
+    private boolean validateXsdAndXsltHashes(SigningParameters sp) {
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+
+            XDCTransformer xdcTransformer = new XDCTransformer(
+                    sp.getSchema(),
+                    sp.getTransformation(),
+                    sp.getPropertiesCanonicalization(),
+                    sp.getDigestAlgorithm(),
+                    builderFactory.newDocumentBuilder().parse(new InputSource(getDocument().openStream()))
+            );
+
+            return xdcTransformer.validateXsd() && xdcTransformer.validateXslt();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private String getContentFromXdc() {
@@ -84,7 +128,7 @@ public class SignRequestBody {
             var element = XDCTransformer.extractFromXDC(document, builderFactory);
             return transformElementToString(element);
         } catch (Exception e) {
-            throw new RequestValidationException("Unable to get XML content from XDC container", "");
+            return null;
         }
     }
 
@@ -97,7 +141,11 @@ public class SignRequestBody {
         return writer.toString();
     }
 
-    private boolean validateXml(String xmlContent, String xsdSchema) {
+    private String getDecodedContent() {
+        return isBase64() ? new String(Base64.getDecoder().decode(document.getContent())) : document.getContent();
+    }
+
+    private boolean validateXmlContentAgainstXsd(String xmlContent, String xsdSchema) {
         if (xsdSchema == null) {
             return true;
         }
@@ -110,13 +158,5 @@ public class SignRequestBody {
         } catch (SAXException | IOException e) {
             return false;
         }
-    }
-
-    private boolean isBase64() {
-        return payloadMimeType.contains("base64");
-    }
-
-    private String getDecodedContent() {
-        return isBase64() ? new String(Base64.getDecoder().decode(document.getContent())) : document.getContent();
     }
 }

@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class XDCTransformer {
+
     public enum DestinationMediaType {
         TXT, HTML, XHTML
     }
@@ -68,6 +69,19 @@ public class XDCTransformer {
         this.xsltSchema = xsltSchema;
         this.digestAlgorithm = digestAlgorithm;
         this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
+    }
+
+    public XDCTransformer(String xsdSchema, String xsltSchema, String canonicalizationMethod,
+                          DigestAlgorithm digestAlgorithm, Document document) {
+        this.xsdSchema = xsdSchema;
+        this.xsltSchema = xsltSchema;
+        this.canonicalizationMethod = canonicalizationMethod;
+        this.digestAlgorithm = digestAlgorithm;
+        this.identifierUri = null;
+        this.identifierVersion = null;
+        this.containerXmlns = null;
+        this.mediaDestinationTypeDescription = null;
+        this.document = document;
     }
 
     public DSSDocument transform(DSSDocument dssDocument) {
@@ -230,4 +244,36 @@ public class XDCTransformer {
 
         return new DOMSource(document);
     }
+
+    private String getDigestValueFromElement(String elementLocalName) {
+        var xdc = document.getDocumentElement();
+
+        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", elementLocalName)
+                .item(0);
+        if (xmlData == null)
+            throw new RuntimeException("XMLData not found in XDC");
+
+        var attributes = xmlData.getAttributes();
+        if (attributes == null)
+            throw new RuntimeException("Attributes not found");
+
+        var digestValue = attributes.getNamedItem("DigestValue");
+        if (digestValue == null)
+            throw new RuntimeException("DigestValue not found");
+
+        return digestValue.getNodeValue();
+    }
+
+    public boolean validateXsd() {
+        String xsdSchemaHash = computeDigest(xsdSchema);
+        String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
+        return xsdSchemaHash.equals(xsdDigestValue);
+    }
+
+    public boolean validateXslt() {
+        String xsltSchemaHash = computeDigest(xsltSchema);
+        String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
+        return xsltSchemaHash.equals(xsltDigestValue);
+    }
+
 }
