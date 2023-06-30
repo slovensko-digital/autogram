@@ -5,6 +5,7 @@ import java.io.File;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileFromBatchResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -15,6 +16,7 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import javafx.application.Platform;
 
 public class SigningJob {
     private final Responder responder;
@@ -54,6 +56,10 @@ public class SigningJob {
     }
 
     public void signWithKeyAndRespond(SigningKey key) {
+        if (Platform.isFxApplicationThread()){
+            throw new RuntimeException("Cannot sign on UI thread");
+        }
+        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName()); 
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);

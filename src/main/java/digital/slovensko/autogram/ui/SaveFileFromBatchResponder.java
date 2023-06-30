@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.util.Logging;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,8 @@ public class SaveFileFromBatchResponder extends Responder {
         try {
             var targetFile = getTargetFile();
             signedDocument.getDocument().save(targetFile.getPath());
+            Logging.log("Saved file " + targetFile.toString());
+            autogram.updateBatch();
             callback.accept(targetFile);
         } catch (IOException e) {
             throw new RuntimeException(e);

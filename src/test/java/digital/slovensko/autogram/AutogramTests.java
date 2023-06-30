@@ -127,6 +127,11 @@ class AutogramTests {
         }
 
         @Override
+        public void updateBatch() {
+            // TODO Auto-generated method stub
+        }
+
+        @Override
         public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
             callback.accept(drivers.get(0));
         }

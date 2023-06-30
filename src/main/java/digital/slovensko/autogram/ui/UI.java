@@ -17,6 +17,8 @@ public interface UI {
     void startBatch(Batch batch, Autogram autogram, AutogramBatchStartCallback callback);
 
     void signBatch(SigningJob job);
+    
+    public void updateBatch();
 
     void cancelBatch(Batch batch, AutogramBatchStartCallback callback);
 

@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import digital.slovensko.autogram.core.errors.BatchEndedException;
 import digital.slovensko.autogram.core.errors.BatchExpiredException;
+import digital.slovensko.autogram.util.Logging;
 
 enum BatchState {
     INITIALIZED, STARTED, ENDED
@@ -32,7 +33,7 @@ public class Batch {
     }
 
     // methods
-    public void start() {
+    public  void start() {
         if (state != BatchState.INITIALIZED)
             throw new BatchEndedException("Starting existing batch is not allowed");
         state = BatchState.STARTED;
@@ -114,6 +115,11 @@ public class Batch {
 
     public void resetExpirationDate() {
         expriationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 10); // 1 minute
+    }
+
+    public void log() {
+        Logging.log("Batch " + batchId + " state: " + state + " processed: " + processedDocumentsCount
+                + " total: " + totalNumberOfDocuments);
     }
 
 }

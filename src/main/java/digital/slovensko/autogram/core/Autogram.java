@@ -8,8 +8,11 @@ import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilde
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
+import javafx.application.Platform;
+
 import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
@@ -87,6 +90,7 @@ public class Autogram {
         var startBatchTask = new AutogramBatchStartCallback() {
             @Override
             protected Void call() throws Exception {
+                Logging.log("Starting batch");
                 batch.start();
                 return null;
             }
@@ -106,7 +110,7 @@ public class Autogram {
 
             @Override
             protected void succeeded() {
-                responder.onBatchStartSuccess(batch);
+                ui.onWorkThreadDo(() -> responder.onBatchStartSuccess(batch));
             }
         };
 
@@ -126,8 +130,19 @@ public class Autogram {
             throw new BatchNotStartedException("Batch not running");
 
         batch.addJob(batchId, job);
-        ui.onWorkThreadDo(() -> {
+
+        if (Platform.isFxApplicationThread()) {
+            ui.onWorkThreadDo(() -> {
+                ui.signBatch(job);
+            });
+        } else {
             ui.signBatch(job);
+        }
+    }
+
+    public void updateBatch() {
+        ui.onUIThreadDo(() -> {
+            ui.updateBatch();
         });
     }
 

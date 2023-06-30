@@ -5,6 +5,8 @@ import digital.slovensko.autogram.core.AutogramBatchStartCallback;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
+import digital.slovensko.autogram.util.Logging;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -65,6 +67,8 @@ public class BatchDialogController implements SuppressedFocusController {
     }
 
     public void update() {
+        Logging.log("BatchDialogController.update() " + Platform.isFxApplicationThread());
+        batch.log();
         updateProgressBar();
         // TODO handle this differently when request came from GUI
         if (!isOpenedFromGui && batch.isAllProcessed()) {
@@ -118,6 +122,8 @@ public class BatchDialogController implements SuppressedFocusController {
             chooseKeyButton.setVisible(true);
             chooseKeyButton.setManaged(true);
             chooseKeyButton.setDisable(false);
+            
+            disableKeyChange();
         } else {
             signButton.setVisible(true);
             signButton.setManaged(true);
@@ -129,7 +135,7 @@ public class BatchDialogController implements SuppressedFocusController {
             signButton.setText("Podpísať ako "
                     + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
 
-            changeKeyButton.setVisible(true);
+            enableKeyChange();
         }
     }
 
@@ -163,10 +169,12 @@ public class BatchDialogController implements SuppressedFocusController {
 
     public void disableKeyChange() {
         changeKeyButton.setVisible(false);
+        changeKeyButton.setManaged(false);
     }
 
     public void enableKeyChange() {
         changeKeyButton.setVisible(true);
+        changeKeyButton.setManaged(true);
     }
 
     private void updateVisualizationCount() {

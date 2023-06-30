@@ -9,6 +9,7 @@ import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -28,6 +29,7 @@ public class GUI implements UI {
     private SigningKey activeKey;
     private final HostServices hostServices;
     private BatchDialogController batchController;
+    private final boolean DEBUG = false;
 
     public GUI(HostServices hostServices) {
         this.hostServices = hostServices;
@@ -65,7 +67,19 @@ public class GUI implements UI {
     @Override
     public void signBatch(SigningJob job) {
         job.signWithKeyAndRespond(getActiveSigningKey());
-        onUIThreadDo(batchController::update);
+        Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
+        updateBatch();
+    }
+
+    @Override
+    public void updateBatch() {
+        Logging.log("GUI: updateBatch " + Platform.isFxApplicationThread());
+        if (Platform.isFxApplicationThread()) {
+            batchController.update();
+        } else {
+            onWorkThreadDo(() -> onUIThreadDo(batchController::update));
+        }
+        Logging.log("GUI: updateBatch2");
     }
 
     @Override
@@ -219,7 +233,6 @@ public class GUI implements UI {
         GUIUtils.setUserFriendlyPosition(stage);
     }
 
-
     public void showIgnorableExceptionDialog(IgnorableException e) {
         var controller = new IgnorableExceptionDialogController(e);
         var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");
@@ -289,12 +302,26 @@ public class GUI implements UI {
 
     @Override
     public void onWorkThreadDo(Runnable callback) {
-        new Thread(callback).start();
+        if (DEBUG && !Platform.isFxApplicationThread())
+            throw new RuntimeException("Can be run only on UI thread");
+
+        if (Platform.isFxApplicationThread()) {
+            new Thread(callback).start();
+        } else {
+            callback.run();
+        }
     }
 
     @Override
     public void onUIThreadDo(Runnable callback) {
-        Platform.runLater(callback);
+        if (DEBUG && Platform.isFxApplicationThread())
+            throw new RuntimeException("Can be run only on work thread");
+
+        if (Platform.isFxApplicationThread()) {
+            callback.run();
+        } else {
+            Platform.runLater(callback);
+        }
     }
 
     public SigningKey getActiveSigningKey() {

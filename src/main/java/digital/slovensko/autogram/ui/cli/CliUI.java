@@ -47,6 +47,11 @@ public class CliUI implements UI {
     }
 
     @Override
+    public void updateBatch() {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
     public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
         TokenDriver pickedDriver;
         if (drivers.size() == 1) {
