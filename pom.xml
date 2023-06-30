@@ -25,7 +25,7 @@
         <junit.version>5.9.3</junit.version>
         <mockito.version>5.4.0</mockito.version>
         <commons-cli.version>1.5.0</commons-cli.version>
-        <xmlunit.version>2.6.2</xmlunit.version>
+        <xmlunit.version>2.9.1</xmlunit.version>
     </properties>
 
     <dependencyManagement>
