@@ -4,6 +4,7 @@ import com.google.common.io.Files;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.CliParameters;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 
@@ -25,28 +26,26 @@ public class CliApp {
             throw new IllegalArgumentException("Invalid target path");
         }
 
-        var shouldGenerateTarget = params.getTarget() == null;
-        var targetPath = shouldGenerateTarget ? generateTargetPath(params.getSource()) : params.getTarget();
+        var targetPathBuilder = new TargetPath(params.getTarget(), params.getSource(), params.isForce());
 
-        File targetFile = new File(targetPath);
-        if ((targetFile.isDirectory() != params.getSource().isDirectory()) && targetFile.exists() && !shouldGenerateTarget) {
+        if (!targetPathBuilder.hasSourceAndTargetMatchingType()) {
             throw new IllegalArgumentException("Source and target incompatible file types");
         }
 
-        if (!params.isForce() && !shouldGenerateTarget && targetFile.exists()) {
+        if (!targetPathBuilder.isTargetWriteable()) {
             throw new IllegalArgumentException(AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE);
         }
 
         try {
             var source = params.getSource();
-            if (source.isDirectory()) {
-                File targetDir = new File(targetPath);
-                if (!targetDir.exists() && !targetDir.mkdir()) {
+            var sourceList =  source.isDirectory() ? source.listFiles(): new File[]{source};
+            // if (source.isDirectory()) {
+
+                if (!targetPathBuilder.mkdirIfDir()) {
                     throw new IllegalArgumentException("Unable to create target directory");
                 }
-                var jobs = Arrays.stream(source.listFiles()).filter(f -> f.isFile()).map(f ->
-                    SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, targetFile.getPath(), null,
-                            params.isForce(), source.isDirectory()), params.shouldCheckPDFACompliance())
+                var jobs = Arrays.stream(sourceList).filter(f -> f.isFile()).map(f ->
+                    SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, targetPathBuilder), params.shouldCheckPDFACompliance())
                 ).toList();
                 if (params.shouldCheckPDFACompliance()) {
                     jobs.forEach(job -> {
@@ -55,28 +54,16 @@ public class CliApp {
                     });
                 }
                 jobs.forEach(autogram::sign);
-            } else {
-                var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, targetFile.getParent(), targetFile.getName(),
-                        params.isForce(), source.isDirectory() || params.getTarget() == null), params.shouldCheckPDFACompliance());
-                if (params.shouldCheckPDFACompliance()) {
-                    System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
-                    autogram.checkPDFACompliance(job);
-                }
-                autogram.sign(job);
-            }
+            // } else {
+            //     var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, targetPathBuilder), params.shouldCheckPDFACompliance());
+            //     if (params.shouldCheckPDFACompliance()) {
+            //         System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
+            //         autogram.checkPDFACompliance(job);
+            //     }
+            //     autogram.sign(job);
+            // }
         } catch (AutogramException e) {
             ui.showError(e);
-        }
-    }
-
-    private static String generateTargetPath(File source) {
-        if (source.isDirectory()) {
-            return source.getPath() + "_signed";
-        } else {
-            var directory = source.getParent();
-            var name = Files.getNameWithoutExtension(source.getName()) + "_signed";
-            var extension = source.getName().endsWith(".pdf") ? ".pdf" : ".asice";
-            return Paths.get(directory, name + extension).toString();
         }
     }
 }

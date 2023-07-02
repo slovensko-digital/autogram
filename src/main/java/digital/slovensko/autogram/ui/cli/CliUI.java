@@ -176,6 +176,8 @@ public class CliUI implements UI {
             errMessage = AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE;
         } else {
             errMessage = "Unknown error occurred";
+            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
         System.err.println(errMessage);
     }
