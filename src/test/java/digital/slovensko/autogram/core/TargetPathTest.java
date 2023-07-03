@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +32,7 @@ public class TargetPathTest {
         var targetPath = TargetPath.buildForTest(sourceFile, false, true, targetDirectory, null);
         var target = targetPath.getSaveFilePath(sourceFile);
 
-        assertEquals("/test/virtual/source_signed.pdf", target.getPath());
+        assertEqualPath("/test/virtual/source_signed.pdf", target.getPath());
     }
 
     /**
@@ -58,7 +59,7 @@ public class TargetPathTest {
         var targetPath = TargetPath.buildForTest(sourceFile, false, false, targetDirectory, "target.pdf");
         var target = targetPath.getSaveFilePath(sourceFile);
 
-        assertEquals("/test/virtual/target.pdf", target.getPath());
+        assertEqualPath("/test/virtual/target.pdf", target.getPath());
     }
 
     @Test
@@ -96,8 +97,9 @@ public class TargetPathTest {
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
-        assertEquals("/test/virtual/target/source1_signed.pdf", target1.getPath());
-        assertEquals("/test/virtual/target/source2_signed.pdf", target2.getPath());
+        assertEqualPath("/test/virtual/target/source1_signed.pdf", target1.getPath());
+        
+        assertEqualPath("/test/virtual/target/source2_signed.pdf", target2.getPath());
     }
 
     @Test
@@ -135,7 +137,11 @@ public class TargetPathTest {
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
-        assertEquals("/test/virtual/source/source1_signed.pdf", target1.getPath());
-        assertEquals("/test/virtual/source/source2_signed.pdf", target2.getPath());
+        assertEqualPath("/test/virtual/source/source1_signed.pdf", target1.getPath());
+        assertEqualPath("/test/virtual/source/source2_signed.pdf", target2.getPath());
+    }
+
+    private void assertEqualPath(String expected, String actual) {
+        assertEquals(Paths.get(expected).normalize().toString(), Paths.get(actual).normalize().toString());
     }
 }
