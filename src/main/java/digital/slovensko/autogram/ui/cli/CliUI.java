@@ -177,7 +177,6 @@ public class CliUI implements UI {
         } else {
             errMessage = "Unknown error occurred";
             e.printStackTrace();
-            e.printStackTrace(System.err);
         }
         System.err.println(errMessage);
     }
