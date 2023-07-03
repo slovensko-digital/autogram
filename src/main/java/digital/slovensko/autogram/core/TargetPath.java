@@ -8,68 +8,98 @@ import com.google.common.io.Files;
 import digital.slovensko.autogram.core.errors.AutogramException;
 
 public class TargetPath {
-    private final File targetFile;
+    private final File targetDirectory;
+    private final String targetName;
     private final File sourceFile;
     private final boolean isForce;
     private final boolean isGenerated;
+    private final boolean isForMultipleFiles;
 
     public TargetPath(String target, File source, boolean force) {
-        sourceFile = source;
-        isForce = force;
-        isGenerated = target == null;
+        this.sourceFile = source;
+        this.isForce = force;
 
-        targetFile = isGenerated ? generateTargetPath(source) : new File(target);
+        // TODO toto nejako otestovat
+        this.isGenerated = target == null;
+        this.isForMultipleFiles = source.isDirectory();
+        if (isGenerated) {
+            this.targetDirectory = isForMultipleFiles ? new File(source.getPath() + "_signed")
+                    : source.getParentFile();
+            this.targetName = null;
+        } else {
+            var targetFile = new File(target);
+            if (!hasSourceAndTargetMatchingType(sourceFile, targetFile)) {
+                throw new IllegalArgumentException("Source and target incompatible file types");
+            }
+            this.targetDirectory = source.isDirectory() ? targetFile : targetFile.getParentFile();
+            this.targetName = targetFile.getName();
+        }
     }
 
-    private boolean isDirectory() {
-        return sourceFile.isDirectory();
+    public static TargetPath fromParams(CliParameters params) {
+        return new TargetPath(params.getTarget(), params.getSource(), params.isForce());
+    }
+
+    public static TargetPath fromSource(File source) {
+        return new TargetPath(null, source, false);
+    }
+
+    private TargetPath(File source, boolean force, boolean isGenerated, File targetDirectory, String targetName) {
+        this.sourceFile = source;
+        this.isForce = force;
+        this.isGenerated = isGenerated;
+        this.isForMultipleFiles = source.isDirectory();
+        this.targetDirectory = targetDirectory;
+        this.targetName = targetName;
     }
 
     /**
-     * Create directory when we want to fill it out, return success status
-     * @return `true` if dir was created or it wasn't needed 
+     * use this constructor only for testing
      */
-    public boolean mkdirIfDir() {
-        if (isDirectory()) {
-            if (((targetFile.exists() && isForce) || !targetFile.exists())) {
-                return targetFile.mkdir();
-            } else {
-                return false;
+    public static TargetPath buildForTest(File source, boolean force, boolean isGenerated, File targetDirectory,
+            String targetName) {
+        return new TargetPath(source, force, isGenerated, targetDirectory, targetName);
+    }
+
+    /**
+     * Create directory when we want to fill it out
+     */
+    public void mkdirIfDir() {
+        if (isForMultipleFiles && !targetDirectory.exists()) {
+            if (!targetDirectory.mkdir()) {
+                throw new IllegalArgumentException("Unable to create target directory");
             }
-        } else {
-            return true;
         }
     }
 
-    public boolean hasSourceAndTargetMatchingType() {
-        if (targetFile.exists()) {
-            return ((targetFile.isDirectory() == sourceFile.isDirectory())
-                    || (targetFile.isFile() == sourceFile.isFile()));
+    private static boolean hasSourceAndTargetMatchingType(File source, File target) {
+        if (target.exists()) {
+            var bothAreFiles = target.isFile() && source.isFile();
+            var bothAreDirectories = target.isDirectory() && source.isDirectory();
+            return (bothAreDirectories || bothAreFiles);
         }
-        return isGenerated;
+        return true;
     }
 
-    public boolean isTargetWriteable() {
-        return isForce || isGenerated || !targetFile.exists();
-    }
-
-    private static File generateTargetPath(File source) {
-        if (source.isDirectory()) {
-            return new File(source.getPath() + "_signed");
-        } else {
-            var directory = source.getParent();
-            var name = Files.getNameWithoutExtension(source.getName()) + "_signed";
-            var extension = source.getName().endsWith(".pdf") ? ".pdf" : ".asice";
-            return Paths.get(directory, name + extension).toFile();
-        }
-    }
-
-    // SaveFileResponder
+    /*
+     * Use these functions to get concrete file to be saved to
+     * 
+     */
 
     public File getSaveFilePath(File singleSourceFile) {
-        var targetName = generateTargetName(singleSourceFile);
 
-        File targetSingleFile = Paths.get(targetFile.getPath(), targetName).toFile();
+        var file = _getSaveFilePath(singleSourceFile);
+
+        if (file.exists() && !isForce) {
+            throw new IllegalArgumentException(AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE);
+        }
+        return file;
+    }
+
+    private File _getSaveFilePath(File singleSourceFile) {
+        var targetName = this.targetName == null ? generateTargetName(singleSourceFile) : this.targetName;
+
+        File targetSingleFile = Paths.get(targetDirectory.getPath(), targetName).toFile();
         if (!targetSingleFile.exists()) {
             return targetSingleFile;
         }
@@ -89,6 +119,9 @@ public class TargetPath {
                 if (!newTargetFile.exists())
                     return newTargetFile;
 
+                if (count > 1000)
+                    throw new IllegalArgumentException(AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE);
+
                 newBaseName = baseName + " (" + count + ")";
                 count++;
             }
@@ -99,10 +132,10 @@ public class TargetPath {
 
     private String generateTargetName(File singleSourceFile) {
         var extension = singleSourceFile.getName().endsWith(".pdf") ? ".pdf" : ".asice";
-        if (isGenerated || sourceFile.isDirectory()) {
+        if (isGenerated || isForMultipleFiles) {
             return Files.getNameWithoutExtension(singleSourceFile.getName()) + "_signed" + extension;
         } else {
-            return Files.getNameWithoutExtension(targetFile.getName()) + extension;
+            return Files.getNameWithoutExtension(targetDirectory.getName()) + extension;
         }
     }
 }

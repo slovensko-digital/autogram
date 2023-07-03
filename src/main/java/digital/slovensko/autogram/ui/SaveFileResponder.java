@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui;
 
-import com.google.common.io.Files;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
@@ -9,7 +8,6 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 public class SaveFileResponder extends Responder {
     private final File file;
@@ -17,7 +15,7 @@ public class SaveFileResponder extends Responder {
     private final TargetPath targetPathBuilder;
 
     public SaveFileResponder(File file, Autogram autogram) {
-        this(file, autogram, new TargetPath(null, file, false));
+        this(file, autogram, TargetPath.fromSource(file));
     }
 
     public SaveFileResponder(File file, Autogram autogram, TargetPath targetPathBuilder) {

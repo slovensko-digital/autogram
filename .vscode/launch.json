@@ -44,7 +44,7 @@
             "args": "${input:commandLineArguments}",
             "osx": {
                 // this is because of some escaping problem with zsh
-                "console": "internalConsole"
+                "console": "integratedTerminal"
             }
         },
         

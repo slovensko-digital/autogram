@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.cli;
 
-import com.google.common.io.Files;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.CliParameters;
 import digital.slovensko.autogram.core.SigningJob;
@@ -9,59 +8,41 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 
 public class CliApp {
     public static void start(CliParameters params) {
         var ui = new CliUI();
-        var autogram = params.getDriver() == null ? new Autogram(ui) : new Autogram(ui, () -> Collections.singletonList(params.getDriver()));
+        var autogram = params.getDriver() == null ? new Autogram(ui)
+                : new Autogram(ui, () -> Collections.singletonList(params.getDriver()));
 
         if (params.getSource() == null) {
             throw new IllegalArgumentException("Source is not defined");
         }
 
-        if (params.getTarget() != null && params.getSource().isFile() && !new File(params.getTarget()).getParentFile().exists()) {
+        if (params.getTarget() != null && params.getSource().isFile()
+                && !new File(params.getTarget()).getParentFile().exists()) {
             throw new IllegalArgumentException("Invalid target path");
         }
 
-        var targetPathBuilder = new TargetPath(params.getTarget(), params.getSource(), params.isForce());
-
-        if (!targetPathBuilder.hasSourceAndTargetMatchingType()) {
-            throw new IllegalArgumentException("Source and target incompatible file types");
-        }
-
-        if (!targetPathBuilder.isTargetWriteable()) {
-            throw new IllegalArgumentException(AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE);
-        }
+        var targetPathBuilder = TargetPath.fromParams(params);
+        targetPathBuilder.mkdirIfDir();
 
         try {
             var source = params.getSource();
-            var sourceList =  source.isDirectory() ? source.listFiles(): new File[]{source};
-            // if (source.isDirectory()) {
-
-                if (!targetPathBuilder.mkdirIfDir()) {
-                    throw new IllegalArgumentException("Unable to create target directory");
-                }
-                var jobs = Arrays.stream(sourceList).filter(f -> f.isFile()).map(f ->
-                    SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, targetPathBuilder), params.shouldCheckPDFACompliance())
-                ).toList();
-                if (params.shouldCheckPDFACompliance()) {
-                    jobs.forEach(job -> {
-                        System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
-                        autogram.checkPDFACompliance(job);
-                    });
-                }
-                jobs.forEach(autogram::sign);
-            // } else {
-            //     var job = SigningJob.buildFromFile(source, new SaveFileResponder(source, autogram, targetPathBuilder), params.shouldCheckPDFACompliance());
-            //     if (params.shouldCheckPDFACompliance()) {
-            //         System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
-            //         autogram.checkPDFACompliance(job);
-            //     }
-            //     autogram.sign(job);
-            // }
+            var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
+            var jobs = Arrays
+                    .stream(sourceList).filter(f -> f.isFile()).map(f -> SigningJob.buildFromFile(f,
+                            new SaveFileResponder(f, autogram, targetPathBuilder), params.shouldCheckPDFACompliance()))
+                    .toList();
+            if (params.shouldCheckPDFACompliance()) {
+                jobs.forEach(job -> {
+                    System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
+                    autogram.checkPDFACompliance(job);
+                });
+            }
+            jobs.forEach(autogram::sign);
         } catch (AutogramException e) {
             ui.showError(e);
         }
