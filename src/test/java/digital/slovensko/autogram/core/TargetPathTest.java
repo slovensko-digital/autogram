@@ -35,6 +35,34 @@ public class TargetPathTest {
         assertEqualPath("/test/virtual/source_signed.pdf", target.getPath());
     }
 
+
+    /**
+     * Used in GUI mode with single file
+     * or used in CLI mode without target eg. `--cli -s /test/virtual/source.pdf`
+     */
+    @Test
+    public void testSingleFileNoTargetAsice() {
+        var sourceFile = mock(File.class);
+        when(sourceFile.getPath()).thenReturn("/test/virtual/source.xml");
+        when(sourceFile.getName()).thenReturn("source.xml");
+        when(sourceFile.getParent()).thenReturn("/test/virtual");
+        when(sourceFile.isDirectory()).thenReturn(false);
+        when(sourceFile.isFile()).thenReturn(true);
+
+        var targetDirectory = mock(File.class);
+        when(targetDirectory.getPath()).thenReturn("/test/virtual");
+        when(targetDirectory.getName()).thenReturn("virtual");
+        when(targetDirectory.isDirectory()).thenReturn(true);
+        when(targetDirectory.isFile()).thenReturn(false);
+        when(targetDirectory.exists()).thenReturn(true);
+
+        var targetPath = TargetPath.buildForTest(sourceFile, false, true, targetDirectory, null);
+        var target = targetPath.getSaveFilePath(sourceFile);
+
+        assertEqualPath("/test/virtual/source_signed.asice", target.getPath());
+    }
+
+
     /**
      * Used in CLI mode eg. `--cli -s /test/virtual/source.pdf -t
      * /test/virtual/target.pdf`
