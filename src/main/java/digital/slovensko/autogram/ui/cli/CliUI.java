@@ -102,8 +102,8 @@ public class CliUI implements UI {
 
     @Override
     public void onDocumentSaved(File file) {
-        System.out.println(
-                "File successfully signed. Signed file saved as " + file.getName() + " in " + file.getParent());
+        var directory = file.getParent() != null ? " in " + file.getParent() : "";
+        System.out.println("File successfully signed. Signed file saved as " + file.getName() + directory);
     }
 
     @Override
@@ -173,7 +173,17 @@ public class CliUI implements UI {
         } else if (e instanceof TokenRemovedException) {
             errMessage = "Token removed";
         } else if (e instanceof TargetAlreadyExistsException) {
-            errMessage = AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE;
+            errMessage = "Target already exists";
+        } else if (e instanceof SourceAndTargetTypeMismatchException) {
+            errMessage = "Source and target type mismatch (file / directory)";
+        } else if (e instanceof SourceDoesNotExistException) {
+            errMessage = "Source does not exist";
+        } else if (e instanceof SourceNotDefindedException) {
+            errMessage = "Source not defined";
+        } else if (e instanceof UnableToCreateDirectoryException) {
+            errMessage = "Unable to create directory";
+        } else if (e instanceof TokenDriverDoesNotExistException) {
+            errMessage = "Token driver does not exist";
         } else {
             errMessage = "Unknown error occurred";
             e.printStackTrace();

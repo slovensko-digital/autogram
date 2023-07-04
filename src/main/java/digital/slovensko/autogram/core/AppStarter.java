@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.ui.cli.CliApp;
 import digital.slovensko.autogram.ui.gui.GUIApp;
 import javafx.application.Application;
@@ -30,7 +32,7 @@ public class AppStarter {
             } else if (cmd.hasOption("u")) {
                 printUsage();
             } else if (cmd.hasOption("c")) {
-                CliApp.start(new CliParameters(cmd));
+                CliApp.start(cmd);
             } else {
                 Application.launch(GUIApp.class, args);
             }

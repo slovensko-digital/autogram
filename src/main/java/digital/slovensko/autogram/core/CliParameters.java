@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
+import digital.slovensko.autogram.core.errors.TokenDriverDoesNotExistException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import org.apache.commons.cli.CommandLine;
 
@@ -47,9 +49,9 @@ public class CliParameters {
     public static class Validations {
 
         public static File getValidSource(String sourcePath) {
-            if (sourcePath != null && !new File(sourcePath).exists()) {
-                throw new IllegalArgumentException(String.format("Source %s does not exist", sourcePath));
-            }
+            if (sourcePath != null && !new File(sourcePath).exists())
+                throw new SourceDoesNotExistException(sourcePath);
+
             return sourcePath == null ? null : new File(sourcePath);
         }
 
@@ -64,9 +66,9 @@ public class CliParameters {
                 .filter(d -> d.getShortname().equals(driverName))
                 .findFirst();
 
-            if (tokenDriver.isEmpty()) {
-                throw new IllegalArgumentException(String.format("Token driver %s not found", driverName));
-            }
+            if (tokenDriver.isEmpty())
+                throw new TokenDriverDoesNotExistException(driverName);
+
             return tokenDriver.get();
         }
     }

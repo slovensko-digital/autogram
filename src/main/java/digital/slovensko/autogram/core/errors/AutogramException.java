@@ -8,7 +8,6 @@ public class AutogramException extends RuntimeException {
     private final String description;
 
     private static final String SIGNING_CERTIFICATE_EXPIRED_EXCEPTION_MESSAGE_REGEX = ".*The signing certificate.*is expired.*";
-    public static final String TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE = "Target already exists";
 
     public AutogramException(String heading, String subheading, String description, Throwable e) {
         super(e);
@@ -62,8 +61,6 @@ public class AutogramException extends RuntimeException {
             if (cause.getMessage() != null) {
                 if (cause.getMessage().matches(SIGNING_CERTIFICATE_EXPIRED_EXCEPTION_MESSAGE_REGEX)) {
                     return new SigningWithExpiredCertificateException();
-                } else if (cause.getMessage().matches(TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE)) {
-                    return new TargetAlreadyExistsException();
                 }
             }
         }

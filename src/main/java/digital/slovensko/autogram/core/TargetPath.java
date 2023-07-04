@@ -5,7 +5,9 @@ import java.nio.file.Paths;
 
 import com.google.common.io.Files;
 
-import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.SourceAndTargetTypeMismatchException;
+import digital.slovensko.autogram.core.errors.TargetAlreadyExistsException;
+import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
 
 public class TargetPath {
     private final File targetDirectory;
@@ -16,26 +18,37 @@ public class TargetPath {
     private final boolean isForMultipleFiles;
 
     public TargetPath(String target, File source, boolean force) {
-        this.sourceFile = source;
-        this.isForce = force;
+        sourceFile = source;
+        isForce = force;
 
-        this.isGenerated = target == null;
-        this.isForMultipleFiles = source.isDirectory();
+        isGenerated = target == null;
+        isForMultipleFiles = source.isDirectory();
         if (isGenerated) {
-            this.targetDirectory = isForMultipleFiles ? new File(source.getPath() + "_signed")
-                    : source.getParentFile();
-            this.targetName = null;
+            if (isForMultipleFiles) {
+
+                targetDirectory = new File(generateUniqueName(source.getParent(), source.getName() + "_signed", ""));
+                targetName = null;
+
+            } else {
+                targetDirectory = source.getParentFile();
+                targetName = null;
+            }
+
         } else {
             var targetFile = new File(target);
-            if (!hasSourceAndTargetMatchingType(sourceFile, targetFile)) {
-                throw new IllegalArgumentException("Source and target incompatible file types");
-            }
-            if (source.isDirectory()) {
-                this.targetDirectory = targetFile;
-                this.targetName = null;
+            if (!hasSourceAndTargetMatchingType(sourceFile, targetFile))
+                throw new SourceAndTargetTypeMismatchException();
+
+            if (targetFile.exists() && !isForce)
+                throw new TargetAlreadyExistsException();
+
+            if (isForMultipleFiles) {
+                targetDirectory = targetFile;
+                targetName = null;
+
             } else {
-                this.targetDirectory = targetFile.getParentFile();
-                this.targetName = targetFile.getName();
+                targetDirectory = targetFile.getParentFile();
+                targetName = targetFile.getName();
             }
         }
     }
@@ -52,11 +65,9 @@ public class TargetPath {
      * Create directory when we want to fill it out
      */
     public void mkdirIfDir() {
-        if (isForMultipleFiles && !targetDirectory.exists()) {
-            if (!targetDirectory.mkdir()) {
-                throw new IllegalArgumentException("Unable to create target directory");
-            }
-        }
+        if (!targetDirectory.exists())
+            if (!targetDirectory.mkdir())
+                throw new UnableToCreateDirectoryException();
     }
 
     private static boolean hasSourceAndTargetMatchingType(File source, File target) {
@@ -78,7 +89,7 @@ public class TargetPath {
         var file = _getSaveFilePath(singleSourceFile);
 
         if (file.exists() && !isForce) {
-            throw new IllegalArgumentException(AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE);
+            throw new TargetAlreadyExistsException();
         }
         return file;
     }
@@ -86,7 +97,8 @@ public class TargetPath {
     private File _getSaveFilePath(File singleSourceFile) {
         var targetName = this.targetName == null ? generateTargetName(singleSourceFile) : this.targetName;
 
-        File targetSingleFile = Paths.get(targetDirectory.getPath(), targetName).toFile();
+        var targetDirectoryPath = targetDirectory == null ? "" : targetDirectory.getPath();
+        File targetSingleFile = Paths.get(targetDirectoryPath, targetName).toFile();
         if (!targetSingleFile.exists()) {
             return targetSingleFile;
         }
@@ -96,25 +108,30 @@ public class TargetPath {
         }
 
         if (isGenerated) {
-            var count = 1;
             var parent = targetSingleFile.getParent();
             var baseName = Files.getNameWithoutExtension(targetSingleFile.getName());
-            var newBaseName = baseName;
-            var extension = Files.getFileExtension(targetSingleFile.getName());
-            while (true) {
-                var newTargetFile = Paths.get(parent, newBaseName + "." + extension).toFile();
-                if (!newTargetFile.exists())
-                    return newTargetFile;
-
-                if (count > 1000)
-                    throw new IllegalArgumentException(AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE);
-
-                newBaseName = baseName + " (" + count + ")";
-                count++;
-            }
+            var extension = "." + Files.getFileExtension(targetSingleFile.getName());
+            return new File(generateUniqueName(parent, baseName, extension));
         }
 
-        throw new IllegalArgumentException(AutogramException.TARGET_ALREADY_EXISTS_EXCEPTION_MESSAGE);
+        throw new TargetAlreadyExistsException();
+    }
+
+    private String generateUniqueName(String parent, String baseName, String extension) {
+        var count = 1;
+        var newBaseName = baseName;
+        parent = parent == null ? "" : parent;
+        while (true) {
+            var newTargetFile = Paths.get(parent, newBaseName + extension).toFile();
+            if (!newTargetFile.exists())
+                return newTargetFile.getPath();
+
+            if (count > 1000)
+                throw new TargetAlreadyExistsException();
+
+            newBaseName = baseName + " (" + count + ")";
+            count++;
+        }
     }
 
     private String generateTargetName(File singleSourceFile) {
