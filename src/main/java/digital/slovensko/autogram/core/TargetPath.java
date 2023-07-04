@@ -15,7 +15,7 @@ public class TargetPath {
     private final boolean isGenerated;
     private final boolean isForMultipleFiles;
 
-    private TargetPath(String target, File source, boolean force) {
+    public TargetPath(String target, File source, boolean force) {
         this.sourceFile = source;
         this.isForce = force;
 
@@ -46,13 +46,6 @@ public class TargetPath {
 
     public static TargetPath fromSource(File source) {
         return new TargetPath(null, source, false);
-    }
-
-    /**
-     * use this constructor only for testing
-     */
-    public static TargetPath buildForTest(File source, boolean force, String target) {
-        return new TargetPath(target, source, force);
     }
 
     /**
