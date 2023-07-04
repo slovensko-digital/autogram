@@ -15,21 +15,22 @@ public class TargetPathTest {
      */
     @Test
     public void testSingleFileNoTarget() {
+        var sourceFileParent = mock(File.class);
+        when(sourceFileParent.getPath()).thenReturn("/test/virtual");
+        when(sourceFileParent.getName()).thenReturn("virtual");
+        when(sourceFileParent.getParent()).thenReturn("/test");
+        when(sourceFileParent.isDirectory()).thenReturn(true);
+        when(sourceFileParent.isFile()).thenReturn(false);
+
         var sourceFile = mock(File.class);
         when(sourceFile.getPath()).thenReturn("/test/virtual/source.pdf");
         when(sourceFile.getName()).thenReturn("source.pdf");
         when(sourceFile.getParent()).thenReturn("/test/virtual");
         when(sourceFile.isDirectory()).thenReturn(false);
         when(sourceFile.isFile()).thenReturn(true);
+        when(sourceFile.getParentFile()).thenReturn(sourceFileParent);
 
-        var targetDirectory = mock(File.class);
-        when(targetDirectory.getPath()).thenReturn("/test/virtual");
-        when(targetDirectory.getName()).thenReturn("virtual");
-        when(targetDirectory.isDirectory()).thenReturn(true);
-        when(targetDirectory.isFile()).thenReturn(false);
-        when(targetDirectory.exists()).thenReturn(true);
-
-        var targetPath = TargetPath.buildForTest(sourceFile, false, true, targetDirectory, null);
+        var targetPath = TargetPath.buildForTest(sourceFile, false, null);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/source_signed.pdf", target.getPath());
@@ -42,21 +43,22 @@ public class TargetPathTest {
      */
     @Test
     public void testSingleFileNoTargetAsice() {
+        var sourceFileParent = mock(File.class);
+        when(sourceFileParent.getPath()).thenReturn("/test/virtual");
+        when(sourceFileParent.getName()).thenReturn("virtual");
+        when(sourceFileParent.getParent()).thenReturn("/test");
+        when(sourceFileParent.isDirectory()).thenReturn(true);
+        when(sourceFileParent.isFile()).thenReturn(false);
+
         var sourceFile = mock(File.class);
         when(sourceFile.getPath()).thenReturn("/test/virtual/source.xml");
         when(sourceFile.getName()).thenReturn("source.xml");
         when(sourceFile.getParent()).thenReturn("/test/virtual");
         when(sourceFile.isDirectory()).thenReturn(false);
         when(sourceFile.isFile()).thenReturn(true);
+        when(sourceFile.getParentFile()).thenReturn(sourceFileParent);
 
-        var targetDirectory = mock(File.class);
-        when(targetDirectory.getPath()).thenReturn("/test/virtual");
-        when(targetDirectory.getName()).thenReturn("virtual");
-        when(targetDirectory.isDirectory()).thenReturn(true);
-        when(targetDirectory.isFile()).thenReturn(false);
-        when(targetDirectory.exists()).thenReturn(true);
-
-        var targetPath = TargetPath.buildForTest(sourceFile, false, true, targetDirectory, null);
+        var targetPath = TargetPath.buildForTest(sourceFile, false, null);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/source_signed.asice", target.getPath());
@@ -69,35 +71,35 @@ public class TargetPathTest {
      */
     @Test
     public void testSingleFileWithTarget() {
+        var sourceFileParent = mock(File.class);
+        when(sourceFileParent.getPath()).thenReturn("/test/virtual");
+        when(sourceFileParent.getName()).thenReturn("virtual");
+        when(sourceFileParent.getParent()).thenReturn("/test");
+        when(sourceFileParent.isDirectory()).thenReturn(true);
+        when(sourceFileParent.isFile()).thenReturn(false);
+
         var sourceFile = mock(File.class);
         when(sourceFile.getPath()).thenReturn("/test/virtual/source.pdf");
         when(sourceFile.getName()).thenReturn("source.pdf");
         when(sourceFile.getParent()).thenReturn("/test/virtual");
         when(sourceFile.isDirectory()).thenReturn(false);
         when(sourceFile.isFile()).thenReturn(true);
+        when(sourceFile.getParentFile()).thenReturn(sourceFileParent);
 
-        var targetDirectory = mock(File.class);
-        when(targetDirectory.getPath()).thenReturn("/test/virtual/");
-        when(targetDirectory.getName()).thenReturn("virtual");
-        when(targetDirectory.isDirectory()).thenReturn(false);
-        when(targetDirectory.isFile()).thenReturn(true);
-        when(targetDirectory.exists()).thenReturn(false);
-        when(targetDirectory.mkdir()).thenReturn(false);
-
-        var targetPath = TargetPath.buildForTest(sourceFile, false, false, targetDirectory, "target.pdf");
+        var targetPath = TargetPath.buildForTest(sourceFile, false, "/test/virtual/other/target.pdf");
         var target = targetPath.getSaveFilePath(sourceFile);
 
-        assertEqualPath("/test/virtual/target.pdf", target.getPath());
+        assertEqualPath("/test/virtual/other/target.pdf", target.getPath());
     }
 
     @Test
     public void testDirectoryWithTarget() {
-        var sourceFile = mock(File.class);
-        when(sourceFile.getPath()).thenReturn("/test/virtual/");
-        when(sourceFile.getName()).thenReturn("virtual");
-        when(sourceFile.getParent()).thenReturn("/test/virtual");
-        when(sourceFile.isDirectory()).thenReturn(false);
-        when(sourceFile.isFile()).thenReturn(true);
+        var sourceDirectory = mock(File.class);
+        when(sourceDirectory.getPath()).thenReturn("/test/virtual/");
+        when(sourceDirectory.getName()).thenReturn("virtual");
+        when(sourceDirectory.getParent()).thenReturn("/test");
+        when(sourceDirectory.isDirectory()).thenReturn(true);
+        when(sourceDirectory.isFile()).thenReturn(false);
 
         var source1 = mock(File.class);
         when(source1.getPath()).thenReturn("/test/virtual/source1.pdf");
@@ -113,39 +115,31 @@ public class TargetPathTest {
         when(source2.isDirectory()).thenReturn(false);
         when(source2.isFile()).thenReturn(true);
 
-        var targetFile = mock(File.class);
-        when(targetFile.getPath()).thenReturn("/test/virtual/target/");
-        when(targetFile.getName()).thenReturn("target");
-        when(targetFile.isDirectory()).thenReturn(false);
-        when(targetFile.isFile()).thenReturn(true);
-        when(targetFile.exists()).thenReturn(false);
-        when(targetFile.mkdir()).thenReturn(false);
-
-        var targetPath = TargetPath.buildForTest(sourceFile, false, true, targetFile, null);
+        var targetPath = TargetPath.buildForTest(sourceDirectory, false, "/test/virtual/target/");
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
         assertEqualPath("/test/virtual/target/source1_signed.pdf", target1.getPath());
-        
+
         assertEqualPath("/test/virtual/target/source2_signed.pdf", target2.getPath());
     }
 
     @Test
     public void testDirectoryNoTarget() {
-        var sourceFile = mock(File.class);
-        when(sourceFile.getPath()).thenReturn("/test/virtual/source");
-        when(sourceFile.getName()).thenReturn("source");
-        when(sourceFile.getParent()).thenReturn("/test/virtual");
-        when(sourceFile.isDirectory()).thenReturn(true);
-        when(sourceFile.isFile()).thenReturn(false);
+        var sourceDirectoryParent = mock(File.class);
+        when(sourceDirectoryParent.getPath()).thenReturn("/test/virtual/");
+        when(sourceDirectoryParent.getName()).thenReturn("virtual");
+        when(sourceDirectoryParent.getParent()).thenReturn("/test");
+        when(sourceDirectoryParent.isDirectory()).thenReturn(true);
+        when(sourceDirectoryParent.isFile()).thenReturn(false);
 
-        var targetDirectory = mock(File.class);
-        when(targetDirectory.getPath()).thenReturn("/test/virtual/source/");
-        when(targetDirectory.getName()).thenReturn("source");
-        when(targetDirectory.isDirectory()).thenReturn(false);
-        when(targetDirectory.isFile()).thenReturn(true);
-        when(targetDirectory.exists()).thenReturn(false);
-        when(targetDirectory.mkdir()).thenReturn(false);
+        var sourceDirectory = mock(File.class);
+        when(sourceDirectory.getPath()).thenReturn("/test/virtual/source");
+        when(sourceDirectory.getName()).thenReturn("source");
+        when(sourceDirectory.getParent()).thenReturn("/test/virtual");
+        when(sourceDirectory.isDirectory()).thenReturn(true);
+        when(sourceDirectory.isFile()).thenReturn(false);
+        when(sourceDirectory.getParentFile()).thenReturn(sourceDirectoryParent);
 
         var source1 = mock(File.class);
         when(source1.getPath()).thenReturn("/test/virtual/source/source1.pdf");
@@ -161,12 +155,12 @@ public class TargetPathTest {
         when(source2.isDirectory()).thenReturn(false);
         when(source2.isFile()).thenReturn(true);
 
-        var targetPath = TargetPath.buildForTest(sourceFile, false, true, targetDirectory, null);
+        var targetPath = TargetPath.buildForTest(sourceDirectory, false, null);
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
-        assertEqualPath("/test/virtual/source/source1_signed.pdf", target1.getPath());
-        assertEqualPath("/test/virtual/source/source2_signed.pdf", target2.getPath());
+        assertEqualPath("/test/virtual/source_signed/source1_signed.pdf", target1.getPath());
+        assertEqualPath("/test/virtual/source_signed/source2_signed.pdf", target2.getPath());
     }
 
     private void assertEqualPath(String expected, String actual) {

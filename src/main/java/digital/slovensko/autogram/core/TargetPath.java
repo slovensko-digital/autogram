@@ -15,11 +15,10 @@ public class TargetPath {
     private final boolean isGenerated;
     private final boolean isForMultipleFiles;
 
-    public TargetPath(String target, File source, boolean force) {
+    private TargetPath(String target, File source, boolean force) {
         this.sourceFile = source;
         this.isForce = force;
 
-        // TODO toto nejako otestovat
         this.isGenerated = target == null;
         this.isForMultipleFiles = source.isDirectory();
         if (isGenerated) {
@@ -31,8 +30,13 @@ public class TargetPath {
             if (!hasSourceAndTargetMatchingType(sourceFile, targetFile)) {
                 throw new IllegalArgumentException("Source and target incompatible file types");
             }
-            this.targetDirectory = source.isDirectory() ? targetFile : targetFile.getParentFile();
-            this.targetName = targetFile.getName();
+            if (source.isDirectory()) {
+                this.targetDirectory = targetFile;
+                this.targetName = null;
+            } else {
+                this.targetDirectory = targetFile.getParentFile();
+                this.targetName = targetFile.getName();
+            }
         }
     }
 
@@ -44,21 +48,11 @@ public class TargetPath {
         return new TargetPath(null, source, false);
     }
 
-    private TargetPath(File source, boolean force, boolean isGenerated, File targetDirectory, String targetName) {
-        this.sourceFile = source;
-        this.isForce = force;
-        this.isGenerated = isGenerated;
-        this.isForMultipleFiles = source.isDirectory();
-        this.targetDirectory = targetDirectory;
-        this.targetName = targetName;
-    }
-
     /**
      * use this constructor only for testing
      */
-    public static TargetPath buildForTest(File source, boolean force, boolean isGenerated, File targetDirectory,
-            String targetName) {
-        return new TargetPath(source, force, isGenerated, targetDirectory, targetName);
+    public static TargetPath buildForTest(File source, boolean force, String target) {
+        return new TargetPath(target, source, force);
     }
 
     /**
@@ -83,7 +77,7 @@ public class TargetPath {
 
     /*
      * Use these functions to get concrete file to be saved to
-     * 
+     *
      */
 
     public File getSaveFilePath(File singleSourceFile) {
