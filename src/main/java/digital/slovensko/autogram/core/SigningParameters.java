@@ -170,13 +170,13 @@ public class SigningParameters {
                 DigestAlgorithm.SHA256,
                 false, null,
                 null, null,
-                null, null, "", checkPDFACompliance, 600);
+                null, null, "", checkPDFACompliance, 640);
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
         return new SigningParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, false, null, null,
-                null, null, null, "", false, 600);
+                null, null, null, "", false, 640);
     }
 
     public String getIdentifier() {
