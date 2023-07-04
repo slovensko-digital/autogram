@@ -17,9 +17,9 @@ public class CliParameters {
 
 
     public CliParameters(CommandLine cmd) {
-        source = validateSource(cmd.getOptionValue("s"));
+        source = getValidSource(cmd.getOptionValue("s"));
         target = cmd.getOptionValue("t");
-        driver = validateTokenDriver(cmd.getOptionValue("d"));
+        driver = getValidTokenDriver(cmd.getOptionValue("d"));
         force = cmd.hasOption("f");
         checkPDFACompliance = cmd.hasOption("pdfa");
     }
@@ -46,14 +46,14 @@ public class CliParameters {
 
     public static class Validations {
 
-        public static File validateSource(String sourcePath) {
+        public static File getValidSource(String sourcePath) {
             if (sourcePath != null && !new File(sourcePath).exists()) {
                 throw new IllegalArgumentException(String.format("Source %s does not exist", sourcePath));
             }
             return sourcePath == null ? null : new File(sourcePath);
         }
 
-        public static TokenDriver validateTokenDriver(String driverName) {
+        public static TokenDriver getValidTokenDriver(String driverName) {
             if (driverName == null) {
                 return null;
             }

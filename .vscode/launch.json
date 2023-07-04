@@ -54,7 +54,7 @@
             "id": "commandLineArguments",
             "type": "promptString",
             "description": "Please enter command line arguments",
-            "default": "--help"
+            "default": "--cli --source src/test/resources/digital/slovensko/autogram/crystal_test_data/rozhodnutie_X4564-2.pdf --target target/out.pdf"
         }
     ]
 }
