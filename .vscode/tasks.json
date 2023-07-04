@@ -103,6 +103,25 @@
       },
       "problemMatcher": [],
       "type": "shell"
+    },
+    {
+      "label": "Run Autogram CLI",
+      "command": "./mvnw exec:java -Dexec.mainClass=\"digital.slovensko.autogram.Main\" -Dexec.args=\"${input:commandLineArguments}\"",
+      "type": "shell",
+      "problemMatcher": [],
+      "options": {
+        "env": {
+          "JAVA_HOME": "${config:java.jdt.ls.java.home}"
+        }
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "commandLineArguments",
+      "type": "promptString",
+      "description": "Please enter command line arguments",
+      "default": "--cli"
     }
   ]
 }
