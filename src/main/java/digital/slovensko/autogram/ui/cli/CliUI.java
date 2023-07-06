@@ -1,17 +1,13 @@
 package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.Main;
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.UI;
-
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
+import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
@@ -22,19 +18,29 @@ import java.util.function.Consumer;
 
 public class CliUI implements UI {
     SigningKey activeKey;
+    int nJobsSigned = 1;
+    int nJobsTotal = 0;
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing file " + job.getDocument().getName());
         if (activeKey == null) {
             autogram.pickSigningKeyAndThen(key -> {
                 activeKey = key;
-                autogram.sign(job, activeKey);
+                sign(job, autogram);
             });
         } else {
-            autogram.sign(job, activeKey);
+            sign(job, autogram);
         }
 
+    }
+
+    private void sign(SigningJob job, Autogram autogram) {
+        System.out.println("Starting signing file %s [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++, nJobsTotal));
+        autogram.sign(job, activeKey);
+    }
+
+    public void setJobsCount(int nJobsTotal) {
+        this.nJobsTotal = nJobsTotal;
     }
 
     @Override
@@ -77,7 +83,21 @@ public class CliUI implements UI {
             return;
         }
 
-        callback.accept(keys.get(0));
+        if (keys.size() == 1) {
+            callback.accept(keys.get(0));
+            return;
+        }
+
+        var i = new AtomicInteger(1);
+        System.out.println("Pick Key:");
+        keys.forEach(key -> {
+            System.out.print("[" + i + "] ");
+            System.out.println(parseCN(key.getCertificate().getSubject().getRFC2253()));
+            i.addAndGet(1);
+        });
+        var pickedKey = keys.get(CliUtils.readInteger() - 1);
+
+        callback.accept(pickedKey);
     }
 
     @Override
