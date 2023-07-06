@@ -1,3 +1,4 @@
-source "$(dirname \"$0\")/cert-functions.sh";
+#!/usr/bin/env bash
+source "$(dirname "$0")/cert-functions.sh";
 
-create_cert()
+create_cert
