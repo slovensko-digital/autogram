@@ -1,10 +1,8 @@
 package digital.slovensko.autogram.drivers;
 
-import digital.slovensko.autogram.util.OperatingSystem;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 
 import java.nio.file.Path;
-import java.util.List;
 
 public abstract class TokenDriver {
     protected final String name;
