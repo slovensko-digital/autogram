@@ -35,7 +35,7 @@ public class CliUI implements UI {
     }
 
     private void sign(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing file %s [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++, nJobsTotal));
+        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++, nJobsTotal));
         autogram.sign(job, activeKey);
     }
 
@@ -122,8 +122,8 @@ public class CliUI implements UI {
 
     @Override
     public void onDocumentSaved(File file) {
-        var directory = file.getParent() != null ? " in " + file.getParent() : "";
-        System.out.println("File successfully signed. Signed file saved as " + file.getName() + directory);
+        var directory = file.getParent() != null ? " in \"%s\"".formatted(file.getParent()) : "";
+        System.out.println("File successfully signed. Signed file saved as \"%s\"".formatted(file.getName()) + directory);
     }
 
     @Override
