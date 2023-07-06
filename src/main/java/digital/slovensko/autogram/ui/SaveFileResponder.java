@@ -15,7 +15,7 @@ public class SaveFileResponder extends Responder {
     private final TargetPath targetPathBuilder;
 
     public SaveFileResponder(File file, Autogram autogram) {
-        this(file, autogram, TargetPath.fromSource(file));
+        this(file, autogram, TargetPath.fromSource(file.toPath()));
     }
 
     public SaveFileResponder(File file, Autogram autogram, TargetPath targetPathBuilder) {
@@ -26,9 +26,9 @@ public class SaveFileResponder extends Responder {
 
     public void onDocumentSigned(SignedDocument signedDocument) {
         try {
-            var targetFile = targetPathBuilder.getSaveFilePath(file);
-            signedDocument.getDocument().save(targetFile.getPath());
-            autogram.onDocumentSaved(targetFile);
+            var targetFile = targetPathBuilder.getSaveFilePath(file.toPath());
+            signedDocument.getDocument().save(targetFile.toString());
+            autogram.onDocumentSaved(targetFile.toFile());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
