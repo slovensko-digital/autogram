@@ -3,6 +3,13 @@
 # How to use FakeTokenDriver
 
 create empty file `fakeTokenDriver` in cwd - so in project root when developing, to enable "Fake token driver"
+# Trying out CLI mode 
+
+Useful command how to run project from CLI.
+
+```bash
+./mvnw exec:java -Dexec.mainClass="digital.slovensko.autogram.Main" -Dexec.args="--cli ..."
+```
 
 # More info about inner workings of builds for MacOS
 

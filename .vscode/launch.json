@@ -33,6 +33,28 @@
                 // this is because of some escaping problem with zsh
                 "console": "externalTerminal"
             }
+        },
+        {
+            "type": "java",
+            "name": "Autogram CLI",
+            "request": "launch",
+            "mainClass": "digital.slovensko.autogram.Main",
+            "projectName": "autogram",
+            "vmArgs": "--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED",
+            "args": "${input:commandLineArguments}",
+            "osx": {
+                // this is because of some escaping problem with zsh
+                "console": "integratedTerminal"
+            }
+        },
+        
+    ],
+    "inputs": [
+        {
+            "id": "commandLineArguments",
+            "type": "promptString",
+            "description": "Please enter command line arguments",
+            "default": "--cli --source src/test/resources/digital/slovensko/autogram/crystal_test_data/rozhodnutie_X4564-2.pdf --target target/out.pdf"
         }
     ]
 }

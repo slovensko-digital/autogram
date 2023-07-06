@@ -50,7 +50,6 @@ public class SigningParameters {
         this.visualizationWidth = preferredPreviewWidth;
     }
 
-
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
         var parameters = new ASiCWithXAdESSignatureParameters();
 
@@ -163,15 +162,21 @@ public class SigningParameters {
                 : CanonicalizationMethod.INCLUSIVE;
     }
 
-    public static SigningParameters buildForPDF(String filename) {
-        return new SigningParameters(SignatureLevel.PAdES_BASELINE_B, null, null, null,
-                DigestAlgorithm.SHA256, false, null, null, null, null, null, "", false, 600);
+    public static SigningParameters buildForPDF(String filename, boolean checkPDFACompliance) {
+        return new SigningParameters(
+                SignatureLevel.PAdES_BASELINE_B,
+                null,
+                null, null,
+                DigestAlgorithm.SHA256,
+                false, null,
+                null, null,
+                null, null, "", checkPDFACompliance, 640);
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
         return new SigningParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, false, null, null,
-                null, null, null, "", false, 600);
+                null, null, null, "", false, 640);
     }
 
     public String getIdentifier() {

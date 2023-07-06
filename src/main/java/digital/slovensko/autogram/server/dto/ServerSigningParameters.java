@@ -11,12 +11,7 @@ import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
 import eu.europa.esig.dss.enumerations.*;
 
-import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
-
-import static digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod.*;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
