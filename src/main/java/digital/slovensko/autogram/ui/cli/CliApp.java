@@ -46,7 +46,9 @@ public class CliApp {
                     autogram.checkPDFACompliance(job);
                 });
             }
+
             jobs.forEach(autogram::sign);
+
         } catch (AutogramException e) {
             ui.showError(e);
         }

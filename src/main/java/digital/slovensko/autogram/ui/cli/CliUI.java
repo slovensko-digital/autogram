@@ -184,6 +184,8 @@ public class CliUI implements UI {
             errMessage = "Unable to create directory";
         } else if (e instanceof TokenDriverDoesNotExistException) {
             errMessage = "Token driver does not exist";
+        } else if (e instanceof TargetDirectoryDoesNotExistException) {
+            errMessage = "Target directory does not exist";
         } else {
             errMessage = "Unknown error occurred";
             e.printStackTrace();

@@ -7,6 +7,7 @@ import com.google.common.io.Files;
 
 import digital.slovensko.autogram.core.errors.SourceAndTargetTypeMismatchException;
 import digital.slovensko.autogram.core.errors.TargetAlreadyExistsException;
+import digital.slovensko.autogram.core.errors.TargetDirectoryDoesNotExistException;
 import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
 
 public class TargetPath {
@@ -16,10 +17,12 @@ public class TargetPath {
     private final boolean isForce;
     private final boolean isGenerated;
     private final boolean isForMultipleFiles;
+    private final boolean isParents;
 
-    public TargetPath(String target, File source, boolean force) {
+    public TargetPath(String target, File source, boolean force, boolean parents) {
         sourceFile = source;
         isForce = force;
+        isParents = parents;
 
         isGenerated = target == null;
         isForMultipleFiles = source.isDirectory();
@@ -54,29 +57,42 @@ public class TargetPath {
     }
 
     public static TargetPath fromParams(CliParameters params) {
-        return new TargetPath(params.getTarget(), params.getSource(), params.isForce());
+        return new TargetPath(params.getTarget(), params.getSource(), params.isForce(), params.shouldMakeParentDirectories());
     }
 
     public static TargetPath fromSource(File source) {
-        return new TargetPath(null, source, false);
+        return new TargetPath(null, source, false, false);
     }
 
     /**
      * Create directory when we want to fill it out
      */
     public void mkdirIfDir() {
-        if (!targetDirectory.exists())
-            if (!targetDirectory.mkdir())
+        if (targetDirectory == null || targetDirectory.exists())
+            return;
+
+        if (isParents) {
+            if (!targetDirectory.mkdirs())
                 throw new UnableToCreateDirectoryException();
+
+            return;
+        }
+
+        if (!isForMultipleFiles)
+            throw new TargetDirectoryDoesNotExistException();
+
+        if (!targetDirectory.mkdir())
+            throw new UnableToCreateDirectoryException();
     }
 
     private static boolean hasSourceAndTargetMatchingType(File source, File target) {
-        if (target.exists()) {
-            var bothAreFiles = target.isFile() && source.isFile();
-            var bothAreDirectories = target.isDirectory() && source.isDirectory();
-            return (bothAreDirectories || bothAreFiles);
-        }
-        return true;
+        if (!target.exists())
+            return true;
+
+        var bothAreFiles = target.isFile() && source.isFile();
+        var bothAreDirectories = target.isDirectory() && source.isDirectory();
+
+        return (bothAreDirectories || bothAreFiles);
     }
 
     /*
@@ -85,27 +101,24 @@ public class TargetPath {
      */
 
     public File getSaveFilePath(File singleSourceFile) {
-
         var file = _getSaveFilePath(singleSourceFile);
 
-        if (file.exists() && !isForce) {
+        if (file.exists() && !isForce)
             throw new TargetAlreadyExistsException();
-        }
+
         return file;
     }
 
     private File _getSaveFilePath(File singleSourceFile) {
         var targetName = this.targetName == null ? generateTargetName(singleSourceFile) : this.targetName;
-
         var targetDirectoryPath = targetDirectory == null ? "" : targetDirectory.getPath();
         File targetSingleFile = Paths.get(targetDirectoryPath, targetName).toFile();
-        if (!targetSingleFile.exists()) {
-            return targetSingleFile;
-        }
 
-        if (isForce) {
+        if (!targetSingleFile.exists())
             return targetSingleFile;
-        }
+
+        if (isForce)
+            return targetSingleFile;
 
         if (isGenerated) {
             var parent = targetSingleFile.getParent();
@@ -136,10 +149,10 @@ public class TargetPath {
 
     private String generateTargetName(File singleSourceFile) {
         var extension = singleSourceFile.getName().endsWith(".pdf") ? ".pdf" : ".asice";
-        if (isGenerated || isForMultipleFiles) {
+        if (isGenerated || isForMultipleFiles)
             return Files.getNameWithoutExtension(singleSourceFile.getName()) + "_signed" + extension;
-        } else {
+
+        else
             return Files.getNameWithoutExtension(targetDirectory.getName()) + extension;
-        }
     }
 }

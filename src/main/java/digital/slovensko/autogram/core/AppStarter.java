@@ -1,7 +1,5 @@
 package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.ui.cli.CliApp;
 import digital.slovensko.autogram.ui.gui.GUIApp;
 import javafx.application.Application;
@@ -21,6 +19,7 @@ public class AppStarter {
         addOption("t", "target", true, "Target file or directory for signed files.").
         addOption("f", "force", false, "Overwrite existing file(s).").
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
+        addOption(null, "parents", false, "Create all target's parent directories if needed.").
         addOption("d", "driver", true, "PCKS driver for signing. Supported drivers: eid, secure_store, monet, gemalto.");
 
     public static void start(String[] args) {
@@ -56,6 +55,7 @@ public class AppStarter {
                 autogram --cli [options]
                 autogram --cli -s target/directory-example/file-example.pdf -t target/output-example/out-example.pdf
                 autogram --cli -s target/directory-example -t target/output-example -f
+                autogram --cli -s target/directory-example -t target/non-existent-dir/output-example --parents
                 autogram --cli -s target/directory-example/file-example.pdf -pdfa
                 autogram --cli -s target/directory-example/file-example.pdf -d eid
                 """;

@@ -30,7 +30,7 @@ public class TargetPathTest {
         when(sourceFile.isFile()).thenReturn(true);
         when(sourceFile.getParentFile()).thenReturn(sourceFileParent);
 
-        var targetPath = new TargetPath(null, sourceFile, false);
+        var targetPath = new TargetPath(null, sourceFile, false, false);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/source_signed.pdf", target.getPath());
@@ -58,7 +58,7 @@ public class TargetPathTest {
         when(sourceFile.isFile()).thenReturn(true);
         when(sourceFile.getParentFile()).thenReturn(sourceFileParent);
 
-        var targetPath = new TargetPath(null, sourceFile, false);
+        var targetPath = new TargetPath(null, sourceFile, false, false);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/source_signed.asice", target.getPath());
@@ -86,7 +86,7 @@ public class TargetPathTest {
         when(sourceFile.isFile()).thenReturn(true);
         when(sourceFile.getParentFile()).thenReturn(sourceFileParent);
 
-        var targetPath = new TargetPath("/test/virtual/other/target.pdf", sourceFile, false);
+        var targetPath = new TargetPath("/test/virtual/other/target.pdf", sourceFile, false, false);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/other/target.pdf", target.getPath());
@@ -115,7 +115,7 @@ public class TargetPathTest {
         when(source2.isDirectory()).thenReturn(false);
         when(source2.isFile()).thenReturn(true);
 
-        var targetPath = new TargetPath("/test/virtual/target/", sourceDirectory, false);
+        var targetPath = new TargetPath("/test/virtual/target/", sourceDirectory, false, false);
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
@@ -155,7 +155,7 @@ public class TargetPathTest {
         when(source2.isDirectory()).thenReturn(false);
         when(source2.isFile()).thenReturn(true);
 
-        var targetPath = new TargetPath(null, sourceDirectory, false);
+        var targetPath = new TargetPath(null, sourceDirectory, false, false);
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 

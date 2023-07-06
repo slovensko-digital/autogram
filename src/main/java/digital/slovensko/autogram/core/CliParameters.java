@@ -8,14 +8,13 @@ import org.apache.commons.cli.CommandLine;
 import java.io.File;
 import java.util.Optional;
 
-import static digital.slovensko.autogram.core.CliParameters.Validations.*;
-
 public class CliParameters {
     private final File source;
     private final String target;
     private final boolean force;
     private final TokenDriver driver;
     private final boolean checkPDFACompliance;
+    private final boolean makeParentDirectories;
 
 
     public CliParameters(CommandLine cmd) {
@@ -24,6 +23,7 @@ public class CliParameters {
         driver = getValidTokenDriver(cmd.getOptionValue("d"));
         force = cmd.hasOption("f");
         checkPDFACompliance = cmd.hasOption("pdfa");
+        makeParentDirectories = cmd.hasOption("parents");
     }
 
     public File getSource() {
@@ -46,30 +46,30 @@ public class CliParameters {
         return checkPDFACompliance;
     }
 
-    public static class Validations {
+    public boolean shouldMakeParentDirectories() {
+        return makeParentDirectories;
+    }
 
-        public static File getValidSource(String sourcePath) {
-            if (sourcePath != null && !new File(sourcePath).exists())
-                throw new SourceDoesNotExistException(sourcePath);
+    private static File getValidSource(String sourcePath) {
+        if (sourcePath != null && !new File(sourcePath).exists())
+            throw new SourceDoesNotExistException(sourcePath);
 
-            return sourcePath == null ? null : new File(sourcePath);
-        }
+        return sourcePath == null ? null : new File(sourcePath);
+    }
 
-        public static TokenDriver getValidTokenDriver(String driverName) {
-            if (driverName == null) {
-                return null;
-            }
+    private static TokenDriver getValidTokenDriver(String driverName) {
+        if (driverName == null)
+            return null;
 
-            Optional<TokenDriver> tokenDriver = new DefaultDriverDetector()
-                .getAvailableDrivers()
-                .stream()
-                .filter(d -> d.getShortname().equals(driverName))
-                .findFirst();
+        Optional<TokenDriver> tokenDriver = new DefaultDriverDetector()
+            .getAvailableDrivers()
+            .stream()
+            .filter(d -> d.getShortname().equals(driverName))
+            .findFirst();
 
-            if (tokenDriver.isEmpty())
-                throw new TokenDriverDoesNotExistException(driverName);
+        if (tokenDriver.isEmpty())
+            throw new TokenDriverDoesNotExistException(driverName);
 
-            return tokenDriver.get();
-        }
+        return tokenDriver.get();
     }
 }
