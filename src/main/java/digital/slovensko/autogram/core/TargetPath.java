@@ -135,7 +135,7 @@ public class TargetPath {
         var newBaseName = baseName;
         parent = parent == null ? "" : parent;
         while (true) {
-            var newTargetFile = Paths.get(parent, newBaseName + extension).toFile();
+            var newTargetFile = _generateUniqueNameGetNewTargetFile(parent, newBaseName, extension);
             if (!newTargetFile.exists())
                 return newTargetFile.getPath();
 
@@ -145,6 +145,10 @@ public class TargetPath {
             newBaseName = baseName + " (" + count + ")";
             count++;
         }
+    }
+
+    private File _generateUniqueNameGetNewTargetFile(String parent, String baseName, String extension) {
+        return Paths.get(parent, baseName + extension).toFile();
     }
 
     private String generateTargetName(File singleSourceFile) {
