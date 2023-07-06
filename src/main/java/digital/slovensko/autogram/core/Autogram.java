@@ -26,18 +26,19 @@ public class Autogram {
     }
 
     public void sign(SigningJob job) {
-        ui.onUIThreadDo(() -> ui.startSigning(job, this));
-
-        if (job.shouldCheckPDFCompliance()) {
-            ui.onWorkThreadDo(() -> checkPDFACompliance(job));
-        }
+        ui.onUIThreadDo(()
+        -> ui.startSigning(job, this));
     }
 
-    private void checkPDFACompliance(SigningJob job) {
-        var result = new PDFAStructureValidator().validate(job.getDocument());
-        if (!result.isCompliant()) {
-            ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
-        }
+    public void checkPDFACompliance(SigningJob job) {
+        if(!job.shouldCheckPDFCompliance()) return;
+
+        ui.onWorkThreadDo(() -> {
+            var result = new PDFAStructureValidator().validate(job.getDocument());
+            if (!result.isCompliant()) {
+                ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
+            }
+        });
     }
 
     public void startVisualization(SigningJob job) {

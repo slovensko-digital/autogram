@@ -3,7 +3,6 @@ package digital.slovensko.autogram.core;
 import java.io.File;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -47,7 +46,7 @@ public class SigningJob {
     public int getVisualizationWidth() {
         return parameters.getVisualizationWidth();
     }
-
+    
     private boolean isDocumentXDC() {
         return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
     }
@@ -150,19 +149,18 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static SigningJob buildFromFile(File file, Autogram autogram) {
+    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance) {
         var document = new FileDocument(file);
 
         SigningParameters parameters;
         var filename = file.getName();
 
         if (filename.endsWith(".pdf")) {
-            parameters = SigningParameters.buildForPDF(filename);
+            parameters = SigningParameters.buildForPDF(filename, checkPDFACompliance);
         } else {
             parameters = SigningParameters.buildForASiCWithXAdES(filename);
         }
 
-        var responder = new SaveFileResponder(file, autogram);
         return new SigningJob(document, parameters, responder);
     }
 
