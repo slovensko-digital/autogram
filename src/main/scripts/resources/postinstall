@@ -24,7 +24,9 @@ function sudo_create_cert() {
     sudo -u "$USER" bash -c "$FUNC; remove_cert; create_cert"
 }
 
-if [ "$AUTOGRAM_SKIP_CREATE_CERT" = "true" ]; then
+
+
+if [[ -f "$HOME/Library/Application Support/Autogram/tls/skip" ]]; then
     exit 0
 fi
 
