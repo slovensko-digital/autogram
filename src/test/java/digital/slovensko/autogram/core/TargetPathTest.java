@@ -38,6 +38,26 @@ public class TargetPathTest {
     }
 
     /**
+     * Used in GUI mode with single file
+     * or used in CLI mode without target eg. `--cli -s source.pdf` on path `/test/virtual/`
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testSingleFileNoTargetNoParent() throws IOException {
+        var config = com.google.common.jimfs.Configuration.unix().toBuilder().setWorkingDirectory("/test/virtual/").build();
+        FileSystem fs = Jimfs.newFileSystem(config);
+        Files.createDirectories(fs.getPath("/test/virtual/"));
+        var sourceFile = fs.getPath("source.pdf");
+        Files.createFile(sourceFile);
+
+        var targetPath = new TargetPath(null, sourceFile, false, false, fs);
+        var target = targetPath.getSaveFilePath(sourceFile);
+
+        assertEqualPath(fs, "/test/virtual/source_signed.pdf", target);
+    }
+
+    /**
      * Used in GUI mode with single file and no target when generated target file
      * exits
      * or used in CLI mode without target eg. `--cli -s /test/virtual/source.pdf`
@@ -96,6 +116,11 @@ public class TargetPathTest {
         assertEqualPath(fs, "/test/virtual/other/target.pdf", target);
     }
 
+
+
+    /**
+     * `--cli -s /test/virtual/ -t /test/virtual/target/`
+     */
     @Test
     public void testDirectoryWithTarget() throws IOException {
 
@@ -114,6 +139,9 @@ public class TargetPathTest {
         assertEqualPath(fs, "/test/virtual/target/source2_signed.pdf", target2);
     }
 
+    /**
+     * `--cli -s /test/virtual/`
+     */
     @Test
     public void testDirectoryNoTarget() throws IOException {
 
@@ -123,6 +151,29 @@ public class TargetPathTest {
 
         var source1 = fs.getPath("/test/virtual/source", "source1.pdf");
         var source2 = fs.getPath("/test/virtual/source", "source2.pdf");
+
+        var targetPath = new TargetPath(null, sourceDirectory, false, false, fs);
+        var target1 = targetPath.getSaveFilePath(source1);
+        var target2 = targetPath.getSaveFilePath(source2);
+
+        assertEqualPath(fs, "/test/virtual/source_signed/source1_signed.pdf", target1);
+        assertEqualPath(fs, "/test/virtual/source_signed/source2_signed.pdf", target2);
+    }
+
+
+    /**
+     * `--cli -s /test/virtual/`
+     */
+    @Test
+    public void testDirectoryNoTargetNoParent() throws IOException {
+
+        var config = com.google.common.jimfs.Configuration.unix().toBuilder().setWorkingDirectory("/test/virtual/").build();
+        FileSystem fs = Jimfs.newFileSystem(config);
+        var sourceDirectory = fs.getPath("source/");
+        Files.createDirectories(sourceDirectory);
+
+        var source1 = fs.getPath("source", "source1.pdf");
+        var source2 = fs.getPath("source", "source2.pdf");
 
         var targetPath = new TargetPath(null, sourceDirectory, false, false, fs);
         var target1 = targetPath.getSaveFilePath(source1);

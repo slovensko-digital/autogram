@@ -33,12 +33,12 @@ public class TargetPath {
             if (isForMultipleFiles) {
 
                 targetDirectory = fs.getPath(
-                        generateUniqueName(source.getParent().toString(), source.getFileName().toString() + "_signed",
+                        generateUniqueName(source.toAbsolutePath().getParent().toString(), source.getFileName().toString() + "_signed",
                                 ""));
                 targetName = null;
 
             } else {
-                targetDirectory = source.getParent();
+                targetDirectory = source.toAbsolutePath().getParent();
                 targetName = null;
             }
 
