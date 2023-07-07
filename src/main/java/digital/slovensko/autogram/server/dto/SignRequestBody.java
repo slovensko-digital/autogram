@@ -79,15 +79,14 @@ public class SignRequestBody {
         String xsdSchema = signingParameters.getSchema();
         String xmlContent;
 
-        if (isXdc()) {
-            if (!validateXsdAndXsltHashes(signingParameters)) {
+        boolean isXdc = getDocument().getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
+        if (isXdc) {
+            XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, getDocument());
+            if (!xdcTransformer.validateXsdAndXsltHashes()) {
                 throw new RequestValidationException("XML validation failed", "Invalid xsd scheme or xslt transformation");
             }
 
-            xmlContent = getContentFromXdc();
-            if (xmlContent == null) {
-                throw new RequestValidationException("XML validation failed", "Unable to get content from xdc container");
-            }
+            xmlContent = xdcTransformer.getContentFromXdc();
         } else {
             xmlContent = getDecodedContent();
         }
@@ -95,50 +94,6 @@ public class SignRequestBody {
         if (!validateXmlContentAgainstXsd(xmlContent, xsdSchema)) {
             throw new RequestValidationException("XML validation failed", "XML validation against XSD failed");
         }
-    }
-
-    private boolean isXdc() {
-        return getDocument().getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
-    }
-
-    private boolean validateXsdAndXsltHashes(SigningParameters sp) {
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-
-            XDCTransformer xdcTransformer = new XDCTransformer(
-                    sp.getSchema(),
-                    sp.getTransformation(),
-                    sp.getPropertiesCanonicalization(),
-                    sp.getDigestAlgorithm(),
-                    builderFactory.newDocumentBuilder().parse(new InputSource(getDocument().openStream()))
-            );
-
-            return xdcTransformer.validateXsd() && xdcTransformer.validateXslt();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private String getContentFromXdc() {
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(getDocument().openStream()));
-            var element = XDCTransformer.extractFromXDC(document, builderFactory);
-            return transformElementToString(element);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private static String transformElementToString(DOMSource element) throws TransformerException {
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = factory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        StringWriter writer = new StringWriter();
-        transformer.transform(element, new StreamResult(writer));
-        return writer.toString();
     }
 
     private String getDecodedContent() {

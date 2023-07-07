@@ -9,12 +9,15 @@ import eu.europa.esig.dss.xades.DSSXMLUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -71,7 +74,22 @@ public class XDCTransformer {
         this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
-    public XDCTransformer(String xsdSchema, String xsltSchema, String canonicalizationMethod,
+    public static XDCTransformer buildFromSigningParametersAndDocument(SigningParameters sp, InMemoryDocument document) {
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+
+            return new XDCTransformer(sp.getSchema(),
+                    sp.getTransformation(),
+                    sp.getPropertiesCanonicalization(),
+                    sp.getDigestAlgorithm(),
+                    builderFactory.newDocumentBuilder().parse(new InputSource(document.openStream())));
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to create XDC transformer from signing parameters and document", e);
+        }
+    }
+
+    private XDCTransformer(String xsdSchema, String xsltSchema, String canonicalizationMethod,
                           DigestAlgorithm digestAlgorithm, Document document) {
         this.xsdSchema = xsdSchema;
         this.xsltSchema = xsltSchema;
@@ -228,21 +246,20 @@ public class XDCTransformer {
         return "urn:oid:" + digestAlgorithm.getOid();
     }
 
-    public static DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)
-            throws ParserConfigurationException {
-        var xdc = document.getDocumentElement();
+    public boolean validateXsdAndXsltHashes() {
+        return validateXsd() && validateXslt();
+    }
 
-        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
-                .item(0);
+    private boolean validateXsd() {
+        String xsdSchemaHash = computeDigest(xsdSchema);
+        String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
+        return xsdSchemaHash.equals(xsdDigestValue);
+    }
 
-        if (xmlData == null)
-            throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere
-
-        document = builderFactory.newDocumentBuilder().newDocument();
-        var node = document.importNode(xmlData.getFirstChild(), true);
-        document.appendChild(node);
-
-        return new DOMSource(document);
+    private boolean validateXslt() {
+        String xsltSchemaHash = computeDigest(xsltSchema);
+        String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
+        return xsltSchemaHash.equals(xsltDigestValue);
     }
 
     private String getDigestValueFromElement(String elementLocalName) {
@@ -264,16 +281,37 @@ public class XDCTransformer {
         return digestValue.getNodeValue();
     }
 
-    public boolean validateXsd() {
-        String xsdSchemaHash = computeDigest(xsdSchema);
-        String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
-        return xsdSchemaHash.equals(xsdDigestValue);
+    public String getContentFromXdc() {
+        var xdc = document.getDocumentElement();
+
+        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
+                .item(0);
+
+        if (xmlData == null)
+            throw new RuntimeException("XMLData not found in XDC");
+
+        return transformElementToString(xmlData.getFirstChild());
     }
 
-    public boolean validateXslt() {
-        String xsltSchemaHash = computeDigest(xsltSchema);
-        String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
-        return xsltSchemaHash.equals(xsltDigestValue);
+    private String transformElementToString(Node element) {
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+
+            var document = builderFactory.newDocumentBuilder().newDocument();
+            var node = document.importNode(element, true);
+            document.appendChild(node);
+
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Transformer transformer = factory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            StringWriter writer = new StringWriter();
+            transformer.transform(new DOMSource(document), new StreamResult(writer));
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to transform element to string", e);
+        }
     }
 
 }
