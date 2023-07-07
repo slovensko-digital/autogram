@@ -1,11 +1,6 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.server.errors.MalformedBodyException;
-import digital.slovensko.autogram.server.errors.RequestValidationException;
-import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
 
 public class ErrorResponse {
     private final int statusCode;
@@ -40,6 +35,7 @@ public class ErrorResponse {
             case "UnsupportedSignatureLevelExceptionError" -> new ErrorResponse(422, "UNSUPPORTED_SIGNATURE_LEVEL", (AutogramException) e);
             case "RequestValidationException" -> new ErrorResponse(422, "UNPROCESSABLE_INPUT", (AutogramException) e);
             case "MalformedBodyException" -> new ErrorResponse(400, "MALFORMED_INPUT", (AutogramException) e);
+            case "TransformationException" -> new ErrorResponse(400, "TRANSFORMATION_FAILED", (AutogramException) e);
             case "AutogramException" -> new ErrorResponse(502, "SIGNING_FAILED", (AutogramException) e);
             default -> new ErrorResponse(500, "INTERNAL_ERROR", "Unexpected exception signing document", e.getMessage());
         };

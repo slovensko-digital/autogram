@@ -1,5 +1,13 @@
 # Info for developers
 
+# Trying out CLI mode 
+
+Useful command how to run project from CLI.
+
+```bash
+./mvnw exec:java -Dexec.mainClass="digital.slovensko.autogram.Main" -Dexec.args="--cli ..."
+```
+
 # More info about inner workings of builds for MacOS
 
 To run signed mac build add follwing to `.vscode/settings.json` (or you can do unsigned build by setting `mac.sign=0` in `build.properties`)

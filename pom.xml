@@ -1,6 +1,6 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,8 +23,10 @@
         <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.7</slf4j.version>
         <junit.version>5.9.3</junit.version>
-        <mockito.version>5.3.1</mockito.version>
-        <xmlunit.version>2.6.2</xmlunit.version>
+        <mockito.version>5.4.0</mockito.version>
+        <commons-cli.version>1.5.0</commons-cli.version>
+        <xmlunit.version>2.9.1</xmlunit.version>
+        <jimfs.version>1.2</jimfs.version>
     </properties>
 
     <dependencyManagement>
@@ -113,6 +115,11 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>${commons-cli.version}</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.xmlunit/xmlunit-core -->
         <dependency>
             <groupId>org.xmlunit</groupId>
@@ -124,6 +131,12 @@
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-matchers</artifactId>
             <version>${xmlunit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.jimfs</groupId>
+            <artifactId>jimfs</artifactId>
+            <version>${jimfs.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -207,7 +220,7 @@
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>versions-maven-plugin</artifactId>
+                <artifactId>versions-maven-plugin</artifactId>
                 <version>2.16.0</version>
             </plugin>
 
@@ -259,8 +272,10 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.min.js</url>
-                            <toDir>${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs</toDir>
+                            <url>
+                                https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.min.js</url>
+                            <toDir>
+                                ${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs</toDir>
                             <skipIfExists>true</skipIfExists>
                         </configuration>
                     </execution>
@@ -271,8 +286,10 @@
                             <goal>download-single</goal>
                         </goals>
                         <configuration>
-                            <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js</url>
-                            <toDir>${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs</toDir>
+                            <url>
+                                https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js</url>
+                            <toDir>
+                                ${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs</toDir>
                             <skipIfExists>true</skipIfExists>
                         </configuration>
                     </execution>
@@ -285,7 +302,8 @@
                         <configuration>
                             <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
                             <fromDir>cmaps</fromDir>
-                            <toDir>${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs/cmaps</toDir>
+                            <toDir>
+                                ${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs/cmaps</toDir>
                             <!-- <skip>true</skip> -->
                         </configuration>
                     </execution>
@@ -321,7 +339,8 @@
                             <goal>jdeps</goal>
                         </goals>
                         <configuration>
-                            <!-- The output of jdeps is currently not used anywhere, modules are defined manually -->
+                            <!-- The output of jdeps is currently not used anywhere, modules are
+                            defined manually -->
                             <skip>true</skip>
                             <output>${project.build.directory}${file.separator}jdeps.out</output>
                             <options>
@@ -332,7 +351,8 @@
                                 <option>${java.version}</option>
                                 <option>-f</option>
                                 <option>.*jar</option>
-                                <option>${project.build.directory}${file.separator}${project.build.finalName}.jar</option>
+                                <option>
+                                    ${project.build.directory}${file.separator}${project.build.finalName}.jar</option>
                             </options>
                         </configuration>
                     </execution>
@@ -363,7 +383,8 @@
                                 <module>javafx.fxml</module>
                                 <module>javafx.graphics</module>
                                 <module>javafx.web</module>
-                                <!-- Needed for sun.misc.Unsafe used by JavaFX, shouldn't be used in our code -->
+                                <!-- Needed for sun.misc.Unsafe used by JavaFX, shouldn't be used in
+                                our code -->
                                 <module>jdk.unsupported</module>
                                 <module>jdk.httpserver</module>
                             </addModules>
@@ -409,13 +430,16 @@
                 <version>3.1.0</version>
                 <configuration>
                     <executable>bash</executable>
-                    <workingDirectory>${project.build.scriptSourceDirectory}${file.separator}resources</workingDirectory>
+                    <workingDirectory>
+                        ${project.build.scriptSourceDirectory}${file.separator}resources</workingDirectory>
                     <arguments>
                         <argument>${project.build.scriptSourceDirectory}${file.separator}package.sh</argument>
                         <argument>${jlink.jdk.path}${file.separator}bin${file.separator}jpackage</argument>
-                        <argument>${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}</argument>
+                        <argument>
+                            ${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}</argument>
                         <argument>${project.build.directory}${file.separator}preparedJDK</argument>
-                        <argument>${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}digital${file.separator}slovensko${file.separator}autogram</argument>
+                        <argument>
+                            ${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}digital${file.separator}slovensko${file.separator}autogram</argument>
                         <argument>${platform}</argument>
                         <argument>${project.version}</argument>
                         <argument>${project.build.directory}</argument>

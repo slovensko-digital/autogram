@@ -51,6 +51,8 @@ if [[ "$platform" == "win" ]]; then
         "--type" "msi"
         "--icon" "./Autogram.ico"
         "--java-options" "$jvmOptions --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED"
+        "--win-shortcut-prompt"
+        "--win-menu"
     )
 
     if [[ ! -z "$properties_win_upgradeUUID" ]]; then
