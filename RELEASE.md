@@ -14,11 +14,11 @@ Je potrebné skontrolovať či nepribudol škodlivý kód, exfiltrácia secrets 
 - [ ] funguje inštalácia na MacOS cez stiahnutý .pkg
 - [ ] funguje inštalácia na Linux (Debian-based) cez stiahnutý .deb
 - [ ] funguje inštalácia na Linux cez stiahnutý .rpm
-- [ ] funguje spustenie v GUI móde `autogram --go`
+- [ ] funguje spustenie v GUI móde
 - [ ] funguje spustenie v GUI serverovom móde `autogram --url=autogram://listen?protocol=http&host=localhost&port=37200&origin=*&language=sk`
-- [ ] funguje URL handler na Windows
-- [ ] funguje URL handler na MacOS
-- [ ] funguje URL handler na Linux
+- [ ] funguje URL handler na Windows [autogram://go](autogram://go)
+- [ ] funguje URL handler na MacOS [autogram://go](autogram://go)
+- [ ] funguje URL handler na Linux [autogram://go](autogram://go)
 - [ ] funguje GUI otvoriť jeden súbor, ten sa zobrazí, viem ho podpísať, vytvorí sa podpísaný súbor
 - [ ] funguje CLI `autogram --cli --source source.pdf`
 - [ ] funguje CLI `autogram --cli --source source.pdf --target target.pdf`
