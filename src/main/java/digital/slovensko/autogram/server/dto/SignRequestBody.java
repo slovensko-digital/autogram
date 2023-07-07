@@ -2,7 +2,6 @@ package digital.slovensko.autogram.server.dto;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Base64;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
@@ -10,15 +9,9 @@ import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.XDCTransformer;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
