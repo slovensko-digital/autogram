@@ -8,11 +8,13 @@ public abstract class TokenDriver {
     protected final String name;
     private final Path path;
     private final boolean needsPassword;
+    private final String shortname;
 
-    public TokenDriver(String name, Path path, boolean needsPassword) {
+    public TokenDriver(String name, Path path, boolean needsPassword, String shortname) {
         this.name = name;
         this.path = path;
         this.needsPassword = needsPassword;
+        this.shortname = shortname;
     }
 
     public String getName() {
@@ -33,5 +35,9 @@ public abstract class TokenDriver {
 
     public boolean needsPassword() {
         return needsPassword;
+    }
+
+    public String getShortname() {
+        return shortname;
     }
 }

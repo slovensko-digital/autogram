@@ -9,8 +9,8 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 public class FakeTokenDriver extends TokenDriver {
-    public FakeTokenDriver(String name, Path path, boolean needsPassword) {
-        super(name, path, needsPassword);
+    public FakeTokenDriver(String name, Path path, boolean needsPassword, String shortname) {
+        super(name, path, needsPassword, shortname);
     }
 
 

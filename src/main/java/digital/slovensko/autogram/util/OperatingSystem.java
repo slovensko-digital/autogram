@@ -17,7 +17,7 @@ public enum OperatingSystem {
         } else if (osName.contains("nux")) {
             return LINUX;
         } else {
-            return null;
+            throw new RuntimeException("Unsupported OS");
         }
     }
 }

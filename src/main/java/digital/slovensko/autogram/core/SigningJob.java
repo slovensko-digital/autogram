@@ -56,10 +56,10 @@ public class SigningJob {
     }
 
     public void signWithKeyAndRespond(SigningKey key) {
-        if (Platform.isFxApplicationThread()){
+        if (Platform.isFxApplicationThread()) {
             throw new RuntimeException("Cannot sign on UI thread");
         }
-        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName()); 
+        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
@@ -157,28 +157,28 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static SigningJob buildFromFile(File file, Autogram autogram) {
+    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance) {
         var document = new FileDocument(file);
-        SigningParameters parameters = getParametersForFile(file);
-
-        var responder = new SaveFileResponder(file, autogram);
+        SigningParameters parameters = getParametersForFile(file, checkPDFACompliance);
         return new SigningJob(document, parameters, responder);
     }
 
-    public static SigningJob buildFromFileBatch(File file, Autogram autogram, File targetDirectory, SaveFileFromBatchResponder responder) {
+    public static SigningJob buildFromFileBatch(File file, Autogram autogram, File targetDirectory,
+            SaveFileFromBatchResponder responder) {
         var document = new FileDocument(file);
-        SigningParameters parameters = getParametersForFile(file);
+        SigningParameters parameters = getParametersForFile(file, false);
         return new SigningJob(document, parameters, responder);
     }
 
-    private static SigningParameters getParametersForFile(File file) {
+    private static SigningParameters getParametersForFile(File file, boolean checkPDFACompliance) {
         var filename = file.getName();
 
         if (filename.endsWith(".pdf")) {
-            return SigningParameters.buildForPDF(filename);
+            return SigningParameters.buildForPDF(filename, checkPDFACompliance);
         } else {
             return SigningParameters.buildForASiCWithXAdES(filename);
         }
+
     }
 
     public boolean shouldCheckPDFCompliance() {
