@@ -246,17 +246,13 @@ public class XDCTransformer {
         return "urn:oid:" + digestAlgorithm.getOid();
     }
 
-    public boolean validateXsdAndXsltHashes() {
-        return validateXsd() && validateXslt();
-    }
-
-    private boolean validateXsd() {
+    public boolean validateXsdDigest() {
         String xsdSchemaHash = computeDigest(xsdSchema);
         String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
         return xsdSchemaHash.equals(xsdDigestValue);
     }
 
-    private boolean validateXslt() {
+    public boolean validateXsltDigest() {
         String xsltSchemaHash = computeDigest(xsltSchema);
         String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
         return xsltSchemaHash.equals(xsltDigestValue);
