@@ -27,40 +27,29 @@ public class BatchSaveFileResponder extends BatchResponder {
 
     @Override
     public void onBatchStartSuccess(Batch batch) {
-        // var targetPath = TargetPath.fromSource(list.get(0).toPath().getParent());
         var targetPath = TargetPath.fromBatchSource(list.get(0).toPath());
+        targetPath.mkdirIfDir();
         for (File file : list) {
-            // synchronized (batch) {
-                targetFiles.put(file, null);
-                Logging.log("1 Signing " + file.toString());
-                var responder = new SaveFileFromBatchResponder(file, autogram, targetPath, (File targetFile) -> {
-                    targetFiles.put(file, targetFile);
-                    Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments()
-                            + " signed " + file.toString());
-                    var isEveryFileSigned = targetFiles.values().stream().allMatch(b -> b != null);
-                    if (batch.isAllProcessed() && isEveryFileSigned) {
-                        onAllFilesSigned();
-                    }
-                    // synchronized (batch) {
-                    //     batch.notify();
-                    // }
-                });
-                var job = SigningJob.buildFromFileBatch(file, autogram, responder);
-                autogram.batchSign(job, batch.getBatchId());
-                Logging.log("Started batchSigning " + file.toString() + "for job " + job.hashCode());
-                // try {
-                //     batch.wait();
-                // } catch (InterruptedException e) {
-                //     // TODO Auto-generated catch block
-                //     e.printStackTrace();
-                // }
-                Logging.log("Ended batchSigning " + file.toString() + "for job " + job.hashCode());
-            // }
+            targetFiles.put(file, null);
+            Logging.log("1 Signing " + file.toString());
+            var responder = new SaveFileFromBatchResponder(file, autogram, targetPath, (File targetFile) -> {
+                targetFiles.put(file, targetFile);
+                Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments()
+                        + " signed " + file.toString());
+                var isEveryFileSigned = targetFiles.values().stream().allMatch(b -> b != null);
+                if (batch.isAllProcessed() && isEveryFileSigned) {
+                    onAllFilesSigned();
+                }
+            });
+            var job = SigningJob.buildFromFileBatch(file, autogram, responder);
+            autogram.batchSign(job, batch.getBatchId());
+            Logging.log("Started batchSigning " + file.toString() + "for job " + job.hashCode());
+            Logging.log("Ended batchSigning " + file.toString() + "for job " + job.hashCode());
         }
 
     }
 
-    private  void onAllFilesSigned() { //synchronized
+    private void onAllFilesSigned() { // synchronized
         if (!uiNotifiedOnAllFilesSigned) {
             uiNotifiedOnAllFilesSigned = true;
             autogram.onDocumentBatchSaved(targetFiles.values().stream().toList());
