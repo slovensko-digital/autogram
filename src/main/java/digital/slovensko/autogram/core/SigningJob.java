@@ -115,11 +115,11 @@ public class SigningJob {
     }
 
     private DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)
-            throws ParserConfigurationException {
+        throws ParserConfigurationException {
         var xdc = document.getDocumentElement();
 
         var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
-                .item(0);
+            .item(0);
 
         if (xmlData == null)
             throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere
