@@ -163,8 +163,7 @@ public class SigningJob {
         return new SigningJob(document, parameters, responder);
     }
 
-    public static SigningJob buildFromFileBatch(File file, Autogram autogram, File targetDirectory,
-            SaveFileFromBatchResponder responder) {
+    public static SigningJob buildFromFileBatch(File file, Autogram autogram, SaveFileFromBatchResponder responder) {
         var document = new FileDocument(file);
         SigningParameters parameters = getParametersForFile(file, false);
         return new SigningJob(document, parameters, responder);

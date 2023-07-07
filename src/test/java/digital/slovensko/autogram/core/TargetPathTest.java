@@ -31,7 +31,7 @@ public class TargetPathTest {
         Files.createDirectories(sourceFile.getParent());
         Files.createFile(sourceFile);
 
-        var targetPath = new TargetPath(null, sourceFile, false, false, fs);
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath(fs, "/test/virtual/source_signed.pdf", target);
@@ -51,7 +51,7 @@ public class TargetPathTest {
         var sourceFile = fs.getPath("source.pdf");
         Files.createFile(sourceFile);
 
-        var targetPath = new TargetPath(null, sourceFile, false, false, fs);
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath(fs, "/test/virtual/source_signed.pdf", target);
@@ -72,7 +72,7 @@ public class TargetPathTest {
         Files.createFile(sourceFile);
         Files.createFile(fs.getPath("/test/virtual/source_signed.pdf"));
 
-        var targetPath = new TargetPath(null, sourceFile, false, false, fs);
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath(fs, "/test/virtual/source_signed (1).pdf", target);
@@ -91,7 +91,7 @@ public class TargetPathTest {
         Files.createDirectories(sourceFile.getParent());
         Files.createFile(sourceFile);
 
-        var targetPath = new TargetPath(null, sourceFile, false, false, fs);
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath(fs, "/test/virtual/source_signed.asice", target);

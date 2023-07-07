@@ -1,17 +1,15 @@
 package digital.slovensko.autogram.ui;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 
@@ -29,12 +27,13 @@ public class BatchSaveFileResponder extends BatchResponder {
 
     @Override
     public void onBatchStartSuccess(Batch batch) {
-        var targetDirectory = getTargetDirectory();
+        // var targetPath = TargetPath.fromSource(list.get(0).toPath().getParent());
+        var targetPath = TargetPath.fromBatchSource(list.get(0).toPath());
         for (File file : list) {
             // synchronized (batch) {
                 targetFiles.put(file, null);
                 Logging.log("1 Signing " + file.toString());
-                var responder = new SaveFileFromBatchResponder(file, autogram, targetDirectory, (File targetFile) -> {
+                var responder = new SaveFileFromBatchResponder(file, autogram, targetPath, (File targetFile) -> {
                     targetFiles.put(file, targetFile);
                     Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments()
                             + " signed " + file.toString());
@@ -46,7 +45,7 @@ public class BatchSaveFileResponder extends BatchResponder {
                     //     batch.notify();
                     // }
                 });
-                var job = SigningJob.buildFromFileBatch(file, autogram, targetDirectory, responder);
+                var job = SigningJob.buildFromFileBatch(file, autogram, responder);
                 autogram.batchSign(job, batch.getBatchId());
                 Logging.log("Started batchSigning " + file.toString() + "for job " + job.hashCode());
                 // try {

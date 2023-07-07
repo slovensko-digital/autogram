@@ -22,18 +22,24 @@ public class TargetPath {
     private final FileSystem fs;
 
     public TargetPath(String target, Path source, boolean force, boolean parents, FileSystem fileSystem) {
+        this(target, source, force, parents, Files.isDirectory(source), fileSystem);
+    }
+
+    public TargetPath(String target, Path source, boolean force, boolean parents, boolean multipleFiles,
+            FileSystem fileSystem) {
         fs = fileSystem;
         sourceFile = source;
         isForce = force;
         isParents = parents;
 
         isGenerated = target == null;
-        isForMultipleFiles = Files.isDirectory(source);
+        isForMultipleFiles = multipleFiles;
         if (isGenerated) {
             if (isForMultipleFiles) {
 
                 targetDirectory = fs.getPath(
-                        generateUniqueName(source.toAbsolutePath().getParent().toString(), source.getFileName().toString() + "_signed",
+                        generateUniqueName(source.toAbsolutePath().getParent().toString(),
+                                source.getFileName().toString() + "_signed",
                                 ""));
                 targetName = null;
 
@@ -68,6 +74,11 @@ public class TargetPath {
 
     public static TargetPath fromSource(Path source) {
         return new TargetPath(null, source, false, false, FileSystems.getDefault());
+    }
+
+    public static TargetPath fromBatchSource(Path source) {
+        return new TargetPath(source.getParent().resolve("signed").toString(), source, false, false, true,
+                FileSystems.getDefault());
     }
 
     /**
