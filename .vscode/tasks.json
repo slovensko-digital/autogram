@@ -93,7 +93,7 @@
 
     {
       "label": "MacOS: Send package for notarization",
-      "command": "xcrun notarytool submit --keychain-profile \"autogram\" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg",
+      "command": "pkgutil --check-signature target/Autogram-*.pkg && xcrun notarytool submit --keychain-profile \"autogram\" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg",
       "options": {
         "env": {
           "JAVA_HOME": "${config:java.jdt.ls.java.home}",
