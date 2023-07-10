@@ -27,8 +27,16 @@ public class BatchSaveFileResponder extends BatchResponder {
 
     @Override
     public void onBatchStartSuccess(Batch batch) {
-        var targetPath = TargetPath.fromBatchSource(list.get(0).toPath());
-        targetPath.mkdirIfDir();
+        TargetPath targetPath;
+        try {
+            targetPath = TargetPath.fromBatchSource(list.get(0).toPath());
+            targetPath.mkdirIfDir();
+
+        } catch (AutogramException e) {
+            autogram.onSigningFailed(e);
+            throw e;
+        }
+        
         for (File file : list) {
             targetFiles.put(file, null);
             Logging.log("1 Signing " + file.toString());
@@ -46,7 +54,6 @@ public class BatchSaveFileResponder extends BatchResponder {
             Logging.log("Started batchSigning " + file.toString() + "for job " + job.hashCode());
             Logging.log("Ended batchSigning " + file.toString() + "for job " + job.hashCode());
         }
-
     }
 
     private void onAllFilesSigned() { // synchronized

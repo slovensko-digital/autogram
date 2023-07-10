@@ -16,6 +16,7 @@ public class TargetPath {
     private final Path sourceFile;
     private final boolean isForce;
     private final boolean isGenerated;
+    private final boolean useUniqueFileName;
     private final boolean isForMultipleFiles;
     private final boolean isParents;
 
@@ -33,8 +34,12 @@ public class TargetPath {
         isParents = parents;
 
         isGenerated = target == null;
+        var isTargetMissing = target == null;
+        useUniqueFileName = isGenerated;
         isForMultipleFiles = multipleFiles;
-        if (isGenerated) {
+        var useUniqueDirectoryName = isForMultipleFiles && !isTargetMissing && source == null; // pouzivane pre gui batch
+        // ktore ale maju target
+        if (isTargetMissing) {
             if (isForMultipleFiles) {
 
                 targetDirectory = fs.getPath(
@@ -53,8 +58,16 @@ public class TargetPath {
             if (!hasSourceAndTargetMatchingType(sourceFile, targetFile))
                 throw new SourceAndTargetTypeMismatchException();
 
-            if (Files.exists(targetFile) && !isForce)
-                throw new TargetAlreadyExistsException();
+            if (Files.exists(targetFile) && !isForce) {
+                if (isForMultipleFiles && useUniqueDirectoryName) {
+                    targetFile = fs.getPath(
+                            generateUniqueName(targetFile.toAbsolutePath().getParent().toString(),
+                                    targetFile.getFileName().toString(),
+                                    ""));
+                } else {
+                    throw new TargetAlreadyExistsException();
+                }
+            }
 
             if (isForMultipleFiles) {
                 targetDirectory = targetFile;
@@ -77,7 +90,7 @@ public class TargetPath {
     }
 
     public static TargetPath fromBatchSource(Path source) {
-        return new TargetPath(source.getParent().resolve("signed").toString(), source, false, false, true,
+        return new TargetPath(source.getParent().resolve("signed").toString(), null, false, false, true,
                 FileSystems.getDefault());
     }
 
@@ -112,6 +125,9 @@ public class TargetPath {
         if (!Files.exists(target))
             return true;
 
+        if (source == null)
+            return true;
+
         var bothAreFiles = Files.isRegularFile(target) && Files.isRegularFile(source);
         var bothAreDirectories = Files.isDirectory(target) && Files.isDirectory(source);
 
@@ -143,7 +159,7 @@ public class TargetPath {
         if (isForce)
             return targetSingleFile;
 
-        if (isGenerated) {
+        if (useUniqueFileName) {
             var parent = targetSingleFile.getParent();
             var baseName = com.google.common.io.Files
                     .getNameWithoutExtension(targetSingleFile.getFileName().toString());
@@ -178,7 +194,7 @@ public class TargetPath {
 
     private String generateTargetName(Path singleSourceFile) {
         var extension = singleSourceFile.getFileName().toString().endsWith(".pdf") ? ".pdf" : ".asice";
-        if (isGenerated || isForMultipleFiles)
+        if (useUniqueFileName || isForMultipleFiles)
             return com.google.common.io.Files.getNameWithoutExtension(singleSourceFile.getFileName().toString())
                     + "_signed"
                     + extension;

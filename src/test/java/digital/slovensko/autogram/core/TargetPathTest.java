@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,18 +35,20 @@ public class TargetPathTest {
         var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
         var target = targetPath.getSaveFilePath(sourceFile);
 
-        assertEqualPath(fs, "/test/virtual/source_signed.pdf", target);
+        assertEqualPath("/test/virtual/source_signed.pdf", target);
     }
 
     /**
      * Used in GUI mode with single file
-     * or used in CLI mode without target eg. `--cli -s source.pdf` on path `/test/virtual/`
+     * or used in CLI mode without target eg. `--cli -s source.pdf` on path
+     * `/test/virtual/`
      * 
      * @throws IOException
      */
     @Test
     public void testSingleFileNoTargetNoParent() throws IOException {
-        var config = com.google.common.jimfs.Configuration.unix().toBuilder().setWorkingDirectory("/test/virtual/").build();
+        var config = com.google.common.jimfs.Configuration.unix().toBuilder().setWorkingDirectory("/test/virtual/")
+                .build();
         FileSystem fs = Jimfs.newFileSystem(config);
         Files.createDirectories(fs.getPath("/test/virtual/"));
         var sourceFile = fs.getPath("source.pdf");
@@ -54,7 +57,7 @@ public class TargetPathTest {
         var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
         var target = targetPath.getSaveFilePath(sourceFile);
 
-        assertEqualPath(fs, "/test/virtual/source_signed.pdf", target);
+        assertEqualPath("/test/virtual/source_signed.pdf", target);
     }
 
     /**
@@ -75,7 +78,7 @@ public class TargetPathTest {
         var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
         var target = targetPath.getSaveFilePath(sourceFile);
 
-        assertEqualPath(fs, "/test/virtual/source_signed (1).pdf", target);
+        assertEqualPath("/test/virtual/source_signed (1).pdf", target);
     }
 
     /**
@@ -94,7 +97,7 @@ public class TargetPathTest {
         var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
         var target = targetPath.getSaveFilePath(sourceFile);
 
-        assertEqualPath(fs, "/test/virtual/source_signed.asice", target);
+        assertEqualPath("/test/virtual/source_signed.asice", target);
     }
 
     /**
@@ -113,10 +116,8 @@ public class TargetPathTest {
         var targetPath = new TargetPath("/test/virtual/other/target.pdf", sourceFile, false, false, fs);
         var target = targetPath.getSaveFilePath(sourceFile);
 
-        assertEqualPath(fs, "/test/virtual/other/target.pdf", target);
+        assertEqualPath("/test/virtual/other/target.pdf", target);
     }
-
-
 
     /**
      * `--cli -s /test/virtual/ -t /test/virtual/target/`
@@ -135,8 +136,8 @@ public class TargetPathTest {
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
-        assertEqualPath(fs, "/test/virtual/target/source1_signed.pdf", target1);
-        assertEqualPath(fs, "/test/virtual/target/source2_signed.pdf", target2);
+        assertEqualPath("/test/virtual/target/source1_signed.pdf", target1);
+        assertEqualPath("/test/virtual/target/source2_signed.pdf", target2);
     }
 
     /**
@@ -156,10 +157,9 @@ public class TargetPathTest {
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
-        assertEqualPath(fs, "/test/virtual/source_signed/source1_signed.pdf", target1);
-        assertEqualPath(fs, "/test/virtual/source_signed/source2_signed.pdf", target2);
+        assertEqualPath("/test/virtual/source_signed/source1_signed.pdf", target1);
+        assertEqualPath("/test/virtual/source_signed/source2_signed.pdf", target2);
     }
-
 
     /**
      * `--cli -s /test/virtual/`
@@ -167,7 +167,8 @@ public class TargetPathTest {
     @Test
     public void testDirectoryNoTargetNoParent() throws IOException {
 
-        var config = com.google.common.jimfs.Configuration.unix().toBuilder().setWorkingDirectory("/test/virtual/").build();
+        var config = com.google.common.jimfs.Configuration.unix().toBuilder().setWorkingDirectory("/test/virtual/")
+                .build();
         FileSystem fs = Jimfs.newFileSystem(config);
         var sourceDirectory = fs.getPath("source/");
         Files.createDirectories(sourceDirectory);
@@ -179,8 +180,8 @@ public class TargetPathTest {
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
-        assertEqualPath(fs, "/test/virtual/source_signed/source1_signed.pdf", target1);
-        assertEqualPath(fs, "/test/virtual/source_signed/source2_signed.pdf", target2);
+        assertEqualPath("/test/virtual/source_signed/source1_signed.pdf", target1);
+        assertEqualPath("/test/virtual/source_signed/source2_signed.pdf", target2);
     }
 
     @Test
@@ -251,14 +252,57 @@ public class TargetPathTest {
 
     }
 
+    @Test()
+    public void testMultipleFilesIntoDir() throws IOException {
+        FileSystem fs = Jimfs.newFileSystem(com.google.common.jimfs.Configuration.unix());
+        Files.createDirectories(fs.getPath("/test/virtual/"));
+
+        var targetPath = new TargetPath("/test/target/", null, false, false, true, fs);
+        targetPath.mkdirIfDir();
+
+        IntStream.range(0, 5).forEach(i -> {
+            try {
+                var sourceFile = fs.getPath("/test/virtual/source" + i + ".pdf");
+
+                Files.createFile(sourceFile);
+                var savePath = targetPath.getSaveFilePath(sourceFile);
+                assertEqualPath("/test/target/source" + i + "_signed.pdf", savePath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Test()
+    public void testMultipleFilesIntoDirExists() throws IOException {
+        FileSystem fs = Jimfs.newFileSystem(com.google.common.jimfs.Configuration.unix());
+        Files.createDirectories(fs.getPath("/test/virtual/"));
+        Files.createDirectories(fs.getPath("/test/target/"));
+
+        var targetPath = new TargetPath("/test/target/", null, false, false, true, fs);
+        targetPath.mkdirIfDir();
+
+        IntStream.range(0, 5).forEach(i -> {
+            try {
+                var sourceFile = fs.getPath("/test/virtual/source" + i + ".pdf");
+
+                Files.createFile(sourceFile);
+                var savePath = targetPath.getSaveFilePath(sourceFile);
+                assertEqualPath("/test/target (1)/source" + i + "_signed.pdf", savePath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     /* Assert helpers */
 
     private void assertEqualPath(FileSystem fs, String expected, String actual) {
         assertEqualPath(fs.getPath(expected), fs.getPath(actual));
     }
 
-    private void assertEqualPath(FileSystem fs, String expected, Path actual) {
-        assertEqualPath(fs.getPath(expected), actual);
+    private void assertEqualPath(String expected, Path actual) {
+        assertEqualPath(actual.getFileSystem().getPath(expected), actual);
     }
 
     private void assertEqualPath(Path expected, Path actual) {
