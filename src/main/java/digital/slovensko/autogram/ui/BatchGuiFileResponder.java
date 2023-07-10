@@ -13,14 +13,14 @@ import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 
-public class BatchSaveFileResponder extends BatchResponder {
+public class BatchGuiFileResponder extends BatchResponder {
     private final Autogram autogram;
     private final List<File> list;
     // private List<SigningJob> jobs = new ArrayList<SigningJob>();
     private Map<File, File> targetFiles = new HashMap<File, File>();
     private boolean uiNotifiedOnAllFilesSigned = false;
 
-    public BatchSaveFileResponder(Autogram autogram, List<File> list) {
+    public BatchGuiFileResponder(Autogram autogram, List<File> list) {
         this.autogram = autogram;
         this.list = list;
     }

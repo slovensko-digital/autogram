@@ -2,7 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.ui.BatchSaveFileResponder;
+import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -55,7 +55,7 @@ public class MainMenuController implements SuppressedFocusController {
                 var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), false);
                 autogram.sign(job);
             } else {
-                autogram.batchStart(list.size(), new BatchSaveFileResponder(autogram, list));
+                autogram.batchStart(list.size(), new BatchGuiFileResponder(autogram, list));
             }
         }
     }
