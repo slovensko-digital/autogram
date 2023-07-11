@@ -6,7 +6,7 @@
 - pocas behu hromadneho podpisovania ostatne sign requesty cakaju
 - pocas behu hromadneho podpisovania su odmietane nove hromadne podpisovania (?)
 - hromadne podpisovanie viem ako pouzivatel prerusit zatvorenim okna alebo stlacenim tlacidla
-- je dolezite aby pri driveroch/klucoch ktore vyzaduju pin pri kazdom podpisani bola informacia o tomto (v nejakej zatvorke/malym sedym) 
+- je dolezite aby pri driveroch/klucoch ktore vyzaduju pin pri kazdom podpisani bola informacia o tomto (v nejakej zatvorke/malym sedym)
 - kym je aktivny session tak je otvorene okno (+ stav pred potvrdenim, po dokonceni)
 
 ## 1. Happy path
@@ -44,8 +44,10 @@ sequenceDiagram
         server->>client: signedDocument
     end
 
-    client->>server: DELETE /batch/:batchId
-    server->>client: batchId
+    opt Close batch
+        client->>server: DELETE /batch/:batchId
+        server->>client: batchId
+    end
 ```
 
 ## 2. Pouzivatel zrusi
@@ -88,9 +90,7 @@ Zobrazi sa okno s podpisovanim, s tym ze button je disabled, kym sa neskonci bat
 
 Novy batch request bude odmietnuty.
 
-
 ### 4.2 pride novy batch request ked
-
 
 ```mermaid
 sequenceDiagram
