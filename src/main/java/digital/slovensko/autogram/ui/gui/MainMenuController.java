@@ -12,6 +12,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.List;
 
 public class MainMenuController implements SuppressedFocusController {
     private final Autogram autogram;
@@ -38,17 +39,17 @@ public class MainMenuController implements SuppressedFocusController {
         });
 
         dropZone.setOnDragDropped(event -> {
-            for (File file : event.getDragboard().getFiles()) {
-                SigningJob job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), false);
-                autogram.sign(job);
-            }
+            processFileList(event.getDragboard().getFiles());
         });
     }
 
     public void onUploadButtonAction() {
         var chooser = new FileChooser();
         var list = chooser.showOpenMultipleDialog(new Stage());
+        processFileList(list);
+    }
 
+    public void processFileList(List<File> list) {
         if (list != null) {
             if (list.size() == 1) {
                 var file = list.get(0);

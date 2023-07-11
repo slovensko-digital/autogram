@@ -1,10 +1,10 @@
 package digital.slovensko.autogram.core;
 
 import java.io.File;
+import java.util.Random;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileFromBatchResponder;
-import digital.slovensko.autogram.ui.SaveFileResponder;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
@@ -12,6 +12,7 @@ import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
@@ -59,16 +60,31 @@ public class SigningJob {
         if (Platform.isFxApplicationThread()) {
             throw new RuntimeException("Cannot sign on UI thread");
         }
-        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
-        boolean isContainer = getParameters().getContainer() != null;
-        var doc = switch (getParameters().getSignatureType()) {
-            case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
-            case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key) : signDocumentAsCAdeS(key);
-            case PAdES -> signDocumentAsPAdeS(key);
-            default -> throw new RuntimeException(
-                    "Unsupported signature type: " + getParameters().getSignatureType());
-        };
-        responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
+
+        try {
+            // Thread.sleep(1000);
+            // var random = new Random();
+            // if (random.nextFloat() > 0.5) {
+            // throw new RuntimeException("Random exception");
+            // }
+            Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
+            boolean isContainer = getParameters().getContainer() != null;
+            var doc = switch (getParameters().getSignatureType()) {
+                case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
+                case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key) : signDocumentAsCAdeS(key);
+                case PAdES -> signDocumentAsPAdeS(key);
+                default -> throw new RuntimeException(
+                        "Unsupported signature type: " + getParameters().getSignatureType());
+            };
+            responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
+        } catch (AutogramException e) {
+            responder.onDocumentSignFailed(e);
+        } catch (DSSException e) {
+            responder.onDocumentSignFailed(AutogramException.createFromDSSException(e));
+        } catch (Exception e) {
+            AutogramException autogramException = new AutogramException("Document signing has failed", "", "", e);
+            responder.onDocumentSignFailed(autogramException);
+        }
     }
 
     public void onDocumentSignFailed(AutogramException e) {

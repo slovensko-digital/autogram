@@ -15,14 +15,17 @@ public class SaveFileFromBatchResponder extends Responder {
     private final File file;
     private final Autogram autogram;
     // private final File targetDirectory;
-    private final Consumer<File> callback;
+    private final Consumer<File> callbackSuccess;
+    private final Consumer<AutogramException> callbackError;
     private final TargetPath targetPath;
 
-    public SaveFileFromBatchResponder(File file, Autogram autogram, TargetPath targetPath, Consumer<File> callback) {
+    public SaveFileFromBatchResponder(File file, Autogram autogram, TargetPath targetPath,
+            Consumer<File> callbackSuccess, Consumer<AutogramException> callbackError) {
         this.file = file;
         this.autogram = autogram;
         this.targetPath = targetPath;
-        this.callback = callback;
+        this.callbackSuccess = callbackSuccess;
+        this.callbackError = callbackError;
     }
 
     public void onDocumentSigned(SignedDocument signedDocument) {
@@ -31,7 +34,7 @@ public class SaveFileFromBatchResponder extends Responder {
             signedDocument.getDocument().save(targetFile.toString());
             Logging.log("Saved file " + targetFile.toString());
             autogram.updateBatch();
-            callback.accept(targetFile.toFile());
+            callbackSuccess.accept(targetFile.toFile());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -40,5 +43,6 @@ public class SaveFileFromBatchResponder extends Responder {
     public void onDocumentSignFailed(AutogramException error) {
         // TODO tu je zozrany error
         System.err.println("Sign failed error occurred: " + error.toString());
+        callbackError.accept(error);
     }
 }

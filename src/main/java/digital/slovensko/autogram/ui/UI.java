@@ -38,7 +38,7 @@ public interface UI {
 
     void onDocumentSaved(File targetFiles);
 
-    void onDocumentBatchSaved(List<File> targetFiles);
+    void onDocumentBatchSaved(BatchGuiResult result);
 
     void onWorkThreadDo(Runnable callback);
 

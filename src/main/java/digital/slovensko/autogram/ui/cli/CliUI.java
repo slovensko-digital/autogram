@@ -35,6 +35,7 @@ import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.BatchGuiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -165,7 +166,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void onDocumentBatchSaved(List<File> targetFiles) {
+    public void onDocumentBatchSaved(BatchGuiResult result) {
 
     }
 

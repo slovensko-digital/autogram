@@ -7,6 +7,7 @@ import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.BatchGuiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
@@ -14,7 +15,6 @@ import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 import javafx.application.Platform;
 
 import java.io.File;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class Autogram {
@@ -197,8 +197,8 @@ public class Autogram {
         ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFile));
     }
 
-    public void onDocumentBatchSaved(List<File> targetFiles) {
-        ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(targetFiles));
+    public void onDocumentBatchSaved(BatchGuiResult result) {
+        ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(result));
     }
 
     public void onSigningFailed(AutogramException e) {

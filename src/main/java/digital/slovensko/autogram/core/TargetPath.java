@@ -94,6 +94,10 @@ public class TargetPath {
                 FileSystems.getDefault());
     }
 
+    public Path getTargetDirectory() {
+        return targetDirectory;
+    }
+
     /**
      * Create directory when we want to fill it out
      */

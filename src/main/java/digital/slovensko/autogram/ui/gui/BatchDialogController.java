@@ -22,7 +22,6 @@ public class BatchDialogController implements SuppressedFocusController {
     private final Batch batch;
     private final Autogram autogram;
     private final AutogramBatchStartCallback startBatchCallback;
-    private boolean isOpenedFromGui = false;
 
     @FXML
     VBox mainBox;
@@ -70,8 +69,7 @@ public class BatchDialogController implements SuppressedFocusController {
         Logging.log("BatchDialogController.update() " + Platform.isFxApplicationThread());
         batch.log();
         updateProgressBar();
-        // TODO handle this differently when request came from GUI
-        if (!isOpenedFromGui && batch.isAllProcessed()) {
+        if (batch.isAllProcessed()) {
             batch.end();
             close();
         }
@@ -94,6 +92,7 @@ public class BatchDialogController implements SuppressedFocusController {
         disableKeyChange();
         hideVisualization();
         showProgress();
+        showCancelButton();
         getNodeForLoosingFocus().requestFocus();
         gui.onWorkThreadDo(startBatchCallback);
     }
@@ -152,6 +151,11 @@ public class BatchDialogController implements SuppressedFocusController {
         updateProgressBar();
     }
 
+    public void showCancelButton() {
+        cancelBatchButton.setVisible(true);
+        cancelBatchButton.setManaged(true);
+    }
+
     public void hideVisualization() {
         batchVisualization.setVisible(false);
         batchVisualization.setManaged(false);
@@ -163,8 +167,10 @@ public class BatchDialogController implements SuppressedFocusController {
     }
 
     public void disableSigning() {
-        signButton.setText("Prebieha hromadné podpisovanie...");
-        signButton.setDisable(true);
+        signButton.setVisible(false);
+        signButton.setManaged(false);
+        // signButton.setText("Prebieha hromadné podpisovanie...");
+        // signButton.setDisable(true);
     }
 
     public void disableKeyChange() {

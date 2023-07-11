@@ -8,6 +8,7 @@ import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.BatchGuiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -288,14 +289,19 @@ public class GUI implements UI {
     }
 
     @Override
-    public void onDocumentBatchSaved(List<File> targetFiles) {
-        var controller = new BatchSigningSuccessDialogController(targetFiles, hostServices);
+    public void onDocumentBatchSaved(BatchGuiResult result) {
+        var controller = new BatchSigningSuccessDialogController(result, hostServices);
         var root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Dokumenty boli úspešne podpísané");
+        if (result.hasErrors()) {
+            stage.setTitle("Dokumenty boli podpísané");
+        } else {
+            stage.setTitle("Dokumenty boli úspešne podpísané");
+        }
         stage.setScene(new Scene(root));
         stage.setResizable(false);
+        stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, controller);
         stage.show();
     }

@@ -208,7 +208,7 @@ public class TargetPathTest {
         Files.createDirectories(fs.getPath("/test/output"));
 
         assertThrows(digital.slovensko.autogram.core.errors.TargetAlreadyExistsException.class, () -> {
-            var targetPath = new TargetPath("/test/output", sourceDirectory, false, false, fs);
+            new TargetPath("/test/output", sourceDirectory, false, false, fs);
         });
     }
 
@@ -223,7 +223,7 @@ public class TargetPathTest {
         Files.createFile(fs.getPath("/test/output.pdf"));
 
         assertThrows(digital.slovensko.autogram.core.errors.TargetAlreadyExistsException.class, () -> {
-            var targetPath = new TargetPath("/test/output.pdf", sourceFile, false, false, fs);
+            new TargetPath("/test/output.pdf", sourceFile, false, false, fs);
         });
     }
 

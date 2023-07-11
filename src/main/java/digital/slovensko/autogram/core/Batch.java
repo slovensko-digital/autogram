@@ -35,7 +35,7 @@ public class Batch {
     // methods
     public  void start() {
         if (state != BatchState.INITIALIZED)
-            throw new BatchEndedException("Starting existing batch is not allowed");
+            throw new BatchEndedException("Nie je možné opätovne spustiť hromadné podpisovanie");
         state = BatchState.STARTED;
     }
 
@@ -54,13 +54,13 @@ public class Batch {
 
     public void validateInternal() {
         if (state == BatchState.INITIALIZED)
-            throw new BatchEndedException("Batch is not started");
+            throw new BatchEndedException("Hromadné podpisovanie nebolo začaté");
 
         if (state == BatchState.ENDED)
-            throw new BatchEndedException("Batch session has ended");
+            throw new BatchEndedException("Hromadné podpisovanie bolo ukončené");
 
         if (isExpired()) {
-            throw new BatchExpiredException("Batch session has expired");
+            throw new BatchExpiredException("Čas na podpisovanie uplynul");
         }
     }
 

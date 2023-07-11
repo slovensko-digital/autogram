@@ -25,6 +25,8 @@
 
   -autogram-success-colour: #00703c;
 
+  -autogram-partial-success-colour: #003078;
+
   -fx-font-family: "Source Sans Pro", "Arial", sans-serif;
   -fx-font-size: 16px;
 
@@ -595,4 +597,45 @@ TextFlow.autogram-body-s {
 
 .autogram-batch-visualization .autogram-error-summary__error {
     -fx-padding: 0.5em 2em 0 2em;
+}
+
+.autogram-listview {
+  -fx-max-height: 400px;
+  -fx-min-height: 30px;
+  -fx-pref-height: 200px;
+  -fx-padding: 0 0 0 20px;
+}
+
+.autogram-confirmation--success {
+  -fx-background-color: -autogram-success-colour;
+}
+.autogram-confirmation--warning {
+  -fx-background-color: -autogram-partial-success-colour;
+}
+
+.autogram-confirmation{
+  -fx-padding: 30px;
+  -fx-background-insets: 20px ;
+  -fx-text-fill: #ffffff;
+  -fx-text-alignment: center;
+}
+
+.autogram-confirmation .autogram-body {
+  -fx-text-fill: #ffffff;
+  -fx-fill:  #ffffff;
+ 
+  -fx-font-size: 1.1875em;
+  -fx-text-alignment: center;
+}
+
+.autogram-confirmation .autogram-heading-m {
+  -fx-text-fill: #ffffff;
+  -fx-fill:  #ffffff;
+ 
+  -fx-font-size: 1.5em;
+  -fx-font-weight: bold;
+  -fx-text-alignment: center;
+}
+.autogram-confirmation Hyperlink {
+  -fx-font-size: 2em; 
 }
