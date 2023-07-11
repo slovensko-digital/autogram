@@ -41,8 +41,7 @@ public class SaveFileFromBatchResponder extends Responder {
     }
 
     public void onDocumentSignFailed(AutogramException error) {
-        // TODO tu je zozrany error
-        System.err.println("Sign failed error occurred: " + error.toString());
+        Logging.log("Sign failed - error occurred: " + error.toString());
         callbackError.accept(error);
     }
 }

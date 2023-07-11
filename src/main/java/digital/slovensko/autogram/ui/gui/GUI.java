@@ -11,6 +11,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchGuiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -67,9 +68,18 @@ public class GUI implements UI {
 
     @Override
     public void signBatch(SigningJob job) {
-        job.signWithKeyAndRespond(getActiveSigningKey());
-        Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
-        updateBatch();
+        try {
+            job.signWithKeyAndRespond(getActiveSigningKey());
+            Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
+            updateBatch();
+        } catch (AutogramException e) {
+            job.onDocumentSignFailed(e);
+        } catch (DSSException e) {
+            job.onDocumentSignFailed(AutogramException.createFromDSSException(e));
+        } catch (Exception e) {
+            AutogramException autogramException = new AutogramException("Document signing has failed", "", "", e);
+            job.onDocumentSignFailed(autogramException);
+        }
     }
 
     @Override

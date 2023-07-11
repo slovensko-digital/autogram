@@ -42,7 +42,6 @@ public class BatchGuiFileResponder extends BatchResponder {
             try {
                 targetFiles.put(file, null);
                 errors.put(file, null);
-                Logging.log("1 Signing " + file.toString());
                 var responder = new SaveFileFromBatchResponder(file, autogram, targetPath, (File targetFile) -> {
                     targetFiles.put(file, targetFile);
                     Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments()
@@ -57,10 +56,9 @@ public class BatchGuiFileResponder extends BatchResponder {
                         onAllFilesSigned();
                     }
                 });
+
                 var job = SigningJob.buildFromFileBatch(file, autogram, responder);
                 autogram.batchSign(job, batch.getBatchId());
-                Logging.log("Started batchSigning " + file.toString() + "for job " + job.hashCode());
-                Logging.log("Ended batchSigning " + file.toString() + "for job " + job.hashCode());
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);
                 break;

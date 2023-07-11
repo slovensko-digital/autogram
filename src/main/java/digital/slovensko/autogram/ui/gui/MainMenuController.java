@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import javafx.fxml.FXML;
@@ -13,6 +14,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class MainMenuController implements SuppressedFocusController {
     private final Autogram autogram;
@@ -51,7 +53,20 @@ public class MainMenuController implements SuppressedFocusController {
 
     public void processFileList(List<File> list) {
         if (list != null) {
+            // If single directory is selected (dropped) we can process it as a batch
             if (list.size() == 1) {
+                var file = list.get(0);
+                if (file.isDirectory()) {
+                    list = Stream.of(file.listFiles()).filter(f -> f.isFile()).toList();
+                }
+            }
+
+            list = list.stream().filter(f -> f.isFile()).toList();
+
+            if (list.size() == 0) {
+                autogram.onSigningFailed(new NoFilesSelectedException());
+                return;
+            } else if (list.size() == 1) {
                 var file = list.get(0);
                 var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), false);
                 autogram.sign(job);
