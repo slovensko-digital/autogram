@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -85,7 +86,7 @@ public class XDCTransformer {
                     sp.getDigestAlgorithm(),
                     builderFactory.newDocumentBuilder().parse(new InputSource(document.openStream())));
         } catch (Exception e) {
-            throw new RuntimeException("Unable to create XDC transformer from signing parameters and document", e);
+            throw new RequestValidationException("XML Datacontainer validation failed", "Unable to process document");
         }
     }
 
@@ -261,18 +262,18 @@ public class XDCTransformer {
     private String getDigestValueFromElement(String elementLocalName) {
         var xdc = document.getDocumentElement();
 
-        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", elementLocalName)
+        var element = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", elementLocalName)
                 .item(0);
-        if (xmlData == null)
-            throw new RuntimeException("XMLData not found in XDC");
+        if (element == null)
+            throw new RequestValidationException("XML Datacontainer validation failed", "Element " + elementLocalName + " not found");
 
-        var attributes = xmlData.getAttributes();
+        var attributes = element.getAttributes();
         if (attributes == null)
-            throw new RuntimeException("Attributes not found");
+            throw new RequestValidationException("XML Datacontainer validation failed", "Attributes of " + elementLocalName + " not found");
 
         var digestValue = attributes.getNamedItem("DigestValue");
         if (digestValue == null)
-            throw new RuntimeException("DigestValue not found");
+            throw new RequestValidationException("XML Datacontainer validation failed", "DigestValue of " + elementLocalName + " not found");
 
         return digestValue.getNodeValue();
     }
@@ -284,7 +285,7 @@ public class XDCTransformer {
                 .item(0);
 
         if (xmlData == null)
-            throw new RuntimeException("XMLData not found in XDC");
+            throw new RequestValidationException("XML Datacontainer validation failed", "XMLData not found in XDC");
 
         return transformElementToString(xmlData.getFirstChild());
     }
@@ -306,7 +307,7 @@ public class XDCTransformer {
 
             return writer.toString();
         } catch (Exception e) {
-            throw new RuntimeException("Unable to transform element to string", e);
+            throw new RequestValidationException("XML Datacontainer validation failed", "Unable to get xml content");
         }
     }
 
