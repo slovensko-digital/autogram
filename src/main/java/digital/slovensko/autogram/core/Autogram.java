@@ -7,10 +7,13 @@ import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.server.ServerBatchStartResponder;
+import digital.slovensko.autogram.ui.BatchGuiResult;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
+import javafx.application.Platform;
+
 import java.io.File;
 import java.util.function.Consumer;
 
@@ -69,7 +72,7 @@ public class Autogram {
             } catch (IllegalArgumentException e) {
                 ui.onUIThreadDo(() -> ui.onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
             } catch (Exception e) {
-                ui.onUIThreadDo(() -> ui.onSigningFailed(new UnrecognizedException(e)));
+                onSigningFailed(new UnrecognizedException(e));
             }
         });
     }
@@ -80,7 +83,7 @@ public class Autogram {
      * @param totalNumberOfDocuments - expected number of documents to be signed
      * @param responder              - callback for http response
      */
-    public void batchStart(int totalNumberOfDocuments, ServerBatchStartResponder responder) {
+    public void batchStart(int totalNumberOfDocuments, BatchResponder responder) {
         if (batch != null && !batch.isEnded())
             throw new BatchConflictException("Another batch is already running");
         batch = new Batch(totalNumberOfDocuments);
@@ -88,8 +91,7 @@ public class Autogram {
         var startBatchTask = new AutogramBatchStartCallback() {
             @Override
             protected Void call() throws Exception {
-                // System.out.println("Starting batch on thread " +
-                // Thread.currentThread().getName());
+                Logging.log("Starting batch");
                 batch.start();
                 return null;
             }
@@ -109,7 +111,7 @@ public class Autogram {
 
             @Override
             protected void succeeded() {
-                responder.onBatchStartSuccess(batch.getBatchId());
+                ui.onWorkThreadDo(() -> responder.onBatchStartSuccess(batch));
             }
         };
 
@@ -117,7 +119,6 @@ public class Autogram {
             ui.startBatch(batch, this, startBatchTask);
         });
     }
-
 
     /**
      * Sign a single document
@@ -130,8 +131,19 @@ public class Autogram {
             throw new BatchNotStartedException("Batch not running");
 
         batch.addJob(batchId, job);
-        ui.onWorkThreadDo(() -> {
+
+        if (Platform.isFxApplicationThread()) {
+            ui.onWorkThreadDo(() -> {
+                ui.signBatch(job);
+            });
+        } else {
             ui.signBatch(job);
+        }
+    }
+
+    public void updateBatch() {
+        ui.onUIThreadDo(() -> {
+            ui.updateBatch();
         });
     }
 
@@ -183,5 +195,13 @@ public class Autogram {
 
     public void onDocumentSaved(File targetFile) {
         ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFile));
+    }
+
+    public void onDocumentBatchSaved(BatchGuiResult result) {
+        ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(result));
+    }
+
+    public void onSigningFailed(AutogramException e) {
+        ui.onUIThreadDo(() -> ui.onSigningFailed(e));
     }
 }

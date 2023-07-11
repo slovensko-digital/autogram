@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningWithExpiredCertificateException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.BatchGuiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.model.FileDocument;
@@ -20,7 +21,6 @@ import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -113,9 +113,9 @@ class AutogramTests {
         public void startSigning(SigningJob signingJob, Autogram autogram) {
 
         }
-        
+
         @Override
-        public void startBatch(Batch batch, Autogram autogram,  AutogramBatchStartCallback callback) {
+        public void startBatch(Batch batch, Autogram autogram, AutogramBatchStartCallback callback) {
         }
 
         @Override
@@ -124,6 +124,11 @@ class AutogramTests {
 
         @Override
         public void signBatch(SigningJob job) {
+        }
+
+        @Override
+        public void updateBatch() {
+            // TODO Auto-generated method stub
         }
 
         @Override
@@ -187,7 +192,12 @@ class AutogramTests {
         }
 
         @Override
-        public void onDocumentSaved(File targetFile) {
+        public void onDocumentSaved(File targetFiles) {
+
+        }
+
+        @Override
+        public void onDocumentBatchSaved(BatchGuiResult result) {
 
         }
 

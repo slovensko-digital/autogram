@@ -13,7 +13,12 @@ public class SignRequestBody {
     private final String payloadMimeType;
     private final String batchId;
 
-    public SignRequestBody(Document document, ServerSigningParameters parameters, String payloadMimeType, String batchId) {
+    public SignRequestBody(Document document, ServerSigningParameters parameters, String payloadMimeType) {
+        this(document, parameters, payloadMimeType, null);
+    }
+
+    public SignRequestBody(Document document, ServerSigningParameters parameters, String payloadMimeType,
+            String batchId) {
         this.document = document;
         this.parameters = parameters;
         this.payloadMimeType = payloadMimeType;
@@ -51,7 +56,6 @@ public class SignRequestBody {
 
         return parameters.getSigningParameters(isBase64());
     }
-
 
     public String getBatchId() {
         return batchId;

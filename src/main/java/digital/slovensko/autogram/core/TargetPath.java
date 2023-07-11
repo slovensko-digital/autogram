@@ -16,24 +16,35 @@ public class TargetPath {
     private final Path sourceFile;
     private final boolean isForce;
     private final boolean isGenerated;
+    private final boolean useUniqueFileName;
     private final boolean isForMultipleFiles;
     private final boolean isParents;
 
     private final FileSystem fs;
 
     public TargetPath(String target, Path source, boolean force, boolean parents, FileSystem fileSystem) {
+        this(target, source, force, parents, Files.isDirectory(source), fileSystem);
+    }
+
+    public TargetPath(String target, Path source, boolean force, boolean parents, boolean multipleFiles,
+            FileSystem fileSystem) {
         fs = fileSystem;
         sourceFile = source;
         isForce = force;
         isParents = parents;
 
         isGenerated = target == null;
-        isForMultipleFiles = Files.isDirectory(source);
-        if (isGenerated) {
+        var isTargetMissing = target == null;
+        useUniqueFileName = isGenerated;
+        isForMultipleFiles = multipleFiles;
+        var useUniqueDirectoryName = isForMultipleFiles && !isTargetMissing && source == null; // pouzivane pre gui batch
+        // ktore ale maju target
+        if (isTargetMissing) {
             if (isForMultipleFiles) {
 
                 targetDirectory = fs.getPath(
-                        generateUniqueName(source.toAbsolutePath().getParent().toString(), source.getFileName().toString() + "_signed",
+                        generateUniqueName(source.toAbsolutePath().getParent().toString(),
+                                source.getFileName().toString() + "_signed",
                                 ""));
                 targetName = null;
 
@@ -47,8 +58,16 @@ public class TargetPath {
             if (!hasSourceAndTargetMatchingType(sourceFile, targetFile))
                 throw new SourceAndTargetTypeMismatchException();
 
-            if (Files.exists(targetFile) && !isForce)
-                throw new TargetAlreadyExistsException();
+            if (Files.exists(targetFile) && !isForce) {
+                if (isForMultipleFiles && useUniqueDirectoryName) {
+                    targetFile = fs.getPath(
+                            generateUniqueName(targetFile.toAbsolutePath().getParent().toString(),
+                                    targetFile.getFileName().toString(),
+                                    ""));
+                } else {
+                    throw new TargetAlreadyExistsException();
+                }
+            }
 
             if (isForMultipleFiles) {
                 targetDirectory = targetFile;
@@ -68,6 +87,15 @@ public class TargetPath {
 
     public static TargetPath fromSource(Path source) {
         return new TargetPath(null, source, false, false, FileSystems.getDefault());
+    }
+
+    public static TargetPath fromBatchSource(Path source) {
+        return new TargetPath(source.getParent().resolve("signed").toString(), null, false, false, true,
+                FileSystems.getDefault());
+    }
+
+    public Path getTargetDirectory() {
+        return targetDirectory;
     }
 
     /**
@@ -101,6 +129,9 @@ public class TargetPath {
         if (!Files.exists(target))
             return true;
 
+        if (source == null)
+            return true;
+
         var bothAreFiles = Files.isRegularFile(target) && Files.isRegularFile(source);
         var bothAreDirectories = Files.isDirectory(target) && Files.isDirectory(source);
 
@@ -132,7 +163,7 @@ public class TargetPath {
         if (isForce)
             return targetSingleFile;
 
-        if (isGenerated) {
+        if (useUniqueFileName) {
             var parent = targetSingleFile.getParent();
             var baseName = com.google.common.io.Files
                     .getNameWithoutExtension(targetSingleFile.getFileName().toString());
@@ -167,7 +198,7 @@ public class TargetPath {
 
     private String generateTargetName(Path singleSourceFile) {
         var extension = singleSourceFile.getFileName().toString().endsWith(".pdf") ? ".pdf" : ".asice";
-        if (isGenerated || isForMultipleFiles)
+        if (useUniqueFileName || isForMultipleFiles)
             return com.google.common.io.Files.getNameWithoutExtension(singleSourceFile.getFileName().toString())
                     + "_signed"
                     + extension;

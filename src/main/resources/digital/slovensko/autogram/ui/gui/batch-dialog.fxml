@@ -54,6 +54,7 @@
 
     <VBox fx:id="progressBarBox" managed="false" visible="false" VBox.vgrow="ALWAYS"
         alignment="CENTER">
+        <Text styleClass="autogram-heading-s" text="Prebieha hromadné podpisovanie..." />
         <ProgressBar fx:id="progressBar" styleClass="autogram-progress-bar,progress-bar"
             layoutX="100.0"
             layoutY="20.0" prefHeight="20.0" prefWidth="400.0" progress="0.0" />
@@ -69,7 +70,9 @@
         <Button fx:id="changeKeyButton" styleClass="autogram-link" text="Zmeniť" visible="false"
             managed="false"
             onAction="#onChangeKeyButtonPressed" />
-        <Button fx:id="cancelBatchButton" styleClass="autogram-link"
+
+        <Pane HBox.hgrow="ALWAYS" />
+        <Button fx:id="cancelBatchButton" styleClass="autogram-button,autogram-button--warning"
             text="Prerušiť hromadné podpisovanie" visible="false" managed="false"
             onAction="#onCancelBatchButtonPressed" />
     </HBox>

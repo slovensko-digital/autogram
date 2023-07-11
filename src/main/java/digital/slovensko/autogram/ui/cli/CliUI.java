@@ -35,6 +35,7 @@ import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.BatchGuiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -58,7 +59,8 @@ public class CliUI implements UI {
     }
 
     private void sign(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++, nJobsTotal));
+        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++,
+                nJobsTotal));
         autogram.sign(job, activeKey);
     }
 
@@ -78,6 +80,11 @@ public class CliUI implements UI {
 
     @Override
     public void cancelBatch(Batch batch, AutogramBatchStartCallback callback) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void updateBatch() {
         // TODO Auto-generated method stub
     }
 
@@ -159,9 +166,15 @@ public class CliUI implements UI {
     }
 
     @Override
+    public void onDocumentBatchSaved(BatchGuiResult result) {
+
+    }
+
+    @Override
     public void onDocumentSaved(File file) {
         var directory = file.getParent() != null ? " in \"%s\"".formatted(file.getParent()) : "";
-        System.out.println("File successfully signed. Signed file saved as \"%s\"".formatted(file.getName()) + directory);
+        System.out
+                .println("File successfully signed. Signed file saved as \"%s\"".formatted(file.getName()) + directory);
     }
 
     @Override

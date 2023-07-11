@@ -3,6 +3,8 @@ package digital.slovensko.autogram.core;
 import java.io.File;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.ui.SaveFileFromBatchResponder;
+import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -13,6 +15,7 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import javafx.application.Platform;
 
 public class SigningJob {
     private final Responder responder;
@@ -46,12 +49,22 @@ public class SigningJob {
     public int getVisualizationWidth() {
         return parameters.getVisualizationWidth();
     }
-    
+
     private boolean isDocumentXDC() {
         return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
     }
 
     public void signWithKeyAndRespond(SigningKey key) {
+        if (Platform.isFxApplicationThread()) {
+            throw new RuntimeException("Cannot sign on UI thread");
+        }
+
+        // Thread.sleep(1000);
+        // var random = new Random();
+        // if (random.nextFloat() > 0.5) {
+        // throw new RuntimeException("Random exception");
+        // }
+        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
@@ -151,17 +164,25 @@ public class SigningJob {
 
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance) {
         var document = new FileDocument(file);
+        SigningParameters parameters = getParametersForFile(file, checkPDFACompliance);
+        return new SigningJob(document, parameters, responder);
+    }
 
-        SigningParameters parameters;
+    public static SigningJob buildFromFileBatch(File file, Autogram autogram, SaveFileFromBatchResponder responder) {
+        var document = new FileDocument(file);
+        SigningParameters parameters = getParametersForFile(file, false);
+        return new SigningJob(document, parameters, responder);
+    }
+
+    private static SigningParameters getParametersForFile(File file, boolean checkPDFACompliance) {
         var filename = file.getName();
 
         if (filename.endsWith(".pdf")) {
-            parameters = SigningParameters.buildForPDF(filename, checkPDFACompliance);
+            return SigningParameters.buildForPDF(filename, checkPDFACompliance);
         } else {
-            parameters = SigningParameters.buildForASiCWithXAdES(filename);
+            return SigningParameters.buildForASiCWithXAdES(filename);
         }
 
-        return new SigningJob(document, parameters, responder);
     }
 
     public boolean shouldCheckPDFCompliance() {

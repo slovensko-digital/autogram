@@ -5,6 +5,8 @@ import digital.slovensko.autogram.core.AutogramBatchStartCallback;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
+import digital.slovensko.autogram.util.Logging;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -64,6 +66,8 @@ public class BatchDialogController implements SuppressedFocusController {
     }
 
     public void update() {
+        Logging.log("BatchDialogController.update() " + Platform.isFxApplicationThread());
+        batch.log();
         updateProgressBar();
         if (batch.isAllProcessed()) {
             batch.end();
@@ -88,6 +92,7 @@ public class BatchDialogController implements SuppressedFocusController {
         disableKeyChange();
         hideVisualization();
         showProgress();
+        showCancelButton();
         getNodeForLoosingFocus().requestFocus();
         gui.onWorkThreadDo(startBatchCallback);
     }
@@ -116,6 +121,8 @@ public class BatchDialogController implements SuppressedFocusController {
             chooseKeyButton.setVisible(true);
             chooseKeyButton.setManaged(true);
             chooseKeyButton.setDisable(false);
+            
+            disableKeyChange();
         } else {
             signButton.setVisible(true);
             signButton.setManaged(true);
@@ -127,7 +134,7 @@ public class BatchDialogController implements SuppressedFocusController {
             signButton.setText("Podpísať ako "
                     + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
 
-            changeKeyButton.setVisible(true);
+            enableKeyChange();
         }
     }
 
@@ -144,6 +151,11 @@ public class BatchDialogController implements SuppressedFocusController {
         updateProgressBar();
     }
 
+    public void showCancelButton() {
+        cancelBatchButton.setVisible(true);
+        cancelBatchButton.setManaged(true);
+    }
+
     public void hideVisualization() {
         batchVisualization.setVisible(false);
         batchVisualization.setManaged(false);
@@ -155,16 +167,20 @@ public class BatchDialogController implements SuppressedFocusController {
     }
 
     public void disableSigning() {
-        signButton.setText("Prebieha hromadné podpisovanie...");
-        signButton.setDisable(true);
+        signButton.setVisible(false);
+        signButton.setManaged(false);
+        // signButton.setText("Prebieha hromadné podpisovanie...");
+        // signButton.setDisable(true);
     }
 
     public void disableKeyChange() {
         changeKeyButton.setVisible(false);
+        changeKeyButton.setManaged(false);
     }
 
     public void enableKeyChange() {
         changeKeyButton.setVisible(true);
+        changeKeyButton.setManaged(true);
     }
 
     private void updateVisualizationCount() {

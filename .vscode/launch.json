@@ -6,7 +6,8 @@
             "name": "Run Main class",
             "request": "launch",
             "mainClass": "digital.slovensko.autogram.Main",
-            "projectName": "autogram"
+            "projectName": "autogram",
+            "preLaunchTask": "java (build): Build Workspace"
         },
         {
             "type": "java",

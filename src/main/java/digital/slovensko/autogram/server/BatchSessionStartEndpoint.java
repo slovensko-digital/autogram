@@ -32,7 +32,7 @@ public class BatchSessionStartEndpoint implements HttpHandler {
 
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, BatchSessionStartRequestBody.class);
-            autogram.batchStart(body.getTotalNumberOfDocuments(), new ServerBatchStartResponder(exchange));
+            autogram.batchStart(body.getTotalNumberOfDocuments(), new BatchServerResponder(exchange));
         } catch (JsonSyntaxException e) {
             var errorResponse = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
             EndpointUtils.respondWithError(errorResponse, exchange);
