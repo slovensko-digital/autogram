@@ -2,6 +2,7 @@ package digital.slovensko.autogram.server.dto;
 
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Map;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
@@ -11,12 +12,7 @@ import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
 import eu.europa.esig.dss.enumerations.*;
 
-import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
-
-import static digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod.*;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
@@ -52,12 +48,12 @@ public class ServerSigningParameters {
     private final VisualizationWidthEnum visualizationWidth;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
-                                   String containerFilename, String containerXmlns, SignaturePackaging packaging,
-                                   DigestAlgorithm digestAlgorithm,
-                                   Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
-                                   LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
-                                   String schema, String transformation,
-                                   String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth) {
+            String containerFilename, String containerXmlns, SignaturePackaging packaging,
+            DigestAlgorithm digestAlgorithm,
+            Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
+            LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
+            String schema, String transformation,
+            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -88,6 +84,48 @@ public class ServerSigningParameters {
                 getSchema(isBase64),
                 getTransformation(isBase64),
                 identifier, checkPDFACompliance, getVisualizationWidth());
+    }
+
+    public static ServerSigningParameters fromMap(Map<String, Object> map) {
+        var level = SignatureLevel.valueByName((String) map.get("level"));
+        var container = fromMapToEnum(ASiCContainerType.class, map.get("container"));
+        var containerFilename = (String) map.get("containerFilename");
+        var containerXmlns = (String) map.get("containerXmlns");
+        var packaging = fromMapToEnum(SignaturePackaging.class, map.get("packaging"));
+        var digestAlgorithm = fromMapToEnum(DigestAlgorithm.class, map.get("digestAlgorithm"));
+        var en319132 = (Boolean) map.get("en319132");
+        var infoCanonicalization = fromMapToEnum(LocalCanonicalizationMethod.class, map.get("infoCanonicalization"));
+        var propertiesCanonicalization = fromMapToEnum(LocalCanonicalizationMethod.class,
+                map.get("propertiesCanonicalization"));
+        var keyInfoCanonicalization = fromMapToEnum(LocalCanonicalizationMethod.class,
+                map.get("keyInfoCanonicalization"));
+        var schema = (String) map.get("schema");
+        var transformation = (String) map.get("transformation");
+        var identifier = (String) map.get("identifier");
+        var checkPDFACompliance = map.getOrDefault("checkPDFACompliance", "false") == "true";
+        var visualizationWidth = fromMapToEnum(VisualizationWidthEnum.class, map.get("visualizationWidth"));
+
+        return new ServerSigningParameters(
+                level,
+                container,
+                containerFilename,
+                containerXmlns,
+                packaging,
+                digestAlgorithm,
+                en319132,
+                infoCanonicalization,
+                propertiesCanonicalization,
+                keyInfoCanonicalization,
+                schema,
+                transformation,
+                identifier, checkPDFACompliance, visualizationWidth);
+    }
+
+    private static <T extends Enum<T>> T fromMapToEnum(Class<T> clazz, Object obj) {
+        var visualizationWidthStr = (String) obj;
+        if (visualizationWidthStr == null)
+            return null;
+        return T.valueOf(clazz, visualizationWidthStr);
     }
 
     private String getTransformation(boolean isBase64) {
