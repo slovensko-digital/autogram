@@ -10,12 +10,12 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       minHeight="800"
-      minWidth="1280"
+      minWidth="768"
       fx:id="mainBox">
 
     <TextFlow><Text styleClass="autogram-heading-m" text="Podpisy"/></TextFlow>
 
-    <!-- HTML/PDF visualization -->
+    <!-- HTML visualization of validation report -->
     <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
         <WebView fx:id="webView" focusTraversable="false" VBox.vgrow="ALWAYS"/>
     </VBox>

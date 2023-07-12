@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.SVGPath?>
+
+<?xml-stylesheet href="present-signatures-style.css" type="text/css"?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      minHeight="800"
+      minWidth="768"
+      fx:id="mainBox">
+
+    <TextFlow><Text styleClass="autogram-heading-m" text="Podpisy"/></TextFlow>
+
+    <HBox>
+        <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="Overujem podpisy..."></Text>
+        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť detaily podpisov" visible="false" onAction="#onSignatureDetailsButtonAction" />
+    </HBox>
+
+    <VBox fx:id="signaturesBox" spacing="10" />
+
+    <TableView fx:id="signaturesTable" VBox.vgrow="ALWAYS">
+    </TableView>
+
+</VBox>

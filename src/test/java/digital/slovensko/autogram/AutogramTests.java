@@ -177,12 +177,12 @@ class AutogramTests {
         }
 
         @Override
-        public void onSignatureValidationCompleted(SigningJob job, Reports reports) {
+        public void onSignatureValidationCompleted(SigningJob job) {
 
         }
 
         @Override
-        public void onSignatureCheckCompleted(SigningJob job, int signaturesCount) {
+        public void onSignatureCheckCompleted(SigningJob job) {
 
         }
     }

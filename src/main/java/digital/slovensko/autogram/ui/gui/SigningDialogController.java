@@ -1,30 +1,17 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.StringReader;
-import java.io.StringWriter;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.xml.sax.InputSource;
-
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.simplereport.SimpleReport;
-import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
@@ -34,17 +21,20 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class SigningDialogController implements SuppressedFocusController {
     private final GUI gui;
     private final SigningJob signingJob;
     private final Autogram autogram;
+    private PresentSignaturesDialogController presentSignaturesDialogController;
+    private boolean signatureValidationCompleted = false;
 
     @FXML
     VBox mainBox;
     @FXML
-    Text signatureValidationMessage;
+    Text signatureCheckMessage;
     @FXML
     TextArea plainTextArea;
     @FXML
@@ -62,7 +52,7 @@ public class SigningDialogController implements SuppressedFocusController {
     @FXML
     public Button changeKeyButton;
     @FXML
-    Button signatureDetailsButton;
+    public Button showPresentSignaturesButton;
 
 
     public SigningDialogController(SigningJob signingJob, Autogram autogram, GUI gui) {
@@ -89,14 +79,6 @@ public class SigningDialogController implements SuppressedFocusController {
         }
     }
 
-    public void showExistingSignatures(int signaturesCount) {
-        if (signaturesCount == 0) {
-            signatureValidationMessage.setText("Dokument ešte nie je podpísaný");
-        } else {
-            signatureValidationMessage.setText("Dokument obsahuje podpisy: " + Integer.toString(signaturesCount));
-        }
-    }
-
     public void onMainButtonPressed(ActionEvent event) {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
@@ -113,34 +95,39 @@ public class SigningDialogController implements SuppressedFocusController {
         autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
     }
 
-    public void onSignatureValidationCompleted(Reports reports) {
-        System.out.println("Signature validation completed");
+    public void onShowPresentSignaturesButtonPressed(ActionEvent event) {
+        if (presentSignaturesDialogController == null)
+            presentSignaturesDialogController = new PresentSignaturesDialogController(signingJob);
 
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(reports.getXmlSimpleReport())));
-            var xmlSource = new DOMSource(document);
+        var root = GUIUtils.loadFXML(presentSignaturesDialogController, "present-signatures-dialog.fxml");
 
-            var xsltFile = new File("src/main/resources/simple-report-bootstrap4.xslt");
-            var xsltSource = new StreamSource(xsltFile);
+        var stage = new Stage();
+        stage.setTitle("Prítomné podpisy");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, presentSignaturesDialogController);
+        presentSignaturesDialogController.showSignatures();
+        stage.show();
 
-            var outputTarget = new StreamResult(new StringWriter());
-            var transformer = TransformerFactory.newInstance().newTransformer(xsltSource);
-            transformer.transform(xmlSource, outputTarget);
-
-            var r = outputTarget.getWriter().toString().trim();
-
-            signingJob.setSimpleValidationReportAsHTML(r);
-
-            System.out.println(r);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        if (signatureValidationCompleted)
+            presentSignaturesDialogController.onSignatureValidationCompleted();
     }
 
-    public void onSignatureDetailsButtonAction() {
-        gui.onSignatureDetails(signingJob);
+    public void onSignatureCheckCompleted() {
+        if (signingJob.getSignatureCheckReport() == null) {
+            signatureCheckMessage.setText("Dokument ešte nie je podpísaný");
+            return;
+        }
+
+        signatureCheckMessage.setText("Dokument obsahuje podpisy: " + Integer.toString(signingJob.getSignatureCheckReport().getSimpleReport().getSignaturesCount()));
+        showPresentSignaturesButton.setVisible(true);
+    }
+
+    public void onSignatureValidationCompleted() {
+        signatureValidationCompleted = true;
+        if (presentSignaturesDialogController != null)
+            presentSignaturesDialogController.onSignatureValidationCompleted();
     }
 
     public void refreshSigningKey() {

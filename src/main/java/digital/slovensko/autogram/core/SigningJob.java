@@ -16,6 +16,7 @@ import eu.europa.esig.dss.pades.validation.PDFDocumentValidatorFactory;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import eu.europa.esig.dss.xades.validation.XMLDocumentValidatorFactory;
 
@@ -31,6 +32,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -39,7 +41,9 @@ public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
     private final SigningParameters parameters;
-    private String simpleReportHTML;
+    private String signatureValidationReportHTML;
+    private Reports signatureCheckReport;
+    private Reports signatureValidationReport;
 
     public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
@@ -282,25 +286,58 @@ public class SigningJob {
         return null;
     }
 
-    public boolean alreadySigned() {
-        return getDocumentValidator() != null;
-    }
-
-    public SimpleReport getSignatureReport() {
+    public void checkForSignatures() {
         var validator = getDocumentValidator();
-        if (validator != null) {
-            validator.setCertificateVerifier(new CommonCertificateVerifier());
-            return validator.validateDocument().getSimpleReport();
+        if (validator == null)
+            return;
+
+        validator.setCertificateVerifier(new CommonCertificateVerifier());
+        signatureCheckReport = validator.validateDocument();
+    }
+
+    public Reports getSignatureCheckReport() {
+        return signatureCheckReport;
+    }
+
+    public void validateSignatures() {
+        signatureValidationReport = new SignatureValidator().validate(getDocument(), getDocumentValidator());
+
+        try {
+            generateSignatureValidationReportHTML();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        return null;
     }
 
-    public String getSimpleValidationReportAsHTML() {
-        return simpleReportHTML;
+    private void generateSignatureValidationReportHTML() throws Exception {
+        var builderFactory = DocumentBuilderFactory.newInstance();
+        builderFactory.setNamespaceAware(true);
+        var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
+        var xmlSource = new DOMSource(document);
+
+        var xsltFile = new File("src/main/resources/simple-report-bootstrap4.xslt");
+        var xsltSource = new StreamSource(xsltFile);
+
+        var outputTarget = new StreamResult(new StringWriter());
+        var transformer = TransformerFactory.newInstance().newTransformer(xsltSource);
+        transformer.transform(xmlSource, outputTarget);
+
+        var r = outputTarget.getWriter().toString().trim();
+
+        var templateFile = new File("src/main/resources/simple-report-template.html");
+        var templateString = new String(java.nio.file.Files.readAllBytes(templateFile.toPath()));
+        signatureValidationReportHTML = templateString.replace("{{content}}", r);
     }
 
-    public void setSimpleValidationReportAsHTML(String simpleReportHTML) {
-        this.simpleReportHTML = simpleReportHTML;
+    public String getSignatureValidationReportHTML() {
+        return signatureValidationReportHTML;
+    }
+
+    public Reports getSignatureValidationReport() {
+        return signatureValidationReport;
+    }
+
+    public boolean hasSignatures() {
+        return signatureCheckReport != null && signatureCheckReport.getSimpleReport().getSignaturesCount() > 0;
     }
 }

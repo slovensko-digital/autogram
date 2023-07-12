@@ -1,13 +1,9 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 
 public class SignatureDetailsController {
@@ -24,17 +20,16 @@ public class SignatureDetailsController {
         this.signingJob = signingJob;
     }
 
-    public void showHTMLVisualization() {
+    public void showHTMLReport() {
         webView.setContextMenuEnabled(false);
         webView.getEngine().setJavaScriptEnabled(false);
         var engine = webView.getEngine();
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                engine.getDocument().getElementById("frame").setAttribute("srcdoc", signingJob.getSimpleValidationReportAsHTML());
+                engine.getDocument().getElementById("frame").setAttribute("srcdoc", signingJob.getSignatureValidationReportHTML());
             }
         });
         engine.load(getClass().getResource("visualization-html.html").toExternalForm());
-        webViewContainer.getStyleClass().add("autogram-visualizer-html");
         webViewContainer.setVisible(true);
         webViewContainer.setManaged(true);
     }

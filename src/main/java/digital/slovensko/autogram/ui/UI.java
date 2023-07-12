@@ -3,9 +3,7 @@ package digital.slovensko.autogram.ui;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.validation.reports.Reports;
 
 import java.io.File;
 import java.util.List;
@@ -38,7 +36,7 @@ public interface UI {
 
     void onPDFAComplianceCheckFailed(SigningJob job);
 
-    public void onSignatureValidationCompleted(SigningJob job, Reports reports);
+    public void onSignatureValidationCompleted(SigningJob job);
 
-    public void onSignatureCheckCompleted(SigningJob job, int signaturesCount);
+    public void onSignatureCheckCompleted(SigningJob job);
 }

@@ -179,15 +179,15 @@ public class GUI implements UI {
     }
 
     @Override
-    public void onSignatureValidationCompleted(SigningJob job, Reports reports) {
+    public void onSignatureValidationCompleted(SigningJob job) {
         var controller = jobControllers.get(job);
-        controller.onSignatureValidationCompleted(reports);
+        controller.onSignatureValidationCompleted();
     }
 
     @Override
-    public void onSignatureCheckCompleted(SigningJob job, int signaturesCount) {
+    public void onSignatureCheckCompleted(SigningJob job) {
         var controller = jobControllers.get(job);
-        controller.showExistingSignatures(signaturesCount);
+        controller.onSignatureCheckCompleted();
     }
 
     private void disableKeyPicking() {
@@ -238,21 +238,6 @@ public class GUI implements UI {
     public void onUIThreadDo(Runnable callback) {
         Platform.runLater(callback);
     }
-
-    public void onSignatureDetails(SigningJob signingJob) {
-        var controller = new SignatureDetailsController(signingJob);
-        var root = GUIUtils.loadFXML(controller, "signature-details.fxml");
-
-        var stage = new Stage();
-        stage.setTitle("Detaily podpisov");
-        stage.setScene(new Scene(root));
-        stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
-
-        controller.showHTMLVisualization();
-    }
-
 
     public SigningKey getActiveSigningKey() {
         return activeKey;

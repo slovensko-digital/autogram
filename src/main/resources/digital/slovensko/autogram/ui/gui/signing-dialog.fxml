@@ -17,8 +17,8 @@
     <TextFlow><Text styleClass="autogram-heading-m" text="Dokument na&#160;podpísanie"/></TextFlow>
 
     <HBox styleClass="autogram-actions">
-        <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="Hľadám podpisy..."></Text>
-        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť detail podpisov" onAction="#onSignatureDetailsButtonAction" />
+        <Text fx:id="signatureCheckMessage" styleClass="autogram-body" text="Hľadám podpisy..."></Text>
+        <Button fx:id="showPresentSignaturesButton" styleClass="autogram-link" text="Zobraziť podpisy" visible="false" onAction="#onShowPresentSignaturesButtonPressed"/>
     </HBox>
 
     <!-- HTML/PDF visualization -->

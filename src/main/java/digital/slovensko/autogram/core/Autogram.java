@@ -8,7 +8,17 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.function.Consumer;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
+import org.xml.sax.InputSource;
 
 public class Autogram {
     private final UI ui;
@@ -37,17 +47,14 @@ public class Autogram {
     }
 
     private void checkAndValidateSignatures(SigningJob job) {
-        if (!job.alreadySigned()) {
-            ui.onUIThreadDo(() -> ui.onSignatureCheckCompleted(job, 0));
+        job.checkForSignatures();
+        ui.onUIThreadDo(() -> ui.onSignatureCheckCompleted(job));
 
+        if (!job.hasSignatures())
             return;
-        }
 
-        var staticRes = job.getSignatureReport();
-        ui.onUIThreadDo(() -> ui.onSignatureCheckCompleted(job, staticRes.getSignaturesCount()));
-
-        var res = new SignatureValidator().validate(job.getDocument(), job.getDocumentValidator());
-        ui.onUIThreadDo(() -> ui.onSignatureValidationCompleted(job, res));
+        job.validateSignatures();
+        ui.onUIThreadDo(() -> ui.onSignatureValidationCompleted(job));
     }
 
     private void checkPDFACompliance(SigningJob job) {
