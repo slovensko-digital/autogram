@@ -268,7 +268,7 @@ public class XDCTransformer {
             throw new RequestValidationException("XML Datacontainer validation failed", "Element " + elementLocalName + " not found");
 
         var attributes = element.getAttributes();
-        if (attributes == null)
+        if (attributes == null || attributes.getLength() == 0)
             throw new RequestValidationException("XML Datacontainer validation failed", "Attributes of " + elementLocalName + " not found");
 
         var digestValue = attributes.getNamedItem("DigestValue");

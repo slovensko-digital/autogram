@@ -75,10 +75,10 @@ public class SignRequestBody {
         boolean isXdc = getDocument().getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
         if (isXdc) {
             XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, getDocument());
-            if (!xdcTransformer.validateXsdDigest())
+            if (signingParameters.getSchema() != null && !xdcTransformer.validateXsdDigest())
                 throw new RequestValidationException("XML Datacontainer validation failed", "XSD scheme digest mismatch");
 
-            if (!xdcTransformer.validateXsltDigest())
+            if (signingParameters.getTransformation() != null && !xdcTransformer.validateXsltDigest())
                 throw new RequestValidationException("XML Datacontainer validation failed", "XSLT transformation digest mismatch");
 
             xmlContent = xdcTransformer.getContentFromXdc();
