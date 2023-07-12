@@ -327,6 +327,15 @@ components:
           type: string
           example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
           description: Identifier of the batch.
+    
+    BatchEndResponseBody:
+      type: object
+      properties:
+        status:
+          type: enum
+          enum:
+            - FINISHED
+            - NOT_FINISHED
 
     SignatureParameters:
       type: object
