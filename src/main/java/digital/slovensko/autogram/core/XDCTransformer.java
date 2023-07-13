@@ -253,7 +253,7 @@ public class XDCTransformer {
             String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
             return xsdSchemaHash.equals(xsdDigestValue);
         } catch (Exception e) {
-            throw new RequestValidationException("XML Datacontainer validation failed", "Unable to validate XSD digest");
+            throw new RequestValidationException("XML Datacontainer validation failed", "Invalid XSD");
         }
     }
 
@@ -263,7 +263,7 @@ public class XDCTransformer {
             String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
             return xsltSchemaHash.equals(xsltDigestValue);
         } catch (Exception e) {
-            throw new RequestValidationException("XML Datacontainer validation failed", "Unable to validate XSLT digest");
+            throw new RequestValidationException("XML Datacontainer validation failed", "Invalid XSLT");
         }
     }
 
