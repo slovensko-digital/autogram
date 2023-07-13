@@ -31,10 +31,17 @@ public class SigningJob {
     private final CommonDocument document;
     private final SigningParameters parameters;
 
+    private final File file;
+
     public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
+        this(document, parameters, responder, null);
+    }
+
+    public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder, File file) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
+        this.file = file;
     }
 
     public DSSDocument getDocument() {
@@ -253,20 +260,10 @@ public class SigningJob {
         }
 
         var responder = new SaveFileResponder(file, autogram);
-        return new SigningJob(document, parameters, responder);
+        return new SigningJob(document, parameters, responder, file);
     }
 
     public boolean shouldCheckPDFCompliance() {
         return parameters.getCheckPDFACompliance();
-    }
-
-    public ExtractedFile getDocumentFromAsice() {
-        try {
-            File file = ((SaveFileResponder) responder).getFile();
-            return ZipProcessor.processZip(file.getPath());
-        } catch (IOException e) {
-            System.err.println("Error occurred during processing: " + e.getMessage());
-        }
-        return null;
     }
 }

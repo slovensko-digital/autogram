@@ -1,10 +1,12 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.ExtractedFile;
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.util.DSSUtils;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.validation.AdvancedSignature;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -24,6 +26,7 @@ import javafx.stage.Stage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 
 public class SigningDialogController implements SuppressedFocusController {
     private final GUI gui;
@@ -186,34 +189,42 @@ public class SigningDialogController implements SuppressedFocusController {
     }
 
     private void showAsiceVisualization() {
-        ExtractedFile extractedFile = signingJob.getDocumentFromAsice();
-
-        String extension = getFileExtension(extractedFile.getFilename());
-        if (extension != null) {
-            if ("txt".equals(extension)) {
-                String documentAsPlainText = new String(extractedFile.getContent(), StandardCharsets.UTF_8);
-                showPlainTextVisualization(documentAsPlainText);
-            } else if ("jpg".equals(extension) || "jpeg".equals(extension) || "png".equals(extension)) {
-                InputStream documentAsInputStream = new ByteArrayInputStream(extractedFile.getContent());
-                showImageVisualization(documentAsInputStream);
-            } else if ("html".equals(extension)) {
-                String documentAsHtml = new String(extractedFile.getContent(), StandardCharsets.UTF_8);
-                showHTMLVisualization(documentAsHtml);
-            } else if ("pdf".equals(extension)) {
-                String documentAsBase64Encoded = new String(Base64.getEncoder().encode(extractedFile.getContent()), StandardCharsets.UTF_8);
-                showPDFVisualization(documentAsBase64Encoded);
-            } else {
-                showUnsupportedVisualization();
-            }
+        DSSDocument document = getOriginalDocument();
+        if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
+            showPlainTextVisualization(getDocumentAsPlainText(document));
+        } else if (document.getMimeType().equals(MimeTypeEnum.PDF)) {
+            showPDFVisualization(getDocumentAsBase64Encoded(document));
+        } else if (document.getMimeType().equals(MimeTypeEnum.JPEG) || document.getMimeType().equals(MimeTypeEnum.PNG)) {
+            showImageVisualization(document.openStream());
+        } else {
+            // TODO: xml, html
+            showUnsupportedVisualization();
         }
     }
 
-    private static String getFileExtension(String fileName) {
-        int dotIndex = fileName.lastIndexOf('.');
-        if (dotIndex >= 0 && dotIndex < fileName.length() - 1) {
-            return fileName.substring(dotIndex + 1);
+    private DSSDocument getOriginalDocument() {
+        SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(signingJob.getDocument());
+        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
+        List<AdvancedSignature> signatures = documentValidator.getSignatures();
+        AdvancedSignature advancedSignature = signatures.get(0);
+        List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
+        return originalDocuments.get(0);
+    }
+
+    private String getDocumentAsPlainText(DSSDocument document) {
+        try {
+            return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return null;
+    }
+
+    private String getDocumentAsBase64Encoded(DSSDocument document) {
+        try {
+            return new String(Base64.getEncoder().encode(document.openStream().readAllBytes()), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void showUnsupportedVisualization() {
