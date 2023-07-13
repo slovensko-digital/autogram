@@ -248,15 +248,23 @@ public class XDCTransformer {
     }
 
     public boolean validateXsdDigest() {
-        String xsdSchemaHash = computeDigest(xsdSchema);
-        String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
-        return xsdSchemaHash.equals(xsdDigestValue);
+        try {
+            String xsdSchemaHash = computeDigest(xsdSchema);
+            String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
+            return xsdSchemaHash.equals(xsdDigestValue);
+        } catch (Exception e) {
+            throw new RequestValidationException("XML Datacontainer validation failed", "Unable to validate XSD digest");
+        }
     }
 
     public boolean validateXsltDigest() {
-        String xsltSchemaHash = computeDigest(xsltSchema);
-        String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
-        return xsltSchemaHash.equals(xsltDigestValue);
+        try {
+            String xsltSchemaHash = computeDigest(xsltSchema);
+            String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
+            return xsltSchemaHash.equals(xsltDigestValue);
+        } catch (Exception e) {
+            throw new RequestValidationException("XML Datacontainer validation failed", "Unable to validate XSLT digest");
+        }
     }
 
     private String getDigestValueFromElement(String elementLocalName) {
