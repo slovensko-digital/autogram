@@ -5,15 +5,14 @@ import java.text.SimpleDateFormat;
 import digital.slovensko.autogram.core.SigningJob;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -30,8 +29,6 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
     VBox mainBox;
     @FXML
     VBox signaturesBox;
-    @FXML
-    TableView signaturesTable;
 
     public PresentSignaturesDialogController(SigningJob signingJob) {
         this.signingJob = signingJob;
@@ -65,70 +62,65 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
         var rep = signingJob.getSignatureCheckReport().getSimpleReport();
         var docValidator = signingJob.getDocumentValidator();
         docValidator.setCertificateVerifier(new CommonCertificateVerifier());
-
-        var rows = new MyTableRow[rep.getSignatureIdList().size()];
-        var format = new SimpleDateFormat("HH:mm:ss\ndd.MM.yyyy");
+        var format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
         for (var signatureId : rep.getSignatureIdList()) {
-            var index = rep.getSignatureIdList().indexOf(signatureId);
-
             var subjectPrincipal = docValidator.getSignatureById(signatureId).getCertificates().get(0).getCertificate().getSubjectX500Principal();
-            var name = subjectPrincipal.getName("RFC1779").replace(',', '\n');
+            var name = rep.getSignedBy(signatureId);
+            var subjectStr = subjectPrincipal.getName("RFC1779").replace(", ", "\n");
+            var signingTime = format.format(rep.getSigningTime(signatureId));
+            var timestampCount = Integer.toString(rep.getSignatureTimestamps(signatureId).size());
 
-            rows[index] = new MyTableRow(
-                    name,
-                    format.format(rep.getSigningTime(signatureId)),
-                    Integer.toString(rep.getSignatureTimestamps(signatureId).size()),
-                    docValidator.getSignatureById(signatureId).getCertificates().get(0).getIssuerX500Principal().getName("RFC1779").replace(',', '\n')
-            );
+            var signatureBox = new VBox();
+            signatureBox.setStyle("-fx-border-color: -autogram-border-colour; -fx-border-width: 1px;");
+
+            var nameText = new Text(name);
+            nameText.getStyleClass().add("autogram-heading-s");
+            var nameFlow = new TextFlow(nameText);
+            nameFlow.setStyle("-fx-padding: 1.25em 1.25em;");
+            nameFlow.setPrefWidth(248);
+
+            var validText = new Text("Prebieha overovanie platnosti...");
+            validText.getStyleClass().add("autogram-body");
+            var validFlow = new TextFlow(validText);
+            validFlow.setStyle("-fx-padding: 1.25em 1.25em;");
+
+            var nameBox = new HBox();
+            nameBox.getChildren().addAll(nameFlow, validFlow);
+            nameBox.setStyle("-fx-background-color: #f3f2f1;");
+            signatureBox.getChildren().add(nameBox);
+
+            var signatureDetailsBox = new VBox();
+            signatureDetailsBox.setStyle("-fx-padding: 0.5em 1.25em 1.25em 1.25em;");
+            signatureBox.getChildren().add(signatureDetailsBox);
+            signatureDetailsBox.getChildren().add(createTableRow("Certifikát", subjectStr));
+            signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu", "Prebieha overovanie..."));
+            signatureDetailsBox.getChildren().add(createTableRow("Čas", signingTime));
+            signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestampCount));
+
+            signaturesBox.getChildren().add(signatureBox);
         }
-
-        var subjectColumn = new TableColumn("Subjekt");
-        subjectColumn.setCellValueFactory(new PropertyValueFactory<>("subject"));
-        var signingTimeColumn = new TableColumn("Čas podpisu");
-        signingTimeColumn.setCellValueFactory(new PropertyValueFactory<>("signingTime"));
-        var timestampCountColumn = new TableColumn("Časové pečiatky");
-        timestampCountColumn.setCellValueFactory(new PropertyValueFactory<>("timestampCount"));
-        var issuerColumn = new TableColumn("Vydavateľ");
-        issuerColumn.setCellValueFactory(new PropertyValueFactory<>("issuer"));
-
-        subjectColumn.setStyle("-fx-alignment: CENTER; -fx-table-cell-border-color: #000000; -fx-table-cell-border-width: 1px; -fx-table-cell-border-style: solid; -fx-border-color: #000000; -fx-border-width: 1px; -fx-border-style: solid; -fx-padding: 5px;");
-        signingTimeColumn.setStyle("-fx-alignment: CENTER; -fx-table-cell-border-color: #000000; -fx-table-cell-border-width: 1px; -fx-table-cell-border-style: solid; -fx-border-color: #000000; -fx-border-width: 1px; -fx-border-style: solid; -fx-padding: 5px;");
-        timestampCountColumn.setStyle("-fx-alignment: CENTER; -fx-table-cell-border-color: #000000; -fx-table-cell-border-width: 1px; -fx-table-cell-border-style: solid; -fx-border-color: #000000; -fx-border-width: 1px; -fx-border-style: solid; -fx-padding: 5px;");
-        issuerColumn.setStyle("-fx-alignment: CENTER; -fx-table-cell-border-color: #000000; -fx-table-cell-border-width: 1px; -fx-table-cell-border-style: solid; -fx-border-color: #000000; -fx-border-width: 1px; -fx-border-style: solid; -fx-padding: 5px;");
-
-        signaturesTable.getColumns().addAll(subjectColumn, signingTimeColumn, timestampCountColumn, issuerColumn);
-        signaturesTable.getItems().addAll(rows);
-        signaturesTable.setStyle("-fx-border-color: #000000; -fx-border-width: 1px; -fx-border-style: solid; -fx-alignment: CENTER; -fx-table-cell-border-color: #000000; -fx-table-cell-border-width: 1px; -fx-table-cell-border-style: solid;");
     }
 
-    public class MyTableRow {
-        String subject;
-        String signingTime;
-        String timestampCount;
-        String issuer;
+    private HBox createTableRow(String label, String value) {
+        var row = new HBox();
+        var labelNode = createTableCell(label, "autogram-heading-s");
+        var valueNode = createTableCell(value, "autogram-body");
 
-        public MyTableRow(String subject, String signingTime, String timestampCount, String issuer) {
-            this.subject = subject;
-            this.signingTime = signingTime;
-            this.timestampCount = timestampCount;
-            this.issuer = issuer;
-        }
+        labelNode.setPrefWidth(248);
+        valueNode.setPrefWidth(400);
 
-        public String getSubject() {
-            return subject;
-        }
+        row.getChildren().addAll(labelNode, valueNode);
 
-        public String getSigningTime() {
-            return signingTime;
-        }
+        return row;
+    }
 
-        public String getTimestampCount() {
-            return timestampCount;
-        }
-
-        public String getIssuer() {
-            return issuer;
-        }
+    private TextFlow createTableCell(String value, String textStyle) {
+        var cell = new TextFlow();
+        cell.getStyleClass().addAll("autogram-table-cell");
+        var text = new Text(value);
+        text.getStyleClass().add(textStyle);
+        cell.getChildren().add(text);
+        return cell;
     }
 }

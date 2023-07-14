@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.simplereport.SimpleReport;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -119,9 +120,6 @@ public class SigningDialogController implements SuppressedFocusController {
             signatureCheckMessage.setText("Dokument ešte nie je podpísaný");
             return;
         }
-
-        signatureCheckMessage.setText("Dokument obsahuje podpisy: " + Integer.toString(signingJob.getSignatureCheckReport().getSimpleReport().getSignaturesCount()));
-        showPresentSignaturesButton.setVisible(true);
     }
 
     public void onSignatureValidationCompleted() {

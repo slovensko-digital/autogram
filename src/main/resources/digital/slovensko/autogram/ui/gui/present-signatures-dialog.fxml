@@ -8,11 +8,9 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.shape.SVGPath?>
 
-<?xml-stylesheet href="present-signatures-style.css" type="text/css"?>
-
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      minHeight="800"
+      maxHeight="800"
       minWidth="768"
       fx:id="mainBox">
 
@@ -23,9 +21,8 @@
         <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť detaily podpisov" visible="false" onAction="#onSignatureDetailsButtonAction" />
     </HBox>
 
-    <VBox fx:id="signaturesBox" spacing="10" />
-
-    <TableView fx:id="signaturesTable" VBox.vgrow="ALWAYS">
-    </TableView>
+    <ScrollPane>
+        <VBox fx:id="signaturesBox" spacing="10" />
+    </ScrollPane>
 
 </VBox>
