@@ -15,7 +15,7 @@ Je potrebné skontrolovať či nepribudol škodlivý kód, exfiltrácia secrets 
 - [ ] funguje inštalácia na Linux (Debian-based) cez stiahnutý .deb
 - [ ] funguje inštalácia na Linux cez stiahnutý .rpm
 - [ ] funguje spustenie v GUI móde
-- [ ] funguje spustenie v GUI serverovom móde `autogram --url=autogram://listen?protocol=http&host=localhost&port=37200&origin=*&language=sk`
+- [ ] funguje spustenie v GUI serverovom móde `autogram --url=autogram://listen?protocol=http&port=37200`
 - [ ] funguje URL handler na Windows [autogram://go](autogram://go)
 - [ ] funguje URL handler na MacOS [autogram://go](autogram://go)
 - [ ] funguje URL handler na Linux [autogram://go](autogram://go)

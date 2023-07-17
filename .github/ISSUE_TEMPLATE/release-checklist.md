@@ -12,6 +12,7 @@ assignees: @slovensko-digital/autogram-release-team
 - [ ] funguje spustenie v GUI móde
 - [ ] funguje URL handler [autogram://go](autogram://go)
 - [ ] funguje GUI otvoriť jeden súbor, ten sa zobrazí, viem ho podpísať, vytvorí sa podpísaný súbor
+- [ ]  funguje CLI `autogram --help`
 
 ## Linux
 - [ ] funguje inštalácia na Linux (Debian-based) cez stiahnutý .deb
@@ -19,18 +20,20 @@ assignees: @slovensko-digital/autogram-release-team
 - [ ] funguje spustenie v GUI móde
 - [ ] funguje URL handler [autogram://go](autogram://go)
 - [ ] funguje GUI otvoriť jeden súbor, ten sa zobrazí, viem ho podpísať, vytvorí sa podpísaný súbor
+- [ ]  funguje CLI `autogram --help`
 
 ## MacOS
 - [ ] funguje inštalácia na MacOS cez stiahnutý .pkg
 - [ ] funguje spustenie v GUI móde
 - [ ] funguje URL handler [autogram://go](autogram://go)
 - [ ] funguje GUI otvoriť jeden súbor, ten sa zobrazí, viem ho podpísať, vytvorí sa podpísaný súbor
+- [ ] funguje CLI `/Applications/Autogram.app/Contents/MacOS/AutogramApp --help`
 
 
 ## Na aspoň jednom systéme
 
 - [ ] fungujú všetky smoke testy `./mvnw test -Psmoke`
-- [ ] funguje spustenie v GUI serverovom móde `autogram --url=autogram://listen?protocol=http&host=localhost&port=37201&origin=*&language=sk` na inom porte
+- [ ] funguje spustenie v GUI serverovom móde `autogram --url=autogram://listen?protocol=http&port=37201` na inom porte
 - [ ] funguje CLI `autogram --cli --source source.pdf`
 - [ ] funguje CLI `autogram --cli --source source.pdf --target target.pdf`
 - [ ] funguje CLI `autogram --cli --source source-dir --target target-dir`
