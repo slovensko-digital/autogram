@@ -27,11 +27,101 @@
       "command": "./mvnw -B -C -V package",
       "options": {
         "env": {
-          "JAVA_HOME": "${workspaceFolder}/target/jdkCache/LIBERICA_jdk17.0.7+7_macos_amd64-full/"
+          "JAVA_HOME": "${config:java.jdt.ls.java.home}",
+          "APPLE_DEVELOPER_IDENTITY": "${config:autogram.APPLE_DEVELOPER_IDENTITY}",
+          "APPLE_KEYCHAIN_PATH": "${config:autogram.APPLE_KEYCHAIN_PATH}"
         }
       },
       "problemMatcher": [],
       "type": "shell"
+    },
+    {
+      "label": "Package using mvnw, skip tests",
+      "command": "./mvnw -B -C -V package -Dmaven.test.skip",
+      "options": {
+        "env": {
+          "JAVA_HOME": "${config:java.jdt.ls.java.home}",
+          "APPLE_DEVELOPER_IDENTITY": "${config:autogram.APPLE_DEVELOPER_IDENTITY}",
+          "APPLE_KEYCHAIN_PATH": "${config:autogram.APPLE_KEYCHAIN_PATH}"
+        }
+      },
+      "problemMatcher": [],
+      "type": "shell"
+    },
+
+    {
+      "label": "MacOS: Check and run installed app",
+      "command": "./src/main/scripts/macos-check-app-validity.sh",
+      "options": {
+        "env": {
+          "JAVA_HOME": "${config:java.jdt.ls.java.home}",
+          "APPLE_DEVELOPER_IDENTITY": "${config:autogram.APPLE_DEVELOPER_IDENTITY}",
+          "APPLE_KEYCHAIN_PATH": "${config:autogram.APPLE_KEYCHAIN_PATH}"
+        }
+      },
+      "problemMatcher": [],
+      "type": "shell"
+    },
+
+    {
+      "label": "MacOS: Setup Keychain for package signing",
+      "command": "./src/main/scripts/macos-setup-keychain.sh",
+      "options": {
+        "env": {
+          "JAVA_HOME": "${config:java.jdt.ls.java.home}",
+          "APPLE_DEVELOPER_IDENTITY": "${config:autogram.APPLE_DEVELOPER_IDENTITY}",
+          "APPLE_KEYCHAIN_PATH": "${config:autogram.APPLE_KEYCHAIN_PATH}"
+        }
+      },
+      "problemMatcher": [],
+      "type": "shell"
+    },
+
+    {
+      "label": "MacOS: Cleanup Keychain after package signing",
+      "command": "./src/main/scripts/macos-cleanup-keychain.sh",
+      "options": {
+        "env": {
+          "JAVA_HOME": "${config:java.jdt.ls.java.home}",
+          "APPLE_DEVELOPER_IDENTITY": "${config:autogram.APPLE_DEVELOPER_IDENTITY}",
+          "APPLE_KEYCHAIN_PATH": "${config:autogram.APPLE_KEYCHAIN_PATH}"
+        }
+      },
+      "problemMatcher": [],
+      "type": "shell"
+    },
+
+    {
+      "label": "MacOS: Send package for notarization",
+      "command": "xcrun notarytool submit --keychain-profile \"autogram\" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg",
+      "options": {
+        "env": {
+          "JAVA_HOME": "${config:java.jdt.ls.java.home}",
+          "APPLE_DEVELOPER_IDENTITY": "${config:autogram.APPLE_DEVELOPER_IDENTITY}",
+          "APPLE_KEYCHAIN_PATH": "${config:autogram.APPLE_KEYCHAIN_PATH}"
+        }
+      },
+      "problemMatcher": [],
+      "type": "shell"
+    },
+    {
+      "label": "Run Autogram CLI",
+      "command": "./mvnw exec:java -Dexec.mainClass=\"digital.slovensko.autogram.Main\" -Dexec.args=\"${input:commandLineArguments}\"",
+      "type": "shell",
+      "problemMatcher": [],
+      "options": {
+        "env": {
+          "JAVA_HOME": "${config:java.jdt.ls.java.home}"
+        }
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "commandLineArguments",
+      "type": "promptString",
+      "description": "Please enter command line arguments",
+      "default": "--cli"
     }
   ]
 }

@@ -11,6 +11,8 @@ import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
 import eu.europa.esig.dss.enumerations.*;
 
+import java.nio.charset.StandardCharsets;
+
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
         INCLUSIVE,
@@ -89,7 +91,7 @@ public class ServerSigningParameters {
 
         if (isBase64)
             try {
-                return new String(Base64.getDecoder().decode(transformation));
+                return new String(Base64.getDecoder().decode(transformation), StandardCharsets.UTF_8);
             } catch (IllegalArgumentException e) {
                 throw new RequestValidationException("XML validation failed", "Invalid XSLT");
             }
@@ -103,7 +105,7 @@ public class ServerSigningParameters {
 
         if (isBase64)
             try {
-                return new String(Base64.getDecoder().decode(schema));
+                return new String(Base64.getDecoder().decode(schema), StandardCharsets.UTF_8);
             } catch (IllegalArgumentException e) {
                 throw new RequestValidationException("XML validation failed", "Invalid XSD");
             }
