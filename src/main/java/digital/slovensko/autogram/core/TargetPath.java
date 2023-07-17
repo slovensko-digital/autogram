@@ -89,8 +89,8 @@ public class TargetPath {
         return new TargetPath(null, source, false, false, FileSystems.getDefault());
     }
 
-    public static TargetPath fromBatchSource(Path source) {
-        return new TargetPath(source.getParent().resolve("signed").toString(), null, false, false, true,
+    public static TargetPath fromTargetDirectory(Path targetDirectory) {
+        return new TargetPath(targetDirectory.toString(), null, false, false, true,
                 FileSystems.getDefault());
     }
 

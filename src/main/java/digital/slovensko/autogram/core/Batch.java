@@ -70,9 +70,6 @@ public class Batch {
 
         if (!this.batchId.equals(batchId))
             throw new BatchInvalidIdException();
-
-        // System.out.println("Batch session " + batchId + " is valid with current session ("
-        // + this.batchId + ")");
     }
 
     // public getters

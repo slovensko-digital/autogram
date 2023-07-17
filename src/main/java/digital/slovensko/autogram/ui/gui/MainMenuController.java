@@ -2,6 +2,8 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
@@ -14,7 +16,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class MainMenuController implements SuppressedFocusController {
     private final Autogram autogram;
@@ -52,27 +53,58 @@ public class MainMenuController implements SuppressedFocusController {
     }
 
     public void processFileList(List<File> list) {
-        if (list != null) {
-            // If single directory is selected (dropped) we can process it as a batch
-            if (list.size() == 1) {
-                var file = list.get(0);
-                if (file.isDirectory()) {
-                    list = Stream.of(file.listFiles()).filter(f -> f.isFile()).toList();
+        try {
+            if (list != null) {
+                if (list.size() == 0) {
+                    throw new NoFilesSelectedException();
+                }
+
+                var dirsList = list.stream().filter(f -> f.isDirectory()).toList();
+                if (dirsList.size() == 1) {
+                    var dir = dirsList.get(0);
+                    var directoryFiles = List.of(dir.listFiles());
+                    if (directoryFiles.size() == 0) {
+                        throw new EmptyDirectorySelectedException(dir.getAbsolutePath());
+                    }
+                    var filesList = getFilesList(directoryFiles);
+
+                    var targetDirectoryName = dir.getName() + "_signed";
+                    var targetDirectory = dir.toPath().getParent().resolve(targetDirectoryName);
+                    autogram.batchStart(filesList.size(),
+                            new BatchGuiFileResponder(autogram, filesList, targetDirectory));
+                } else if (dirsList.size() > 1) {
+                    throw new AutogramException("Zvolili ste viac ako jeden priečinok",
+                            "Priečinky musíte podpísať po jednom",
+                            "Podpisovanie viacerých priečinkov ešte nepodporujeme");
+                }
+                if (list.size() - dirsList.size() > 0) {
+                    batchProcessFiles(list);
                 }
             }
+        } catch (AutogramException e) {
+            autogram.onSigningFailed(e);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 
-            list = list.stream().filter(f -> f.isFile()).toList();
+    private List<File> getFilesList(List<File> list) {
+        var filesList = list.stream().filter(f -> f.isFile()).toList();
+        if (filesList.size() == 0) {
+            throw new NoFilesSelectedException();
+        }
+        return filesList;
+    }
 
-            if (list.size() == 0) {
-                autogram.onSigningFailed(new NoFilesSelectedException());
-                return;
-            } else if (list.size() == 1) {
-                var file = list.get(0);
-                var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), false);
-                autogram.sign(job);
-            } else {
-                autogram.batchStart(list.size(), new BatchGuiFileResponder(autogram, list));
-            }
+    private void batchProcessFiles(List<File> list) {
+        var filesList = getFilesList(list);
+        if (filesList.size() == 1) {
+            var file = filesList.get(0);
+            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), false);
+            autogram.sign(job);
+        } else {
+            autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
+                    filesList.get(0).toPath().getParent().resolve("signed")));
         }
     }
 

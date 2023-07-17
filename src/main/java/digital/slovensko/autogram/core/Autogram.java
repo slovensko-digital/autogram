@@ -85,7 +85,7 @@ public class Autogram {
      */
     public void batchStart(int totalNumberOfDocuments, BatchResponder responder) {
         if (batch != null && !batch.isEnded())
-            throw new BatchConflictException("Another batch is already running");
+            throw new BatchConflictException("Iné hromadné podpisovanie už prebieha");
         batch = new Batch(totalNumberOfDocuments);
 
         var startBatchTask = new AutogramBatchStartCallback() {

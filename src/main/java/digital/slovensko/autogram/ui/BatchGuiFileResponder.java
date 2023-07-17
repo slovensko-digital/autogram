@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,17 +23,16 @@ public class BatchGuiFileResponder extends BatchResponder {
     private boolean uiNotifiedOnAllFilesSigned = false;
     private TargetPath targetPath;
 
-    public BatchGuiFileResponder(Autogram autogram, List<File> list) {
+    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory) {
         this.autogram = autogram;
         this.list = list;
+        this.targetPath = TargetPath.fromTargetDirectory(targetDirectory);
     }
 
     @Override
     public void onBatchStartSuccess(Batch batch) {
         try {
-            targetPath = TargetPath.fromBatchSource(list.get(0).toPath());
             targetPath.mkdirIfDir();
-
         } catch (AutogramException e) {
             autogram.onSigningFailed(e);
             throw e;
