@@ -40,7 +40,7 @@ public class SignRequestBody {
 
         byte[] content;
         if (isBase64()) {
-            content = Base64.getDecoder().decode(document.getContent());
+            content = decodeDocumentContent();
         } else {
             content = document.getContent().getBytes();
         }
@@ -92,7 +92,7 @@ public class SignRequestBody {
     }
 
     private String getDecodedContent() {
-        return isBase64() ? new String(Base64.getDecoder().decode(document.getContent())) : document.getContent();
+        return isBase64() ? new String(decodeDocumentContent()) : document.getContent();
     }
 
     private boolean validateXmlContentAgainstXsd(String xmlContent, String xsdSchema) {
@@ -107,6 +107,14 @@ public class SignRequestBody {
             return true;
         } catch (SAXException | IOException e) {
             return false;
+        }
+    }
+
+    private byte[] decodeDocumentContent() {
+        try {
+            return Base64.getDecoder().decode(document.getContent());
+        } catch (IllegalArgumentException e) {
+            throw new RequestValidationException("XML validation failed", "Invalid document content");
         }
     }
 }

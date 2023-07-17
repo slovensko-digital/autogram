@@ -88,7 +88,11 @@ public class ServerSigningParameters {
             return null;
 
         if (isBase64)
-            return new String(Base64.getDecoder().decode(transformation));
+            try {
+                return new String(Base64.getDecoder().decode(transformation));
+            } catch (IllegalArgumentException e) {
+                throw new RequestValidationException("XML validation failed", "Invalid XSLT");
+            }
 
         return transformation;
     }
@@ -98,7 +102,11 @@ public class ServerSigningParameters {
             return null;
 
         if (isBase64)
-            return new String(Base64.getDecoder().decode(schema));
+            try {
+                return new String(Base64.getDecoder().decode(schema));
+            } catch (IllegalArgumentException e) {
+                throw new RequestValidationException("XML validation failed", "Invalid XSD");
+            }
 
         return schema;
     }
