@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import digital.slovensko.autogram.core.errors.BatchEndedException;
 import digital.slovensko.autogram.core.errors.BatchExpiredException;
+import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
 import digital.slovensko.autogram.util.Logging;
 
 enum BatchState {
@@ -60,7 +61,7 @@ public class Batch {
             throw new BatchEndedException("Hromadné podpisovanie bolo ukončené");
 
         if (isExpired()) {
-            throw new BatchExpiredException("Čas na podpisovanie uplynul");
+            throw new BatchExpiredException();
         }
     }
 
@@ -68,7 +69,7 @@ public class Batch {
         validateInternal();
 
         if (!this.batchId.equals(batchId))
-            throw new IllegalArgumentException("Batch session ID does not match");
+            throw new BatchInvalidIdException();
 
         // System.out.println("Batch session " + batchId + " is valid with current session ("
         // + this.batchId + ")");

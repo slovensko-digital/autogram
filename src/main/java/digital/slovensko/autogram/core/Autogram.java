@@ -128,7 +128,7 @@ public class Autogram {
      */
     public void batchSign(SigningJob job, String batchId) {
         if (batch == null)
-            throw new BatchNotStartedException("Batch not running");
+            throw new BatchNotStartedException();
 
         batch.addJob(batchId, job);
 
