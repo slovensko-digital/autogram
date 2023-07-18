@@ -12,8 +12,7 @@ info:
     url: https://github.com/slovensko-digital/autogram/blob/main/LICENSE
   version: 1.99.9
 servers:
-  - url: http://localhost:37200
-  - url: https://localhost:37200
+  - url: /
 tags:
   - name: Info
     description: Information and status of the server
