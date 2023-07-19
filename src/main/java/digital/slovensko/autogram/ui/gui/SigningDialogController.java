@@ -4,8 +4,6 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
-import eu.europa.esig.dss.simplereport.SimpleReport;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;

@@ -18,9 +18,7 @@ import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
-import eu.europa.esig.dss.tsl.source.TLSource;
 import eu.europa.esig.dss.tsl.sync.AcceptAllStrategy;
-import eu.europa.esig.dss.tsl.sync.ExpirationAndSignatureCheckStrategy;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
@@ -28,7 +26,6 @@ import eu.europa.esig.dss.validation.reports.Reports;
 
 public class SignatureValidator {
     private static final String LOTL_URL = "https://ec.europa.eu/tools/lotl/eu-lotl.xml";
-    private static final String TL_SK = "http://tl.nbu.gov.sk/kca/tsl/tsl.xml";
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
     private CertificateSource journalCertificateSource;
     private FileCacheDataLoader dataLoader;
@@ -55,7 +52,7 @@ public class SignatureValidator {
     private void processLOTL(TrustedListsCertificateSource trustedListCertificateSource) {
         try {
             journalCertificateSource = new KeyStoreCertificateSource(
-                new File("/home/turtle/slovensko_digital/autogram/src/main/resources/keyStore.p12"), "PKCS12", "dss-password");
+                new File("/home/turtle/slovensko_digital/autogram/src/main/resources/lotlKeyStore.p12"), "PKCS12", "dss-password");
         } catch (IOException e) {
             throw new AssertionError(e);
         }

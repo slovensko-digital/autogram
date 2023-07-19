@@ -41,8 +41,6 @@ public class MainMenuController implements SuppressedFocusController {
                 autogram.sign(SigningJob.buildFromFile(file, autogram));
             }
         });
-
-        autogram.sign(SigningJob.buildFromFile(new File("src/test/resources/digital/slovensko/autogram/signed.asice"), autogram));
     }
 
     public void onUploadButtonAction() {
