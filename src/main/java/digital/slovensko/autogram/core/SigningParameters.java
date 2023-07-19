@@ -144,7 +144,7 @@ public class SigningParameters {
     }
 
     public Boolean isEn319132() {
-        return en319132 != null ? en319132 : true;
+        return en319132 != null ? en319132 : false;
     }
 
     public String getInfoCanonicalization() {

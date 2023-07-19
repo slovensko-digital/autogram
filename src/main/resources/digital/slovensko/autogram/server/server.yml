@@ -318,7 +318,7 @@ components:
         en319132:
           type: boolean
           example: false
-          description: Optional flag to control whether the signature should be made according to EN 319132. Defaults to true.
+          description: Optional flag to control whether the signature should be made according to EN 319132. Defaults to false.
 
         infoCanonicalization:
           type: string
