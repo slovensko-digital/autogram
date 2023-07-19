@@ -2,11 +2,13 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.util.DSSUtils;
+import eu.europa.esig.dss.asic.common.ASiCContent;
+import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
+import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.validation.AdvancedSignature;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.validation.*;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -22,7 +24,10 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -197,7 +202,9 @@ public class SigningDialogController implements SuppressedFocusController {
         } else if (document.getMimeType().equals(MimeTypeEnum.JPEG) || document.getMimeType().equals(MimeTypeEnum.PNG)) {
             showImageVisualization(document.openStream());
         } else {
-            // TODO: xml, html
+            if (document.getMimeType().equals(MimeTypeEnum.XML)) {
+                setMimeTypeFromManifest(document);
+            }
             showUnsupportedVisualization();
         }
     }
@@ -209,6 +216,61 @@ public class SigningDialogController implements SuppressedFocusController {
         AdvancedSignature advancedSignature = signatures.get(0);
         List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
         return originalDocuments.get(0);
+    }
+
+    private void setMimeTypeFromManifest(DSSDocument document) {
+        DSSDocument manifest = getManifest();
+        if (manifest == null) {
+            throw new RuntimeException("Unable to find manifest.xml");
+        }
+
+        String documentName = document.getName();
+        MimeType mimeType = getMimeTypeFromManifest(manifest, documentName);
+        if (mimeType == null) {
+            throw new RuntimeException("Unable to get mimetype from manifest.xml");
+        }
+
+        document.setMimeType(mimeType);
+    }
+
+    private DSSDocument getManifest() {
+        ASiCWithXAdESContainerExtractor extractor = new ASiCWithXAdESContainerExtractor(new FileDocument(signingJob.getFile()));
+        ASiCContent aSiCContent = extractor.extract();
+        List<DSSDocument> manifestDocuments = aSiCContent.getManifestDocuments();
+        if (manifestDocuments.isEmpty()) {
+            return null;
+        }
+        return manifestDocuments.get(0);
+    }
+
+    private MimeType getMimeTypeFromManifest(DSSDocument manifest, String documentName) {
+        NodeList fileEntries = getFileEntriesFromManifest(manifest);
+
+        for (int i = 0; i < fileEntries.getLength(); i++) {
+            String fileName = fileEntries.item(i).getAttributes().item(0).getNodeValue();
+            String fileType = fileEntries.item(i).getAttributes().item(1).getNodeValue();
+
+            if (documentName.equals(fileName)) {
+                return AutogramMimeType.fromMimeTypeString(fileType);
+            }
+        }
+
+        return null;
+    }
+
+    private NodeList getFileEntriesFromManifest(DSSDocument manifest) {
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+            var document = builderFactory.newDocumentBuilder().parse(new InputSource(manifest.openStream()));
+            return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private boolean isDocumentMimeType(String fullPath) {
+        return !"/".equals(fullPath);
     }
 
     private String getDocumentAsPlainText(DSSDocument document) {

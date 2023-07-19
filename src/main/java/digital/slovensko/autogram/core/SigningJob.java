@@ -266,4 +266,8 @@ public class SigningJob {
     public boolean shouldCheckPDFCompliance() {
         return parameters.getCheckPDFACompliance();
     }
+
+    public File getFile() {
+        return file;
+    }
 }
