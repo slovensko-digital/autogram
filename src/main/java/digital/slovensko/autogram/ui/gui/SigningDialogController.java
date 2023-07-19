@@ -269,10 +269,6 @@ public class SigningDialogController implements SuppressedFocusController {
         }
     }
 
-    private boolean isDocumentMimeType(String fullPath) {
-        return !"/".equals(fullPath);
-    }
-
     private String getDocumentAsPlainText(DSSDocument document) {
         try {
             return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
