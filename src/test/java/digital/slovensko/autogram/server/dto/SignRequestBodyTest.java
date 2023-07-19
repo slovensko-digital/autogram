@@ -11,7 +11,7 @@ class SignRequestBodyTest {
 
     @Test
     void testValidateXDCWithoutXSD() throws IOException {
-        var xmlContent = new String(this.getClass().getResourceAsStream("def.xml").readAllBytes());
+        var xmlContent = new String(this.getClass().getResourceAsStream("xdc.xml").readAllBytes());
         var document = new Document(xmlContent);
 
         var signingParameters = new ServerSigningParameters(
@@ -40,7 +40,7 @@ class SignRequestBodyTest {
 
     @Test
     void testValidateXDCWithValidXmlAgainstXSD() throws IOException {
-        var xmlContent = new String(this.getClass().getResourceAsStream("def.xml").readAllBytes());
+        var xmlContent = new String(this.getClass().getResourceAsStream("xdc.xml").readAllBytes());
         var document = new Document(xmlContent);
 
         var schema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n\n\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>";
