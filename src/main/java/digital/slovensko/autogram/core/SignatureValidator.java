@@ -9,6 +9,7 @@ import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
+import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
@@ -40,9 +41,8 @@ public class SignatureValidator {
         verifier.setTrustedCertSources(trustedListCertificateSource);
         verifier.setAIASource(new DefaultAIASource(dataLoader));
         verifier.setCrlSource(new OnlineCRLSource(dataLoader));
-        verifier.setOcspSource(new OnlineOCSPSource(dataLoader));
+        verifier.setOcspSource(new OnlineOCSPSource(new OCSPDataLoader()));
 
-        docValidator.setCertificateVerifier(new CommonCertificateVerifier());
         docValidator.setCertificateVerifier(verifier);
         var r = docValidator.validateDocument();
 
@@ -55,9 +55,8 @@ public class SignatureValidator {
     private void processLOTL(TrustedListsCertificateSource trustedListCertificateSource) {
         try {
             journalCertificateSource = new KeyStoreCertificateSource(
-                new File("/home/turtle/slovensko_digital/autogram/src/main/resources/keyStore.p12"), "PKCS12",
-                    "dss-password");
-                } catch (IOException e) {
+                new File("/home/turtle/slovensko_digital/autogram/src/main/resources/keyStore.p12"), "PKCS12", "dss-password");
+        } catch (IOException e) {
             throw new AssertionError(e);
         }
 
@@ -66,7 +65,7 @@ public class SignatureValidator {
 
         dataLoader = new FileCacheDataLoader();
         dataLoader.setDataLoader(new CommonsDataLoader());
-        dataLoader.setCacheExpirationTime(-1);
+        dataLoader.setCacheExpirationTime(3600000);
         dataLoader.setFileCacheDirectory(targetLocation);
 
         var offlineFileLoader = new FileCacheDataLoader();
@@ -83,11 +82,6 @@ public class SignatureValidator {
         lotlSource.setUrl(LOTL_URL);
         lotlSource.setPivotSupport(true);
         validationJob.setListOfTrustedListSources(lotlSource);
-
-        // var tlSource = new TLSource();
-        // tlSource.setUrl(TL_SK);
-        // tlSource.setCertificateSource(journalCertificateSource);
-        // validationJob.setTrustedListSources(tlSource);
 
         // validationJob.setSynchronizationStrategy(new ExpirationAndSignatureCheckStrategy());
         validationJob.setSynchronizationStrategy(new AcceptAllStrategy());

@@ -120,6 +120,9 @@ public class SigningDialogController implements SuppressedFocusController {
             signatureCheckMessage.setText("Dokument ešte nie je podpísaný");
             return;
         }
+
+        signatureCheckMessage.setText("Dokument obsahuje podpisy: " + Integer.toString(signingJob.getSignatureCheckReport().getSimpleReport().getSignaturesCount()));
+        showPresentSignaturesButton.setVisible(true);
     }
 
     public void onSignatureValidationCompleted() {
