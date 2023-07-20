@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><xs:schema elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://schemas.gov.sk/form/App.GeneralAgenda/1.9" xmlns="http://schemas.gov.sk/form/App.GeneralAgenda/1.9">
+    <xs:simpleType name="textArea">
+        <xs:restriction base="xs:string">
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="meno">
+        <xs:restriction base="xs:string">
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <xs:element name="GeneralAgenda">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="subject" type="meno" minOccurs="0" nillable="true" />
+                <xs:element name="text" type="textArea" minOccurs="0" nillable="true" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
