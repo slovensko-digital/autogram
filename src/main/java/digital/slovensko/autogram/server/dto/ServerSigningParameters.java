@@ -7,6 +7,7 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
 import eu.europa.esig.dss.enumerations.*;
@@ -93,7 +94,7 @@ public class ServerSigningParameters {
             try {
                 return new String(Base64.getDecoder().decode(transformation), StandardCharsets.UTF_8);
             } catch (IllegalArgumentException e) {
-                throw new RequestValidationException("XML validation failed", "Invalid XSLT");
+                throw new MalformedBodyException("XML validation failed", "Invalid XSLT");
             }
 
         return transformation;
@@ -107,7 +108,7 @@ public class ServerSigningParameters {
             try {
                 return new String(Base64.getDecoder().decode(schema), StandardCharsets.UTF_8);
             } catch (IllegalArgumentException e) {
-                throw new RequestValidationException("XML validation failed", "Invalid XSD");
+                throw new MalformedBodyException("XML validation failed", "Invalid XSD");
             }
 
         return schema;

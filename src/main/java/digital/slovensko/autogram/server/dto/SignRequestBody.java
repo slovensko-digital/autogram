@@ -123,7 +123,7 @@ public class SignRequestBody {
         try {
             return Base64.getDecoder().decode(document.getContent());
         } catch (IllegalArgumentException e) {
-            throw new RequestValidationException("XML validation failed", "Invalid document content");
+            throw new MalformedBodyException("XML validation failed", "Invalid document content");
         }
     }
 }
