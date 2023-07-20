@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.server.dto;
 
+import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import org.junit.jupiter.api.Assertions;
@@ -185,7 +186,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -215,7 +216,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -245,7 +246,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -275,7 +276,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -305,7 +306,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -335,7 +336,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -365,7 +366,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -395,7 +396,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test

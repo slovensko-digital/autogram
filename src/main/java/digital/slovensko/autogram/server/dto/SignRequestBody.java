@@ -7,6 +7,9 @@ import java.util.Base64;
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.XDCTransformer;
+import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
+import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import org.xml.sax.SAXException;
@@ -69,25 +72,31 @@ public class SignRequestBody {
     }
 
     private void validateXml(SigningParameters signingParameters) {
-        String xsdSchema = signingParameters.getSchema();
-        String xmlContent;
+        try {
+            String xsdSchema = signingParameters.getSchema();
+            String xmlContent;
 
-        boolean isXdc = getDocument().getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
-        if (isXdc) {
-            XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, getDocument());
-            if (signingParameters.getSchema() != null && !xdcTransformer.validateXsdDigest())
-                throw new RequestValidationException("XML Datacontainer validation failed", "XSD scheme digest mismatch");
+            boolean isXdc = getDocument().getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
+            if (isXdc) {
+                XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, getDocument());
+                if (signingParameters.getSchema() != null && !xdcTransformer.validateXsdDigest())
+                    throw new XMLValidationException("XML Datacontainer validation failed", "XSD scheme digest mismatch");
 
-            if (signingParameters.getTransformation() != null && !xdcTransformer.validateXsltDigest())
-                throw new RequestValidationException("XML Datacontainer validation failed", "XSLT transformation digest mismatch");
+                if (signingParameters.getTransformation() != null && !xdcTransformer.validateXsltDigest())
+                    throw new XMLValidationException("XML Datacontainer validation failed", "XSLT transformation digest mismatch");
 
-            xmlContent = xdcTransformer.getContentFromXdc();
-        } else {
-            xmlContent = getDecodedContent();
-        }
+                xmlContent = xdcTransformer.getContentFromXdc();
+            } else {
+                xmlContent = getDecodedContent();
+            }
 
-        if (!validateXmlContentAgainstXsd(xmlContent, xsdSchema)) {
-            throw new RequestValidationException("XML validation failed", "XML validation against XSD failed");
+            if (!validateXmlContentAgainstXsd(xmlContent, xsdSchema)) {
+                throw new XMLValidationException("XML validation failed", "XML validation against XSD failed");
+            }
+        } catch (InvalidXMLException e) {
+            throw new MalformedBodyException(e.getMessage(), e.getDescription());
+        } catch (XMLValidationException e) {
+            throw new RequestValidationException(e.getMessage(), e.getDescription());
         }
     }
 

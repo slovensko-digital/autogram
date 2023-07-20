@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.server.errors.RequestValidationException;
+import digital.slovensko.autogram.core.errors.InvalidXMLException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -80,7 +80,7 @@ public class XDCTransformer {
         this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
-    public static XDCTransformer buildFromSigningParametersAndDocument(SigningParameters sp, InMemoryDocument document) {
+    public static XDCTransformer buildFromSigningParametersAndDocument(SigningParameters sp, InMemoryDocument document) throws InvalidXMLException {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
@@ -91,7 +91,7 @@ public class XDCTransformer {
                     sp.getDigestAlgorithm(),
                     builderFactory.newDocumentBuilder().parse(new InputSource(document.openStream())));
         } catch (Exception e) {
-            throw new RequestValidationException("XML Datacontainer validation failed", "Unable to process document");
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to process document");
         }
     }
 
@@ -252,58 +252,58 @@ public class XDCTransformer {
         return "urn:oid:" + digestAlgorithm.getOid();
     }
 
-    public boolean validateXsdDigest() {
+    public boolean validateXsdDigest() throws InvalidXMLException {
         try {
             String xsdSchemaHash = computeDigest(xsdSchema);
             String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
             return xsdSchemaHash.equals(xsdDigestValue);
         } catch (Exception e) {
-            throw new RequestValidationException("XML Datacontainer validation failed", "Invalid XSD");
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Invalid XSD");
         }
     }
 
-    public boolean validateXsltDigest() {
+    public boolean validateXsltDigest() throws InvalidXMLException {
         try {
             String xsltSchemaHash = computeDigest(xsltSchema);
             String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
             return xsltSchemaHash.equals(xsltDigestValue);
         } catch (Exception e) {
-            throw new RequestValidationException("XML Datacontainer validation failed", "Invalid XSLT");
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Invalid XSLT");
         }
     }
 
-    private String getDigestValueFromElement(String elementLocalName) {
+    private String getDigestValueFromElement(String elementLocalName) throws InvalidXMLException {
         var xdc = document.getDocumentElement();
 
         var element = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", elementLocalName)
                 .item(0);
         if (element == null)
-            throw new RequestValidationException("XML Datacontainer validation failed", "Element " + elementLocalName + " not found");
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Element " + elementLocalName + " not found");
 
         var attributes = element.getAttributes();
         if (attributes == null || attributes.getLength() == 0)
-            throw new RequestValidationException("XML Datacontainer validation failed", "Attributes of " + elementLocalName + " not found");
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Attributes of " + elementLocalName + " not found");
 
         var digestValue = attributes.getNamedItem("DigestValue");
         if (digestValue == null)
-            throw new RequestValidationException("XML Datacontainer validation failed", "DigestValue of " + elementLocalName + " not found");
+            throw new InvalidXMLException("XML Datacontainer validation failed", "DigestValue of " + elementLocalName + " not found");
 
         return digestValue.getNodeValue();
     }
 
-    public String getContentFromXdc() {
+    public String getContentFromXdc() throws InvalidXMLException {
         var xdc = document.getDocumentElement();
 
         var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
                 .item(0);
 
         if (xmlData == null)
-            throw new RequestValidationException("XML Datacontainer validation failed", "XMLData not found in XDC");
+            throw new InvalidXMLException("XML Datacontainer validation failed", "XMLData not found in XDC");
 
         return transformElementToString(xmlData.getFirstChild());
     }
 
-    private String transformElementToString(Node element) {
+    private String transformElementToString(Node element) throws InvalidXMLException {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
@@ -320,7 +320,7 @@ public class XDCTransformer {
 
             return writer.toString();
         } catch (Exception e) {
-            throw new RequestValidationException("XML Datacontainer validation failed", "Unable to get xml content");
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to get xml content");
         }
     }
 
