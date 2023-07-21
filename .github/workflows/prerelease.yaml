@@ -2,12 +2,6 @@ name: Pre-release
 on:
   release:
     types: [prereleased]
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag name'
-        required: true
-
 jobs:
   checklist:
     runs-on: ubuntu-latest
@@ -24,5 +18,5 @@ jobs:
         with:
           assignees: ${{ steps.issueTemplate.outputs.assignees }}
           labels: ${{ steps.issueTemplate.outputs.labels }}
-          title: ${{ steps.issueTemplate.outputs.title }} ${{ github.event.release.tag_name }} ${{ inputs.tag }}
+          title: ${{ steps.issueTemplate.outputs.title }} ${{ github.event.release.tag_name }}
           body: ${{ steps.issueTemplate.outputs.body }}
