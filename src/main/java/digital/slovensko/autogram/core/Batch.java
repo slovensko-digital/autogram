@@ -53,7 +53,7 @@ public class Batch {
         state = BatchState.ENDED;
     }
 
-    public void validateInternal() {
+    private void validateInternal() {
         if (state == BatchState.INITIALIZED)
             throw new BatchEndedException("Hromadné podpisovanie nebolo začaté");
 

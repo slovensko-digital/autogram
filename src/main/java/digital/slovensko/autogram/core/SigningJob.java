@@ -60,11 +60,6 @@ public class SigningJob {
             throw new RuntimeException("Cannot sign on UI thread");
         }
 
-        // Thread.sleep(5000);
-        // var random = new Random();
-        // if (random.nextFloat() > 0.5) {
-        // throw new RuntimeException("Random exception");
-        // }
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         Logging.log("Signing Job: " + this.hashCode() + " key: " + key.getCertificate().getAbbreviation() + " "
                 + DSSUtils.buildTooltipLabel(key.privateKey));

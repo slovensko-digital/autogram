@@ -28,8 +28,6 @@ public class ErrorResponse {
     }
 
     public static ErrorResponse buildFromException(Exception e) {
-        e.printStackTrace();
-        System.out.println( e.getClass().getSimpleName());
         // TODO maybe replace with pattern matching someday
         return switch (e.getClass().getSimpleName()) {
             case "SigningCanceledByUserException" -> new ErrorResponse(204, "USER_CANCELLED", (AutogramException) e);
