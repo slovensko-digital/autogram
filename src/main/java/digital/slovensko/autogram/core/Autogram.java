@@ -103,7 +103,7 @@ public class Autogram {
                 if (e instanceof AutogramException)
                     responder.onBatchStartFailure((AutogramException) e);
                 else {
-                    System.out.println("Batch start failed with exception: " + e);
+                    Logging.log("Batch start failed with exception: " + e);
                     responder.onBatchStartFailure(
                             new AutogramException("Unkown error occured while starting batch", "",
                                     "Batch start failed with exception: " + e, e));

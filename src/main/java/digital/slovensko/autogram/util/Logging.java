@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.util;
 
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -15,5 +16,10 @@ public class Logging {
         var date = new SimpleDateFormat("HH:mm:ss.S").format(new Date());
 
         logger.debug("{} ({}) {}", date, (Platform.isFxApplicationThread() ? "FX" : "BG"), message);
+    }
+
+    public static void log(Object x){
+        String s = String.valueOf(x);
+        log(s);
     }
 }

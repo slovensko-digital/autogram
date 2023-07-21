@@ -65,7 +65,7 @@ public class BatchGuiFileResponder extends BatchResponder {
     private void onAllFilesSigned(Batch batch) { // synchronized
         if (batch.isAllProcessed() && !uiNotifiedOnAllFilesSigned) {
             uiNotifiedOnAllFilesSigned = true;
-            System.out.println(errors.values().stream().map(e -> e == null ? "" : e.toString()).toList());
+            Logging.log(errors.values().stream().map(e -> e == null ? "" : e.toString()).toList());
             var result = new BatchUiResult(targetPath, targetFiles, errors);
             autogram.onDocumentBatchSaved(result);
         }
