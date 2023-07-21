@@ -1,30 +1,35 @@
 package digital.slovensko.autogram.ui.gui;
 
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.function.Consumer;
+
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.AutogramBatchStartCallback;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.errors.*;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.ui.BatchGuiResult;
+import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.function.Consumer;
 
 public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
@@ -50,7 +55,7 @@ public class GUI implements UI {
         var stage = new Stage();
         stage.setTitle("Hromadné podpisovanie");
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> cancelBatch(batch, callback));
+        stage.setOnCloseRequest(e -> cancelBatch(batch));
 
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, batchController);
@@ -59,19 +64,17 @@ public class GUI implements UI {
     }
 
     @Override
-    public void cancelBatch(Batch batch, AutogramBatchStartCallback callback) {
+    public void cancelBatch(Batch batch) {
         batchController.close();
         batch.end();
         refreshKeyOnAllJobs();
-        onWorkThreadDo(callback);
     }
 
     @Override
-    public void signBatch(SigningJob job) {
+    public void signBatch(SigningJob job, SigningKey key) {
         try {
-            job.signWithKeyAndRespond(getActiveSigningKey());
+            job.signWithKeyAndRespond(key);
             Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
-            updateBatch();
         } catch (AutogramException e) {
             job.onDocumentSignFailed(e);
         } catch (DSSException e) {
@@ -80,6 +83,7 @@ public class GUI implements UI {
             AutogramException autogramException = new AutogramException("Document signing has failed", "", "", e);
             job.onDocumentSignFailed(autogramException);
         }
+        updateBatch();
     }
 
     @Override
@@ -163,6 +167,9 @@ public class GUI implements UI {
 
     private void refreshKeyOnAllJobs() {
         jobControllers.values().forEach(SigningDialogController::refreshSigningKey);
+        if (batchController != null) {
+            batchController.refreshSigningKey();
+        }
     }
 
     private void showError(AutogramException e) {
@@ -299,15 +306,18 @@ public class GUI implements UI {
     }
 
     @Override
-    public void onDocumentBatchSaved(BatchGuiResult result) {
-        var controller = new BatchSigningSuccessDialogController(result, hostServices);
-        var root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
-
+    public void onDocumentBatchSaved(BatchUiResult result) {
         var stage = new Stage();
+        SuppressedFocusController controller;
+        Parent root;
         if (result.hasErrors()) {
-            stage.setTitle("Dokumenty boli podpísané");
+            controller = new BatchSigningFailureDialogController(result, hostServices);
+            root = GUIUtils.loadFXML(controller, "batch-signing-failure-dialog.fxml");
+            stage.setTitle("Hromadné podpisovanie ukončené s chybami");
         } else {
-            stage.setTitle("Dokumenty boli úspešne podpísané");
+            controller = new BatchSigningSuccessDialogController(result, hostServices);
+            root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
+            stage.setTitle("Hromadné podpisovanie úspešne ukončené");
         }
         stage.setScene(new Scene(root));
         stage.setResizable(false);

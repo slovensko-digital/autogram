@@ -35,7 +35,7 @@ import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.ui.BatchGuiResult;
+import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -74,12 +74,12 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void signBatch(SigningJob job) {
+    public void signBatch(SigningJob job, SigningKey key) {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void cancelBatch(Batch batch, AutogramBatchStartCallback callback) {
+    public void cancelBatch(Batch batch) {
         // TODO Auto-generated method stub
     }
 
@@ -166,7 +166,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void onDocumentBatchSaved(BatchGuiResult result) {
+    public void onDocumentBatchSaved(BatchUiResult result) {
 
     }
 

@@ -603,7 +603,7 @@ TextFlow.autogram-body-s {
   -fx-max-height: 400px;
   -fx-min-height: 30px;
   -fx-pref-height: 200px;
-  -fx-padding: 0 0 0 20px;
+  -fx-padding: 0 0 20px 20px;
 }
 
 .autogram-confirmation--success {
@@ -614,8 +614,8 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-confirmation{
-  -fx-padding: 30px;
-  -fx-background-insets: 20px ;
+  -fx-padding: 40px 20px 40px 20px;
+  -fx-background-insets: 20px 0 20px 0;
   -fx-text-fill: #ffffff;
   -fx-text-alignment: center;
 }

@@ -15,10 +15,14 @@
     fx:id="mainBox">
     <VBox>
 
-        <VBox styleClass="autogram-prose,autogram-confirmation" fx:id="confirmationBox">
+        <VBox styleClass="autogram-prose,autogram-confirmation,autogram-confirmation--success">
             <TextFlow styleClass="autogram-heading-m">
-                <Text fx:id="h1" styleClass="autogram-heading-m"
-                    text="Dokumenty boli úspešne podpísané" />
+                <Text styleClass="autogram-heading-m" text="Dokumenty boli úspešne podpísané" />
+            </TextFlow>
+            <TextFlow styleClass="autogram-body">
+                <Text styleClass="autogram-body">Podpísali ste&#160;</Text>
+                <Text fx:id="successCount" styleClass="autogram-font-weight-bold,autogram-body">X</Text>
+                <Text styleClass="autogram-body">&#160;dokumentov.&#160;</Text>
             </TextFlow>
             <TextFlow styleClass="autogram-body">
                 <Text styleClass="autogram-body" text="Podpísané súbor sú uložené v&#160;priečinku " />
@@ -28,31 +32,6 @@
             </TextFlow>
         </VBox>
 
-            <Button fx:id="showFiles" styleClass="autogram-button,autogram-link" text="Zobraziť súbory"
-                onAction="#onShowFiles" />
-
-        <VBox styleClass="autogram-prose" fx:id="listsBox" visible="false" managed="false">
-            <VBox fx:id="fileListBox">
-                <TextFlow styleClass="autogram-heading-s">
-                    <Text fx:id="fileListHeading" styleClass="autogram-heading-s"
-                        text="Úspešne podpísané" />
-                </TextFlow>
-                <ListView fx:id="fileList" styleClass="autogram-listview" />
-            </VBox>
-            <VBox fx:id="errorListBox">
-                <TextFlow styleClass="autogram-heading-s">
-                    <Text fx:id="errorListHeading" styleClass="autogram-heading-s" text="Neúspešné" />
-                </TextFlow>
-                <ListView fx:id="errorList" styleClass="autogram-listview" />
-
-                <TextFlow styleClass="autogram-body-s">
-                    <Button fx:id="showErrorDetailsButton" styleClass="autogram-link"
-                        text="Zobraziť detaily chyby" onAction="#onShowErrorDetailsButtonAction" />
-                </TextFlow>
-                <TextArea fx:id="errorDetails" styleClass="autogram-details__text,autogram-body-s"
-                    editable="false" visible="false" managed="false" />
-            </VBox>
-        </VBox>
         <HBox styleClass="autogram-actions">
             <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary"
                 text="Zavrieť" onAction="#onCloseAction" />

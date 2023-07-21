@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.core;
 
-import javafx.concurrent.Task;
+import java.util.function.Consumer;
 
-public abstract class AutogramBatchStartCallback extends Task<Void> {
+public abstract class AutogramBatchStartCallback implements Consumer<SigningKey> {
 }

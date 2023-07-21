@@ -60,25 +60,19 @@ public class MainMenuController implements SuppressedFocusController {
                 }
 
                 var dirsList = list.stream().filter(f -> f.isDirectory()).toList();
-                if (dirsList.size() == 1) {
-                    var dir = dirsList.get(0);
-                    var directoryFiles = List.of(dir.listFiles());
-                    if (directoryFiles.size() == 0) {
-                        throw new EmptyDirectorySelectedException(dir.getAbsolutePath());
-                    }
-                    var filesList = getFilesList(directoryFiles);
-
-                    var targetDirectoryName = dir.getName() + "_signed";
-                    var targetDirectory = dir.toPath().getParent().resolve(targetDirectoryName);
-                    autogram.batchStart(filesList.size(),
-                            new BatchGuiFileResponder(autogram, filesList, targetDirectory));
+                var filesList = list.stream().filter(f -> f.isFile()).toList();
+                if (dirsList.size() == 1 && filesList.size() == 0) {
+                    batchProcessDirectory(dirsList.get(0));
                 } else if (dirsList.size() > 1) {
                     throw new AutogramException("Zvolili ste viac ako jeden priečinok",
                             "Priečinky musíte podpísať po jednom",
                             "Podpisovanie viacerých priečinkov ešte nepodporujeme");
-                }
-                if (list.size() - dirsList.size() > 0) {
+                } else if (dirsList.size() == 0 && filesList.size() > 0) {
                     batchProcessFiles(list);
+                } else {
+                    throw new AutogramException("Zvolili ste zmiešaný výber súborov a priečinkov",
+                            "Podpisovanie zmesi súborov a priečinkov nepodporujeme",
+                            "Priečinky musíte podpísať po jednom, súbory môžete po viacerých");
                 }
             }
         } catch (AutogramException e) {
@@ -106,6 +100,19 @@ public class MainMenuController implements SuppressedFocusController {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
                     filesList.get(0).toPath().getParent().resolve("signed")));
         }
+    }
+
+    private void batchProcessDirectory(File dir) {
+        var directoryFiles = List.of(dir.listFiles());
+        if (directoryFiles.size() == 0) {
+            throw new EmptyDirectorySelectedException(dir.getAbsolutePath());
+        }
+        var filesList = getFilesList(directoryFiles);
+
+        var targetDirectoryName = dir.getName() + "_signed";
+        var targetDirectory = dir.toPath().getParent().resolve(targetDirectoryName);
+        autogram.batchStart(filesList.size(),
+                new BatchGuiFileResponder(autogram, filesList, targetDirectory));
     }
 
     public void onAboutButtonAction() {

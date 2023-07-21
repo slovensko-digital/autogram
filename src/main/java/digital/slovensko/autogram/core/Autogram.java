@@ -7,7 +7,7 @@ import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.ui.BatchGuiResult;
+import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
@@ -33,12 +33,12 @@ public class Autogram {
     }
 
     public void sign(SigningJob job) {
-        ui.onUIThreadDo(()
-        -> ui.startSigning(job, this));
+        ui.onUIThreadDo(() -> ui.startSigning(job, this));
     }
 
     public void checkPDFACompliance(SigningJob job) {
-        if(!job.shouldCheckPDFCompliance()) return;
+        if (!job.shouldCheckPDFCompliance())
+            return;
 
         ui.onWorkThreadDo(() -> {
             var result = new PDFAStructureValidator().validate(job.getDocument());
@@ -89,16 +89,17 @@ public class Autogram {
         batch = new Batch(totalNumberOfDocuments);
 
         var startBatchTask = new AutogramBatchStartCallback() {
-            @Override
-            protected Void call() throws Exception {
-                Logging.log("Starting batch");
-                batch.start();
-                return null;
+            public void accept(SigningKey key) {
+                try {
+                    Logging.log("Starting batch");
+                    batch.start(key);
+                    handleSuccess();
+                } catch (Exception e) {
+                    handleException(e);
+                }                
             }
 
-            @Override
-            protected void failed() {
-                var e = getException();
+            private void handleException(Exception e) {
                 if (e instanceof AutogramException)
                     responder.onBatchStartFailure((AutogramException) e);
                 else {
@@ -109,8 +110,7 @@ public class Autogram {
                 }
             }
 
-            @Override
-            protected void succeeded() {
+            private void handleSuccess() {
                 ui.onWorkThreadDo(() -> responder.onBatchStartSuccess(batch));
             }
         };
@@ -134,10 +134,10 @@ public class Autogram {
 
         if (Platform.isFxApplicationThread()) {
             ui.onWorkThreadDo(() -> {
-                ui.signBatch(job);
+                ui.signBatch(job, batch.getSigningKey());
             });
         } else {
-            ui.signBatch(job);
+            ui.signBatch(job, batch.getSigningKey());
         }
     }
 
@@ -156,7 +156,7 @@ public class Autogram {
         batch.validate(batchId);
         batch.end();
         ui.onUIThreadDo(() -> {
-            ui.cancelBatch(batch, null);
+            ui.cancelBatch(batch);
         });
         return batch.isAllProcessed();
     }
@@ -197,7 +197,7 @@ public class Autogram {
         ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFile));
     }
 
-    public void onDocumentBatchSaved(BatchGuiResult result) {
+    public void onDocumentBatchSaved(BatchUiResult result) {
         ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(result));
     }
 

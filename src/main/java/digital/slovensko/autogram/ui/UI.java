@@ -16,11 +16,11 @@ public interface UI {
 
     void startBatch(Batch batch, Autogram autogram, AutogramBatchStartCallback callback);
 
-    void signBatch(SigningJob job);
+    void signBatch(SigningJob job, SigningKey key);
     
     public void updateBatch();
 
-    void cancelBatch(Batch batch, AutogramBatchStartCallback callback);
+    void cancelBatch(Batch batch);
 
     void showVisualization(Visualization visualization, Autogram autogram);
 
@@ -38,7 +38,7 @@ public interface UI {
 
     void onDocumentSaved(File targetFiles);
 
-    void onDocumentBatchSaved(BatchGuiResult result);
+    void onDocumentBatchSaved(BatchUiResult result);
 
     void onWorkThreadDo(Runnable callback);
 

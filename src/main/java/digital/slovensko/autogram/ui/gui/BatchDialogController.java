@@ -94,7 +94,9 @@ public class BatchDialogController implements SuppressedFocusController {
         showProgress();
         showCancelButton();
         getNodeForLoosingFocus().requestFocus();
-        gui.onWorkThreadDo(startBatchCallback);
+        gui.onWorkThreadDo(() -> {
+            startBatchCallback.accept(signingKey);
+        });
     }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
@@ -113,28 +115,30 @@ public class BatchDialogController implements SuppressedFocusController {
     }
 
     public void refreshSigningKey() {
-        SigningKey key = gui.getActiveSigningKey();
-        if (key == null) {
-            signButton.setVisible(false);
-            signButton.setManaged(false);
+        if (batch.isKeyChangeAllowed()) {
+            SigningKey key = gui.getActiveSigningKey();
+            if (key == null) {
+                signButton.setVisible(false);
+                signButton.setManaged(false);
 
-            chooseKeyButton.setVisible(true);
-            chooseKeyButton.setManaged(true);
-            chooseKeyButton.setDisable(false);
-            
-            disableKeyChange();
-        } else {
-            signButton.setVisible(true);
-            signButton.setManaged(true);
+                chooseKeyButton.setVisible(true);
+                chooseKeyButton.setManaged(true);
+                chooseKeyButton.setDisable(false);
 
-            chooseKeyButton.setVisible(false);
-            chooseKeyButton.setManaged(false);
+                disableKeyChange();
+            } else {
+                signButton.setVisible(true);
+                signButton.setManaged(true);
 
-            signButton.setDisable(false);
-            signButton.setText("Podpísať ako "
-                    + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+                chooseKeyButton.setVisible(false);
+                chooseKeyButton.setManaged(false);
 
-            enableKeyChange();
+                signButton.setDisable(false);
+                signButton.setText("Podpísať ako "
+                        + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+
+                enableKeyChange();
+            }
         }
     }
 

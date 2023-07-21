@@ -4,6 +4,7 @@ import java.io.File;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileFromBatchResponder;
+import digital.slovensko.autogram.util.DSSUtils;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
@@ -54,17 +55,19 @@ public class SigningJob {
         return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
     }
 
-    public void signWithKeyAndRespond(SigningKey key) {
+    public void signWithKeyAndRespond(SigningKey key) throws InterruptedException {
         if (Platform.isFxApplicationThread()) {
             throw new RuntimeException("Cannot sign on UI thread");
         }
 
-        // Thread.sleep(1000);
+        // Thread.sleep(5000);
         // var random = new Random();
         // if (random.nextFloat() > 0.5) {
         // throw new RuntimeException("Random exception");
         // }
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
+        Logging.log("Signing Job: " + this.hashCode() + " key: " + key.getCertificate().getAbbreviation() + " "
+                + DSSUtils.buildTooltipLabel(key.privateKey));
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);

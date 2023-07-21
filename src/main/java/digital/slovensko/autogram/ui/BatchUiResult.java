@@ -9,12 +9,12 @@ import java.util.stream.Stream;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 
-public class BatchGuiResult {
+public class BatchUiResult {
     private final TargetPath targetPath;
     private final Map<File, File> targetFiles;
     private final Map<File, AutogramException> errors;
 
-    public BatchGuiResult(TargetPath targetPath, Map<File, File> targetFiles, Map<File, AutogramException> errors) {
+    public BatchUiResult(TargetPath targetPath, Map<File, File> targetFiles, Map<File, AutogramException> errors) {
         this.targetPath = targetPath;
         this.targetFiles = targetFiles;
         this.errors = errors;

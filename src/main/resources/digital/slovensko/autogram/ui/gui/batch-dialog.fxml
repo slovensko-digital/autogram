@@ -70,10 +70,8 @@
         <Button fx:id="changeKeyButton" styleClass="autogram-link" text="Zmeniť" visible="false"
             managed="false"
             onAction="#onChangeKeyButtonPressed" />
-
-        <Pane HBox.hgrow="ALWAYS" />
         <Button fx:id="cancelBatchButton" styleClass="autogram-button,autogram-button--warning"
-            text="Prerušiť hromadné podpisovanie" visible="false" managed="false"
+            text="Zrušiť hromadné podpisovanie" visible="false" managed="false"
             onAction="#onCancelBatchButtonPressed" />
     </HBox>
 </VBox>

@@ -46,15 +46,11 @@ public class BatchGuiFileResponder extends BatchResponder {
                     targetFiles.put(file, targetFile);
                     Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments()
                             + " signed " + file.toString());
-                    if (batch.isAllProcessed()) {
-                        onAllFilesSigned();
-                    }
+                    onAllFilesSigned(batch);
                 }, (AutogramException error) -> {
                     Logging.log("Signing failed " + file.toString() + " all:" + batch.isAllProcessed());
                     errors.put(file, error);
-                    if (batch.isAllProcessed()) {
-                        onAllFilesSigned();
-                    }
+                    onAllFilesSigned(batch);
                 });
 
                 var job = SigningJob.buildFromFileBatch(file, autogram, responder);
@@ -66,11 +62,11 @@ public class BatchGuiFileResponder extends BatchResponder {
         }
     }
 
-    private void onAllFilesSigned() { // synchronized
-        if (!uiNotifiedOnAllFilesSigned) {
+    private void onAllFilesSigned(Batch batch) { // synchronized
+        if (batch.isAllProcessed() && !uiNotifiedOnAllFilesSigned) {
             uiNotifiedOnAllFilesSigned = true;
             System.out.println(errors.values().stream().map(e -> e == null ? "" : e.toString()).toList());
-            var result = new BatchGuiResult(targetPath, targetFiles, errors);
+            var result = new BatchUiResult(targetPath, targetFiles, errors);
             autogram.onDocumentBatchSaved(result);
         }
     }

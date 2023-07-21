@@ -12,21 +12,20 @@ enum BatchState {
     INITIALIZED, STARTED, ENDED
 }
 
-
 /**
  * Batch is a session for signing multiple documents with the same key.
  * 
- * This class is used for checking runtime conditions and tracking progress. 
+ * This class is used for checking runtime conditions and tracking progress.
  */
 public class Batch {
-    private final String batchId = getNewBatchId();
+    private final String batchId = generateNewBatchId();
     private final int totalNumberOfDocuments;
 
     private BatchState state = BatchState.INITIALIZED;
+    private SigningKey signingKey = null;
 
     private Date expriationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 10);
     private int processedDocumentsCount = 0;
-
 
     public Batch(int totalNumberOfDocuments) {
         this.totalNumberOfDocuments = totalNumberOfDocuments;
@@ -34,10 +33,11 @@ public class Batch {
     }
 
     // methods
-    public  void start() {
+    public void start(SigningKey key) {
         if (state != BatchState.INITIALIZED)
             throw new BatchEndedException("Nie je možné opätovne spustiť hromadné podpisovanie");
         state = BatchState.STARTED;
+        signingKey = key;
     }
 
     public void addJob(String batchId, SigningJob job) {
@@ -100,10 +100,12 @@ public class Batch {
         return processedDocumentsCount;
     }
 
-    // private getters
+    public SigningKey getSigningKey() {
+        return signingKey;
+    }
 
-    private static String getNewBatchId() {
-        // TODO maybe there is more secure alternative to UUID?
+    // private
+    private static String generateNewBatchId() {
         return UUID.randomUUID().toString();
     }
 

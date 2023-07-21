@@ -7,6 +7,7 @@ import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.nio.file.Paths;
 import java.security.KeyStore;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.net.ssl.KeyManagerFactory;
@@ -42,7 +43,8 @@ public class AutogramServer {
                 .add(new AutogramCorsFilter("POST"));
 
         // Batch
-        server.createContext("/batch", new BatchEndpoint(autogram));
+        server.createContext("/batch", new BatchEndpoint(autogram)).getFilters()
+                .add(new AutogramCorsFilter(List.of("POST", "DELETE")));
 
         // Start server
         server.setExecutor(Executors.newCachedThreadPool());
@@ -55,9 +57,8 @@ public class AutogramServer {
                 return HttpServer.create(new InetSocketAddress(hostname, port), 0);
 
             var server = HttpsServer.create(new InetSocketAddress(hostname, port), 0);
-            var p12file =
-                    Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert"))
-                            .toFile();
+            var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert"))
+                    .toFile();
             char[] password = "".toCharArray();
             var ks = KeyStore.getInstance("PKCS12");
             ks.load(new FileInputStream(p12file), password);

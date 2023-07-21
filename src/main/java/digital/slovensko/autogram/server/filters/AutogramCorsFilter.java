@@ -1,7 +1,9 @@
 package digital.slovensko.autogram.server.filters;
 
-
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpExchange;
 
@@ -11,10 +13,14 @@ import com.sun.net.httpserver.HttpExchange;
  * Access-Control-Allow-*...
  */
 public class AutogramCorsFilter extends Filter {
-    private final String allowedMethod;
+    private final List<String> allowedMethods;
 
     public AutogramCorsFilter(String allowedMethod) {
-        this.allowedMethod = allowedMethod;
+        this(List.of(allowedMethod));
+    }
+
+    public AutogramCorsFilter(List<String> allowedMethod) {
+        this.allowedMethods = allowedMethod;
     }
 
     @Override
@@ -26,8 +32,10 @@ public class AutogramCorsFilter extends Filter {
     public void doFilter(HttpExchange exchange, Chain chain) throws IOException {
 
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        var methods = new ArrayList<String>(allowedMethods);
+        methods.add("OPTIONS");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods",
-                String.join(allowedMethod, "OPTIONS"));
+                String.join(",", methods));
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers",
                 "Content-Type, Authorization");
 
@@ -39,7 +47,7 @@ public class AutogramCorsFilter extends Filter {
         }
 
         // Check HTTP request method
-        if (!exchange.getRequestMethod().equalsIgnoreCase(allowedMethod)) {
+        if (!allowedMethods.stream().anyMatch((method) -> method.equalsIgnoreCase(exchange.getRequestMethod()))) {
             exchange.sendResponseHeaders(405, -1);
             exchange.close();
             return;
