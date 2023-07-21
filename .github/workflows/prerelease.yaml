@@ -8,18 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: imjohnbo/extract-issue-template-fields@f5232d9bc6ad9aff26c462e60a2c8ef0b17aa3fa
-        if: startsWith(github.ref, 'refs/tags/')
         id: issueTemplate
         with:
           path: .github/ISSUE_TEMPLATE/release-checklist.md
 
       - name: Create release checklist issue
         uses: imjohnbo/issue-bot@3d96848fb5e9a4a473bb81ae62b4b4866a56e93a
-        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           assignees: ${{ steps.issueTemplate.outputs.assignees }}
           labels: ${{ steps.issueTemplate.outputs.labels }}
-          title: ${{ steps.issueTemplate.outputs.title }} ${{github.ref_name}}
+          title: ${{ steps.issueTemplate.outputs.title }} ${{github.event.release.tag_name}}
           body: ${{ steps.issueTemplate.outputs.body }}
