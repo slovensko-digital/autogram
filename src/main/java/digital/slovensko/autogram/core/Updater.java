@@ -8,7 +8,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -42,6 +44,17 @@ public class Updater {
             return false;
 
         var latestVersion = latestVersionTag.replaceAll("^v", "");
-        return !Main.getVersion().equals(latestVersion);
+        int[] vCurrent = Stream.of(Main.getVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+        int[] vLatest = Stream.of(latestVersion.split("\\.")).mapToInt(Integer::parseInt).toArray();
+
+        for (int i = 0; i < vCurrent.length; i++) {
+            if (vLatest[i] > vCurrent[i]) {
+                return true;
+            }
+            if (vLatest[i] < vCurrent[i]) {
+                return false;
+            }
+        }
+        return false;
     }
 }
