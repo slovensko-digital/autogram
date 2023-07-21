@@ -2,12 +2,11 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.util.DSSUtils;
+import digital.slovensko.autogram.util.DocumentUtils;
 import eu.europa.esig.dss.asic.common.ASiCContent;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.validation.*;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -29,8 +28,6 @@ import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 
 public class SigningDialogController implements SuppressedFocusController {
@@ -195,16 +192,22 @@ public class SigningDialogController implements SuppressedFocusController {
 
     private void showAsiceVisualization() {
         DSSDocument document = getOriginalDocument();
-        if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            showPlainTextVisualization(getDocumentAsPlainText(document));
-        } else if (document.getMimeType().equals(MimeTypeEnum.PDF)) {
-            showPDFVisualization(getDocumentAsBase64Encoded(document));
-        } else if (document.getMimeType().equals(MimeTypeEnum.JPEG) || document.getMimeType().equals(MimeTypeEnum.PNG)) {
+        if (DocumentUtils.isPlainText(document)) {
+            showPlainTextVisualization(DocumentUtils.getDocumentAsPlainText(document, signingJob.getParameters().getTransformation()));
+        } else if (DocumentUtils.isPdf(document)) {
+            showPDFVisualization(DocumentUtils.getDocumentAsBase64Encoded(document));
+        } else if (DocumentUtils.isImage(document)) {
             showImageVisualization(document.openStream());
-        } else {
-            if (document.getMimeType().equals(MimeTypeEnum.XML)) {
-                setMimeTypeFromManifest(document);
+        } else if (DocumentUtils.isXML(document)){
+            setMimeTypeFromManifest(document);
+
+            String transformation = signingJob.getParameters().getTransformation();
+            if (transformation != null) {
+                showPlainTextVisualization(DocumentUtils.getDocumentAsPlainText(document, transformation));
+            } else {
+                showUnsupportedVisualization();
             }
+        } else {
             showUnsupportedVisualization();
         }
     }
@@ -234,7 +237,7 @@ public class SigningDialogController implements SuppressedFocusController {
     }
 
     private DSSDocument getManifest() {
-        ASiCWithXAdESContainerExtractor extractor = new ASiCWithXAdESContainerExtractor(new FileDocument(signingJob.getFile()));
+        ASiCWithXAdESContainerExtractor extractor = new ASiCWithXAdESContainerExtractor(signingJob.getDocument());
         ASiCContent aSiCContent = extractor.extract();
         List<DSSDocument> manifestDocuments = aSiCContent.getManifestDocuments();
         if (manifestDocuments.isEmpty()) {
@@ -266,22 +269,6 @@ public class SigningDialogController implements SuppressedFocusController {
             return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
         } catch (Exception e) {
             return null;
-        }
-    }
-
-    private String getDocumentAsPlainText(DSSDocument document) {
-        try {
-            return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private String getDocumentAsBase64Encoded(DSSDocument document) {
-        try {
-            return new String(Base64.getEncoder().encode(document.openStream().readAllBytes()), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 

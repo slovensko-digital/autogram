@@ -162,7 +162,7 @@ public class ServerSigningParameters {
         }
 
         if (level.getSignatureForm() == SignatureForm.XAdES) {
-            if (!isXMLMimeType(mimeType) && !isXDCMimeType(mimeType) && container == null)
+            if (!isXMLMimeType(mimeType) && !isXDCMimeType(mimeType) && !isAsiceMimeType(mimeType) && container == null)
                 if (!(packaging != null && packaging == SignaturePackaging.ENVELOPING))
                     throw new RequestValidationException(
                             "PayloadMimeType, Parameters.Level, Parameters.Container and Parameters.Packaging mismatch",
@@ -198,5 +198,9 @@ public class ServerSigningParameters {
 
     private static boolean isXDCMimeType(MimeType mimeType) {
         return mimeType.equals(AutogramMimeType.XML_DATACONTAINER);
+    }
+
+    private static boolean isAsiceMimeType(MimeType mimeType) {
+        return mimeType.equals(MimeTypeEnum.ASICE);
     }
 }

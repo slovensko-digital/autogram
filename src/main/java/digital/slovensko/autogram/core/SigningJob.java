@@ -2,9 +2,11 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import digital.slovensko.autogram.util.DocumentUtils;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -13,35 +15,17 @@ import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
     private final SigningParameters parameters;
 
-    private final File file;
-
     public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
-        this(document, parameters, responder, null);
-    }
-
-    public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder, File file) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
-        this.file = file;
     }
 
     public DSSDocument getDocument() {
@@ -53,10 +37,10 @@ public class SigningJob {
     }
 
     public boolean isPlainText() {
-        if (parameters.getTransformationOutputMimeType() != null)
+        if (parameters.getTransformationOutputMimeType() != null && document.getMimeType() != MimeTypeEnum.ASICE)
             return parameters.getTransformationOutputMimeType().equals(MimeTypeEnum.TEXT);
 
-        return document.getMimeType().equals(MimeTypeEnum.TEXT);
+        return DocumentUtils.isPlainText(document);
     }
 
     public boolean isHTML() {
@@ -71,84 +55,31 @@ public class SigningJob {
     }
 
     public boolean isPDF() {
-        return document.getMimeType().equals(MimeTypeEnum.PDF);
+        return DocumentUtils.isPdf(document);
     }
 
     public boolean isImage() {
-        return document.getMimeType().equals(MimeTypeEnum.JPEG) || document.getMimeType().equals(MimeTypeEnum.PNG);
+        return DocumentUtils.isImage(document);
     }
 
     private boolean isXDC() {
-        return document.getMimeType()
-            .equals(AutogramMimeType.XML_DATACONTAINER);
+        return DocumentUtils.isXDC(document);
     }
 
     public boolean isAsice() {
-        return document.getMimeType().equals(MimeTypeEnum.ASICE);
+        return DocumentUtils.isAsice(document);
     }
 
     public String getDocumentAsPlainText() {
-        if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            try {
-                return new String(document.openStream().readAllBytes(), StandardCharsets.UTF_8);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            return transform();
-        }
-    }
-
-    private String transform() {
-        // TODO probably move this logic into signing job creation
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(this.document.openStream()));
-
-            var xmlSource = new DOMSource(document);
-            if (isXDC())
-                xmlSource = extractFromXDC(document, builderFactory);
-
-            var outputTarget = new StreamResult(new StringWriter());
-            var transformer = TransformerFactory.newInstance().newTransformer(
-                new StreamSource(new ByteArrayInputStream(parameters.getTransformation().getBytes())));
-            transformer.transform(xmlSource, outputTarget);
-
-            return outputTarget.getWriter().toString().trim();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null; // TODO
-        }
-    }
-
-    private DOMSource extractFromXDC(Document document, DocumentBuilderFactory builderFactory)
-        throws ParserConfigurationException {
-        var xdc = document.getDocumentElement();
-
-        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
-            .item(0);
-
-        if (xmlData == null)
-            throw new RuntimeException("XMLData not found in XDC"); // TODO catch somewhere
-
-        document = builderFactory.newDocumentBuilder().newDocument();
-        var node = document.importNode(xmlData.getFirstChild(), true);
-        document.appendChild(node);
-
-        return new DOMSource(document);
+        return DocumentUtils.getDocumentAsPlainText(document, parameters.getTransformation());
     }
 
     public String getDocumentAsHTML() {
-        return transform();
+        return DocumentUtils.transform(document, parameters.getTransformation());
     }
 
     public String getDocumentAsBase64Encoded() {
-        try {
-            return new String(Base64.getEncoder().encode(document.openStream().readAllBytes()), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return DocumentUtils.getDocumentAsBase64Encoded(document);
     }
 
     public void signWithKeyAndRespond(SigningKey key) {
@@ -260,14 +191,10 @@ public class SigningJob {
         }
 
         var responder = new SaveFileResponder(file, autogram);
-        return new SigningJob(document, parameters, responder, file);
+        return new SigningJob(document, parameters, responder);
     }
 
     public boolean shouldCheckPDFCompliance() {
         return parameters.getCheckPDFACompliance();
-    }
-
-    public File getFile() {
-        return file;
     }
 }
