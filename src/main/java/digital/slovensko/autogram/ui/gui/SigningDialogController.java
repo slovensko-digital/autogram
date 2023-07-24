@@ -6,6 +6,7 @@ import digital.slovensko.autogram.util.DocumentUtils;
 import eu.europa.esig.dss.asic.common.ASiCContent;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.validation.*;
 import javafx.concurrent.Worker;
@@ -203,7 +204,11 @@ public class SigningDialogController implements SuppressedFocusController {
 
             String transformation = signingJob.getParameters().getTransformation();
             if (transformation != null) {
-                showPlainTextVisualization(DocumentUtils.getDocumentAsPlainText(document, transformation));
+                if(signingJob.getParameters().getTransformationOutputMimeType() == MimeTypeEnum.HTML) {
+                    showHTMLVisualization(DocumentUtils.getDocumentAsPlainText(document, transformation));
+                } else {
+                    showPlainTextVisualization(DocumentUtils.getDocumentAsPlainText(document, transformation));
+                }
             } else {
                 showUnsupportedVisualization();
             }
