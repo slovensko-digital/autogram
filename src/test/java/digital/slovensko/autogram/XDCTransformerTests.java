@@ -3,7 +3,6 @@ package digital.slovensko.autogram;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.XDCTransformer;
 import digital.slovensko.autogram.core.errors.InvalidXMLException;
-import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;

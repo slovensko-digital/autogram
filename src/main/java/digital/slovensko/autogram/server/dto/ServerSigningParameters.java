@@ -5,7 +5,6 @@ import java.util.Base64;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
@@ -13,6 +12,9 @@ import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExcepti
 import eu.europa.esig.dss.enumerations.*;
 
 import java.nio.charset.StandardCharsets;
+
+import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
+import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
@@ -86,32 +88,32 @@ public class ServerSigningParameters {
                 identifier, checkPDFACompliance, getVisualizationWidth());
     }
 
-    private String getTransformation(boolean isBase64) {
+    private String getTransformation(boolean isBase64) throws MalformedBodyException {
         if (transformation == null)
             return null;
 
-        if (isBase64)
-            try {
-                return new String(Base64.getDecoder().decode(transformation), StandardCharsets.UTF_8);
-            } catch (IllegalArgumentException e) {
-                throw new MalformedBodyException("XML validation failed", "Invalid XSLT");
-            }
+        if (!isBase64)
+            return transformation;
 
-        return transformation;
+        try {
+            return new String(Base64.getDecoder().decode(transformation), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            throw new MalformedBodyException("XML validation failed", "Invalid XSLT");
+        }
     }
 
-    private String getSchema(boolean isBase64) {
+    private String getSchema(boolean isBase64) throws MalformedBodyException {
         if (schema == null)
             return null;
 
-        if (isBase64)
-            try {
-                return new String(Base64.getDecoder().decode(schema), StandardCharsets.UTF_8);
-            } catch (IllegalArgumentException e) {
-                throw new MalformedBodyException("XML validation failed", "Invalid XSD");
-            }
+        if (!isBase64)
+            return schema;
 
-        return schema;
+        try {
+            return new String(Base64.getDecoder().decode(schema), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            throw new MalformedBodyException("XML validation failed", "Invalid XSD");
+        }
     }
 
     private static String getCanonicalizationMethodString(LocalCanonicalizationMethod method) {
@@ -150,7 +152,7 @@ public class ServerSigningParameters {
         return container;
     }
 
-    public void validate(MimeType mimeType) {
+    public void validate(MimeType mimeType) throws RequestValidationException {
         if (level == null)
             throw new RequestValidationException("Parameters.Level is required", "");
 
@@ -173,7 +175,7 @@ public class ServerSigningParameters {
         }
 
         if (level.getSignatureForm() == SignatureForm.XAdES) {
-            if (!isXMLMimeType(mimeType) && !isXDCMimeType(mimeType) && container == null)
+            if (!isXML(mimeType) && !isXDC(mimeType) && container == null)
                 if (!(packaging != null && packaging == SignaturePackaging.ENVELOPING))
                     throw new RequestValidationException(
                             "PayloadMimeType, Parameters.Level, Parameters.Container and Parameters.Packaging mismatch",
@@ -182,7 +184,7 @@ public class ServerSigningParameters {
         }
 
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")
-                && !isXDCMimeType(mimeType)) {
+                && !isXDC(mimeType)) {
 
             if (transformation == null || transformation.isEmpty())
                 throw new RequestValidationException("Parameters.Transformation is null",
@@ -196,18 +198,10 @@ public class ServerSigningParameters {
                 throw new RequestValidationException("Parameters.Identifier is null",
                         "Parameters.Identifier is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
 
-            if (!isXMLMimeType(mimeType))
+            if (!isXML(mimeType))
                 throw new RequestValidationException("PayloadMimeType and Parameters.ContainerXmlns mismatch",
                         "Parameters.ContainerXmlns: XML datacontainer is not supported for this payload: "
                                 + mimeType.getMimeTypeString());
         }
-    }
-
-    private static boolean isXMLMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(AutogramMimeType.APPLICATION_XML);
-    }
-
-    private static boolean isXDCMimeType(MimeType mimeType) {
-        return mimeType.equals(AutogramMimeType.XML_DATACONTAINER);
     }
 }

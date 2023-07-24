@@ -9,6 +9,7 @@ import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilde
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
+import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.TransformationException;
 import eu.europa.esig.dss.enumerations.MimeType;
 
@@ -50,10 +51,12 @@ public class SignEndpoint implements HttpHandler {
             EndpointUtils.respondWithError(response, exchange);
         } catch (SAXException e) {
             System.out.println("SAXException: " + e.getMessage());
-            EndpointUtils.respondWithError(
-                    ErrorResponse.buildFromException(new TransformationException(e.getMessage(), e)),
-                    exchange);
+            var response = ErrorResponse.buildFromException(new TransformationException(e.getMessage(), e));
+            EndpointUtils.respondWithError(response, exchange);
+        } catch (RequestValidationException | MalformedBodyException e) {
+            EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
         } catch (Exception e) {
+            System.out.println("General Exception in SignEndpoint.java:");
             e.printStackTrace();
             EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
         }
