@@ -67,13 +67,13 @@ public class SigningDialogController implements SuppressedFocusController {
         mainBox.setPrefWidth(signingJob.getVisualizationWidth());
 
         if (signingJob.isPlainText()) {
-            showPlainTextVisualization();
+            showPlainTextVisualization(signingJob.getDocumentAsPlainText());
         } else if (signingJob.isHTML()) {
-            showHTMLVisualization();
+            showHTMLVisualization(signingJob.getDocumentAsHTML());
         } else if (signingJob.isPDF()) {
-            showPDFVisualization();
+            showPDFVisualization(signingJob.getDocumentAsBase64Encoded());
         } else if (signingJob.isImage()) {
-            showImageVisualization();
+            showImageVisualization(signingJob.getDocument().openStream());
         } else if (signingJob.isAsice()) {
             showAsiceVisualization();
         } else {
@@ -128,19 +128,11 @@ public class SigningDialogController implements SuppressedFocusController {
         mainButton.setDisable(true);
     }
 
-    private void showPlainTextVisualization() {
-        showPlainTextVisualization(signingJob.getDocumentAsPlainText());
-    }
-
     private void showPlainTextVisualization(String document) {
         plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
         plainTextArea.setText(document);
         plainTextArea.setVisible(true);
         plainTextArea.setManaged(true);
-    }
-
-    private void showHTMLVisualization() {
-        showHTMLVisualization(signingJob.getDocumentAsHTML());
     }
 
     private void showHTMLVisualization(String document) {
@@ -158,10 +150,6 @@ public class SigningDialogController implements SuppressedFocusController {
         webViewContainer.setManaged(true);
     }
 
-    private void showPDFVisualization() {
-        showPDFVisualization(signingJob.getDocumentAsBase64Encoded());
-    }
-
     private void showPDFVisualization(String document) {
         var engine = webView.getEngine();
         engine.setJavaScriptEnabled(true);
@@ -174,9 +162,6 @@ public class SigningDialogController implements SuppressedFocusController {
         webViewContainer.getStyleClass().add("autogram-visualizer-pdf");
         webViewContainer.setVisible(true);
         webViewContainer.setManaged(true);
-    }
-    private void showImageVisualization() {
-        showImageVisualization(signingJob.getDocument().openStream());
     }
 
     private void showImageVisualization(InputStream image) {
@@ -192,7 +177,7 @@ public class SigningDialogController implements SuppressedFocusController {
     }
 
     private void showAsiceVisualization() {
-        DSSDocument document = getOriginalDocument();
+        DSSDocument document = DSSDocumentUtils.getOriginalDocument(signingJob.getDocument());
         if (DSSDocumentUtils.isPlainText(document)) {
             showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, signingJob.getParameters().getTransformation()));
         } else if (DSSDocumentUtils.isPdf(document)) {
@@ -203,27 +188,16 @@ public class SigningDialogController implements SuppressedFocusController {
             setMimeTypeFromManifest(document);
 
             String transformation = signingJob.getParameters().getTransformation();
-            if (transformation != null) {
-                if(signingJob.getParameters().getTransformationOutputMimeType() == MimeTypeEnum.HTML) {
-                    showHTMLVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
-                } else {
-                    showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
-                }
-            } else {
+            if (transformation == null) {
                 showUnsupportedVisualization();
+            } else if (signingJob.getParameters().getTransformationOutputMimeType() == MimeTypeEnum.HTML) {
+                showHTMLVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
+            } else {
+                showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
             }
         } else {
             showUnsupportedVisualization();
         }
-    }
-
-    private DSSDocument getOriginalDocument() {
-        SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(signingJob.getDocument());
-        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
-        List<AdvancedSignature> signatures = documentValidator.getSignatures();
-        AdvancedSignature advancedSignature = signatures.get(0);
-        List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
-        return originalDocuments.get(0);
     }
 
     private void setMimeTypeFromManifest(DSSDocument document) {

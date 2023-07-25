@@ -28,9 +28,15 @@ public class DSSDocumentUtils {
         SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(document);
         documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
         List<AdvancedSignature> signatures = documentValidator.getSignatures();
+        if (signatures.isEmpty()) {
+            throw new RuntimeException("No signatures in document");
+        }
         AdvancedSignature advancedSignature = signatures.get(0);
         List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
-        return originalDocuments.get(0);
+        if (originalDocuments.isEmpty()) {
+            throw new RuntimeException("No original documents found");
+        }
+         return originalDocuments.get(0);
     }
 
     public static boolean isPlainText(DSSDocument document) {
