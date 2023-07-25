@@ -2,11 +2,10 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
-import digital.slovensko.autogram.util.DocumentUtils;
+import digital.slovensko.autogram.util.DSSDocumentUtils;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -43,7 +42,7 @@ public class SigningJob {
         if (parameters.getTransformationOutputMimeType() != null && document.getMimeType() != MimeTypeEnum.ASICE)
             return parameters.getTransformationOutputMimeType().equals(MimeTypeEnum.TEXT);
 
-        return DocumentUtils.isPlainText(document);
+        return DSSDocumentUtils.isPlainText(document);
     }
 
     public boolean isHTML() {
@@ -58,31 +57,31 @@ public class SigningJob {
     }
 
     public boolean isPDF() {
-        return DocumentUtils.isPdf(document);
+        return DSSDocumentUtils.isPdf(document);
     }
 
     public boolean isImage() {
-        return DocumentUtils.isImage(document);
+        return DSSDocumentUtils.isImage(document);
     }
 
     private boolean isXDC() {
-        return DocumentUtils.isXDC(document);
+        return DSSDocumentUtils.isXDC(document);
     }
 
     public boolean isAsice() {
-        return DocumentUtils.isAsice(document);
+        return DSSDocumentUtils.isAsice(document);
     }
 
     public String getDocumentAsPlainText() {
-        return DocumentUtils.getDocumentAsPlainText(document, parameters.getTransformation());
+        return DSSDocumentUtils.getDocumentAsPlainText(document, parameters.getTransformation());
     }
 
     public String getDocumentAsHTML() {
-        return DocumentUtils.transform(document, parameters.getTransformation());
+        return DSSDocumentUtils.transform(document, parameters.getTransformation());
     }
 
     public String getDocumentAsBase64Encoded() {
-        return DocumentUtils.getDocumentAsBase64Encoded(document);
+        return DSSDocumentUtils.getDocumentAsBase64Encoded(document);
     }
 
     public void signWithKeyAndRespond(SigningKey key) {
@@ -109,17 +108,17 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getOriginalDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(getDocumentToSign(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getOriginalDocument(), signatureParameters, signatureValue);
+        return service.signDocument(getDocumentToSign(), signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
-        DSSDocument doc = getOriginalDocument();
+        DSSDocument doc = getDocumentToSign();
         if (getParameters().shouldCreateDatacontainer() && !isXDC()) {
             var transformer = XDCTransformer.buildFromSigningParameters(getParameters());
-            doc = transformer.transform(getOriginalDocument());
+            doc = transformer.transform(getDocumentToSign());
             doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
         }
 
@@ -145,10 +144,10 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getOriginalDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(getDocumentToSign(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getOriginalDocument(), signatureParameters, signatureValue);
+        return service.signDocument(getDocumentToSign(), signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsASiCWithCAdeS(SigningKey key) {
@@ -160,23 +159,14 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getOriginalDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(getDocumentToSign(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getOriginalDocument(), signatureParameters, signatureValue);
+        return service.signDocument(getDocumentToSign(), signatureParameters, signatureValue);
     }
 
-    private DSSDocument getOriginalDocument() {
-        if (isAsice()) {
-            SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(getDocument());
-            documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
-            List<AdvancedSignature> signatures = documentValidator.getSignatures();
-            AdvancedSignature advancedSignature = signatures.get(0);
-            List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
-            return originalDocuments.get(0);
-        } else {
-            return getDocument();
-        }
+    private DSSDocument getDocumentToSign() {
+        return isAsice() ? DSSDocumentUtils.getOriginalDocument(getDocument()) : getDocument();
     }
 
     private DSSDocument signDocumentAsPAdeS(SigningKey key) {
@@ -188,10 +178,10 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getOriginalDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(getDocumentToSign(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getOriginalDocument(), signatureParameters, signatureValue);
+        return service.signDocument(getDocumentToSign(), signatureParameters, signatureValue);
     }
 
     public static SigningJob buildFromFile(File file, Autogram autogram) {

@@ -2,7 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.util.DSSUtils;
-import digital.slovensko.autogram.util.DocumentUtils;
+import digital.slovensko.autogram.util.DSSDocumentUtils;
 import eu.europa.esig.dss.asic.common.ASiCContent;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
@@ -193,21 +193,21 @@ public class SigningDialogController implements SuppressedFocusController {
 
     private void showAsiceVisualization() {
         DSSDocument document = getOriginalDocument();
-        if (DocumentUtils.isPlainText(document)) {
-            showPlainTextVisualization(DocumentUtils.getDocumentAsPlainText(document, signingJob.getParameters().getTransformation()));
-        } else if (DocumentUtils.isPdf(document)) {
-            showPDFVisualization(DocumentUtils.getDocumentAsBase64Encoded(document));
-        } else if (DocumentUtils.isImage(document)) {
+        if (DSSDocumentUtils.isPlainText(document)) {
+            showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, signingJob.getParameters().getTransformation()));
+        } else if (DSSDocumentUtils.isPdf(document)) {
+            showPDFVisualization(DSSDocumentUtils.getDocumentAsBase64Encoded(document));
+        } else if (DSSDocumentUtils.isImage(document)) {
             showImageVisualization(document.openStream());
-        } else if (DocumentUtils.isXML(document)){
+        } else if (DSSDocumentUtils.isXML(document)){
             setMimeTypeFromManifest(document);
 
             String transformation = signingJob.getParameters().getTransformation();
             if (transformation != null) {
                 if(signingJob.getParameters().getTransformationOutputMimeType() == MimeTypeEnum.HTML) {
-                    showHTMLVisualization(DocumentUtils.getDocumentAsPlainText(document, transformation));
+                    showHTMLVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
                 } else {
-                    showPlainTextVisualization(DocumentUtils.getDocumentAsPlainText(document, transformation));
+                    showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
                 }
             } else {
                 showUnsupportedVisualization();
