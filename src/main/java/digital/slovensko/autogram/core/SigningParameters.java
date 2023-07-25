@@ -86,6 +86,7 @@ public class SigningParameters {
 
         parameters.setSignatureLevel(getLevel());
         parameters.setDigestAlgorithm(getDigestAlgorithm());
+        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
         parameters.setEn319122(isEn319132());
 
         return parameters;

@@ -66,7 +66,7 @@ public class DocumentVisualizationBuilder {
         if (document.getMimeType().equals(MimeTypeEnum.HTML)) {
             return new HTMLVisualization(transform(), job);
         } else if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            return new PlainTextVisualization(transform(), job);
+            return new PlainTextVisualization(new String(document.openStream().readAllBytes()), job);
         } else if (document.getMimeType().equals(MimeTypeEnum.PDF)) {
             return new PDFVisualization(document, job);
         } else if (document.getMimeType().equals(MimeTypeEnum.JPEG)
