@@ -8,7 +8,9 @@ import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.validation.*;
+import eu.europa.esig.dss.validation.AdvancedSignature;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -177,7 +179,7 @@ public class SigningDialogController implements SuppressedFocusController {
     }
 
     private void showAsiceVisualization() {
-        DSSDocument document = DSSDocumentUtils.getOriginalDocument(signingJob.getDocument());
+        DSSDocument document = getOriginalDocument(signingJob.getDocument());
         if (DSSDocumentUtils.isPlainText(document)) {
             showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, signingJob.getParameters().getTransformation()));
         } else if (DSSDocumentUtils.isPdf(document)) {
@@ -198,6 +200,21 @@ public class SigningDialogController implements SuppressedFocusController {
         } else {
             showUnsupportedVisualization();
         }
+    }
+
+    private DSSDocument getOriginalDocument(DSSDocument document) {
+        SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(document);
+        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
+        List<AdvancedSignature> signatures = documentValidator.getSignatures();
+        if (signatures.isEmpty()) {
+            throw new RuntimeException("No signatures in document");
+        }
+        AdvancedSignature advancedSignature = signatures.get(0);
+        List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
+        if (originalDocuments.isEmpty()) {
+            throw new RuntimeException("No original documents found");
+        }
+        return originalDocuments.get(0);
     }
 
     private void setMimeTypeFromManifest(DSSDocument document) {

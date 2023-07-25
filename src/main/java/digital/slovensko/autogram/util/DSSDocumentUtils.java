@@ -3,9 +3,6 @@ package digital.slovensko.autogram.util;
 import digital.slovensko.autogram.core.AutogramMimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.validation.AdvancedSignature;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -20,24 +17,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
 
 public class DSSDocumentUtils {
-
-    public static DSSDocument getOriginalDocument(DSSDocument document) {
-        SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(document);
-        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
-        List<AdvancedSignature> signatures = documentValidator.getSignatures();
-        if (signatures.isEmpty()) {
-            throw new RuntimeException("No signatures in document");
-        }
-        AdvancedSignature advancedSignature = signatures.get(0);
-        List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
-        if (originalDocuments.isEmpty()) {
-            throw new RuntimeException("No original documents found");
-        }
-         return originalDocuments.get(0);
-    }
 
     public static boolean isPlainText(DSSDocument document) {
         return document.getMimeType().equals(MimeTypeEnum.TEXT);

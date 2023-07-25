@@ -11,13 +11,10 @@ import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
-import eu.europa.esig.dss.validation.AdvancedSignature;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 import java.io.*;
-import java.util.List;
 
 public class SigningJob {
     private final Responder responder;
@@ -108,17 +105,17 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getDocumentToSign(), signatureParameters);
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocumentToSign(), signatureParameters, signatureValue);
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
-        DSSDocument doc = getDocumentToSign();
+        DSSDocument doc = getDocument();
         if (getParameters().shouldCreateDatacontainer() && !isXDC()) {
             var transformer = XDCTransformer.buildFromSigningParameters(getParameters());
-            doc = transformer.transform(getDocumentToSign());
+            doc = transformer.transform(getDocument());
             doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
         }
 
@@ -144,10 +141,10 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getDocumentToSign(), signatureParameters);
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocumentToSign(), signatureParameters, signatureValue);
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsASiCWithCAdeS(SigningKey key) {
@@ -159,14 +156,10 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getDocumentToSign(), signatureParameters);
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocumentToSign(), signatureParameters, signatureValue);
-    }
-
-    private DSSDocument getDocumentToSign() {
-        return isAsice() ? DSSDocumentUtils.getOriginalDocument(getDocument()) : getDocument();
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsPAdeS(SigningKey key) {
@@ -178,10 +171,10 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
-        var dataToSign = service.getDataToSign(getDocumentToSign(), signatureParameters);
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocumentToSign(), signatureParameters, signatureValue);
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
     public static SigningJob buildFromFile(File file, Autogram autogram) {
