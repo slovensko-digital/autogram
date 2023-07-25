@@ -68,9 +68,9 @@ public class Autogram {
                 job.signWithKeyAndRespond(signingKey);
                 ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
             } catch (DSSException e) {
-                ui.onUIThreadDo(() -> ui.onSigningFailed(AutogramException.createFromDSSException(e)));
+                onSigningFailed(AutogramException.createFromDSSException(e));
             } catch (IllegalArgumentException e) {
-                ui.onUIThreadDo(() -> ui.onSigningFailed(AutogramException.createFromIllegalArgumentException(e)));
+                onSigningFailed(AutogramException.createFromIllegalArgumentException(e));
             } catch (Exception e) {
                 onSigningFailed(new UnrecognizedException(e));
             }

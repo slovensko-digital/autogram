@@ -36,7 +36,7 @@ public interface UI {
 
     void onSigningFailed(AutogramException e);
 
-    void onDocumentSaved(File targetFiles);
+    void onDocumentSaved(File targetFile);
 
     void onDocumentBatchSaved(BatchUiResult result);
 

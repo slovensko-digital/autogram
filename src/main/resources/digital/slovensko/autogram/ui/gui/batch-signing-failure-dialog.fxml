@@ -72,32 +72,6 @@
 
 
     <VBox>
-
-        <!-- <VBox styleClass="autogram-prose,autogram-confirmation" fx:id="confirmationBox">
-            <TextFlow styleClass="autogram-heading-m">
-                <Text fx:id="h1" styleClass="autogram-heading-m"
-                    text="Dokumenty boli úspešne podpísané" />
-            </TextFlow>
-            <TextFlow styleClass="autogram-body">
-                <Text styleClass="autogram-body" text="Podpísané súbor sú uložené v&#160;priečinku " />
-                <Hyperlink styleClass="autogram-body,autogram-link,autogram-font-weight-bold"
-                    fx:id="folderPathText" onAction="#onOpenFolderAction" wrapText="true" />
-                <Text styleClass="autogram-body" text="." />
-            </TextFlow>
-        </VBox>
-
-        <Button fx:id="showFiles" styleClass="autogram-button,autogram-link" text="Zobraziť súbory"
-            onAction="#onShowFiles" />
-
-        <VBox styleClass="autogram-prose" fx:id="listsBox" visible="false" managed="false">
-            <VBox fx:id="fileListBox">
-                <TextFlow styleClass="autogram-heading-s">
-                    <Text fx:id="fileListHeading" styleClass="autogram-heading-s"
-                        text="Úspešne podpísané" />
-                </TextFlow>
-                <ListView fx:id="fileList" styleClass="autogram-listview" />
-            </VBox>
-        </VBox> -->
         <HBox styleClass="autogram-actions">
             <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary"
                 text="Zavrieť" onAction="#onCloseAction" />

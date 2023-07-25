@@ -355,10 +355,17 @@ public class GUI implements UI {
     }
 
     public void setActiveSigningKey(SigningKey newKey) {
+        if (!isActiveSigningKeyChangeAllowed()){
+            throw new RuntimeException("Signing key change is not allowed");
+        }
         if (activeKey != null)
             activeKey.close();
         activeKey = newKey;
         refreshKeyOnAllJobs();
+    }
+
+    public boolean isActiveSigningKeyChangeAllowed(){
+        return true;
     }
 
     public void disableSigning() {

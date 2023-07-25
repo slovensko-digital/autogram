@@ -56,9 +56,6 @@ public class SigningJob {
     }
 
     public void signWithKeyAndRespond(SigningKey key) throws InterruptedException {
-        if (Platform.isFxApplicationThread()) {
-            throw new RuntimeException("Cannot sign on UI thread");
-        }
 
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         Logging.log("Signing Job: " + this.hashCode() + " key: " + key.getCertificate().getAbbreviation() + " "

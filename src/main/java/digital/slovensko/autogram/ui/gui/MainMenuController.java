@@ -42,17 +42,17 @@ public class MainMenuController implements SuppressedFocusController {
         });
 
         dropZone.setOnDragDropped(event -> {
-            processFileList(event.getDragboard().getFiles());
+            onFilesSelected(event.getDragboard().getFiles());
         });
     }
 
     public void onUploadButtonAction() {
         var chooser = new FileChooser();
         var list = chooser.showOpenMultipleDialog(new Stage());
-        processFileList(list);
+        onFilesSelected(list);
     }
 
-    public void processFileList(List<File> list) {
+    public void onFilesSelected(List<File> list) {
         try {
             if (list != null) {
                 if (list.size() == 0) {
@@ -62,13 +62,13 @@ public class MainMenuController implements SuppressedFocusController {
                 var dirsList = list.stream().filter(f -> f.isDirectory()).toList();
                 var filesList = list.stream().filter(f -> f.isFile()).toList();
                 if (dirsList.size() == 1 && filesList.size() == 0) {
-                    batchProcessDirectory(dirsList.get(0));
+                    signDirectory(dirsList.get(0));
                 } else if (dirsList.size() > 1) {
                     throw new AutogramException("Zvolili ste viac ako jeden priečinok",
                             "Priečinky musíte podpísať po jednom",
                             "Podpisovanie viacerých priečinkov ešte nepodporujeme");
                 } else if (dirsList.size() == 0 && filesList.size() > 0) {
-                    batchProcessFiles(list);
+                    signFiles(list);
                 } else {
                     throw new AutogramException("Zvolili ste zmiešaný výber súborov a priečinkov",
                             "Podpisovanie zmesi súborov a priečinkov nepodporujeme",
@@ -90,7 +90,7 @@ public class MainMenuController implements SuppressedFocusController {
         return filesList;
     }
 
-    private void batchProcessFiles(List<File> list) {
+    private void signFiles(List<File> list) {
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
@@ -102,7 +102,7 @@ public class MainMenuController implements SuppressedFocusController {
         }
     }
 
-    private void batchProcessDirectory(File dir) {
+    private void signDirectory(File dir) {
         var directoryFiles = List.of(dir.listFiles());
         if (directoryFiles.size() == 0) {
             throw new EmptyDirectorySelectedException(dir.getAbsolutePath());

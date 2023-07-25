@@ -17,7 +17,6 @@ import digital.slovensko.autogram.util.Logging;
 public class BatchGuiFileResponder extends BatchResponder {
     private final Autogram autogram;
     private final List<File> list;
-    // private List<SigningJob> jobs = new ArrayList<SigningJob>();
     private Map<File, File> targetFiles = new HashMap<File, File>();
     private Map<File, AutogramException> errors = new HashMap<File, AutogramException>();
     private boolean uiNotifiedOnAllFilesSigned = false;

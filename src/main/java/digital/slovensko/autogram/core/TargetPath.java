@@ -37,8 +37,7 @@ public class TargetPath {
         var isTargetMissing = target == null;
         useUniqueFileName = isGenerated;
         isForMultipleFiles = multipleFiles;
-        var useUniqueDirectoryName = isForMultipleFiles && !isTargetMissing && source == null; // pouzivane pre gui batch
-        // ktore ale maju target
+        var useUniqueDirectoryName = isForMultipleFiles && !isTargetMissing && source == null;
         if (isTargetMissing) {
             if (isForMultipleFiles) {
 
