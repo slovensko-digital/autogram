@@ -84,8 +84,8 @@ public class SigningParameters {
 
         parameters.setSignatureLevel(level);
         parameters.setDigestAlgorithm(getDigestAlgorithm());
-        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING); // TODO: seems to be the
-                                                                         // only supported value
+        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
+        parameters.setEn319122(isEn319132());
 
         return parameters;
     }
