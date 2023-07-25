@@ -1,16 +1,11 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.visualization.Visualization;
+import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
-import digital.slovensko.autogram.util.DSSDocumentUtils;
-import eu.europa.esig.dss.asic.common.ASiCContent;
-import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
-import eu.europa.esig.dss.enumerations.MimeType;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.validation.AdvancedSignature;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import eu.europa.esig.dss.model.CommonDocument;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -26,17 +21,11 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.*;
-import java.util.List;
-
-public class SigningDialogController implements SuppressedFocusController {
+public class SigningDialogController implements SuppressedFocusController, Visualizer {
     private final GUI gui;
-    private final SigningJob signingJob;
     private final Autogram autogram;
+    private final Visualization visualization;
 
     @FXML
     VBox mainBox;
@@ -51,14 +40,14 @@ public class SigningDialogController implements SuppressedFocusController {
     @FXML
     ScrollPane imageVisualizationContainer;
     @FXML
-    VBox unsupportedVisualizationInfoBox;
-    @FXML
     public Button mainButton;
     @FXML
     public Button changeKeyButton;
+    @FXML
+    VBox unsupportedVisualizationInfoBox;
 
-    public SigningDialogController(SigningJob signingJob, Autogram autogram, GUI gui) {
-        this.signingJob = signingJob;
+    public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui) {
+        this.visualization = visualization;
         this.gui = gui;
         this.autogram = autogram;
     }
@@ -66,21 +55,22 @@ public class SigningDialogController implements SuppressedFocusController {
     public void initialize() {
         refreshSigningKey();
 
-        mainBox.setPrefWidth(signingJob.getVisualizationWidth());
-
-        if (signingJob.isPlainText()) {
-            showPlainTextVisualization(signingJob.getDocumentAsPlainText());
-        } else if (signingJob.isHTML()) {
-            showHTMLVisualization(signingJob.getDocumentAsHTML());
-        } else if (signingJob.isPDF()) {
-            showPDFVisualization(signingJob.getDocumentAsBase64Encoded());
-        } else if (signingJob.isImage()) {
-            showImageVisualization(signingJob.getDocument().openStream());
-        } else if (signingJob.isAsice()) {
-            showAsiceVisualization();
-        } else {
-            showUnsupportedVisualization();
-        }
+//        mainBox.setPrefWidth(signingJob.getVisualizationWidth());
+//
+//        if (signingJob.isPlainText()) {
+//            showPlainTextVisualization(signingJob.getDocumentAsPlainText());
+//        } else if (signingJob.isHTML()) {
+//            showHTMLVisualization(signingJob.getDocumentAsHTML());
+//        } else if (signingJob.isPDF()) {
+//            showPDFVisualization(signingJob.getDocumentAsBase64Encoded());
+//        } else if (signingJob.isImage()) {
+//            showImageVisualization(signingJob.getDocument().openStream());
+//        } else if (signingJob.isAsice()) {
+//            showAsiceVisualization();
+//        } else {
+//            showUnsupportedVisualization();
+//        }
+        visualization.initialize(this);
     }
 
     public void onMainButtonPressed(ActionEvent event) {
@@ -90,7 +80,7 @@ public class SigningDialogController implements SuppressedFocusController {
         } else {
             gui.disableSigning();
             getNodeForLoosingFocus().requestFocus();
-            autogram.sign(signingJob, signingKey);
+            autogram.sign(visualization.getJob(), signingKey);
         }
     }
 
@@ -107,8 +97,10 @@ public class SigningDialogController implements SuppressedFocusController {
             mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
         } else {
-            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
-            mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
+            mainButton.setText("Podpísať ako "
+                    + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+            mainButton.getStyleClass()
+                    .removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
         }
     }
@@ -130,20 +122,20 @@ public class SigningDialogController implements SuppressedFocusController {
         mainButton.setDisable(true);
     }
 
-    private void showPlainTextVisualization(String document) {
+    public void showPlainTextVisualization(String text) {
         plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
-        plainTextArea.setText(document);
+        plainTextArea.setText(text);
         plainTextArea.setVisible(true);
         plainTextArea.setManaged(true);
     }
 
-    private void showHTMLVisualization(String document) {
+    public void showHTMLVisualization(String html) {
         webView.setContextMenuEnabled(false);
         webView.getEngine().setJavaScriptEnabled(false);
         var engine = webView.getEngine();
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                engine.getDocument().getElementById("frame").setAttribute("srcdoc", document);
+                engine.getDocument().getElementById("frame").setAttribute("srcdoc", html);
             }
         });
         engine.load(getClass().getResource("visualization-html.html").toExternalForm());
@@ -152,12 +144,13 @@ public class SigningDialogController implements SuppressedFocusController {
         webViewContainer.setManaged(true);
     }
 
-    private void showPDFVisualization(String document) {
+    public void showPDFVisualization(String base64EncodedPdf) {
         var engine = webView.getEngine();
         engine.setJavaScriptEnabled(true);
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                engine.executeScript("displayPdf('" + document + "')");
+                engine.executeScript(
+                        "displayPdf('" + base64EncodedPdf + "')");
             }
         });
         engine.load(getClass().getResource("visualization-pdf.html").toExternalForm());
@@ -166,9 +159,11 @@ public class SigningDialogController implements SuppressedFocusController {
         webViewContainer.setManaged(true);
     }
 
-    private void showImageVisualization(InputStream image) {
-        imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
-        imageVisualization.setImage(new Image(image));
+    public void showImageVisualization(CommonDocument doc) {
+        // TODO what about visualization
+        imageVisualization.fitWidthProperty()
+                .bind(imageVisualizationContainer.widthProperty().subtract(4));
+        imageVisualization.setImage(new Image(doc.openStream()));
         imageVisualization.setPreserveRatio(true);
         imageVisualization.setSmooth(true);
         imageVisualization.setCursor(Cursor.OPEN_HAND);
@@ -178,97 +173,97 @@ public class SigningDialogController implements SuppressedFocusController {
         imageVisualizationContainer.setManaged(true);
     }
 
-    private void showAsiceVisualization() {
-        DSSDocument document = getOriginalDocument(signingJob.getDocument());
-        if (DSSDocumentUtils.isPlainText(document)) {
-            showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, signingJob.getParameters().getTransformation()));
-        } else if (DSSDocumentUtils.isPdf(document)) {
-            showPDFVisualization(DSSDocumentUtils.getDocumentAsBase64Encoded(document));
-        } else if (DSSDocumentUtils.isImage(document)) {
-            showImageVisualization(document.openStream());
-        } else if (DSSDocumentUtils.isXML(document)){
-            setMimeTypeFromManifest(document);
+//    private void showAsiceVisualization() {
+//        DSSDocument document = getOriginalDocument(signingJob.getDocument());
+//        if (DSSDocumentUtils.isPlainText(document)) {
+//            showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, signingJob.getParameters().getTransformation()));
+//        } else if (DSSDocumentUtils.isPdf(document)) {
+//            showPDFVisualization(DSSDocumentUtils.getDocumentAsBase64Encoded(document));
+//        } else if (DSSDocumentUtils.isImage(document)) {
+//            showImageVisualization(document.openStream());
+//        } else if (DSSDocumentUtils.isXML(document)){
+//            setMimeTypeFromManifest(document);
+//
+//            String transformation = signingJob.getParameters().getTransformation();
+//            if (transformation == null) {
+//                showUnsupportedVisualization();
+//            } else if (signingJob.getParameters().getTransformationOutputMimeType() == MimeTypeEnum.HTML) {
+//                showHTMLVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
+//            } else {
+//                showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
+//            }
+//        } else {
+//            showUnsupportedVisualization();
+//        }
+//    }
+//
+//    private DSSDocument getOriginalDocument(DSSDocument document) {
+//        SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(document);
+//        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
+//        List<AdvancedSignature> signatures = documentValidator.getSignatures();
+//        if (signatures.isEmpty()) {
+//            throw new RuntimeException("No signatures in document");
+//        }
+//        AdvancedSignature advancedSignature = signatures.get(0);
+//        List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
+//        if (originalDocuments.isEmpty()) {
+//            throw new RuntimeException("No original documents found");
+//        }
+//        return originalDocuments.get(0);
+//    }
+//
+//    private void setMimeTypeFromManifest(DSSDocument document) {
+//        DSSDocument manifest = getManifest();
+//        if (manifest == null) {
+//            throw new RuntimeException("Unable to find manifest.xml");
+//        }
+//
+//        String documentName = document.getName();
+//        MimeType mimeType = getMimeTypeFromManifest(manifest, documentName);
+//        if (mimeType == null) {
+//            throw new RuntimeException("Unable to get mimetype from manifest.xml");
+//        }
+//
+//        document.setMimeType(mimeType);
+//    }
+//
+//    private DSSDocument getManifest() {
+//        ASiCWithXAdESContainerExtractor extractor = new ASiCWithXAdESContainerExtractor(signingJob.getDocument());
+//        ASiCContent aSiCContent = extractor.extract();
+//        List<DSSDocument> manifestDocuments = aSiCContent.getManifestDocuments();
+//        if (manifestDocuments.isEmpty()) {
+//            return null;
+//        }
+//        return manifestDocuments.get(0);
+//    }
+//
+//    private MimeType getMimeTypeFromManifest(DSSDocument manifest, String documentName) {
+//        NodeList fileEntries = getFileEntriesFromManifest(manifest);
+//
+//        for (int i = 0; i < fileEntries.getLength(); i++) {
+//            String fileName = fileEntries.item(i).getAttributes().item(0).getNodeValue();
+//            String fileType = fileEntries.item(i).getAttributes().item(1).getNodeValue();
+//
+//            if (documentName.equals(fileName)) {
+//                return AutogramMimeType.fromMimeTypeString(fileType);
+//            }
+//        }
+//
+//        return null;
+//    }
+//
+//    private NodeList getFileEntriesFromManifest(DSSDocument manifest) {
+//        try {
+//            var builderFactory = DocumentBuilderFactory.newInstance();
+//            builderFactory.setNamespaceAware(true);
+//            var document = builderFactory.newDocumentBuilder().parse(new InputSource(manifest.openStream()));
+//            return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
+//        } catch (Exception e) {
+//            return null;
+//        }
+//    }
 
-            String transformation = signingJob.getParameters().getTransformation();
-            if (transformation == null) {
-                showUnsupportedVisualization();
-            } else if (signingJob.getParameters().getTransformationOutputMimeType() == MimeTypeEnum.HTML) {
-                showHTMLVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
-            } else {
-                showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
-            }
-        } else {
-            showUnsupportedVisualization();
-        }
-    }
-
-    private DSSDocument getOriginalDocument(DSSDocument document) {
-        SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(document);
-        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
-        List<AdvancedSignature> signatures = documentValidator.getSignatures();
-        if (signatures.isEmpty()) {
-            throw new RuntimeException("No signatures in document");
-        }
-        AdvancedSignature advancedSignature = signatures.get(0);
-        List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
-        if (originalDocuments.isEmpty()) {
-            throw new RuntimeException("No original documents found");
-        }
-        return originalDocuments.get(0);
-    }
-
-    private void setMimeTypeFromManifest(DSSDocument document) {
-        DSSDocument manifest = getManifest();
-        if (manifest == null) {
-            throw new RuntimeException("Unable to find manifest.xml");
-        }
-
-        String documentName = document.getName();
-        MimeType mimeType = getMimeTypeFromManifest(manifest, documentName);
-        if (mimeType == null) {
-            throw new RuntimeException("Unable to get mimetype from manifest.xml");
-        }
-
-        document.setMimeType(mimeType);
-    }
-
-    private DSSDocument getManifest() {
-        ASiCWithXAdESContainerExtractor extractor = new ASiCWithXAdESContainerExtractor(signingJob.getDocument());
-        ASiCContent aSiCContent = extractor.extract();
-        List<DSSDocument> manifestDocuments = aSiCContent.getManifestDocuments();
-        if (manifestDocuments.isEmpty()) {
-            return null;
-        }
-        return manifestDocuments.get(0);
-    }
-
-    private MimeType getMimeTypeFromManifest(DSSDocument manifest, String documentName) {
-        NodeList fileEntries = getFileEntriesFromManifest(manifest);
-
-        for (int i = 0; i < fileEntries.getLength(); i++) {
-            String fileName = fileEntries.item(i).getAttributes().item(0).getNodeValue();
-            String fileType = fileEntries.item(i).getAttributes().item(1).getNodeValue();
-
-            if (documentName.equals(fileName)) {
-                return AutogramMimeType.fromMimeTypeString(fileType);
-            }
-        }
-
-        return null;
-    }
-
-    private NodeList getFileEntriesFromManifest(DSSDocument manifest) {
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(manifest.openStream()));
-            return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private void showUnsupportedVisualization() {
+    public void showUnsupportedVisualization() {
         unsupportedVisualizationInfoBox.setVisible(true);
         unsupportedVisualizationInfoBox.setManaged(true);
     }
@@ -276,5 +271,10 @@ public class SigningDialogController implements SuppressedFocusController {
     @Override
     public Node getNodeForLoosingFocus() {
         return mainBox;
+    }
+
+    @Override
+    public void setPrefWidth(double prefWidth) {
+        mainBox.setPrefWidth(prefWidth);
     }
 }

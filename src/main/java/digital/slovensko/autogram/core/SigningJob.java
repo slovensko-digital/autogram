@@ -1,11 +1,14 @@
 package digital.slovensko.autogram.core;
 
+import java.io.File;
+
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.ui.SaveFileResponder;
+import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.util.DSSDocumentUtils;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -20,14 +23,24 @@ public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
     private final SigningParameters parameters;
+    private final MimeType transformationOutputMimeTypeForXdc;
+
+    public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder,
+            MimeType transformationOutputMimeTypeForXdc) {
+        this.document = document;
+        this.parameters = parameters;
+        this.responder = responder;
+        this.transformationOutputMimeTypeForXdc = transformationOutputMimeTypeForXdc;
+    }
 
     public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
+        this.transformationOutputMimeTypeForXdc = null;
     }
 
-    public DSSDocument getDocument() {
+    public CommonDocument getDocument() {
         return this.document;
     }
 
@@ -36,21 +49,24 @@ public class SigningJob {
     }
 
     public boolean isPlainText() {
-        if (parameters.getTransformationOutputMimeType() != null && document.getMimeType() != MimeTypeEnum.ASICE)
-            return parameters.getTransformationOutputMimeType().equals(MimeTypeEnum.TEXT);
+        try {
+            if (DocumentVisualizationBuilder.getTransformationOutputMimeType(parameters.getTransformation()) != null && document.getMimeType() != MimeTypeEnum.ASICE)
+                return DocumentVisualizationBuilder.getTransformationOutputMimeType(parameters.getTransformation()).equals(MimeTypeEnum.TEXT);
+        } catch (Exception e) {
 
+        }
         return DSSDocumentUtils.isPlainText(document);
     }
 
     public boolean isHTML() {
-        if (parameters.getTransformationOutputMimeType() != null && document.getMimeType() != MimeTypeEnum.ASICE)
-            return parameters.getTransformationOutputMimeType().equals(MimeTypeEnum.HTML);
+        try {
+            if (DocumentVisualizationBuilder.getTransformationOutputMimeType(parameters.getTransformation()) != null && document.getMimeType() != MimeTypeEnum.ASICE)
+                return DocumentVisualizationBuilder.getTransformationOutputMimeType(parameters.getTransformation()).equals(MimeTypeEnum.HTML);
+        } catch (Exception e) {
+
+        }
 
         return false;
-    }
-
-    public int getVisualizationWidth() {
-        return parameters.getVisualizationWidth();
     }
 
     public boolean isPDF() {
@@ -81,13 +97,22 @@ public class SigningJob {
         return DSSDocumentUtils.getDocumentAsBase64Encoded(document);
     }
 
+    public int getVisualizationWidth() {
+        return parameters.getVisualizationWidth();
+    }
+    
+    private boolean isDocumentXDC() {
+        return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
+    }
+
     public void signWithKeyAndRespond(SigningKey key) {
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
             case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key) : signDocumentAsCAdeS(key);
             case PAdES -> signDocumentAsPAdeS(key);
-            default -> throw new RuntimeException("Unsupported signature type: " + getParameters().getSignatureType());
+            default -> throw new RuntimeException(
+                    "Unsupported signature type: " + getParameters().getSignatureType());
         };
         responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
     }
@@ -113,9 +138,10 @@ public class SigningJob {
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
         DSSDocument doc = getDocument();
-        if (getParameters().shouldCreateDatacontainer() && !isXDC()) {
-            var transformer = XDCTransformer.buildFromSigningParameters(getParameters());
-            doc = transformer.transform(getDocument());
+        if (getParameters().shouldCreateDatacontainer() && !isDocumentXDC()) {
+            var transformer = XDCTransformer.buildFromSigningParameters(getParameters(),
+                    transformationOutputMimeTypeForXdc);
+            doc = transformer.transform(doc);
             doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
         }
 
@@ -177,19 +203,18 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static SigningJob buildFromFile(File file, Autogram autogram) {
+    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance) {
         var document = new FileDocument(file);
 
         SigningParameters parameters;
         var filename = file.getName();
 
         if (filename.endsWith(".pdf")) {
-            parameters = SigningParameters.buildForPDF(filename);
+            parameters = SigningParameters.buildForPDF(filename, checkPDFACompliance);
         } else {
             parameters = SigningParameters.buildForASiCWithXAdES(filename);
         }
 
-        var responder = new SaveFileResponder(file, autogram);
         return new SigningJob(document, parameters, responder);
     }
 

@@ -1,5 +1,13 @@
 # Info for developers
 
+# Trying out CLI mode 
+
+Useful command how to run project from CLI.
+
+```bash
+./mvnw exec:java -Dexec.mainClass="digital.slovensko.autogram.Main" -Dexec.args="--cli ..."
+```
+
 # More info about inner workings of builds for MacOS
 
 To run signed mac build add follwing to `.vscode/settings.json` (or you can do unsigned build by setting `mac.sign=0` in `build.properties`)
@@ -176,6 +184,19 @@ extracting
 ```sh
 pkgutil --expand-full Autogram.pkg autogram-pkg-extracted
 ```
+
+
+### Loading external dylib libraries
+
+By default MacOS Gatekeeper allows loading dylib only from secure paths 
+
+> Beginning with macOS 10.10.4, Gatekeeper verifies that no libraries are loaded from outside an app bundle.
+
+we can use `com.apple.security.cs.disable-library-validation` entitlement to disable this check (there may be better workaround with )
+
+https://developer.apple.com/library/archive/technotes/tn2206/_index.html#//apple_ref/doc/uid/DTS40007919-CH1-TNTAG207
+https://stackoverflow.com/questions/57667467/dylib-library-not-loaded-due-to-restricted-binary-after-apple-code-signing
+https://wiki.freepascal.org/Hardened_runtime_for_macOS
 
 ### More Resources
 
