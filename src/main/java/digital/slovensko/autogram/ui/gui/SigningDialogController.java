@@ -157,8 +157,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         imageVisualizationContainer.setManaged(true);
     }
 
-
-
     public void showUnsupportedVisualization() {
         unsupportedVisualizationInfoBox.setVisible(true);
         unsupportedVisualizationInfoBox.setManaged(true);
