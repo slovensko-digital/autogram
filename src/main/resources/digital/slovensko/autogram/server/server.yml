@@ -318,7 +318,7 @@ components:
         en319132:
           type: boolean
           example: false
-          description: Optional flag to control whether the signature should be made according to EN 319132. Defaults to true.
+          description: Optional flag to control whether the signature should be made according to ETSI EN 319132 for XAdES and ETSI EN 319122 for CAdES and PAdES. Defaults to false.
 
         infoCanonicalization:
           type: string
