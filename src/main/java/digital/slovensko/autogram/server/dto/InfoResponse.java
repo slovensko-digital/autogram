@@ -1,8 +1,5 @@
 package digital.slovensko.autogram.server.dto;
 
-import digital.slovensko.autogram.Main;
-import static java.util.Objects.requireNonNullElse;
-
 public class InfoResponse {
     private final String version;
     private final String status;

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+
+<VBox xmlns="http://javafx.com/javafx"
+    xmlns:fx="http://javafx.com/fxml"
+    prefWidth="450" minWidth="450"
+    fx:id="mainBox">
+
+    <fx:include fx:id="errorSummaryComponent" source="error-summary-component.fxml" />
+
+    <HBox styleClass="autogram-actions">
+        <Button fx:id="cancelButton" styleClass="autogram-button,autogram-button--warning"
+            text="Zrušiť podpisovanie" onAction="#onCancelAction" />
+        <Button fx:id="continueButton" styleClass="autogram-link" text="Pokračovať"
+            onAction="#onContinueAction" />
+    </HBox>
+</VBox>
