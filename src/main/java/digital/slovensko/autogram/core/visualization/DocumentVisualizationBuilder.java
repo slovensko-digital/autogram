@@ -59,36 +59,36 @@ public class DocumentVisualizationBuilder {
     private Visualization createVisualization(SigningJob job, MimeType transformationOutputMimeType)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
-        DSSDocument dssDocument = document;
-        if (dssDocument.getMimeType().equals(MimeTypeEnum.ASICE)) {
-            dssDocument = getOriginalDocument(document);
+        DSSDocument document = this.document;
+        if (document.getMimeType().equals(MimeTypeEnum.ASICE)) {
+            document = getOriginalDocument(this.document);
 
-            if (dssDocument.getMimeType().equals(MimeTypeEnum.XML)) {
-                setMimeTypeFromManifest(job.getDocument(), dssDocument);
+            if (document.getMimeType().equals(MimeTypeEnum.XML)) {
+                setMimeTypeFromManifest(job.getDocument(), document);
             }
         }
 
-        if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(dssDocument)) {
+        if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(document)) {
 
                 // Applying transformation
                 if (transformationOutputMimeType.equals(MimeTypeEnum.HTML)) {
-                    return new HTMLVisualization(transform(dssDocument), job);
+                    return new HTMLVisualization(transform(document), job);
                 } else if (transformationOutputMimeType.equals(MimeTypeEnum.TEXT)) {
-                    return new PlainTextVisualization(transform(dssDocument), job);
+                    return new PlainTextVisualization(transform(document), job);
                 } else {
                     return new UnsupportedVisualization(job);
                 }
         }
 
-        if (dssDocument.getMimeType().equals(MimeTypeEnum.HTML)) {
-            return new HTMLVisualization(transform(dssDocument), job);
-        } else if (dssDocument.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            return new PlainTextVisualization(new String(dssDocument.openStream().readAllBytes()), job);
-        } else if (dssDocument.getMimeType().equals(MimeTypeEnum.PDF)) {
-            return new PDFVisualization(dssDocument, job);
-        } else if (dssDocument.getMimeType().equals(MimeTypeEnum.JPEG)
-            || dssDocument.getMimeType().equals(MimeTypeEnum.PNG)) {
-            return new ImageVisualization(dssDocument, job);
+        if (document.getMimeType().equals(MimeTypeEnum.HTML)) {
+            return new HTMLVisualization(transform(document), job);
+        } else if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
+            return new PlainTextVisualization(new String(document.openStream().readAllBytes()), job);
+        } else if (document.getMimeType().equals(MimeTypeEnum.PDF)) {
+            return new PDFVisualization(document, job);
+        } else if (document.getMimeType().equals(MimeTypeEnum.JPEG)
+            || document.getMimeType().equals(MimeTypeEnum.PNG)) {
+            return new ImageVisualization(document, job);
         }
 
         return new UnsupportedVisualization(job);
@@ -213,12 +213,12 @@ public class DocumentVisualizationBuilder {
      *
      * @return transformed document string
      */
-    private String transform(DSSDocument dssDocument)
+    private String transform(DSSDocument document)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
         // We are using try catch instead of try-with-resources because
         // when debugging with VSCode on M2 MacOS, it throws self-suppression error
         // (which is weird)
-        final var is = dssDocument.openStream();
+        final var is = document.openStream();
         Throwable originalException = null;
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
