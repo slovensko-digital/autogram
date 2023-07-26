@@ -112,13 +112,13 @@ public class DocumentVisualizationBuilder {
     private void setMimeTypeFromManifest(DSSDocument originalDocument, DSSDocument document) {
         DSSDocument manifest = getManifest(originalDocument);
         if (manifest == null) {
-            throw new RuntimeException("Unable to find manifest.xml");
+            return;
         }
 
         String documentName = document.getName();
         MimeType mimeType = getMimeTypeFromManifest(manifest, documentName);
         if (mimeType == null) {
-            throw new RuntimeException("Unable to get mimetype from manifest.xml");
+            return;
         }
 
         document.setMimeType(mimeType);
@@ -136,10 +136,17 @@ public class DocumentVisualizationBuilder {
 
     private MimeType getMimeTypeFromManifest(DSSDocument manifest, String documentName) {
         NodeList fileEntries = getFileEntriesFromManifest(manifest);
+        if (fileEntries == null) {
+            return null;
+        }
 
         for (int i = 0; i < fileEntries.getLength(); i++) {
-            String fileName = fileEntries.item(i).getAttributes().item(0).getNodeValue();
-            String fileType = fileEntries.item(i).getAttributes().item(1).getNodeValue();
+            var attributes = fileEntries.item(i).getAttributes();
+            if (attributes.getLength() < 2) {
+                continue;
+            }
+            String fileName = attributes.item(0).getNodeValue();
+            String fileType = attributes.item(1).getNodeValue();
 
             if (documentName.equals(fileName)) {
                 return AutogramMimeType.fromMimeTypeString(fileType);
