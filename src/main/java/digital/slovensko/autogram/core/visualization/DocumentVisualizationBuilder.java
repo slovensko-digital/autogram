@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -17,7 +18,14 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import eu.europa.esig.dss.asic.common.ASiCContent;
+import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.validation.AdvancedSignature;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -51,30 +59,105 @@ public class DocumentVisualizationBuilder {
     private Visualization createVisualization(SigningJob job, MimeType transformationOutputMimeType)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
-        if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(document)) {
+        DSSDocument dssDocument = document;
+        if (dssDocument.getMimeType().equals(MimeTypeEnum.ASICE)) {
+            dssDocument = getOriginalDocument(document);
+
+            if (dssDocument.getMimeType().equals(MimeTypeEnum.XML)) {
+                setMimeTypeFromManifest(job.getDocument(), dssDocument);
+            }
+        }
+
+        if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(dssDocument)) {
 
                 // Applying transformation
                 if (transformationOutputMimeType.equals(MimeTypeEnum.HTML)) {
-                    return new HTMLVisualization(transform(), job);
+                    return new HTMLVisualization(transform(dssDocument), job);
                 } else if (transformationOutputMimeType.equals(MimeTypeEnum.TEXT)) {
-                    return new PlainTextVisualization(transform(), job);
+                    return new PlainTextVisualization(transform(dssDocument), job);
                 } else {
                     return new UnsupportedVisualization(job);
                 }
         }
 
-        if (document.getMimeType().equals(MimeTypeEnum.HTML)) {
-            return new HTMLVisualization(transform(), job);
-        } else if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            return new PlainTextVisualization(new String(document.openStream().readAllBytes()), job);
-        } else if (document.getMimeType().equals(MimeTypeEnum.PDF)) {
-            return new PDFVisualization(document, job);
-        } else if (document.getMimeType().equals(MimeTypeEnum.JPEG)
-            || document.getMimeType().equals(MimeTypeEnum.PNG)) {
-            return new ImageVisualization(document, job);
+        if (dssDocument.getMimeType().equals(MimeTypeEnum.HTML)) {
+            return new HTMLVisualization(transform(dssDocument), job);
+        } else if (dssDocument.getMimeType().equals(MimeTypeEnum.TEXT)) {
+            return new PlainTextVisualization(new String(dssDocument.openStream().readAllBytes()), job);
+        } else if (dssDocument.getMimeType().equals(MimeTypeEnum.PDF)) {
+            return new PDFVisualization(dssDocument, job);
+        } else if (dssDocument.getMimeType().equals(MimeTypeEnum.JPEG)
+            || dssDocument.getMimeType().equals(MimeTypeEnum.PNG)) {
+            return new ImageVisualization(dssDocument, job);
         }
 
         return new UnsupportedVisualization(job);
+    }
+
+    private DSSDocument getOriginalDocument(DSSDocument document) {
+        SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(document);
+        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
+        List<AdvancedSignature> signatures = documentValidator.getSignatures();
+        if (signatures.isEmpty()) {
+            throw new RuntimeException("No signatures in document");
+        }
+        AdvancedSignature advancedSignature = signatures.get(0);
+        List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
+        if (originalDocuments.isEmpty()) {
+            throw new RuntimeException("No original documents found");
+        }
+        return originalDocuments.get(0);
+    }
+
+    private void setMimeTypeFromManifest(DSSDocument originalDocument, DSSDocument document) {
+        DSSDocument manifest = getManifest(originalDocument);
+        if (manifest == null) {
+            throw new RuntimeException("Unable to find manifest.xml");
+        }
+
+        String documentName = document.getName();
+        MimeType mimeType = getMimeTypeFromManifest(manifest, documentName);
+        if (mimeType == null) {
+            throw new RuntimeException("Unable to get mimetype from manifest.xml");
+        }
+
+        document.setMimeType(mimeType);
+    }
+
+    private DSSDocument getManifest(DSSDocument originalDocument) {
+        ASiCWithXAdESContainerExtractor extractor = new ASiCWithXAdESContainerExtractor(originalDocument);
+        ASiCContent aSiCContent = extractor.extract();
+        List<DSSDocument> manifestDocuments = aSiCContent.getManifestDocuments();
+        if (manifestDocuments.isEmpty()) {
+            return null;
+        }
+        return manifestDocuments.get(0);
+    }
+
+    private MimeType getMimeTypeFromManifest(DSSDocument manifest, String documentName) {
+        NodeList fileEntries = getFileEntriesFromManifest(manifest);
+
+        for (int i = 0; i < fileEntries.getLength(); i++) {
+            String fileName = fileEntries.item(i).getAttributes().item(0).getNodeValue();
+            String fileType = fileEntries.item(i).getAttributes().item(1).getNodeValue();
+
+            if (documentName.equals(fileName)) {
+                return AutogramMimeType.fromMimeTypeString(fileType);
+            }
+        }
+
+        return null;
+    }
+
+    private NodeList getFileEntriesFromManifest(DSSDocument manifest) {
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+            var document = builderFactory.newDocumentBuilder().parse(new InputSource(manifest.openStream()));
+            return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String getTransformation() {
@@ -90,7 +173,7 @@ public class DocumentVisualizationBuilder {
      *
      * @return
      */
-    private boolean isDocumentSupportingTransformation(CommonDocument document) {
+    private boolean isDocumentSupportingTransformation(DSSDocument document) {
         return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER)
             || document.getMimeType().equals(AutogramMimeType.APPLICATION_XML)
             || document.getMimeType().equals(MimeTypeEnum.XML);
@@ -130,12 +213,12 @@ public class DocumentVisualizationBuilder {
      *
      * @return transformed document string
      */
-    private String transform()
+    private String transform(DSSDocument dssDocument)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
         // We are using try catch instead of try-with-resources because
         // when debugging with VSCode on M2 MacOS, it throws self-suppression error
         // (which is weird)
-        final var is = document.openStream();
+        final var is = dssDocument.openStream();
         Throwable originalException = null;
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();

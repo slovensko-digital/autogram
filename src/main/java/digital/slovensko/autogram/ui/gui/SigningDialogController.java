@@ -5,7 +5,7 @@ import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
-import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.model.DSSDocument;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -54,22 +54,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
     public void initialize() {
         refreshSigningKey();
-
-//        mainBox.setPrefWidth(signingJob.getVisualizationWidth());
-//
-//        if (signingJob.isPlainText()) {
-//            showPlainTextVisualization(signingJob.getDocumentAsPlainText());
-//        } else if (signingJob.isHTML()) {
-//            showHTMLVisualization(signingJob.getDocumentAsHTML());
-//        } else if (signingJob.isPDF()) {
-//            showPDFVisualization(signingJob.getDocumentAsBase64Encoded());
-//        } else if (signingJob.isImage()) {
-//            showImageVisualization(signingJob.getDocument().openStream());
-//        } else if (signingJob.isAsice()) {
-//            showAsiceVisualization();
-//        } else {
-//            showUnsupportedVisualization();
-//        }
         visualization.initialize(this);
     }
 
@@ -159,7 +143,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         webViewContainer.setManaged(true);
     }
 
-    public void showImageVisualization(CommonDocument doc) {
+    public void showImageVisualization(DSSDocument doc) {
         // TODO what about visualization
         imageVisualization.fitWidthProperty()
                 .bind(imageVisualizationContainer.widthProperty().subtract(4));
@@ -173,95 +157,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         imageVisualizationContainer.setManaged(true);
     }
 
-//    private void showAsiceVisualization() {
-//        DSSDocument document = getOriginalDocument(signingJob.getDocument());
-//        if (DSSDocumentUtils.isPlainText(document)) {
-//            showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, signingJob.getParameters().getTransformation()));
-//        } else if (DSSDocumentUtils.isPdf(document)) {
-//            showPDFVisualization(DSSDocumentUtils.getDocumentAsBase64Encoded(document));
-//        } else if (DSSDocumentUtils.isImage(document)) {
-//            showImageVisualization(document.openStream());
-//        } else if (DSSDocumentUtils.isXML(document)){
-//            setMimeTypeFromManifest(document);
-//
-//            String transformation = signingJob.getParameters().getTransformation();
-//            if (transformation == null) {
-//                showUnsupportedVisualization();
-//            } else if (signingJob.getParameters().getTransformationOutputMimeType() == MimeTypeEnum.HTML) {
-//                showHTMLVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
-//            } else {
-//                showPlainTextVisualization(DSSDocumentUtils.getDocumentAsPlainText(document, transformation));
-//            }
-//        } else {
-//            showUnsupportedVisualization();
-//        }
-//    }
-//
-//    private DSSDocument getOriginalDocument(DSSDocument document) {
-//        SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(document);
-//        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
-//        List<AdvancedSignature> signatures = documentValidator.getSignatures();
-//        if (signatures.isEmpty()) {
-//            throw new RuntimeException("No signatures in document");
-//        }
-//        AdvancedSignature advancedSignature = signatures.get(0);
-//        List<DSSDocument> originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
-//        if (originalDocuments.isEmpty()) {
-//            throw new RuntimeException("No original documents found");
-//        }
-//        return originalDocuments.get(0);
-//    }
-//
-//    private void setMimeTypeFromManifest(DSSDocument document) {
-//        DSSDocument manifest = getManifest();
-//        if (manifest == null) {
-//            throw new RuntimeException("Unable to find manifest.xml");
-//        }
-//
-//        String documentName = document.getName();
-//        MimeType mimeType = getMimeTypeFromManifest(manifest, documentName);
-//        if (mimeType == null) {
-//            throw new RuntimeException("Unable to get mimetype from manifest.xml");
-//        }
-//
-//        document.setMimeType(mimeType);
-//    }
-//
-//    private DSSDocument getManifest() {
-//        ASiCWithXAdESContainerExtractor extractor = new ASiCWithXAdESContainerExtractor(signingJob.getDocument());
-//        ASiCContent aSiCContent = extractor.extract();
-//        List<DSSDocument> manifestDocuments = aSiCContent.getManifestDocuments();
-//        if (manifestDocuments.isEmpty()) {
-//            return null;
-//        }
-//        return manifestDocuments.get(0);
-//    }
-//
-//    private MimeType getMimeTypeFromManifest(DSSDocument manifest, String documentName) {
-//        NodeList fileEntries = getFileEntriesFromManifest(manifest);
-//
-//        for (int i = 0; i < fileEntries.getLength(); i++) {
-//            String fileName = fileEntries.item(i).getAttributes().item(0).getNodeValue();
-//            String fileType = fileEntries.item(i).getAttributes().item(1).getNodeValue();
-//
-//            if (documentName.equals(fileName)) {
-//                return AutogramMimeType.fromMimeTypeString(fileType);
-//            }
-//        }
-//
-//        return null;
-//    }
-//
-//    private NodeList getFileEntriesFromManifest(DSSDocument manifest) {
-//        try {
-//            var builderFactory = DocumentBuilderFactory.newInstance();
-//            builderFactory.setNamespaceAware(true);
-//            var document = builderFactory.newDocumentBuilder().parse(new InputSource(manifest.openStream()));
-//            return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
-//        } catch (Exception e) {
-//            return null;
-//        }
-//    }
+
 
     public void showUnsupportedVisualization() {
         unsupportedVisualizationInfoBox.setVisible(true);
