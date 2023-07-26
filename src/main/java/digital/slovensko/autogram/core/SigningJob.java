@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import java.io.File;
+import java.io.IOException;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
@@ -21,8 +22,11 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 import eu.europa.esig.dss.xades.validation.XMLDocumentValidatorFactory;
 
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -34,7 +38,6 @@ public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
     private final SigningParameters parameters;
-    private String signatureValidationReportHTML;
     private Reports signatureCheckReport;
     private Reports signatureValidationReport;
     private final MimeType transformationOutputMimeTypeForXdc;
@@ -217,37 +220,34 @@ public class SigningJob {
     }
 
     public void validateSignatures() {
-        signatureValidationReport = new SignatureValidator().validate(getDocumentValidator());
-
-        try {
-            generateSignatureValidationReportHTML();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void generateSignatureValidationReportHTML() throws Exception {
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
-        var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
-        var xmlSource = new DOMSource(document);
-
-        var xsltFile = new File("src/main/resources/simple-report-bootstrap4.xslt");
-        var xsltSource = new StreamSource(xsltFile);
-
-        var outputTarget = new StreamResult(new StringWriter());
-        var transformer = TransformerFactory.newInstance().newTransformer(xsltSource);
-        transformer.transform(xmlSource, outputTarget);
-
-        var r = outputTarget.getWriter().toString().trim();
-
-        var templateFile = new File("src/main/resources/simple-report-template.html");
-        var templateString = new String(java.nio.file.Files.readAllBytes(templateFile.toPath()));
-        signatureValidationReportHTML = templateString.replace("{{content}}", r);
+        var signatureValidator = SignatureValidator.getInstance();
+        signatureValidationReport = signatureValidator.validate(getDocumentValidator());
     }
 
     public String getSignatureValidationReportHTML() {
-        return signatureValidationReportHTML;
+        var builderFactory = DocumentBuilderFactory.newInstance();
+        builderFactory.setNamespaceAware(true);
+
+        try {
+            var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
+            var xmlSource = new DOMSource(document);
+
+            var xsltFile = new File("src/main/resources/simple-report-bootstrap4.xslt");
+            var xsltSource = new StreamSource(xsltFile);
+
+            var outputTarget = new StreamResult(new StringWriter());
+            var transformer = TransformerFactory.newInstance().newTransformer(xsltSource);
+            transformer.transform(xmlSource, outputTarget);
+
+            var r = outputTarget.getWriter().toString().trim();
+
+            var templateFile = new File("src/main/resources/simple-report-template.html");
+            var templateString = new String(java.nio.file.Files.readAllBytes(templateFile.toPath()));
+            return templateString.replace("{{content}}", r);
+
+        } catch (SAXException | IOException | ParserConfigurationException | TransformerException e) {
+            return "Error transforming validation report";
+        }
     }
 
     public Reports getSignatureValidationReport() {

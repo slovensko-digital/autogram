@@ -10,6 +10,8 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.function.Consumer;
 
 public class Autogram {
@@ -115,5 +117,22 @@ public class Autogram {
 
     public void onDocumentSaved(File targetFile) {
         ui.onUIThreadDo(() -> ui.onDocumentSaved(targetFile));
+    }
+
+    public Timer initializeSignatureValidator() {
+        ui.onWorkThreadDo(() -> {
+            SignatureValidator.getInstance().initialize();
+        });
+
+        var timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+                public void run() {
+                    SignatureValidator.getInstance().refresh();
+                }
+            },
+             3600000L,
+             3600000L);
+
+        return timer;
     }
 }

@@ -16,6 +16,7 @@ public class GUIApp extends Application {
 
         Platform.setImplicitExit(false);
         autogram.checkForUpdate();
+        var timer = autogram.initializeSignatureValidator();
 
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
 
@@ -31,6 +32,8 @@ public class GUIApp extends Application {
 
         windowStage.setOnCloseRequest(event -> {
             new Thread(server::stop).start();
+            timer.cancel();
+            System.out.println("Closing application");
 
             Platform.exit();
         });

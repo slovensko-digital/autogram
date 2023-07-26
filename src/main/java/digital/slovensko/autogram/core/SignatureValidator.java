@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.concurrent.Executors;
 
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
@@ -17,6 +16,7 @@ import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.tsl.sync.ExpirationAndSignatureCheckStrategy;
+import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -24,15 +24,22 @@ import eu.europa.esig.dss.validation.reports.Reports;
 public class SignatureValidator {
     private static final String LOTL_URL = "https://ec.europa.eu/tools/lotl/eu-lotl.xml";
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
+    private CertificateVerifier verifier;
+    private TLValidationJob validationJob;
 
-    public Reports validate(SignedDocumentValidator docValidator) {
-        var trustedListCertificateSource = buildLOTLCertificateSource();
-        var verifier = new CommonCertificateVerifier();
+    private static SignatureValidator instance;
 
-        verifier.setTrustedCertSources(trustedListCertificateSource);
-        verifier.setCrlSource(new OnlineCRLSource());
-        verifier.setOcspSource(new OnlineOCSPSource());
+    private SignatureValidator() {
+    }
 
+    public synchronized static SignatureValidator getInstance() {
+        if (instance == null)
+            instance = new SignatureValidator();
+
+        return instance;
+    }
+
+    public synchronized Reports validate(SignedDocumentValidator docValidator) {
         docValidator.setCertificateVerifier(verifier);
         var result = docValidator.validateDocument();
 
@@ -41,11 +48,18 @@ public class SignatureValidator {
         return result;
     }
 
-    private TrustedListsCertificateSource buildLOTLCertificateSource() {
+    public synchronized void refresh() {
+        System.out.println("Refreshing signature validator...");
+        validationJob.offlineRefresh();
+        System.out.println("Signature validator refreshed");
+    }
+
+    public synchronized void initialize() {
+        System.out.println("Initializing signature validator");
         var trustedListCertificateSource = new TrustedListsCertificateSource();
         var lotlSource = new LOTLSource();
         var offlineFileLoader = new FileCacheDataLoader();
-        var validationJob = new TLValidationJob();
+        validationJob = new TLValidationJob();
 
         lotlSource.setCertificateSource(getJournalCertificateSource());
         lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(OJ_URL));
@@ -62,11 +76,16 @@ public class SignatureValidator {
         validationJob.setListOfTrustedListSources(lotlSource);
         validationJob.setSynchronizationStrategy(new ExpirationAndSignatureCheckStrategy());
         validationJob.setOfflineDataLoader(offlineFileLoader);
-        validationJob.setExecutorService(Executors.newSingleThreadExecutor());
 
+        System.out.println("Starting signature validator offline refresh");
         validationJob.offlineRefresh();
 
-        return trustedListCertificateSource;
+        verifier = new CommonCertificateVerifier();
+        verifier.setTrustedCertSources(trustedListCertificateSource);
+        verifier.setCrlSource(new OnlineCRLSource());
+        verifier.setOcspSource(new OnlineOCSPSource());
+
+        System.out.println("Signature validator initialized");
     }
 
     private CertificateSource getJournalCertificateSource() throws AssertionError {
