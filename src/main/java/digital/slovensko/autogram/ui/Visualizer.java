@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui;
 
-import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 
 public interface Visualizer {
