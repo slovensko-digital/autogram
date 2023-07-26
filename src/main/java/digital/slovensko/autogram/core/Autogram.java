@@ -8,17 +8,7 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.function.Consumer;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.xml.sax.InputSource;
 
 public class Autogram {
     private final UI ui;

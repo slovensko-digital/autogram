@@ -299,7 +299,7 @@ public class SigningJob {
     }
 
     public void validateSignatures() {
-        signatureValidationReport = new SignatureValidator().validate(getDocument(), getDocumentValidator());
+        signatureValidationReport = new SignatureValidator().validate(getDocumentValidator());
 
         try {
             generateSignatureValidationReportHTML();

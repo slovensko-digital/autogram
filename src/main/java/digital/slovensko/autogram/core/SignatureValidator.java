@@ -4,130 +4,79 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.Executors;
 
-import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
-import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
-import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
-import eu.europa.esig.dss.tsl.sync.AcceptAllStrategy;
+import eu.europa.esig.dss.tsl.sync.ExpirationAndSignatureCheckStrategy;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
-import eu.europa.esig.dss.validation.reports.CertificateReports;
 import eu.europa.esig.dss.validation.reports.Reports;
 
 public class SignatureValidator {
     private static final String LOTL_URL = "https://ec.europa.eu/tools/lotl/eu-lotl.xml";
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
-    private CertificateSource journalCertificateSource;
-    private FileCacheDataLoader dataLoader;
 
-    public Reports validate(DSSDocument doc, SignedDocumentValidator docValidator) {
-        var trustedListCertificateSource = new TrustedListsCertificateSource();
-        processLOTL(trustedListCertificateSource);
-
+    public Reports validate(SignedDocumentValidator docValidator) {
+        var trustedListCertificateSource = buildLOTLCertificateSource();
         var verifier = new CommonCertificateVerifier();
+
         verifier.setTrustedCertSources(trustedListCertificateSource);
-        verifier.setAIASource(new DefaultAIASource(dataLoader));
-        verifier.setCrlSource(new OnlineCRLSource(dataLoader));
-        verifier.setOcspSource(new OnlineOCSPSource(new OCSPDataLoader()));
+        verifier.setCrlSource(new OnlineCRLSource());
+        verifier.setOcspSource(new OnlineOCSPSource());
 
         docValidator.setCertificateVerifier(verifier);
-        var r = docValidator.validateDocument();
+        var result = docValidator.validateDocument();
 
-        System.out.println("Done");
-        saveResults(r);
+        saveResults(result);
 
-        return r;
+        return result;
     }
 
-    private void processLOTL(TrustedListsCertificateSource trustedListCertificateSource) {
-        try {
-            journalCertificateSource = new KeyStoreCertificateSource(
-                new File("/home/turtle/slovensko_digital/autogram/src/main/resources/lotlKeyStore.p12"), "PKCS12", "dss-password");
-        } catch (IOException e) {
-            throw new AssertionError(e);
-        }
-
-        File targetLocation = Path.of(System.getProperty("user.dir"), "cache", "certs").toFile();
-        targetLocation.mkdirs();
-
-        dataLoader = new FileCacheDataLoader();
-        dataLoader.setDataLoader(new CommonsDataLoader());
-        dataLoader.setCacheExpirationTime(3600000);
-        dataLoader.setFileCacheDirectory(targetLocation);
-
-        var offlineFileLoader = new FileCacheDataLoader();
-        offlineFileLoader.setCacheExpirationTime(3600000);
-        offlineFileLoader.setDataLoader(dataLoader);
-        offlineFileLoader.setFileCacheDirectory(targetLocation);
-
-        var validationJob = new TLValidationJob();
-        validationJob.setTrustedListCertificateSource(trustedListCertificateSource);
-
+    private TrustedListsCertificateSource buildLOTLCertificateSource() {
+        var trustedListCertificateSource = new TrustedListsCertificateSource();
         var lotlSource = new LOTLSource();
-        lotlSource.setCertificateSource(journalCertificateSource);
+        var offlineFileLoader = new FileCacheDataLoader();
+        var validationJob = new TLValidationJob();
+
+        lotlSource.setCertificateSource(getJournalCertificateSource());
         lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(OJ_URL));
         lotlSource.setUrl(LOTL_URL);
         lotlSource.setPivotSupport(true);
+
+        var targetLocation = Path.of(System.getProperty("user.dir"), "cache", "certs").toFile();
+        targetLocation.mkdirs();
+        offlineFileLoader.setCacheExpirationTime(21600000);
+        offlineFileLoader.setDataLoader(new CommonsDataLoader());
+        offlineFileLoader.setFileCacheDirectory(targetLocation);
+
+        validationJob.setTrustedListCertificateSource(trustedListCertificateSource);
         validationJob.setListOfTrustedListSources(lotlSource);
-
-        // validationJob.setSynchronizationStrategy(new ExpirationAndSignatureCheckStrategy());
-        validationJob.setSynchronizationStrategy(new AcceptAllStrategy());
-        validationJob.setDebug(false);
-
+        validationJob.setSynchronizationStrategy(new ExpirationAndSignatureCheckStrategy());
         validationJob.setOfflineDataLoader(offlineFileLoader);
+        validationJob.setExecutorService(Executors.newSingleThreadExecutor());
+
         validationJob.offlineRefresh();
 
+        return trustedListCertificateSource;
     }
 
-    private void saveResults(CertificateReports certificateReports) {
+    private CertificateSource getJournalCertificateSource() throws AssertionError {
         try {
-            var writer = new FileWriter(new File("/home/turtle/slovensko_digital/autogram/reportDiag.xml"));
-            writer.write(certificateReports.getXmlDiagnosticData());
-            writer.close();
+            var keystore = new File("src/main/resources/lotlKeyStore.p12");
+            return new KeyStoreCertificateSource(keystore, "PKCS12", "dss-password");
+
         } catch (IOException e) {
+            throw new AssertionError("Cannot load LOTL keystore", e);
         }
-        try {
-            var writer = new FileWriter(new File("/home/turtle/slovensko_digital/autogram/reportSimple.xml"));
-            writer.write(certificateReports.getXmlSimpleReport());
-            writer.close();
-        } catch (IOException e) {
-        }
-        try {
-            var writer = new FileWriter(new File("/home/turtle/slovensko_digital/autogram/reportDetailed.xml"));
-            writer.write(certificateReports.getXmlDetailedReport());
-            writer.close();
-        } catch (IOException e) {
-        }
-    }
-
-    private void printResults(CertificateReports reps) {
-        System.out.println("-----------------");
-
-        System.out.println("Qualification at issuance type " + reps.getSimpleReport().getQualificationAtCertificateIssuance().getType());
-        System.out.println("Qualification at validation type " + reps.getSimpleReport().getQualificationAtValidationTime().getType());
-        System.out.println("Is Qualifie Certificate " + reps.getSimpleReport().getQualificationAtValidationTime().isQc());
-        System.out.println("Is QSC Device " + reps.getSimpleReport().getQualificationAtValidationTime().isQscd());
-        System.out.println("Qualification name " + reps.getSimpleReport().getQualificationAtValidationTime().name());
-        System.out.println("Qualification name " + reps.getSimpleReport().getQualificationAtValidationTime().toString());
-        System.out.println("Qualification label " + reps.getSimpleReport().getQualificationAtValidationTime().getLabel());
-
-        System.out.println("Indications");
-        for (var cert : reps.getSimpleReport().getCertificateIds()) {
-            System.out.println(reps.getSimpleReport().getCertificateCommonName(cert) + " "
-                    + reps.getSimpleReport().getCertificateIndication(cert));
-        }
-
-        System.out.println("-----------------");
     }
 
     private void saveResults(Reports r) {
