@@ -3,21 +3,16 @@ package digital.slovensko.autogram.core;
 import java.io.File;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
-import digital.slovensko.autogram.util.DSSDocumentUtils;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.MimeType;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-
-import java.io.*;
 
 public class SigningJob {
     private final Responder responder;
@@ -46,55 +41,6 @@ public class SigningJob {
 
     public SigningParameters getParameters() {
         return parameters;
-    }
-
-    public boolean isPlainText() {
-        try {
-            if (DocumentVisualizationBuilder.getTransformationOutputMimeType(parameters.getTransformation()) != null && document.getMimeType() != MimeTypeEnum.ASICE)
-                return DocumentVisualizationBuilder.getTransformationOutputMimeType(parameters.getTransformation()).equals(MimeTypeEnum.TEXT);
-        } catch (Exception e) {
-
-        }
-        return DSSDocumentUtils.isPlainText(document);
-    }
-
-    public boolean isHTML() {
-        try {
-            if (DocumentVisualizationBuilder.getTransformationOutputMimeType(parameters.getTransformation()) != null && document.getMimeType() != MimeTypeEnum.ASICE)
-                return DocumentVisualizationBuilder.getTransformationOutputMimeType(parameters.getTransformation()).equals(MimeTypeEnum.HTML);
-        } catch (Exception e) {
-
-        }
-
-        return false;
-    }
-
-    public boolean isPDF() {
-        return DSSDocumentUtils.isPdf(document);
-    }
-
-    public boolean isImage() {
-        return DSSDocumentUtils.isImage(document);
-    }
-
-    private boolean isXDC() {
-        return DSSDocumentUtils.isXDC(document);
-    }
-
-    public boolean isAsice() {
-        return DSSDocumentUtils.isAsice(document);
-    }
-
-    public String getDocumentAsPlainText() {
-        return DSSDocumentUtils.getDocumentAsPlainText(document, parameters.getTransformation());
-    }
-
-    public String getDocumentAsHTML() {
-        return DSSDocumentUtils.transform(document, parameters.getTransformation());
-    }
-
-    public String getDocumentAsBase64Encoded() {
-        return DSSDocumentUtils.getDocumentAsBase64Encoded(document);
     }
 
     public int getVisualizationWidth() {
