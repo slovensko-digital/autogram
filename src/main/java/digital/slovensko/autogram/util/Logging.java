@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.util;
 
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 

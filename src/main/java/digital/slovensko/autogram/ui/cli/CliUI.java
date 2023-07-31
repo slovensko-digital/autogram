@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 
 import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.AutogramBatchStartCallback;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
@@ -69,7 +68,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, AutogramBatchStartCallback callback) {
+    public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
         // TODO Auto-generated method stub
     }
 
@@ -80,11 +79,6 @@ public class CliUI implements UI {
 
     @Override
     public void cancelBatch(Batch batch) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
-    public void updateBatch() {
         // TODO Auto-generated method stub
     }
 

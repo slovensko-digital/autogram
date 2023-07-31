@@ -115,7 +115,7 @@ class AutogramTests {
         }
 
         @Override
-        public void startBatch(Batch batch, Autogram autogram, AutogramBatchStartCallback callback) {
+        public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
         }
 
         @Override
@@ -124,11 +124,6 @@ class AutogramTests {
 
         @Override
         public void signBatch(SigningJob job, SigningKey key) {
-        }
-
-        @Override
-        public void updateBatch() {
-            // TODO Auto-generated method stub
         }
 
         @Override

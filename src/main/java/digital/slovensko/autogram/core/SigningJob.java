@@ -16,7 +16,6 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-import javafx.application.Platform;
 
 public class SigningJob {
     private final Responder responder;

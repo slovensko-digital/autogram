@@ -88,32 +88,7 @@ public class Autogram {
             throw new BatchConflictException("Iné hromadné podpisovanie už prebieha");
         batch = new Batch(totalNumberOfDocuments);
 
-        var startBatchTask = new AutogramBatchStartCallback() {
-            public void accept(SigningKey key) {
-                try {
-                    Logging.log("Starting batch");
-                    batch.start(key);
-                    handleSuccess();
-                } catch (Exception e) {
-                    handleException(e);
-                }                
-            }
-
-            private void handleException(Exception e) {
-                if (e instanceof AutogramException)
-                    responder.onBatchStartFailure((AutogramException) e);
-                else {
-                    Logging.log("Batch start failed with exception: " + e);
-                    responder.onBatchStartFailure(
-                            new AutogramException("Unkown error occured while starting batch", "",
-                                    "Batch start failed with exception: " + e, e));
-                }
-            }
-
-            private void handleSuccess() {
-                ui.onWorkThreadDo(() -> responder.onBatchStartSuccess(batch));
-            }
-        };
+        var startBatchTask = new AutogramBatchStartCallback(batch, responder);
 
         ui.onUIThreadDo(() -> {
             ui.startBatch(batch, this, startBatchTask);
@@ -139,12 +114,6 @@ public class Autogram {
         } else {
             ui.signBatch(job, batch.getSigningKey());
         }
-    }
-
-    public void updateBatch() {
-        ui.onUIThreadDo(() -> {
-            ui.updateBatch();
-        });
     }
 
     /**

@@ -6,8 +6,10 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.AutogramBatchStartCallback;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
@@ -36,7 +38,8 @@ public class GUI implements UI {
     private SigningKey activeKey;
     private final HostServices hostServices;
     private BatchDialogController batchController;
-    private final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
+    private static Logger logger = LoggerFactory.getLogger(GUI.class);
 
     public GUI(HostServices hostServices) {
         this.hostServices = hostServices;
@@ -48,7 +51,7 @@ public class GUI implements UI {
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, AutogramBatchStartCallback callback) {
+    public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
         batchController = new BatchDialogController(batch, callback, autogram, this);
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
@@ -72,6 +75,7 @@ public class GUI implements UI {
 
     @Override
     public void signBatch(SigningJob job, SigningKey key) {
+        assertOnWorkThread();
         try {
             job.signWithKeyAndRespond(key);
             Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
@@ -83,18 +87,16 @@ public class GUI implements UI {
             AutogramException autogramException = new AutogramException("Document signing has failed", "", "", e);
             job.onDocumentSignFailed(autogramException);
         }
-        updateBatch();
+        onUIThreadDo(() -> {
+            updateBatch();
+        });
     }
 
-    @Override
-    public void updateBatch() {
-        Logging.log("GUI: updateBatch " + Platform.isFxApplicationThread());
-        if (Platform.isFxApplicationThread()) {
-            batchController.update();
-        } else {
-            onWorkThreadDo(() -> onUIThreadDo(batchController::update));
-        }
-        Logging.log("GUI: updateBatch2");
+    private void updateBatch() {
+        if (batchController == null)
+            return;
+        assertOnUIThread();
+        batchController.update();
     }
 
     @Override
@@ -173,6 +175,7 @@ public class GUI implements UI {
     }
 
     private void showError(AutogramException e) {
+        logger.debug("GUI showing error", e);
         var controller = new ErrorController(e);
         var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
 
@@ -280,6 +283,7 @@ public class GUI implements UI {
     public void onSigningSuccess(SigningJob job) {
         jobControllers.get(job).close();
         refreshKeyOnAllJobs();
+        updateBatch();
     }
 
     @Override
@@ -328,9 +332,6 @@ public class GUI implements UI {
 
     @Override
     public void onWorkThreadDo(Runnable callback) {
-        if (DEBUG && !Platform.isFxApplicationThread())
-            throw new RuntimeException("Can be run only on UI thread");
-
         if (Platform.isFxApplicationThread()) {
             new Thread(callback).start();
         } else {
@@ -340,9 +341,6 @@ public class GUI implements UI {
 
     @Override
     public void onUIThreadDo(Runnable callback) {
-        if (DEBUG && Platform.isFxApplicationThread())
-            throw new RuntimeException("Can be run only on work thread");
-
         if (Platform.isFxApplicationThread()) {
             callback.run();
         } else {
@@ -350,12 +348,22 @@ public class GUI implements UI {
         }
     }
 
+    public static void assertOnUIThread() {
+        if (DEBUG && !Platform.isFxApplicationThread())
+            throw new RuntimeException("Can be run only on UI thread");
+    }
+
+    public static void assertOnWorkThread() {
+        if (DEBUG && Platform.isFxApplicationThread())
+            throw new RuntimeException("Can be run only on work thread");
+    }
+
     public SigningKey getActiveSigningKey() {
         return activeKey;
     }
 
     public void setActiveSigningKey(SigningKey newKey) {
-        if (!isActiveSigningKeyChangeAllowed()){
+        if (!isActiveSigningKeyChangeAllowed()) {
             throw new RuntimeException("Signing key change is not allowed");
         }
         if (activeKey != null)
@@ -364,7 +372,7 @@ public class GUI implements UI {
         refreshKeyOnAllJobs();
     }
 
-    public boolean isActiveSigningKeyChangeAllowed(){
+    public boolean isActiveSigningKeyChangeAllowed() {
         return true;
     }
 
