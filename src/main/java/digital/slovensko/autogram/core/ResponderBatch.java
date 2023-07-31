@@ -2,11 +2,11 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 
-public class ResponderBatchWrapper extends Responder {
+public class ResponderBatch extends Responder {
     private final Responder responder;
     private final Batch batch;
 
-    public ResponderBatchWrapper(Responder responder, Batch batch) {
+    public ResponderBatch(Responder responder, Batch batch) {
         this.responder = responder;
         this.batch = batch;
     }
