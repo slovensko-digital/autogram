@@ -38,7 +38,7 @@ public class GUI implements UI {
     private SigningKey activeKey;
     private final HostServices hostServices;
     private BatchDialogController batchController;
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static Logger logger = LoggerFactory.getLogger(GUI.class);
 
     public GUI(HostServices hostServices) {

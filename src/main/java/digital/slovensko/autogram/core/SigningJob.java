@@ -57,8 +57,6 @@ public class SigningJob {
     public void signWithKeyAndRespond(SigningKey key) throws InterruptedException {
 
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
-        Logging.log("Signing Job: " + this.hashCode() + " key: " + key.getCertificate().getAbbreviation() + " "
-                + DSSUtils.buildTooltipLabel(key.privateKey));
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
