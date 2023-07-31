@@ -41,7 +41,7 @@ public class BatchGuiFileResponder extends BatchResponder {
             try {
                 targetFiles.put(file, null);
                 errors.put(file, null);
-                var responder = new SaveFileFromBatchResponder(file, autogram, targetPath, (File targetFile) -> {
+                var responder = new SaveFileFromBatchResponder(file, targetPath, (File targetFile) -> {
                     targetFiles.put(file, targetFile);
                     Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments()
                             + " signed " + file.toString());

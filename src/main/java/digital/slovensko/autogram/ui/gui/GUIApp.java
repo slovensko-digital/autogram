@@ -19,7 +19,7 @@ public class GUIApp extends Application {
 
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
 
-        var controller = new MainMenuController(autogram, ui);
+        var controller = new MainMenuController(autogram);
         var root = GUIUtils.loadFXML(controller, "main-menu.fxml");
 
         var scene = new Scene(root);
