@@ -39,7 +39,7 @@ public class SignEndpoint implements HttpHandler {
             if (body.getBatchId() != null) {
                 autogram.batchSign(job, body.getBatchId());
             } else {
-                autogram.sign(job);
+                autogram.startSigning(job);
             }
 
         } catch (JsonSyntaxException e) {

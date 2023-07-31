@@ -32,7 +32,7 @@ public class Autogram {
         this.driverDetector = driverDetector;
     }
 
-    public void sign(SigningJob job) {
+    public void startSigning(SigningJob job) {
         ui.onUIThreadDo(() -> ui.startSigning(job, this));
     }
 
