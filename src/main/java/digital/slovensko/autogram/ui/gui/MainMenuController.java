@@ -95,7 +95,7 @@ public class MainMenuController implements SuppressedFocusController {
         if (filesList.size() == 1) {
             var file = filesList.get(0);
             var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), false);
-            autogram.startSigning(job);
+            autogram.sign(job);
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
                     filesList.get(0).toPath().getParent().resolve("signed")));
