@@ -3,8 +3,6 @@ package digital.slovensko.autogram.core;
 import java.io.File;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.ui.SaveFileFromBatchResponder;
-import digital.slovensko.autogram.util.DSSUtils;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
@@ -160,7 +158,7 @@ public class SigningJob {
         return new SigningJob(document, parameters, responder);
     }
 
-    public static SigningJob buildFromFileBatch(File file, Autogram autogram, SaveFileFromBatchResponder responder) {
+    public static SigningJob buildFromFileBatch(File file, Autogram autogram, Responder responder) {
         var document = new FileDocument(file);
         SigningParameters parameters = getParametersForFile(file, false);
         return new SigningJob(document, parameters, responder);

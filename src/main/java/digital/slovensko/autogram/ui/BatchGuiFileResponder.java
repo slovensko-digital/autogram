@@ -9,6 +9,7 @@ import java.util.Map;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
+import digital.slovensko.autogram.core.ResponderBatchWrapper;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -41,16 +42,15 @@ public class BatchGuiFileResponder extends BatchResponder {
             try {
                 targetFiles.put(file, null);
                 errors.put(file, null);
-                var responder = new SaveFileFromBatchResponder(file, targetPath, (File targetFile) -> {
+                var responder = new ResponderBatchWrapper(new SaveFileFromBatchResponder(file, targetPath, (File targetFile) -> {
                     targetFiles.put(file, targetFile);
-                    Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments()
-                            + " signed " + file.toString());
+                    Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments() + " signed " + file.toString());
                     onAllFilesSigned(batch);
                 }, (AutogramException error) -> {
                     Logging.log("Signing failed " + file.toString() + " all:" + batch.isAllProcessed());
                     errors.put(file, error);
                     onAllFilesSigned(batch);
-                });
+                }), batch);
 
                 var job = SigningJob.buildFromFileBatch(file, autogram, responder);
                 autogram.batchSign(job, batch.getBatchId());
@@ -62,6 +62,7 @@ public class BatchGuiFileResponder extends BatchResponder {
     }
 
     private void onAllFilesSigned(Batch batch) { // synchronized
+        Logging.log("onAllFilesSigned " + batch.isAllProcessed() + " " + uiNotifiedOnAllFilesSigned);
         if (batch.isAllProcessed() && !uiNotifiedOnAllFilesSigned) {
             uiNotifiedOnAllFilesSigned = true;
             Logging.log(errors.values().stream().map(e -> e == null ? "" : e.toString()).toList());

@@ -100,10 +100,9 @@ public class Autogram {
      * @param batchId - current batch ID, used to authenticate the request
      */
     public void batchSign(SigningJob job, String batchId) {
-        if (batch == null)
-            throw new BatchNotStartedException(); // TODO replace with checked exception
+        if (batch == null) throw new BatchNotStartedException(); // TODO replace with checked exception
 
-        batch.addJob(batchId, job);
+        batch.addJob(batchId);
 
         ui.onWorkThreadDo(() -> {
             ui.signBatch(job, batch.getSigningKey());
@@ -124,6 +123,12 @@ public class Autogram {
         return batch.isAllProcessed();
     }
 
+    public Batch getBatch(String batchId) {
+        if (batch == null) throw new BatchNotStartedException(); // TODO replace with checked exception
+        batch.validate(batchId);
+        return batch;
+    }
+
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
         var drivers = driverDetector.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers,
@@ -131,8 +136,7 @@ public class Autogram {
                         () -> fetchKeysAndThen(driver, password, callback))));
     }
 
-    private void fetchKeysAndThen(TokenDriver driver, char[] password,
-            Consumer<SigningKey> callback) {
+    private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {
         try {
             var token = driver.createTokenWithPassword(password);
             var keys = token.getKeys();

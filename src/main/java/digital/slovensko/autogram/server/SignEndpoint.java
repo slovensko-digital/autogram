@@ -4,6 +4,8 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.Responder;
+import digital.slovensko.autogram.core.ResponderBatchWrapper;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
@@ -30,12 +32,17 @@ public class SignEndpoint implements HttpHandler {
 
             MimeType transformationOutputMimeTypeForXdc = null;
             if (body.getParameters().getContainer() != null) {
-                transformationOutputMimeTypeForXdc = DocumentVisualizationBuilder
-                        .getTransformationOutputMimeType(body.getParameters().getTransformation());
+                transformationOutputMimeTypeForXdc = DocumentVisualizationBuilder.getTransformationOutputMimeType(body.getParameters().getTransformation());
             }
-            var job = new SigningJob(body.getDocument(), body.getParameters(), new ServerResponder(exchange),
-                    transformationOutputMimeTypeForXdc);
-            
+
+            Responder responder;
+            if (body.getBatchId() != null) {
+                responder = new ResponderBatchWrapper(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
+            } else {
+                responder = new ServerResponder(exchange);
+            }
+            var job = new SigningJob(body.getDocument(), body.getParameters(), responder, transformationOutputMimeTypeForXdc);
+
             if (body.getBatchId() != null) {
                 autogram.batchSign(job, body.getBatchId());
             } else {
@@ -43,14 +50,12 @@ public class SignEndpoint implements HttpHandler {
             }
 
         } catch (JsonSyntaxException e) {
-            var response =
-                    ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
+            var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
             EndpointUtils.respondWithError(response, exchange);
         } catch (SAXException e) {
             System.out.println("SAXException: " + e.getMessage());
             EndpointUtils.respondWithError(
-                    ErrorResponse.buildFromException(new TransformationException(e.getMessage(), e)),
-                    exchange);
+                    ErrorResponse.buildFromException(new TransformationException(e.getMessage(), e)), exchange);
         } catch (Exception e) {
             e.printStackTrace();
             EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);

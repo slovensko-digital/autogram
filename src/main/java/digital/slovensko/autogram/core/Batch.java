@@ -25,7 +25,9 @@ public class Batch {
     private SigningKey signingKey = null;
 
     private Date expriationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 10);
-    private int processedDocumentsCount = 0;
+    private int addedDocumentsCount = 0;
+    private int successfulDocumentsCount = 0;
+    private int failedDocumentsCount = 0;
 
     public Batch(int totalNumberOfDocuments) {
         this.totalNumberOfDocuments = totalNumberOfDocuments;
@@ -39,13 +41,25 @@ public class Batch {
         signingKey = key;
     }
 
-    public void addJob(String batchId, SigningJob job) {
+    public void addJob(String batchId) {
         validate(batchId);
 
-        if (this.totalNumberOfDocuments <= this.processedDocumentsCount)
+        if (this.totalNumberOfDocuments <= this.addedDocumentsCount)
             throw new IllegalAccessError("Sent more sign requests than declared at start");
 
-        processedDocumentsCount++;
+        addedDocumentsCount++;
+    }
+
+    public void onJobSuccess() {
+        successfulDocumentsCount++;
+        Logging.log("Batch " + batchId + " success");
+        log();
+    }
+
+    public void onJobFailure() {
+        failedDocumentsCount++;
+        Logging.log("Batch " + batchId + " failed");
+        log();
     }
 
     public void end() {
@@ -67,8 +81,7 @@ public class Batch {
     public void validate(String batchId) {
         validateInternal();
 
-        if (!this.batchId.equals(batchId))
-            throw new BatchInvalidIdException();
+        if (!this.batchId.equals(batchId)) throw new BatchInvalidIdException();
     }
 
     // public getters
@@ -84,7 +97,7 @@ public class Batch {
     }
 
     public boolean isAllProcessed() {
-        return processedDocumentsCount >= totalNumberOfDocuments;
+        return getProcessedDocumentsCount() >= totalNumberOfDocuments;
     }
 
     public boolean isKeyChangeAllowed() {
@@ -95,8 +108,8 @@ public class Batch {
         return totalNumberOfDocuments;
     }
 
-    public int getProcessedDocumentsCount() {
-        return processedDocumentsCount;
+    public int getProcessedDocumentsCount(){
+        return successfulDocumentsCount + failedDocumentsCount;
     }
 
     public SigningKey getSigningKey() {
@@ -117,8 +130,7 @@ public class Batch {
     }
 
     public void log() {
-        Logging.log("Batch " + batchId + " state: " + state + " processed: " + processedDocumentsCount
-                + " total: " + totalNumberOfDocuments);
+        Logging.log("Batch " + batchId + " state: " + state + " processed: " + addedDocumentsCount + " total: " + totalNumberOfDocuments);
     }
 
 }
