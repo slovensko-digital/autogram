@@ -32,7 +32,6 @@ public class Batch {
         resetExpirationDate();
     }
 
-    // methods
     public void start(SigningKey key) {
         if (state != BatchState.INITIALIZED)
             throw new BatchEndedException("Nie je možné opätovne spustiť hromadné podpisovanie");
