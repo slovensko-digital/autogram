@@ -11,7 +11,6 @@ import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
-import javafx.application.Platform;
 
 import java.io.File;
 import java.util.function.Consumer;
@@ -106,13 +105,9 @@ public class Autogram {
 
         batch.addJob(batchId, job);
 
-        if (Platform.isFxApplicationThread()) {
-            ui.onWorkThreadDo(() -> {
-                ui.signBatch(job, batch.getSigningKey());
-            });
-        } else {
+        ui.onWorkThreadDo(() -> {
             ui.signBatch(job, batch.getSigningKey());
-        }
+        });
     }
 
     /**
