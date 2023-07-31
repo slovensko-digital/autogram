@@ -34,7 +34,7 @@
         <VBox>
             <TextFlow>
                 <Text styleClass="autogram-body"
-                    text="Idete podpísať " />
+                    text="Chystáte sa podpísať " />
                 <Text fx:id="batchVisualizationCount"
                     styleClass="autogram-body,autogram-font-weight-bold"
                     text="" />
@@ -43,7 +43,7 @@
             </TextFlow>
             <TextFlow>
                 <Text styleClass="autogram-body"
-                    text="Uistite sa, že dôverujete zdroju dokumentu a&#160;máte dostatočne zabezpečený počítač, na&#160;ktorom dokument podpisujete." />
+                    text="Uistite sa, že dôverujete zdroju dokumentov a&#160;máte dostatočne zabezpečený počítač, na&#160;ktorom dokumenty podpisujete." />
             </TextFlow>
             <TextFlow>
                 <Text styleClass="autogram-body,autogram-font-weight-bold"
