@@ -584,7 +584,7 @@ TextFlow.autogram-body-s {
 
 .autogram-batch-visualization {
     -fx-border-width: 5px;
-    -fx-border-color: -autogram-focus-colour;
+    -fx-border-color: -autogram-error-colour;
 
     -fx-spacing: 3em;
     -fx-padding: 6em 4em 4em 4em;
