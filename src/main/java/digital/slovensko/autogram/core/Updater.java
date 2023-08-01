@@ -20,14 +20,14 @@ public class Updater {
     public static final String LATEST_RELEASE_API_URL = "https://api.github.com/repos/slovensko-digital/autogram/releases/latest";
 
     public static boolean newVersionAvailable() {
-        if (Main.getVersion().isDev()) {
+        Version vCurrent = Version.createCurrent();
+        if (vCurrent.isDev()) {
             return false;
         }
 
         String latestVersionTag = "";
         try {
-            var request = HttpRequest.newBuilder().uri(new URI(LATEST_RELEASE_API_URL))
-                    .header("Accept", "application/vnd.github.v3+json").GET().build();
+            var request = HttpRequest.newBuilder().uri(new URI(LATEST_RELEASE_API_URL)).header("Accept", "application/vnd.github.v3+json").GET().build();
 
             var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
             var response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -35,12 +35,12 @@ public class Updater {
             var json = gson.fromJson(response.body(), JsonObject.class);
             latestVersionTag = json.get("tag_name").getAsString();
 
-        } catch (IOException | InterruptedException | URISyntaxException | NoSuchElementException ignored) {
+        } catch (IOException | InterruptedException | URISyntaxException |
+                 NoSuchElementException ignored) {
             ignored.printStackTrace(); // TODO handle error
             return false;
         }
 
-        Version vCurrent = Main.getVersion();
         Version vLatest = Version.createFromVersionString(latestVersionTag);
         return vCurrent.compareTo(vLatest) < 0;
     }

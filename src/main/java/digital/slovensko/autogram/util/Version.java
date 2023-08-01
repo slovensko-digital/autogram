@@ -4,13 +4,24 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static java.util.Objects.requireNonNullElse;
+
 public class Version implements Comparable<Version> {
 
-    private int[] versionNumbers;
-    private boolean dev;
+    private final int[] versionNumbers;
+    private final boolean dev;
 
     public Version(int[] versionNumbers) {
         this.versionNumbers = versionNumbers;
+        this.dev = false;
+    }
+
+    /**
+     * Dev version constructor
+     */
+    public Version() {
+        this.versionNumbers = new int[]{};
+        this.dev = true;
     }
 
     public static Version createFromVersionString(String version) {
@@ -21,21 +32,22 @@ public class Version implements Comparable<Version> {
         }
 
         if (version.equals("dev")) {
-            return createDevVersion();
+            return new Version();
         }
 
         var versionNumbers = Stream.of(version.split("\\.")).mapToInt(Integer::parseInt).toArray();
         return new Version(versionNumbers);
     }
 
-    private static Version createDevVersion() {
-        var v = new Version(new int[]{});
-        v.dev = true;
-        return v;
+    public static Version createCurrent() {
+        return Version.createFromVersionString(requireNonNullElse(System.getProperty("jpackage.app-version"), "dev"));
     }
 
 
     public String toString() {
+        if (dev) {
+            return "dev";
+        }
         return IntStream.of(versionNumbers).mapToObj(Integer::toString).collect(Collectors.joining("."));
     }
 
