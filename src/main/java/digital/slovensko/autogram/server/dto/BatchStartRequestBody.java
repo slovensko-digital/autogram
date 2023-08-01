@@ -2,10 +2,10 @@ package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 
-public class BatchSessionStartRequestBody {
+public class BatchStartRequestBody {
     private final Integer totalNumberOfDocuments;
 
-    public BatchSessionStartRequestBody(int totalNumberOfDocuments) {
+    public BatchStartRequestBody(int totalNumberOfDocuments) {
         this.totalNumberOfDocuments = totalNumberOfDocuments;
 
     }

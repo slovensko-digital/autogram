@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 
-import digital.slovensko.autogram.server.dto.BatchSessionStartResponseBody;
+import digital.slovensko.autogram.server.dto.BatchStartResponseBody;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -39,7 +39,7 @@ public class BatchSigningHttpSmokeTests {
 
         assertEquals(HttpStatus.SC_OK, startResponse.getStatusLine().getStatusCode());
 
-        var startData = new Gson().fromJson(json, BatchSessionStartResponseBody.class);
+        var startData = new Gson().fromJson(json, BatchStartResponseBody.class);
         System.out.println("Session Start Response: " + startData);
 
         var batchId = startData.batchId();

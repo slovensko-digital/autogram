@@ -9,7 +9,7 @@ import java.util.Map;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
-import digital.slovensko.autogram.core.ResponderBatch;
+import digital.slovensko.autogram.core.ResponderInBatch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -42,7 +42,7 @@ public class BatchGuiFileResponder extends BatchResponder {
             try {
                 targetFiles.put(file, null);
                 errors.put(file, null);
-                var responder = new ResponderBatch(new SaveFileFromBatchResponder(file, targetPath, (File targetFile) -> {
+                var responder = new ResponderInBatch(new SaveFileFromBatchResponder(file, targetPath, (File targetFile) -> {
                     targetFiles.put(file, targetFile);
                     Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments() + " signed " + file.toString());
                     onAllFilesSigned(batch);

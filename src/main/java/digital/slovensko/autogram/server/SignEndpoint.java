@@ -5,7 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Responder;
-import digital.slovensko.autogram.core.ResponderBatch;
+import digital.slovensko.autogram.core.ResponderInBatch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
@@ -37,7 +37,7 @@ public class SignEndpoint implements HttpHandler {
 
             Responder responder;
             if (body.getBatchId() != null) {
-                responder = new ResponderBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
+                responder = new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
             } else {
                 responder = new ServerResponder(exchange);
             }

@@ -4,8 +4,8 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.server.dto.BatchSessionEndRequestBody;
-import digital.slovensko.autogram.server.dto.BatchSessionStartRequestBody;
+import digital.slovensko.autogram.server.dto.BatchEndRequestBody;
+import digital.slovensko.autogram.server.dto.BatchStartRequestBody;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 
@@ -25,13 +25,13 @@ public class BatchEndpoint implements HttpHandler {
             if (requestMethod.equalsIgnoreCase("POST")) {
                 // Start batch
                 var body = EndpointUtils.loadFromJsonExchange(exchange,
-                        BatchSessionStartRequestBody.class);
+                        BatchStartRequestBody.class);
                 autogram.batchStart(body.getTotalNumberOfDocuments(),
                         new BatchServerResponder(exchange));
             } else if (requestMethod.equalsIgnoreCase("DELETE")) {
                 // End batch
                 var body = EndpointUtils.loadFromJsonExchange(exchange,
-                        BatchSessionEndRequestBody.class);
+                        BatchEndRequestBody.class);
                 var finished = autogram.batchEnd(body.batchId());
                 EndpointUtils.respondWith(finished ? new Object() {
                     public String status = "FINISHED";

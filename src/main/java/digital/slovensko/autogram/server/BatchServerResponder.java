@@ -7,7 +7,7 @@ import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.server.dto.BatchSessionStartResponseBody;
+import digital.slovensko.autogram.server.dto.BatchStartResponseBody;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 
@@ -22,7 +22,7 @@ public class BatchServerResponder extends BatchResponder {
         var gson = new Gson();
 
         try {
-            var response = new BatchSessionStartResponseBody(batch.getBatchId());
+            var response = new BatchStartResponseBody(batch.getBatchId());
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, 0);
             exchange.getResponseBody().write(gson.toJson(response).getBytes());
