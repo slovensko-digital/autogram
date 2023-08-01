@@ -43,7 +43,7 @@ public class ErrorSummaryComponentController {
         }
         description.setText(exception.getDescription());
         if (exception.getCause() != null) {
-            errorDetails.setText(formatException(exception));
+            errorDetails.setText(GUIUtils.exceptionToString(exception));
             showErrorDetailsButton.setVisible(true);
         }
     }
@@ -51,17 +51,8 @@ public class ErrorSummaryComponentController {
     public void initialize() {
     }
 
-    private String formatException(AutogramException exception) {
-        var writer = new StringWriter();
-        var printWriter = new PrintWriter(writer);
-        exception.printStackTrace(printWriter);
-        printWriter.flush();
-
-        return writer.toString();
-    }
-
     public void onShowErrorDetailsButtonAction() {
-        errorDetails.setText(formatException(exception));
+        errorDetails.setText(GUIUtils.exceptionToString(exception));
         if (errorDetails.isVisible()) {
             errorDetails.setManaged(false);
             errorDetails.setVisible(false);

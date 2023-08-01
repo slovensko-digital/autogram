@@ -35,6 +35,7 @@ public class SaveFileResponder extends Responder {
     }
 
     public void onDocumentSignFailed(AutogramException error) {
+        // TODO tu je zozrany error
         System.err.println("Sign failed error occurred: " + error.toString());
     }
 }

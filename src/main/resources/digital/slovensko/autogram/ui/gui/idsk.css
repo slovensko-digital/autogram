@@ -25,6 +25,8 @@
 
   -autogram-success-colour: #00703c;
 
+  -autogram-partial-success-colour: #003078;
+
   -fx-font-family: "Source Sans Pro", "Arial", sans-serif;
   -fx-font-size: 16px;
 
@@ -598,4 +600,79 @@ TextFlow.autogram-body-s {
 .autogram-tag-invalid--text {
   -fx-text-fill: #721c24;
   -fx-fill: #721c24;
+}
+.autogram-progress-bar {
+    -fx-border-color: -autogram-input-border-colour;
+    /* -fx-background-color: -autogram-focus-colour; */
+    -fx-background-insets: 0 0 0 0;
+}
+
+.autogram-progress-bar > .track {
+    -fx-text-box-border: forestgreen;
+    -fx-control-inner-background: palegreen;
+  }
+
+.autogram-progress-bar > .bar {
+    -fx-background-color: #003183;
+}
+.autogram-progress-bar > .track {
+      -fx-background-color: transparent;
+}
+
+.autogram-batch-visualization {
+    -fx-border-width: 5px;
+    -fx-border-color: -autogram-error-colour;
+
+    -fx-spacing: 3em;
+    -fx-padding: 6em 4em 4em 4em;
+    -fx-alignment: center;
+}
+
+.autogram-batch-visualization VBox {
+    -fx-spacing: 20px;
+}
+
+.autogram-batch-visualization .autogram-error-summary__error {
+    -fx-padding: 0.5em 2em 0 2em;
+}
+
+.autogram-listview {
+  -fx-max-height: 400px;
+  -fx-min-height: 30px;
+  -fx-pref-height: 200px;
+  -fx-padding: 0 0 20px 20px;
+}
+
+.autogram-confirmation--success {
+  -fx-background-color: -autogram-success-colour;
+}
+.autogram-confirmation--warning {
+  -fx-background-color: -autogram-partial-success-colour;
+}
+
+.autogram-confirmation{
+  -fx-padding: 40px 20px 40px 20px;
+  -fx-background-insets: 20px 0 20px 0;
+  -fx-text-fill: #ffffff;
+  -fx-text-alignment: center;
+}
+
+.autogram-confirmation .autogram-body {
+  -fx-text-fill: #ffffff;
+  -fx-fill:  #ffffff;
+
+  -fx-font-size: 1.1875em;
+  -fx-text-alignment: center;
+}
+
+.autogram-confirmation .autogram-heading-m {
+  -fx-text-fill: #ffffff;
+  -fx-fill:  #ffffff;
+
+  -fx-font-size: 1.5em;
+  -fx-font-weight: bold;
+  -fx-text-alignment: center;
+}
+.autogram-confirmation Hyperlink {
+  -fx-font-size: 2em;
 }

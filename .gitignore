@@ -26,3 +26,5 @@ whitelabel.iml
 secret
 
 cache/
+
+/fakeTokenDriver

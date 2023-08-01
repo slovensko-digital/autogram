@@ -167,6 +167,7 @@ if [[ "$platform" == "mac" ]]; then
     fi
 
     if [[ "$properties_mac_sign" == "1" ]]; then
+        export JPACKAGE_MAC_SIGN="1"
         if [[ -z "$APPLE_DEVELOPER_IDENTITY" ]] || [[ -z "$APPLE_KEYCHAIN_PATH" ]]; then
             echo "Missing APPLE_DEVELOPER_IDENTITY or APPLE_KEYCHAIN_PATH env variable"
             exit 1

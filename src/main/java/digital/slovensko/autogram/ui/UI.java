@@ -14,6 +14,12 @@ import java.util.function.Consumer;
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
 
+    void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback);
+
+    void signBatch(SigningJob job, SigningKey key);
+
+    void cancelBatch(Batch batch);
+
     void showVisualization(Visualization visualization, Autogram autogram);
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback);
@@ -29,6 +35,8 @@ public interface UI {
     void onSigningFailed(AutogramException e);
 
     void onDocumentSaved(File targetFile);
+
+    void onDocumentBatchSaved(BatchUiResult result);
 
     void onWorkThreadDo(Runnable callback);
 
