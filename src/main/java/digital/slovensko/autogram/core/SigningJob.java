@@ -164,6 +164,10 @@ public class SigningJob {
         return new SigningJob(document, parameters, responder);
     }
 
+    public static SigningJob buildFromJobAndParameters(SigningJob job, SigningParameters parameters) {
+        return new SigningJob(job.getDocument(), parameters, job.responder, job.transformationOutputMimeTypeForXdc);
+    } 
+
     private static SigningParameters getParametersForFile(File file, boolean checkPDFACompliance) {
         var filename = file.getName();
 

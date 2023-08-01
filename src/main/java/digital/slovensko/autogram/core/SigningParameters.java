@@ -197,4 +197,22 @@ public class SigningParameters {
         return (visualizationWidth > 0) ? visualizationWidth : 640;
     }
 
+
+    public SigningParameters sameButCades() {
+        return new SigningParameters(
+                SignatureLevel.CAdES_BASELINE_B,
+                ASiCContainerType.ASiC_E,
+                containerXmlns,
+                packaging,
+                digestAlgorithm,
+                en319132,
+                infoCanonicalization,
+                propertiesCanonicalization,
+                keyInfoCanonicalization,
+                schema,
+                transformation,
+                identifier,
+                checkPDFACompliance,
+                visualizationWidth);
+    }
 }

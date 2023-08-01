@@ -1,3 +1,4 @@
+<meta charset="UTF-8" />
 <!-- Doesn't allow loading any external or inline scripts, styles, etc. -->
 <!-- The only exception are the following scripts allowed using hash -->
 <!-- You can update the hash by looking at the exception message in the browser that mentions the new hash -->
@@ -7,144 +8,280 @@
 <script src="./vendor/pdfjs/pdf.min.js"></script>
 
 <style>
-    body {
-        margin: 0;
-        width: 100%;
-    }
+  body {
+    margin: 0;
+    width: 100%;
+  }
 
-    #container {
-        width: 100%;
+  #container {
+    width: 100%;
 
-        display: flex;
-        flex-direction: column;
-    }
+    display: flex;
+    flex-direction: column;
+  }
 
-    #container > * {
-        border: 2px solid #0b0c0c;
-        margin: 0 24px 15px 0;
-    }
+  #container > * {
+    border: 2px solid #0b0c0c;
+    margin: 0 24px 15px 0;
+  }
 
-    #container > *:last-child {
-        margin-bottom: 0;
-    }
+  #container > *:last-child {
+    margin-bottom: 0;
+  }
+
+  #password-box h2 {
+    font-size: 24px;
+    margin-bottom: 22px;
+    font-family: "Source Sans Pro", "Arial", sans-serif;
+  }
+
+  #password-box label {
+    font-size: 16px;
+    font-family: "Source Sans Pro", "Arial", sans-serif;
+
+    color: #0b0c0c;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  #password-box input {
+    width: 100%;
+    box-sizing: border-box;
+    width: 100%;
+    height: 40px;
+    margin-top: 0;
+    margin-bottom: 22px;
+    padding: 5px;
+    border: 2px solid #0b0c0c;
+  }
+
+  #password-box .message {
+    color: #d4351c;
+    display: none;
+    margin-bottom: 24px;
+    margin-top: -10px;
+    font-family: "Source Sans Pro", "Arial", sans-serif;
+  }
+
+  #password-box button::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    bottom: -4px;
+    left: -2px;
+    background: transparent;
+  }
+
+  #password-box button {
+    font-family: "Source Sans Pro", "Arial", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 400;
+    font-size: 16px;
+    font-size: 1rem;
+    line-height: 1.1875;
+    box-sizing: border-box;
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 22px;
+    padding: 8px 10px 7px;
+    border: 2px solid transparent;
+    border-radius: 0;
+    color: #ffffff;
+    background-color: #00703c;
+    box-shadow: 0 2px 0 #002d18;
+    text-align: center;
+    vertical-align: top;
+    cursor: pointer;
+
+    font-size: 1.1875rem;
+    line-height: 1;
+  }
 </style>
 
 <body>
+  <div id="container"></div>
 
-<div id="container"></div>
+  <dialog id="password-box">
+    <h2>PDF je zaheslované</h2>
+    <label for="password">Heslo</label>
+    <input type="password" id="password" autocomplete="off" />
+    <span class="message">Nesprávne heslo</span>
+    <button type="button">Odomknúť</button>
+  </dialog>
 
-<script type="text/javascript">
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.js';
+  <script type="text/javascript">
+    const pdfjsLib = window["pdfjs-dist/build/pdf"];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "./vendor/pdfjs/pdf.worker.min.js";
+
+    function initPdfDisplay(pdf) {
+      renderPdf(pdf);
+
+      if (currentResizeListener) {
+        window.removeEventListener("resize", currentResizeListener);
+      }
+
+      // TODO resize only if width changes & do this better
+      currentResizeListener = debounce(() => renderPdf(pdf), 1000);
+      window.addEventListener("resize", currentResizeListener);
+    }
 
     let currentResizeListener;
     window.displayPdf = function (data) {
-        pdfjsLib.getDocument({
-            data: atob(data),
-            cMapUrl: './vendor/pdfjs/cmaps/',
-            cMapPacked: true,
-            isEvalSupported: false,
-        }).promise.then(function (pdf) {
-            renderPdf(pdf);
-
-            if (currentResizeListener) {
-                window.removeEventListener('resize', currentResizeListener);
-            }
-
-            // TODO resize only if width changes & do this better
-            currentResizeListener = debounce(() => renderPdf(pdf), 1000);
-            window.addEventListener('resize', currentResizeListener);
+      pdfjsLib
+        .getDocument({
+          data: atob(data),
+          cMapUrl: "./vendor/pdfjs/cmaps/",
+          cMapPacked: true,
+          isEvalSupported: false,
+        })
+        .promise.then(initPdfDisplay)
+        .catch(function (error) {
+          if (error.name == "PasswordException") {
+            console.log(window.javaPasswordProtected);
+            window.javaPasswordProtected.notifyPasswordProtectedPdf();
+            const box = document.querySelector("#password-box");
+            // box.quueySelector("message").style.display = "block";
+            // box.quueySelector("message").innerText = "" + window.javaPasswordProtected;
+            box.dataset.pdfData = data;
+            box.showModal();
+          }
         });
     };
 
-    const renderPdf = async function (pdf) {
-        let pages = new Set();
-        const checkVisibility = function (elements, callback) {
-            const options = {
-                root: null,
-            };
-
-            const observer = new IntersectionObserver((entries, observer) => {
-                entries.forEach(e => {
-                    const pageNumber = Number(e.target.dataset.pageNumber);
-                    e.isIntersecting ? pages.add(pageNumber) : pages.delete(pageNumber);
-                });
-
-                if (pages.size > 0) {
-                    const first = Math.max(1, Math.min(...pages) - 2);
-                    const last = Math.min(pdf.numPages, Math.max(...pages) + 2)
-                    callback(first, last); // TODO debounce?
-                }
-            }, options);
-
-            elements.forEach(e => observer.observe(e));
-        }
-
-        const container = document.querySelector('#container');
-        container.innerHTML = '';
-
-        let pageElms = [];
-        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-            const pageElm = document.createElement('div');
-            pageElm.style.width = document.body.clientWidth - 32 + "px";
-            pageElm.style.height = (document.body.clientWidth - 32) * 1.41 + "px";
-            pageElm.dataset.pageNumber = pageNumber;
-
-            container.appendChild(pageElm);
-            pageElms.push(pageElm);
-        }
-
-        checkVisibility(pageElms,
-            function (firstVisiblePageNumber, lastVisiblePageNumber) {
-                pageElms.forEach(function (elm, index) {
-                    const pageNumber = index + 1;
-                    if (pageNumber >= firstVisiblePageNumber && pageNumber <= lastVisiblePageNumber) {
-                        if (elm.hasChildNodes()) return;
-
-                        pdf.getPage(pageNumber).then(function (page) {
-                            const viewport = page.getViewport({
-                                scale: (document.body.clientWidth - 32) / page.getViewport({scale: 1,}).width,
-                            });
-
-                            // Prepare canvas using PDF page dimensions
-                            // Support HiDPI-screens.
-                            const outputScale = window.devicePixelRatio || 1;
-
-                            const canvas = document.createElement('canvas');
-                            const context = canvas.getContext('2d');
-                            canvas.width = Math.floor(viewport.width * outputScale);
-                            canvas.height = Math.floor(viewport.height * outputScale);
-                            canvas.style.width = Math.floor(viewport.width) + "px";
-                            canvas.style.height = Math.floor(viewport.height) + "px";
-                            elm.style.height = viewport.height + 'px';
-                            elm.style.width = viewport.width + 'px';
-                            const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
-
-                            page.render({
-                                canvasContext: context,
-                                transform: transform,
-                                viewport: viewport
-                            });
-
-                            elm.replaceChildren(canvas);
-                        });
-                    } else {
-                        if (!elm.hasChildNodes()) return;
-
-                        elm.replaceChildren();
-                    }
-                });
-            }
-        );
+    function displayPdfWithPassword(data, password) {
+      pdfjsLib
+        .getDocument({
+          data: atob(data),
+          cMapUrl: "./vendor/pdfjs/cmaps/",
+          cMapPacked: true,
+          isEvalSupported: false,
+          password: password,
+        })
+        .promise.then(initPdfDisplay)
+        .catch(function (error) {
+          console.log(error);
+          if (error.name == "PasswordException") {
+            const box = document.querySelector("#password-box");
+            const message = box.querySelector(".message");
+            box.querySelector("input").value = "";
+            message.style.display = "block";
+            message.innerText = "Nesprávne heslo";
+            box.showModal();
+          }
+        });
     }
+
+    document
+      .querySelector("#password-box button")
+      .addEventListener("click", function () {
+        const box = document.querySelector("#password-box");
+        const password = box.querySelector("input").value;
+        box.close();
+        displayPdfWithPassword(box.dataset.pdfData, password);
+      });
+
+    const renderPdf = async function (pdf) {
+      let pages = new Set();
+      const checkVisibility = function (elements, callback) {
+        const options = {
+          root: null,
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+          entries.forEach((e) => {
+            const pageNumber = Number(e.target.dataset.pageNumber);
+            e.isIntersecting ? pages.add(pageNumber) : pages.delete(pageNumber);
+          });
+
+          if (pages.size > 0) {
+            const first = Math.max(1, Math.min(...pages) - 2);
+            const last = Math.min(pdf.numPages, Math.max(...pages) + 2);
+            callback(first, last); // TODO debounce?
+          }
+        }, options);
+
+        elements.forEach((e) => observer.observe(e));
+      };
+
+      const container = document.querySelector("#container");
+      container.innerHTML = "";
+
+      let pageElms = [];
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+        const pageElm = document.createElement("div");
+        pageElm.style.width = document.body.clientWidth - 32 + "px";
+        pageElm.style.height = (document.body.clientWidth - 32) * 1.41 + "px";
+        pageElm.dataset.pageNumber = pageNumber;
+
+        container.appendChild(pageElm);
+        pageElms.push(pageElm);
+      }
+
+      checkVisibility(
+        pageElms,
+        function (firstVisiblePageNumber, lastVisiblePageNumber) {
+          pageElms.forEach(function (elm, index) {
+            const pageNumber = index + 1;
+            if (
+              pageNumber >= firstVisiblePageNumber &&
+              pageNumber <= lastVisiblePageNumber
+            ) {
+              if (elm.hasChildNodes()) return;
+
+              pdf.getPage(pageNumber).then(function (page) {
+                const viewport = page.getViewport({
+                  scale:
+                    (document.body.clientWidth - 32) /
+                    page.getViewport({ scale: 1 }).width,
+                });
+
+                // Prepare canvas using PDF page dimensions
+                // Support HiDPI-screens.
+                const outputScale = window.devicePixelRatio || 1;
+
+                const canvas = document.createElement("canvas");
+                const context = canvas.getContext("2d");
+                canvas.width = Math.floor(viewport.width * outputScale);
+                canvas.height = Math.floor(viewport.height * outputScale);
+                canvas.style.width = Math.floor(viewport.width) + "px";
+                canvas.style.height = Math.floor(viewport.height) + "px";
+                elm.style.height = viewport.height + "px";
+                elm.style.width = viewport.width + "px";
+                const transform =
+                  outputScale !== 1
+                    ? [outputScale, 0, 0, outputScale, 0, 0]
+                    : null;
+
+                page.render({
+                  canvasContext: context,
+                  transform: transform,
+                  viewport: viewport,
+                });
+
+                elm.replaceChildren(canvas);
+              });
+            } else {
+              if (!elm.hasChildNodes()) return;
+
+              elm.replaceChildren();
+            }
+          });
+        }
+      );
+    };
 
     function debounce(callback, time) {
-        let timer;
-        return () => {
-            if (timer) clearTimeout(timer);
+      let timer;
+      return () => {
+        if (timer) clearTimeout(timer);
 
-            timer = setTimeout(callback, time, event);
-        };
+        timer = setTimeout(callback, time, event);
+      };
     }
-</script>
+  </script>
 </body>

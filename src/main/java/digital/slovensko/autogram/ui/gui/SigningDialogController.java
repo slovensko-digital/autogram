@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
@@ -19,13 +20,17 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import netscape.javascript.JSObject;
 
 public class SigningDialogController implements SuppressedFocusController, Visualizer {
     private final GUI gui;
     private final Autogram autogram;
     private final Visualization visualization;
+    boolean isPdfPasswordProtected = false;
+
 
     @FXML
     VBox mainBox;
@@ -64,7 +69,14 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         } else {
             gui.disableSigning();
             getNodeForLoosingFocus().requestFocus();
-            autogram.sign(visualization.getJob(), signingKey);
+
+            var job = visualization.getJob();
+            if (isPdfPasswordProtected) {
+                // TODO change parameters to use asice
+                job = SigningJob.buildFromJobAndParameters(job, job.getParameters().sameButCades());
+            }
+
+            autogram.sign(job, signingKey);
         }
     }
 
@@ -81,10 +93,8 @@ public class SigningDialogController implements SuppressedFocusController, Visua
             mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
         } else {
-            mainButton.setText("Podpísať ako "
-                    + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
-            mainButton.getStyleClass()
-                    .removeIf(style -> style.equals("autogram-button--secondary"));
+            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+            mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
         }
     }
@@ -133,6 +143,14 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         engine.setJavaScriptEnabled(true);
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
+                Font.loadFont(
+                        SigningDialogController.class.getResource("fonts/SourceSansPro-Regular.ttf").toExternalForm(), 10
+                );
+
+                JSObject window = (JSObject) engine.executeScript("window");
+                window.setMember("javaPasswordProtected", this);
+
+
                 engine.executeScript(
                         "displayPdf('" + base64EncodedPdf + "')");
             }
@@ -143,10 +161,16 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         webViewContainer.setManaged(true);
     }
 
+
+    public void notifyPasswordProtectedPdf() {
+        System.out.println("Password protected PDF");
+        isPdfPasswordProtected = true;
+    }
+
+
     public void showImageVisualization(CommonDocument doc) {
         // TODO what about visualization
-        imageVisualization.fitWidthProperty()
-                .bind(imageVisualizationContainer.widthProperty().subtract(4));
+        imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
         imageVisualization.setImage(new Image(doc.openStream()));
         imageVisualization.setPreserveRatio(true);
         imageVisualization.setSmooth(true);
