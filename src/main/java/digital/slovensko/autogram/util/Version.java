@@ -20,7 +20,7 @@ public class Version implements Comparable<Version> {
         return new Version(versionNumbers);
     }
 
-    public int[] getVersionNumbers() {
+    private int[] getVersionNumbers() {
         return versionNumbers;
     }
 
