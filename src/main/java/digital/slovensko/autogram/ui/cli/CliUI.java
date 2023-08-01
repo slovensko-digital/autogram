@@ -144,7 +144,7 @@ public class CliUI implements UI {
         System.out.println(
                 """
                         O projekte Autogram
-                        Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a štandardov. Môžete ho používať komerčne aj nekomerčne a úplne zadarmo.
+                        Autogram je jednoduchý nástroj na podpisovanie podľa európskeho nariadenia eIDAS, slovenských zákonov a štandardov. Môžete ho používať komerčne aj nekomerčne a úplne zadarmo.
                         Autori a sponzori
                         Autormi tohto projektu sú Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. a ďalší spoluautori.
                         Licencia a zdrojové kódy
