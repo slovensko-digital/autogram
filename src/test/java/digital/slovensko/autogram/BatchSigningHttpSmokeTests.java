@@ -11,6 +11,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 import com.google.gson.Gson;
 
@@ -18,6 +19,7 @@ import digital.slovensko.autogram.server.dto.BatchStartResponseBody;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Tag("HttpSmokeTest")
 public class BatchSigningHttpSmokeTests {
     @Test
     void testBatchSigningHappyScenario() throws URISyntaxException, ClientProtocolException, IOException {
