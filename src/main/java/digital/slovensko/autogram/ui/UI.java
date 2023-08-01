@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui;
 
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.Visualization;
@@ -14,6 +13,12 @@ import java.util.function.Consumer;
 
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
+
+    void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback);
+
+    void signBatch(SigningJob job, SigningKey key);
+
+    void cancelBatch(Batch batch);
 
     void showVisualization(Visualization visualization, Autogram autogram);
 
@@ -30,6 +35,8 @@ public interface UI {
     void onSigningFailed(AutogramException e);
 
     void onDocumentSaved(File targetFile);
+
+    void onDocumentBatchSaved(BatchUiResult result);
 
     void onWorkThreadDo(Runnable callback);
 

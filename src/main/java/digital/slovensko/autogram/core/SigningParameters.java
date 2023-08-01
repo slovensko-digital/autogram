@@ -54,13 +54,14 @@ public class SigningParameters {
         var parameters = new ASiCWithXAdESSignatureParameters();
 
         parameters.aSiC().setContainerType(getContainer());
-        parameters.setSignatureLevel(level);
+        parameters.setSignatureLevel(getLevel());
         parameters.setDigestAlgorithm(getDigestAlgorithm());
         parameters.setSigningCertificateDigestMethod(getDigestAlgorithm());
         parameters.setSignedInfoCanonicalizationMethod(getInfoCanonicalization());
         parameters.setSignedPropertiesCanonicalizationMethod(getPropertiesCanonicalization());
+        parameters.setKeyInfoCanonicalizationMethod(getKeyInfoCanonicalization());
         parameters.setEn319132(isEn319132());
-        parameters.setSignaturePackaging(packaging);
+        parameters.setAddX509SubjectName(true);
 
         return parameters;
     }
@@ -68,13 +69,14 @@ public class SigningParameters {
     public XAdESSignatureParameters getXAdESSignatureParameters() {
         var parameters = new XAdESSignatureParameters();
 
-        parameters.setSignatureLevel(level);
+        parameters.setSignatureLevel(getLevel());
         parameters.setDigestAlgorithm(getDigestAlgorithm());
         parameters.setEn319132(isEn319132());
         parameters.setSignedInfoCanonicalizationMethod(getInfoCanonicalization());
         parameters.setSignedPropertiesCanonicalizationMethod(getPropertiesCanonicalization());
-
         parameters.setSignaturePackaging(getSignaturePackaging());
+        parameters.setKeyInfoCanonicalizationMethod(getKeyInfoCanonicalization());
+        parameters.setAddX509SubjectName(true);
 
         return parameters;
     }
@@ -82,10 +84,10 @@ public class SigningParameters {
     public CAdESSignatureParameters getCAdESSignatureParameters() {
         var parameters = new CAdESSignatureParameters();
 
-        parameters.setSignatureLevel(level);
+        parameters.setSignatureLevel(getLevel());
         parameters.setDigestAlgorithm(getDigestAlgorithm());
-        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING); // TODO: seems to be the
-                                                                         // only supported value
+        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
+        parameters.setEn319122(isEn319132());
 
         return parameters;
     }
@@ -93,7 +95,7 @@ public class SigningParameters {
     public PAdESSignatureParameters getPAdESSignatureParameters() {
         var parameters = new PAdESSignatureParameters();
 
-        parameters.setSignatureLevel(level);
+        parameters.setSignatureLevel(getLevel());
         parameters.setDigestAlgorithm(getDigestAlgorithm());
         parameters.setEn319122(isEn319132());
 
@@ -103,7 +105,7 @@ public class SigningParameters {
     public ASiCWithCAdESSignatureParameters getASiCWithCAdESSignatureParameters() {
         var parameters = new ASiCWithCAdESSignatureParameters();
 
-        parameters.setSignatureLevel(level);
+        parameters.setSignatureLevel(getLevel());
         parameters.setDigestAlgorithm(getDigestAlgorithm());
         parameters.setEn319122(isEn319132());
         parameters.aSiC().setContainerType(getContainer());
@@ -144,7 +146,7 @@ public class SigningParameters {
     }
 
     public Boolean isEn319132() {
-        return en319132 != null ? en319132 : true;
+        return en319132 != null ? en319132 : false;
     }
 
     public String getInfoCanonicalization() {

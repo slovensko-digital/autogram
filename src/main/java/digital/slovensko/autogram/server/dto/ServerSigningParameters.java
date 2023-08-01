@@ -50,12 +50,12 @@ public class ServerSigningParameters {
     private final VisualizationWidthEnum visualizationWidth;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
-                                   String containerFilename, String containerXmlns, SignaturePackaging packaging,
-                                   DigestAlgorithm digestAlgorithm,
-                                   Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
-                                   LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
-                                   String schema, String transformation,
-                                   String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth) {
+            String containerFilename, String containerXmlns, SignaturePackaging packaging,
+            DigestAlgorithm digestAlgorithm,
+            Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
+            LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
+            String schema, String transformation,
+            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
