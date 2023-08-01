@@ -1,5 +1,8 @@
 # Info for developers
 
+# How to use FakeTokenDriver
+
+create empty file `fakeTokenDriver` in cwd - so in project root when developing, to enable "Fake token driver"
 # Trying out CLI mode 
 
 Useful command how to run project from CLI.

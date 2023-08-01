@@ -11,6 +11,7 @@ import java.io.File;
 
 public class SigningSuccessDialogController implements SuppressedFocusController {
     private final File targetFile;
+    private final File targetDirectory;
     private final HostServices hostServices;
     @FXML
     Text filenameText;
@@ -20,7 +21,12 @@ public class SigningSuccessDialogController implements SuppressedFocusController
     Node mainBox;
 
     public SigningSuccessDialogController(File targetFile, HostServices hostServices) {
+        this(targetFile, targetFile.getParentFile(), hostServices);
+    }
+
+    public SigningSuccessDialogController(File targetFile, File targetDirectory, HostServices hostServices) {
         this.targetFile = targetFile;
+        this.targetDirectory = targetDirectory;
         this.hostServices = hostServices;
     }
 
@@ -30,7 +36,7 @@ public class SigningSuccessDialogController implements SuppressedFocusController
     }
 
     public void onOpenFolderAction(ActionEvent ignored) {
-        hostServices.showDocument("file://" + targetFile.getParent());
+        hostServices.showDocument(targetDirectory.toURI().toString());
     }
 
     public void onCloseAction(ActionEvent ignored) {
