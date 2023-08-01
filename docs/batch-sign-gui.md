@@ -6,7 +6,7 @@
 - pocas behu hromadneho podpisovania su odmietane nove hromadne podpisovania (?)
 - hromadne podpisovanie viem ako pouzivatel prerusit zatvorenim okna alebo stlacenim tlacidla
 - je dolezite aby pri driveroch/klucoch ktore vyzaduju pin pri kazdom podpisani bola informacia o tomto (v nejakej zatvorke/malym sedym) 
-- kym je aktivny session tak je otvorene okno (+ stav pred potvrdenim, po dokonceni)
+- kym je aktivny batch (session) tak je otvorene okno (+ stav pred potvrdenim, po dokonceni)
 
 ## 1. Happy path
 z pohladu pouzivatela - UI

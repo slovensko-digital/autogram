@@ -7,7 +7,7 @@
 - pocas behu hromadneho podpisovania su odmietane nove hromadne podpisovania (?)
 - hromadne podpisovanie viem ako pouzivatel prerusit zatvorenim okna alebo stlacenim tlacidla
 - je dolezite aby pri driveroch/klucoch ktore vyzaduju pin pri kazdom podpisani bola informacia o tomto (v nejakej zatvorke/malym sedym)
-- kym je aktivny session tak je otvorene okno (+ stav pred potvrdenim, po dokonceni)
+- kym je aktivny batch (session) tak je otvorene okno (+ stav pred potvrdenim, po dokonceni)
 
 ## 1. Happy path
 
@@ -75,10 +75,9 @@ Zatvori sa okno, pouzivatel bude mat moznost zopakovat vyber driveru.
 ### 3.2 chyba pocas podpisovania
 
 Vrati sa chyba sign requestu.
-(Ak je to chyba ktoru vieme opravit strojovo treba zvazit ci to chceme urobit - napr retry)
 
-Retry (navrh):
-Ak zlyha podpis jedneho zo suborov, na chybu ktora je temporary a nie je o nespravnom hesle, ci inej operacii, ktora by mohla zablokovat kartu, tak s malym timeoutom (1-2s) zopakujeme podpis jeden krat.
+Retry (navrh/todo):
+Ked nastane chyba pri podpisovani dokumentov na error screene, by mal byt button na zopakovanie podpisovania so skip parametrom.
 
 ## 4. Pocas behu batchu
 
