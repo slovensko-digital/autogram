@@ -195,7 +195,7 @@ public class CliUI implements UI {
                         Licencia a zdrojové kódy
                         Tento softvér pôvodne vychádza projektu z Octosign White Label od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou. So súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2.
                         Zdrojové kódy sú dostupné na https://github.com/slovensko-digital/autogram.""");
-        System.out.println(String.format("Verzia: %s", Main.getVersion()));
+        System.out.println(String.format("Verzia: %s", Main.getVersionString()));
     }
 
     @Override
