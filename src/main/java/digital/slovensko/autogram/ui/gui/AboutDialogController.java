@@ -22,7 +22,7 @@ public class AboutDialogController implements SuppressedFocusController {
     }
 
     public void initialize() {
-        versionText.setText(Main.getVersion());
+        versionText.setText(Main.getVersionString());
     }
 
     public void githubLinkAction(ActionEvent ignored) {

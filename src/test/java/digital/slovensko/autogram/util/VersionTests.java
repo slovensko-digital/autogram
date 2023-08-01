@@ -100,4 +100,17 @@ public class VersionTests {
         assertTrue(v3.compareTo(v2) > 0);
         assertTrue(v3.compareTo(v3) == 0);
     }
+
+    @Test
+    public void testDev(){
+        var dev = Version.createFromVersionString("dev");
+        var v1 = Version.createFromVersionString("1.0.0");
+        var v2 = Version.createFromVersionString("0.2");
+
+        assertTrue(dev.compareTo(dev) == 0);
+        assertTrue(dev.compareTo(v1) > 0);
+        assertTrue(dev.compareTo(v2) > 0);
+        assertTrue(v1.compareTo(dev) < 0);
+        assertTrue(v2.compareTo(dev) < 0);
+    }
 }

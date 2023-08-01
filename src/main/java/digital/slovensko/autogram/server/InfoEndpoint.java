@@ -24,7 +24,7 @@ public class InfoEndpoint implements HttpHandler {
             return;
         }
 
-        var response = new InfoResponse(Main.getVersion(), getStatus());
+        var response = new InfoResponse(Main.getVersionString(), getStatus());
         var gson = new Gson();
 
         try {
