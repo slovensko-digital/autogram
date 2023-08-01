@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.CommonDocument;
+import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -55,6 +56,13 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void initialize() {
         refreshSigningKey();
         visualization.initialize(this);
+
+        Platform.runLater(() -> {
+            var w = mainBox.getScene().getWindow();
+            // This forces layout recalculation and fixes issue https://github.com/slovensko-digital/autogram/issues/172
+            w.setHeight(w.getHeight() - 1);
+        });
+
     }
 
     public void onMainButtonPressed(ActionEvent event) {
