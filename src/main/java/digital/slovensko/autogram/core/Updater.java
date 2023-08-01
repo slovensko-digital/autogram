@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.Main;
+import digital.slovensko.autogram.util.Version;
 
 import java.io.IOException;
 import java.net.*;
@@ -10,7 +11,6 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 import java.util.NoSuchElementException;
-import java.util.stream.Stream;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -40,21 +40,8 @@ public class Updater {
             return false;
         }
 
-        if (latestVersionTag.equals(""))
-            return false;
-
-        var latestVersion = latestVersionTag.replaceAll("^v", "");
-        int[] vCurrent = Stream.of(Main.getVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
-        int[] vLatest = Stream.of(latestVersion.split("\\.")).mapToInt(Integer::parseInt).toArray();
-
-        for (int i = 0; i < vCurrent.length; i++) {
-            if (vLatest[i] > vCurrent[i]) {
-                return true;
-            }
-            if (vLatest[i] < vCurrent[i]) {
-                return false;
-            }
-        }
-        return false;
+        Version vCurrent = new Version(Main.getVersion());
+        Version vLatest = new Version(latestVersionTag);
+        return vCurrent.compareTo(vLatest) < 0;
     }
 }
