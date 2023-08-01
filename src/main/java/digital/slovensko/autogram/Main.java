@@ -11,7 +11,7 @@ public class Main {
     }
 
     public static Version getVersion() {
-        return Version.createFromVersionString(requireNonNullElse(System.getProperty("jpackage.app-version"), "dev"))
+        return Version.createFromVersionString(requireNonNullElse(System.getProperty("jpackage.app-version"), "dev"));
     }
 
     public static String getVersionString() {
