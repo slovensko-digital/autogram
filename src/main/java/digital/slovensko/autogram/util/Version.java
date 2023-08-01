@@ -4,23 +4,20 @@ import java.util.stream.Stream;
 
 public class Version implements Comparable<Version> {
 
-    private String version;
     private int[] versionNumbers;
 
-    public Version(String version) {
-        this.version = version;
-        this.versionNumbers = parseVersion(version.replaceAll("^v", ""));
+    public Version(int[] versionNumbers) {
+        this.versionNumbers = versionNumbers;
     }
 
-    private int[] parseVersion(String version) {
+    public static Version createFromVersionString(String version) {
+        version = version.replaceAll("^v", "");
+
         if (version.equals("")) {
-            return new int[]{};
+            return new Version(new int[]{});
         }
-        return Stream.of(version.split("\\.")).mapToInt(Integer::parseInt).toArray();
-    }
-
-    public String getVersion() {
-        return version;
+        var versionNumbers =  Stream.of(version.split("\\.")).mapToInt(Integer::parseInt).toArray();
+        return new Version(versionNumbers);
     }
 
     public int[] getVersionNumbers() {

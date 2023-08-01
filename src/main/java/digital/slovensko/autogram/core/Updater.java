@@ -40,8 +40,8 @@ public class Updater {
             return false;
         }
 
-        Version vCurrent = new Version(Main.getVersion());
-        Version vLatest = new Version(latestVersionTag);
+        Version vCurrent = Version.createFromVersionString(Main.getVersion());
+        Version vLatest = Version.createFromVersionString(latestVersionTag);
         return vCurrent.compareTo(vLatest) < 0;
     }
 }

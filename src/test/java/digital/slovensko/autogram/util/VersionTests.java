@@ -8,13 +8,13 @@ public class VersionTests {
 
     @Test
     public void testVersionCompareTo() {
-        var v1 = new Version("1.0.0");
-        var v2 = new Version("1.0.1");
-        var v3 = new Version("v1.1.0");
-        var v4 = new Version("v2.0.0");
-        var v5 = new Version("2.0.1");
-        var v6 = new Version("2.1.0");
-        var v7 = new Version("2.1.1");
+        var v1 = Version.createFromVersionString("1.0.0");
+        var v2 = Version.createFromVersionString("1.0.1");
+        var v3 = Version.createFromVersionString("v1.1.0");
+        var v4 = Version.createFromVersionString("v2.0.0");
+        var v5 = Version.createFromVersionString("2.0.1");
+        var v6 = Version.createFromVersionString("2.1.0");
+        var v7 = Version.createFromVersionString("2.1.1");
 
         assertTrue(v1.compareTo(v1) == 0);
         assertTrue(v1.compareTo(v2) < 0);
@@ -75,10 +75,10 @@ public class VersionTests {
 
     @Test
     public void testVersionCompareToWithDifferentLength() {
-        var v0 = new Version("");
-        var v1 = new Version("1.0.0");
-        var v2 = new Version("0.2");
-        var v3 = new Version("1");
+        var v0 = Version.createFromVersionString("");
+        var v1 = Version.createFromVersionString("1.0.0");
+        var v2 = Version.createFromVersionString("0.2");
+        var v3 = Version.createFromVersionString("1");
 
         assertTrue(v0.compareTo(v0) == 0);
         assertTrue(v0.compareTo(v1) < 0);
