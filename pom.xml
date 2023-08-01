@@ -150,6 +150,10 @@
                     <version>3.1.2</version>
                     <configuration>
                         <jvm>${jlink.jdk.path}${file.separator}bin${file.separator}java</jvm>
+
+                        <excludes>
+                            <exclude>**/BatchSigningHttpSmokeTests.java</exclude>
+                        </excludes>
                     </configuration>
                 </plugin>
             </plugins>

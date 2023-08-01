@@ -13,17 +13,6 @@ import java.io.IOException;
 public class InfoEndpoint implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, OPTIONS");
-        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-        // Allow preflight requests
-        if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
-            exchange.sendResponseHeaders(204, -1);
-            exchange.getResponseBody().close();
-            return;
-        }
-
         var response = new InfoResponse(Main.getVersion(), getStatus());
         var gson = new Gson();
 

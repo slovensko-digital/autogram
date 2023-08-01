@@ -1,28 +1,29 @@
 package digital.slovensko.autogram.server;
 
-import com.sun.net.httpserver.HttpServer;
-import com.sun.net.httpserver.HttpsConfigurator;
-import com.sun.net.httpserver.HttpsParameters;
-import com.sun.net.httpserver.HttpsServer;
-import digital.slovensko.autogram.core.Autogram;
+import static digital.slovensko.autogram.core.Configuration.getProperty;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.nio.file.Paths;
 import java.security.KeyStore;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
+import com.sun.net.httpserver.HttpsServer;
 
-import static digital.slovensko.autogram.core.Configuration.getProperty;
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.server.filters.AutogramCorsFilter;
 
 public class AutogramServer {
     private final HttpServer server;
     private final Autogram autogram;
-
 
     public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps) {
         this.autogram = autogram;
@@ -30,9 +31,22 @@ public class AutogramServer {
     }
 
     public void start() {
-        server.createContext("/info", new InfoEndpoint());
-        server.createContext("/sign", new SignEndpoint(autogram));
+        // Info
+        server.createContext("/info", new InfoEndpoint()).getFilters()
+                .add(new AutogramCorsFilter("GET"));
+
+        // Documentation
         server.createContext("/docs", new DocumentationEndpoint());
+
+        // Sign
+        server.createContext("/sign", new SignEndpoint(autogram)).getFilters()
+                .add(new AutogramCorsFilter("POST"));
+
+        // Batch
+        server.createContext("/batch", new BatchEndpoint(autogram)).getFilters()
+                .add(new AutogramCorsFilter(List.of("POST", "DELETE")));
+
+        // Start server
         server.setExecutor(Executors.newCachedThreadPool());
         server.start();
     }
@@ -43,7 +57,8 @@ public class AutogramServer {
                 return HttpServer.create(new InetSocketAddress(hostname, port), 0);
 
             var server = HttpsServer.create(new InetSocketAddress(hostname, port), 0);
-            var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert")).toFile();
+            var p12file = Paths.get(System.getProperty("user.home"), getProperty("file.ssl.pkcs12.cert"))
+                    .toFile();
             char[] password = "".toCharArray();
             var ks = KeyStore.getInstance("PKCS12");
             ks.load(new FileInputStream(p12file), password);
@@ -67,7 +82,7 @@ public class AutogramServer {
                         var defaultSSLParameters = c.getDefaultSSLParameters();
                         params.setSSLParameters(defaultSSLParameters);
                     } catch (Exception e) {
-                        throw new RuntimeException(e); //   TODO
+                        throw new RuntimeException(e); // TODO
                     }
                 }
             });

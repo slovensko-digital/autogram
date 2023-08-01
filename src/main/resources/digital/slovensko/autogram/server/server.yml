@@ -1,7 +1,10 @@
 openapi: 3.0.3
 info:
   title: Autogram Server
-  description: "This documentation describes Autogram running in the server mode. If you have the custom protocol configured, you can launch it using the link [autogram://launch/37200/*/key](autogram://launch/37200/*/key)."
+  description: |
+    This documentation describes Autogram running in the server mode. 
+    
+    If you have the custom protocol configured, you can launch it using the link `autogram://launch/37200/*/key` or `autogram://go`.
   termsOfService: https://sluzby.slovensko.digital/autogram
   contact:
     name: Autogram
@@ -19,6 +22,11 @@ tags:
     description: Information and status of the server
   - name: Sign
     description: Document signing
+  - name: Batch
+    description: Signing multiple documents in batch, with same signature. Process is [start batch](#/Batch/startBatch), [sign document](#/Batch/signDocument),... , sign document, [end batch](#/Batch/endBatch).
+    externalDocs:
+      description: More info
+      url: https://github.com/slovensko-digital/autogram/tree/main/docs/batch-sign-api.md
 paths:
   /info:
     get:
@@ -37,7 +45,14 @@ paths:
     post:
       tags:
         - Sign
-      summary: Sign a single document
+        - Batch
+      summary: Sign a single document or single document in batch
+      description: |
+        Sign a single document or single document in batch. 
+
+        If the `batchId` is provided, the document is signed inside the batch. 
+
+        If the `batchId` is not provided, the document is signed as a standalone document.
       operationId: signDocument
       requestBody:
         content:
@@ -194,7 +209,51 @@ paths:
                     type: string
                     example: "no such algorithm: PKCS11 for provider"
                     description: Optional details.
+  /batch:
+    post:
+      tags:
+        - Batch
+      operationId: startBatch
+      summary: Start a batch session
+      description: |
+        Start a batch session, `batchId` is returned. 
 
+        Batch session is used to sign multiple documents with the same signature. 
+        The batch session is identified and authorized by the `batchId`, keep it secret. 
+
+        After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body. 
+        When you are done signing documents, you can end the batch session using `DELETE /batch`.
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/BatchStartRequestBody"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchStartResponseBody"
+    delete:
+      tags:
+        - Batch
+      operationId: endBatch
+      summary: End a batch session
+      description: |
+        End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/BatchEndRequestBody"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchEndResponseBody"
 components:
   schemas:
     Info:
@@ -212,6 +271,13 @@ components:
     SignRequestBody:
       type: object
       properties:
+        batchId:
+          type: string
+          example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
+          description: |
+            Optional identifier of the batch. 
+            If not provided, document will be signed as single standalone document.
+            If provided, document will be signed inside batch.
         document:
           $ref: "#/components/schemas/Document"
         parameters:
@@ -261,6 +327,41 @@ components:
         - content
         - signedBy
         - issuedBy
+
+
+    BatchStartRequestBody:
+      type: object
+      properties:
+        totalNumberOfDocuments:
+          type: integer
+          example: 500
+          description: Total number of documents in the batch. Used to calculate the progress of the batch.
+
+
+    BatchStartResponseBody:
+      type: object
+      properties:
+        batchId: 
+          type: string
+          example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
+          description: Identifier of the batch. Used to identify the batch for signing and ending batch.
+
+    BatchEndRequestBody:
+      type: object
+      properties:
+        batchId: 
+          type: string
+          example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
+          description: Identifier of the batch.
+    
+    BatchEndResponseBody:
+      type: object
+      properties:
+        status:
+          type: enum
+          enum:
+            - FINISHED
+            - NOT_FINISHED
 
     SignatureParameters:
       type: object
