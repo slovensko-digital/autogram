@@ -3,7 +3,7 @@ name: Release checklist
 about: Použi tento checklist na testovanie artefaktov pred public releaseom
 title: "Release "
 labels: release
-assignees: @slovensko-digital/autogram-release-team
+assignees: "@slovensko-digital/autogram-release-team"
 ---
 
 ## Windows
