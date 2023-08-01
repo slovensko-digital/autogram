@@ -1,20 +1,43 @@
 package digital.slovensko.autogram.ui.cli;
 
-import digital.slovensko.autogram.Main;
-import digital.slovensko.autogram.core.*;
-import digital.slovensko.autogram.core.errors.*;
-import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.ui.UI;
-import digital.slovensko.autogram.core.visualization.Visualization;
-import digital.slovensko.autogram.ui.gui.IgnorableException;
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
-
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+
+import digital.slovensko.autogram.Main;
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.Updater;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.FunctionCanceledException;
+import digital.slovensko.autogram.core.errors.InitializationFailedException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
+import digital.slovensko.autogram.core.errors.PDFAComplianceException;
+import digital.slovensko.autogram.core.errors.PINIncorrectException;
+import digital.slovensko.autogram.core.errors.PINLockedException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.SigningWithExpiredCertificateException;
+import digital.slovensko.autogram.core.errors.SourceAndTargetTypeMismatchException;
+import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
+import digital.slovensko.autogram.core.errors.SourceNotDefindedException;
+import digital.slovensko.autogram.core.errors.TargetAlreadyExistsException;
+import digital.slovensko.autogram.core.errors.TargetDirectoryDoesNotExistException;
+import digital.slovensko.autogram.core.errors.TokenDriverDoesNotExistException;
+import digital.slovensko.autogram.core.errors.TokenNotRecognizedException;
+import digital.slovensko.autogram.core.errors.TokenRemovedException;
+import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
+import digital.slovensko.autogram.core.visualization.Visualization;
+import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.BatchUiResult;
+import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.ui.gui.IgnorableException;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 public class CliUI implements UI {
     SigningKey activeKey;
@@ -35,12 +58,28 @@ public class CliUI implements UI {
     }
 
     private void sign(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++, nJobsTotal));
+        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++,
+                nJobsTotal));
         autogram.sign(job, activeKey);
     }
 
     public void setJobsCount(int nJobsTotal) {
         this.nJobsTotal = nJobsTotal;
+    }
+
+    @Override
+    public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void signBatch(SigningJob job, SigningKey key) {
+        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void cancelBatch(Batch batch) {
+        // TODO Auto-generated method stub
     }
 
     @Override
@@ -121,9 +160,15 @@ public class CliUI implements UI {
     }
 
     @Override
+    public void onDocumentBatchSaved(BatchUiResult result) {
+
+    }
+
+    @Override
     public void onDocumentSaved(File file) {
         var directory = file.getParent() != null ? " in \"%s\"".formatted(file.getParent()) : "";
-        System.out.println("File successfully signed. Signed file saved as \"%s\"".formatted(file.getName()) + directory);
+        System.out
+                .println("File successfully signed. Signed file saved as \"%s\"".formatted(file.getName()) + directory);
     }
 
     @Override
@@ -144,7 +189,7 @@ public class CliUI implements UI {
         System.out.println(
                 """
                         O projekte Autogram
-                        Autogram je jednoduchý nástroj na podpisovanie podľa európskej regulácie eIDAS, slovenských zákonov a štandardov. Môžete ho používať komerčne aj nekomerčne a úplne zadarmo.
+                        Autogram je jednoduchý nástroj na podpisovanie podľa európskeho nariadenia eIDAS, slovenských zákonov a štandardov. Môžete ho používať komerčne aj nekomerčne a úplne zadarmo.
                         Autori a sponzori
                         Autormi tohto projektu sú Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. a ďalší spoluautori.
                         Licencia a zdrojové kódy

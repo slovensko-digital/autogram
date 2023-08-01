@@ -1,6 +1,6 @@
 # Autogram
 
-Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplikácia, ktorá slúži na podpisovanie dokumentov v súlade s eIDAS reguláciou. Používateľ ňou môže podpisovať súbory priamo alebo je možné aplikáciu jednoducho zaintegrovať do vlastného (webového) informačného systému pomocou HTTP API. Podpisovanie je možné spúšať aj z príkazového riadku, čo je vhodné pre hromadné podpisovanie veľkého množstva súborov naraz.
+Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplikácia, ktorá slúži na podpisovanie dokumentov v súlade s európskym nariadením eIDAS. Používateľ ňou môže podpisovať súbory priamo alebo je možné aplikáciu jednoducho zaintegrovať do vlastného (webového) informačného systému pomocou HTTP API. Podpisovanie je možné spúšať aj z príkazového riadku, čo je vhodné pre hromadné podpisovanie veľkého množstva súborov naraz.
 
 **Inštalačné balíky pre Windows, MacOS a Linux sú dostupné v časti [Releases](https://github.com/slovensko-digital/autogram/releases).** Na použitie na existujúcich štátnych weboch bude potrebné doinštalovať aj [rozšírenie do prehliadača](https://github.com/slovensko-digital/autogram-extension#readme).
 

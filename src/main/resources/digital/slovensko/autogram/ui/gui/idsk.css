@@ -25,6 +25,8 @@
 
   -autogram-success-colour: #00703c;
 
+  -autogram-partial-success-colour: #003078;
+
   -fx-font-family: "Source Sans Pro", "Arial", sans-serif;
   -fx-font-size: 16px;
 
@@ -560,4 +562,80 @@ TextFlow.autogram-body-s {
   -fx-max-height: 100;
   -fx-shape: "M571 512c118-85 197-240 197-384 0-71-172-128-384-128s-384 57-384 128c0 144 80 299 197 384-118 85-197 240-197 384 0 71 172 128 384 128s384-57 384-128c0-144-80-299-197-384z m-187-448c141 0 256 29 256 64s-115 64-256 64-256-29-256-64 115-64 256-64z m-64 706c-154 7-238 40-253 82 16-114 75-189 141-251 73-68 112-60 112-103v273z m-105-352c-70-55-122-130-142-215 70 32 183 53 311 53s241-21 311-53c-20 85-72 160-142 215-24-17-70-34-169-34s-145 17-169 34z m233 352v-273c0 43 39 35 112 103 66 62 125 138 141 251-14-41-99-75-253-82z";
   -fx-background-color: -autogram-border-colour;
+}
+
+.autogram-progress-bar {
+    -fx-border-color: -autogram-input-border-colour;
+    /* -fx-background-color: -autogram-focus-colour; */
+    -fx-background-insets: 0 0 0 0;
+}
+
+.autogram-progress-bar > .track {
+    -fx-text-box-border: forestgreen;
+    -fx-control-inner-background: palegreen;
+  }
+
+.autogram-progress-bar > .bar {
+    -fx-background-color: #003183;
+}
+.autogram-progress-bar > .track {
+      -fx-background-color: transparent;
+}
+
+.autogram-batch-visualization {
+    -fx-border-width: 5px;
+    -fx-border-color: -autogram-error-colour;
+
+    -fx-spacing: 3em;
+    -fx-padding: 6em 4em 4em 4em;
+    -fx-alignment: center;
+}
+
+.autogram-batch-visualization VBox {
+    -fx-spacing: 20px;
+}
+
+.autogram-batch-visualization .autogram-error-summary__error {
+    -fx-padding: 0.5em 2em 0 2em;
+}
+
+.autogram-listview {
+  -fx-max-height: 400px;
+  -fx-min-height: 30px;
+  -fx-pref-height: 200px;
+  -fx-padding: 0 0 20px 20px;
+}
+
+.autogram-confirmation--success {
+  -fx-background-color: -autogram-success-colour;
+}
+.autogram-confirmation--warning {
+  -fx-background-color: -autogram-partial-success-colour;
+}
+
+.autogram-confirmation{
+  -fx-padding: 40px 20px 40px 20px;
+  -fx-background-insets: 20px 0 20px 0;
+  -fx-text-fill: #ffffff;
+  -fx-text-alignment: center;
+}
+
+.autogram-confirmation .autogram-body {
+  -fx-text-fill: #ffffff;
+  -fx-fill:  #ffffff;
+ 
+  -fx-font-size: 1.1875em;
+  -fx-text-alignment: center;
+}
+
+.autogram-confirmation .autogram-heading-m {
+  -fx-text-fill: #ffffff;
+  -fx-fill:  #ffffff;
+ 
+  -fx-font-size: 1.5em;
+  -fx-font-weight: bold;
+  -fx-text-alignment: center;
+}
+.autogram-confirmation Hyperlink {
+  -fx-font-size: 2em; 
 }

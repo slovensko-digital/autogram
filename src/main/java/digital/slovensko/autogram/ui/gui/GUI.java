@@ -1,30 +1,45 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.errors.*;
-import digital.slovensko.autogram.core.visualization.Visualization;
-import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.ui.UI;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import javafx.application.HostServices;
-import javafx.application.Platform;
-import javafx.scene.Scene;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
-
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.TokenRemovedException;
+import digital.slovensko.autogram.core.visualization.Visualization;
+import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.BatchUiResult;
+import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.Logging;
+import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import javafx.application.HostServices;
+import javafx.application.Platform;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+
 public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
     private final HostServices hostServices;
+    private BatchDialogController batchController;
+    private static final boolean DEBUG = false;
+    private static Logger logger = LoggerFactory.getLogger(GUI.class);
 
     public GUI(HostServices hostServices) {
         this.hostServices = hostServices;
@@ -33,6 +48,55 @@ public class GUI implements UI {
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
         autogram.startVisualization(job);
+    }
+
+    @Override
+    public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
+        batchController = new BatchDialogController(batch, callback, autogram, this);
+        var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Hromadné podpisovanie");
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> cancelBatch(batch));
+
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, batchController);
+        GUIUtils.showOnTop(stage);
+        GUIUtils.setUserFriendlyPosition(stage);
+    }
+
+    @Override
+    public void cancelBatch(Batch batch) {
+        batchController.close();
+        batch.end();
+        refreshKeyOnAllJobs();
+    }
+
+    @Override
+    public void signBatch(SigningJob job, SigningKey key) {
+        assertOnWorkThread();
+        try {
+            job.signWithKeyAndRespond(key);
+            Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
+        } catch (AutogramException e) {
+            job.onDocumentSignFailed(e);
+        } catch (DSSException e) {
+            job.onDocumentSignFailed(AutogramException.createFromDSSException(e));
+        } catch (Exception e) {
+            AutogramException autogramException = new AutogramException("Document signing has failed", "", "", e);
+            job.onDocumentSignFailed(autogramException);
+        }
+        onUIThreadDo(() -> {
+            updateBatch();
+        });
+    }
+
+    private void updateBatch() {
+        if (batchController == null)
+            return;
+        assertOnUIThread();
+        batchController.update();
     }
 
     @Override
@@ -81,7 +145,8 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys,
+            Consumer<DSSPrivateKeyEntry> callback) {
         if (keys.isEmpty()) {
             showError(new NoKeysDetectedException());
             refreshKeyOnAllJobs();
@@ -104,9 +169,13 @@ public class GUI implements UI {
 
     private void refreshKeyOnAllJobs() {
         jobControllers.values().forEach(SigningDialogController::refreshSigningKey);
+        if (batchController != null) {
+            batchController.refreshSigningKey();
+        }
     }
 
     private void showError(AutogramException e) {
+        logger.debug("GUI showing error", e);
         var controller = new ErrorController(e);
         var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
 
@@ -185,7 +254,6 @@ public class GUI implements UI {
         GUIUtils.setUserFriendlyPosition(stage);
     }
 
-
     public void showIgnorableExceptionDialog(IgnorableException e) {
         var controller = new IgnorableExceptionDialogController(e);
         var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");
@@ -215,6 +283,7 @@ public class GUI implements UI {
     public void onSigningSuccess(SigningJob job) {
         jobControllers.get(job).close();
         refreshKeyOnAllJobs();
+        updateBatch();
     }
 
     @Override
@@ -241,13 +310,52 @@ public class GUI implements UI {
     }
 
     @Override
+    public void onDocumentBatchSaved(BatchUiResult result) {
+        var stage = new Stage();
+        SuppressedFocusController controller;
+        Parent root;
+        if (result.hasErrors()) {
+            controller = new BatchSigningFailureDialogController(result, hostServices);
+            root = GUIUtils.loadFXML(controller, "batch-signing-failure-dialog.fxml");
+            stage.setTitle("Hromadné podpisovanie ukončené s chybami");
+        } else {
+            controller = new BatchSigningSuccessDialogController(result, hostServices);
+            root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
+            stage.setTitle("Hromadné podpisovanie úspešne ukončené");
+        }
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
+    }
+
+    @Override
     public void onWorkThreadDo(Runnable callback) {
-        new Thread(callback).start();
+        if (Platform.isFxApplicationThread()) {
+            new Thread(callback).start();
+        } else {
+            callback.run();
+        }
     }
 
     @Override
     public void onUIThreadDo(Runnable callback) {
-        Platform.runLater(callback);
+        if (Platform.isFxApplicationThread()) {
+            callback.run();
+        } else {
+            Platform.runLater(callback);
+        }
+    }
+
+    public static void assertOnUIThread() {
+        if (DEBUG && !Platform.isFxApplicationThread())
+            throw new RuntimeException("Can be run only on UI thread");
+    }
+
+    public static void assertOnWorkThread() {
+        if (DEBUG && Platform.isFxApplicationThread())
+            throw new RuntimeException("Can be run only on work thread");
     }
 
     public SigningKey getActiveSigningKey() {
@@ -255,10 +363,17 @@ public class GUI implements UI {
     }
 
     public void setActiveSigningKey(SigningKey newKey) {
+        if (!isActiveSigningKeyChangeAllowed()) {
+            throw new RuntimeException("Signing key change is not allowed");
+        }
         if (activeKey != null)
             activeKey.close();
         activeKey = newKey;
         refreshKeyOnAllJobs();
+    }
+
+    public boolean isActiveSigningKeyChangeAllowed() {
+        return true;
     }
 
     public void disableSigning() {

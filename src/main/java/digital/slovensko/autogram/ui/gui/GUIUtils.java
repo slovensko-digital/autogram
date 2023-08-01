@@ -10,6 +10,8 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Random;
 
 public class GUIUtils {
@@ -71,5 +73,16 @@ public class GUIUtils {
                 stage.setOpacity(1);
             }));
         }
+    }
+
+
+    public static String exceptionToString(Exception exception) {
+        var writer = new StringWriter();
+        var printWriter = new PrintWriter(writer);
+        exception.printStackTrace(printWriter);
+        printWriter.flush();
+        printWriter.close();
+
+        return writer.toString();
     }
 }
