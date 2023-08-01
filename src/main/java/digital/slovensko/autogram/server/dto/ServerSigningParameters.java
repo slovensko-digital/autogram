@@ -2,7 +2,6 @@ package digital.slovensko.autogram.server.dto;
 
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Map;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
@@ -84,13 +83,6 @@ public class ServerSigningParameters {
                 getSchema(isBase64),
                 getTransformation(isBase64),
                 identifier, checkPDFACompliance, getVisualizationWidth());
-    }
-
-    private static <T extends Enum<T>> T fromMapToEnum(Class<T> clazz, Object obj) {
-        var visualizationWidthStr = (String) obj;
-        if (visualizationWidthStr == null)
-            return null;
-        return T.valueOf(clazz, visualizationWidthStr);
     }
 
     private String getTransformation(boolean isBase64) {
