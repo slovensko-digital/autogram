@@ -18,10 +18,10 @@ import digital.slovensko.autogram.util.Logging;
 public class BatchGuiFileResponder extends BatchResponder {
     private final Autogram autogram;
     private final List<File> list;
-    private Map<File, File> targetFiles = new HashMap<File, File>();
-    private Map<File, AutogramException> errors = new HashMap<File, AutogramException>();
+    private final Map<File, File> targetFiles = new HashMap<>();
+    private final Map<File, AutogramException> errors = new HashMap<>();
     private boolean uiNotifiedOnAllFilesSigned = false;
-    private TargetPath targetPath;
+    private final TargetPath targetPath;
 
     public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory) {
         this.autogram = autogram;
