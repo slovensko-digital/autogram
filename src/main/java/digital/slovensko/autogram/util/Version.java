@@ -4,8 +4,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static java.util.Objects.requireNonNullElse;
-
 public class Version implements Comparable<Version> {
 
     private final int[] versionNumbers;
@@ -37,10 +35,6 @@ public class Version implements Comparable<Version> {
 
         var versionNumbers = Stream.of(version.split("\\.")).mapToInt(Integer::parseInt).toArray();
         return new Version(versionNumbers);
-    }
-
-    public static Version createCurrent() {
-        return Version.createFromVersionString(requireNonNullElse(System.getProperty("jpackage.app-version"), "dev"));
     }
 
 
