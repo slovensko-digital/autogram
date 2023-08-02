@@ -213,6 +213,7 @@ public class CliUI implements UI {
         throw exception;
     }
 
+    @Override
     public void showError(AutogramException e) {
         String errMessage = "";
         if (e instanceof FunctionCanceledException) {
