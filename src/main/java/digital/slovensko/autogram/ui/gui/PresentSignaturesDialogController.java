@@ -71,16 +71,29 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
 
     public void renderSignatures(Reports reports, boolean isValidated) {
         signaturesBox.getChildren().clear();
+        mainBox.setMaxHeight(1440);
 
         var s = reports.getSimpleReport();
+        var diag = reports.getDiagnosticData();
 
         var format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         for (var signatureId : s.getSignatureIdList()) {
-            var subject = new X500Principal(reports.getDiagnosticData().getSignatureById(signatureId).getSigningCertificate().getCertificateDN()).getName(X500Principal.RFC1779);
+            var isQTSA = false;
+            var signature = diag.getSignatureById(signatureId);
+            for (var timestamp : signature.getSignatureTimestamps())
+                if (s.getTimestampQualification(timestamp.getId()).getReadable().equals("QTSA"))
+                    isQTSA = true;
+
+            System.out.println("isQTSA: " + isQTSA);
+
+            var isQSCD = diag.getSignatureById(signatureId).getSigningCertificate().isSupportedByQSCD();
+
+            var subject = new X500Principal(diag.getSignatureById(signatureId).getSigningCertificate().getCertificateDN()).getName(X500Principal.RFC1779);
             var name = s.getSignedBy(signatureId);
             var subjectStr = subject.replace(", ", "\n");
+            var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId).getLabel() : "Prebieha overovanie...";
             var signingTime = format.format(s.getSigningTime(signatureId));
-            var timestampCount = Integer.toString(s.getSignatureTimestamps(signatureId).size());
+            var timestampCount = Integer.toString(s.getSignatureTimestamps(signatureId).size()) + (isQTSA ? " (QTSA)" : "");
 
             var signatureBox = new VBox();
             signatureBox.setStyle("-fx-border-color: -autogram-border-colour; -fx-border-width: 1px;");
@@ -91,7 +104,6 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
             nameFlow.setStyle("-fx-padding: 1.25em 1.25em;");
             nameFlow.setPrefWidth(248);
 
-            var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId).getLabel() : "Prebieha overovanie...";
 
             var validText = new Text("Prebieha overovanie...");
             var validFlow = new TextFlow();

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.Executors;
 
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
@@ -76,6 +77,8 @@ public class SignatureValidator {
         validationJob.setListOfTrustedListSources(lotlSource);
         validationJob.setSynchronizationStrategy(new ExpirationAndSignatureCheckStrategy());
         validationJob.setOfflineDataLoader(offlineFileLoader);
+
+        validationJob.setExecutorService(Executors.newFixedThreadPool(4));
 
         System.out.println("Starting signature validator offline refresh");
         validationJob.offlineRefresh();
