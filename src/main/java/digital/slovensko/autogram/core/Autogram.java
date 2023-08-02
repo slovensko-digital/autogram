@@ -10,6 +10,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.pades.exception.InvalidPasswordException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
@@ -51,6 +52,10 @@ public class Autogram {
             try {
                 var visualization = DocumentVisualizationBuilder.fromJob(job);
                 ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
+            } catch (InvalidPasswordException e) {
+                ui.onUIThreadDo(() -> {
+                    ui.showError(new AutogramException("PDF je zaheslované", "Zaheslované PDF nepodporujeme", "Odstráňte ochranu heslom z PDF pomocou iného nástroja a potom ho budete môcť podpísať."));
+                });
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
 

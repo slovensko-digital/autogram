@@ -174,7 +174,8 @@ public class GUI implements UI {
         }
     }
 
-    private void showError(AutogramException e) {
+    @Override
+    public void showError(AutogramException e) {
         logger.debug("GUI showing error", e);
         var controller = new ErrorController(e);
         var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
@@ -254,6 +255,7 @@ public class GUI implements UI {
         GUIUtils.setUserFriendlyPosition(stage);
     }
 
+    @Override
     public void showIgnorableExceptionDialog(IgnorableException e) {
         var controller = new IgnorableExceptionDialogController(e);
         var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");

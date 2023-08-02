@@ -177,6 +177,11 @@ class AutogramTests {
         }
 
         @Override
+        public void showError(AutogramException exception) {
+
+        }
+
+        @Override
         public void onSigningSuccess(SigningJob signingJob) {
 
         }

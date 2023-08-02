@@ -49,4 +49,6 @@ public interface UI {
     void onPDFAComplianceCheckFailed(SigningJob job);
 
     void showIgnorableExceptionDialog(IgnorableException exception);
+
+    void showError(AutogramException exception);
 }
