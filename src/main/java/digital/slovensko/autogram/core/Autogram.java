@@ -51,7 +51,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             if (PDFUtils.isPdfAndPasswordProtected(job.getDocument())) {
                 ui.onUIThreadDo(() -> {
-                    ui.showError(new AutogramException("PDF je zaheslované", "Zaheslované PDF nepodporujeme", "Odstráňte ochranu heslom z PDF pomocou iného nástroja a potom ho budete môcť podpísať."));
+                    ui.showError(new AutogramException("Nastala chyba", "Dokument je chránený heslom", "Snažíte sa podpísať dokument chránený heslom, čo je funkcionalita, ktorá nie je podporovaná.\n\nOdstráňte ochranu heslom a potom budete môcť dokument podpísať."));
                 });
                 return;
             }
