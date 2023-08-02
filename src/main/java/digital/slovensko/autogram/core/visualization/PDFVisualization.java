@@ -7,8 +7,6 @@ import java.util.Base64;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.ui.Visualizer;
 import eu.europa.esig.dss.model.CommonDocument;
-import eu.europa.esig.dss.pades.exception.InvalidPasswordException;
-import eu.europa.esig.dss.pdf.pdfbox.PdfBoxDocumentReader;
 
 public class PDFVisualization extends Visualization {
     private final CommonDocument document;
@@ -16,8 +14,6 @@ public class PDFVisualization extends Visualization {
     public PDFVisualization(CommonDocument document, SigningJob job) {
         super(job);
         this.document = document;
-
-        this.checkPdfPasswordProtection();
     }
 
     private String getBase64EncodedDocument() {
@@ -32,15 +28,5 @@ public class PDFVisualization extends Visualization {
     public void initialize(Visualizer visualizer) {
         visualizer.setPrefWidth(getVisualizationWidth());
         visualizer.showPDFVisualization(getBase64EncodedDocument());
-    }
-
-    private void checkPdfPasswordProtection() {
-        try {
-            PdfBoxDocumentReader reader = new PdfBoxDocumentReader(document);
-            reader.close();
-        } catch (InvalidPasswordException e) {
-            throw e;
-        } catch (IOException e) {
-        }
     }
 }

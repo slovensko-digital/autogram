@@ -9,8 +9,8 @@ import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
-import eu.europa.esig.dss.pades.exception.InvalidPasswordException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
@@ -49,13 +49,16 @@ public class Autogram {
 
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
-            try {
-                var visualization = DocumentVisualizationBuilder.fromJob(job);
-                ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
-            } catch (InvalidPasswordException e) {
+            if (PDFUtils.isPdfAndPasswordProtected(job.getDocument())) {
                 ui.onUIThreadDo(() -> {
                     ui.showError(new AutogramException("PDF je zaheslované", "Zaheslované PDF nepodporujeme", "Odstráňte ochranu heslom z PDF pomocou iného nástroja a potom ho budete môcť podpísať."));
                 });
+                return;
+            }
+
+            try {
+                var visualization = DocumentVisualizationBuilder.fromJob(job);
+                ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
 
