@@ -27,6 +27,7 @@ public class SignatureValidator {
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
     private CertificateVerifier verifier;
     private TLValidationJob validationJob;
+    private boolean initialized = false;
 
     private static SignatureValidator instance;
 
@@ -89,6 +90,7 @@ public class SignatureValidator {
         verifier.setOcspSource(new OnlineOCSPSource());
 
         System.out.println("Signature validator initialized");
+        initialized = true;
     }
 
     private CertificateSource getJournalCertificateSource() throws AssertionError {

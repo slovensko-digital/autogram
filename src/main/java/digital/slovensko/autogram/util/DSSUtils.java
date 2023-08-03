@@ -1,6 +1,12 @@
 package digital.slovensko.autogram.util;
 
+import eu.europa.esig.dss.asic.cades.validation.ASiCContainerWithCAdESValidatorFactory;
+import eu.europa.esig.dss.asic.xades.validation.ASiCContainerWithXAdESValidatorFactory;
+import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.pades.validation.PDFDocumentValidatorFactory;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import eu.europa.esig.dss.xades.validation.XMLDocumentValidatorFactory;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -28,5 +34,21 @@ public class DSSUtils {
             out += "\n\n" + key.getCertificate().getIssuer().getPrincipal().toString();
         }
         return out;
+    }
+
+    public static SignedDocumentValidator getDocumentValidator(CommonDocument document) {
+        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document))
+            return new ASiCContainerWithXAdESValidatorFactory().create(document);
+
+        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document))
+            return new ASiCContainerWithCAdESValidatorFactory().create(document);
+
+        if (new PDFDocumentValidatorFactory().isSupported(document))
+            return new PDFDocumentValidatorFactory().create(document);
+
+        if (new XMLDocumentValidatorFactory().isSupported(document))
+            return new XMLDocumentValidatorFactory().create(document);
+
+        return null;
     }
 }

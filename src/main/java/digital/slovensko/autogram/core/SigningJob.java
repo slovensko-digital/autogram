@@ -5,22 +5,18 @@ import java.io.IOException;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
+import static digital.slovensko.autogram.util.DSSUtils.getDocumentValidator;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
-import eu.europa.esig.dss.asic.cades.validation.ASiCContainerWithCAdESValidatorFactory;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
-import eu.europa.esig.dss.asic.xades.validation.ASiCContainerWithXAdESValidatorFactory;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
-import eu.europa.esig.dss.pades.validation.PDFDocumentValidatorFactory;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-import eu.europa.esig.dss.xades.validation.XMLDocumentValidatorFactory;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -201,24 +197,8 @@ public class SigningJob {
         return parameters.getCheckPDFACompliance();
     }
 
-    public SignedDocumentValidator getDocumentValidator() {
-        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document))
-            return new ASiCContainerWithXAdESValidatorFactory().create(document);
-
-        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document))
-            return new ASiCContainerWithCAdESValidatorFactory().create(document);
-
-        if (new PDFDocumentValidatorFactory().isSupported(document))
-            return new PDFDocumentValidatorFactory().create(document);
-
-        if (new XMLDocumentValidatorFactory().isSupported(document))
-            return new XMLDocumentValidatorFactory().create(document);
-
-        return null;
-    }
-
     public void checkForSignatures() {
-        var validator = getDocumentValidator();
+        var validator = getDocumentValidator(document);
         if (validator == null)
             return;
 
@@ -232,7 +212,7 @@ public class SigningJob {
 
     public void validateSignatures() {
         var signatureValidator = SignatureValidator.getInstance();
-        signatureValidationReport = signatureValidator.validate(getDocumentValidator());
+        signatureValidationReport = signatureValidator.validate(getDocumentValidator(document));
     }
 
     public String getSignatureValidationReportHTML() {

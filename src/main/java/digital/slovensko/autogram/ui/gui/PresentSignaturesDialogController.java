@@ -80,9 +80,12 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
         for (var signatureId : s.getSignatureIdList()) {
             var isQTSA = false;
             var signature = diag.getSignatureById(signatureId);
-            for (var timestamp : signature.getSignatureTimestamps())
+            for (var timestamp : signature.getSignatureTimestamps()) {
                 if (s.getTimestampQualification(timestamp.getId()).getReadable().equals("QTSA"))
                     isQTSA = true;
+
+                System.out.println(new X500Principal(timestamp.getSigningCertificate().getCertificateDN()).getName(X500Principal.RFC1779));
+            }
 
             System.out.println("isQTSA: " + isQTSA);
 
