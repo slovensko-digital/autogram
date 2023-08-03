@@ -28,8 +28,6 @@ tags:
     externalDocs:
       description: More info
       url: https://github.com/slovensko-digital/autogram/tree/main/docs/batch-sign-api.md
-  - name: Validate
-    description: Document signature validation
 paths:
   /info:
     get:
@@ -257,33 +255,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BatchEndResponseBody"
-  /validate:
-    post:
-      tags:
-        - Validate
-      summary: Validate signed document
-      description: |
-        Validate signed document.
-      requestBody:
-        content:
-          "application/json":
-            schema:
-              $ref: "#/components/schemas/ValidateRequestBody"
-            examples:
-              ? ASiC-E with valid signature
-              : $ref: "#/components/examples/validate-ASiC-E-valid"
-
-              ? PAdES with invalid signature
-              : $ref: "#/components/examples/validate-PAdES-invalid"
-
-              ? ZEP plaintext with invalid time seal
-              : $ref: "#/components/examples/validate-ZEP-invalid"
-      responses:
-        200:
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidateResponseBody"
 components:
   schemas:
     Info:
@@ -510,101 +481,6 @@ components:
 
       required:
         - level
-
-    ValidateRequestBody:
-      type: object
-      properties:
-        payloadMimeType:
-          type: string
-          example: application/vnd.etsi.asic-e+zip;base64
-          description: MIME type of the payload. Binary files should be encoded using base64, e.g., `application/pdf;base64`. Text formats like XML can be optionally encoded using base64 but can be supplied as plain text as seen in the examples, in which case the type is `application/xml`.
-        payload:
-          type: string
-          example: SGVsbG8gV29ybGQh
-          description: Content of the file to validate. If the payload is encoded using base64, the `payloadMimeType` must contain the `;base64` suffix, e.g., `application/pdf;base64`.
-      required:
-        - payloadMimeType
-        - payload
-
-    ValidateResponseBody:
-      type: object
-      properties:
-        signatures:
-          type: array
-          items:
-            type: object
-            description: Signature
-            properties:
-              valid:
-                type: boolean
-                description: Flag indicating whether the signature is valid.
-                example: true
-              signedBy:
-                type: string
-                description: Distinguished name of the certificate in RFC 1779 format.
-                example: OID.2.5.4.5=PNOSK-1234567890, C=SK, L=Bratislava, OID.2.5.4.4=Smith, OID.2.5.4.42=John, CN=John Smith
-              qualification:
-                type: string
-                enum:
-                  - QESIG
-                  - QESEAL
-                  - UNKNOWN_QC_QSCD
-                  - ADESIG_QC
-                  - ADESEAL_QC
-                  - UNKNOWN_QC
-                  - ADESIG
-                  - ADESEAL
-                  - UNKNOWN
-                  - INDETERMINATE_QESIG
-                  - INDETERMINATE_QESEAL
-                  - INDETERMINATE_UNKNOWN_QC_QSCD
-                  - INDETERMINATE_ADESIG_QC
-                  - INDETERMINATE_ADESEAL_QC
-                  - INDETERMINATE_UNKNOWN_QC
-                  - INDETERMINATE_ADESIG
-                  - INDETERMINATE_ADESEAL
-                  - INDETERMINATE_UNKNOWN
-                  - NOT_ADES_QC_QSCD
-                  - NOT_ADES_QC
-                  - NOT_ADES
-                  - NA
-                description: Signature qualification acording to https://ec.europa.eu/digital-building-blocks/DSS/webapp-demo/apidocs/eu/europa/esig/dss/enumerations/SignatureQualification.html
-                example: QESIG
-              signingTime:
-                type: string
-                format: date-time
-                description: Signing time in ISO 8601 format.
-                example: 2020-01-01T00:00:00Z
-              timestamps:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ValidateResponseBodyTimestamp'
-
-    ValidateResponseBodyTimestamp:
-      type: object
-      properties:
-        valid:
-          type: boolean
-          description: Flag indicating whether the timestamp is valid.
-          example: true
-        signedBy:
-          type: string
-          description: Distinguished name of the certificate in RFC 1779 format.
-          example: CN=NASES Time Stamp Authority 1, O=Národná agentúra pre sieťové a elektronické služby, OID.2.5.4.97=NTRSK-42156424, OU=SNCA, C=SK
-        qualification:
-          type: string
-          enum:
-            - QTSA
-            - TSA
-            - NA
-          description: Timestamp qualification. QTSA is a qualified timestamp from a granted trust service, TSA is any other timestamp from a known trust anchor, NA is a timestamp from an unknown trust anchor.
-          example: QTSA
-        stampingTime:
-          type: string
-          format: date-time
-          description: Stamping time in ISO 8601 format.
-          example: 2020-01-01T00:00:00Z
-
 
   examples:
     XAdES-XML-Base64-HTML_md:
