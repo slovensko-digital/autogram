@@ -19,4 +19,7 @@ jobs:
           assignees: ${{ steps.issueTemplate.outputs.assignees }}
           labels: ${{ steps.issueTemplate.outputs.labels }}
           title: ${{ steps.issueTemplate.outputs.title }} ${{ github.event.release.tag_name }}
-          body: ${{ steps.issueTemplate.outputs.body }}
+          body: |
+            [👉 Release ${{ github.event.release.tag_name }}](https://github.com/slovensko-digital/autogram/releases/tag/${{ github.event.release.tag_name }})
+
+            ${{ steps.issueTemplate.outputs.body }}
