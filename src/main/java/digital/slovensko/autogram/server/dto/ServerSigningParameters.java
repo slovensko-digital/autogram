@@ -2,7 +2,6 @@ package digital.slovensko.autogram.server.dto;
 
 import java.util.Arrays;
 import java.util.Base64;
-
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
@@ -15,20 +14,11 @@ import java.nio.charset.StandardCharsets;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
-        INCLUSIVE,
-        EXCLUSIVE,
-        INCLUSIVE_WITH_COMMENTS,
-        EXCLUSIVE_WITH_COMMENTS,
-        INCLUSIVE_11,
-        INCLUSIVE_11_WITH_COMMENTS
+        INCLUSIVE, EXCLUSIVE, INCLUSIVE_WITH_COMMENTS, EXCLUSIVE_WITH_COMMENTS, INCLUSIVE_11, INCLUSIVE_11_WITH_COMMENTS
     }
 
     public enum VisualizationWidthEnum {
-        sm,
-        md,
-        lg,
-        xl,
-        xxl
+        sm, md, lg, xl, xxl
     }
 
     private final ASiCContainerType container;
@@ -46,13 +36,16 @@ public class ServerSigningParameters {
     private final boolean checkPDFACompliance;
     private final VisualizationWidthEnum visualizationWidth;
 
+    private ServerSignatureImageParameters signatureImageParameters;
+
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerFilename, String containerXmlns, SignaturePackaging packaging,
             DigestAlgorithm digestAlgorithm,
             Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
             LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
             String schema, String transformation,
-            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth) {
+            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth,
+            ServerSignatureImageParameters signatureImageParameters) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -67,22 +60,18 @@ public class ServerSigningParameters {
         this.identifier = Identifier;
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
+        this.signatureImageParameters = signatureImageParameters;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64) {
-        return new SigningParameters(
-                getSignatureLevel(),
-                getContainer(),
-                containerXmlns,
-                packaging,
-                digestAlgorithm,
-                en319132,
-                getCanonicalizationMethodString(infoCanonicalization),
+        var imageParameters = signatureImageParameters == null ? null
+                : signatureImageParameters.getSignatureImageParameters();
+        return new SigningParameters(getSignatureLevel(), getContainer(), containerXmlns, packaging,
+                digestAlgorithm, en319132, getCanonicalizationMethodString(infoCanonicalization),
                 getCanonicalizationMethodString(propertiesCanonicalization),
-                getCanonicalizationMethodString(keyInfoCanonicalization),
-                getSchema(isBase64),
-                getTransformation(isBase64),
-                identifier, checkPDFACompliance, getVisualizationWidth());
+                getCanonicalizationMethodString(keyInfoCanonicalization), getSchema(isBase64),
+                getTransformation(isBase64), identifier, checkPDFACompliance,
+                getVisualizationWidth(), imageParameters);
     }
 
     private String getTransformation(boolean isBase64) {
@@ -145,21 +134,22 @@ public class ServerSigningParameters {
         if (level == null)
             throw new RequestValidationException("Parameters.Level is required", "");
 
-        var supportedLevels = Arrays.asList(
-                SignatureLevel.XAdES_BASELINE_B,
-                SignatureLevel.PAdES_BASELINE_B,
-                SignatureLevel.CAdES_BASELINE_B);
+        var supportedLevels = Arrays.asList(SignatureLevel.XAdES_BASELINE_B,
+                SignatureLevel.PAdES_BASELINE_B, SignatureLevel.CAdES_BASELINE_B);
 
         if (!supportedLevels.contains(level))
             throw new UnsupportedSignatureLevelExceptionError(level.name());
 
         if (level.getSignatureForm() == SignatureForm.PAdES) {
             if (!mimeType.equals(MimeTypeEnum.PDF))
-                throw new RequestValidationException("PayloadMimeType and Parameters.Level mismatch",
-                        "Parameters.Level: PAdES is not supported for this payload: " + mimeType.getMimeTypeString());
+                throw new RequestValidationException(
+                        "PayloadMimeType and Parameters.Level mismatch",
+                        "Parameters.Level: PAdES is not supported for this payload: "
+                                + mimeType.getMimeTypeString());
 
             if (container != null)
-                throw new RequestValidationException("Parameters.Container is not supported for PAdES",
+                throw new RequestValidationException(
+                        "Parameters.Container is not supported for PAdES",
                         "PAdES signature cannot be in a container");
         }
 
@@ -188,14 +178,16 @@ public class ServerSigningParameters {
                         "Parameters.Identifier is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
 
             if (!isXMLMimeType(mimeType))
-                throw new RequestValidationException("PayloadMimeType and Parameters.ContainerXmlns mismatch",
+                throw new RequestValidationException(
+                        "PayloadMimeType and Parameters.ContainerXmlns mismatch",
                         "Parameters.ContainerXmlns: XML datacontainer is not supported for this payload: "
                                 + mimeType.getMimeTypeString());
         }
     }
 
     private static boolean isXMLMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(AutogramMimeType.APPLICATION_XML);
+        return mimeType.equals(MimeTypeEnum.XML)
+                || mimeType.equals(AutogramMimeType.APPLICATION_XML);
     }
 
     private static boolean isXDCMimeType(MimeType mimeType) {
