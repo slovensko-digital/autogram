@@ -27,9 +27,11 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
@@ -40,6 +42,7 @@ public class GUI implements UI {
     private BatchDialogController batchController;
     private static final boolean DEBUG = false;
     private static Logger logger = LoggerFactory.getLogger(GUI.class);
+    private int nWindows = 0;
 
     public GUI(HostServices hostServices) {
         this.hostServices = hostServices;
@@ -63,7 +66,7 @@ public class GUI implements UI {
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, batchController);
         GUIUtils.showOnTop(stage);
-        GUIUtils.setUserFriendlyPosition(stage);
+        setUserFriendlyPosition(stage);
     }
 
     @Override
@@ -252,7 +255,7 @@ public class GUI implements UI {
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, controller);
         GUIUtils.showOnTop(stage);
-        GUIUtils.setUserFriendlyPosition(stage);
+        setUserFriendlyPosition(stage);
     }
 
     @Override
@@ -268,7 +271,6 @@ public class GUI implements UI {
         GUIUtils.suppressDefaultFocus(stage, controller);
 
         GUIUtils.showOnTop(stage);
-        GUIUtils.setUserFriendlyPosition(stage);
     }
 
     private void disableKeyPicking() {
@@ -397,5 +399,19 @@ public class GUI implements UI {
 
     private Window getJobWindow(SigningJob job) {
         return jobControllers.get(job).mainBox.getScene().getWindow();
+    }
+
+    private void setUserFriendlyPosition(Stage stage) {
+        var maxWindows = 10;
+        var maxOffset = 25;
+        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
+        var sceneWidth = stage.getScene().getWidth();
+        var availabeWidth = (bounds.getWidth() - sceneWidth);
+        var singleOffsetXPx = Math.round(Math.min(maxOffset, (availabeWidth / 2) / maxWindows)); // spread windows into half of availabe screen width
+        var offsetX = singleOffsetXPx * (nWindows - maxWindows / 2);
+        double idealX = bounds.getMinX() + availabeWidth / 2 + offsetX;
+        double x = Math.max(bounds.getMinX(), Math.min(bounds.getMaxX() - sceneWidth, idealX));
+        stage.setX(x);
+        nWindows = (nWindows + 1) % maxWindows;
     }
 }
