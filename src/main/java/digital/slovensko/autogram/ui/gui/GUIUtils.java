@@ -3,16 +3,13 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Random;
 
 public class GUIUtils {
     static Parent loadFXML(Object controller, String fxml) {
@@ -24,15 +21,6 @@ public class GUIUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    static void setUserFriendlyPosition(Stage stage) {
-        Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
-        double x = bounds.getMinX() + (bounds.getWidth() - stage.getScene().getWidth()) / 2 + (new Random()).nextInt(100) - 50;
-        double y = bounds.getMinY() + (bounds.getHeight() - stage.getScene().getHeight()) / 2 + (new Random()).nextInt(100) - 50;
-
-        stage.setX(x);
-        stage.setY(y);
     }
 
     static void showOnTop(Stage stage) {
