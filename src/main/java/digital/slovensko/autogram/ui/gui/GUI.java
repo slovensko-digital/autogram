@@ -411,7 +411,10 @@ public class GUI implements UI {
         var offsetX = singleOffsetXPx * (nWindows - maxWindows / 2);
         double idealX = bounds.getMinX() + availabeWidth / 2 + offsetX;
         double x = Math.max(bounds.getMinX(), Math.min(bounds.getMaxX() - sceneWidth, idealX));
+        var sceneHeight = stage.getScene().getHeight();
+        double y = Math.max(bounds.getMinY(), Math.min(bounds.getMaxY() - sceneHeight, bounds.getMinY() + (bounds.getHeight() - sceneHeight)/2));
         stage.setX(x);
+        stage.setY(y);
         nWindows = (nWindows + 1) % maxWindows;
     }
 }
