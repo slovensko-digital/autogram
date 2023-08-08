@@ -1,4 +1,4 @@
 ---
-name: New Issue
-about: Create new blank issue
+name: Vytvor issue
+about: Ak máš problém alebo by si chcel niečo navrhnúť
 ---
