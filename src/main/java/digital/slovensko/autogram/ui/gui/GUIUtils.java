@@ -73,4 +73,10 @@ public class GUIUtils {
 
         return writer.toString();
     }
+
+    public static void hackToForceRelayout(Stage stage) {
+        var w = stage.getScene().getWindow();
+        // This forces layout recalculation and fixes issue https://github.com/slovensko-digital/autogram/issues/172
+        w.setHeight(w.getHeight() - 1);
+    }
 }

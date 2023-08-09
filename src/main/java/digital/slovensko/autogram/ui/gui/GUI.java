@@ -253,8 +253,12 @@ public class GUI implements UI {
         stage.setOnCloseRequest(e -> cancelJob(visualization.getJob()));
 
         stage.sizeToScene();
+
+
+        
         GUIUtils.suppressDefaultFocus(stage, controller);
         GUIUtils.showOnTop(stage);
+        GUIUtils.hackToForceRelayout(stage);
         setUserFriendlyPosition(stage);
     }
 
