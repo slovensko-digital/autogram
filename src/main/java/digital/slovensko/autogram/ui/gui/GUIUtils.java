@@ -75,6 +75,7 @@ public class GUIUtils {
     }
 
     public static void hackToForceRelayout(Stage stage) {
+        // this MUST be run after stage was shown to work on all platforms
         var w = stage.getScene().getWindow();
         // This forces layout recalculation and fixes issue https://github.com/slovensko-digital/autogram/issues/172
         w.setHeight(w.getHeight() - 1);
