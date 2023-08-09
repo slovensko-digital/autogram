@@ -66,7 +66,7 @@ public class GUI implements UI {
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, batchController);
         GUIUtils.showOnTop(stage);
-        setUserFriendlyPosition(stage);
+        setUserFriendlyPositionAndLimits(stage);
     }
 
     @Override
@@ -255,7 +255,7 @@ public class GUI implements UI {
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, controller);
         GUIUtils.showOnTop(stage);
-        setUserFriendlyPosition(stage);
+        setUserFriendlyPositionAndLimits(stage);
     }
 
     @Override
@@ -401,7 +401,7 @@ public class GUI implements UI {
         return jobControllers.get(job).mainBox.getScene().getWindow();
     }
 
-    private void setUserFriendlyPosition(Stage stage) {
+    private void setUserFriendlyPositionAndLimits(Stage stage) {
         var maxWindows = 10;
         var maxOffset = 25;
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
@@ -411,7 +411,12 @@ public class GUI implements UI {
         var offsetX = singleOffsetXPx * (nWindows - maxWindows / 2);
         double idealX = bounds.getMinX() + availabeWidth / 2 + offsetX;
         double x = Math.max(bounds.getMinX(), Math.min(bounds.getMaxX() - sceneWidth, idealX));
+        var sceneHeight = stage.getScene().getHeight();
+        double y = Math.max(bounds.getMinY(), Math.min(bounds.getMaxY() - sceneHeight, bounds.getMinY() + (bounds.getHeight() - sceneHeight)/2));
         stage.setX(x);
+        stage.setY(y);
+        stage.setMaxHeight(bounds.getHeight());
+        stage.setMaxWidth(bounds.getWidth());
         nWindows = (nWindows + 1) % maxWindows;
     }
 }
