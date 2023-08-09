@@ -56,13 +56,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void initialize() {
         refreshSigningKey();
         visualization.initialize(this);
-
-        Platform.runLater(() -> {
-            var w = mainBox.getScene().getWindow();
-            // This forces layout recalculation and fixes issue https://github.com/slovensko-digital/autogram/issues/172
-            w.setHeight(w.getHeight() - 1);
-        });
-
     }
 
     public void onMainButtonPressed(ActionEvent event) {
@@ -89,10 +82,8 @@ public class SigningDialogController implements SuppressedFocusController, Visua
             mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
         } else {
-            mainButton.setText("Podpísať ako "
-                    + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
-            mainButton.getStyleClass()
-                    .removeIf(style -> style.equals("autogram-button--secondary"));
+            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+            mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
         }
     }
@@ -153,8 +144,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
     public void showImageVisualization(CommonDocument doc) {
         // TODO what about visualization
-        imageVisualization.fitWidthProperty()
-                .bind(imageVisualizationContainer.widthProperty().subtract(4));
+        imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
         imageVisualization.setImage(new Image(doc.openStream()));
         imageVisualization.setPreserveRatio(true);
         imageVisualization.setSmooth(true);
