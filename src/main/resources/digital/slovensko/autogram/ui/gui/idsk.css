@@ -676,3 +676,19 @@ TextFlow.autogram-body-s {
 .autogram-confirmation Hyperlink {
   -fx-font-size: 2em;
 }
+
+.autogram-signature-details-box {
+  -fx-padding: 0.5em 1.25em 1.25em 1.25em;
+}
+
+.autogram-summary-header {
+  -fx-background-color: #f3f2f1;
+}
+
+.autogram-summary-header__title {
+  -fx-padding: 1.25em 1.25em;
+}
+
+.autogram-summary-header__badge {
+  -fx-padding: 1.1875em 1.25em;
+}

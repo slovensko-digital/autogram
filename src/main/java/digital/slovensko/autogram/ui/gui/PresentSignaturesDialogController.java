@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import javax.security.auth.x500.X500Principal;
 
 import digital.slovensko.autogram.core.SigningJob;
+import eu.europa.esig.dss.diagnostic.DiagnosticData;
+import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -19,6 +21,7 @@ import javafx.stage.Stage;
 
 public class PresentSignaturesDialogController implements SuppressedFocusController {
     private final SigningJob signingJob;
+    private final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
     @FXML
     Text signatureValidationMessage;
@@ -71,86 +74,87 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
 
     public void renderSignatures(Reports reports, boolean isValidated) {
         signaturesBox.getChildren().clear();
-        mainBox.setMaxHeight(1440);
 
-        var s = reports.getSimpleReport();
-        var diag = reports.getDiagnosticData();
+        var simple = reports.getSimpleReport();
+        var diagnostic = reports.getDiagnosticData();
 
-        var format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-        for (var signatureId : s.getSignatureIdList()) {
-            var isQTSA = false;
-            var signature = diag.getSignatureById(signatureId);
-            for (var timestamp : signature.getSignatureTimestamps()) {
-                if (s.getTimestampQualification(timestamp.getId()).getReadable().equals("QTSA"))
-                    isQTSA = true;
-
-                System.out.println(new X500Principal(timestamp.getSigningCertificate().getCertificateDN()).getName(X500Principal.RFC1779));
-            }
-
-            System.out.println("isQTSA: " + isQTSA);
-
-            var isQSCD = diag.getSignatureById(signatureId).getSigningCertificate().isSupportedByQSCD();
-
-            var subject = new X500Principal(diag.getSignatureById(signatureId).getSigningCertificate().getCertificateDN()).getName(X500Principal.RFC1779);
-            var name = s.getSignedBy(signatureId);
-            var subjectStr = subject.replace(", ", "\n");
+        for (var signatureId : diagnostic.getSignatureIdList()) {
             var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId).getLabel() : "Prebieha overovanie...";
-            var signingTime = format.format(s.getSigningTime(signatureId));
-            var timestampCount = Integer.toString(s.getSignatureTimestamps(signatureId).size()) + (isQTSA ? " (QTSA)" : "");
+            var subject = new X500Principal(diagnostic.getSignatureById(signatureId).getSigningCertificate().getCertificateDN()).getName(X500Principal.RFC1779);
+            var name = simple.getSignedBy(signatureId);
+            var subjectStr = subject.replace(", ", "\n");
+            var signingTime = format.format(simple.getSigningTime(signatureId));
+            var timestampCount = Integer.toString(simple.getSignatureTimestamps(signatureId).size()) + (isQTSA(diagnostic, simple, signatureId) ? " (QTSA)" : "");
+            var isValid = isValidated && simple.isValid(signatureId);
 
-            var signatureBox = new VBox();
-            signatureBox.setStyle("-fx-border-color: -autogram-border-colour; -fx-border-width: 1px;");
+            signaturesBox.getChildren().add(createSignatureBox(isValid, isValidated, subjectStr, signatureType, name, signingTime, timestampCount));
 
-            var nameText = new Text(name);
-            nameText.getStyleClass().add("autogram-heading-m");
-            var nameFlow = new TextFlow(nameText);
-            nameFlow.setStyle("-fx-padding: 1.25em 1.25em;");
-            nameFlow.setPrefWidth(248);
+            System.out.println("Issuer DN: " + new X500Principal(diagnostic.getSignatureById(signatureId).getSigningCertificate().getCertificateIssuerDN()).getName(X500Principal.RFC1779));
+        }
+    }
 
+    private VBox createSignatureBox(boolean isValidated, boolean isValid, String subjectStr, String signatureType, String name, String signingTime, String timestampCount) {
+        var nameText = new Text(name);
+        nameText.getStyleClass().add("autogram-heading-m");
+        var nameFlow = new TextFlow(nameText);
+        nameFlow.getStyleClass().add("autogram-summary-header__title");
+        nameFlow.setPrefWidth(248);
 
-            var validText = new Text("Prebieha overovanie...");
-            var validFlow = new TextFlow();
-            validFlow.setStyle("-fx-padding: 1.1875em 1.25em;");
+        var validText = new Text("Prebieha overovanie...");
+        var validFlow = new TextFlow();
+        validFlow.getStyleClass().add("autogram-summary-header__basge");
 
-            if (!isValidated) {
-                validFlow.getChildren().add(validText);
-                validText.getStyleClass().add("autogram-body");
+        if (!isValidated) {
+            validFlow.getChildren().add(validText);
+            validText.getStyleClass().add("autogram-body");
+
+        } else {
+            validText.getStyleClass().add("autogram-heading-s");
+            var validBox = new VBox();
+            validBox.getChildren().add(validText);
+            validBox.getStyleClass().add("autogram-tag");
+
+            if (isValid) {
+                validText.setText("Platný");
+                validText.getStyleClass().add("autogram-tag-valid--text");
+                validBox.getStyleClass().add("autogram-tag-valid");
 
             } else {
-                validText.getStyleClass().add("autogram-heading-s");
-                var validBox = new VBox();
-                validBox.getChildren().add(validText);
-                validBox.getStyleClass().add("autogram-tag");
-
-                if (s.isValid(signatureId)) {
-                    validText.setText("Platný");
-                    validText.getStyleClass().add("autogram-tag-valid--text");
-                    validBox.getStyleClass().add("autogram-tag-valid");
-
-                } else {
-                    validText.setText("Neplatný");
-                    validText.getStyleClass().add("autogram-tag-invalid--text");
-                    validBox.getStyleClass().add("autogram-tag-invalid");
-                }
-
-                validFlow.getChildren().add(validBox);
+                validText.setText("Neplatný");
+                validText.getStyleClass().add("autogram-tag-invalid--text");
+                validBox.getStyleClass().add("autogram-tag-invalid");
             }
 
-            var nameBox = new HBox();
-            nameBox.getChildren().addAll(nameFlow, validFlow);
-            nameBox.setStyle("-fx-background-color: #f3f2f1;");
-            signatureBox.getChildren().add(nameBox);
-
-            var signatureDetailsBox = new VBox();
-            signatureDetailsBox.setStyle("-fx-padding: 0.5em 1.25em 1.25em 1.25em;");
-            signatureBox.getChildren().add(signatureDetailsBox);
-            signatureDetailsBox.getChildren().add(createTableRow("Certifikát", subjectStr));
-            signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu", signatureType));
-            signatureDetailsBox.getChildren().add(createTableRow("Čas", signingTime));
-            signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestampCount, true));
-
-            signaturesBox.getChildren().add(signatureBox);
+            validFlow.getChildren().add(validBox);
         }
+
+        var nameBox = new HBox(nameFlow, validFlow);
+        nameBox.getStyleClass().add("autogram-summary-header");
+
+        var signatureDetailsBox = new VBox(
+            createTableRow("Certifikát", subjectStr),
+            createTableRow("Typ podpisu", signatureType),
+            createTableRow("Čas", signingTime),
+            createTableRow("Časové pečiatky", timestampCount, true)
+            );
+            signatureDetailsBox.getStyleClass().add("autogram-signature-details-box");
+
+        var signatureBox = new VBox(nameBox, signatureDetailsBox);
+        signatureBox.setStyle("-fx-border-color: -autogram-border-colour; -fx-border-width: 1px;");
+
+        return signatureBox;
+    }
+
+    private boolean isQTSA(DiagnosticData diagnostic, SimpleReport simple, String signatureId) {
+        var signature = diagnostic.getSignatureById(signatureId);
+        for (var timestamp : signature.getSignatureTimestamps()) {
+            System.out.println("Timestamp DN: " + new X500Principal(timestamp.getSigningCertificate().getCertificateDN()).getName(X500Principal.RFC1779));
+
+            if (simple.getTimestampQualification(timestamp.getId()).getReadable().equals("QTSA"))
+                return true;
+        }
+
+        return false;
     }
 
     private HBox createTableRow(String label, String value) {
@@ -158,24 +162,22 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
     }
 
     private HBox createTableRow(String label, String value, boolean isLast) {
-        var row = new HBox();
         var labelNode = createTableCell(label, "autogram-heading-s", isLast);
         var valueNode = createTableCell(value, "autogram-body", isLast);
 
         labelNode.setPrefWidth(248);
         valueNode.setPrefWidth(400);
 
-        row.getChildren().addAll(labelNode, valueNode);
-
-        return row;
+        return new HBox(labelNode, valueNode);
     }
 
     private TextFlow createTableCell(String value, String textStyle, boolean isLast) {
-        var cell = new TextFlow();
-        cell.getStyleClass().addAll(isLast ? "autogram-table-cell--last" : "autogram-table-cell");
         var text = new Text(value);
         text.getStyleClass().add(textStyle);
-        cell.getChildren().add(text);
+
+        var cell = new TextFlow(text);
+        cell.getStyleClass().addAll(isLast ? "autogram-table-cell--last" : "autogram-table-cell");
+
         return cell;
     }
 }

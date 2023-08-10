@@ -16,13 +16,12 @@
 
     <TextFlow><Text styleClass="autogram-heading-m" text="Podpisy"/></TextFlow>
 
-    <HBox>
-        <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="Overujem podpisy..."></Text>
-        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť detaily podpisov" visible="false" onAction="#onSignatureDetailsButtonAction" />
-    </HBox>
-
     <ScrollPane>
         <VBox fx:id="signaturesBox" spacing="10" />
     </ScrollPane>
 
+    <HBox>
+        <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="Overujem podpisy..."></Text>
+        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť detaily podpisov" visible="false" onAction="#onSignatureDetailsButtonAction" />
+    </HBox>
 </VBox>
