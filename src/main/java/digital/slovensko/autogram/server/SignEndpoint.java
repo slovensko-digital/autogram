@@ -60,7 +60,6 @@ public class SignEndpoint implements HttpHandler {
         } catch (RequestValidationException | MalformedBodyException e) {
             EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
         } catch (Exception e) {
-            System.out.println("General Exception in SignEndpoint.java:");
             e.printStackTrace();
             EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
         }
