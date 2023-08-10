@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Batch Sign Testing page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Don't use this in production: -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="module">
+      // note jsdelivr.net does not automatically minify .mjs
+      import { Base64 } from "https://cdn.jsdelivr.net/npm/js-base64@3.7.5/base64.mjs";
+      window.Base64 = Base64;
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const baseURL = "http://localhost:37200";
+      const handleResponse = (r) => {
+        if (!r.ok) {
+          throw new Error(r);
+        }
+        const jsonP = r.json();
+        jsonP.then((json) => {
+          console.groupCollapsed(r.url);
+          console.log(r);
+          console.log(json);
+          console.groupEnd();
+        });
+        return jsonP;
+      };
+      const API = {
+        startBatch: (totalNumberOfDocuments) =>
+          fetch(`${baseURL}/batch`, {
+            method: "POST",
+            body: JSON.stringify({ totalNumberOfDocuments }),
+          }).then(handleResponse),
+        sign: (requestBody) =>
+          fetch(`${baseURL}/sign`, {
+            method: "POST",
+            body: JSON.stringify(requestBody),
+          }).then(handleResponse),
+        endBatch: (batchId) =>
+          fetch(`${baseURL}/batch`, {
+            method: "DELETE",
+            body: JSON.stringify({ batchId }),
+          }).then(handleResponse),
+      };
+
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+      function MyApp() {
+        const [batchId, setBatchId] = React.useState(null);
+        const [documents, setDocuments] = React.useState([]);
+        const [errors, setErrors] = React.useState([]);
+
+        React.useEffect(() => {
+          if (batchId != null && documents.length == 0) {
+            // sign();
+            // sign();
+            let lastP = sleep(100)
+            for (let i = 0; i < 15; i++) {
+                lastP = lastP.then(sign).then(() => sleep(200));
+            }
+          }
+        }, [batchId, documents]);
+
+        const sign = () => {
+          API.sign({
+            batchId: batchId,
+            document: {
+              content: `Testovací dokument ${
+                documents.length
+              }  ${Math.random()}`,
+              filename: "TextDocument.txt",
+            },
+            parameters: {
+              level: "XAdES_BASELINE_B",
+              container: "ASiC_E",
+            },
+            payloadMimeType: "text/plain",
+          })
+            .catch((e) => {
+              setErrors((errors) => [...errors, e]);
+              throw e;
+            })
+            .then((r) => {
+              setDocuments((documents) => [...documents, r]);
+            });
+        };
+
+        const startBatch = () => {
+          API.startBatch(15)
+            .catch((e) => {
+              console.log(e);
+              setErrors((errors) => [...errors, e]);
+              throw e;
+            })
+            .then((r) => setBatchId(r.batchId))
+            .catch((e) => {
+              console.log(e);
+              setErrors((errors) => [...errors, e]);
+              throw e;
+            });
+        };
+
+        const stopBatch = () => {
+          API.endBatch(batchId)
+            .catch((e) => {
+              setErrors((errors) => [...errors, e]);
+              throw e;
+            })
+            .then(() => setBatchId(null));
+        };
+
+        return (
+          <>
+            <h1>Hromadné podpisovanie!</h1>
+
+            <button onClick={startBatch}>Start batch</button>
+
+            <button disabled={batchId == null} onClick={stopBatch}>
+              Stop batch
+            </button>
+
+            <button disabled={batchId == null} onClick={sign}>
+              Sign
+            </button>
+
+            <p>Batch ID: {batchId}</p>
+            <div>
+              Documents:
+              <ul>
+                {documents.map((d, i) => (
+                  <li key={i}>
+                    <code>{JSON.stringify(d)}</code>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>Errors:</div>
+          </>
+        );
+      }
+
+      const container = document.getElementById("root");
+      const root = ReactDOM.createRoot(container);
+      root.render(<MyApp />);
+    </script>
+  </body>
+</html>

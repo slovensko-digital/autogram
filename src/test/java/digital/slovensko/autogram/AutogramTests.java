@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningWithExpiredCertificateException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.model.FileDocument;
@@ -114,6 +115,18 @@ class AutogramTests {
         }
 
         @Override
+        public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
+        }
+
+        @Override
+        public void cancelBatch(Batch batch) {
+        }
+
+        @Override
+        public void signBatch(SigningJob job, SigningKey key) {
+        }
+
+        @Override
         public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
             callback.accept(drivers.get(0));
         }
@@ -164,6 +177,11 @@ class AutogramTests {
         }
 
         @Override
+        public void showError(AutogramException exception) {
+
+        }
+
+        @Override
         public void onSigningSuccess(SigningJob signingJob) {
 
         }
@@ -174,7 +192,12 @@ class AutogramTests {
         }
 
         @Override
-        public void onDocumentSaved(File targetFile) {
+        public void onDocumentSaved(File targetFiles) {
+
+        }
+
+        @Override
+        public void onDocumentBatchSaved(BatchUiResult result) {
 
         }
 

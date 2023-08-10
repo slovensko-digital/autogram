@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.DSSDocument;
+import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -81,10 +82,8 @@ public class SigningDialogController implements SuppressedFocusController, Visua
             mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
         } else {
-            mainButton.setText("Podpísať ako "
-                    + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
-            mainButton.getStyleClass()
-                    .removeIf(style -> style.equals("autogram-button--secondary"));
+            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+            mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
         }
     }
@@ -145,8 +144,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
     public void showImageVisualization(DSSDocument doc) {
         // TODO what about visualization
-        imageVisualization.fitWidthProperty()
-                .bind(imageVisualizationContainer.widthProperty().subtract(4));
+        imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
         imageVisualization.setImage(new Image(doc.openStream()));
         imageVisualization.setPreserveRatio(true);
         imageVisualization.setSmooth(true);

@@ -11,16 +11,15 @@
       prefWidth="500" minWidth="450"
       fx:id="mainBox">
     <VBox>
-        <TextFlow styleClass="autogram-heading-m">
-            <Text styleClass="autogram-heading-m" text="Dokument bol úspešne podpísaný"/>
-        </TextFlow>
-
-        <VBox styleClass="autogram-prose">
-            <TextFlow styleClass="autogram-body">
+        <VBox styleClass="autogram-prose,autogram-confirmation,autogram-confirmation--success">
+            <TextFlow styleClass="autogram-heading-m">
+                <Text styleClass="autogram-heading-m" text="Dokument bol úspešne podpísaný" />
+            </TextFlow>
+            <TextFlow styleClass="autogram-body" fx:id="successTextFlow">
                 <Text styleClass="autogram-body" text="Podpísaný súbor je uložený ako "/>
                 <Text styleClass="autogram-body,autogram-font-weight-bold" fx:id="filenameText" />
                 <Text styleClass="autogram-body" text=" v&#160;priečinku " />
-                <Hyperlink styleClass="autogram-body,autogram-link,autogram-font-weight-bold" fx:id="folderPathText" onAction="#onOpenFolderAction" />
+                <!-- Hyperlinks with path are inserted here-->
                 <Text styleClass="autogram-body" text="." />
             </TextFlow>
         </VBox>

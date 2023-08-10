@@ -19,8 +19,7 @@ public class PDFVisualization extends Visualization {
 
     private String getBase64EncodedDocument() {
         try (var is = document.openStream()) {
-            return new String(Base64.getEncoder().encode(is.readAllBytes()),
-                    StandardCharsets.UTF_8);
+            return new String(Base64.getEncoder().encode(is.readAllBytes()), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -11,11 +11,18 @@ public class SignRequestBody {
     private final Document document;
     private final ServerSigningParameters parameters;
     private final String payloadMimeType;
+    private final String batchId;
 
     public SignRequestBody(Document document, ServerSigningParameters parameters, String payloadMimeType) {
+        this(document, parameters, payloadMimeType, null);
+    }
+
+    public SignRequestBody(Document document, ServerSigningParameters parameters, String payloadMimeType,
+            String batchId) {
         this.document = document;
         this.parameters = parameters;
         this.payloadMimeType = payloadMimeType;
+        this.batchId = batchId;
     }
 
     public InMemoryDocument getDocument() throws RequestValidationException {
@@ -48,6 +55,10 @@ public class SignRequestBody {
         parameters.validate(getDocument().getMimeType());
 
         return parameters.getSigningParameters(isBase64());
+    }
+
+    public String getBatchId() {
+        return batchId;
     }
 
     private boolean isBase64() {

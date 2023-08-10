@@ -3,10 +3,12 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Main",
+            "name": "Run Main class",
             "request": "launch",
             "mainClass": "digital.slovensko.autogram.Main",
-            "projectName": "autogram"
+            "projectName": "autogram",
+            "preLaunchTask": "java (build): Build Workspace",
+            // "vmArgs": "-Dprism.maxvram=2G",
         },
         {
             "type": "java",

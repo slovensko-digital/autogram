@@ -1,0 +1,25 @@
+name: Pre-release
+on:
+  release:
+    types: [published]
+jobs:
+  checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: imjohnbo/extract-issue-template-fields@f5232d9bc6ad9aff26c462e60a2c8ef0b17aa3fa
+        id: issueTemplate
+        with:
+          path: .github/ISSUE_TEMPLATE/release-checklist.md
+
+      - name: Create release checklist issue
+        uses: imjohnbo/issue-bot@3d96848fb5e9a4a473bb81ae62b4b4866a56e93a
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          assignees: ${{ steps.issueTemplate.outputs.assignees }}
+          labels: ${{ steps.issueTemplate.outputs.labels }}
+          title: ${{ steps.issueTemplate.outputs.title }} ${{ github.event.release.tag_name }}
+          body: |
+            [👉 Release ${{ github.event.release.tag_name }}](https://github.com/slovensko-digital/autogram/releases/tag/${{ github.event.release.tag_name }})
+
+            ${{ steps.issueTemplate.outputs.body }}
