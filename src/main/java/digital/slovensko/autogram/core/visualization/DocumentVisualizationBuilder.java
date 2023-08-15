@@ -186,8 +186,8 @@ public class DocumentVisualizationBuilder {
     /**
      * Is document xml data container?
      */
-    private boolean isDocumentXDC() {
-        return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
+    private boolean isDocumentXDC(DSSDocument documentToDisplay) {
+        return documentToDisplay.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
     }
 
     public static MimeType getTransformationOutputMimeType(String transformation)
@@ -233,7 +233,7 @@ public class DocumentVisualizationBuilder {
             var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
 
             var xmlSource = new DOMSource(parsedDocument);
-            if (isDocumentXDC())
+            if (isDocumentXDC(documentToDisplay))
                 xmlSource = extractFromXDC(parsedDocument, builderFactory);
 
             var outputTarget = new StreamResult(new StringWriter());
