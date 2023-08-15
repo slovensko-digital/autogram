@@ -27,7 +27,7 @@ while read -r key value; do
 done <"$resourcesDir/build.properties"
 unset IFS
 
-jvmOptions="-Dfile.encoding=UTF-8 --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
+jvmOptions="-Dfile.encoding=UTF-8 -Dprism.maxvram=2G --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
 arguments=(
     "--input" "$appDirectory"
     "--runtime-image" "$jdkDirectory"
@@ -167,6 +167,7 @@ if [[ "$platform" == "mac" ]]; then
     fi
 
     if [[ "$properties_mac_sign" == "1" ]]; then
+        export JPACKAGE_MAC_SIGN="1"
         if [[ -z "$APPLE_DEVELOPER_IDENTITY" ]] || [[ -z "$APPLE_KEYCHAIN_PATH" ]]; then
             echo "Missing APPLE_DEVELOPER_IDENTITY or APPLE_KEYCHAIN_PATH env variable"
             exit 1

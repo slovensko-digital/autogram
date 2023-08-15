@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 import java.io.File;
 
@@ -16,7 +17,7 @@ public class SigningSuccessDialogController implements SuppressedFocusController
     @FXML
     Text filenameText;
     @FXML
-    Hyperlink folderPathText;
+    TextFlow successTextFlow;
     @FXML
     Node mainBox;
 
@@ -32,7 +33,20 @@ public class SigningSuccessDialogController implements SuppressedFocusController
 
     public void initialize() {
         filenameText.setText(targetFile.getName());
-        folderPathText.setText(targetFile.getParent());
+        initHyperlink();
+    }
+
+
+    public void initHyperlink() {
+        var path = targetFile.getParent().split("((?<=/|\\\\))");
+        for (int i = 0; i < path.length; i++) {
+            var hyperlink = new Hyperlink(path[i]);
+            hyperlink.getStyleClass().add("autogram-body");
+            hyperlink.getStyleClass().add("autogram-link");
+            hyperlink.getStyleClass().add("autogram-font-weight-bold");
+            hyperlink.setOnAction(this::onOpenFolderAction);
+            successTextFlow.getChildren().add(successTextFlow.getChildren().size() - 1, hyperlink);
+        }
     }
 
     public void onOpenFolderAction(ActionEvent ignored) {

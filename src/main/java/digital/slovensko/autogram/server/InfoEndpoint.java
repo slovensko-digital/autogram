@@ -13,7 +13,7 @@ import java.io.IOException;
 public class InfoEndpoint implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        var response = new InfoResponse(Main.getVersion(), getStatus());
+        var response = new InfoResponse(Main.getVersionString(), getStatus());
         var gson = new Gson();
 
         try {

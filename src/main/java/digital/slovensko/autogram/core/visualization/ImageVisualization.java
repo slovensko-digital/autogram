@@ -1,12 +1,13 @@
 package digital.slovensko.autogram.core.visualization;
+
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.ui.Visualizer;
-import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.model.DSSDocument;
 
 public class ImageVisualization extends Visualization {
-    private final CommonDocument document;
+    private final DSSDocument document;
 
-    public ImageVisualization(CommonDocument document, SigningJob job) {
+    public ImageVisualization(DSSDocument document, SigningJob job) {
         super(job);
         this.document = document;
     }

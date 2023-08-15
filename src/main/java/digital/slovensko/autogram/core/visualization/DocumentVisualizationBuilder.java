@@ -17,7 +17,13 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import digital.slovensko.autogram.core.AsicContainer;
+import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -30,7 +36,7 @@ import eu.europa.esig.dss.model.CommonDocument;
 
 public class DocumentVisualizationBuilder {
 
-    private final CommonDocument document;
+    private final DSSDocument document;
     private final SigningParameters parameters;
     private final Charset encoding = StandardCharsets.UTF_8;
 
@@ -51,31 +57,39 @@ public class DocumentVisualizationBuilder {
     private Visualization createVisualization(SigningJob job, MimeType transformationOutputMimeType)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
-        if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(document)) {
+        var documentToDisplay = this.document;
+        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.ASICE)) {
+            AsicContainer asicContainer = new AsicContainer(this.document);
+            documentToDisplay = asicContainer.getOriginalDocument();
+        }
+
+        if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(documentToDisplay)) {
 
                 // Applying transformation
                 if (transformationOutputMimeType.equals(MimeTypeEnum.HTML)) {
-                    return new HTMLVisualization(transform(), job);
+                    return new HTMLVisualization(transform(documentToDisplay), job);
                 } else if (transformationOutputMimeType.equals(MimeTypeEnum.TEXT)) {
-                    return new PlainTextVisualization(transform(), job);
+                    return new PlainTextVisualization(transform(documentToDisplay), job);
                 } else {
                     return new UnsupportedVisualization(job);
                 }
         }
 
-        if (document.getMimeType().equals(MimeTypeEnum.HTML)) {
-            return new HTMLVisualization(transform(), job);
-        } else if (document.getMimeType().equals(MimeTypeEnum.TEXT)) {
-            return new PlainTextVisualization(new String(document.openStream().readAllBytes()), job);
-        } else if (document.getMimeType().equals(MimeTypeEnum.PDF)) {
-            return new PDFVisualization(document, job);
-        } else if (document.getMimeType().equals(MimeTypeEnum.JPEG)
-            || document.getMimeType().equals(MimeTypeEnum.PNG)) {
-            return new ImageVisualization(document, job);
+        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.HTML)) {
+            return new HTMLVisualization(transform(documentToDisplay), job);
+        } else if (documentToDisplay.getMimeType().equals(MimeTypeEnum.TEXT)) {
+            return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes()), job);
+        } else if (documentToDisplay.getMimeType().equals(MimeTypeEnum.PDF)) {
+            return new PDFVisualization(documentToDisplay, job);
+        } else if (documentToDisplay.getMimeType().equals(MimeTypeEnum.JPEG)
+            || documentToDisplay.getMimeType().equals(MimeTypeEnum.PNG)) {
+            return new ImageVisualization(documentToDisplay, job);
         }
 
         return new UnsupportedVisualization(job);
     }
+
+
 
     private String getTransformation() {
         return parameters.getTransformation();
@@ -90,7 +104,7 @@ public class DocumentVisualizationBuilder {
      *
      * @return
      */
-    private boolean isDocumentSupportingTransformation(CommonDocument document) {
+    private boolean isDocumentSupportingTransformation(DSSDocument document) {
         return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER)
             || document.getMimeType().equals(AutogramMimeType.APPLICATION_XML)
             || document.getMimeType().equals(MimeTypeEnum.XML);
@@ -99,8 +113,8 @@ public class DocumentVisualizationBuilder {
     /**
      * Is document xml data container?
      */
-    private boolean isDocumentXDC() {
-        return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
+    private boolean isDocumentXDC(DSSDocument documentToDisplay) {
+        return documentToDisplay.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
     }
 
     public static MimeType getTransformationOutputMimeType(String transformation)
@@ -130,12 +144,12 @@ public class DocumentVisualizationBuilder {
      *
      * @return transformed document string
      */
-    private String transform()
+    private String transform(DSSDocument documentToDisplay)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
         // We are using try catch instead of try-with-resources because
         // when debugging with VSCode on M2 MacOS, it throws self-suppression error
         // (which is weird)
-        final var is = document.openStream();
+        final var is = documentToDisplay.openStream();
         Throwable originalException = null;
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
@@ -146,7 +160,7 @@ public class DocumentVisualizationBuilder {
             var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
 
             var xmlSource = new DOMSource(parsedDocument);
-            if (isDocumentXDC())
+            if (isDocumentXDC(documentToDisplay))
                 xmlSource = extractFromXDC(parsedDocument, builderFactory);
 
             var outputTarget = new StreamResult(new StringWriter());

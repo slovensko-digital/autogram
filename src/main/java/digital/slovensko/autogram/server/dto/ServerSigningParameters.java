@@ -5,6 +5,7 @@ import java.util.Base64;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
+import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
@@ -175,7 +176,7 @@ public class ServerSigningParameters {
         }
 
         if (level.getSignatureForm() == SignatureForm.XAdES) {
-            if (!isXML(mimeType) && !isXDC(mimeType) && container == null)
+            if (!isXMLMimeType(mimeType) && !isXDCMimeType(mimeType) && !isAsiceMimeType(mimeType) && container == null)
                 if (!(packaging != null && packaging == SignaturePackaging.ENVELOPING))
                     throw new RequestValidationException(
                             "PayloadMimeType, Parameters.Level, Parameters.Container and Parameters.Packaging mismatch",
@@ -203,5 +204,17 @@ public class ServerSigningParameters {
                         "Parameters.ContainerXmlns: XML datacontainer is not supported for this payload: "
                                 + mimeType.getMimeTypeString());
         }
+    }
+
+    private static boolean isXMLMimeType(MimeType mimeType) {
+        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(AutogramMimeType.APPLICATION_XML);
+    }
+
+    private static boolean isXDCMimeType(MimeType mimeType) {
+        return mimeType.equals(AutogramMimeType.XML_DATACONTAINER);
+    }
+
+    private static boolean isAsiceMimeType(MimeType mimeType) {
+        return mimeType.equals(MimeTypeEnum.ASICE);
     }
 }
