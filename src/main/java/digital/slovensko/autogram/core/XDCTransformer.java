@@ -80,7 +80,7 @@ public class XDCTransformer {
         this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
-    public static XDCTransformer buildFromSigningParametersAndDocument(SigningParameters sp, InMemoryDocument document) throws InvalidXMLException {
+    public static XDCTransformer buildFromSigningParametersAndDocument(SigningParameters sp, DSSDocument document) throws InvalidXMLException {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
@@ -303,7 +303,7 @@ public class XDCTransformer {
         return transformElementToString(xmlData.getFirstChild());
     }
 
-    private String transformElementToString(Node element) throws InvalidXMLException {
+    public static String transformElementToString(Node element) throws InvalidXMLException {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
