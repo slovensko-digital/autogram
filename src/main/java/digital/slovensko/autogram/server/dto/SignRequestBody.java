@@ -10,6 +10,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
 import digital.slovensko.autogram.core.AsicContainer;
+import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import eu.europa.esig.dss.model.DSSDocument;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -105,9 +106,10 @@ public class SignRequestBody {
             if (!validateXmlContentAgainstXsd(xmlContent, xsdSchema))
                 throw new XMLValidationException("XML validation failed", "XML validation against XSD failed");
 
+        } catch (OriginalDocumentNotFoundException e) {
+            throw new MalformedBodyException(e.getMessage(), e.getDescription());
         } catch (InvalidXMLException e) {
             throw new MalformedBodyException(e.getMessage(), e.getDescription());
-
         } catch (XMLValidationException e) {
             throw new RequestValidationException(e.getMessage(), e.getDescription());
         }

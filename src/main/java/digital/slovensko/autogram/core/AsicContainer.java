@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -24,12 +25,12 @@ public class AsicContainer {
         documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
         var signatures = documentValidator.getSignatures();
         if (signatures.isEmpty()) {
-            throw new RuntimeException("No signatures in document");
+            throw new OriginalDocumentNotFoundException("No signatures in document");
         }
         var advancedSignature = signatures.get(0);
         var originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
         if (originalDocuments.isEmpty()) {
-            throw new RuntimeException("No original documents found");
+            throw new OriginalDocumentNotFoundException("No original documents found");
         }
         DSSDocument originalDocument = originalDocuments.get(0);
         if (originalDocument.getMimeType().equals(MimeTypeEnum.XML)) {
