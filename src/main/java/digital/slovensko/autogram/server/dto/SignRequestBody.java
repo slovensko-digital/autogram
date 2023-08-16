@@ -133,7 +133,7 @@ public class SignRequestBody {
             var xml = document.getDocumentElement();
             return XDCTransformer.transformElementToString(xml);
         } catch (Exception e) {
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to process document");
+            throw new InvalidXMLException("XML validation failed", "Unable to get xml from original document");
         }
     }
 
