@@ -109,17 +109,18 @@ public class SignHttpSmokeTest {
         assertEquals(HttpStatus.SC_OK, signResponse.getStatusLine().getStatusCode());
         // System.out.println("Sign Response: " + signResponse.getStatusLine());
         // System.out.println("Sign Response: " + new String(
-        //         signResponse.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8));
+        // signResponse.getEntity().getContent().readAllBytes(),
+        // StandardCharsets.UTF_8));
     }
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "XAdES-XML-Base64-HTML_md", "XAdES-XML-Base64-TXT", "XAdES-XML-TXT-HTML",
-            "XAdES-XML-TXT-TXT_md", "XAdES-ASiC_E-Base64-HTML", "XAdES-ASiC_E-Base64-TXT",
-            "XAdES-ASiC_E-TXT-HTML_md", "XAdES-ASiC_E-TXT-TXT", "XAdES-ASiC_E-SKXDC-Base64-HTML",
-            "XAdES-ASiC_E-SKXDC-TXT-HTML", "PAdES-PDF_lg", "XAdES-PDF",
-            "XAdES-ASiC_E-PDF", "XAdES-ASiC_E-TXT", "XAdES-ASiC_E-DOCX",
-            "CAdES-ASiC_E-DOCX", "CAdES-ASiC_E-PNG_md", "CAdES-PNG_lg",
+            "XAdES-XML-Base64-HTML_md", "XAdES-XML-Base64-TXT", "XAdES-XML-TXT-HTML", "XAdES-XML-TXT-TXT_md",
+            "XAdES-ASiC_E-Base64-HTML", "XAdES-ASiC_E-Base64-TXT", "XAdES-ASiC_E-TXT-HTML_md", "XAdES-ASiC_E-TXT-TXT",
+            "XAdES-ASiC_E-SKXDC-Base64-TXT", "XAdES-ASiC_E-SKXDC-TXT-TXT", "Signed-XAdES-ASiC_E-SKXDC-Base64-TXT",
+            "PAdES-PDF_lg", "XAdES-PDF", "XAdES-ASiC_E-PDF", "CAdES-ASiC_E-PDF", "XAdES-ASiC_E-TXT",
+            "XAdES-ASiC_E-DOCX", "CAdES-ASiC_E-DOCX", "CAdES-PNG_lg", "CAdES-ASiC_E-PNG_md", "Signed-XAdES-ASiC_E-PDF",
+            "Double-Signed-XAdES-ASiC_E-PDF", "Signed-CAdES-ASiC_E-PDF", "Double-Signed-CAdES-ASiC_E-PDF",
     })
     public void testFromYaml(String exampleName) throws ClientProtocolException, IOException, IllegalAccessException,
             NoSuchFieldException, SecurityException {
@@ -169,7 +170,6 @@ public class SignHttpSmokeTest {
                 });
     }
 
-
     private static ServerSigningParameters fromMap(Map<String, Object> map) {
         var level = SignatureLevel.valueByName((String) map.get("level"));
         var container = fromMapToEnum(ASiCContainerType.class, map.get("container"));
@@ -204,7 +204,7 @@ public class SignHttpSmokeTest {
                 transformation,
                 identifier, checkPDFACompliance, visualizationWidth);
     }
-    
+
     private static <T extends Enum<T>> T fromMapToEnum(Class<T> clazz, Object obj) {
         var visualizationWidthStr = (String) obj;
         if (visualizationWidthStr == null)
