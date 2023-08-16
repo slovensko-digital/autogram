@@ -91,16 +91,9 @@ public class SignRequestBody {
         var xsdSchema = signingParameters.getSchema();
 
         try {
-            String xmlContent = null;
-            if (isAsice(getMimetype())) {
-               xmlContent = getXmlContentFromAsice(signingParameters);
-               if (xmlContent == null) {
-                   return;
-               }
-            } else if (isXDC(getMimetype())) {
-               xmlContent = getXmlContentFromXdc(signingParameters, getDocument());
-            }  else {
-               xmlContent = new String(decodeDocumentContent());
+            var xmlContent = getXmlContent(signingParameters);
+            if (xmlContent == null) {
+                return;
             }
 
             if (!validateXmlContentAgainstXsd(xmlContent, xsdSchema))
@@ -112,6 +105,16 @@ public class SignRequestBody {
             throw new MalformedBodyException(e.getMessage(), e.getDescription());
         } catch (XMLValidationException e) {
             throw new RequestValidationException(e.getMessage(), e.getDescription());
+        }
+    }
+
+    private String getXmlContent(SigningParameters signingParameters) throws XMLValidationException, InvalidXMLException {
+        if (isAsice(getMimetype())) {
+            return getXmlContentFromAsice(signingParameters);
+        } else if (isXDC(getMimetype())) {
+            return getXmlContentFromXdc(signingParameters, getDocument());
+        }  else {
+            return new String(decodeDocumentContent());
         }
     }
 
