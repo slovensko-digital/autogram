@@ -22,7 +22,6 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class SigningDialogController implements SuppressedFocusController, Visualizer {
@@ -92,7 +91,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         stage.setTitle("Prítomné podpisy");
         stage.setScene(new Scene(root));
         stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
         GUIUtils.suppressDefaultFocus(stage, presentSignaturesDialogController);
         presentSignaturesDialogController.showSignatures();
         stage.show();

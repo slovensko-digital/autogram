@@ -59,7 +59,6 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
         stage.setTitle("Detaily podpisov");
         stage.setScene(new Scene(root));
         stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
         controller.showHTMLReport();
         stage.show();
     }

@@ -1,7 +1,5 @@
 package digital.slovensko.autogram.core;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,6 +8,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
@@ -106,10 +105,10 @@ public class SignatureValidator {
 
     private CertificateSource getJournalCertificateSource() throws AssertionError {
         try {
-            var keystore = new File("src/main/resources/lotlKeyStore.p12");
+            var keystore = getClass().getResourceAsStream("lotlKeyStore.p12");
             return new KeyStoreCertificateSource(keystore, "PKCS12", "dss-password");
 
-        } catch (IOException e) {
+        } catch (DSSException | NullPointerException e) {
             throw new AssertionError("Cannot load LOTL keystore", e);
         }
     }

@@ -36,18 +36,18 @@ public class DSSUtils {
         return out;
     }
 
-    public static SignedDocumentValidator getDocumentValidator(CommonDocument document) {
-        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document))
-            return new ASiCContainerWithXAdESValidatorFactory().create(document);
-
-        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document))
-            return new ASiCContainerWithCAdESValidatorFactory().create(document);
-
+    public static SignedDocumentValidator createDocumentValidator(CommonDocument document) {
         if (new PDFDocumentValidatorFactory().isSupported(document))
             return new PDFDocumentValidatorFactory().create(document);
 
         if (new XMLDocumentValidatorFactory().isSupported(document))
             return new XMLDocumentValidatorFactory().create(document);
+
+        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document))
+            return new ASiCContainerWithXAdESValidatorFactory().create(document);
+
+        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document))
+            return new ASiCContainerWithCAdESValidatorFactory().create(document);
 
         return null;
     }

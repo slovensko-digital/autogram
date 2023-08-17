@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
-import static digital.slovensko.autogram.util.DSSUtils.getDocumentValidator;
+import static digital.slovensko.autogram.util.DSSUtils.createDocumentValidator;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -198,7 +198,7 @@ public class SigningJob {
     }
 
     public void checkForSignatures() {
-        var validator = getDocumentValidator(document);
+        var validator = createDocumentValidator(document);
         if (validator == null)
             return;
 
@@ -212,7 +212,7 @@ public class SigningJob {
 
     public void validateSignatures() {
         var signatureValidator = SignatureValidator.getInstance();
-        signatureValidationReport = signatureValidator.validate(getDocumentValidator(document));
+        signatureValidationReport = signatureValidator.validate(createDocumentValidator(document));
     }
 
     public String getSignatureValidationReportHTML() {
@@ -223,7 +223,7 @@ public class SigningJob {
             var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
             var xmlSource = new DOMSource(document);
 
-            var xsltFile = new File("src/main/resources/simple-report-bootstrap4.xslt");
+            var xsltFile = getClass().getResourceAsStream("simple-report-bootstrap4.xslt");
             var xsltSource = new StreamSource(xsltFile);
 
             var outputTarget = new StreamResult(new StringWriter());
@@ -232,8 +232,8 @@ public class SigningJob {
 
             var r = outputTarget.getWriter().toString().trim();
 
-            var templateFile = new File("src/main/resources/simple-report-template.html");
-            var templateString = new String(java.nio.file.Files.readAllBytes(templateFile.toPath()));
+            var templateFile = getClass().getResourceAsStream("simple-report-template.html");
+            var templateString = new String(templateFile.readAllBytes());
             return templateString.replace("{{content}}", r);
 
         } catch (SAXException | IOException | ParserConfigurationException | TransformerException e) {
