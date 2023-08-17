@@ -204,6 +204,13 @@
   -fx-font-size: 1.5em;
 }
 
+.autogram-body-m {
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
+
+  -fx-font-size: 1.25em;
+}
+
 .autogram-body-s {
   -fx-text-fill: -autogram-text-colour;
   -fx-fill: -autogram-text-colour;
@@ -606,6 +613,10 @@ TextFlow.autogram-body-s {
   -fx-padding: 0 0 20px 20px;
 }
 
+.borders {
+    -fx-border-color:black
+}
+
 .autogram-confirmation--success {
   -fx-background-color: -autogram-success-colour;
 }
@@ -638,4 +649,38 @@ TextFlow.autogram-body-s {
 }
 .autogram-confirmation Hyperlink {
   -fx-font-size: 2em; 
+}
+
+.tab {
+-fx-spacing: 20;
+}
+
+.autogram-tabpane .tab {
+}
+
+.autogram-tabpane .tab:selected {
+}
+
+.tab .tab-label {
+  -fx-text-fill: -autogram-text-colour;
+  -fx-background-color: #f3f2f1;
+  -fx-border-color: #929191;
+  -fx-cursor: hand;
+  -fx-padding: 7px 10px 7px 10px;
+  -fx-font-size: 1em;
+  -fx-font-weight: bold;
+  -fx-border-width: 0 0 0 0;
+}
+
+.tab:selected .tab-label {
+  -fx-background-color: white;
+  -fx-border-width: 1px 1px 0 1px;
+}
+
+.tab-header-area {
+    -fx-spacing: 20; /* Adjust the spacing value as needed */
+}
+
+.test {
+    -
 }

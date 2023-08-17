@@ -179,4 +179,8 @@ public class Autogram {
     public void onSigningFailed(AutogramException e) {
         ui.onUIThreadDo(() -> ui.onSigningFailed(e));
     }
+
+    public void onSettings() {
+        ui.onSettings();
+    }
 }

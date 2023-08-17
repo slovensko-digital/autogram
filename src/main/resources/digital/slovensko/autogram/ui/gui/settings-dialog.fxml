@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.AnchorPane?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" prefWidth="800" minWidth="800">
+    <center>
+        <VBox fx:id="mainBox">
+            <VBox>
+                <TabPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+                         styleClass="autogram-tabpane">
+                    <tabs>
+                        <Tab text="Podpisovanie">
+                            <content>
+                                <AnchorPane>
+                                    <VBox styleClass="borders,autogram-prose,test" maxWidth="650">
+                                        <TextFlow >
+                                            <Text styleClass="autogram-heading-m" text="Podpisovanie"/>
+                                        </TextFlow>
+                                        <TextFlow styleClass="borders">
+                                            <Text styleClass="autogram-body-m"
+                                                  text="Predvolené nastavenia na typy a spôsob podpisovania. Tieto nastavenia sa dajú rýchlo zmeniť pri každom hromadnom a individuálnom podpisovaní."/>
+                                        </TextFlow>
+                                    </VBox>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                        <Tab text="Overovanie podpisu">
+                            <content>
+                                <AnchorPane>
+                                    <TextFlow>
+                                        <Text styleClass="autogram-body-s" text="Verzia2: "/>
+                                    </TextFlow>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                        <Tab text="Bezpečnosť">
+                            <content>
+                                <AnchorPane>
+                                    <TextFlow>
+                                        <Text styleClass="autogram-body-s" text="Verzia3: "/>
+                                    </TextFlow>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                        <Tab text="Pokročilé nastavenia">
+                            <content>
+                                <AnchorPane>
+                                    <TextFlow>
+                                        <Text styleClass="autogram-body-s" text="Verzia4: "/>
+                                    </TextFlow>
+                                </AnchorPane>
+                            </content>
+                        </Tab>
+                    </tabs>
+                </TabPane>
+            </VBox>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox styleClass="autogram-footer">
+            <TextFlow>
+                <Text styleClass="autogram-body-s" text="Verzia: "/>
+            </TextFlow>
+        </HBox>
+    </bottom>
+</BorderPane>

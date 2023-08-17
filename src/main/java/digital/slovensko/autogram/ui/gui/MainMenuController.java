@@ -119,6 +119,10 @@ public class MainMenuController implements SuppressedFocusController {
         autogram.onAboutInfo();
     }
 
+    public void onSettingButtonAction() {
+        autogram.onSettings();
+    }
+
     @Override
     public Node getNodeForLoosingFocus() {
         return dropZone;

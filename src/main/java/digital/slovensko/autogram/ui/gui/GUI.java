@@ -423,4 +423,18 @@ public class GUI implements UI {
         stage.setMaxWidth(bounds.getWidth());
         nWindows = (nWindows + 1) % maxWindows;
     }
+
+    @Override
+    public void onSettings() {
+        var controller = new SettingsDialogController();
+        var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Nastavenia");
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
+    }
 }
