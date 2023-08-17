@@ -48,9 +48,9 @@ public interface UI {
 
     void onPDFAComplianceCheckFailed(SigningJob job);
 
-    public void onSignatureValidationCompleted(SigningJob job);
+    public void onSignatureValidationCompleted(ValidationReportsWrapper wrapper);
 
-    public void onSignatureCheckCompleted(SigningJob job);
+    public void onSignatureCheckCompleted(ValidationReportsWrapper wrapper);
 
     void showIgnorableExceptionDialog(IgnorableException exception);
 }

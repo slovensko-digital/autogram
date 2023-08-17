@@ -9,11 +9,9 @@ import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.model.FileDocument;
-import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
-import eu.europa.esig.dss.validation.reports.Reports;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -205,12 +203,12 @@ class AutogramTests {
         }
 
         @Override
-        public void onSignatureValidationCompleted(SigningJob job) {
+        public void onSignatureValidationCompleted(ValidationReportsWrapper wrapper) {
 
         }
 
         @Override
-        public void onSignatureCheckCompleted(SigningJob job) {
+        public void onSignatureCheckCompleted(ValidationReportsWrapper wrapper) {
 
         }
     }

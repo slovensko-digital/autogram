@@ -13,6 +13,7 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.ValidationReportsWrapper;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
@@ -47,6 +48,9 @@ public class GUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
+        onWorkThreadDo(()
+        -> autogram.checkAndValidateSignatures(job));
+
         autogram.startVisualization(job);
     }
 
@@ -236,15 +240,15 @@ public class GUI implements UI {
     }
 
     @Override
-    public void onSignatureValidationCompleted(SigningJob job) {
-        var controller = jobControllers.get(job);
-        controller.onSignatureValidationCompleted();
+    public void onSignatureValidationCompleted(ValidationReportsWrapper wrapper) {
+        var controller = jobControllers.get(wrapper.getSigningJob());
+        controller.onSignatureValidationCompleted(wrapper.getReports());
     }
 
     @Override
-    public void onSignatureCheckCompleted(SigningJob job) {
-        var controller = jobControllers.get(job);
-        controller.onSignatureCheckCompleted();
+    public void onSignatureCheckCompleted(ValidationReportsWrapper wrapper) {
+        var controller = jobControllers.get(wrapper.getSigningJob());
+        controller.onSignatureCheckCompleted(wrapper.getReports());
     }
 
     public void showVisualization(Visualization visualization, Autogram autogram) {

@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -30,6 +31,8 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     private PresentSignaturesDialogController presentSignaturesDialogController;
     private boolean signatureValidationCompleted = false;
     private final Visualization visualization;
+    private Reports signatureValidationReports;
+    private Reports signatureCheckReports;
 
     @FXML
     VBox mainBox;
@@ -83,7 +86,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
     public void onShowPresentSignaturesButtonPressed(ActionEvent event) {
         if (presentSignaturesDialogController == null)
-            presentSignaturesDialogController = new PresentSignaturesDialogController(visualization.getJob());
+            presentSignaturesDialogController = new PresentSignaturesDialogController(signatureCheckReports, gui);
 
         var root = GUIUtils.loadFXML(presentSignaturesDialogController, "present-signatures-dialog.fxml");
 
@@ -96,23 +99,26 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         stage.show();
 
         if (signatureValidationCompleted)
-            presentSignaturesDialogController.onSignatureValidationCompleted();
+            presentSignaturesDialogController.onSignatureValidationCompleted(signatureValidationReports);
     }
 
-    public void onSignatureCheckCompleted() {
-        if (visualization.getJob().getSignatureCheckReport() == null) {
+    public void onSignatureCheckCompleted(Reports reports) {
+        if (reports == null) {
             signatureCheckMessage.setText("Dokument ešte nie je podpísaný");
             return;
         }
 
-        signatureCheckMessage.setText("Dokument obsahuje podpisy: " + Integer.toString(visualization.getJob().getSignatureCheckReport().getSimpleReport().getSignaturesCount()));
+        signatureCheckReports = reports;
+
+        signatureCheckMessage.setText("Dokument obsahuje podpisy: " + Integer.toString(reports.getSimpleReport().getSignaturesCount()));
         showPresentSignaturesButton.setVisible(true);
     }
 
-    public void onSignatureValidationCompleted() {
+    public void onSignatureValidationCompleted(Reports reports) {
         signatureValidationCompleted = true;
+        signatureValidationReports = reports;
         if (presentSignaturesDialogController != null)
-            presentSignaturesDialogController.onSignatureValidationCompleted();
+            presentSignaturesDialogController.onSignatureValidationCompleted(reports);
     }
 
     public void refreshSigningKey() {

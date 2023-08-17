@@ -13,6 +13,7 @@ import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.Updater;
+import digital.slovensko.autogram.core.ValidationReportsWrapper;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.FunctionCanceledException;
 import digital.slovensko.autogram.core.errors.InitializationFailedException;
@@ -209,12 +210,12 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void onSignatureValidationCompleted(SigningJob job) {
+    public void onSignatureValidationCompleted(ValidationReportsWrapper wrapper) {
 
     }
 
     @Override
-    public void onSignatureCheckCompleted(SigningJob job) {
+    public void onSignatureCheckCompleted(ValidationReportsWrapper wrapper) {
 
     }
 

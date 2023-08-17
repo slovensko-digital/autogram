@@ -1,13 +1,27 @@
 package digital.slovensko.autogram.core;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Executors;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
@@ -25,6 +39,8 @@ import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.reports.Reports;
+
+import static digital.slovensko.autogram.util.DSSUtils.*;
 
 public class SignatureValidator {
     private static final String LOTL_URL = "https://ec.europa.eu/tools/lotl/eu-lotl.xml";
@@ -111,5 +127,49 @@ public class SignatureValidator {
         } catch (DSSException | NullPointerException e) {
             throw new AssertionError("Cannot load LOTL keystore", e);
         }
+    }
+
+    public synchronized Reports getSignatureValidationReport(DSSDocument document) {
+        return validate(createDocumentValidator(document));
+    }
+
+    public static String getSignatureValidationReportHTML(Reports signatureValidationReport) {
+        var builderFactory = DocumentBuilderFactory.newInstance();
+        builderFactory.setNamespaceAware(true);
+
+        try {
+            var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
+            var xmlSource = new DOMSource(document);
+
+            var xsltFile = SignatureValidator.class.getResourceAsStream("simple-report-bootstrap4.xslt");
+            var xsltSource = new StreamSource(xsltFile);
+
+            var outputTarget = new StreamResult(new StringWriter());
+            var transformer = TransformerFactory.newInstance().newTransformer(xsltSource);
+            transformer.transform(xmlSource, outputTarget);
+
+            var r = outputTarget.getWriter().toString().trim();
+
+            var templateFile = SignatureValidator.class.getResourceAsStream("simple-report-template.html");
+            var templateString = new String(templateFile.readAllBytes());
+            return templateString.replace("{{content}}", r);
+
+        } catch (SAXException | IOException | ParserConfigurationException | TransformerException e) {
+            return "Error transforming validation report";
+        }
+    }
+
+    public static Reports getSignatureCheckReport(DSSDocument document) {
+        var validator = createDocumentValidator(document);
+        if (validator == null)
+            return null;
+
+        validator.setCertificateVerifier(new CommonCertificateVerifier());
+        return validator.validateDocument();
+    }
+
+    public static boolean hasSignatures(DSSDocument document) {
+        var signatureCheckReport = getSignatureCheckReport(document);
+        return signatureCheckReport != null && signatureCheckReport.getSimpleReport().getSignaturesCount() > 0;
     }
 }

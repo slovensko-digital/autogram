@@ -1,11 +1,9 @@
 package digital.slovensko.autogram.core;
 
 import java.io.File;
-import java.io.IOException;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
-import static digital.slovensko.autogram.util.DSSUtils.createDocumentValidator;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
@@ -15,28 +13,12 @@ import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import java.io.StringReader;
-import java.io.StringWriter;
 
 public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
     private final SigningParameters parameters;
-    private Reports signatureCheckReport;
-    private Reports signatureValidationReport;
     private final MimeType transformationOutputMimeTypeForXdc;
 
     public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder,
@@ -195,57 +177,5 @@ public class SigningJob {
 
     public boolean shouldCheckPDFCompliance() {
         return parameters.getCheckPDFACompliance();
-    }
-
-    public void checkForSignatures() {
-        var validator = createDocumentValidator(document);
-        if (validator == null)
-            return;
-
-        validator.setCertificateVerifier(new CommonCertificateVerifier());
-        signatureCheckReport = validator.validateDocument();
-    }
-
-    public Reports getSignatureCheckReport() {
-        return signatureCheckReport;
-    }
-
-    public void validateSignatures() {
-        var signatureValidator = SignatureValidator.getInstance();
-        signatureValidationReport = signatureValidator.validate(createDocumentValidator(document));
-    }
-
-    public String getSignatureValidationReportHTML() {
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
-
-        try {
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
-            var xmlSource = new DOMSource(document);
-
-            var xsltFile = getClass().getResourceAsStream("simple-report-bootstrap4.xslt");
-            var xsltSource = new StreamSource(xsltFile);
-
-            var outputTarget = new StreamResult(new StringWriter());
-            var transformer = TransformerFactory.newInstance().newTransformer(xsltSource);
-            transformer.transform(xmlSource, outputTarget);
-
-            var r = outputTarget.getWriter().toString().trim();
-
-            var templateFile = getClass().getResourceAsStream("simple-report-template.html");
-            var templateString = new String(templateFile.readAllBytes());
-            return templateString.replace("{{content}}", r);
-
-        } catch (SAXException | IOException | ParserConfigurationException | TransformerException e) {
-            return "Error transforming validation report";
-        }
-    }
-
-    public Reports getSignatureValidationReport() {
-        return signatureValidationReport;
-    }
-
-    public boolean hasSignatures() {
-        return signatureCheckReport != null && signatureCheckReport.getSimpleReport().getSignaturesCount() > 0;
     }
 }

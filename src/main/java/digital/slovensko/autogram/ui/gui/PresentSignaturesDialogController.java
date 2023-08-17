@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 
 import javax.security.auth.x500.X500Principal;
 
-import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SignatureValidator;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -16,12 +16,14 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class PresentSignaturesDialogController implements SuppressedFocusController {
-    private final SigningJob signingJob;
     private final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+    private final GUI gui;
+    private Reports signatureCheckReports;
+    private Reports signatureValidationReports;
+    private String signatureValidationReportsHTML;
 
     @FXML
     Text signatureValidationMessage;
@@ -34,8 +36,9 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
     @FXML
     VBox signaturesBox;
 
-    public PresentSignaturesDialogController(SigningJob signingJob) {
-        this.signingJob = signingJob;
+    public PresentSignaturesDialogController(Reports signatureCheckReports, GUI gui) {
+        this.signatureCheckReports = signatureCheckReports;
+        this.gui = gui;
     }
 
     @Override
@@ -43,32 +46,38 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
         return mainBox;
     }
 
-    public void onSignatureValidationCompleted() {
+    public void onSignatureValidationCompleted(Reports reports) {
         signatureValidationMessage.setText("");
         signatureValidationMessage.setVisible(false);
-        signatureDetailsButton.setVisible(true);
+
+        signatureValidationReports = reports;
 
         showSignatures();
+
+        gui.onWorkThreadDo(() -> {
+            signatureValidationReportsHTML = SignatureValidator.getSignatureValidationReportHTML(signatureValidationReports);
+            signatureDetailsButton.setVisible(true);
+        });
     }
 
     public void onSignatureDetailsButtonAction() {
-        var controller = new SignatureDetailsController(signingJob);
+        var controller = new SignatureDetailsController();
         var root = GUIUtils.loadFXML(controller, "signature-details.fxml");
 
         var stage = new Stage();
         stage.setTitle("Detaily podpisov");
         stage.setScene(new Scene(root));
         stage.setResizable(false);
-        controller.showHTMLReport();
+        controller.showHTMLReport(signatureValidationReportsHTML);
         stage.show();
     }
 
     public void showSignatures() {
-        if (signingJob.getSignatureValidationReport() != null)
-            renderSignatures(signingJob.getSignatureValidationReport(), true);
+        if (signatureValidationReports != null)
+            renderSignatures(signatureValidationReports, true);
 
         else
-            renderSignatures(signingJob.getSignatureCheckReport(), false);
+            renderSignatures(signatureCheckReports, false);
     }
 
     public void renderSignatures(Reports reports, boolean isValidated) {
@@ -86,9 +95,7 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
             var timestampCount = Integer.toString(simple.getSignatureTimestamps(signatureId).size()) + (isQTSA(diagnostic, simple, signatureId) ? " (QTSA)" : "");
             var isValid = isValidated && simple.isValid(signatureId);
 
-            signaturesBox.getChildren().add(createSignatureBox(isValid, isValidated, subjectStr, signatureType, name, signingTime, timestampCount));
-
-            System.out.println("Issuer DN: " + new X500Principal(diagnostic.getSignatureById(signatureId).getSigningCertificate().getCertificateIssuerDN()).getName(X500Principal.RFC1779));
+            signaturesBox.getChildren().add(createSignatureBox(isValidated, isValid, subjectStr, signatureType, name, signingTime, timestampCount));
         }
     }
 
@@ -147,8 +154,6 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
     private boolean isQTSA(DiagnosticData diagnostic, SimpleReport simple, String signatureId) {
         var signature = diagnostic.getSignatureById(signatureId);
         for (var timestamp : signature.getSignatureTimestamps()) {
-            System.out.println("Timestamp DN: " + new X500Principal(timestamp.getSigningCertificate().getCertificateDN()).getName(X500Principal.RFC1779));
-
             if (simple.getTimestampQualification(timestamp.getId()).getReadable().equals("QTSA"))
                 return true;
         }
