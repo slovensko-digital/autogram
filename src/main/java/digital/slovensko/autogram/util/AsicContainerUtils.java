@@ -20,19 +20,19 @@ public class AsicContainerUtils {
         documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
         var signatures = documentValidator.getSignatures();
         if (signatures.isEmpty())
-            throw new OriginalDocumentNotFoundException("No signatures in document");
+            throw new OriginalDocumentNotFoundException("V kontajneri neboli nájdené žiadne podpisy");
 
         var extractor = new ASiCWithXAdESContainerExtractor(asice);
         var aSiCContent = extractor.extract();
 
         if (aSiCContent.getAllDocuments().isEmpty())
-            throw new OriginalDocumentNotFoundException("No documents in container");
+            throw new OriginalDocumentNotFoundException("V kontajneri neboli nájdené žiadne dokumenty");
 
         if (aSiCContent.getSignedDocuments().isEmpty())
-            throw new OriginalDocumentNotFoundException("No signed documents in container");
+            throw new OriginalDocumentNotFoundException("V kontajneri neboli nájdené žiadne dokumenty na podpis");
 
         if (aSiCContent.getSignedDocuments().size() > 1)
-            throw new MultipleOriginalDocumentsFoundException("Multiple original documents found in the container");
+            throw new MultipleOriginalDocumentsFoundException("V kontajneri bolo nájdených viacero dokumentov na podpis");
 
         var originalDocument = aSiCContent.getSignedDocuments().get(0);
         if (originalDocument.getMimeType().equals(MimeTypeEnum.XML))

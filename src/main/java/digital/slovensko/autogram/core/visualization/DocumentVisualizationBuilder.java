@@ -26,6 +26,7 @@ import digital.slovensko.autogram.core.AutogramMimeType;
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -55,8 +56,13 @@ public class DocumentVisualizationBuilder {
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
         var documentToDisplay = this.document;
-        if (isAsice(documentToDisplay.getMimeType()))
-            documentToDisplay = AsicContainerUtils.getOriginalDocument(this.document);
+        if (isAsice(documentToDisplay.getMimeType())) {
+            try {
+                documentToDisplay = AsicContainerUtils.getOriginalDocument(this.document);
+            } catch (AutogramException e) {
+                return new UnsupportedVisualization(job);
+            }
+        }
 
         if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(documentToDisplay)) {
 
