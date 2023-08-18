@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.InvalidXMLException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -10,12 +11,15 @@ import eu.europa.esig.dss.xades.DSSXMLUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -27,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class XDCTransformer {
+
     public enum DestinationMediaType {
         TXT, HTML, XHTML
     }
@@ -73,6 +78,34 @@ public class XDCTransformer {
         this.xsltSchema = xsltSchema;
         this.digestAlgorithm = digestAlgorithm;
         this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
+    }
+
+    public static XDCTransformer buildFromSigningParametersAndDocument(SigningParameters sp, DSSDocument document) throws InvalidXMLException {
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+
+            return new XDCTransformer(sp.getSchema(),
+                    sp.getTransformation(),
+                    sp.getPropertiesCanonicalization(),
+                    sp.getDigestAlgorithm(),
+                    builderFactory.newDocumentBuilder().parse(new InputSource(document.openStream())));
+        } catch (Exception e) {
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to process document");
+        }
+    }
+
+    private XDCTransformer(String xsdSchema, String xsltSchema, String canonicalizationMethod,
+                          DigestAlgorithm digestAlgorithm, Document document) {
+        this.xsdSchema = xsdSchema;
+        this.xsltSchema = xsltSchema;
+        this.canonicalizationMethod = canonicalizationMethod;
+        this.digestAlgorithm = digestAlgorithm;
+        this.identifierUri = null;
+        this.identifierVersion = null;
+        this.containerXmlns = null;
+        this.mediaDestinationTypeDescription = null;
+        this.document = document;
     }
 
     public DSSDocument transform(DSSDocument dssDocument) {
@@ -218,4 +251,77 @@ public class XDCTransformer {
     private static String toNamespacedString(DigestAlgorithm digestAlgorithm) {
         return "urn:oid:" + digestAlgorithm.getOid();
     }
+
+    public boolean validateXsdDigest() throws InvalidXMLException {
+        try {
+            String xsdSchemaHash = computeDigest(xsdSchema);
+            String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
+            return xsdSchemaHash.equals(xsdDigestValue);
+        } catch (Exception e) {
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Invalid XSD");
+        }
+    }
+
+    public boolean validateXsltDigest() throws InvalidXMLException {
+        try {
+            String xsltSchemaHash = computeDigest(xsltSchema);
+            String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
+            return xsltSchemaHash.equals(xsltDigestValue);
+        } catch (Exception e) {
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Invalid XSLT");
+        }
+    }
+
+    private String getDigestValueFromElement(String elementLocalName) throws InvalidXMLException {
+        var xdc = document.getDocumentElement();
+
+        var element = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", elementLocalName)
+                .item(0);
+        if (element == null)
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Element " + elementLocalName + " not found");
+
+        var attributes = element.getAttributes();
+        if (attributes == null || attributes.getLength() == 0)
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Attributes of " + elementLocalName + " not found");
+
+        var digestValue = attributes.getNamedItem("DigestValue");
+        if (digestValue == null)
+            throw new InvalidXMLException("XML Datacontainer validation failed", "DigestValue of " + elementLocalName + " not found");
+
+        return digestValue.getNodeValue();
+    }
+
+    public String getContentFromXdc() throws InvalidXMLException {
+        var xdc = document.getDocumentElement();
+
+        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
+                .item(0);
+
+        if (xmlData == null)
+            throw new InvalidXMLException("XML Datacontainer validation failed", "XMLData not found in XDC");
+
+        return transformElementToString(xmlData.getFirstChild());
+    }
+
+    public static String transformElementToString(Node element) throws InvalidXMLException {
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+
+            var document = builderFactory.newDocumentBuilder().newDocument();
+            var node = document.importNode(element, true);
+            document.appendChild(node);
+
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Transformer transformer = factory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            StringWriter writer = new StringWriter();
+            transformer.transform(new DOMSource(document), new StreamResult(writer));
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to get xml content");
+        }
+    }
+
 }

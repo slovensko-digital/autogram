@@ -6,12 +6,12 @@ import java.util.Base64;
 
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.ui.Visualizer;
-import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.model.DSSDocument;
 
 public class PDFVisualization extends Visualization {
-    private final CommonDocument document;
+    private final DSSDocument document;
 
-    public PDFVisualization(CommonDocument document, SigningJob job) {
+    public PDFVisualization(DSSDocument document, SigningJob job) {
         super(job);
         this.document = document;
     }
