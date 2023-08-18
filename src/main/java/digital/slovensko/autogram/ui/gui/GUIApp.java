@@ -36,6 +36,7 @@ public class GUIApp extends Application {
             System.out.println("Closing application");
 
             Platform.exit();
+            System.exit(0);
         });
 
         if (!params.isStandaloneMode())
