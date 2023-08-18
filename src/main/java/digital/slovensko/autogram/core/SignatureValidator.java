@@ -85,7 +85,7 @@ public class SignatureValidator {
         lotlSource.setPivotSupport(true);
         lotlSource.setTlPredicate(TLPredicateFactory.createEUTLCountryCodePredicate("SK", "CZ", "AT", "HU", "PL"));
 
-        var targetLocation = Path.of(System.getProperty("user.dir"), "cache", "certs").toFile();
+        var targetLocation = Path.of(System.getProperty("user.dir"), ".autogram", "cache", "certs").toFile();
         targetLocation.mkdirs();
 
         var offlineFileLoader = new FileCacheDataLoader();
