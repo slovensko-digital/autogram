@@ -2,8 +2,8 @@ openapi: 3.0.3
 info:
   title: Autogram Server
   description: |
-    This documentation describes Autogram running in the server mode.
-
+    This documentation describes Autogram running in the server mode. 
+    
     If you have the custom protocol configured, you can launch it using the link `autogram://launch/37200/*/key` or `autogram://go`.
   termsOfService: https://sluzby.slovensko.digital/autogram
   contact:
@@ -49,9 +49,9 @@ paths:
         - Batch
       summary: Sign a single document or single document in batch
       description: |
-        Sign a single document or single document in batch.
+        Sign a single document or single document in batch. 
 
-        If the `batchId` is provided, the document is signed inside the batch.
+        If the `batchId` is provided, the document is signed inside the batch. 
 
         If the `batchId` is not provided, the document is signed as a standalone document.
       operationId: signDocument
@@ -217,12 +217,12 @@ paths:
       operationId: startBatch
       summary: Start a batch session
       description: |
-        Start a batch session, `batchId` is returned.
+        Start a batch session, `batchId` is returned. 
 
-        Batch session is used to sign multiple documents with the same signature.
-        The batch session is identified and authorized by the `batchId`, keep it secret.
+        Batch session is used to sign multiple documents with the same signature. 
+        The batch session is identified and authorized by the `batchId`, keep it secret. 
 
-        After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body.
+        After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body. 
         When you are done signing documents, you can end the batch session using `DELETE /batch`.
       requestBody:
         content:
@@ -276,7 +276,7 @@ components:
           type: string
           example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
           description: |
-            Optional identifier of the batch.
+            Optional identifier of the batch. 
             If not provided, document will be signed as single standalone document.
             If provided, document will be signed inside batch.
         document:
@@ -342,7 +342,7 @@ components:
     BatchStartResponseBody:
       type: object
       properties:
-        batchId:
+        batchId: 
           type: string
           example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
           description: Identifier of the batch. Used to identify the batch for signing and ending batch.
@@ -350,11 +350,11 @@ components:
     BatchEndRequestBody:
       type: object
       properties:
-        batchId:
+        batchId: 
           type: string
           example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
           description: Identifier of the batch.
-
+    
     BatchEndResponseBody:
       type: object
       properties:
