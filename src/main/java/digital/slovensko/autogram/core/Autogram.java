@@ -9,6 +9,7 @@ import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
@@ -66,6 +67,13 @@ public class Autogram {
 
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
+            if (PDFUtils.isPdfAndPasswordProtected(job.getDocument())) {
+                ui.onUIThreadDo(() -> {
+                    ui.showError(new AutogramException("Nastala chyba", "Dokument je chránený heslom", "Snažíte sa podpísať dokument chránený heslom, čo je funkcionalita, ktorá nie je podporovaná.\n\nOdstráňte ochranu heslom a potom budete môcť dokument podpísať."));
+                });
+                return;
+            }
+
             try {
                 var visualization = DocumentVisualizationBuilder.fromJob(job);
                 ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));

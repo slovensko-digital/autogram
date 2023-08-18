@@ -53,4 +53,6 @@ public interface UI {
     public void onSignatureCheckCompleted(ValidationReports reports);
 
     void showIgnorableExceptionDialog(IgnorableException exception);
+
+    void showError(AutogramException exception);
 }
