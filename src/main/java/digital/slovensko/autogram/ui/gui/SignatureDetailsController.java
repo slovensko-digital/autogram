@@ -25,7 +25,7 @@ public class SignatureDetailsController {
                 engine.getDocument().getElementById("frame").setAttribute("srcdoc", htmlReport);
             }
         });
-        engine.load(getClass().getResource("visualization-html.html").toExternalForm());
+        engine.load(getClass().getResource("signature-details.html").toExternalForm());
         webViewContainer.setVisible(true);
         webViewContainer.setManaged(true);
     }
