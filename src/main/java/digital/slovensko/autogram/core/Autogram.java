@@ -14,8 +14,8 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
 public class Autogram {
@@ -39,7 +39,7 @@ public class Autogram {
     }
 
     public void checkAndValidateSignatures(SigningJob job) {
-        ui.onWorkThreadDo(() -> checkSignatures(job));
+        checkSignatures(job);
 
         var reports = SignatureValidator.getInstance().getSignatureValidationReport(job);
         if (!reports.haveSignatures())
@@ -198,20 +198,12 @@ public class Autogram {
         ui.onUIThreadDo(() -> ui.onSigningFailed(e));
     }
 
-    public Timer initializeSignatureValidator() {
+    public void initializeSignatureValidator(ScheduledExecutorService scheduledExecutorService, ExecutorService cachedExecutorService) {
         ui.onWorkThreadDo(() -> {
-            SignatureValidator.getInstance().initialize();
+            SignatureValidator.getInstance().initialize(cachedExecutorService);
         });
 
-        var timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
-                public void run() {
-                    SignatureValidator.getInstance().refresh();
-                }
-            },
-             3600000L,
-             3600000L);
-
-        return timer;
+        scheduledExecutorService.scheduleAtFixedRate(() -> SignatureValidator.getInstance().refresh(),
+            480, 480, java.util.concurrent.TimeUnit.MINUTES);
     }
 }

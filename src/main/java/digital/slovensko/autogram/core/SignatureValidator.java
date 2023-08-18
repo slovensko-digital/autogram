@@ -6,7 +6,7 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -67,12 +67,10 @@ public class SignatureValidator {
     }
 
     public synchronized void refresh() {
-        System.out.println("Refreshing signature validator...");
         validationJob.offlineRefresh();
-        System.out.println("Signature validator refreshed");
     }
 
-    public synchronized void initialize() {
+    public synchronized void initialize(ExecutorService executorService) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         logger.debug("Initializing signature validator at {}", formatter.format(new Date()));
 
@@ -104,7 +102,7 @@ public class SignatureValidator {
         validationJob.setTrustedListCertificateSource(trustedListCertificateSource);
         validationJob.setListOfTrustedListSources(lotlSource);
         validationJob.setSynchronizationStrategy(new ExpirationAndSignatureCheckStrategy());
-        validationJob.setExecutorService(Executors.newFixedThreadPool(4));
+        validationJob.setExecutorService(executorService);
         validationJob.setDebug(true);
 
         logger.debug("Starting signature validator offline refresh");
@@ -129,7 +127,11 @@ public class SignatureValidator {
     }
 
     public synchronized ValidationReports getSignatureValidationReport(SigningJob job) {
-        return new ValidationReports(validate(createDocumentValidator(job.getDocument())), job);
+        var documentValidator = createDocumentValidator(job.getDocument());
+        if (documentValidator == null)
+            return new ValidationReports(null, job);
+
+        return new ValidationReports(validate(documentValidator), job);
     }
 
     public static String getSignatureValidationReportHTML(Reports signatureValidationReport) {
@@ -161,7 +163,7 @@ public class SignatureValidator {
     public static ValidationReports getSignatureCheckReport(SigningJob job) {
         var validator = createDocumentValidator(job.getDocument());
         if (validator == null)
-            return null;
+            return new ValidationReports(null, job);
 
         validator.setCertificateVerifier(new CommonCertificateVerifier());
         return new ValidationReports(validator.validateDocument(), job);

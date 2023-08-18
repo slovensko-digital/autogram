@@ -51,9 +51,6 @@ public class GUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
-        onWorkThreadDo(()
-        -> autogram.checkAndValidateSignatures(job));
-
         autogram.startVisualization(job);
     }
 
@@ -269,12 +266,13 @@ public class GUI implements UI {
 
         stage.sizeToScene();
 
-
-
         GUIUtils.suppressDefaultFocus(stage, controller);
         GUIUtils.showOnTop(stage);
         GUIUtils.hackToForceRelayout(stage);
         setUserFriendlyPositionAndLimits(stage);
+
+        onWorkThreadDo(()
+        -> autogram.checkAndValidateSignatures(visualization.getJob()));
     }
 
     @Override
