@@ -17,19 +17,16 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import digital.slovensko.autogram.core.AsicContainer;
-import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
+import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
@@ -58,10 +55,8 @@ public class DocumentVisualizationBuilder {
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
         var documentToDisplay = this.document;
-        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.ASICE)) {
-            AsicContainer asicContainer = new AsicContainer(this.document);
-            documentToDisplay = asicContainer.getOriginalDocument();
-        }
+        if (isAsice(documentToDisplay.getMimeType()))
+            documentToDisplay = AsicContainerUtils.getOriginalDocument(this.document);
 
         if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(documentToDisplay)) {
 

@@ -9,7 +9,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
-import digital.slovensko.autogram.core.AsicContainer;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import eu.europa.esig.dss.model.DSSDocument;
 import org.xml.sax.InputSource;
@@ -22,6 +21,7 @@ import digital.slovensko.autogram.core.errors.InvalidXMLException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
+import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
@@ -68,7 +68,8 @@ public class SignRequestBody {
         parameters.validate(getDocument().getMimeType());
 
         var signingParameters = parameters.getSigningParameters(isBase64());
-        if (isAsice(getMimetype()) || isXML(getMimetype()) || isXDC(getMimetype()))
+        var parsedPaylodMimeType = getMimetype();
+        if (isAsice(parsedPaylodMimeType) || isXML(parsedPaylodMimeType) || isXDC(parsedPaylodMimeType))
             validateXml(signingParameters);
 
         return signingParameters;
@@ -119,8 +120,7 @@ public class SignRequestBody {
     }
 
     private String getXmlContentFromAsice(SigningParameters signingParameters) throws XMLValidationException, InvalidXMLException {
-        AsicContainer asicContainer = new AsicContainer(getDocument());
-        DSSDocument originalDocument = asicContainer.getOriginalDocument();
+        DSSDocument originalDocument = AsicContainerUtils.getOriginalDocument(getDocument());
         if (!isXDC(originalDocument.getMimeType()) && !isXML(originalDocument.getMimeType())) {
             return null;
         }

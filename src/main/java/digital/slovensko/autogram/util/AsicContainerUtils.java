@@ -1,5 +1,7 @@
-package digital.slovensko.autogram.core;
+package digital.slovensko.autogram.util;
 
+import digital.slovensko.autogram.core.AutogramMimeType;
+import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
@@ -12,35 +14,34 @@ import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-public class AsicContainer {
-
-    private DSSDocument asice;
-
-    public AsicContainer(DSSDocument asice) {
-        this.asice = asice;
-    }
-
-    public DSSDocument getOriginalDocument() {
+public class AsicContainerUtils {
+    public static DSSDocument getOriginalDocument(DSSDocument asice) {
         var documentValidator = SignedDocumentValidator.fromDocument(asice);
         documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
         var signatures = documentValidator.getSignatures();
-        if (signatures.isEmpty()) {
+        if (signatures.isEmpty())
             throw new OriginalDocumentNotFoundException("No signatures in document");
-        }
-        var advancedSignature = signatures.get(0);
-        var originalDocuments = documentValidator.getOriginalDocuments(advancedSignature.getId());
-        if (originalDocuments.isEmpty()) {
-            throw new OriginalDocumentNotFoundException("No original documents found");
-        }
-        DSSDocument originalDocument = originalDocuments.get(0);
-        if (originalDocument.getMimeType().equals(MimeTypeEnum.XML)) {
+
+        var extractor = new ASiCWithXAdESContainerExtractor(asice);
+        var aSiCContent = extractor.extract();
+
+        if (aSiCContent.getAllDocuments().isEmpty())
+            throw new OriginalDocumentNotFoundException("No documents in container");
+
+        if (aSiCContent.getSignedDocuments().isEmpty())
+            throw new OriginalDocumentNotFoundException("No signed documents in container");
+
+        if (aSiCContent.getSignedDocuments().size() > 1)
+            throw new MultipleOriginalDocumentsFoundException("Multiple original documents found in the container");
+
+        var originalDocument = aSiCContent.getSignedDocuments().get(0);
+        if (originalDocument.getMimeType().equals(MimeTypeEnum.XML))
             setMimeTypeFromManifest(asice, originalDocument);
-        }
 
         return originalDocument;
     }
 
-    private void setMimeTypeFromManifest(DSSDocument asiceContainer, DSSDocument documentToDisplay) {
+    private static void setMimeTypeFromManifest(DSSDocument asiceContainer, DSSDocument documentToDisplay) {
         var manifest = getManifest(asiceContainer);
         if (manifest == null) {
             return;
@@ -55,7 +56,7 @@ public class AsicContainer {
         documentToDisplay.setMimeType(mimeType);
     }
 
-    private DSSDocument getManifest(DSSDocument originalDocument) {
+    private static DSSDocument getManifest(DSSDocument originalDocument) {
         var extractor = new ASiCWithXAdESContainerExtractor(originalDocument);
         var aSiCContent = extractor.extract();
         var manifestDocuments = aSiCContent.getManifestDocuments();
@@ -65,7 +66,7 @@ public class AsicContainer {
         return manifestDocuments.get(0);
     }
 
-    private MimeType getMimeTypeFromManifest(DSSDocument manifest, String documentName) {
+    private static MimeType getMimeTypeFromManifest(DSSDocument manifest, String documentName) {
         var fileEntries = getFileEntriesFromManifest(manifest);
         if (fileEntries == null) {
             return null;
@@ -87,7 +88,7 @@ public class AsicContainer {
         return null;
     }
 
-    private NodeList getFileEntriesFromManifest(DSSDocument manifest) {
+    private static NodeList getFileEntriesFromManifest(DSSDocument manifest) {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
