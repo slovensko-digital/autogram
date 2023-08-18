@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
@@ -129,8 +128,8 @@ public class SignatureValidator {
         }
     }
 
-    public synchronized Reports getSignatureValidationReport(DSSDocument document) {
-        return validate(createDocumentValidator(document));
+    public synchronized ValidationReports getSignatureValidationReport(SigningJob job) {
+        return new ValidationReports(validate(createDocumentValidator(job.getDocument())), job);
     }
 
     public static String getSignatureValidationReportHTML(Reports signatureValidationReport) {
@@ -159,17 +158,12 @@ public class SignatureValidator {
         }
     }
 
-    public static Reports getSignatureCheckReport(DSSDocument document) {
-        var validator = createDocumentValidator(document);
+    public static ValidationReports getSignatureCheckReport(SigningJob job) {
+        var validator = createDocumentValidator(job.getDocument());
         if (validator == null)
             return null;
 
         validator.setCertificateVerifier(new CommonCertificateVerifier());
-        return validator.validateDocument();
-    }
-
-    public static boolean hasSignatures(DSSDocument document) {
-        var signatureCheckReport = getSignatureCheckReport(document);
-        return signatureCheckReport != null && signatureCheckReport.getSimpleReport().getSignaturesCount() > 0;
+        return new ValidationReports(validator.validateDocument(), job);
     }
 }

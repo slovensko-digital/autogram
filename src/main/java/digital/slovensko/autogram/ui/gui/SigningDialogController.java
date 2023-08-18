@@ -28,7 +28,7 @@ import javafx.stage.Stage;
 public class SigningDialogController implements SuppressedFocusController, Visualizer {
     private final GUI gui;
     private final Autogram autogram;
-    private PresentSignaturesDialogController presentSignaturesDialogController;
+    private SignaturesController signaturesController;
     private boolean signatureValidationCompleted = false;
     private final Visualization visualization;
     private Reports signatureValidationReports;
@@ -53,7 +53,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     @FXML
     public Button changeKeyButton;
     @FXML
-    public Button showPresentSignaturesButton;
+    public Button showSignaturesButton;
     @FXML
     VBox unsupportedVisualizationInfoBox;
 
@@ -84,22 +84,22 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
     }
 
-    public void onShowPresentSignaturesButtonPressed(ActionEvent event) {
-        if (presentSignaturesDialogController == null)
-            presentSignaturesDialogController = new PresentSignaturesDialogController(signatureCheckReports, gui);
+    public void onShowSignaturesButtonPressed(ActionEvent event) {
+        if (signaturesController == null)
+            signaturesController = new SignaturesController(signatureCheckReports, gui);
 
-        var root = GUIUtils.loadFXML(presentSignaturesDialogController, "present-signatures-dialog.fxml");
+        var root = GUIUtils.loadFXML(signaturesController, "present-signatures-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Prítomné podpisy");
+        stage.setTitle("Prítomné podpisy"); // TODO lepsi nazov
         stage.setScene(new Scene(root));
         stage.setResizable(false);
-        GUIUtils.suppressDefaultFocus(stage, presentSignaturesDialogController);
-        presentSignaturesDialogController.showSignatures();
+        GUIUtils.suppressDefaultFocus(stage, signaturesController);
+        signaturesController.showSignatures();
         stage.show();
 
         if (signatureValidationCompleted)
-            presentSignaturesDialogController.onSignatureValidationCompleted(signatureValidationReports);
+            signaturesController.onSignatureValidationCompleted(signatureValidationReports);
     }
 
     public void onSignatureCheckCompleted(Reports reports) {
@@ -111,14 +111,14 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         signatureCheckReports = reports;
 
         signatureCheckMessage.setText("Dokument obsahuje podpisy: " + Integer.toString(reports.getSimpleReport().getSignaturesCount()));
-        showPresentSignaturesButton.setVisible(true);
+        showSignaturesButton.setVisible(true);
     }
 
     public void onSignatureValidationCompleted(Reports reports) {
         signatureValidationCompleted = true;
         signatureValidationReports = reports;
-        if (presentSignaturesDialogController != null)
-            presentSignaturesDialogController.onSignatureValidationCompleted(reports);
+        if (signaturesController != null)
+            signaturesController.onSignatureValidationCompleted(reports);
     }
 
     public void refreshSigningKey() {

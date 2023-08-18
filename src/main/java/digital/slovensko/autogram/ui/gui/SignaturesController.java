@@ -18,7 +18,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
-public class PresentSignaturesDialogController implements SuppressedFocusController {
+public class SignaturesController implements SuppressedFocusController {
     private final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
     private final GUI gui;
     private Reports signatureCheckReports;
@@ -36,7 +36,7 @@ public class PresentSignaturesDialogController implements SuppressedFocusControl
     @FXML
     VBox signaturesBox;
 
-    public PresentSignaturesDialogController(Reports signatureCheckReports, GUI gui) {
+    public SignaturesController(Reports signatureCheckReports, GUI gui) {
         this.signatureCheckReports = signatureCheckReports;
         this.gui = gui;
     }

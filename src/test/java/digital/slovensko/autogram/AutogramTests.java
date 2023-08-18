@@ -203,12 +203,12 @@ class AutogramTests {
         }
 
         @Override
-        public void onSignatureValidationCompleted(ValidationReportsWrapper wrapper) {
+        public void onSignatureValidationCompleted(ValidationReports wrapper) {
 
         }
 
         @Override
-        public void onSignatureCheckCompleted(ValidationReportsWrapper wrapper) {
+        public void onSignatureCheckCompleted(ValidationReports wrapper) {
 
         }
     }

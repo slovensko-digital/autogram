@@ -21,7 +21,7 @@
 
     <HBox styleClass="autogram-actions">
         <Text fx:id="signatureCheckMessage" styleClass="autogram-body" text="Hľadám podpisy..."></Text>
-        <Button fx:id="showPresentSignaturesButton" styleClass="autogram-link" text="Zobraziť podpisy" visible="false" onAction="#onShowPresentSignaturesButtonPressed"/>
+        <Button fx:id="showSignaturesButton" styleClass="autogram-link" text="Zobraziť podpisy" visible="false" onAction="#onShowSignaturesButtonPressed"/>
     </HBox>
 
     <!-- HTML/PDF visualization -->

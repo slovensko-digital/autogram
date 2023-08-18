@@ -13,7 +13,7 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.ValidationReportsWrapper;
+import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
@@ -240,15 +240,15 @@ public class GUI implements UI {
     }
 
     @Override
-    public void onSignatureValidationCompleted(ValidationReportsWrapper wrapper) {
-        var controller = jobControllers.get(wrapper.getSigningJob());
-        controller.onSignatureValidationCompleted(wrapper.getReports());
+    public void onSignatureValidationCompleted(ValidationReports reports) {
+        var controller = jobControllers.get(reports.getSigningJob());
+        controller.onSignatureValidationCompleted(reports.getReports());
     }
 
     @Override
-    public void onSignatureCheckCompleted(ValidationReportsWrapper wrapper) {
-        var controller = jobControllers.get(wrapper.getSigningJob());
-        controller.onSignatureCheckCompleted(wrapper.getReports());
+    public void onSignatureCheckCompleted(ValidationReports reports) {
+        var controller = jobControllers.get(reports.getSigningJob());
+        controller.onSignatureCheckCompleted(reports.haveSignatures() ? reports.getReports() : null);
     }
 
     public void showVisualization(Visualization visualization, Autogram autogram) {

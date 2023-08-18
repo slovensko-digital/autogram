@@ -2,11 +2,11 @@ package digital.slovensko.autogram.core;
 
 import eu.europa.esig.dss.validation.reports.Reports;
 
-public class ValidationReportsWrapper {
+public class ValidationReports {
     private final Reports reports;
     private final SigningJob signingJob;
 
-    public ValidationReportsWrapper(Reports reports, SigningJob signingJob) {
+    public ValidationReports(Reports reports, SigningJob signingJob) {
         this.reports = reports;
         this.signingJob = signingJob;
     }
@@ -17,5 +17,9 @@ public class ValidationReportsWrapper {
 
     public SigningJob getSigningJob() {
         return signingJob;
+    }
+
+    public boolean haveSignatures() {
+        return reports != null && reports.getSimpleReport().getSignaturesCount() > 0;
     }
 }

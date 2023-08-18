@@ -40,16 +40,16 @@ public class Autogram {
     public void checkAndValidateSignatures(SigningJob job) {
         ui.onWorkThreadDo(() -> checkSignatures(job));
 
-        if (!SignatureValidator.hasSignatures(job.getDocument()))
+        var reports = SignatureValidator.getInstance().getSignatureValidationReport(job);
+        if (!reports.haveSignatures())
             return;
 
-        var reports = SignatureValidator.getInstance().getSignatureValidationReport(job.getDocument());
-        ui.onUIThreadDo(() -> ui.onSignatureValidationCompleted(new ValidationReportsWrapper(reports, job)));
+        ui.onUIThreadDo(() -> ui.onSignatureValidationCompleted(reports));
     }
 
     private void checkSignatures(SigningJob job) {
-        var reports = SignatureValidator.getSignatureCheckReport(job.getDocument());
-        ui.onUIThreadDo(() -> ui.onSignatureCheckCompleted(new ValidationReportsWrapper(reports, job)));
+        var reports = SignatureValidator.getSignatureCheckReport(job);
+        ui.onUIThreadDo(() -> ui.onSignatureCheckCompleted(reports));
     }
 
     public void checkPDFACompliance(SigningJob job) {
