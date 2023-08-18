@@ -655,6 +655,9 @@ TextFlow.autogram-body-s {
 -fx-spacing: 20;
 }
 
+.tab {
+}
+
 .autogram-tabpane .tab {
 }
 
@@ -684,3 +687,41 @@ TextFlow.autogram-body-s {
 .test {
     -
 }
+
+.autogram-tab-header {
+  -fx-text-fill: red;
+}
+
+.choice-box {
+  -fx-background-color: white;
+  -fx-border-color: black;
+  -fx-border-width: 2px;
+  -fx-padding: 5px;
+  -fx-font-size: 14px;
+}
+
+.choice-box .arrow-button {
+    -fx-background-color: #e0e0e0;
+    -fx-background-radius: 0;
+}
+
+.choice-box .arrow {
+    -fx-background-color: #a0a0a0;
+    -fx-shape: "M0 0 L10 5 L0 10 L0 0";
+    -fx-padding: 3px;
+    -fx-rotate: 90;
+}
+
+.check-box {
+     -fx-text-fill: black; /* Change this color to suit your design */
+ }
+
+ /* Style the CheckBox itself */
+ .check-box .box {
+     -fx-background-color: #e0e0e0; /* Background color of the CheckBox box */
+ }
+
+ .check-box .mark {
+     -fx-background-color: #007bff; /* Checkmark color */
+     -fx-border-color: #007bff; /* Border color around the checkmark */
+ }

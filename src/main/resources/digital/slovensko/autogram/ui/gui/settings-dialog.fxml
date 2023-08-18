@@ -1,29 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.VBox?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.layout.AnchorPane?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" prefWidth="800" minWidth="800">
+
+<BorderPane minWidth="800" prefWidth="800" xmlns="http://javafx.com/javafx/17.0.2-ea"
+            xmlns:fx="http://javafx.com/fxml/1">
     <center>
-        <VBox fx:id="mainBox">
+        <VBox fx:id="mainBox" prefHeight="600" prefWidth="800.0">
             <VBox>
-                <TabPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-                         styleClass="autogram-tabpane">
+                <TabPane prefHeight="600" prefWidth="800.0" styleClass="autogram-tabpane"
+                         xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
                     <tabs>
                         <Tab text="Podpisovanie">
                             <content>
-                                <AnchorPane>
-                                    <VBox styleClass="borders,autogram-prose,test" maxWidth="650">
-                                        <TextFlow >
-                                            <Text styleClass="autogram-heading-m" text="Podpisovanie"/>
+                                <AnchorPane styleClass="autogram-tab-header">
+                                    <VBox styleClass="autogram-prose"  maxWidth="650">
+                                        <TextFlow styleClass="autogram-body">
+                                            <Text styleClass="autogram-body-s" text="Podpisovanie"/>
                                         </TextFlow>
-                                        <TextFlow styleClass="borders">
-                                            <Text styleClass="autogram-body-m"
-                                                  text="Predvolené nastavenia na typy a spôsob podpisovania. Tieto nastavenia sa dajú rýchlo zmeniť pri každom hromadnom a individuálnom podpisovaní."/>
+                                        <TextFlow styleClass="autogram-body">
+                                            <Text styleClass="autogram-body-s" text="Predvolené nastavenia na typy a spôsob podpisovania. Tieto nastavenia sa dajú rýchlo zmeniť pri každom hromadnom a individuálnom podpisovaní."/>
                                         </TextFlow>
+                                        <HBox >
+                                            <TextFlow styleClass="autogram-body" minWidth="300">
+                                                <Text styleClass="autogram-body-s" text="Podpisovanie PDF"/>
+                                            </TextFlow>
+                                            <ChoiceBox fx:id="signatureTypeBox"></ChoiceBox>
+                                        </HBox>
+                                        <HBox>
+                                            <TextFlow styleClass="autogram-body" minWidth="300">
+                                                <Text styleClass="autogram-body-s" text="Štandard ETSI EN 319 132-1"/>
+                                            </TextFlow>
+                                            <CheckBox fx:id="checkBox" text="Použiť štandard" styleClass="check-box"/>
+                                        </HBox>
+                                        <HBox>
+                                            <TextFlow styleClass="autogram-body" minWidth="300">
+                                                <Text styleClass="autogram-body-s" text="Hromadné podpisovanie dokumentov"/>
+                                                <HBox fx:id="radios" styleClass="autogram-radios"/>
+                                            </TextFlow>
+                                        </HBox>
+                                        <HBox>
+                                            <TextFlow styleClass="autogram-body" minWidth="300">
+                                                <Text styleClass="autogram-body-s" text="Podpisovací certifikát"/>
+                                            </TextFlow>
+                                            <ChoiceBox fx:id="driverBox" styleClass="choice-box"></ChoiceBox>
+                                        </HBox>
                                     </VBox>
                                 </AnchorPane>
                             </content>
@@ -61,9 +84,9 @@
         </VBox>
     </center>
     <bottom>
-        <HBox styleClass="autogram-footer">
-            <TextFlow>
-                <Text styleClass="autogram-body-s" text="Verzia: "/>
+        <HBox prefHeight="51.0" prefWidth="800.0" styleClass="autogram-footer">
+            <TextFlow prefHeight="135.0" prefWidth="135.0">
+                <Text styleClass="autogram-body-s" text="Verzia: " wrappingWidth="266.2265625"/>
             </TextFlow>
         </HBox>
     </bottom>
