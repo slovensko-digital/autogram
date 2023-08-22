@@ -700,6 +700,26 @@ TextFlow.autogram-body-s {
   -fx-font-size: 14px;
 }
 
+.choice-box .context-menu {
+    -fx-background-color: white;
+}
+
+.choice-box .menu-item:focused {
+    -fx-background-color: #dbdad9;
+}
+
+.choice-box .menu-item > .label {
+    -fx-text-fill: black;
+    -fx-padding: 3px;
+}
+
+.choice-box .menu-item:focused > .label {
+    -fx-text-fill: black;
+}
+.choice-box > .label {
+    -fx-text-fill: black;
+}
+
 .choice-box .arrow-button {
     -fx-background-color: #e0e0e0;
     -fx-background-radius: 0;
@@ -713,15 +733,45 @@ TextFlow.autogram-body-s {
 }
 
 .check-box {
-     -fx-text-fill: black; /* Change this color to suit your design */
+     -fx-text-fill: black;
  }
 
- /* Style the CheckBox itself */
  .check-box .box {
-     -fx-background-color: #e0e0e0; /* Background color of the CheckBox box */
+  -fx-background-color: white;
+  -fx-border-color: black;
+  -fx-text-fill: black;
+  -fx-pref-height: 25px;
+  -fx-pref-width: 25px;
+  -fx-spacing: 0 10px 0 0;
  }
 
  .check-box .mark {
-     -fx-background-color: #007bff; /* Checkmark color */
-     -fx-border-color: #007bff; /* Border color around the checkmark */
+  -fx-background-color: white;
+  -fx-border-color: black;
+  -fx-text-fill: black;
+  -fx-pref-height: 25px;
+  -fx-pref-width: 25px;
  }
+
+.autogram-settings-header {
+    -fx-border-color:black;
+    -fx-padding: 3px;
+}
+
+.autogram-settings-container {
+    -fx-padding: 15px;
+}
+
+.autogram-settings-description {
+  -fx-text-fill: gray;
+  -fx-fill: gray;
+
+  -fx-font-size: 1em;
+}
+
+.autogram-settings-body-container {
+  -fx-border-width: 0 0 1px 0;
+  -fx-border-color: gray;
+
+  -fx-padding: 5px;
+}
