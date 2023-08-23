@@ -91,6 +91,14 @@
   -fx-font-size: 1.1875em;
 }
 
+.custom-radio-button .radio {
+  -fx-pref-height: 25px;
+  -fx-pref-width: 25px;
+  -fx-min-height: 25px;
+  -fx-min-width: 25px;
+    -fx-padding: -3px;
+ }
+
 /* Buttons */
 .autogram-button {
   -fx-cursor: hand;
@@ -617,6 +625,20 @@ TextFlow.autogram-body-s {
     -fx-border-color:black
 }
 
+.borders-red {
+    -fx-border-color:red;
+}
+
+.borders-settings-tab-header {
+  -fx-border-color:white;
+  -fx-border-width: 0 0 2 0;
+}
+
+
+.borders-settings-tab-content {
+  -fx-border-color: black;
+}
+
 .autogram-confirmation--success {
   -fx-background-color: -autogram-success-colour;
 }
@@ -697,7 +719,7 @@ TextFlow.autogram-body-s {
   -fx-border-color: black;
   -fx-border-width: 2px;
   -fx-padding: 5px;
-  -fx-font-size: 14px;
+  -fx-font-size: 20px;
 }
 
 .choice-box .context-menu {
@@ -731,27 +753,82 @@ TextFlow.autogram-body-s {
     -fx-padding: 3px;
     -fx-rotate: 90;
 }
+/*
+.table-view{
+   -fx-background-color: transparent;
+}
 
-.check-box {
-     -fx-text-fill: black;
+.table-view:focused{
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header-background{
+    -fx-background-color: linear-gradient(#131313 0%, #424141 100%);
+}
+
+.table-view .column-header-background .label{
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+}
+*/
+.table-view .table-cell{
+    -fx-text-fill: black;
+}
+
+.table-row-cell{
+  -fx-border-width: 0 0 1px 0;
+  -fx-border-color: gray;
+
+  -fx-padding: 5px;
+}
+
+.table-row-cell:odd{
+    -fx-background-color: -fx-table-cell-border-color, #424242;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0.0em; /* 0 */
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #005797;
+    -fx-background-insets: 0;
+    -fx-background-radius: 1;
+}
+
+.table-view > .virtual-flow > .scroll-bar:vertical,
+.table-view > .virtual-flow > .scroll-bar:vertical > .track,
+.table-view > .virtual-flow > .scroll-bar:vertical > .track-background,
+.table-view > .virtual-flow > .scroll-bar:horizontal,
+.table-view > .virtual-flow > .scroll-bar:horizontal > .track,
+.table-view > .virtual-flow > .scroll-bar:horizontal > .track-background {
+    -fx-background-color: transparent;
+}
+
+
+
+.table-view > .virtual-flow > .scroll-bar > .increment-button,
+.table-view > .virtual-flow > .scroll-bar > .decrement-button {
+    -fx-opacity: 0;
+}
+
+.custom-checkbox {
+  -fx-label-padding: 0 0 0 5px;
+    -fx-font-size: 20px;
  }
 
- .check-box .box {
+.custom-checkbox .box {
   -fx-background-color: white;
   -fx-border-color: black;
-  -fx-text-fill: black;
   -fx-pref-height: 25px;
   -fx-pref-width: 25px;
-  -fx-spacing: 0 10px 0 0;
- }
+}
 
- .check-box .mark {
-  -fx-background-color: white;
-  -fx-border-color: black;
-  -fx-text-fill: black;
-  -fx-pref-height: 25px;
-  -fx-pref-width: 25px;
- }
+.custom-checkbox:selected .box {
+  -fx-background-color: black;
+}
 
 .autogram-settings-header {
     -fx-border-color:black;
@@ -759,7 +836,7 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-settings-container {
-    -fx-padding: 15px;
+    -fx-padding: 20px;
 }
 
 .autogram-settings-description {
@@ -774,4 +851,8 @@ TextFlow.autogram-body-s {
   -fx-border-color: gray;
 
   -fx-padding: 5px;
+}
+
+.settings-footer {
+  -fx-padding: 0px 30px;
 }

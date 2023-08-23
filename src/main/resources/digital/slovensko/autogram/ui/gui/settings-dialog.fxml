@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -8,16 +7,16 @@
 <BorderPane minWidth="800" prefWidth="800" xmlns="http://javafx.com/javafx/17.0.2-ea"
             xmlns:fx="http://javafx.com/fxml/1">
     <center>
-        <VBox fx:id="mainBox" prefHeight="600" prefWidth="800.0">
+        <VBox fx:id="mainBox" prefHeight="500" prefWidth="800.0">
             <VBox>
-                <TabPane prefHeight="600" prefWidth="800.0" styleClass="autogram-tabpane"
+                <TabPane prefHeight="500" prefWidth="800.0" styleClass="autogram-tabpane"
                          xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
                     <tabs>
-                        <Tab text="Podpisovanie">
+                        <Tab styleClass="" text="Podpisovanie">
                             <content>
-                                <AnchorPane styleClass="autogram-tab-header">
-                                    <VBox styleClass="autogram-prose,borders,autogram-settings-container"
-                                          maxWidth="650">
+                                <AnchorPane styleClass="autogram-tab-header,borders-settings-tab-content">
+                                    <VBox maxWidth="725" minWidth="725"
+                                          styleClass="autogram-prose,autogram-settings-container">
                                         <TextFlow styleClass="autogram-heading">
                                             <Text styleClass="autogram-heading-m" text="Podpisovanie"/>
                                         </TextFlow>
@@ -26,7 +25,7 @@
                                                   text="Predvolené nastavenia na typy a spôsob podpisovania. Tieto nastavenia sa dajú rýchlo zmeniť pri každom hromadnom a individuálnom podpisovaní."/>
                                         </TextFlow>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="300">
+                                            <VBox minWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s" text="Podpisovanie PDF"/>
                                                 </TextFlow>
@@ -34,42 +33,52 @@
                                                     <Text styleClass="autogram-settings-description" text="?popis?"/>
                                                 </TextFlow>
                                             </VBox>
-                                            <VBox alignment="CENTER_LEFT" minWidth="300">
-                                                <ChoiceBox fx:id="signatureTypeBox" styleClass="autogram-choicebox" minWidth="300"
-                                                ></ChoiceBox>
+                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                <ChoiceBox fx:id="signatureTypeBox" minWidth="325"
+                                                           styleClass="autogram-choicebox"/>
                                             </VBox>
                                         </HBox>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="300">
+                                            <VBox minWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
-                                                    <Text styleClass="autogram-heading-s" text="Štandard ETSI EN 319 132-1"/>
+                                                    <Text styleClass="autogram-heading-s"
+                                                          text="Štandard ETSI EN 319 132-1"/>
                                                 </TextFlow>
                                                 <TextFlow>
                                                     <Text styleClass="autogram-settings-description" text="?popis?"/>
                                                 </TextFlow>
                                             </VBox>
-                                            <VBox alignment="CENTER_LEFT" minWidth="300">
-                                                <CheckBox fx:id="checkBox" text="Použiť štandard" styleClass="check-box"/>
+                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                <CheckBox fx:id="checkBox" styleClass="custom-checkbox"
+                                                          text="Použiť štandard"/>
                                             </VBox>
                                         </HBox>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="300">
+                                            <VBox minWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
-                                                    <Text styleClass="autogram-heading-s" text="Hromadné podpisovanie dokumentov"/>
+                                                    <Text styleClass="autogram-heading-s"
+                                                          text="Hromadné podpisovanie dokumentov"/>
                                                 </TextFlow>
                                                 <TextFlow>
                                                     <Text styleClass="autogram-settings-description" text="?popis?"/>
                                                 </TextFlow>
                                             </VBox>
-                                            <VBox alignment="CENTER_LEFT" minWidth="300">
-                                                <HBox fx:id="radios" styleClass="autogram-radios"/>
+                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                <HBox fx:id="radios" spacing="50" styleClass="custom-radio-button"/>
                                             </VBox>
                                         </HBox>
-                                        <HBox>
-                                            <TextFlow styleClass="autogram-body" minWidth="300">
-                                                <Text styleClass="autogram-body-s" text="Podpisovací certifikát"/>
-                                            </TextFlow>
-                                            <ChoiceBox fx:id="driverBox" styleClass="choice-box"></ChoiceBox>
+                                        <HBox styleClass="autogram-settings-body-container">
+                                            <VBox minWidth="325">
+                                                <TextFlow styleClass="autogram-heading">
+                                                    <Text styleClass="autogram-heading-s"
+                                                          text="Podpisovací certifikát"/>
+                                                </TextFlow>
+                                                <TextFlow>
+                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                </TextFlow>
+                                            </VBox>
+                                            <ChoiceBox fx:id="driverBox" minWidth="325"
+                                                       styleClass="autogram-choicebox"/>
                                         </HBox>
                                     </VBox>
                                 </AnchorPane>
@@ -77,28 +86,223 @@
                         </Tab>
                         <Tab text="Overovanie podpisu">
                             <content>
-                                <AnchorPane>
-                                    <TextFlow>
-                                        <Text styleClass="autogram-body-s" text="Verzia2: "/>
-                                    </TextFlow>
+                                <AnchorPane styleClass="autogram-tab-header,borders-settings-tab-content">
+                                    <VBox maxWidth="725" minWidth="725"
+                                          styleClass="autogram-prose,autogram-settings-container">
+                                        <TextFlow styleClass="autogram-heading">
+                                            <Text styleClass="autogram-heading-m" text="Overovanie podpisov"/>
+                                        </TextFlow>
+                                        <TextFlow styleClass="autogram-body">
+                                            <Text styleClass="autogram-body-s"
+                                                  text="Zniženie počtu krajín, v ktorých sa overuje platnosť podpisu zrýchli samotný proces overovania. Zapnite overenie podpisov iba z krajín, ktoré potrebujete."/>
+                                        </TextFlow>
+                                        <ScrollPane fx:id="sasd" prefHeight="230" vbarPolicy="NEVER" hbarPolicy="NEVER">
+                                            <content>
+                                                <VBox prefWidth="200" alignment="center" fx:id="Left">
+                                                    <children>
+                                                        <HBox styleClass="autogram-settings-body-container">
+                                                            <VBox minWidth="325">
+                                                                <TextFlow styleClass="autogram-heading">
+                                                                    <Text styleClass="autogram-heading-s"
+                                                                          text="Belgicko"/>
+                                                                </TextFlow>
+                                                            </VBox>
+                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                                <CheckBox fx:id="belCheckBox"
+                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
+                                                            </VBox>
+                                                        </HBox>
+                                                        <HBox styleClass="autogram-settings-body-container">
+                                                            <VBox minWidth="325">
+                                                                <TextFlow styleClass="autogram-heading">
+                                                                    <Text styleClass="autogram-heading-s"
+                                                                          text="Bulharsko"/>
+                                                                </TextFlow>
+                                                            </VBox>
+                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                                <CheckBox fx:id="bulCheckBox"
+                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
+                                                            </VBox>
+                                                        </HBox>
+                                                        <HBox styleClass="autogram-settings-body-container">
+                                                            <VBox minWidth="325">
+                                                                <TextFlow styleClass="autogram-heading">
+                                                                    <Text styleClass="autogram-heading-s"
+                                                                          text="Česká republika"/>
+                                                                </TextFlow>
+                                                            </VBox>
+                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                                <CheckBox fx:id="czeCheckBox"
+                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
+                                                            </VBox>
+                                                        </HBox>
+                                                        <HBox styleClass="autogram-settings-body-container">
+                                                            <VBox minWidth="325">
+                                                                <TextFlow styleClass="autogram-heading">
+                                                                    <Text styleClass="autogram-heading-s"
+                                                                          text="Chorvátsko"/>
+                                                                </TextFlow>
+                                                            </VBox>
+                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                                <CheckBox fx:id="croCheckBox"
+                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
+                                                            </VBox>
+                                                        </HBox>
+                                                        <HBox styleClass="autogram-settings-body-container">
+                                                            <VBox minWidth="325">
+                                                                <TextFlow styleClass="autogram-heading">
+                                                                    <Text styleClass="autogram-heading-s"
+                                                                          text="Cyprus"/>
+                                                                </TextFlow>
+                                                            </VBox>
+                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                                <CheckBox fx:id="cypCheckBox"
+                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
+                                                            </VBox>
+                                                        </HBox>
+                                                        <HBox styleClass="autogram-settings-body-container">
+                                                            <VBox minWidth="325">
+                                                                <TextFlow styleClass="autogram-heading">
+                                                                    <Text styleClass="autogram-heading-s"
+                                                                          text="Dánsko"/>
+                                                                </TextFlow>
+                                                            </VBox>
+                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                                <CheckBox fx:id="denCheckBox"
+                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
+                                                            </VBox>
+                                                        </HBox>
+                                                        <HBox styleClass="autogram-settings-body-container">
+                                                            <VBox minWidth="325">
+                                                                <TextFlow styleClass="autogram-heading">
+                                                                    <Text styleClass="autogram-heading-s"
+                                                                          text="Estónsko"/>
+                                                                </TextFlow>
+                                                            </VBox>
+                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                                <CheckBox fx:id="estCheckBox"
+                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
+                                                            </VBox>
+                                                        </HBox>
+                                                        <HBox styleClass="autogram-settings-body-container">
+                                                            <VBox minWidth="325">
+                                                                <TextFlow styleClass="autogram-heading">
+                                                                    <Text styleClass="autogram-heading-s"
+                                                                          text="Fínsko"/>
+                                                                </TextFlow>
+                                                            </VBox>
+                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                                <CheckBox fx:id="finCheckBox"
+                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
+                                                            </VBox>
+                                                        </HBox>
+                                                        <HBox styleClass="autogram-settings-body-container">
+                                                            <VBox minWidth="325">
+                                                                <TextFlow styleClass="autogram-heading">
+                                                                    <Text styleClass="autogram-heading-s"
+                                                                          text="Francúzsko"/>
+                                                                </TextFlow>
+                                                            </VBox>
+                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                                <CheckBox fx:id="fraCheckBox"
+                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
+                                                            </VBox>
+                                                        </HBox>
+                                                    </children>
+                                                </VBox>
+                                            </content>
+                                        </ScrollPane>
+                                    </VBox>
                                 </AnchorPane>
                             </content>
                         </Tab>
                         <Tab text="Bezpečnosť">
                             <content>
-                                <AnchorPane>
-                                    <TextFlow>
-                                        <Text styleClass="autogram-body-s" text="Verzia3: "/>
-                                    </TextFlow>
+                                <AnchorPane styleClass="autogram-tab-header,borders-settings-tab-content">
+                                    <VBox maxWidth="725" minWidth="725"
+                                          styleClass="autogram-prose,autogram-settings-container">
+                                        <TextFlow styleClass="autogram-heading">
+                                            <Text styleClass="autogram-heading-m" text="Bezpečnosť"/>
+                                        </TextFlow>
+                                        <TextFlow styleClass="autogram-body">
+                                            <Text styleClass="autogram-body-s"
+                                                  text="Z bezpečnostných dôvodov Autogram testuje správnosť dokumentu a podpisov. Možnosť vypnutia týchto kontrol je iba na vlastnú zodpovednosť."/>
+                                        </TextFlow>
+                                        <HBox styleClass="autogram-settings-body-container">
+                                            <VBox minWidth="325">
+                                                <TextFlow styleClass="autogram-heading">
+                                                    <Text styleClass="autogram-heading-s"
+                                                          text="Správne zobrazenie dokumentu"/>
+                                                </TextFlow>
+                                                <TextFlow>
+                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                </TextFlow>
+                                            </VBox>
+                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                <CheckBox fx:id="correctDocumentDisplaycheckBox"
+                                                          styleClass="custom-checkbox" text="Vypnutá"/>
+                                            </VBox>
+                                        </HBox>
+                                        <HBox styleClass="autogram-settings-body-container">
+                                            <VBox minWidth="325">
+                                                <TextFlow styleClass="autogram-heading">
+                                                    <Text styleClass="autogram-heading-s" text="Platnosť podpisov"/>
+                                                </TextFlow>
+                                                <TextFlow>
+                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                </TextFlow>
+                                            </VBox>
+                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                <CheckBox fx:id="signatureValidationCheckBox"
+                                                          styleClass="custom-checkbox" text="Vypnutá"/>
+                                            </VBox>
+                                        </HBox>
+                                        <HBox styleClass="autogram-settings-body-container">
+                                            <VBox minWidth="325">
+                                                <TextFlow styleClass="autogram-heading">
+                                                    <Text styleClass="autogram-heading-s"
+                                                          text="Správnosť PDF/A formátu"/>
+                                                </TextFlow>
+                                                <TextFlow>
+                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                </TextFlow>
+                                            </VBox>
+                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                <CheckBox fx:id="checkPDFAComplianceCheckBox"
+                                                          styleClass="custom-checkbox" text="Vypnutá"/>
+                                            </VBox>
+                                        </HBox>
+                                    </VBox>
                                 </AnchorPane>
                             </content>
                         </Tab>
                         <Tab text="Pokročilé nastavenia">
                             <content>
-                                <AnchorPane>
-                                    <TextFlow>
-                                        <Text styleClass="autogram-body-s" text="Verzia4: "/>
-                                    </TextFlow>
+                                <AnchorPane styleClass="autogram-tab-header,borders-settings-tab-content">
+                                    <VBox maxWidth="725" minWidth="725"
+                                          styleClass="autogram-prose,autogram-settings-container">
+                                        <TextFlow styleClass="autogram-heading">
+                                            <Text styleClass="autogram-heading-m" text="Pokročilé nastavenia"/>
+                                        </TextFlow>
+                                        <TextFlow styleClass="autogram-body">
+                                            <Text styleClass="autogram-body-s"
+                                                  text="Rozšírenie možnosti pre pokročilých používateľov."/>
+                                        </TextFlow>
+                                        <HBox styleClass="autogram-settings-body-container">
+                                            <VBox minWidth="325">
+                                                <TextFlow styleClass="autogram-heading">
+                                                    <Text styleClass="autogram-heading-s" text="Lokálny server"/>
+                                                </TextFlow>
+                                                <TextFlow>
+                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                </TextFlow>
+                                            </VBox>
+                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                                <CheckBox fx:id="localServerEnabledCheckBox"
+                                                          styleClass="custom-checkbox" text="Vypnutý"/>
+                                            </VBox>
+                                        </HBox>
+                                    </VBox>
                                 </AnchorPane>
                             </content>
                         </Tab>
@@ -108,10 +312,14 @@
         </VBox>
     </center>
     <bottom>
-        <HBox prefHeight="51.0" prefWidth="800.0" styleClass="autogram-footer">
-            <TextFlow prefHeight="135.0" prefWidth="135.0">
-                <Text styleClass="autogram-body-s" text="Verzia: " wrappingWidth="266.2265625"/>
-            </TextFlow>
+        <HBox prefHeight="75.0" prefWidth="100.0" spacing="10" styleClass="settings-footer">
+            <Button onAction="#onSaveButtonAction" styleClass="autogram-button,autogram-confirmation--success">Uložiť
+                zmeny
+            </Button>
+            <Button onAction="#onCancelButtonAction" styleClass="autogram-button,autogram-button--secondary">Zahodiť
+                zmeny
+            </Button>
         </HBox>
+
     </bottom>
 </BorderPane>
