@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.validation.reports.Reports;
+import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.model.DSSDocument;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -21,7 +22,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
@@ -37,8 +41,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     @FXML
     VBox mainBox;
     @FXML
-    Text signatureCheckMessage;
-    @FXML
     TextArea plainTextArea;
     @FXML
     WebView webView;
@@ -53,9 +55,11 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     @FXML
     public Button changeKeyButton;
     @FXML
-    public Button showSignaturesButton;
-    @FXML
     VBox unsupportedVisualizationInfoBox;
+    @FXML
+    VBox signaturesTable;
+    @FXML
+    Text signatureCheckMessage;
 
     public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui) {
         this.visualization = visualization;
@@ -93,7 +97,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         var stage = new Stage();
         stage.setTitle("Prítomné podpisy"); // TODO lepsi nazov
         stage.setScene(new Scene(root));
-        stage.setResizable(false);
         GUIUtils.suppressDefaultFocus(stage, signaturesController);
         signaturesController.showSignatures();
         stage.show();
@@ -103,22 +106,74 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void onSignatureCheckCompleted(Reports reports) {
-        if (reports == null) {
-            signatureCheckMessage.setText("Dokument ešte nie je podpísaný");
-            return;
-        }
-
         signatureCheckReports = reports;
-
-        signatureCheckMessage.setText("Dokument obsahuje podpisy: " + Integer.toString(reports.getSimpleReport().getSignaturesCount()));
-        showSignaturesButton.setVisible(true);
+        renderSignatures(reports, false);
     }
 
     public void onSignatureValidationCompleted(Reports reports) {
         signatureValidationCompleted = true;
         signatureValidationReports = reports;
+        renderSignatures(reports, true);
         if (signaturesController != null)
-            signaturesController.onSignatureValidationCompleted(reports);
+        signaturesController.onSignatureValidationCompleted(reports);
+    }
+
+    public void renderSignatures(Reports reports, boolean isValidated) {
+        if (reports == null) {
+            signatureCheckMessage.setText("Dokument ešte neobsahuje žiadne podpisy.");
+            return;
+        }
+
+        signaturesTable.getChildren().clear();
+        signaturesTable.getChildren().addAll(createSignatureTableHeader(isValidated), createSignatureTableRows(reports, isValidated));
+
+        // resize the stage to fit the content
+        var stage = (Stage) mainButton.getScene().getWindow();
+        stage.sizeToScene();
+    }
+
+    private VBox createSignatureTableRows(Reports reports, boolean isValidated) {
+        var r = new VBox();
+        for (var signatureId : reports.getSimpleReport().getSignatureIdList()) {
+            var name = reports.getSimpleReport().getSignedBy(signatureId);
+            var signatureType = reports.getDetailedReport().getSignatureQualification(signatureId);
+
+            r.getChildren().add(createSignatureTableRow(name, signatureType, isValidated));
+        }
+
+        return r;
+    }
+
+    private HBox createSignatureTableRow(String name, SignatureQualification signatureType, boolean isValidated) {
+        var whoSignedText = new Button(name);
+        whoSignedText.getStyleClass().add("autogram-link");
+        whoSignedText.setPrefWidth(360);
+        whoSignedText.setOnMouseClicked(event -> {
+            onShowSignaturesButtonPressed(null);
+        });
+
+        var signatureTypeText = new Text(signatureType != null ? signatureType.toString() : "Prebieha validácia");
+        signatureTypeText.getStyleClass().add("autogram-text");
+        var signatureTypeFlow = new TextFlow(signatureTypeText);
+
+        var r = new HBox(whoSignedText, signatureTypeFlow);
+        r.getStyleClass().add("autogram-table-cell");
+        return r;
+    }
+
+    private HBox createSignatureTableHeader(boolean isValidated) {
+        var whoSignedText = new Text("Podpísal");
+        whoSignedText.getStyleClass().add("autogram-heading-s");
+        var whoSigned = new TextFlow(whoSignedText);
+        whoSigned.setPrefWidth(360);
+
+        var signatureTypeText = new Text("Typ podpisu");
+        signatureTypeText.getStyleClass().add("autogram-heading-s");
+        var signatureType = new TextFlow(signatureTypeText);
+
+        var r = new HBox(whoSigned, signatureType);
+        r.getStyleClass().add("autogram-table-cell");
+        return r;
     }
 
     public void refreshSigningKey() {
@@ -126,11 +181,9 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         SigningKey key = gui.getActiveSigningKey();
         if (key == null) {
             mainButton.setText("Vybrať podpisový certifikát");
-            mainButton.getStyleClass().add("autogram-button--secondary");
             changeKeyButton.setVisible(false);
         } else {
             mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
-            mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));
             changeKeyButton.setVisible(true);
         }
     }

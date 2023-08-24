@@ -10,7 +10,7 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      maxHeight="800"
+      maxHeight="900"
       minWidth="768"
       fx:id="mainBox">
 
@@ -19,11 +19,12 @@
     <ScrollPane>
         <VBox>
             <VBox fx:id="signaturesBox" spacing="10" />
-
-            <HBox>
-                <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="Overujem podpisy..."></Text>
-                <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť detaily podpisov" visible="false" onAction="#onSignatureDetailsButtonAction" />
-            </HBox>
         </VBox>
     </ScrollPane>
+
+    <HBox styleClass="autogram-actions">
+        <Button fx:id="closeButton" styleClass="autogram-button, autogram-button--secondary" text="Zavrieť" onAction="#onCloseButtonAction" />
+        <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="Prebieha overovanie podpisov..."></Text>
+        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť techický detail podpisov" visible="false" onAction="#onSignatureDetailsButtonAction" />
+    </HBox>
 </VBox>

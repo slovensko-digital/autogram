@@ -9,7 +9,7 @@
 <?import javafx.scene.shape.SVGPath?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      minHeight="800"
+      minHeight="900"
       minWidth="768"
       fx:id="mainBox">
 
