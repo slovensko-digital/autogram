@@ -49,7 +49,7 @@
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                <CheckBox fx:id="checkBox" styleClass="custom-checkbox"
+                                                <CheckBox fx:id="standardCeckBox" styleClass="custom-checkbox"
                                                           text="Použiť štandard"/>
                                             </VBox>
                                         </HBox>
@@ -98,117 +98,7 @@
                                         </TextFlow>
                                         <ScrollPane fx:id="sasd" prefHeight="230" vbarPolicy="NEVER" hbarPolicy="NEVER">
                                             <content>
-                                                <VBox prefWidth="200" alignment="center" fx:id="Left">
-                                                    <children>
-                                                        <HBox styleClass="autogram-settings-body-container">
-                                                            <VBox minWidth="325">
-                                                                <TextFlow styleClass="autogram-heading">
-                                                                    <Text styleClass="autogram-heading-s"
-                                                                          text="Belgicko"/>
-                                                                </TextFlow>
-                                                            </VBox>
-                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                                <CheckBox fx:id="belCheckBox"
-                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
-                                                            </VBox>
-                                                        </HBox>
-                                                        <HBox styleClass="autogram-settings-body-container">
-                                                            <VBox minWidth="325">
-                                                                <TextFlow styleClass="autogram-heading">
-                                                                    <Text styleClass="autogram-heading-s"
-                                                                          text="Bulharsko"/>
-                                                                </TextFlow>
-                                                            </VBox>
-                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                                <CheckBox fx:id="bulCheckBox"
-                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
-                                                            </VBox>
-                                                        </HBox>
-                                                        <HBox styleClass="autogram-settings-body-container">
-                                                            <VBox minWidth="325">
-                                                                <TextFlow styleClass="autogram-heading">
-                                                                    <Text styleClass="autogram-heading-s"
-                                                                          text="Česká republika"/>
-                                                                </TextFlow>
-                                                            </VBox>
-                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                                <CheckBox fx:id="czeCheckBox"
-                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
-                                                            </VBox>
-                                                        </HBox>
-                                                        <HBox styleClass="autogram-settings-body-container">
-                                                            <VBox minWidth="325">
-                                                                <TextFlow styleClass="autogram-heading">
-                                                                    <Text styleClass="autogram-heading-s"
-                                                                          text="Chorvátsko"/>
-                                                                </TextFlow>
-                                                            </VBox>
-                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                                <CheckBox fx:id="croCheckBox"
-                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
-                                                            </VBox>
-                                                        </HBox>
-                                                        <HBox styleClass="autogram-settings-body-container">
-                                                            <VBox minWidth="325">
-                                                                <TextFlow styleClass="autogram-heading">
-                                                                    <Text styleClass="autogram-heading-s"
-                                                                          text="Cyprus"/>
-                                                                </TextFlow>
-                                                            </VBox>
-                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                                <CheckBox fx:id="cypCheckBox"
-                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
-                                                            </VBox>
-                                                        </HBox>
-                                                        <HBox styleClass="autogram-settings-body-container">
-                                                            <VBox minWidth="325">
-                                                                <TextFlow styleClass="autogram-heading">
-                                                                    <Text styleClass="autogram-heading-s"
-                                                                          text="Dánsko"/>
-                                                                </TextFlow>
-                                                            </VBox>
-                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                                <CheckBox fx:id="denCheckBox"
-                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
-                                                            </VBox>
-                                                        </HBox>
-                                                        <HBox styleClass="autogram-settings-body-container">
-                                                            <VBox minWidth="325">
-                                                                <TextFlow styleClass="autogram-heading">
-                                                                    <Text styleClass="autogram-heading-s"
-                                                                          text="Estónsko"/>
-                                                                </TextFlow>
-                                                            </VBox>
-                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                                <CheckBox fx:id="estCheckBox"
-                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
-                                                            </VBox>
-                                                        </HBox>
-                                                        <HBox styleClass="autogram-settings-body-container">
-                                                            <VBox minWidth="325">
-                                                                <TextFlow styleClass="autogram-heading">
-                                                                    <Text styleClass="autogram-heading-s"
-                                                                          text="Fínsko"/>
-                                                                </TextFlow>
-                                                            </VBox>
-                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                                <CheckBox fx:id="finCheckBox"
-                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
-                                                            </VBox>
-                                                        </HBox>
-                                                        <HBox styleClass="autogram-settings-body-container">
-                                                            <VBox minWidth="325">
-                                                                <TextFlow styleClass="autogram-heading">
-                                                                    <Text styleClass="autogram-heading-s"
-                                                                          text="Francúzsko"/>
-                                                                </TextFlow>
-                                                            </VBox>
-                                                            <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                                <CheckBox fx:id="fraCheckBox"
-                                                                          styleClass="custom-checkbox" text="Vypnuté"/>
-                                                            </VBox>
-                                                        </HBox>
-                                                    </children>
+                                                <VBox prefWidth="200" alignment="center" fx:id="countryList">
                                                 </VBox>
                                             </content>
                                         </ScrollPane>

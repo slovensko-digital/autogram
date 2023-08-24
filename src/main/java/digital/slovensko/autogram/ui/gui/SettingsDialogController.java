@@ -10,12 +10,15 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxListCell;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
 
 import java.util.ArrayList;
@@ -32,7 +35,7 @@ public class SettingsDialogController {
     private ChoiceBox<String> driverBox;
 
     @FXML
-    private CheckBox checkBox;
+    private CheckBox standardCeckBox;
 
     @FXML
     private CheckBox correctDocumentDisplaycheckBox;
@@ -47,33 +50,6 @@ public class SettingsDialogController {
     private CheckBox localServerEnabledCheckBox;
 
     @FXML
-    private CheckBox belCheckBox;
-
-    @FXML
-    private CheckBox bulCheckBox;
-
-    @FXML
-    private CheckBox czeCheckBox;
-
-    @FXML
-    private CheckBox croCheckBox;
-
-    @FXML
-    private CheckBox cypCheckBox;
-
-    @FXML
-    private CheckBox denCheckBox;
-
-    @FXML
-    private CheckBox estCheckBox;
-
-    @FXML
-    private CheckBox finCheckBox;
-
-    @FXML
-    private CheckBox fraCheckBox;
-
-    @FXML
     HBox radios;
 
     private ToggleGroup toggleGroup;
@@ -81,6 +57,9 @@ public class SettingsDialogController {
 
     @FXML
     private TableView tableView;
+
+    @FXML
+    private VBox countryList;
 
 
     public void initialize() {
@@ -97,7 +76,7 @@ public class SettingsDialogController {
             System.out.println("Selected driver: " + newValue);
         });
 
-        checkBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+        standardCeckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 System.out.println("Option enabled");
             } else {
@@ -151,6 +130,51 @@ public class SettingsDialogController {
         toggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println("Selected driver: " + newValue);
         });
+
+        String[] countries = {
+                "Belgicko", "Bulharsko", "Česká republika",
+                "Chorvátsko", "Cyprus", "Dánsko",
+                "Estónsko", "Fínsko", "Francúzsko",
+                "Grécko", "Holandsko", "Írsko",
+                "Litva", "Lotyšsko", "Luxembursko",
+                "Maďarsko", "Malta", "Nemecko",
+                "Poľsko", "Portugalsko", "Rakúsko",
+                "Rumunsko", "Slovensko", "Slovinsko",
+                "Španielsko", "Švédsko", "Taliansko"
+        };
+
+        for (String country : countries) {
+            HBox hbox = new HBox();
+            hbox.getStyleClass().add("autogram-settings-body-container");
+
+            VBox countryBox = new VBox();
+            countryBox.setMinWidth(325);
+
+            Text countryText = new Text(country);
+            countryText.getStyleClass().add("autogram-heading-s");
+            TextFlow textFlow = new TextFlow(countryText);
+            textFlow.getStyleClass().add("autogram-heading");
+            countryBox.getChildren().add(textFlow);
+
+            VBox checkBoxBox = new VBox();
+            checkBoxBox.setAlignment(Pos.CENTER_LEFT);
+            checkBoxBox.setMinWidth(325);
+
+            CheckBox checkBox = new CheckBox("Vypnuté");
+            checkBox.getStyleClass().addAll("custom-checkbox");
+            checkBoxBox.getChildren().add(checkBox);
+
+            checkBox.setOnAction(event -> {
+                if (checkBox.isSelected()) {
+                    checkBox.setText("Zapnuté"); // Change text when selected
+                } else {
+                    checkBox.setText("Vypnuté"); // Change text when deselected
+                }
+            });
+
+            hbox.getChildren().addAll(countryBox, checkBoxBox);
+            countryList.getChildren().add(hbox);
+        }
     }
 
     public void onSaveButtonAction() {
