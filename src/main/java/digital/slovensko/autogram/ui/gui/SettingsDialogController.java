@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.UserSettings;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -8,6 +9,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class SettingsDialogController {
 
@@ -42,61 +46,68 @@ public class SettingsDialogController {
 
     @FXML private Button closeButton;
 
+    private UserSettings userSettings;
 
     public void initialize() {
+        userSettings = UserSettings.load();
+
         signatureTypeBox.getItems().addAll("ASIC XADES", "ASIC CADES", "PADES");
-        signatureTypeBox.setValue("PADES");
+        signatureTypeBox.setValue(userSettings.getSignatureType());
         signatureTypeBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("Selected: " + newValue);
+            userSettings.setSignatureType(newValue);
         });
 
-
-        driverBox.getItems().addAll("Občiansky preukaz (eID klient)", "I.CA SecureStore", "MONET+ ProID+Q", "Gemalto IDPrime 940", "Fake token driver");
-        driverBox.setValue("Občiansky preukaz (eID klient)");
+        driverBox.getItems().addAll("", "Občiansky preukaz (eID klient)", "I.CA SecureStore", "MONET+ ProID+Q", "Gemalto IDPrime 940", "Fake token driver");
+        driverBox.setValue(userSettings.getDriver());
         driverBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("Selected driver: " + newValue);
+            userSettings.setDriver(newValue);
         });
 
         standardCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) {
-                System.out.println("Option enabled");
-            } else {
-                System.out.println("Option disabled");
-            }
+            userSettings.setEn319132(newValue);
         });
+        standardCheckBox.setSelected(userSettings.isEn319132());
 
         correctDocumentDisplaycheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            userSettings.setCorrectDocumentDisplay(newValue);
             if (newValue) {
                 correctDocumentDisplaycheckBox.setText("Zapnutá");
             } else {
                 correctDocumentDisplaycheckBox.setText("Vypnutá");
             }
         });
+        correctDocumentDisplaycheckBox.setSelected(userSettings.isCorrectDocumentDisplay());
 
         signatureValidationCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            userSettings.setSignaturesValidity(newValue);
             if (newValue) {
                 signatureValidationCheckBox.setText("Zapnutá");
             } else {
                 signatureValidationCheckBox.setText("Vypnutá");
             }
         });
+        signatureValidationCheckBox.setSelected(userSettings.isSignaturesValidity());
 
         checkPDFAComplianceCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            userSettings.setPdfaCompliance(newValue);
             if (newValue) {
                 checkPDFAComplianceCheckBox.setText("Zapnutá");
             } else {
                 checkPDFAComplianceCheckBox.setText("Vypnutá");
             }
         });
+        checkPDFAComplianceCheckBox.setSelected(userSettings.isPdfaCompliance());
 
         localServerEnabledCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            userSettings.setServerEnabled(newValue);
             if (newValue) {
                 localServerEnabledCheckBox.setText("Zapnutý");
             } else {
                 localServerEnabledCheckBox.setText("Vypnutý");
             }
         });
-
+        localServerEnabledCheckBox.setSelected(userSettings.isServerEnabled());
+        localServerEnabledCheckBox.setText(userSettings.isServerEnabled() ? "Zapnutý" : "Vypnutý");
 
         toggleGroup = new ToggleGroup();
 
@@ -105,12 +116,17 @@ public class SettingsDialogController {
         radios.getChildren().add(togetherRadioButton);
         var individaullyRadioButton = new RadioButton("Samostatne");
         individaullyRadioButton.setToggleGroup(toggleGroup);
+        individaullyRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            userSettings.setSignIndividually(newValue);
+        });
         radios.getChildren().add(individaullyRadioButton);
 //        radioButton.setUserData(driver);
 
-        toggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("Selected driver: " + newValue);
-        });
+        if (userSettings.isSignIndividually()) {
+            individaullyRadioButton.setSelected(true);
+        } else {
+            togetherRadioButton.setSelected(true);
+        }
 
         String[] countries = {
                 "Belgicko", "Bulharsko", "Česká republika",
@@ -123,6 +139,8 @@ public class SettingsDialogController {
                 "Rumunsko", "Slovensko", "Slovinsko",
                 "Španielsko", "Švédsko", "Taliansko"
         };
+
+        List<String> trustedList = userSettings.getTrustedList();
 
         for (String country : countries) {
             HBox hbox = new HBox();
@@ -141,15 +159,20 @@ public class SettingsDialogController {
             checkBoxBox.setAlignment(Pos.CENTER_LEFT);
             checkBoxBox.setMinWidth(325);
 
-            CheckBox checkBox = new CheckBox("Vypnuté");
+            var isCountryInTrustedList = trustedList.contains(country);
+            var checkBoxLabel = isCountryInTrustedList ? "Zapnuté" : "Vypnuté";
+            CheckBox checkBox = new CheckBox(checkBoxLabel);
+            checkBox.setSelected(isCountryInTrustedList);
             checkBox.getStyleClass().addAll("custom-checkbox");
             checkBoxBox.getChildren().add(checkBox);
 
             checkBox.setOnAction(event -> {
                 if (checkBox.isSelected()) {
-                    checkBox.setText("Zapnuté"); // Change text when selected
+                    userSettings.addToTrustedList(country);
+                    checkBox.setText("Zapnuté");
                 } else {
-                    checkBox.setText("Vypnuté"); // Change text when deselected
+                    userSettings.removeFromTrustedList(country);
+                    checkBox.setText("Vypnuté");
                 }
             });
 
@@ -159,7 +182,7 @@ public class SettingsDialogController {
     }
 
     public void onSaveButtonAction() {
-        System.out.println("Save");
+        userSettings.saveSettings();
     }
 
     public void onCancelButtonAction() {
