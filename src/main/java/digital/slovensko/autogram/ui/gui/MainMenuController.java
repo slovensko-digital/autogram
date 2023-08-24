@@ -9,9 +9,11 @@ import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -120,7 +122,15 @@ public class MainMenuController implements SuppressedFocusController {
     }
 
     public void onSettingButtonAction() {
-        autogram.onSettings();
+        var controller = new SettingsDialogController();
+        var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Nastavenia");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
     }
 
     @Override

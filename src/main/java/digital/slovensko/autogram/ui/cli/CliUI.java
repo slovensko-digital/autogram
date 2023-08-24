@@ -258,10 +258,4 @@ public class CliUI implements UI {
         }
         System.err.println(errMessage);
     }
-
-    @Override
-    public void onSettings() {
-        // TODO: implement
-        System.out.println("onSettingsInfo");
-    }
 }

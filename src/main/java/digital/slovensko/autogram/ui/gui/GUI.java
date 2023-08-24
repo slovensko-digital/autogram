@@ -424,7 +424,6 @@ public class GUI implements UI {
         nWindows = (nWindows + 1) % maxWindows;
     }
 
-    @Override
     public void onSettings() {
         var controller = new SettingsDialogController();
         var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
