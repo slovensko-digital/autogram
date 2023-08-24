@@ -9,19 +9,10 @@
             xmlns:fx="http://javafx.com/fxml" minWidth="600">
     <top>
     <VBox fx:id="mainBox">
-        <HBox spacing="100">
-            <VBox>
-                <VBox >
-                    <Label styleClass="autogram-claim,autogram-heading-l">Autogram</Label>
-                    <TextFlow><Text styleClass="autogram-body-m" text="Nový, krajší a&#160;lepší nástroj na&#160;podpisovanie."/></TextFlow>
-                </VBox>
-            </VBox>
-            <VBox alignment="CENTER" fillWidth="true">
-                <HBox >
-                    <Button styleClass="autogram-button,autogram-confirmation--success" onAction="#onSettingButtonAction">Nastavenia</Button>
-                </HBox>
-            </VBox>
-        </HBox>
+        <VBox>
+            <Label styleClass="autogram-claim,autogram-heading-l">Autogram</Label>
+            <TextFlow><Text styleClass="autogram-body-l" text="Nový, krajší a&#160;lepší nástroj na&#160;podpisovanie."/></TextFlow>
+        </VBox>
 
         <VBox spacing="15">
             <TextFlow><Text styleClass="autogram-heading-m" text="Vyberte súbor na&#160;podpísanie"/></TextFlow>
@@ -36,7 +27,9 @@
     </VBox>
     </top>
     <bottom>
-        <HBox styleClass="autogram-footer">
+        <HBox styleClass="autogram-footer" alignment="BASELINE_RIGHT">
+            <Button styleClass="autogram-link" onAction="#onSettingButtonAction">Nastavenia</Button>
+            <Region HBox.hgrow="ALWAYS" />
             <Button styleClass="autogram-link" onAction="#onAboutButtonAction">O Autograme</Button>
         </HBox>
     </bottom>

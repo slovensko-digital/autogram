@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.drivers.TokenDriver;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -19,6 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.util.ArrayList;
@@ -60,6 +62,8 @@ public class SettingsDialogController {
 
     @FXML
     private VBox countryList;
+
+    @FXML private Button closeButton;
 
 
     public void initialize() {
@@ -182,6 +186,7 @@ public class SettingsDialogController {
     }
 
     public void onCancelButtonAction() {
-        System.out.println("Cancel");
+        Stage stage = (Stage) closeButton.getScene().getWindow();
+        stage.close();
     }
 }

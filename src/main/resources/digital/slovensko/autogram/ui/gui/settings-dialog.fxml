@@ -206,7 +206,7 @@
             <Button onAction="#onSaveButtonAction" styleClass="autogram-button,autogram-confirmation--success">Uložiť
                 zmeny
             </Button>
-            <Button onAction="#onCancelButtonAction" styleClass="autogram-button,autogram-button--secondary">Zahodiť
+            <Button fx:id="closeButton" onAction="#onCancelButtonAction" styleClass="autogram-button,autogram-button--secondary">Zahodiť
                 zmeny
             </Button>
         </HBox>
