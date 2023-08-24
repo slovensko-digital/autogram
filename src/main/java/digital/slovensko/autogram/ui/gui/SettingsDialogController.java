@@ -1,32 +1,13 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.drivers.TokenDriver;
-import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxListCell;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
 public class SettingsDialogController {
 
@@ -37,7 +18,7 @@ public class SettingsDialogController {
     private ChoiceBox<String> driverBox;
 
     @FXML
-    private CheckBox standardCeckBox;
+    private CheckBox standardCheckBox;
 
     @FXML
     private CheckBox correctDocumentDisplaycheckBox;
@@ -55,10 +36,6 @@ public class SettingsDialogController {
     HBox radios;
 
     private ToggleGroup toggleGroup;
-
-
-    @FXML
-    private TableView tableView;
 
     @FXML
     private VBox countryList;
@@ -80,7 +57,7 @@ public class SettingsDialogController {
             System.out.println("Selected driver: " + newValue);
         });
 
-        standardCeckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+        standardCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
                 System.out.println("Option enabled");
             } else {

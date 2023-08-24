@@ -49,7 +49,7 @@
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                <CheckBox fx:id="standardCeckBox" styleClass="custom-checkbox"
+                                                <CheckBox fx:id="standardCheckBox" styleClass="custom-checkbox"
                                                           text="Použiť štandard"/>
                                             </VBox>
                                         </HBox>

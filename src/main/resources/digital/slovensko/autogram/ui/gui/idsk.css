@@ -96,7 +96,7 @@
   -fx-pref-width: 25px;
   -fx-min-height: 25px;
   -fx-min-width: 25px;
-    -fx-padding: -3px;
+  -fx-padding: -3px;
  }
 
 /* Buttons */
@@ -210,13 +210,6 @@
   -fx-fill: -autogram-text-colour;
 
   -fx-font-size: 1.5em;
-}
-
-.autogram-body-m {
-  -fx-text-fill: -autogram-text-colour;
-  -fx-fill: -autogram-text-colour;
-
-  -fx-font-size: 1.25em;
 }
 
 .autogram-body-s {
@@ -621,20 +614,6 @@ TextFlow.autogram-body-s {
   -fx-padding: 0 0 20px 20px;
 }
 
-.borders {
-    -fx-border-color:black
-}
-
-.borders-red {
-    -fx-border-color:red;
-}
-
-.borders-settings-tab-header {
-  -fx-border-color:white;
-  -fx-border-width: 0 0 2 0;
-}
-
-
 .borders-settings-tab-content {
   -fx-border-color: black;
 }
@@ -674,16 +653,7 @@ TextFlow.autogram-body-s {
 }
 
 .tab {
--fx-spacing: 20;
-}
-
-.tab {
-}
-
-.autogram-tabpane .tab {
-}
-
-.autogram-tabpane .tab:selected {
+    -fx-spacing: 20;
 }
 
 .tab .tab-label {
@@ -700,14 +670,6 @@ TextFlow.autogram-body-s {
 .tab:selected .tab-label {
   -fx-background-color: white;
   -fx-border-width: 1px 1px 0 1px;
-}
-
-.tab-header-area {
-    -fx-spacing: 20; /* Adjust the spacing value as needed */
-}
-
-.test {
-    -
 }
 
 .autogram-tab-header {
@@ -753,66 +715,6 @@ TextFlow.autogram-body-s {
     -fx-padding: 3px;
     -fx-rotate: 90;
 }
-/*
-.table-view{
-   -fx-background-color: transparent;
-}
-
-.table-view:focused{
-    -fx-background-color: transparent;
-}
-
-.table-view .column-header-background{
-    -fx-background-color: linear-gradient(#131313 0%, #424141 100%);
-}
-
-.table-view .column-header-background .label{
-    -fx-background-color: transparent;
-    -fx-text-fill: white;
-}
-
-.table-view .column-header {
-    -fx-background-color: transparent;
-}
-*/
-.table-view .table-cell{
-    -fx-text-fill: black;
-}
-
-.table-row-cell{
-  -fx-border-width: 0 0 1px 0;
-  -fx-border-color: gray;
-
-  -fx-padding: 5px;
-}
-
-.table-row-cell:odd{
-    -fx-background-color: -fx-table-cell-border-color, #424242;
-    -fx-background-insets: 0, 0 0 1 0;
-    -fx-padding: 0.0em; /* 0 */
-}
-
-.table-row-cell:selected {
-    -fx-background-color: #005797;
-    -fx-background-insets: 0;
-    -fx-background-radius: 1;
-}
-
-.table-view > .virtual-flow > .scroll-bar:vertical,
-.table-view > .virtual-flow > .scroll-bar:vertical > .track,
-.table-view > .virtual-flow > .scroll-bar:vertical > .track-background,
-.table-view > .virtual-flow > .scroll-bar:horizontal,
-.table-view > .virtual-flow > .scroll-bar:horizontal > .track,
-.table-view > .virtual-flow > .scroll-bar:horizontal > .track-background {
-    -fx-background-color: transparent;
-}
-
-
-
-.table-view > .virtual-flow > .scroll-bar > .increment-button,
-.table-view > .virtual-flow > .scroll-bar > .decrement-button {
-    -fx-opacity: 0;
-}
 
 .custom-checkbox {
   -fx-label-padding: 0 0 0 5px;
@@ -828,11 +730,6 @@ TextFlow.autogram-body-s {
 
 .custom-checkbox:selected .box {
   -fx-background-color: black;
-}
-
-.autogram-settings-header {
-    -fx-border-color:black;
-    -fx-padding: 3px;
 }
 
 .autogram-settings-container {
