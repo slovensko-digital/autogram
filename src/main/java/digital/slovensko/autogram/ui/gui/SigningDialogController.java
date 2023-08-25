@@ -2,7 +2,9 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.visualization.Visualization;
+import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.CommonDocument;
@@ -54,6 +56,14 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void initialize() {
+        UserSettings userSettings = UserSettings.load();
+        TokenDriver driver = userSettings.getDriver();
+        if (driver != null) {
+            autogram.requestPasswordAndThen(key -> {
+                gui.setActiveSigningKey(key);
+            }, driver);
+        }
+
         refreshSigningKey();
         visualization.initialize(this);
     }

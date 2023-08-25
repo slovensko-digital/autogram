@@ -165,19 +165,21 @@ public class SigningParameters {
     }
 
     public static SigningParameters buildForPDF(String filename, boolean checkPDFACompliance) {
+        UserSettings userSettings = UserSettings.load();
         return new SigningParameters(
                 SignatureLevel.PAdES_BASELINE_B,
                 null,
                 null, null,
                 DigestAlgorithm.SHA256,
-                false, null,
+                userSettings.isEn319132(), null,
                 null, null,
                 null, null, "", checkPDFACompliance, 640);
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename) {
+        UserSettings userSettings = UserSettings.load();
         return new SigningParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
-                null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, false, null, null,
+                null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, userSettings.isEn319132(), null, null,
                 null, null, null, "", false, 640);
     }
 

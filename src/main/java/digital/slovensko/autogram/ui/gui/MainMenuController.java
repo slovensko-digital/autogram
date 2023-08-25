@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
@@ -96,7 +97,8 @@ public class MainMenuController implements SuppressedFocusController {
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), false);
+            UserSettings userSettings = UserSettings.load();
+            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), userSettings.isPdfaCompliance());
             autogram.sign(job);
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,

@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -27,10 +28,16 @@ public class GUIApp extends Application {
         var params = LaunchParameters.fromParameters(getParameters());
         var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps());
 
-        server.start();
+        UserSettings userSettings = UserSettings.load();
+
+        if (userSettings.isServerEnabled()) {
+            server.start();
+        }
 
         windowStage.setOnCloseRequest(event -> {
-            new Thread(server::stop).start();
+            if (userSettings.isServerEnabled()) {
+                new Thread(server::stop).start();
+            }
 
             Platform.exit();
         });

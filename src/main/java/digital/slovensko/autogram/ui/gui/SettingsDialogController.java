@@ -1,6 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.drivers.TokenDriver;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -12,6 +14,7 @@ import javafx.stage.Stage;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SettingsDialogController {
 
@@ -19,7 +22,7 @@ public class SettingsDialogController {
     private ChoiceBox<String> signatureTypeBox;
 
     @FXML
-    private ChoiceBox<String> driverBox;
+    private ChoiceBox<TokenDriver> driverBox;
 
     @FXML
     private CheckBox standardCheckBox;
@@ -57,7 +60,10 @@ public class SettingsDialogController {
             userSettings.setSignatureType(newValue);
         });
 
-        driverBox.getItems().addAll("", "Občiansky preukaz (eID klient)", "I.CA SecureStore", "MONET+ ProID+Q", "Gemalto IDPrime 940", "Fake token driver");
+        List<TokenDriver> drivers = new DefaultDriverDetector().getAvailableDrivers();
+        driverBox.setConverter(new TokenDriverStringConverter());
+        driverBox.getItems().add(null);
+        driverBox.getItems().addAll(drivers);
         driverBox.setValue(userSettings.getDriver());
         driverBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setDriver(newValue);

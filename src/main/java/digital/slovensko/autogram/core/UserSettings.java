@@ -1,8 +1,11 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.drivers.TokenDriver;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
@@ -32,7 +35,7 @@ public class UserSettings {
 
     private String signatureType;
 
-    private String driver;
+    private TokenDriver driver;
 
     private boolean en319132;
 
@@ -49,7 +52,7 @@ public class UserSettings {
     private List<String> trustedList;
 
 
-    private UserSettings(String signatureType, String driver, boolean en319132,
+    private UserSettings(String signatureType, TokenDriver driver, boolean en319132,
                          boolean signIndividually, boolean correctDocumentDisplay,
                          boolean signaturesValidity, boolean pdfaCompliance,
                          boolean serverEnabled, List<String> trustedList) {
@@ -77,8 +80,21 @@ public class UserSettings {
         var serverEnabled = prefs.getBoolean(UserSettingsKeys.SERVER_ENABLED.getKey(), true);
         var trustedList = prefs.get(UserSettingsKeys.TRUSTED_LIST.getKey(), null);
 
-        return new UserSettings(signatureType, driver, en319132, signIndividually, correctDocumentDisplay, signaturesValidity,
-                pdfaCompliance, serverEnabled, trustedList == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(trustedList.split(","))));
+        var tokenDriver = new DefaultDriverDetector()
+                .getAvailableDrivers()
+                .stream()
+                .filter(d -> d.getShortname().equals(driver))
+                .findFirst();
+
+        return new UserSettings(signatureType,
+                tokenDriver.isEmpty() ? null : tokenDriver.get(),
+                en319132,
+                signIndividually,
+                correctDocumentDisplay,
+                signaturesValidity,
+                pdfaCompliance,
+                serverEnabled,
+                trustedList == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(trustedList.split(","))));
     }
 
     public String getSignatureType() {
@@ -89,11 +105,11 @@ public class UserSettings {
         this.signatureType = signatureType;
     }
 
-    public String getDriver() {
+    public TokenDriver getDriver() {
         return driver;
     }
 
-    public void setDriver(String driver) {
+    public void setDriver(TokenDriver driver) {
         this.driver = driver;
     }
 
@@ -161,7 +177,7 @@ public class UserSettings {
         Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         prefs.put(UserSettingsKeys.SIGNATURE_TYPE.getKey(), signatureType);
-        prefs.put(UserSettingsKeys.DRIVER.getKey(), driver);
+        prefs.put(UserSettingsKeys.DRIVER.getKey(), driver.getShortname());
         prefs.putBoolean(UserSettingsKeys.EN319132.getKey(), en319132);
         prefs.putBoolean(UserSettingsKeys.SIGN_INDIVIDUALLY.getKey(), signIndividually);
         prefs.putBoolean(UserSettingsKeys.CORRECT_DOCUMENT_DISPLAY.getKey(), correctDocumentDisplay);
@@ -170,13 +186,4 @@ public class UserSettings {
         prefs.putBoolean(UserSettingsKeys.SERVER_ENABLED.getKey(), serverEnabled);
         prefs.put(UserSettingsKeys.TRUSTED_LIST.getKey(), trustedList.stream().collect(Collectors.joining(",")));
     }
-
-//
-//    public static List<String> getTrustedList() {
-//        return Arrays.asList(prefs.get(UserSettingsKeys.TRUSTED_LIST.getKey(), "SK,CZ,AT,HU,PL"));
-//    }
-//
-//    public static void setTrustedList(List<String> trustedList) {
-//        prefs.put(UserSettingsKeys.TRUSTED_LIST.getKey(), trustedList.stream().collect(Collectors.joining()));
-//    }
 }
