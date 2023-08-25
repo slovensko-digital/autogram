@@ -15,7 +15,7 @@ public class DefaultDriverDetector implements DriverDetector {
         public static final String SECURE_STORE = "secure_store";
         public static final String MONET = "monet";
         public static final String GEMALTO = "gemalto";
-        public static final String GEMALTO_MANDATE = "gemalto-mandate";
+        public static final String GEMALTO_MANDATE = "gemalto_mandate";
         public static final String FAKE = "fake";
     }
 
