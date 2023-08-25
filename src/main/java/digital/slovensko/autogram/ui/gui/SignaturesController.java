@@ -122,31 +122,17 @@ public class SignaturesController implements SuppressedFocusController {
         nameFlow.getStyleClass().add("autogram-summary-header__title");
         nameFlow.setPrefWidth(272);
 
-        var validText = new Text();
-        var validBox = new VBox(validText);
-        validBox.getStyleClass().add("autogram-tag");
-        validText.getStyleClass().add("autogram-heading-s");
-        var validFlow = new TextFlow(validBox);
+        VBox badge = null;
+        if (!isValidated)
+            badge = SignatureBadgeFactory.createInProgressBadge();
+        else
+            if (isValid)
+                badge = SignatureBadgeFactory.createValidBadge();
+            else
+                badge = SignatureBadgeFactory.createInvalidBadge();
+
+        var validFlow = new TextFlow(badge);
         validFlow.getStyleClass().add("autogram-summary-header__badge");
-
-        if (!isValidated) {
-            validText.setText("Prebieha overovanie...");
-            validText.getStyleClass().add("autogram-tag-processing--text");
-            validBox.getStyleClass().add("autogram-tag-processing");
-
-        } else {
-            if (isValid) {
-                validText.setText("Platný");
-                validText.getStyleClass().add("autogram-tag-valid--text");
-                validBox.getStyleClass().add("autogram-tag-valid");
-
-            } else {
-                validText.setText("Neplatný");
-                validText.getStyleClass().add("autogram-tag-invalid--text");
-                validBox.getStyleClass().add("autogram-tag-invalid");
-            }
-        }
-
         var nameBox = new HBox(nameFlow, validFlow);
         nameBox.getStyleClass().add("autogram-summary-header");
 
@@ -154,7 +140,7 @@ public class SignaturesController implements SuppressedFocusController {
                 createTableRow("Čas podpisu", signingTime),
                 createTableRow("Certifikát", subjectStr),
                 createTableRow("Vydavateľ", issuerStr),
-                createTableRow("Typ podpisu", signatureType),
+                createTableRow("Typ podpisu", SignatureBadgeFactory.createInProgressBadge(), false),
                 createTableRow("Časové pečiatky", timestamps, true));
         signatureDetailsBox.getStyleClass().add("autogram-signature-details-box");
 
@@ -180,9 +166,11 @@ public class SignaturesController implements SuppressedFocusController {
     private HBox createTableRow(String label, VBox valueNode, boolean isLast) {
         var labelNode = createTableCell(label, "autogram-heading-s", isLast);
         labelNode.setPrefWidth(280);
-        valueNode.setPrefWidth(384);
+        var cell = new TextFlow(valueNode);
+        cell.getStyleClass().addAll(isLast ? "autogram-table-cell--last" : "autogram-table-cell");
+        cell.setPrefWidth(384);
 
-        return new HBox(labelNode, valueNode);
+        return new HBox(labelNode, cell);
     }
 
     private HBox createTableRow(String label, String value, boolean isLast) {
@@ -221,7 +209,7 @@ public class SignaturesController implements SuppressedFocusController {
             subject.getStyleClass().add("autogram-body-details");
             qualification.getStyleClass().add("autogram-body-details");
 
-            var timestampDetailsBox = new VBox(productionTime, subject, qualification);
+            var timestampDetailsBox = new VBox(productionTime, subject, new TextFlow(SignatureBadgeFactory.createInProgressBadge()));
             timestampDetailsBox.getStyleClass().add("autogram-timestamp-details-box");
             timestampDetailsBox.setVisible(false);
 
