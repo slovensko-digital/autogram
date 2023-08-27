@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -12,14 +13,12 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SettingsDialogController {
 
     @FXML
-    private ChoiceBox<String> signatureTypeBox;
+    private ChoiceBox<SignatureForm> signatureTypeBox;
 
     @FXML
     private ChoiceBox<TokenDriver> driverBox;
@@ -54,7 +53,8 @@ public class SettingsDialogController {
     public void initialize() {
         userSettings = UserSettings.load();
 
-        signatureTypeBox.getItems().addAll("ASIC XADES", "ASIC CADES", "PADES");
+        signatureTypeBox.getItems().addAll(SignatureForm.values());
+        signatureTypeBox.setConverter(new SignatureFormStringConverter());
         signatureTypeBox.setValue(userSettings.getSignatureType());
         signatureTypeBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setSignatureType(newValue);

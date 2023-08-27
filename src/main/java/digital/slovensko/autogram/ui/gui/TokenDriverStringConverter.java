@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.DefaultDriverDetector;
-import digital.slovensko.autogram.core.errors.TokenDriverDoesNotExistException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import javafx.util.StringConverter;
 

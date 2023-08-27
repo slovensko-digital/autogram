@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.drivers.TokenDriver;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +34,7 @@ public class UserSettings {
         }
     }
 
-    private String signatureType;
+    private SignatureForm signatureType;
 
     private TokenDriver driver;
 
@@ -52,7 +53,7 @@ public class UserSettings {
     private List<String> trustedList;
 
 
-    private UserSettings(String signatureType, TokenDriver driver, boolean en319132,
+    private UserSettings(SignatureForm signatureType, TokenDriver driver, boolean en319132,
                          boolean signIndividually, boolean correctDocumentDisplay,
                          boolean signaturesValidity, boolean pdfaCompliance,
                          boolean serverEnabled, List<String> trustedList) {
@@ -86,7 +87,13 @@ public class UserSettings {
                 .filter(d -> d.getShortname().equals(driver))
                 .findFirst();
 
-        return new UserSettings(signatureType,
+
+        var signatureForm = Arrays.
+                stream(SignatureForm.values())
+                .filter(sf -> sf.toString().equals(signatureType))
+                .findFirst();
+
+        return new UserSettings(signatureForm.isEmpty() ? null : signatureForm.get(),
                 tokenDriver.isEmpty() ? null : tokenDriver.get(),
                 en319132,
                 signIndividually,
@@ -97,11 +104,11 @@ public class UserSettings {
                 trustedList == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(trustedList.split(","))));
     }
 
-    public String getSignatureType() {
+    public SignatureForm getSignatureType() {
         return signatureType;
     }
 
-    public void setSignatureType(String signatureType) {
+    public void setSignatureType(SignatureForm signatureType) {
         this.signatureType = signatureType;
     }
 
@@ -176,7 +183,7 @@ public class UserSettings {
     public void saveSettings() {
         Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
 
-        prefs.put(UserSettingsKeys.SIGNATURE_TYPE.getKey(), signatureType);
+        prefs.put(UserSettingsKeys.SIGNATURE_TYPE.getKey(), signatureType.toString());
         prefs.put(UserSettingsKeys.DRIVER.getKey(), driver.getShortname());
         prefs.putBoolean(UserSettingsKeys.EN319132.getKey(), en319132);
         prefs.putBoolean(UserSettingsKeys.SIGN_INDIVIDUALLY.getKey(), signIndividually);
