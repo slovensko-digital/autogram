@@ -9,6 +9,7 @@ import digital.slovensko.autogram.core.errors.SourceAndTargetTypeMismatchExcepti
 import digital.slovensko.autogram.core.errors.TargetAlreadyExistsException;
 import digital.slovensko.autogram.core.errors.TargetDirectoryDoesNotExistException;
 import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 
 public class TargetPath {
     private final Path targetDirectory;
@@ -196,7 +197,10 @@ public class TargetPath {
     }
 
     private String generateTargetName(Path singleSourceFile) {
-        var extension = singleSourceFile.getFileName().toString().endsWith(".pdf") ? ".pdf" : ".asice";
+        var isSignatureLevelPades = SignatureLevel.PAdES_BASELINE_B == UserSettings.load().getSignatureLevel();
+        var isSourceFileExtensionPdf = singleSourceFile.getFileName().toString().endsWith(".pdf");
+
+        var extension = isSourceFileExtensionPdf && isSignatureLevelPades ? ".pdf" : ".asice";
         if (useUniqueFileName || isForMultipleFiles)
             return com.google.common.io.Files.getNameWithoutExtension(singleSourceFile.getFileName().toString())
                     + "_signed"

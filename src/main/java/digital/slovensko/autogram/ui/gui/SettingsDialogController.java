@@ -3,7 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -13,12 +13,13 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class SettingsDialogController {
 
     @FXML
-    private ChoiceBox<SignatureForm> signatureTypeBox;
+    private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
 
     @FXML
     private ChoiceBox<TokenDriver> driverBox;
@@ -53,11 +54,15 @@ public class SettingsDialogController {
     public void initialize() {
         userSettings = UserSettings.load();
 
-        signatureTypeBox.getItems().addAll(SignatureForm.values());
-        signatureTypeBox.setConverter(new SignatureFormStringConverter());
-        signatureTypeBox.setValue(userSettings.getSignatureType());
-        signatureTypeBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setSignatureType(newValue);
+        var supportedLevels = Arrays.asList(
+                SignatureLevel.XAdES_BASELINE_B,
+                SignatureLevel.PAdES_BASELINE_B,
+                SignatureLevel.CAdES_BASELINE_B);
+        signatureLevelChoiceBoxBox.getItems().addAll(supportedLevels);
+        signatureLevelChoiceBoxBox.setConverter(new SignatureLevelStringConverter());
+        signatureLevelChoiceBoxBox.setValue(userSettings.getSignatureLevel());
+        signatureLevelChoiceBoxBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            userSettings.setSignatureLevel(newValue);
         });
 
         List<TokenDriver> drivers = new DefaultDriverDetector().getAvailableDrivers();

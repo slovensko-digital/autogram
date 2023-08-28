@@ -1,19 +1,20 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.gui.SignatureLevelStringConverter;
 import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 public class UserSettings {
 
     private enum UserSettingsKeys {
-        SIGNATURE_TYPE("signature_type"),
+        SIGNATURE_LEVEL("signature_level"),
         DRIVER("driver"),
         EN319132("en319132"),
         SIGN_INDIVIDUALLY("sign_individually"),
@@ -34,7 +35,7 @@ public class UserSettings {
         }
     }
 
-    private SignatureForm signatureType;
+    private SignatureLevel signatureLevel;
 
     private TokenDriver driver;
 
@@ -53,11 +54,11 @@ public class UserSettings {
     private List<String> trustedList;
 
 
-    private UserSettings(SignatureForm signatureType, TokenDriver driver, boolean en319132,
+    private UserSettings(SignatureLevel signatureLevel, TokenDriver driver, boolean en319132,
                          boolean signIndividually, boolean correctDocumentDisplay,
                          boolean signaturesValidity, boolean pdfaCompliance,
                          boolean serverEnabled, List<String> trustedList) {
-        this.signatureType = signatureType;
+        this.signatureLevel = signatureLevel;
         this.driver = driver;
         this.en319132 = en319132;
         this.signIndividually = signIndividually;
@@ -71,8 +72,8 @@ public class UserSettings {
     public static UserSettings load() {
         Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
 
-        var signatureType = prefs.get(UserSettingsKeys.SIGNATURE_TYPE.getKey(), "PADES");
-        var driver = prefs.get(UserSettingsKeys.DRIVER.getKey(), "");
+        var signatureType = prefs.get(UserSettingsKeys.SIGNATURE_LEVEL.getKey(), null);
+        var driver = prefs.get(UserSettingsKeys.DRIVER.getKey(), null);
         var en319132 = prefs.getBoolean(UserSettingsKeys.EN319132.getKey(), false);
         var signIndividually = prefs.getBoolean(UserSettingsKeys.SIGN_INDIVIDUALLY.getKey(), false);
         var correctDocumentDisplay = prefs.getBoolean(UserSettingsKeys.CORRECT_DOCUMENT_DISPLAY.getKey(), true);
@@ -88,12 +89,16 @@ public class UserSettings {
                 .findFirst();
 
 
-        var signatureForm = Arrays.
-                stream(SignatureForm.values())
-                .filter(sf -> sf.toString().equals(signatureType))
+        SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
+        var signatureLevel = Arrays
+                .asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B, SignatureLevel.CAdES_BASELINE_B)
+                .stream()
+                .map(signatureLevelStringConverter::toString)
+                .filter(sl -> sl.equals(signatureType))
+                .map(signatureLevelStringConverter::fromString)
                 .findFirst();
 
-        return new UserSettings(signatureForm.isEmpty() ? null : signatureForm.get(),
+        return new UserSettings(signatureLevel.isEmpty() ? SignatureLevel.PAdES_BASELINE_B : signatureLevel.get(),
                 tokenDriver.isEmpty() ? null : tokenDriver.get(),
                 en319132,
                 signIndividually,
@@ -104,12 +109,12 @@ public class UserSettings {
                 trustedList == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(trustedList.split(","))));
     }
 
-    public SignatureForm getSignatureType() {
-        return signatureType;
+    public SignatureLevel getSignatureLevel() {
+        return signatureLevel;
     }
 
-    public void setSignatureType(SignatureForm signatureType) {
-        this.signatureType = signatureType;
+    public void setSignatureLevel(SignatureLevel signatureLevel) {
+        this.signatureLevel = signatureLevel;
     }
 
     public TokenDriver getDriver() {
@@ -183,7 +188,8 @@ public class UserSettings {
     public void saveSettings() {
         Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
 
-        prefs.put(UserSettingsKeys.SIGNATURE_TYPE.getKey(), signatureType.toString());
+        SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
+        prefs.put(UserSettingsKeys.SIGNATURE_LEVEL.getKey(), signatureLevelStringConverter.toString(signatureLevel));
         prefs.put(UserSettingsKeys.DRIVER.getKey(), driver.getShortname());
         prefs.putBoolean(UserSettingsKeys.EN319132.getKey(), en319132);
         prefs.putBoolean(UserSettingsKeys.SIGN_INDIVIDUALLY.getKey(), signIndividually);

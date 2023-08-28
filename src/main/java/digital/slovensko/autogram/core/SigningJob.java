@@ -8,6 +8,7 @@ import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.MimeType;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -168,7 +169,10 @@ public class SigningJob {
     private static SigningParameters getParametersForFile(File file, boolean checkPDFACompliance) {
         var filename = file.getName();
 
-        if (filename.endsWith(".pdf")) {
+        var isFilePdf = filename.endsWith(".pdf");
+        var isSignatureLevelPades = SignatureLevel.PAdES_BASELINE_B == UserSettings.load().getSignatureLevel();
+
+        if (isFilePdf && isSignatureLevelPades) {
             return SigningParameters.buildForPDF(filename, checkPDFACompliance);
         } else {
             return SigningParameters.buildForASiCWithXAdES(filename);

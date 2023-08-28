@@ -34,7 +34,7 @@
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                <ChoiceBox fx:id="signatureTypeBox" minWidth="325"
+                                                <ChoiceBox fx:id="signatureLevelChoiceBoxBox" minWidth="325"
                                                            styleClass="autogram-choicebox"/>
                                             </VBox>
                                         </HBox>
