@@ -718,18 +718,29 @@ TextFlow.autogram-body-s {
 
 .custom-checkbox {
   -fx-label-padding: 0 0 0 5px;
-    -fx-font-size: 20px;
- }
-
-.custom-checkbox .box {
-  -fx-background-color: white;
-  -fx-border-color: black;
-  -fx-pref-height: 25px;
-  -fx-pref-width: 25px;
+  -fx-font-size: 20px;
 }
 
-.custom-checkbox:selected .box {
-  -fx-background-color: black;
+.custom-checkbox .box {
+  -fx-pref-height: 25px;
+  -fx-pref-width: 25px;
+  -fx-border-color: black;
+  -fx-border-width: 2px 2px 2px 2px;
+  -fx-padding: 2px 2px 2px 2px;
+}
+
+.check-box .mark {
+ -fx-shape: "M1.73,12.91 8.1,19.28 22.79,4.59 22.79,1.59 8.1,16.28 1.73,9.91";
+ -fx-pref-height: 15px;
+ -fx-pref-width: 15px;
+}
+
+.check-box:selected .mark {
+	-fx-background-color: black;
+}
+
+.check-box:selected .box {
+	-fx-background-color: white;
 }
 
 .autogram-settings-container {
