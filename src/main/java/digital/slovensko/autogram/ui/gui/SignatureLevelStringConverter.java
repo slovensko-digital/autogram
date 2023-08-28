@@ -8,16 +8,12 @@ public class SignatureLevelStringConverter extends StringConverter<SignatureLeve
 
     public static final String ASIC_XADES = "ASiC XAdES";
     public static final String PADES = "PAdES";
-    public static final String ASIC_CADES = "ASiC CAdES";
-
     @Override
     public String toString(SignatureLevel signatureLevel) {
         if (SignatureLevel.XAdES_BASELINE_B == signatureLevel) {
             return ASIC_XADES;
         } else if (SignatureLevel.PAdES_BASELINE_B == signatureLevel) {
             return PADES;
-        } else if (SignatureLevel.CAdES_BASELINE_B == signatureLevel) {
-            return ASIC_CADES;
         }
         return "";
     }
@@ -28,8 +24,6 @@ public class SignatureLevelStringConverter extends StringConverter<SignatureLeve
             return SignatureLevel.XAdES_BASELINE_B;
         } else if (PADES.equals(signatureLevel)) {
             return SignatureLevel.PAdES_BASELINE_B;
-        } else if (ASIC_CADES.equals(signatureLevel)) {
-            return SignatureLevel.CAdES_BASELINE_B;
         }
         return null;
     }

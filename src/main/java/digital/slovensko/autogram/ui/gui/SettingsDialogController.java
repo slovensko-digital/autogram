@@ -54,11 +54,9 @@ public class SettingsDialogController {
     public void initialize() {
         userSettings = UserSettings.load();
 
-        var supportedLevels = Arrays.asList(
+        signatureLevelChoiceBoxBox.getItems().addAll(Arrays.asList(
                 SignatureLevel.XAdES_BASELINE_B,
-                SignatureLevel.PAdES_BASELINE_B,
-                SignatureLevel.CAdES_BASELINE_B);
-        signatureLevelChoiceBoxBox.getItems().addAll(supportedLevels);
+                SignatureLevel.PAdES_BASELINE_B));
         signatureLevelChoiceBoxBox.setConverter(new SignatureLevelStringConverter());
         signatureLevelChoiceBoxBox.setValue(userSettings.getSignatureLevel());
         signatureLevelChoiceBoxBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {

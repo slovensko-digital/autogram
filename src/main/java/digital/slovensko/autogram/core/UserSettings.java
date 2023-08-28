@@ -88,10 +88,9 @@ public class UserSettings {
                 .filter(d -> d.getShortname().equals(driver))
                 .findFirst();
 
-
         SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
         var signatureLevel = Arrays
-                .asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B, SignatureLevel.CAdES_BASELINE_B)
+                .asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B)
                 .stream()
                 .map(signatureLevelStringConverter::toString)
                 .filter(sl -> sl.equals(signatureType))
