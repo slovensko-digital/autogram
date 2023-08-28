@@ -7,9 +7,9 @@
 <BorderPane minWidth="800" prefWidth="800" xmlns="http://javafx.com/javafx/17.0.2-ea"
             xmlns:fx="http://javafx.com/fxml/1">
     <center>
-        <VBox fx:id="mainBox" prefHeight="500" prefWidth="800.0">
+        <VBox fx:id="mainBox" maxHeight="600" prefWidth="800.0">
             <VBox>
-                <TabPane prefHeight="500" prefWidth="800.0" styleClass="autogram-tabpane"
+                <TabPane maxHeight="600" prefWidth="800.0"
                          xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
                     <tabs>
                         <Tab styleClass="" text="Podpisovanie">
@@ -25,27 +25,27 @@
                                                   text="Predvolené nastavenia na typy a spôsob podpisovania. Tieto nastavenia sa dajú rýchlo zmeniť pri každom hromadnom a individuálnom podpisovaní."/>
                                         </TextFlow>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="325">
+                                            <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s" text="Podpisovanie PDF"/>
                                                 </TextFlow>
                                                 <TextFlow>
-                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                    <Text styleClass="autogram-settings-description" text="Zvolenie typu podpisu pre podpisovanie PDF"/>
                                                 </TextFlow>
                                             </VBox>
-                                            <VBox alignment="CENTER_LEFT" minWidth="325">
+                                            <VBox alignment="CENTER_LEFT" minWidth="325" >
                                                 <ChoiceBox fx:id="signatureLevelChoiceBoxBox" minWidth="325"
                                                            styleClass="autogram-choicebox"/>
                                             </VBox>
                                         </HBox>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="325">
+                                            <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
                                                           text="Štandard ETSI EN 319 132-1"/>
                                                 </TextFlow>
                                                 <TextFlow>
-                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                    <Text styleClass="autogram-settings-description" text="Podpisovanie novým spôsobom podľa normy ETSI EN 319 132-1"/>
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
@@ -54,13 +54,14 @@
                                             </VBox>
                                         </HBox>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="325">
+                                            <VBox minWidth="325"  maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
                                                           text="Hromadné podpisovanie dokumentov"/>
                                                 </TextFlow>
                                                 <TextFlow>
-                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                    <Text styleClass="autogram-settings-description"
+                                                          text="Jeden výstupný dokument, resp. každý dokument podpísaný individuálne"/>
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
@@ -68,13 +69,13 @@
                                             </VBox>
                                         </HBox>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="325">
+                                            <VBox minWidth="325"  maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
                                                           text="Podpisovací certifikát"/>
                                                 </TextFlow>
                                                 <TextFlow>
-                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                    <Text styleClass="autogram-settings-description" text="Certifikát overovania platnosti elektronického podpisu"/>
                                                 </TextFlow>
                                             </VBox>
                                             <ChoiceBox fx:id="driverBox" minWidth="325"
@@ -96,7 +97,7 @@
                                             <Text styleClass="autogram-body-s"
                                                   text="Zniženie počtu krajín, v ktorých sa overuje platnosť podpisu zrýchli samotný proces overovania. Zapnite overenie podpisov iba z krajín, ktoré potrebujete."/>
                                         </TextFlow>
-                                        <ScrollPane fx:id="sasd" prefHeight="230" vbarPolicy="NEVER" hbarPolicy="NEVER">
+                                        <ScrollPane fx:id="sasd" prefHeight="300" vbarPolicy="NEVER" hbarPolicy="NEVER">
                                             <content>
                                                 <VBox prefWidth="200" alignment="center" fx:id="countryList">
                                                 </VBox>
@@ -119,13 +120,13 @@
                                                   text="Z bezpečnostných dôvodov Autogram testuje správnosť dokumentu a podpisov. Možnosť vypnutia týchto kontrol je iba na vlastnú zodpovednosť."/>
                                         </TextFlow>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="325">
+                                            <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
                                                           text="Správne zobrazenie dokumentu"/>
                                                 </TextFlow>
                                                 <TextFlow>
-                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                    <Text styleClass="autogram-settings-description" text="Zobrazenie chyby, ktorá nastala pri zobrazovaní dokumentu"/>
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
@@ -134,12 +135,12 @@
                                             </VBox>
                                         </HBox>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="325">
+                                            <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s" text="Platnosť podpisov"/>
                                                 </TextFlow>
                                                 <TextFlow>
-                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                    <Text styleClass="autogram-settings-description" text="Kontrola platnosti podpisov vnútri dokumentu"/>
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
@@ -148,13 +149,13 @@
                                             </VBox>
                                         </HBox>
                                         <HBox styleClass="autogram-settings-body-container">
-                                            <VBox minWidth="325">
+                                            <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
                                                           text="Správnosť PDF/A formátu"/>
                                                 </TextFlow>
                                                 <TextFlow>
-                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                    <Text styleClass="autogram-settings-description" text="Kontrola súladu podpisovaného dokumentu s PDF/A formátom"/>
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
@@ -184,7 +185,7 @@
                                                     <Text styleClass="autogram-heading-s" text="Lokálny server"/>
                                                 </TextFlow>
                                                 <TextFlow>
-                                                    <Text styleClass="autogram-settings-description" text="?popis?"/>
+                                                    <Text styleClass="autogram-settings-description" text="Automatické spustenie lokálneho servera pri spustení aplikácie"/>
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
