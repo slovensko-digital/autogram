@@ -161,8 +161,7 @@ public class SigningJob {
 
     public static SigningJob buildFromFileBatch(File file, Autogram autogram, Responder responder) {
         var document = new FileDocument(file);
-        UserSettings userSettings = UserSettings.load();
-        SigningParameters parameters = getParametersForFile(file, userSettings.isPdfaCompliance());
+        var parameters = getParametersForFile(file, UserSettings.load().isPdfaCompliance());
         return new SigningJob(document, parameters, responder);
     }
 

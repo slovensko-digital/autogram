@@ -10,7 +10,7 @@ public class TokenDriverStringConverter extends StringConverter<TokenDriver> {
     @Override
     public String toString(TokenDriver driver) {
         if (driver == null) {
-            return null;
+            return "";
         }
         return driver.getName();
     }

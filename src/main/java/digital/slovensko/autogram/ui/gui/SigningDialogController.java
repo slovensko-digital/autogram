@@ -8,7 +8,6 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.CommonDocument;
-import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -56,8 +55,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void initialize() {
-        UserSettings userSettings = UserSettings.load();
-        TokenDriver driver = userSettings.getDriver();
+        TokenDriver driver = UserSettings.load().getDriver();
         if (driver != null) {
             autogram.requestPasswordAndThen(key -> {
                 gui.setActiveSigningKey(key);

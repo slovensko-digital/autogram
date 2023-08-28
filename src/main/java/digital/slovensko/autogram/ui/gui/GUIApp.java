@@ -28,8 +28,7 @@ public class GUIApp extends Application {
         var params = LaunchParameters.fromParameters(getParameters());
         var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps());
 
-        UserSettings userSettings = UserSettings.load();
-
+        var userSettings = UserSettings.load();
         if (userSettings.isServerEnabled()) {
             server.start();
         }

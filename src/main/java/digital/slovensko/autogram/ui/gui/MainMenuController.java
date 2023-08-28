@@ -97,8 +97,7 @@ public class MainMenuController implements SuppressedFocusController {
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-            UserSettings userSettings = UserSettings.load();
-            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), userSettings.isPdfaCompliance());
+            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), UserSettings.load().isPdfaCompliance());
             autogram.sign(job);
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
