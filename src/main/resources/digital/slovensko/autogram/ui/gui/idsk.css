@@ -652,17 +652,13 @@ TextFlow.autogram-body-s {
   -fx-font-size: 2em; 
 }
 
-.tab {
-    -fx-spacing: 20;
-}
-
 .tab .tab-label {
   -fx-text-fill: -autogram-text-colour;
   -fx-background-color: #f3f2f1;
   -fx-border-color: #929191;
   -fx-cursor: hand;
-  -fx-padding: 7px 10px 7px 10px;
-  -fx-font-size: 1em;
+  -fx-padding: 10px 13px 10px 13px;
+  -fx-font-size: 1.125em;
   -fx-font-weight: bold;
   -fx-border-width: 0 0 0 0;
 }
