@@ -672,10 +672,6 @@ TextFlow.autogram-body-s {
   -fx-border-width: 1px 1px 0 1px;
 }
 
-.autogram-tab-header {
-  -fx-text-fill: red;
-}
-
 .choice-box {
   -fx-background-color: white;
   -fx-border-color: black;
@@ -726,7 +722,7 @@ TextFlow.autogram-body-s {
   -fx-pref-width: 25px;
   -fx-border-color: black;
   -fx-border-width: 2px 2px 2px 2px;
-  -fx-padding: 2px 2px 2px 2px;
+  -fx-padding: 3px 3px 3px 3px;
 }
 
 .check-box .mark {
