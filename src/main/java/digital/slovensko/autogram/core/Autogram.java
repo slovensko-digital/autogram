@@ -62,8 +62,12 @@ public class Autogram {
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
 
-                ui.onUIThreadDo(
-                        () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+                if (UserSettings.load().isCorrectDocumentDisplay()) {
+                    ui.onUIThreadDo(
+                            () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+                } else {
+                    ui.onUIThreadDo(onContinue);
+                }
             }
         });
     }
