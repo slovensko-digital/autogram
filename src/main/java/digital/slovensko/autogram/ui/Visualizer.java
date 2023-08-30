@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.ui;
 
-import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.model.DSSDocument;
 
 public interface Visualizer {
     void showUnsupportedVisualization();
@@ -11,7 +11,7 @@ public interface Visualizer {
 
     void showPlainTextVisualization(String document);
 
-    void showImageVisualization(CommonDocument document);
+    void showImageVisualization(DSSDocument document);
 
     void setPrefWidth(double visualizationWidth);
 }

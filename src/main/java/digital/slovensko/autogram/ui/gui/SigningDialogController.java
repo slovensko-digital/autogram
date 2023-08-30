@@ -7,7 +7,8 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
-import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.model.DSSDocument;
+import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -150,7 +151,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         webViewContainer.setManaged(true);
     }
 
-    public void showImageVisualization(CommonDocument doc) {
+    public void showImageVisualization(DSSDocument doc) {
         // TODO what about visualization
         imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
         imageVisualization.setImage(new Image(doc.openStream()));
