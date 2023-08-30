@@ -104,7 +104,7 @@ public class UserSettings {
                 signaturesValidity,
                 pdfaCompliance,
                 serverEnabled,
-                trustedList == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(trustedList.split(","))));
+                trustedList == null ? new ArrayList<>() : new ArrayList<>(List.of(trustedList.split(","))));
     }
 
     public SignatureLevel getSignatureLevel() {

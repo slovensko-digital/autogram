@@ -91,7 +91,7 @@
   -fx-font-size: 1.1875em;
 }
 
-.custom-radio-button .radio {
+#batchSigningRadioButtons .radio {
   -fx-pref-height: 25px;
   -fx-pref-width: 25px;
   -fx-min-height: 25px;
@@ -358,6 +358,12 @@
   -fx-background-color: -autogram-link-hover-colour;
 }
 
+.autogram-description {
+  -fx-text-fill: gray;
+  -fx-fill: gray;
+  -fx-font-size: 1em;
+}
+
 .autogram-visualizer-plaintext,
 .autogram-visualizer-html,
 .autogram-visualizer-image {
@@ -501,6 +507,98 @@ TextFlow.autogram-body-s {
   -fx-stroke: -autogram-error-colour;
 }
 
+/* Borders */
+.borders {
+  -fx-border-color: black;
+}
+
+/* Tabs */
+.tab .tab-label {
+  -fx-text-fill: -autogram-text-colour;
+  -fx-background-color: #f3f2f1;
+  -fx-border-color: #929191;
+  -fx-cursor: hand;
+  -fx-padding: 10px 13px 10px 13px;
+  -fx-font-size: 1.125em;
+  -fx-font-weight: bold;
+  -fx-border-width: 0 0 0 0;
+}
+
+.tab:selected .tab-label {
+  -fx-background-color: white;
+  -fx-border-width: 1px 1px 0 1px;
+}
+
+/* Choice boxes */
+.choice-box {
+  -fx-background-color: white;
+  -fx-border-color: black;
+  -fx-border-width: 2px;
+  -fx-padding: 5px;
+  -fx-font-size: 20px;
+}
+
+.choice-box .context-menu {
+  -fx-background-color: white;
+}
+
+.choice-box .menu-item:focused {
+  -fx-background-color: #dbdad9;
+}
+
+.choice-box .menu-item > .label {
+  -fx-text-fill: black;
+  -fx-padding: 3px;
+}
+
+.choice-box .menu-item:focused > .label {
+  -fx-text-fill: black;
+}
+
+.choice-box > .label {
+  -fx-text-fill: black;
+}
+
+.choice-box .arrow-button {
+  -fx-background-color: #e0e0e0;
+  -fx-background-radius: 0;
+}
+
+.choice-box .arrow {
+  -fx-background-color: #a0a0a0;
+  -fx-shape: "M0 0 L10 5 L0 10 L0 0";
+  -fx-padding: 3px;
+  -fx-rotate: 90;
+}
+
+/* Check boxes */
+.check-box {
+  -fx-label-padding: 0 0 0 5px;
+  -fx-font-size: 20px;
+}
+
+.check-box .box {
+  -fx-pref-height: 25px;
+  -fx-pref-width: 25px;
+  -fx-border-color: black;
+  -fx-border-width: 2px 2px 2px 2px;
+  -fx-padding: 3px 3px 3px 3px;
+}
+
+.check-box .mark {
+ -fx-shape: "M1.73,12.91 8.1,19.28 22.79,4.59 22.79,1.59 8.1,16.28 1.73,9.91";
+ -fx-pref-height: 15px;
+ -fx-pref-width: 15px;
+}
+
+.check-box:selected .mark {
+  -fx-background-color: black;
+}
+
+.check-box:selected .box {
+  -fx-background-color: white;
+}
+
 /* Custom styles */
 
 .autogram-claim {
@@ -614,10 +712,6 @@ TextFlow.autogram-body-s {
   -fx-padding: 0 0 20px 20px;
 }
 
-.borders-settings-tab-content {
-  -fx-border-color: black;
-}
-
 .autogram-confirmation--success {
   -fx-background-color: -autogram-success-colour;
 }
@@ -650,98 +744,4 @@ TextFlow.autogram-body-s {
 }
 .autogram-confirmation Hyperlink {
   -fx-font-size: 2em; 
-}
-
-.tab .tab-label {
-  -fx-text-fill: -autogram-text-colour;
-  -fx-background-color: #f3f2f1;
-  -fx-border-color: #929191;
-  -fx-cursor: hand;
-  -fx-padding: 10px 13px 10px 13px;
-  -fx-font-size: 1.125em;
-  -fx-font-weight: bold;
-  -fx-border-width: 0 0 0 0;
-}
-
-.tab:selected .tab-label {
-  -fx-background-color: white;
-  -fx-border-width: 1px 1px 0 1px;
-}
-
-.choice-box {
-  -fx-background-color: white;
-  -fx-border-color: black;
-  -fx-border-width: 2px;
-  -fx-padding: 5px;
-  -fx-font-size: 20px;
-}
-
-.choice-box .context-menu {
-    -fx-background-color: white;
-}
-
-.choice-box .menu-item:focused {
-    -fx-background-color: #dbdad9;
-}
-
-.choice-box .menu-item > .label {
-    -fx-text-fill: black;
-    -fx-padding: 3px;
-}
-
-.choice-box .menu-item:focused > .label {
-    -fx-text-fill: black;
-}
-.choice-box > .label {
-    -fx-text-fill: black;
-}
-
-.choice-box .arrow-button {
-    -fx-background-color: #e0e0e0;
-    -fx-background-radius: 0;
-}
-
-.choice-box .arrow {
-    -fx-background-color: #a0a0a0;
-    -fx-shape: "M0 0 L10 5 L0 10 L0 0";
-    -fx-padding: 3px;
-    -fx-rotate: 90;
-}
-
-.custom-checkbox {
-  -fx-label-padding: 0 0 0 5px;
-  -fx-font-size: 20px;
-}
-
-.check-box .box {
-  -fx-pref-height: 25px;
-  -fx-pref-width: 25px;
-  -fx-border-color: black;
-  -fx-border-width: 2px 2px 2px 2px;
-  -fx-padding: 3px 3px 3px 3px;
-}
-
-.check-box .mark {
- -fx-shape: "M1.73,12.91 8.1,19.28 22.79,4.59 22.79,1.59 8.1,16.28 1.73,9.91";
- -fx-pref-height: 15px;
- -fx-pref-width: 15px;
-}
-
-.check-box:selected .mark {
-	-fx-background-color: black;
-}
-
-.check-box:selected .box {
-	-fx-background-color: white;
-}
-
-.autogram-settings-container {
-    -fx-padding: 20px;
-}
-
-.autogram-settings-description {
-  -fx-text-fill: gray;
-  -fx-fill: gray;
-
-  -fx-font-size: 1em;
 }

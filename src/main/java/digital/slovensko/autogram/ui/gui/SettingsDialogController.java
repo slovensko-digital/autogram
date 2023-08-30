@@ -139,7 +139,12 @@ public class SettingsDialogController {
         individaullyRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setSignIndividually(newValue);
         });
-        individaullyRadioButton.setSelected(userSettings.isSignIndividually());
+
+        if (userSettings.isSignIndividually()) {
+            individaullyRadioButton.setSelected(true);
+        } else {
+            togetherRadioButton.setSelected(true);
+        }
     }
 
     private void initializeTrustedCountriesList() {
@@ -180,7 +185,6 @@ public class SettingsDialogController {
         var checkBoxLabel = isCountryInTrustedList ? "Zapnuté" : "Vypnuté";
         var checkBox = new CheckBox(checkBoxLabel);
         checkBox.setSelected(isCountryInTrustedList);
-        checkBox.getStyleClass().addAll("custom-checkbox");
         checkBoxBox.getChildren().add(checkBox);
 
         checkBox.setOnAction(event -> {
