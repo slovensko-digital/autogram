@@ -47,11 +47,13 @@ if [[ "$platform" == "win" ]]; then
     sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./main.wxs"
 
     arguments+=(
+        "--name" "$properties_name"
         "--type" "msi"
         "--icon" "./Autogram.ico"
         "--java-options" "$jvmOptions --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED"
         "--win-shortcut-prompt"
         "--win-menu"
+        "--add-launcher" "Autogram-cli=$resourcesDir/windows-cli-build.properties"
     )
 
     if [[ ! -z "$properties_win_upgradeUUID" ]]; then
@@ -79,18 +81,7 @@ if [[ "$platform" == "win" ]]; then
         )
     fi
 
-    cli_arguments=("${arguments[@]}")
-    cli_arguments+=(
-        "--win-console"
-        "--name" "$properties_name-cli"
-    )
-    gui_arguments=("${arguments[@]}")
-    gui_arguments+=(
-         "--name" "$properties_name"
-    )
-
-    $jpackage "${cli_arguments[@]}"
-    $jpackage "${gui_arguments[@]}"
+    $jpackage "${arguments[@]}"
     checkExitCode $?
 fi
 
