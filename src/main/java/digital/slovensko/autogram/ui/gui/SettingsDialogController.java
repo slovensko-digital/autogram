@@ -13,7 +13,6 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class SettingsDialogController {
@@ -22,13 +21,21 @@ public class SettingsDialogController {
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
 
     @FXML
-    private ChoiceBox<TokenDriver> driverBox;
+    private CheckBox en319132CheckBox;
 
     @FXML
-    private CheckBox standardCheckBox;
+    private HBox batchSigningRadioButtons;
+
+    private ToggleGroup toggleGroup;
 
     @FXML
-    private CheckBox correctDocumentDisplaycheckBox;
+    private ChoiceBox<TokenDriver> driverChoiceBox;
+
+    @FXML
+    private VBox trustedCountriesList;
+
+    @FXML
+    private CheckBox correctDocumentDisplayCheckBox;
 
     @FXML
     private CheckBox signatureValidationCheckBox;
@@ -40,21 +47,26 @@ public class SettingsDialogController {
     private CheckBox localServerEnabledCheckBox;
 
     @FXML
-    HBox radios;
-
-    private ToggleGroup toggleGroup;
-
-    @FXML
-    private VBox countryList;
-
-    @FXML private Button closeButton;
+    private Button closeButton;
 
     private UserSettings userSettings;
 
     public void initialize() {
         userSettings = UserSettings.load();
 
-        signatureLevelChoiceBoxBox.getItems().addAll(Arrays.asList(
+        initializeSignatureLevelChoiceBox();
+        initializeDriverChoiceBox();
+        initializeEn319132CheckBox();
+        initializeCorrectDocumentDisplayCheckBox();
+        initializeSignatureValidationCheckBox();
+        initializeCheckPDFAComplianceCheckBox();
+        initializeLocalServerEnabledCheckBox();
+        initializeBatchSigningRadioButtons();
+        initializeTrustedCountriesList();
+    }
+
+    private void initializeSignatureLevelChoiceBox() {
+        signatureLevelChoiceBoxBox.getItems().addAll(List.of(
                 SignatureLevel.XAdES_BASELINE_B,
                 SignatureLevel.PAdES_BASELINE_B));
         signatureLevelChoiceBoxBox.setConverter(new SignatureLevelStringConverter());
@@ -62,82 +74,76 @@ public class SettingsDialogController {
         signatureLevelChoiceBoxBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setSignatureLevel(newValue);
         });
+    }
 
-        List<TokenDriver> drivers = new DefaultDriverDetector().getAvailableDrivers();
-        driverBox.setConverter(new TokenDriverStringConverter());
-        driverBox.getItems().add(null);
-        driverBox.getItems().addAll(drivers);
-        driverBox.setValue(userSettings.getDriver());
-        driverBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+    private void initializeDriverChoiceBox() {
+        driverChoiceBox.setConverter(new TokenDriverStringConverter());
+        driverChoiceBox.getItems().add(null);
+        driverChoiceBox.getItems().addAll(new DefaultDriverDetector().getAvailableDrivers());
+        driverChoiceBox.setValue(userSettings.getDriver());
+        driverChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setDriver(newValue);
         });
+    }
 
-        standardCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+    private void initializeEn319132CheckBox() {
+        en319132CheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setEn319132(newValue);
         });
-        standardCheckBox.setSelected(userSettings.isEn319132());
+        en319132CheckBox.setSelected(userSettings.isEn319132());
+    }
 
-        correctDocumentDisplaycheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+    private void initializeCorrectDocumentDisplayCheckBox() {
+        correctDocumentDisplayCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setCorrectDocumentDisplay(newValue);
-            if (newValue) {
-                correctDocumentDisplaycheckBox.setText("Zapnutá");
-            } else {
-                correctDocumentDisplaycheckBox.setText("Vypnutá");
-            }
+            correctDocumentDisplayCheckBox.setText(newValue ? "Zapnutá" : "Vypnutá");
         });
-        correctDocumentDisplaycheckBox.setSelected(userSettings.isCorrectDocumentDisplay());
+        correctDocumentDisplayCheckBox.setSelected(userSettings.isCorrectDocumentDisplay());
+    }
 
+    private void initializeSignatureValidationCheckBox() {
         signatureValidationCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setSignaturesValidity(newValue);
-            if (newValue) {
-                signatureValidationCheckBox.setText("Zapnutá");
-            } else {
-                signatureValidationCheckBox.setText("Vypnutá");
-            }
+            signatureValidationCheckBox.setText(newValue ? "Zapnutá" : "Vypnutá");
         });
         signatureValidationCheckBox.setSelected(userSettings.isSignaturesValidity());
+    }
 
+    private void initializeCheckPDFAComplianceCheckBox() {
         checkPDFAComplianceCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setPdfaCompliance(newValue);
-            if (newValue) {
-                checkPDFAComplianceCheckBox.setText("Zapnutá");
-            } else {
-                checkPDFAComplianceCheckBox.setText("Vypnutá");
-            }
+            checkPDFAComplianceCheckBox.setText(newValue ? "Zapnutá" : "Vypnutá");
         });
         checkPDFAComplianceCheckBox.setSelected(userSettings.isPdfaCompliance());
+    }
 
+    private void initializeLocalServerEnabledCheckBox() {
         localServerEnabledCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setServerEnabled(newValue);
-            if (newValue) {
-                localServerEnabledCheckBox.setText("Zapnutý");
-            } else {
-                localServerEnabledCheckBox.setText("Vypnutý");
-            }
+            localServerEnabledCheckBox.setText(newValue ? "Zapnutý" : "Vypnutý");
         });
         localServerEnabledCheckBox.setSelected(userSettings.isServerEnabled());
-        localServerEnabledCheckBox.setText(userSettings.isServerEnabled() ? "Zapnutý" : "Vypnutý");
+    }
 
+    private void initializeBatchSigningRadioButtons() {
         toggleGroup = new ToggleGroup();
 
         var togetherRadioButton = new RadioButton("Spoločne");
         togetherRadioButton.setToggleGroup(toggleGroup);
-        radios.getChildren().add(togetherRadioButton);
+        batchSigningRadioButtons.getChildren().add(togetherRadioButton);
+
         var individaullyRadioButton = new RadioButton("Samostatne");
         individaullyRadioButton.setToggleGroup(toggleGroup);
+        batchSigningRadioButtons.getChildren().add(individaullyRadioButton);
+
         individaullyRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setSignIndividually(newValue);
         });
-        radios.getChildren().add(individaullyRadioButton);
-//        radioButton.setUserData(driver);
+        individaullyRadioButton.setSelected(userSettings.isSignIndividually());
+    }
 
-        if (userSettings.isSignIndividually()) {
-            individaullyRadioButton.setSelected(true);
-        } else {
-            togetherRadioButton.setSelected(true);
-        }
-
-        String[] countries = {
+    private void initializeTrustedCountriesList() {
+        var europeanCountries = List.of(
                 "Belgicko", "Bulharsko", "Česká republika",
                 "Chorvátsko", "Cyprus", "Dánsko",
                 "Estónsko", "Fínsko", "Francúzsko",
@@ -146,56 +152,57 @@ public class SettingsDialogController {
                 "Maďarsko", "Malta", "Nemecko",
                 "Poľsko", "Portugalsko", "Rakúsko",
                 "Rumunsko", "Slovensko", "Slovinsko",
-                "Španielsko", "Švédsko", "Taliansko"
-        };
+                "Španielsko", "Švédsko", "Taliansko");
 
         List<String> trustedList = userSettings.getTrustedList();
-
-        for (String country : countries) {
-            HBox hbox = new HBox();
-            hbox.getStyleClass().add("autogram-settings-body-container");
-
-            VBox countryBox = new VBox();
-            countryBox.setMinWidth(325);
-
-            Text countryText = new Text(country);
-            countryText.getStyleClass().add("autogram-heading-s");
-            TextFlow textFlow = new TextFlow(countryText);
-            textFlow.getStyleClass().add("autogram-heading");
-            countryBox.getChildren().add(textFlow);
-
-            VBox checkBoxBox = new VBox();
-            checkBoxBox.setAlignment(Pos.CENTER_LEFT);
-            checkBoxBox.setMinWidth(325);
-
-            var isCountryInTrustedList = trustedList.contains(country);
-            var checkBoxLabel = isCountryInTrustedList ? "Zapnuté" : "Vypnuté";
-            CheckBox checkBox = new CheckBox(checkBoxLabel);
-            checkBox.setSelected(isCountryInTrustedList);
-            checkBox.getStyleClass().addAll("custom-checkbox");
-            checkBoxBox.getChildren().add(checkBox);
-
-            checkBox.setOnAction(event -> {
-                if (checkBox.isSelected()) {
-                    userSettings.addToTrustedList(country);
-                    checkBox.setText("Zapnuté");
-                } else {
-                    userSettings.removeFromTrustedList(country);
-                    checkBox.setText("Vypnuté");
-                }
-            });
-
-            hbox.getChildren().addAll(countryBox, checkBoxBox);
-            countryList.getChildren().add(hbox);
+        for (String country : europeanCountries) {
+            var isInTrustedList = trustedList.contains(country);
+            var hbox = createCountryElement(country, isInTrustedList);
+            trustedCountriesList.getChildren().add(hbox);
         }
     }
 
+    private HBox createCountryElement(String country, boolean isCountryInTrustedList) {
+        var hbox = new HBox();
+        hbox.setStyle("-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;");
+
+        var countryBox = new VBox();
+        countryBox.setMinWidth(325);
+        var countryText = new Text(country);
+        countryText.getStyleClass().add("autogram-heading-s");
+        var textFlow = new TextFlow(countryText);
+        textFlow.getStyleClass().add("autogram-heading");
+        countryBox.getChildren().add(textFlow);
+
+        var checkBoxBox = new VBox();
+        checkBoxBox.setAlignment(Pos.CENTER_LEFT);
+        checkBoxBox.setMinWidth(325);
+        var checkBoxLabel = isCountryInTrustedList ? "Zapnuté" : "Vypnuté";
+        var checkBox = new CheckBox(checkBoxLabel);
+        checkBox.setSelected(isCountryInTrustedList);
+        checkBox.getStyleClass().addAll("custom-checkbox");
+        checkBoxBox.getChildren().add(checkBox);
+
+        checkBox.setOnAction(event -> {
+            if (checkBox.isSelected()) {
+                userSettings.addToTrustedList(country);
+                checkBox.setText("Zapnuté");
+            } else {
+                userSettings.removeFromTrustedList(country);
+                checkBox.setText("Vypnuté");
+            }
+        });
+
+        hbox.getChildren().addAll(countryBox, checkBoxBox);
+        return hbox;
+    }
+
     public void onSaveButtonAction() {
-        userSettings.saveSettings();
+        userSettings.save();
     }
 
     public void onCancelButtonAction() {
-        Stage stage = (Stage) closeButton.getScene().getWindow();
+        var stage = (Stage) closeButton.getScene().getWindow();
         stage.close();
     }
 }

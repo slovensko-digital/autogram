@@ -713,7 +713,7 @@ TextFlow.autogram-body-s {
   -fx-font-size: 20px;
 }
 
-.custom-checkbox .box {
+.check-box .box {
   -fx-pref-height: 25px;
   -fx-pref-width: 25px;
   -fx-border-color: black;
@@ -744,15 +744,4 @@ TextFlow.autogram-body-s {
   -fx-fill: gray;
 
   -fx-font-size: 1em;
-}
-
-.autogram-settings-body-container {
-  -fx-border-width: 0 0 1px 0;
-  -fx-border-color: gray;
-
-  -fx-padding: 5px;
-}
-
-.settings-footer {
-  -fx-padding: 0px 30px;
 }

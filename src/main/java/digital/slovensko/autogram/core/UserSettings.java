@@ -2,7 +2,6 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.gui.SignatureLevelStringConverter;
-import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 
 import java.util.ArrayList;
@@ -184,7 +183,7 @@ public class UserSettings {
         this.trustedList.remove(country);
     }
 
-    public void saveSettings() {
+    public void save() {
         Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();

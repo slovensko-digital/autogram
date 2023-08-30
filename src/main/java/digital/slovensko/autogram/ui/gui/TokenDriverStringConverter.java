@@ -17,7 +17,7 @@ public class TokenDriverStringConverter extends StringConverter<TokenDriver> {
 
     @Override
     public TokenDriver fromString(String driverName) {
-        Optional<TokenDriver> tokenDriver = new DefaultDriverDetector()
+        var tokenDriver = new DefaultDriverDetector()
                 .getAvailableDrivers()
                 .stream()
                 .filter(d -> d.getName().equals(driverName))

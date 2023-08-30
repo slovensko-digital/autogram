@@ -24,7 +24,7 @@
                                             <Text styleClass="autogram-body-s"
                                                   text="Predvolené nastavenia na typy a spôsob podpisovania. Tieto nastavenia sa dajú rýchlo zmeniť pri každom hromadnom a individuálnom podpisovaní."/>
                                         </TextFlow>
-                                        <HBox styleClass="autogram-settings-body-container">
+                                        <HBox style="-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;">
                                             <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s" text="Podpisovanie PDF"/>
@@ -38,7 +38,7 @@
                                                            styleClass="autogram-choicebox"/>
                                             </VBox>
                                         </HBox>
-                                        <HBox styleClass="autogram-settings-body-container">
+                                        <HBox style="-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;">
                                             <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
@@ -49,11 +49,11 @@
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                <CheckBox fx:id="standardCheckBox" styleClass="custom-checkbox"
+                                                <CheckBox fx:id="en319132CheckBox"
                                                           text="Použiť štandard"/>
                                             </VBox>
                                         </HBox>
-                                        <HBox styleClass="autogram-settings-body-container">
+                                        <HBox style="-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;">
                                             <VBox minWidth="325"  maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
@@ -65,10 +65,10 @@
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                <HBox fx:id="radios" spacing="50" styleClass="custom-radio-button"/>
+                                                <HBox fx:id="batchSigningRadioButtons" spacing="50" styleClass="custom-radio-button"/>
                                             </VBox>
                                         </HBox>
-                                        <HBox styleClass="autogram-settings-body-container">
+                                        <HBox style="-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;">
                                             <VBox minWidth="325"  maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
@@ -78,7 +78,7 @@
                                                     <Text styleClass="autogram-settings-description" text="Certifikát overovania platnosti elektronického podpisu"/>
                                                 </TextFlow>
                                             </VBox>
-                                            <ChoiceBox fx:id="driverBox" minWidth="325"
+                                            <ChoiceBox fx:id="driverChoiceBox" minWidth="325"
                                                        styleClass="autogram-choicebox"/>
                                         </HBox>
                                     </VBox>
@@ -99,7 +99,7 @@
                                         </TextFlow>
                                         <ScrollPane fx:id="sasd" prefHeight="300" vbarPolicy="NEVER" hbarPolicy="NEVER">
                                             <content>
-                                                <VBox prefWidth="200" alignment="center" fx:id="countryList">
+                                                <VBox prefWidth="200" alignment="center" fx:id="trustedCountriesList">
                                                 </VBox>
                                             </content>
                                         </ScrollPane>
@@ -119,7 +119,7 @@
                                             <Text styleClass="autogram-body-s"
                                                   text="Z bezpečnostných dôvodov Autogram testuje správnosť dokumentu a podpisov. Možnosť vypnutia týchto kontrol je iba na vlastnú zodpovednosť."/>
                                         </TextFlow>
-                                        <HBox styleClass="autogram-settings-body-container">
+                                        <HBox style="-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;">
                                             <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
@@ -130,11 +130,11 @@
                                                 </TextFlow>
                                             </VBox>
                                             <VBox alignment="CENTER_LEFT" minWidth="325">
-                                                <CheckBox fx:id="correctDocumentDisplaycheckBox"
+                                                <CheckBox fx:id="correctDocumentDisplayCheckBox"
                                                           styleClass="custom-checkbox" text="Vypnutá"/>
                                             </VBox>
                                         </HBox>
-                                        <HBox styleClass="autogram-settings-body-container">
+                                        <HBox style="-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;">
                                             <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s" text="Platnosť podpisov"/>
@@ -148,7 +148,7 @@
                                                           styleClass="custom-checkbox" text="Vypnutá"/>
                                             </VBox>
                                         </HBox>
-                                        <HBox styleClass="autogram-settings-body-container">
+                                        <HBox style="-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;">
                                             <VBox minWidth="325" maxWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s"
@@ -179,7 +179,7 @@
                                             <Text styleClass="autogram-body-s"
                                                   text="Rozšírenie možnosti pre pokročilých používateľov."/>
                                         </TextFlow>
-                                        <HBox styleClass="autogram-settings-body-container">
+                                        <HBox style="-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;">
                                             <VBox minWidth="325">
                                                 <TextFlow styleClass="autogram-heading">
                                                     <Text styleClass="autogram-heading-s" text="Lokálny server"/>
@@ -203,7 +203,7 @@
         </VBox>
     </center>
     <bottom>
-        <HBox prefHeight="75.0" prefWidth="100.0" spacing="10" styleClass="settings-footer">
+        <HBox prefHeight="75.0" prefWidth="100.0" spacing="10" style="-fx-padding: 0px 30px;">
             <Button onAction="#onSaveButtonAction" styleClass="autogram-button,autogram-confirmation--success">Uložiť
                 zmeny
             </Button>
