@@ -1,9 +1,10 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
@@ -24,6 +25,15 @@ public class PickDriverDialogController {
     VBox mainBox;
     private ToggleGroup toggleGroup;
 
+    @FXML
+    Button showSignatureTypeButton;
+
+    @FXML
+    VBox signatureType;
+
+    @FXML
+    private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
+
     public PickDriverDialogController(List<? extends TokenDriver> drivers, Consumer<TokenDriver> callback) {
         this.drivers = drivers;
         this.callback = callback;
@@ -37,6 +47,20 @@ public class PickDriverDialogController {
             radioButton.setUserData(driver);
             radios.getChildren().add(radioButton);
         }
+        initializeSignatureLevelChoiceBox();
+    }
+
+    private void initializeSignatureLevelChoiceBox() {
+        var userSettings = UserSettings.load();
+        signatureLevelChoiceBoxBox.getItems().addAll(List.of(
+                SignatureLevel.XAdES_BASELINE_B,
+                SignatureLevel.PAdES_BASELINE_B));
+        signatureLevelChoiceBoxBox.setConverter(new SignatureLevelStringConverter());
+        signatureLevelChoiceBoxBox.setValue(userSettings.getSignatureLevel());
+        signatureLevelChoiceBoxBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            userSettings.setSignatureLevel(newValue);
+            userSettings.save();
+        });
     }
 
     public void onPickDriverButtonAction() {
@@ -49,5 +73,18 @@ public class PickDriverDialogController {
             var driver = (TokenDriver) toggleGroup.getSelectedToggle().getUserData();
             callback.accept(driver);
         }
+    }
+
+    public void onShowSignatureTypeAction() {
+        if (signatureType.isVisible()) {
+            signatureType.setManaged(false);
+            signatureType.setVisible(false);
+            showSignatureTypeButton.getStyleClass().remove("autogram-error-summary__more-open");
+        } else {
+            signatureType.setManaged(true);
+            signatureType.setVisible(true);
+            showSignatureTypeButton.getStyleClass().add("autogram-error-summary__more-open");
+        }
+        signatureType.getScene().getWindow().sizeToScene();
     }
 }
