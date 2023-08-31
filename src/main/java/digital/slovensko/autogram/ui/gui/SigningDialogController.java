@@ -56,7 +56,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void initialize() {
-        refreshSigningKey();
+        refreshSigningKey(true);
         visualization.initialize(this);
     }
 
@@ -76,13 +76,19 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
     }
 
-    public void refreshSigningKey() {
+    public void refreshSigningKey(boolean shouldLoadDriverFromSettings) {
         mainButton.setDisable(false);
+
         SigningKey key = gui.getActiveSigningKey();
         if (key == null) {
-            mainButton.setText("Vybrať podpisový certifikát");
-            mainButton.getStyleClass().add("autogram-button--secondary");
-            changeKeyButton.setVisible(false);
+            var driver = UserSettings.load().getDriver();
+            if (driver != null && shouldLoadDriverFromSettings) {
+                autogram.requestPasswordAndThen(driver, gui::setActiveSigningKey);
+            } else {
+                mainButton.setText("Vybrať podpisový certifikát");
+                mainButton.getStyleClass().add("autogram-button--secondary");
+                changeKeyButton.setVisible(false);
+            }
         } else {
             mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
             mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));

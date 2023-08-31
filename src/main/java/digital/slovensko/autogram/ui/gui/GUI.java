@@ -103,10 +103,7 @@ public class GUI implements UI {
     public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
         disableKeyPicking();
 
-        var driver = UserSettings.load().getDriver();
-        if (driver != null) {
-            callback.accept(driver);
-        } else if (drivers.isEmpty()) {
+        if (drivers.isEmpty()) {
             showError(new NoDriversDetectedException());
             refreshKeyOnAllJobs();
         } else if (drivers.size() == 1) {
@@ -171,7 +168,7 @@ public class GUI implements UI {
     }
 
     private void refreshKeyOnAllJobs() {
-        jobControllers.values().forEach(SigningDialogController::refreshSigningKey);
+        jobControllers.values().forEach(signingDialogController -> signingDialogController.refreshSigningKey(false));
         if (batchController != null) {
             batchController.refreshSigningKey();
         }
