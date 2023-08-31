@@ -74,12 +74,12 @@ public class UserSettings {
         var signatureType = prefs.get(UserSettingsKeys.SIGNATURE_LEVEL.getKey(), null);
         var driver = prefs.get(UserSettingsKeys.DRIVER.getKey(), null);
         var en319132 = prefs.getBoolean(UserSettingsKeys.EN319132.getKey(), false);
-        var signIndividually = prefs.getBoolean(UserSettingsKeys.SIGN_INDIVIDUALLY.getKey(), false);
+        var signIndividually = prefs.getBoolean(UserSettingsKeys.SIGN_INDIVIDUALLY.getKey(), true);
         var correctDocumentDisplay = prefs.getBoolean(UserSettingsKeys.CORRECT_DOCUMENT_DISPLAY.getKey(), true);
         var signaturesValidity = prefs.getBoolean(UserSettingsKeys.SIGNATURES_VALIDITY.getKey(), true);
         var pdfaCompliance = prefs.getBoolean(UserSettingsKeys.PDFA_COMPLIANCE.getKey(), true);
         var serverEnabled = prefs.getBoolean(UserSettingsKeys.SERVER_ENABLED.getKey(), true);
-        var trustedList = prefs.get(UserSettingsKeys.TRUSTED_LIST.getKey(), null);
+        var trustedList = prefs.get(UserSettingsKeys.TRUSTED_LIST.getKey(), "SK,CZ,AT,PL,HU");
 
         var tokenDriver = new DefaultDriverDetector()
                 .getAvailableDrivers()
@@ -188,7 +188,7 @@ public class UserSettings {
 
         SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
         prefs.put(UserSettingsKeys.SIGNATURE_LEVEL.getKey(), signatureLevelStringConverter.toString(signatureLevel));
-        prefs.put(UserSettingsKeys.DRIVER.getKey(), driver.getShortname());
+        prefs.put(UserSettingsKeys.DRIVER.getKey(), driver == null ? "" : driver.getShortname());
         prefs.putBoolean(UserSettingsKeys.EN319132.getKey(), en319132);
         prefs.putBoolean(UserSettingsKeys.SIGN_INDIVIDUALLY.getKey(), signIndividually);
         prefs.putBoolean(UserSettingsKeys.CORRECT_DOCUMENT_DISPLAY.getKey(), correctDocumentDisplay);

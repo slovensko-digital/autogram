@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.Country;
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -149,31 +150,50 @@ public class SettingsDialogController {
 
     private void initializeTrustedCountriesList() {
         var europeanCountries = List.of(
-                "Belgicko", "Bulharsko", "Česká republika",
-                "Chorvátsko", "Cyprus", "Dánsko",
-                "Estónsko", "Fínsko", "Francúzsko",
-                "Grécko", "Holandsko", "Írsko",
-                "Litva", "Lotyšsko", "Luxembursko",
-                "Maďarsko", "Malta", "Nemecko",
-                "Poľsko", "Portugalsko", "Rakúsko",
-                "Rumunsko", "Slovensko", "Slovinsko",
-                "Španielsko", "Švédsko", "Taliansko");
+                new Country("Belgicko", "BE"),
+                new Country("Bulharsko", "BG"),
+                new Country("Česká republika", "CZ"),
+                new Country("Chorvátsko", "HR"),
+                new Country("Cyprus", "CY"),
+                new Country("Dánsko", "DK"),
+                new Country("Estónsko", "EE"),
+                new Country("Fínsko", "FI"),
+                new Country("Francúzsko", "FR"),
+                new Country("Grécko", "GR"),
+                new Country("Holandsko", "NL"),
+                new Country("Írsko", "IE"),
+                new Country("Litva", "LT"),
+                new Country("Lotyšsko", "LV"),
+                new Country("Luxembursko", "LU"),
+                new Country("Maďarsko", "HU"),
+                new Country("Malta", "MT"),
+                new Country("Nemecko", "DE"),
+                new Country("Poľsko", "PL"),
+                new Country("Portugalsko", "PT"),
+                new Country("Rakúsko", "AT"),
+                new Country("Rumunsko", "RO"),
+                new Country("Slovensko", "SK"),
+                new Country("Slovinsko", "SI"),
+                new Country("Španielsko", "ES"),
+                new Country("Švédsko", "SE"),
+                new Country("Taliansko", "IT")
+        );
 
         List<String> trustedList = userSettings.getTrustedList();
-        for (String country : europeanCountries) {
-            var isInTrustedList = trustedList.contains(country);
+        for (Country country : europeanCountries) {
+            var isInTrustedList = trustedList.contains(country.getShrotname());
             var hbox = createCountryElement(country, isInTrustedList);
             trustedCountriesList.getChildren().add(hbox);
         }
     }
 
-    private HBox createCountryElement(String country, boolean isCountryInTrustedList) {
+    private HBox createCountryElement(Country country, boolean isCountryInTrustedList) {
         var hbox = new HBox();
         hbox.setStyle("-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;");
 
         var countryBox = new VBox();
         countryBox.setMinWidth(325);
-        var countryText = new Text(country);
+        var countryText = new Text(country.getName());
         countryText.getStyleClass().add("autogram-heading-s");
         var textFlow = new TextFlow(countryText);
         textFlow.getStyleClass().add("autogram-heading");
@@ -189,10 +209,10 @@ public class SettingsDialogController {
 
         checkBox.setOnAction(event -> {
             if (checkBox.isSelected()) {
-                userSettings.addToTrustedList(country);
+                userSettings.addToTrustedList(country.getShrotname());
                 checkBox.setText("Zapnuté");
             } else {
-                userSettings.removeFromTrustedList(country);
+                userSettings.removeFromTrustedList(country.getShrotname());
                 checkBox.setText("Vypnuté");
             }
         });
