@@ -48,6 +48,9 @@ public class SettingsDialogController {
     private CheckBox localServerEnabledCheckBox;
 
     @FXML
+    private Button saveButton;
+
+    @FXML
     private Button closeButton;
 
     private UserSettings userSettings;
@@ -223,6 +226,8 @@ public class SettingsDialogController {
 
     public void onSaveButtonAction() {
         userSettings.save();
+        var stage = (Stage) saveButton.getScene().getWindow();
+        stage.close();
     }
 
     public void onCancelButtonAction() {
