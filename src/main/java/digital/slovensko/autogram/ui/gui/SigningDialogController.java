@@ -56,13 +56,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void initialize() {
-        TokenDriver driver = UserSettings.load().getDriver();
-        if (driver != null) {
-            autogram.requestPasswordAndThen(key -> {
-                gui.setActiveSigningKey(key);
-            }, driver);
-        }
-
         refreshSigningKey();
         visualization.initialize(this);
     }

@@ -144,12 +144,8 @@ public class Autogram {
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
         var drivers = driverDetector.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers,
-                (driver) -> requestPasswordAndThen(callback, driver));
-    }
-
-    public void requestPasswordAndThen(Consumer<SigningKey> callback, TokenDriver driver) {
-        ui.requestPasswordAndThen(driver, (password) -> ui.onWorkThreadDo(
-                () -> fetchKeysAndThen(driver, password, callback)));
+                (driver) -> ui.requestPasswordAndThen(driver, (password) -> ui.onWorkThreadDo(
+                        () -> fetchKeysAndThen(driver, password, callback))));
     }
 
     private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {

@@ -6,13 +6,10 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
+import digital.slovensko.autogram.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
@@ -106,7 +103,10 @@ public class GUI implements UI {
     public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
         disableKeyPicking();
 
-        if (drivers.isEmpty()) {
+        var driver = UserSettings.load().getDriver();
+        if (driver != null) {
+            callback.accept(driver);
+        } else if (drivers.isEmpty()) {
             showError(new NoDriversDetectedException());
             refreshKeyOnAllJobs();
         } else if (drivers.size() == 1) {
