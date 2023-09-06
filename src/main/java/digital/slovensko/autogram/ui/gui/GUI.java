@@ -171,7 +171,7 @@ public class GUI implements UI {
         }
     }
 
-    private void refreshKeyOnAllJobs() {
+    public void refreshKeyOnAllJobs() {
         jobControllers.values().forEach(SigningDialogController::refreshSigningKey);
         if (batchController != null) {
             batchController.refreshSigningKey();

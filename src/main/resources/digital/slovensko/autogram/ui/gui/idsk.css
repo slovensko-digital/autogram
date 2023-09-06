@@ -499,7 +499,7 @@ TextFlow.autogram-body-s {
     -fx-border-style: hidden hidden solid hidden;
     -fx-border-width: 1px;
     -fx-border-color: -autogram-border-colour;
-    -fx-padding: 0.75em 0;
+    -fx-padding: 0.5em 0;
 }
 
 .autogram-table-cell--last {
@@ -584,24 +584,39 @@ TextFlow.autogram-body-s {
   -fx-padding: 0.1875em 0.25em;
 }
 
-.autogram-tag-valid {
-  -fx-background-color: #cce2d8;
-  -fx-border-color: #cce2d8;
-}
-
-.autogram-tag-invalid {
-  -fx-background-color: #f8d7da;
-  -fx-border-color: #f8d7da;
-}
-
 .autogram-tag-processing {
   -fx-background-color: #D2E2F1;
   -fx-border-color: #D2E2F1;
 }
 
-.autogram-tag-valid--text {
-  -fx-text-fill: #005a30;
-  -fx-fill: #005a30;
+.autogram-tag-invalid {
+  -fx-background-color: #F6D7D2;
+  -fx-border-color: #F6D7D2;
+}
+
+.autogram-tag-valid {
+  -fx-background-color: #cce2d8;
+  -fx-border-color: #cce2d8;
+}
+
+.autogram-tag-custom-valid {
+  -fx-background-color: #D2E2F1;
+  -fx-border-color: #D2E2F1;
+}
+
+.autogram-tag-unknown {
+  -fx-background-color: #EEEFEF;
+  -fx-border-color: #EEEFEF;
+}
+
+.autogram-tag-warning {
+  -fx-background-color: #FFF7BF;
+  -fx-border-color: #FFF7BF;
+}
+
+.autogram-tag-processing--text {
+  -fx-text-fill: #144E81;
+  -fx-fill: #144E81;
 }
 
 .autogram-tag-invalid--text {
@@ -609,9 +624,24 @@ TextFlow.autogram-body-s {
   -fx-fill: #721c24;
 }
 
-.autogram-tag-processing--text {
+.autogram-tag-valid--text {
+  -fx-text-fill: #005a30;
+  -fx-fill: #005a30;
+}
+
+.autogram-tag-custom-valid--text {
   -fx-text-fill: #144E81;
   -fx-fill: #144E81;
+}
+
+.autogram-tag-unknown--text {
+  -fx-text-fill: #383F43;
+  -fx-fill: #383F43;
+}
+
+.autogram-tag-warning--text {
+  -fx-text-fill: #594D00;
+  -fx-fill: #594D00;
 }
 
 .autogram-progress-bar {
@@ -720,13 +750,22 @@ TextFlow.autogram-body-s {
   -fx-font-size: 1.125em;
 }
 
+.autogram-details__more-icon {
+  -fx-fill: -autogram-link-colour;
+}
+
 .autogram-timestamp-details-box {
   -fx-border-color: -autogram-border-colour;
   -fx-border-width: 0 0 0 4px;
   -fx-padding: 0.5em 1em;
+  -fx-spacing: 0.5em;
 }
 
 .autogram-signature-box {
   -fx-border-color: -autogram-border-colour;
   -fx-border-width: 2px;
+}
+
+.autogram-timestamps-box {
+  -fx-max-width: 360px;
 }

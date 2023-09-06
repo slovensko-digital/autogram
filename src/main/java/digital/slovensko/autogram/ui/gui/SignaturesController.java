@@ -7,6 +7,7 @@ import javax.security.auth.x500.X500Principal;
 
 import digital.slovensko.autogram.core.SignatureValidator;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
+import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.simplereport.jaxb.XmlTimestamp;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -104,18 +105,16 @@ public class SignaturesController implements SuppressedFocusController {
             var signingTime = format.format(simple.getSigningTime(signatureId));
             var subject = getPrettyDNWithoutCN(diagnostic.getSignatureById(signatureId).getSigningCertificate().getCertificateDN());
             var issuer = getPrettyDN(diagnostic.getCertificateIssuerDN(diagnostic.getSignatureById(signatureId).getSigningCertificate().getId()));
-            var signatureType = isValidated
-                    ? reports.getDetailedReport().getSignatureQualification(signatureId).getLabel()
-                    : null;
+            var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null;
             var timestamps = simple.getSignatureTimestamps(signatureId);
 
             signaturesBox.getChildren().add(createSignatureBox(isValidated, isValid, name, signingTime, subject, issuer,
-                    signatureType, createTimestampsBox(timestamps, simple, diagnostic)));
+                    signatureType, createTimestampsBox(isValidated, timestamps, simple, diagnostic)));
         }
     }
 
     private VBox createSignatureBox(boolean isValidated, boolean isValid, String name, String signingTime,
-            String subjectStr, String issuerStr, String signatureType, VBox timestamps) {
+            String subjectStr, String issuerStr, SignatureQualification signatureQualification, VBox timestamps) {
         var nameText = new Text(name);
         nameText.getStyleClass().add("autogram-heading-s");
         var nameFlow = new TextFlow(nameText);
@@ -127,9 +126,9 @@ public class SignaturesController implements SuppressedFocusController {
             badge = SignatureBadgeFactory.createInProgressBadge();
         else
             if (isValid)
-                badge = SignatureBadgeFactory.createValidBadge();
+                badge = SignatureBadgeFactory.createBadgeFromQualification(signatureQualification);
             else
-                badge = SignatureBadgeFactory.createInvalidBadge();
+                badge = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
 
         var validFlow = new TextFlow(badge);
         validFlow.getStyleClass().add("autogram-summary-header__badge");
@@ -139,24 +138,21 @@ public class SignaturesController implements SuppressedFocusController {
         var signatureDetailsBox = new VBox(
                 createTableRow("Čas podpisu", signingTime),
                 createTableRow("Certifikát", subjectStr),
-                createTableRow("Vydavateľ", issuerStr),
-                createTableRow("Typ podpisu", SignatureBadgeFactory.createInProgressBadge(), false),
-                createTableRow("Časové pečiatky", timestamps, true));
+                createTableRow("Vydavateľ", issuerStr)
+        );
+
+        if (timestamps.getChildren().size() > 0) {
+            signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu", SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), false));
+            signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestamps, true));
+        } else {
+            signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu", SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), true));
+        }
+
         signatureDetailsBox.getStyleClass().add("autogram-signature-details-box");
 
         var signatureBox = new VBox(nameBox, signatureDetailsBox);
         signatureBox.getStyleClass().add("autogram-signature-box");
         return signatureBox;
-    }
-
-    private boolean isQTSA(DiagnosticData diagnostic, SimpleReport simple, String signatureId) {
-        var signature = diagnostic.getSignatureById(signatureId);
-        for (var timestamp : signature.getSignatureTimestamps()) {
-            if (simple.getTimestampQualification(timestamp.getId()).getReadable().equals("QTSA"))
-                return true;
-        }
-
-        return false;
     }
 
     private HBox createTableRow(String label, String value) {
@@ -183,10 +179,6 @@ public class SignaturesController implements SuppressedFocusController {
         return new HBox(labelNode, valueNode);
     }
 
-    private TextFlow createTableCell(String value) {
-        return createTableCell(value, "autogram-body", false);
-    }
-
     private TextFlow createTableCell(String value, String textStyle, boolean isLast) {
         var text = new Text(value);
         text.getStyleClass().add(textStyle);
@@ -197,8 +189,9 @@ public class SignaturesController implements SuppressedFocusController {
         return cell;
     }
 
-    private VBox createTimestampsBox(List<XmlTimestamp> timestamps, SimpleReport simple, DiagnosticData diagnostic) {
+    private VBox createTimestampsBox(boolean isValidated, List<XmlTimestamp> timestamps, SimpleReport simple, DiagnosticData diagnostic) {
         var vBox =  new VBox();
+        vBox.getStyleClass().add("autogram-timestamps-box");
 
         for (var timestamp : timestamps) {
             var productionTime = new TextFlow(new Text(format.format(timestamp.getProductionTime())));
@@ -209,16 +202,18 @@ public class SignaturesController implements SuppressedFocusController {
             subject.getStyleClass().add("autogram-body-details");
             qualification.getStyleClass().add("autogram-body-details");
 
-            var timestampDetailsBox = new VBox(productionTime, subject, new TextFlow(SignatureBadgeFactory.createInProgressBadge()));
+            var timestampQualification = isValidated ? simple.getTimestampQualification(timestamp.getId()) : null;
+            var timestampDetailsBox = new VBox(productionTime, subject, new TextFlow(SignatureBadgeFactory.createBadgeFromTSQualification(timestampQualification)));
             timestampDetailsBox.getStyleClass().add("autogram-timestamp-details-box");
             timestampDetailsBox.setVisible(false);
 
             var polygon = new Polygon(0.0, 0.0, 9.0, 6.0, 0.0, 12.0);
-            polygon.setFill(Paint.valueOf("#1d70b8"));
+            polygon.getStyleClass().add("autogram-details__more-icon");
             var graphic = new TextFlow(polygon);
             var button = new Button(timestamp.getProducedBy(), graphic);
             button.getStyleClass().addAll("autogram-link", "autogram-details__more");
             var textFlow = new TextFlow(button);
+
             var timestampDetailsVBoxWrapper = new VBox();
             vBox.getChildren().add(new VBox(textFlow, timestampDetailsVBoxWrapper));
             timestampDetailsBox.setVisible(false);

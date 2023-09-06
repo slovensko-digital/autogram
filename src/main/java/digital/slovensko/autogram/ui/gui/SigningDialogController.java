@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
+import java.util.ArrayList;
+
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.visualization.Visualization;
@@ -7,6 +9,7 @@ import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
+import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.model.DSSDocument;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
@@ -26,12 +29,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.scene.web.WebView;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class SigningDialogController implements SuppressedFocusController, Visualizer {
     private final GUI gui;
     private final Autogram autogram;
     private SignaturesController signaturesController;
+    private SignaturesNotValidatedDialogController signaturesNotValidatedDialogController;
+    private SignaturesInvalidDialogController signaturesInvalidDialogController;
     private boolean signatureValidationCompleted = false;
     private final Visualization visualization;
     private Reports signatureValidationReports;
@@ -78,6 +84,52 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         } else {
             gui.disableSigning();
             getNodeForLoosingFocus().requestFocus();
+            checkExistingSignatureValidityAndSign(signingKey);
+        }
+    }
+
+    private void checkExistingSignatureValidityAndSign(SigningKey signingKey) {
+        if (!signatureValidationCompleted) {
+            if (signaturesNotValidatedDialogController == null)
+                signaturesNotValidatedDialogController = new SignaturesNotValidatedDialogController(this);
+
+            var root = GUIUtils.loadFXML(signaturesNotValidatedDialogController, "signatures-not-validated-dialog.fxml");
+            var stage = new Stage();
+            stage.setTitle("Upozornenie");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.WINDOW_MODAL);
+            GUIUtils.suppressDefaultFocus(stage, signaturesNotValidatedDialogController);
+            stage.show();
+            System.out.println("Signature validation not completed yet");
+            return;
+        }
+
+        for (var signatureId : signatureValidationReports.getSimpleReport().getSignatureIdList()) {
+            if (!signatureValidationReports.getSimpleReport().isValid(signatureId)) {
+                if (signaturesInvalidDialogController == null)
+                    signaturesInvalidDialogController = new SignaturesInvalidDialogController(this);
+
+                var root = GUIUtils.loadFXML(signaturesInvalidDialogController, "signatures-invalid-dialog.fxml");
+                var stage = new Stage();
+                stage.setTitle("Upozornenie");
+                stage.setScene(new Scene(root));
+                stage.initModality(Modality.WINDOW_MODAL);
+                GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
+                stage.show();
+
+                return;
+            }
+        }
+
+        System.out.println("All signatures are valid, signing");
+        sign();
+    }
+
+    public void sign() {
+        var signingKey = gui.getActiveSigningKey();
+        if (signingKey == null) {
+            autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
+        } else {
             autogram.sign(visualization.getJob(), signingKey);
         }
     }
@@ -114,7 +166,10 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         signatureValidationReports = reports;
         renderSignatures(reports, true);
         if (signaturesController != null)
-        signaturesController.onSignatureValidationCompleted(reports);
+            signaturesController.onSignatureValidationCompleted(reports);
+
+        if (signaturesNotValidatedDialogController != null)
+            signaturesNotValidatedDialogController.onCancelAction();
     }
 
     public void renderSignatures(Reports reports, boolean isValidated) {
@@ -126,7 +181,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         signaturesTable.getChildren().clear();
         signaturesTable.getChildren().addAll(createSignatureTableHeader(isValidated), createSignatureTableRows(reports, isValidated));
 
-        // resize the stage to fit the content
         var stage = (Stage) mainButton.getScene().getWindow();
         stage.sizeToScene();
     }
@@ -136,26 +190,34 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         for (var signatureId : reports.getSimpleReport().getSignatureIdList()) {
             var name = reports.getSimpleReport().getSignedBy(signatureId);
             var signatureType = reports.getDetailedReport().getSignatureQualification(signatureId);
+            var valid = reports.getSimpleReport().isValid(signatureId);
 
-            r.getChildren().add(createSignatureTableRow(name, signatureType, isValidated));
+            var timestampQualifications = new ArrayList<TimestampQualification>();
+            for (var timestampId : reports.getSimpleReport().getSignatureTimestamps(signatureId))
+                timestampQualifications.add(reports.getDetailedReport().getTimestampQualification(timestampId.getId()));
+
+            r.getChildren().add(createSignatureTableRow(name, signatureType, timestampQualifications, isValidated, valid));
         }
 
         return r;
     }
 
-    private HBox createSignatureTableRow(String name, SignatureQualification signatureType, boolean isValidated) {
-        var whoSignedText = new Button(name);
-        whoSignedText.getStyleClass().add("autogram-link");
-        whoSignedText.setPrefWidth(360);
-        whoSignedText.setOnMouseClicked(event -> {
+    private HBox createSignatureTableRow(String name, SignatureQualification signatureType, ArrayList<TimestampQualification> timestampQualifications, boolean isValidated, boolean valid) {
+        var whoSignedButton = new Button(name);
+        whoSignedButton.getStyleClass().addAll("autogram-link");
+        whoSignedButton.setPrefWidth(360);
+        whoSignedButton.setOnMouseClicked(event -> {
             onShowSignaturesButtonPressed(null);
         });
 
-        var signatureTypeText = new Text(signatureType != null ? signatureType.toString() : "Prebieha validácia");
-        signatureTypeText.getStyleClass().add("autogram-text");
-        var signatureTypeFlow = new TextFlow(signatureTypeText);
+        var whoSignedBox = new HBox(whoSignedButton);
+        whoSignedBox.setStyle("-fx-padding: 0.25em 0;");
 
-        var r = new HBox(whoSignedText, signatureTypeFlow);
+        var signatureTypeBox = SignatureBadgeFactory.createCombinedBadgeFromQualification(isValidated ? signatureType : null, timestampQualifications);
+        if (isValidated && !valid)
+            signatureTypeBox = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
+
+        var r = new HBox(whoSignedBox, new VBox(signatureTypeBox));
         r.getStyleClass().add("autogram-table-cell");
         return r;
     }
@@ -267,5 +329,9 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     @Override
     public void setPrefWidth(double prefWidth) {
         mainBox.setPrefWidth(prefWidth);
+    }
+
+    public void enableSigning() {
+        gui.refreshKeyOnAllJobs();
     }
 }
