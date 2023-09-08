@@ -8,6 +8,7 @@ import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.MimeType;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -176,6 +177,6 @@ public class SigningJob {
     }
 
     public boolean shouldCheckPDFCompliance() {
-        return parameters.getCheckPDFACompliance();
+        return parameters.getCheckPDFACompliance() && document.getMimeType().equals(MimeTypeEnum.PDF);
     }
 }
