@@ -1,15 +1,8 @@
 package digital.slovensko.autogram.core.errors;
 
-public class MultipleOriginalDocumentsFoundException extends RuntimeException {
+public class MultipleOriginalDocumentsFoundException extends AutogramException {
 
     public MultipleOriginalDocumentsFoundException(String description) {
-        super("Multiple original documents found");
-        this.description = description;
-    }
-
-    private String description;
-
-    public String getDescription() {
-        return description;
+        super("Chyba ASiC-E kontajnera", "Nájdených viacero dokumnetov na podpis", description);
     }
 }
