@@ -85,42 +85,50 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         }
     }
 
+    private void showSignaturesNotValidatedDialog() {
+        if (signaturesNotValidatedDialogController == null)
+            signaturesNotValidatedDialogController = new SignaturesNotValidatedDialogController(this);
+
+        var root = GUIUtils.loadFXML(signaturesNotValidatedDialogController, "signatures-not-validated-dialog.fxml");
+        var stage = new Stage();
+        stage.setTitle("Upozornenie");
+        stage.setScene(new Scene(root));
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.setOnCloseRequest(event -> {
+            signaturesNotValidatedDialogController.onCancelAction();
+        });
+        GUIUtils.suppressDefaultFocus(stage, signaturesNotValidatedDialogController);
+        stage.show();
+    }
+
+    private void showSignaturesInvalidDialog() {
+        if (signaturesInvalidDialogController == null)
+            signaturesInvalidDialogController = new SignaturesInvalidDialogController(this);
+
+        var root = GUIUtils.loadFXML(signaturesInvalidDialogController, "signatures-invalid-dialog.fxml");
+        var stage = new Stage();
+        stage.setTitle("Upozornenie");
+        stage.setScene(new Scene(root));
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.setOnCloseRequest(event -> {
+            signaturesInvalidDialogController.onCancelAction();
+        });
+        signaturesInvalidDialogController.initialize(signatureValidationReports);
+        GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
+        stage.show();
+
+        return;
+    }
+
     private void checkExistingSignatureValidityAndSign(SigningKey signingKey) {
         if (!signatureValidationCompleted) {
-            if (signaturesNotValidatedDialogController == null)
-                signaturesNotValidatedDialogController = new SignaturesNotValidatedDialogController(this);
-
-            var root = GUIUtils.loadFXML(signaturesNotValidatedDialogController, "signatures-not-validated-dialog.fxml");
-            var stage = new Stage();
-            stage.setTitle("Upozornenie");
-            stage.setScene(new Scene(root));
-            stage.initModality(Modality.WINDOW_MODAL);
-            stage.setOnCloseRequest(event -> {
-                signaturesNotValidatedDialogController.onCancelAction();
-            });
-            GUIUtils.suppressDefaultFocus(stage, signaturesNotValidatedDialogController);
-            stage.show();
-
+            showSignaturesNotValidatedDialog();
             return;
         }
 
         for (var signatureId : signatureValidationReports.getSimpleReport().getSignatureIdList()) {
             if (!signatureValidationReports.getSimpleReport().isValid(signatureId)) {
-                if (signaturesInvalidDialogController == null)
-                    signaturesInvalidDialogController = new SignaturesInvalidDialogController(this);
-
-                var root = GUIUtils.loadFXML(signaturesInvalidDialogController, "signatures-invalid-dialog.fxml");
-                var stage = new Stage();
-                stage.setTitle("Upozornenie");
-                stage.setScene(new Scene(root));
-                stage.initModality(Modality.WINDOW_MODAL);
-                stage.setOnCloseRequest(event -> {
-                    signaturesInvalidDialogController.onCancelAction();
-                });
-                signaturesInvalidDialogController.initialize(signatureValidationReports);
-                GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
-                stage.show();
-
+                showSignaturesInvalidDialog();
                 return;
             }
         }
