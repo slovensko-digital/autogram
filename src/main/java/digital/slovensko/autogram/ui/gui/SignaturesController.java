@@ -92,8 +92,10 @@ public class SignaturesController implements SuppressedFocusController {
 
             var name = simple.getSignedBy(signatureId);
             var signingTime = format.format(simple.getSigningTime(signatureId));
-            var subject = getPrettyDNWithoutCN(diagnostic.getSignatureById(signatureId).getSigningCertificate().getCertificateDN());
-            var issuer = getPrettyDN(diagnostic.getCertificateIssuerDN(diagnostic.getSignatureById(signatureId).getSigningCertificate().getId()));
+            var subject = getPrettyDNWithoutCN(
+                    diagnostic.getSignatureById(signatureId).getSigningCertificate().getCertificateDN());
+            var issuer = getPrettyDN(diagnostic
+                    .getCertificateIssuerDN(diagnostic.getSignatureById(signatureId).getSigningCertificate().getId()));
             var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null;
             var timestamps = simple.getSignatureTimestamps(signatureId);
 

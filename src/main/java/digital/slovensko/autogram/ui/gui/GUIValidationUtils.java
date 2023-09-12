@@ -24,17 +24,12 @@ public class GUIValidationUtils {
     public static final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
     public static HBox createSignatureTableHeader(boolean isValidated) {
-        var whoSignedText = new Text("Podpísal");
-        whoSignedText.getStyleClass().add("autogram-heading-s");
-        var whoSigned = new TextFlow(whoSignedText);
-        whoSigned.setPrefWidth(360);
-
-        var signatureTypeText = new Text("Typ podpisu");
-        signatureTypeText.getStyleClass().add("autogram-heading-s");
-        var signatureType = new TextFlow(signatureTypeText);
+        var whoSigned = new TextFlow(new Text("Podpísal"));
+        whoSigned.getStyleClass().add("autogram-table__left-column");
+        var signatureType = new TextFlow(new Text("Typ podpisu"));
 
         var r = new HBox(whoSigned, signatureType);
-        r.getStyleClass().add("autogram-table-cell");
+        r.getStyleClass().add("autogram-table-header");
         return r;
     }
 
@@ -57,31 +52,25 @@ public class GUIValidationUtils {
 
     public static HBox createSignatureTableRow(String name, SignatureQualification signatureType, ArrayList<TimestampQualification> timestampQualifications, boolean isValidated, boolean valid, Consumer<String> callback) {
         var whoSignedButton = new Button(name);
-        whoSignedButton.getStyleClass().addAll("autogram-link");
-        whoSignedButton.setPrefWidth(360);
+        whoSignedButton.getStyleClass().addAll("autogram-link", "autogram-table__left-column");
         whoSignedButton.setOnMouseClicked(event -> {
             callback.accept(null);
         });
-
-        var whoSignedBox = new HBox(whoSignedButton);
-        whoSignedBox.setStyle("-fx-padding: 0.25em 0;");
 
         var signatureTypeBox = SignatureBadgeFactory.createCombinedBadgeFromQualification(isValidated ? signatureType : null, timestampQualifications);
         if (isValidated && !valid)
             signatureTypeBox = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
 
-        var r = new HBox(whoSignedBox, new VBox(signatureTypeBox));
+        var r = new HBox(new HBox(whoSignedButton), new VBox(signatureTypeBox));
         r.getStyleClass().add("autogram-table-cell");
         return r;
     }
 
     public static VBox createSignatureBox(boolean isValidated, boolean isValid, String name, String signingTime,
             String subjectStr, String issuerStr, SignatureQualification signatureQualification, VBox timestamps) {
-        var nameText = new Text(name);
-        nameText.getStyleClass().add("autogram-heading-s");
-        var nameFlow = new TextFlow(nameText);
+
+        var nameFlow = new TextFlow(new Text(name));
         nameFlow.getStyleClass().add("autogram-summary-header__title");
-        nameFlow.setPrefWidth(272);
 
         VBox badge = null;
         if (!isValidated)
@@ -95,7 +84,6 @@ public class GUIValidationUtils {
         var validFlow = new TextFlow(badge);
         validFlow.getStyleClass().add("autogram-summary-header__badge");
         var nameBox = new HBox(nameFlow, validFlow);
-        nameBox.getStyleClass().add("autogram-summary-header");
 
         var signatureDetailsBox = new VBox(
                 createTableRow("Čas podpisu", signingTime),
@@ -106,11 +94,8 @@ public class GUIValidationUtils {
         if (timestamps.getChildren().size() > 0) {
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu", SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), false));
             signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestamps, true));
-        } else {
+        } else
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu", SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), true));
-        }
-
-        signatureDetailsBox.getStyleClass().add("autogram-signature-details-box");
 
         var signatureBox = new VBox(nameBox, signatureDetailsBox);
         signatureBox.getStyleClass().add("autogram-signature-box");
@@ -122,31 +107,28 @@ public class GUIValidationUtils {
     }
 
     public static HBox createTableRow(String label, VBox valueNode, boolean isLast) {
-        var labelNode = createTableCell(label, "autogram-heading-s", isLast);
-        labelNode.setPrefWidth(280);
+        var labelNode = createTableCell(label, "autogram-heading-s", isLast, true);
         var cell = new TextFlow(valueNode);
         cell.getStyleClass().addAll(isLast ? "autogram-table-cell--last" : "autogram-table-cell");
-        cell.setPrefWidth(384);
+        cell.getStyleClass().addAll("autogram-table-cell--right");
 
         return new HBox(labelNode, cell);
     }
 
     public static HBox createTableRow(String label, String value, boolean isLast) {
-        var labelNode = createTableCell(label, "autogram-heading-s", isLast);
-        var valueNode = createTableCell(value, "autogram-body", isLast);
-
-        labelNode.setPrefWidth(280);
-        valueNode.setPrefWidth(384);
+        var labelNode = createTableCell(label, "autogram-heading-s", isLast, true);
+        var valueNode = createTableCell(value, "autogram-body", isLast, false);
 
         return new HBox(labelNode, valueNode);
     }
 
-    public static TextFlow createTableCell(String value, String textStyle, boolean isLast) {
+    public static TextFlow createTableCell(String value, String textStyle, boolean isLast, boolean isLeft) {
         var text = new Text(value);
         text.getStyleClass().add(textStyle);
 
         var cell = new TextFlow(text);
         cell.getStyleClass().addAll(isLast ? "autogram-table-cell--last" : "autogram-table-cell");
+        cell.getStyleClass().addAll(isLeft ? "autogram-table-cell--left" : "autogram-table-cell--right");
 
         return cell;
     }
@@ -158,27 +140,14 @@ public class GUIValidationUtils {
         for (var timestamp : timestamps) {
             var productionTime = new TextFlow(new Text(format.format(timestamp.getProductionTime())));
             var subject = new TextFlow(new Text(getPrettyDNWithoutCN(diagnostic.getCertificateDN(diagnostic.getTimestampSigningCertificateId(timestamp.getId())))));
-            var qualification = new TextFlow(new Text(simple.getTimestampQualification(timestamp.getId()).getLabel()));
-
-            productionTime.getStyleClass().add("autogram-body-details");
-            subject.getStyleClass().add("autogram-body-details");
-            qualification.getStyleClass().add("autogram-body-details");
-
             var timestampQualification = isValidated ? simple.getTimestampQualification(timestamp.getId()) : null;
             var timestampDetailsBox = new VBox(productionTime, subject, new TextFlow(SignatureBadgeFactory.createBadgeFromTSQualification(timestampQualification)));
-            timestampDetailsBox.getStyleClass().add("autogram-timestamp-details-box");
             timestampDetailsBox.setVisible(false);
 
-            var polygon = new Polygon(0.0, 0.0, 9.0, 6.0, 0.0, 12.0);
-            polygon.getStyleClass().add("autogram-details__more-icon");
-            var graphic = new TextFlow(polygon);
-            var button = new Button(timestamp.getProducedBy(), graphic);
-            button.getStyleClass().addAll("autogram-link", "autogram-details__more");
-            var textFlow = new TextFlow(button);
-
+            var button = new Button(timestamp.getProducedBy(), new TextFlow(new Polygon(0.0, 0.0, 9.0, 6.0, 0.0, 12.0)));
+            button.getStyleClass().addAll("autogram-link");
             var timestampDetailsVBoxWrapper = new VBox();
-            vBox.getChildren().add(new VBox(textFlow, timestampDetailsVBoxWrapper));
-            timestampDetailsBox.setVisible(false);
+            vBox.getChildren().add(new VBox(new TextFlow(button), timestampDetailsVBoxWrapper));
 
             button.setOnAction(e -> {
                 if (timestampDetailsBox.isVisible()) {

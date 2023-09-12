@@ -520,8 +520,41 @@ TextFlow.autogram-body-s {
     -fx-padding: 0.5em 0;
 }
 
+.autogram-table-cell > HBox {
+  -fx-padding: 0.25em 0;
+}
+
 .autogram-table-cell--last {
   -fx-padding: 0.625em 0 0.5em 0;
+}
+
+.autogram-table-cell--left {
+  -fx-pref-width: 280px;
+}
+
+.autogram-table-cell--right {
+  -fx-pref-width: 384px;
+}
+
+.autogram-table-header {
+  -fx-border-style: hidden hidden solid hidden;
+  -fx-border-width: 1px;
+  -fx-border-color: -autogram-border-colour;
+  -fx-padding: 0.5em 0;
+}
+
+.autogram-table-header > TextFlow > Text {
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
+
+  -fx-font-size: 1.1875em;
+  -fx-font-weight: bold;
+  -fx-padding: 0 0 15px 0;
+
+}
+
+.autogram-table__left-column {
+  -fx-pref-width: 320px;
 }
 
 
@@ -602,6 +635,14 @@ TextFlow.autogram-body-s {
   -fx-padding: 0.1875em 0.25em;
 }
 
+.autogram-tag > Text {
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
+
+  -fx-font-size: 1.1875em;
+  -fx-font-weight: bold;
+}
+
 .autogram-tag-processing {
   -fx-background-color: #D2E2F1;
   -fx-border-color: #D2E2F1;
@@ -632,32 +673,32 @@ TextFlow.autogram-body-s {
   -fx-border-color: #FFF7BF;
 }
 
-.autogram-tag-processing--text {
+.autogram-tag-processing > Text {
   -fx-text-fill: #144E81;
   -fx-fill: #144E81;
 }
 
-.autogram-tag-invalid--text {
+.autogram-tag-invalid > Text {
   -fx-text-fill: #721c24;
   -fx-fill: #721c24;
 }
 
-.autogram-tag-valid--text {
+.autogram-tag-valid > Text {
   -fx-text-fill: #005a30;
   -fx-fill: #005a30;
 }
 
-.autogram-tag-custom-valid--text {
+.autogram-tag-custom-valid > Text {
   -fx-text-fill: #144E81;
   -fx-fill: #144E81;
 }
 
-.autogram-tag-unknown--text {
+.autogram-tag-unknown > Text {
   -fx-text-fill: #383F43;
   -fx-fill: #383F43;
 }
 
-.autogram-tag-warning--text {
+.autogram-tag-warning > Text {
   -fx-text-fill: #594D00;
   -fx-fill: #594D00;
 }
@@ -738,16 +779,23 @@ TextFlow.autogram-body-s {
   -fx-font-size: 2em;
 }
 
-.autogram-signature-details-box {
-  -fx-padding: 0.5em 0.75em;
-}
-
 .autogram-summary-header {
   -fx-background-color: -autogram-secondary-background-colour;
 }
 
 .autogram-summary-header__title {
   -fx-padding: 1.11em 0.75em;
+  -fx-pref-width: 272px;
+}
+
+.autogram-summary-header__title > Text {
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
+
+  -fx-font-size: 1.1875em;
+  -fx-font-weight: bold;
+
+  -fx-padding: 0 0 0 15px;
 }
 
 .autogram-summary-header__badge {
@@ -772,18 +820,49 @@ TextFlow.autogram-body-s {
   -fx-fill: -autogram-link-colour;
 }
 
-.autogram-timestamp-details-box {
+.autogram-signature-box {
+  -fx-border-color: -autogram-border-colour;
+  -fx-border-width: 2px;
+}
+
+.autogram-signature-box > HBox {
+  -fx-background-color: -autogram-secondary-background-colour;
+}
+
+.autogram-signature-box > VBox {
+  -fx-padding: 0.5em 0.75em;
+}
+
+.autogram-timestamps-box {
+  -fx-max-width: 360px;
+}
+
+.autogram-timestamps-box > VBox > TextFlow > Button > TextFlow > Polygon {
+  -fx-fill: -autogram-link-colour;
+}
+
+.autogram-timestamps-box > VBox > VBox {
+  -fx-background-color: transparent;
+  -fx-background-insets: 2em;
+  -fx-border-insets: 2em;
+  -fx-border-width: 0;
+  -fx-font-size: 1.125em;
+  -fx-padding: 0.625em 0;
+  -fx-text-fill: -autogram-link-colour;
+  -fx-underline: true;
+}
+
+.autogram-timestamps-box > VBox > VBox > VBox {
   -fx-border-color: -autogram-border-colour;
   -fx-border-width: 0 0 0 4px;
   -fx-padding: 0.5em 1em;
   -fx-spacing: 0.5em;
 }
 
-.autogram-signature-box {
-  -fx-border-color: -autogram-border-colour;
-  -fx-border-width: 2px;
+.autogram-timestamps-box > VBox > VBox > VBox > TextFlow > Text {
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
+
+  -fx-font-size: 1.125em;
 }
 
-.autogram-timestamps-box {
-  -fx-max-width: 360px;
-}

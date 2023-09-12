@@ -7,19 +7,11 @@ import eu.europa.esig.dss.enumerations.TimestampQualification;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 
 public abstract class SignatureBadgeFactory {
     public static VBox createBadge(String label, String styleClass) {
-        var text = new Text(label);
-        text.getStyleClass().addAll("autogram-heading-s", styleClass + "--text");
-        text.getStyleClass().add("autogram-heading-s");
-
-        var box = new VBox(text);
+        var box = new VBox(new Text(label));
         box.getStyleClass().addAll("autogram-tag", styleClass);
-
-        var validFlow = new TextFlow(box);
-        validFlow.getStyleClass().add("autogram-summary-header__badge");
 
         return box;
     }
