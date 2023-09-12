@@ -56,18 +56,10 @@ public class GUIApp extends Application {
 
     @Override
     public void stop() throws Exception {
-        if (scheduledExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS)) {
-            // System.out.println("Background threads exited");
-        } else {
-            // System.out.println("Background threads did not exit, trying to force termination (via interruption)");
+        if (!scheduledExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS))
             scheduledExecutorService.shutdownNow();
-        }
 
-        if (cachedExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS)) {
-            // System.out.println("Background threads exited");
-        } else {
-            // System.out.println("Background threads did not exit, trying to force termination (via interruption)");
+        if (!cachedExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS))
             cachedExecutorService.shutdownNow();
-        }
     }
 }
