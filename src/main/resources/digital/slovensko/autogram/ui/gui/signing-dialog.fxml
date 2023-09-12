@@ -56,7 +56,7 @@
             </TextFlow>
             <TextFlow>
                 <Text styleClass="autogram-body,autogram-font-weight-bold"
-                text="Podpisovanie dokumentov, ktoré nevidíte, môže mať vážne právne následky. Zvážte, či chcete pokračovať." />
+                    text="Podpisovanie dokumentov, ktoré nevidíte, môže mať vážne právne následky. Zvážte, či chcete pokračovať." />
             </TextFlow>
         </VBox>
     </VBox>

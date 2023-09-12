@@ -87,7 +87,8 @@ public abstract class SignatureBadgeFactory {
         return timestampQualifications.size() > 0;
     }
 
-    public static VBox createCombinedBadgeFromQualification(SignatureQualification signatureQualification, ArrayList<TimestampQualification> timestampQualifications) {
+    public static VBox createCombinedBadgeFromQualification(SignatureQualification signatureQualification,
+            ArrayList<TimestampQualification> timestampQualifications) {
         if (signatureQualification == null)
             return createInProgressBadge();
 
@@ -118,7 +119,8 @@ public abstract class SignatureBadgeFactory {
         }
     }
 
-    private static VBox createMultipleBadges(SignatureQualification signatureQualification, ArrayList<TimestampQualification> timestampQualifications) {
+    private static VBox createMultipleBadges(SignatureQualification signatureQualification,
+            ArrayList<TimestampQualification> timestampQualifications) {
         var hBox = new HBox(10);
         hBox.getChildren().add(createCustomValidQualifiedBadge(signatureQualification.getReadable()));
         for (var timestampQualification : timestampQualifications)

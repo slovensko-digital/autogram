@@ -191,10 +191,10 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
         signaturesTable.getChildren().clear();
         signaturesTable.getChildren().addAll(
-            createSignatureTableHeader(isValidated),
-            createSignatureTableRows(reports, isValidated, dummy -> {
-                onShowSignaturesButtonPressed(null);
-            }));
+                createSignatureTableHeader(isValidated),
+                createSignatureTableRows(reports, isValidated, e -> {
+                    onShowSignaturesButtonPressed(null);
+                }));
 
         var stage = (Stage) mainButton.getScene().getWindow();
         stage.sizeToScene();
