@@ -4,11 +4,11 @@ public class Country {
 
     private String name;
 
-    private String shrotname;
+    private String shortname;
 
     public Country(String name, String shrotname) {
         this.name = name;
-        this.shrotname = shrotname;
+        this.shortname = shrotname;
     }
 
     public String getName() {
@@ -19,11 +19,11 @@ public class Country {
         this.name = name;
     }
 
-    public String getShrotname() {
-        return shrotname;
+    public String getShortname() {
+        return shortname;
     }
 
-    public void setShrotname(String shrotname) {
-        this.shrotname = shrotname;
+    public void setShortname(String shrotname) {
+        this.shortname = shrotname;
     }
 }

@@ -212,7 +212,7 @@
     </center>
     <bottom>
         <HBox prefHeight="75.0" prefWidth="100.0" spacing="10" style="-fx-padding: 0px 30px;">
-            <Button fx:id="saveButton" onAction="#onSaveButtonAction" styleClass="autogram-button,autogram-confirmation--success">Uložiť
+            <Button fx:id="saveButton" onAction="#onSaveButtonAction" styleClass="autogram-button">Uložiť
                 zmeny
             </Button>
             <Button fx:id="closeButton" onAction="#onCancelButtonAction"

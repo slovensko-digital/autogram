@@ -184,7 +184,7 @@ public class SettingsDialogController {
 
         List<String> trustedList = userSettings.getTrustedList();
         for (Country country : europeanCountries) {
-            var isInTrustedList = trustedList.contains(country.getShrotname());
+            var isInTrustedList = trustedList.contains(country.getShortname());
             var hbox = createCountryElement(country, isInTrustedList);
             trustedCountriesList.getChildren().add(hbox);
         }
@@ -212,10 +212,10 @@ public class SettingsDialogController {
 
         checkBox.setOnAction(event -> {
             if (checkBox.isSelected()) {
-                userSettings.addToTrustedList(country.getShrotname());
+                userSettings.addToTrustedList(country.getShortname());
                 checkBox.setText("Zapnuté");
             } else {
-                userSettings.removeFromTrustedList(country.getShrotname());
+                userSettings.removeFromTrustedList(country.getShortname());
                 checkBox.setText("Vypnuté");
             }
         });
