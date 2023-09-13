@@ -1,8 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.Country;
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.settings.Country;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
