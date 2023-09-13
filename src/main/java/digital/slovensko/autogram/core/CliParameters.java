@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.SlotIdIsNotANumberException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.core.errors.TokenDriverDoesNotExistException;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -13,17 +14,30 @@ public class CliParameters {
     private final String target;
     private final boolean force;
     private final TokenDriver driver;
+    private final Integer slotId;
     private final boolean checkPDFACompliance;
     private final boolean makeParentDirectories;
 
 
-    public CliParameters(CommandLine cmd) {
+    public CliParameters(CommandLine cmd) throws SourceDoesNotExistException, TokenDriverDoesNotExistException, SlotIdIsNotANumberException {
         source = getValidSource(cmd.getOptionValue("s"));
         target = cmd.getOptionValue("t");
         driver = getValidTokenDriver(cmd.getOptionValue("d"));
+        slotId = getValidSlotId(cmd.getOptionValue("slot-id"));
         force = cmd.hasOption("f");
         checkPDFACompliance = cmd.hasOption("pdfa");
         makeParentDirectories = cmd.hasOption("parents");
+    }
+
+    private Integer getValidSlotId(String optionValue) throws SlotIdIsNotANumberException {
+        if (optionValue == null)
+            return -1;
+
+        try {
+            return Integer.parseInt(optionValue);
+        } catch (NumberFormatException e) {
+            throw new SlotIdIsNotANumberException(optionValue);
+        }
     }
 
     public File getSource() {
@@ -32,6 +46,10 @@ public class CliParameters {
 
     public TokenDriver getDriver() {
         return driver;
+    }
+
+    public Integer getSlotId() {
+        return slotId;
     }
 
     public boolean isForce() {
@@ -50,14 +68,14 @@ public class CliParameters {
         return makeParentDirectories;
     }
 
-    private static File getValidSource(String sourcePath) {
+    private static File getValidSource(String sourcePath) throws SourceDoesNotExistException {
         if (sourcePath != null && !new File(sourcePath).exists())
             throw new SourceDoesNotExistException(sourcePath);
 
         return sourcePath == null ? null : new File(sourcePath);
     }
 
-    private static TokenDriver getValidTokenDriver(String driverName) {
+    private static TokenDriver getValidTokenDriver(String driverName) throws TokenDriverDoesNotExistException {
         if (driverName == null)
             return null;
 

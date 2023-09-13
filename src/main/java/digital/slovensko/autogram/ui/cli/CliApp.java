@@ -22,8 +22,8 @@ public class CliApp {
         try {
             var params = new CliParameters(cmd);
 
-            var autogram = params.getDriver() == null ? new Autogram(ui)
-                    : new Autogram(ui, () -> Collections.singletonList(params.getDriver()));
+            var autogram = params.getDriver() == null ? new Autogram(ui, params.getSlotId())
+                    : new Autogram(ui, () -> Collections.singletonList(params.getDriver()), params.getSlotId());
 
             if (params.getSource() == null)
                 throw new SourceNotDefindedException();
@@ -48,7 +48,7 @@ public class CliApp {
             }
 
             ui.setJobsCount(jobs.size());
-            
+
             jobs.forEach(autogram::sign);
 
         } catch (AutogramException e) {
