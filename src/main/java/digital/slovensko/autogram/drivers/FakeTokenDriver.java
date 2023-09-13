@@ -15,7 +15,7 @@ public class FakeTokenDriver extends TokenDriver {
 
 
     @Override
-    public AbstractKeyStoreTokenConnection createTokenWithPassword(char[] password) {
+    public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
         try {
             var keystore = Objects.requireNonNull(this.getClass().getResource("FakeTokenDriver.keystore")).getFile();
             return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));

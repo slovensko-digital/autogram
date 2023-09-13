@@ -3,7 +3,6 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.drivers.PKCS11TokenDriver;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.drivers.FakeTokenDriver;
-import digital.slovensko.autogram.drivers.PKCS11GemaltoMandateTokenDriver;
 import digital.slovensko.autogram.util.OperatingSystem;
 
 import java.nio.file.Path;
@@ -24,7 +23,6 @@ public class DefaultDriverDetector implements DriverDetector {
         new PKCS11TokenDriver("I.CA SecureStore", Path.of("/usr/lib/pkcs11/libICASecureStorePkcs11.so"), true, TokenDriverShortnames.SECURE_STORE),
         new PKCS11TokenDriver("MONET+ ProID+Q", Path.of("/usr/lib/x86_64-linux-gnu/libproidqcm11.so"), true, TokenDriverShortnames.MONET),
         new PKCS11TokenDriver("Gemalto IDPrime 940", Path.of("/usr/lib/libIDPrimePKCS11.so"), true, TokenDriverShortnames.GEMALTO),
-        new PKCS11GemaltoMandateTokenDriver("Mandate Gemalto IDPrime 940", Path.of("/usr/lib/libIDPrimePKCS11.so"), true, TokenDriverShortnames.GEMALTO_MANDATE),
         new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), false, TokenDriverShortnames.FAKE)
     );
 

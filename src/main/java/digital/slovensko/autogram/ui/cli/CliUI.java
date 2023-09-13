@@ -23,6 +23,7 @@ import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PINLockedException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.SigningWithExpiredCertificateException;
+import digital.slovensko.autogram.core.errors.SlotIdIsNotANumberException;
 import digital.slovensko.autogram.core.errors.SourceAndTargetTypeMismatchException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.core.errors.SourceNotDefindedException;
@@ -252,6 +253,8 @@ public class CliUI implements UI {
             errMessage = "Token driver does not exist";
         } else if (e instanceof TargetDirectoryDoesNotExistException) {
             errMessage = "Target directory does not exist";
+        } else if (e instanceof SlotIdIsNotANumberException) {
+            errMessage = "Slot ID is not a number";
         } else {
             errMessage = "Unknown error occurred";
             e.printStackTrace();
