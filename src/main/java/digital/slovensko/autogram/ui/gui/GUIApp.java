@@ -39,7 +39,6 @@ public class GUIApp extends Application {
 
         windowStage.setOnCloseRequest(event -> {
             new Thread(server::stop).start();
-            System.out.println("Closing application");
 
             Platform.exit();
         });
