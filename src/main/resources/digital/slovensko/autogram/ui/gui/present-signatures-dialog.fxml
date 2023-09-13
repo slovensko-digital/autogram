@@ -25,6 +25,6 @@
     <HBox styleClass="autogram-actions">
         <Button fx:id="closeButton" styleClass="autogram-button, autogram-button--secondary" text="Zavrieť" onAction="#onCloseButtonAction" />
         <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="Prebieha overovanie podpisov..."></Text>
-        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť techický detail podpisov" visible="false" onAction="#onSignatureDetailsButtonAction" />
+        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť technické detaily overenia podpisov" visible="false" onAction="#onSignatureDetailsButtonAction" />
     </HBox>
 </VBox>

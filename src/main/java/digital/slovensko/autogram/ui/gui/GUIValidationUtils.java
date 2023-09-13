@@ -71,7 +71,8 @@ public class GUIValidationUtils {
     }
 
     public static VBox createSignatureBox(boolean isValidated, boolean isValid, String name, String signingTime,
-            String subjectStr, String issuerStr, SignatureQualification signatureQualification, VBox timestamps) {
+            String subjectStr, String issuerStr, SignatureQualification signatureQualification,
+            ArrayList<TimestampQualification> timestampQualifications, VBox timestamps) {
 
         var nameFlow = new TextFlow(new Text(name));
         nameFlow.getStyleClass().add("autogram-summary-header__title");
@@ -80,7 +81,8 @@ public class GUIValidationUtils {
         if (!isValidated)
             badge = SignatureBadgeFactory.createInProgressBadge();
         else if (isValid)
-            badge = SignatureBadgeFactory.createBadgeFromQualification(signatureQualification);
+            badge = SignatureBadgeFactory.createCombinedBadgeFromQualification(
+                    isValidated ? signatureQualification : null, timestampQualifications);
         else
             badge = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
 
@@ -89,7 +91,7 @@ public class GUIValidationUtils {
         var nameBox = new HBox(nameFlow, validFlow);
 
         var signatureDetailsBox = new VBox(
-                createTableRow("Čas podpisu", signingTime),
+                createTableRow("Negarantovaný čas podpisu", signingTime),
                 createTableRow("Certifikát", subjectStr),
                 createTableRow("Vydavateľ", issuerStr));
 

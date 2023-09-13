@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.SignatureValidator;
+import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -12,6 +13,8 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
+
+import java.util.ArrayList;
 
 public class SignaturesController implements SuppressedFocusController {
     private final GUI gui;
@@ -99,8 +102,12 @@ public class SignaturesController implements SuppressedFocusController {
             var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null;
             var timestamps = simple.getSignatureTimestamps(signatureId);
 
+            var timestampQualifications = new ArrayList<TimestampQualification>();
+            for (var timestampId : reports.getSimpleReport().getSignatureTimestamps(signatureId))
+                timestampQualifications.add(reports.getDetailedReport().getTimestampQualification(timestampId.getId()));
+
             signaturesBox.getChildren().add(createSignatureBox(isValidated, isValid, name, signingTime, subject, issuer,
-                    signatureType, createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
+                    signatureType, timestampQualifications, createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
                         getNodeForLoosingFocus().requestFocus();
                     })));
         }
