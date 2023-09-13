@@ -197,4 +197,8 @@ public class UserSettings {
         prefs.putBoolean(UserSettingsKeys.SERVER_ENABLED.getKey(), serverEnabled);
         prefs.put(UserSettingsKeys.TRUSTED_LIST.getKey(), trustedList.stream().collect(Collectors.joining(",")));
     }
+
+    public boolean signPDFAsPades() {
+        return signatureLevel == SignatureLevel.PAdES_BASELINE_B;
+    }
 }

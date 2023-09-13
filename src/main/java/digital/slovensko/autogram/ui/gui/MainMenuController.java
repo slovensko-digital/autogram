@@ -22,12 +22,14 @@ import java.util.List;
 
 public class MainMenuController implements SuppressedFocusController {
     private final Autogram autogram;
+    private final UserSettings userSettings;
 
     @FXML
     VBox dropZone;
 
-    public MainMenuController(Autogram autogram) {
+    public MainMenuController(Autogram autogram, UserSettings userSettings) {
         this.autogram = autogram;
+        this.userSettings = userSettings;
     }
 
     public void initialize() {
@@ -97,11 +99,11 @@ public class MainMenuController implements SuppressedFocusController {
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), UserSettings.load().isPdfaCompliance());
+            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram, userSettings.signPDFAsPades()), userSettings.isPdfaCompliance(), userSettings.signPDFAsPades(), userSettings.isEn319132());
             autogram.sign(job);
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
-                    filesList.get(0).toPath().getParent().resolve("signed")));
+                    filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(), userSettings.signPDFAsPades(), userSettings.isEn319132()));
         }
     }
 
@@ -115,7 +117,7 @@ public class MainMenuController implements SuppressedFocusController {
         var targetDirectoryName = dir.getName() + "_signed";
         var targetDirectory = dir.toPath().getParent().resolve(targetDirectoryName);
         autogram.batchStart(filesList.size(),
-                new BatchGuiFileResponder(autogram, filesList, targetDirectory));
+                new BatchGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(), userSettings.signPDFAsPades(), userSettings.isEn319132()));
     }
 
     public void onAboutButtonAction() {
@@ -123,7 +125,7 @@ public class MainMenuController implements SuppressedFocusController {
     }
 
     public void onSettingButtonAction() {
-        var controller = new SettingsDialogController();
+        var controller = new SettingsDialogController(userSettings);
         var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
 
         var stage = new Stage();

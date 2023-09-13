@@ -36,13 +36,15 @@ public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
     private final HostServices hostServices;
+    private final UserSettings userSettings;
     private BatchDialogController batchController;
     private static final boolean DEBUG = false;
     private static Logger logger = LoggerFactory.getLogger(GUI.class);
     private int nWindows = 0;
 
-    public GUI(HostServices hostServices) {
+    public GUI(HostServices hostServices, UserSettings userSettings) {
         this.hostServices = hostServices;
+        this.userSettings = userSettings;
     }
 
     @Override
@@ -110,7 +112,7 @@ public class GUI implements UI {
             // short-circuit if only one driver present
             callback.accept(drivers.get(0));
         } else {
-            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
+            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback, userSettings);
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
             var stage = new Stage();
@@ -168,7 +170,7 @@ public class GUI implements UI {
     }
 
     private void refreshKeyOnAllJobs() {
-        jobControllers.values().forEach(signingDialogController -> signingDialogController.refreshSigningKey(false));
+        jobControllers.values().forEach(signingDialogController -> signingDialogController.refreshSigningKey(userSettings.getDriver()));
         if (batchController != null) {
             batchController.refreshSigningKey();
         }

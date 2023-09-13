@@ -72,4 +72,14 @@ public class CliParameters {
 
         return tokenDriver.get();
     }
+
+    public boolean shouldSignPDFAsPades() {
+        // TODO
+        return true;
+    }
+
+    public boolean shouldSignAsEn319132() {
+        // TODO
+        return false;
+    }
 }

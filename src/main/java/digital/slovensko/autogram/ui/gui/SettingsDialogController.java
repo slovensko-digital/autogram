@@ -53,11 +53,13 @@ public class SettingsDialogController {
     @FXML
     private Button closeButton;
 
-    private UserSettings userSettings;
+    private final UserSettings userSettings;
+
+    public SettingsDialogController(UserSettings userSettings) {
+        this.userSettings = userSettings;
+    }
 
     public void initialize() {
-        userSettings = UserSettings.load();
-
         initializeSignatureLevelChoiceBox();
         initializeDriverChoiceBox();
         initializeEn319132CheckBox();

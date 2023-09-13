@@ -8,7 +8,6 @@ import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.MimeType;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -153,28 +152,27 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance) {
+    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, boolean signPDFAsPades, boolean isEn319132) {
         var document = new FileDocument(file);
-        SigningParameters parameters = getParametersForFile(file, checkPDFACompliance);
+        SigningParameters parameters = getParametersForFile(file, checkPDFACompliance, signPDFAsPades, isEn319132);
         return new SigningJob(document, parameters, responder);
     }
 
-    public static SigningJob buildFromFileBatch(File file, Autogram autogram, Responder responder) {
+    public static SigningJob buildFromFileBatch(File file, Autogram autogram, Responder responder, boolean checkPDFACompliance, boolean signPDFAsPades, boolean isEn319132) {
         var document = new FileDocument(file);
-        var parameters = getParametersForFile(file, UserSettings.load().isPdfaCompliance());
+        var parameters = getParametersForFile(file, checkPDFACompliance, signPDFAsPades, isEn319132);
         return new SigningJob(document, parameters, responder);
     }
 
-    private static SigningParameters getParametersForFile(File file, boolean checkPDFACompliance) {
+    private static SigningParameters getParametersForFile(File file, boolean checkPDFACompliance, boolean signPDFAsPades, boolean isEn319132) {
         var filename = file.getName();
 
         var isFilePdf = filename.endsWith(".pdf");
-        var isSignatureLevelPades = SignatureLevel.PAdES_BASELINE_B == UserSettings.load().getSignatureLevel();
 
-        if (isFilePdf && isSignatureLevelPades) {
-            return SigningParameters.buildForPDF(filename, checkPDFACompliance);
+        if (isFilePdf && signPDFAsPades) {
+            return SigningParameters.buildForPDF(filename, checkPDFACompliance, isEn319132);
         } else {
-            return SigningParameters.buildForASiCWithXAdES(filename);
+            return SigningParameters.buildForASiCWithXAdES(filename, isEn319132);
         }
 
     }

@@ -12,15 +12,16 @@ import javafx.stage.Stage;
 public class GUIApp extends Application {
     @Override
     public void start(Stage windowStage) throws Exception {
-        var ui = new GUI(getHostServices());
-        var autogram = new Autogram(ui);
+        var userSettings = UserSettings.load();
+        var ui = new GUI(getHostServices(), userSettings);
+        var autogram = new Autogram(ui, userSettings.isCorrectDocumentDisplay());
 
         Platform.setImplicitExit(false);
         autogram.checkForUpdate();
 
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
 
-        var controller = new MainMenuController(autogram);
+        var controller = new MainMenuController(autogram, userSettings);
         var root = GUIUtils.loadFXML(controller, "main-menu.fxml");
 
         var scene = new Scene(root);
@@ -28,7 +29,6 @@ public class GUIApp extends Application {
         var params = LaunchParameters.fromParameters(getParameters());
         var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps());
 
-        var userSettings = UserSettings.load();
         if (userSettings.isServerEnabled()) {
             server.start();
         }

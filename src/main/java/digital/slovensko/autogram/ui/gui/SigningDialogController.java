@@ -2,13 +2,11 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.DSSDocument;
-import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -55,8 +53,8 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         this.autogram = autogram;
     }
 
-    public void initialize() {
-        refreshSigningKey(true);
+    public void initialize(TokenDriver driver) {
+        refreshSigningKey(driver);
         visualization.initialize(this);
     }
 
@@ -76,13 +74,12 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
     }
 
-    public void refreshSigningKey(boolean shouldLoadDriverFromSettings) {
+    public void refreshSigningKey(TokenDriver driver) {
         mainButton.setDisable(false);
 
-        SigningKey key = gui.getActiveSigningKey();
+        var key = gui.getActiveSigningKey();
         if (key == null) {
-            var driver = UserSettings.load().getDriver();
-            if (driver != null && shouldLoadDriverFromSettings) {
+            if (driver != null) {
                 autogram.requestPasswordAndThen(driver, gui::setActiveSigningKey);
             } else {
                 mainButton.setText("Vybrať podpisový certifikát");

@@ -22,11 +22,17 @@ public class BatchGuiFileResponder extends BatchResponder {
     private final Map<File, AutogramException> errors = new HashMap<>();
     private boolean uiNotifiedOnAllFilesSigned = false;
     private final TargetPath targetPath;
+    private final boolean checkPDFACompliance;
+    private final boolean signPDFAsPades;
+    private final boolean isEn319132;
 
-    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory) {
+    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, boolean checkPDFACompliance, boolean signPDFAsPades, boolean isEn319132) {
         this.autogram = autogram;
         this.list = list;
-        this.targetPath = TargetPath.fromTargetDirectory(targetDirectory);
+        this.checkPDFACompliance = checkPDFACompliance;
+        this.signPDFAsPades = signPDFAsPades;
+        this.isEn319132 = isEn319132;
+        this.targetPath = TargetPath.fromTargetDirectory(targetDirectory, signPDFAsPades);
     }
 
     @Override
@@ -52,7 +58,7 @@ public class BatchGuiFileResponder extends BatchResponder {
                     onAllFilesSigned(batch);
                 }), batch);
 
-                var job = SigningJob.buildFromFileBatch(file, autogram, responder);
+                var job = SigningJob.buildFromFileBatch(file, autogram, responder, checkPDFACompliance, signPDFAsPades, isEn319132);
                 autogram.batchSign(job, batch.getBatchId());
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);

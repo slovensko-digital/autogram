@@ -21,14 +21,16 @@ public class Autogram {
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
     private final DriverDetector driverDetector;
+    private final boolean shouldDisplayVisualizationError;
 
-    public Autogram(UI ui) {
-        this(ui, new DefaultDriverDetector());
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError) {
+        this(ui, shouldDisplayVisualizationError, new DefaultDriverDetector());
     }
 
-    public Autogram(UI ui, DriverDetector driverDetector) {
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError, DriverDetector driverDetector) {
         this.ui = ui;
         this.driverDetector = driverDetector;
+        this.shouldDisplayVisualizationError = shouldDisplayVisualizationError;
     }
 
     public void sign(SigningJob job) {
@@ -62,7 +64,7 @@ public class Autogram {
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
 
-                if (UserSettings.load().isCorrectDocumentDisplay()) {
+                if (shouldDisplayVisualizationError) {
                     ui.onUIThreadDo(
                             () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
                 } else {
@@ -89,7 +91,7 @@ public class Autogram {
 
     /**
      * Starts a batch - ask user - get signing key - start batch - return batch ID
-     * 
+     *
      * @param totalNumberOfDocuments - expected number of documents to be signed
      * @param responder              - callback for http response
      */
@@ -107,7 +109,7 @@ public class Autogram {
 
     /**
      * Sign a single document
-     * 
+     *
      * @param job
      * @param batchId - current batch ID, used to authenticate the request
      */
@@ -123,7 +125,7 @@ public class Autogram {
 
     /**
      * End the batch
-     * 
+     *
      * @param batchId - current batch ID, used to authenticate the request
      */
     public boolean batchEnd(String batchId) {

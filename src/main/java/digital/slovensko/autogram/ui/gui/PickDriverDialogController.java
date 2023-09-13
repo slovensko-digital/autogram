@@ -33,10 +33,12 @@ public class PickDriverDialogController {
 
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
+    private final UserSettings userSettings;
 
-    public PickDriverDialogController(List<? extends TokenDriver> drivers, Consumer<TokenDriver> callback) {
+    public PickDriverDialogController(List<? extends TokenDriver> drivers, Consumer<TokenDriver> callback, UserSettings userSettings) {
         this.drivers = drivers;
         this.callback = callback;
+        this.userSettings = userSettings;
     }
 
     public void initialize() {
@@ -51,7 +53,6 @@ public class PickDriverDialogController {
     }
 
     private void initializeSignatureLevelChoiceBox() {
-        var userSettings = UserSettings.load();
         signatureLevelChoiceBoxBox.getItems().addAll(List.of(
                 SignatureLevel.XAdES_BASELINE_B,
                 SignatureLevel.PAdES_BASELINE_B));
@@ -59,7 +60,6 @@ public class PickDriverDialogController {
         signatureLevelChoiceBoxBox.setValue(userSettings.getSignatureLevel());
         signatureLevelChoiceBoxBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setSignatureLevel(newValue);
-            userSettings.save();
         });
     }
 

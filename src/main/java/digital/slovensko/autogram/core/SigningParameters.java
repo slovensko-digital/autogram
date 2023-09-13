@@ -164,20 +164,20 @@ public class SigningParameters {
                 : CanonicalizationMethod.INCLUSIVE;
     }
 
-    public static SigningParameters buildForPDF(String filename, boolean checkPDFACompliance) {
+    public static SigningParameters buildForPDF(String filename, boolean checkPDFACompliance, boolean signAsEn319132) {
         return new SigningParameters(
                 SignatureLevel.PAdES_BASELINE_B,
                 null,
                 null, null,
                 DigestAlgorithm.SHA256,
-                UserSettings.load().isEn319132(), null,
+                signAsEn319132, null,
                 null, null,
                 null, null, "", checkPDFACompliance, 640);
     }
 
-    public static SigningParameters buildForASiCWithXAdES(String filename) {
+    public static SigningParameters buildForASiCWithXAdES(String filename, boolean signAsEn319132) {
         return new SigningParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
-                null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, UserSettings.load().isEn319132(), null, null,
+                null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
                 null, null, null, "", false, 640);
     }
 
