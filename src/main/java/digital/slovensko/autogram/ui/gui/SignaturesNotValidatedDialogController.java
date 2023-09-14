@@ -19,12 +19,16 @@ public class SignaturesNotValidatedDialogController implements SuppressedFocusCo
         this.signigDialogController = signigDialogController;
     }
 
-    public void onCancelAction() {
+    public void close() {
         var window = mainBox.getScene().getRoot().getScene().getWindow();
         if (window instanceof Stage)
             ((Stage) window).close();
 
         signigDialogController.enableSigning();
+    }
+
+    public void onCancelAction() {
+        close();
         signigDialogController.close();
     }
 

@@ -95,7 +95,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         stage.setScene(new Scene(root));
         stage.initModality(Modality.WINDOW_MODAL);
         stage.setOnCloseRequest(event -> {
-            signaturesNotValidatedDialogController.onCancelAction();
+            signaturesNotValidatedDialogController.close();
         });
         GUIUtils.suppressDefaultFocus(stage, signaturesNotValidatedDialogController);
         stage.show();
@@ -111,7 +111,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         stage.setScene(new Scene(root));
         stage.initModality(Modality.WINDOW_MODAL);
         stage.setOnCloseRequest(event -> {
-            signaturesInvalidDialogController.onCancelAction();
+            signaturesInvalidDialogController.close();
         });
         signaturesInvalidDialogController.initialize(signatureValidationReports);
         GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
