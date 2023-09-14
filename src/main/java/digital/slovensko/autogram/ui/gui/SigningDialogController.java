@@ -35,6 +35,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     private SignaturesNotValidatedDialogController signaturesNotValidatedDialogController;
     private SignaturesInvalidDialogController signaturesInvalidDialogController;
     private boolean signatureValidationCompleted = false;
+    private boolean signatureCheckCompleted = false;
     private final Visualization visualization;
     private Reports signatureValidationReports;
     private Reports signatureCheckReports;
@@ -121,8 +122,13 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     private void checkExistingSignatureValidityAndSign(SigningKey signingKey) {
-        if (!signatureValidationCompleted) {
+        if ((!signatureCheckCompleted) || ((signatureCheckReports != null) && !signatureValidationCompleted)) {
             showSignaturesNotValidatedDialog();
+            return;
+        }
+
+        if (signatureCheckReports == null) {
+            sign();
             return;
         }
 
@@ -169,7 +175,11 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
     public void onSignatureCheckCompleted(Reports reports) {
         signatureCheckReports = reports;
+        signatureCheckCompleted = true;
         renderSignatures(reports, false);
+
+        if (signaturesNotValidatedDialogController != null)
+            signaturesNotValidatedDialogController.close();
     }
 
     public void onSignatureValidationCompleted(Reports reports) {
@@ -180,7 +190,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
             signaturesController.onSignatureValidationCompleted(reports);
 
         if (signaturesNotValidatedDialogController != null)
-            signaturesNotValidatedDialogController.onCancelAction();
+            signaturesNotValidatedDialogController.close();
     }
 
     public void renderSignatures(Reports reports, boolean isValidated) {
