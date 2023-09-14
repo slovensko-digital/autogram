@@ -24,11 +24,8 @@ public class GUIValidationUtils {
     public static final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
     public static HBox createSignatureTableHeader(boolean isValidated) {
-        var whoSigned = new TextFlow(new Text("Podpísal"));
-        whoSigned.getStyleClass().add("autogram-table__left-column");
-        var signatureType = new TextFlow(new Text("Typ podpisu"));
-
-        var r = new HBox(whoSigned, signatureType);
+        var whoSigned = new TextFlow(new Text("Podpisy na dokumente"));
+        var r = new HBox(whoSigned);
         r.getStyleClass().add("autogram-table-header");
         return r;
     }
