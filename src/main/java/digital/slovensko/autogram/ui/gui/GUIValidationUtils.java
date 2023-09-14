@@ -53,6 +53,7 @@ public class GUIValidationUtils {
             Consumer<String> callback) {
         var whoSignedButton = new Button(name);
         whoSignedButton.getStyleClass().addAll("autogram-link", "autogram-table__left-column");
+        whoSignedButton.wrapTextProperty().setValue(true);
         whoSignedButton.setOnMouseClicked(event -> {
             callback.accept(null);
         });
