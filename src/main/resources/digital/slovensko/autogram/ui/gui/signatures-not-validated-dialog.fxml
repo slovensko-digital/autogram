@@ -25,7 +25,7 @@
 
 
     <HBox styleClass="autogram-actions">
-        <Button fx:id="cancelButton" styleClass="autogram-button,autogram-button--warning" text="Zavrieť" onAction="#onCancelAction" />
+        <Button fx:id="cancelButton" styleClass="autogram-button,autogram-button--warning" text="Zrušiť podpisovanie" onAction="#onCancelAction" />
         <Button fx:id="continueButton" styleClass="autogram-button,autogram-button--secondary" text="Podpísať" onAction="#onContinueAction" />
     </HBox>
 </VBox>

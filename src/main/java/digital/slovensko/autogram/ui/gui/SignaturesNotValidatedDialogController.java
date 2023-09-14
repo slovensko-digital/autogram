@@ -25,6 +25,7 @@ public class SignaturesNotValidatedDialogController implements SuppressedFocusCo
             ((Stage) window).close();
 
         signigDialogController.enableSigning();
+        signigDialogController.close();
     }
 
     public void onContinueAction() {

@@ -31,6 +31,7 @@ public class SignaturesInvalidDialogController implements SuppressedFocusControl
             ((Stage) window).close();
 
         signingDialogController.enableSigning();
+        signingDialogController.close();
     }
 
     public void onContinueAction() {
