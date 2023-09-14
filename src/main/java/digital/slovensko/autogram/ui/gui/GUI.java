@@ -253,14 +253,16 @@ public class GUI implements UI {
     }
 
     public void showVisualization(Visualization visualization, Autogram autogram) {
-        var controller = new SigningDialogController(visualization, autogram, this);
+        var title = "Dokument";
+        if (visualization.getJob().getDocument().getName() != null)
+            title = "Dokument " + visualization.getJob().getDocument().getName();
+
+        var controller = new SigningDialogController(visualization, autogram, this, title);
         jobControllers.put(visualization.getJob(), controller);
 
         var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
-
         var stage = new Stage();
-
-        stage.setTitle("Podpisovanie dokumentu"); // TODO use document name?
+        stage.setTitle(title);
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> cancelJob(visualization.getJob()));
 

@@ -48,8 +48,8 @@
       #d0190f 66.6%,
       #d0190f 100%
     );
-  -fx-padding: 30px;
-  -fx-spacing: 30px;
+  -fx-padding: 2em;
+  -fx-spacing: 2em;
 }
 
 /* Radio buttons */
@@ -574,17 +574,21 @@ TextFlow.autogram-body-s {
   -fx-alignment: center-left;
 }
 
+.autogram-visualization-header {
+  -fx-padding: 0 0 1em 0;
+}
+
 .autogram-unsupported-visualization {
   -fx-border-width: 5px;
   -fx-border-color: -autogram-error-colour;
 
   -fx-spacing: 2em;
-  -fx-padding: 2em 1em;
+  -fx-padding: 2.5em 2em 2em 2em;
   -fx-alignment: center;
 }
 
 .autogram-unsupported-visualization VBox {
-  -fx-spacing: 20px;
+  -fx-spacing: 1em;
 }
 
 .autogram-unsupported-visualization .autogram-error-summary__error {

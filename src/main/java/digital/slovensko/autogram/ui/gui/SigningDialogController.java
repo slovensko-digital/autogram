@@ -31,6 +31,7 @@ import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
 public class SigningDialogController implements SuppressedFocusController, Visualizer {
     private final GUI gui;
     private final Autogram autogram;
+    private final String title;
     private SignaturesController signaturesController;
     private SignaturesNotValidatedDialogController signaturesNotValidatedDialogController;
     private SignaturesInvalidDialogController signaturesInvalidDialogController;
@@ -62,14 +63,18 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     VBox signaturesTable;
     @FXML
     Text signatureCheckMessage;
+    @FXML
+    Text headerText;
 
-    public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui) {
+    public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui, String title) {
         this.visualization = visualization;
         this.gui = gui;
         this.autogram = autogram;
+        this.title = title;
     }
 
     public void initialize() {
+        headerText.setText(title);
         refreshSigningKey();
         visualization.initialize(this);
         autogram.checkPDFACompliance(visualization.getJob());
