@@ -385,7 +385,7 @@
 							Timestamps <span class="badge badge-light"><xsl:value-of select="count(dss:Timestamps/dss:Timestamp)" /></span>
 						</div>
 						<div>
-							<xsl:attribute name="class">card-body collapse pb-1</xsl:attribute>
+							<xsl:attribute name="class">card-body pb-1</xsl:attribute>
 							<xsl:attribute name="id">collapseSigDetails<xsl:value-of select="$idToken" /></xsl:attribute>
 							<xsl:apply-templates select="dss:Timestamps" />
 						</div>

@@ -18,7 +18,7 @@ public class SignatureDetailsController {
 
     public void showHTMLReport(String htmlReport) {
         webView.setContextMenuEnabled(false);
-        webView.getEngine().setJavaScriptEnabled(false);
+        webView.getEngine().setJavaScriptEnabled(true);
         var engine = webView.getEngine();
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
