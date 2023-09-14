@@ -23,14 +23,24 @@ public class Autogram {
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
     private final DriverDetector driverDetector;
+    private final Integer slotId;
 
     public Autogram(UI ui) {
-        this(ui, new DefaultDriverDetector());
+        this(ui, new DefaultDriverDetector(), -1);
     }
 
     public Autogram(UI ui, DriverDetector driverDetector) {
+        this(ui, driverDetector, -1);
+    }
+
+    public Autogram(UI ui, Integer slotId) {
+        this(ui, new DefaultDriverDetector(), slotId);
+    }
+
+    public Autogram(UI ui, DriverDetector driverDetector, Integer slotId) {
         this.ui = ui;
         this.driverDetector = driverDetector;
+        this.slotId = slotId;
     }
 
     public void sign(SigningJob job) {
@@ -164,7 +174,7 @@ public class Autogram {
 
     private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {
         try {
-            var token = driver.createTokenWithPassword(password);
+            var token = driver.createTokenWithPassword(slotId, password);
             var keys = token.getKeys();
 
             ui.onUIThreadDo(

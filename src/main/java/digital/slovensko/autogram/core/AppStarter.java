@@ -20,7 +20,8 @@ public class AppStarter {
         addOption("f", "force", false, "Overwrite existing file(s).").
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
         addOption(null, "parents", false, "Create all parent directories for target if needed.").
-        addOption("d", "driver", true, "PCKS driver for signing. Supported drivers: eid, secure_store, monet, gemalto.");
+        addOption("d", "driver", true, "PCKS driver for signing. Supported drivers: eid, secure_store, monet, gemalto.").
+        addOption(null, "slot-id", true, "Slot ID for PKCS11 driver. If not specified, first available slot is used.");
 
     public static void start(String[] args) {
         try {
