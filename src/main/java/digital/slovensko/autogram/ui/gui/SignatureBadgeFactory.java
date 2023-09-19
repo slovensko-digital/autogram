@@ -65,9 +65,12 @@ public abstract class SignatureBadgeFactory {
         }
     }
 
-    public static VBox createBadgeFromTSQualification(TimestampQualification timestampQualification) {
+    public static VBox createBadgeFromTSQualification(boolean isFailed, TimestampQualification timestampQualification) {
         if (timestampQualification == null)
             return createInProgressBadge();
+
+        if (isFailed)
+            return createInvalidBadge("Neplatná časová pečiatka");
 
         switch (timestampQualification) {
             case QTSA:

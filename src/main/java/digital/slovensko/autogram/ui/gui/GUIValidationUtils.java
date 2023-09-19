@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import javax.security.auth.x500.X500Principal;
 
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
+import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.simplereport.SimpleReport;
@@ -31,26 +32,27 @@ public class GUIValidationUtils {
     }
 
     public static VBox createSignatureTableRows(Reports reports, boolean isValidated, Consumer<String> callback) {
+
         var r = new VBox();
         for (var signatureId : reports.getSimpleReport().getSignatureIdList()) {
             var name = reports.getSimpleReport().getSignedBy(signatureId);
             var signatureType = reports.getDetailedReport().getSignatureQualification(signatureId);
-            var valid = reports.getSimpleReport().isValid(signatureId);
+            var isFailed = reports.getDetailedReport().getBasicValidationIndication(signatureId)
+                    .equals(Indication.FAILED);
 
             var timestampQualifications = new ArrayList<TimestampQualification>();
             for (var timestampId : reports.getSimpleReport().getSignatureTimestamps(signatureId))
                 timestampQualifications.add(reports.getDetailedReport().getTimestampQualification(timestampId.getId()));
 
-            r.getChildren().add(createSignatureTableRow(name, signatureType, timestampQualifications, isValidated,
-                    valid, callback));
+            r.getChildren().add(createSignatureTableRow(name, signatureType, timestampQualifications, isValidated, isFailed, callback));
         }
 
         return r;
     }
 
     public static HBox createSignatureTableRow(String name, SignatureQualification signatureType,
-            ArrayList<TimestampQualification> timestampQualifications, boolean isValidated, boolean valid,
-            Consumer<String> callback) {
+            ArrayList<TimestampQualification> timestampQualifications, boolean isValidated,
+            boolean isFailed, Consumer<String> callback) {
         var whoSignedButton = new Button(name);
         whoSignedButton.getStyleClass().addAll("autogram-link", "autogram-table__left-column");
         whoSignedButton.wrapTextProperty().setValue(true);
@@ -60,7 +62,7 @@ public class GUIValidationUtils {
 
         var signatureTypeBox = SignatureBadgeFactory
                 .createCombinedBadgeFromQualification(isValidated ? signatureType : null, timestampQualifications);
-        if (isValidated && !valid)
+        if (isValidated && isFailed)
             signatureTypeBox = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
 
         var r = new HBox(new HBox(whoSignedButton), new VBox(signatureTypeBox));
@@ -68,7 +70,35 @@ public class GUIValidationUtils {
         return r;
     }
 
-    public static VBox createSignatureBox(boolean isValidated, boolean isValid, String name, String signingTime,
+    public static VBox createSignatureBox(Reports reports, boolean isValidated, String signatureId,
+            Consumer<String> callback) {
+        var simple = reports.getSimpleReport();
+        var diagnostic = reports.getDiagnosticData();
+
+        var isValid = simple.isValid(signatureId);
+        var isFailed = reports.getDetailedReport().getBasicValidationIndication(signatureId).equals(Indication.FAILED);
+        var name = simple.getSignedBy(signatureId);
+        var signingTime = format.format(simple.getSigningTime(signatureId));
+        var subject = getPrettyDNWithoutCN(
+                diagnostic.getSignatureById(signatureId).getSigningCertificate().getCertificateDN());
+        var issuer = getPrettyDN(diagnostic
+                .getCertificateIssuerDN(diagnostic.getSignatureById(signatureId).getSigningCertificate().getId()));
+        var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null;
+        var timestamps = simple.getSignatureTimestamps(signatureId);
+
+        var timestampQualifications = new ArrayList<TimestampQualification>();
+        for (var timestampId : reports.getSimpleReport().getSignatureTimestamps(signatureId))
+            timestampQualifications.add(reports.getDetailedReport().getTimestampQualification(timestampId.getId()));
+
+        return createSignatureBox(isValidated, isValid, isFailed, name, signingTime, subject, issuer,
+                signatureType, timestampQualifications,
+                createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
+                    callback.accept(null);
+                }));
+    }
+
+    public static VBox createSignatureBox(boolean isValidated, boolean isValid, boolean isFailed, String name,
+            String signingTime,
             String subjectStr, String issuerStr, SignatureQualification signatureQualification,
             ArrayList<TimestampQualification> timestampQualifications, VBox timestamps) {
 
@@ -78,11 +108,11 @@ public class GUIValidationUtils {
         VBox badge = null;
         if (!isValidated)
             badge = SignatureBadgeFactory.createInProgressBadge();
-        else if (isValid)
+        else if (isFailed)
+            badge = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
+        else
             badge = SignatureBadgeFactory.createCombinedBadgeFromQualification(
                     isValidated ? signatureQualification : null, timestampQualifications);
-        else
-            badge = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
 
         var validFlow = new TextFlow(badge);
         validFlow.getStyleClass().add("autogram-summary-header__badge");
@@ -143,12 +173,14 @@ public class GUIValidationUtils {
         vBox.getStyleClass().add("autogram-timestamps-box");
 
         for (var timestamp : timestamps) {
+            var isFailed = timestamp.getIndication().equals(Indication.FAILED);
             var productionTime = new TextFlow(new Text(format.format(timestamp.getProductionTime())));
             var subject = new TextFlow(new Text(getPrettyDNWithoutCN(
                     diagnostic.getCertificateDN(diagnostic.getTimestampSigningCertificateId(timestamp.getId())))));
             var timestampQualification = isValidated ? simple.getTimestampQualification(timestamp.getId()) : null;
             var timestampDetailsBox = new VBox(productionTime, subject,
-                    new TextFlow(SignatureBadgeFactory.createBadgeFromTSQualification(timestampQualification)));
+                    new TextFlow(
+                            SignatureBadgeFactory.createBadgeFromTSQualification(isFailed, timestampQualification)));
             timestampDetailsBox.setVisible(false);
 
             var button = new Button(timestamp.getProducedBy(),
