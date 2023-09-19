@@ -44,7 +44,8 @@ public class GUIValidationUtils {
             for (var timestampId : reports.getSimpleReport().getSignatureTimestamps(signatureId))
                 timestampQualifications.add(reports.getDetailedReport().getTimestampQualification(timestampId.getId()));
 
-            r.getChildren().add(createSignatureTableRow(name, signatureType, timestampQualifications, isValidated, isFailed, callback));
+            r.getChildren().add(createSignatureTableRow(name, signatureType, timestampQualifications, isValidated,
+                    isFailed, callback));
         }
 
         return r;
@@ -174,19 +175,21 @@ public class GUIValidationUtils {
 
         for (var timestamp : timestamps) {
             var isFailed = timestamp.getIndication().equals(Indication.FAILED);
-            var productionTime = new TextFlow(new Text(format.format(timestamp.getProductionTime())));
-            var subject = new TextFlow(new Text(getPrettyDNWithoutCN(
+            var subject = new TextFlow(new Text(getPrettyDN(
                     diagnostic.getCertificateDN(diagnostic.getTimestampSigningCertificateId(timestamp.getId())))));
             var timestampQualification = isValidated ? simple.getTimestampQualification(timestamp.getId()) : null;
-            var timestampDetailsBox = new VBox(productionTime, subject,
-                    new TextFlow(
-                            SignatureBadgeFactory.createBadgeFromTSQualification(isFailed, timestampQualification)));
-            timestampDetailsBox.setVisible(false);
+            var qualificationBadge = new TextFlow(
+                    SignatureBadgeFactory.createBadgeFromTSQualification(isFailed, timestampQualification));
+            var timestampDetailsBox = new VBox(subject, qualificationBadge);
 
-            var button = new Button(timestamp.getProducedBy(),
+            var button = new Button(
+                    format.format(timestamp.getProductionTime()),
                     new TextFlow(new Polygon(0.0, 0.0, 9.0, 6.0, 0.0, 12.0)));
+
             button.getStyleClass().addAll("autogram-link");
             var timestampDetailsVBoxWrapper = new VBox();
+            timestampDetailsVBoxWrapper.setVisible(true);
+            timestampDetailsVBoxWrapper.getChildren().add(timestampDetailsBox);
             vBox.getChildren().add(new VBox(new TextFlow(button), timestampDetailsVBoxWrapper));
 
             button.setOnAction(e -> {
