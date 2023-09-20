@@ -31,7 +31,7 @@ public abstract class TokenDriver {
 
 
 
-    public abstract AbstractKeyStoreTokenConnection createTokenWithPassword(char[] password);
+    public abstract AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password);
 
     public boolean needsPassword() {
         return needsPassword;

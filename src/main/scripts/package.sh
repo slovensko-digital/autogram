@@ -53,6 +53,7 @@ if [[ "$platform" == "win" ]]; then
         "--java-options" "$jvmOptions --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED"
         "--win-shortcut-prompt"
         "--win-menu"
+        "--add-launcher" "autogram-cli=$resourcesDir/windows-cli-build.properties"
     )
 
     if [[ ! -z "$properties_win_upgradeUUID" ]]; then

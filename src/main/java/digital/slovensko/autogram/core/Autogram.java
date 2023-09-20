@@ -22,14 +22,24 @@ public class Autogram {
     private Batch batch = null;
     private final DriverDetector driverDetector;
     private final boolean shouldDisplayVisualizationError;
+    private final Integer slotId;
 
     public Autogram(UI ui, boolean shouldDisplayVisualizationError) {
-        this(ui, shouldDisplayVisualizationError, new DefaultDriverDetector());
+        this(ui, shouldDisplayVisualizationError, new DefaultDriverDetector(), -1);
     }
 
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError, DriverDetector driverDetector) {
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector) {
+        this(ui, shouldDisplayVisualizationError, driverDetector, -1);
+    }
+
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError , Integer slotId) {
+        this(ui, shouldDisplayVisualizationError, new DefaultDriverDetector(), slotId);
+    }
+
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, Integer slotId) {
         this.ui = ui;
         this.driverDetector = driverDetector;
+        this.slotId = slotId;
         this.shouldDisplayVisualizationError = shouldDisplayVisualizationError;
     }
 
@@ -156,7 +166,7 @@ public class Autogram {
 
     private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {
         try {
-            var token = driver.createTokenWithPassword(password);
+            var token = driver.createTokenWithPassword(slotId, password);
             var keys = token.getKeys();
 
             ui.onUIThreadDo(

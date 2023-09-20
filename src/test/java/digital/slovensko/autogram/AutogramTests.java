@@ -80,7 +80,7 @@ class AutogramTests {
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createTokenWithPassword(char[] password) {
+        public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("test.keystore")).getFile();
                 return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
@@ -97,7 +97,7 @@ class AutogramTests {
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createTokenWithPassword(char[] password) {
+        public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("expired_certificate.keystore"))
                         .getFile();

@@ -21,8 +21,8 @@ public class CliApp {
 
         try {
             var params = new CliParameters(cmd);
-            var autogram = params.getDriver() == null ? new Autogram(ui, false)
-                    : new Autogram(ui, false, () -> Collections.singletonList(params.getDriver()));
+            var autogram = params.getDriver() == null ? new Autogram(ui, false, params.getSlotId())
+                    : new Autogram(ui, false, () -> Collections.singletonList(params.getDriver()), params.getSlotId());
 
             if (params.getSource() == null)
                 throw new SourceNotDefindedException();

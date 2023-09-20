@@ -56,6 +56,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void initialize(TokenDriver driver) {
         refreshSigningKey(driver);
         visualization.initialize(this);
+        autogram.checkPDFACompliance(visualization.getJob());
     }
 
     public void onMainButtonPressed(ActionEvent event) {

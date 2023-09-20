@@ -19,6 +19,7 @@ public class DefaultDriverDetector implements DriverDetector {
 
     public static final List<TokenDriver> LINUX_DRIVERS = List.of(
         new PKCS11TokenDriver("Občiansky preukaz (eID klient)", Path.of("/usr/lib/eID_klient/libpkcs11_x64.so"), false, TokenDriverShortnames.EID),
+        new PKCS11TokenDriver("Občiansky preukaz (starý eID klient)", Path.of("/usr/lib/eac_mw_klient/libpkcs11_x64.so"), false, TokenDriverShortnames.EID),
         new PKCS11TokenDriver("I.CA SecureStore", Path.of("/usr/lib/pkcs11/libICASecureStorePkcs11.so"), true, TokenDriverShortnames.SECURE_STORE),
         new PKCS11TokenDriver("MONET+ ProID+Q", Path.of("/usr/lib/x86_64-linux-gnu/libproidqcm11.so"), true, TokenDriverShortnames.MONET),
         new PKCS11TokenDriver("Gemalto IDPrime 940", Path.of("/usr/lib/libIDPrimePKCS11.so"), true, TokenDriverShortnames.GEMALTO),

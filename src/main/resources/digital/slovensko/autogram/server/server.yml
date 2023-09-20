@@ -97,7 +97,7 @@ paths:
               Signed XAdES (ASiC_E) XML with Base64-encoded XML parameters and HTML transformation:
                 $ref: "#/components/examples/Signed-XAdES-ASiC_E-SKXDC-Base64-HTML"
 
-              PAdES PDF (preview 1024px):
+              PAdES PDF (preview 1024px + PDF/A compliance check warning):
                 $ref: "#/components/examples/PAdES-PDF_lg"
 
               XAdES PDF:
