@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.Visualizer;

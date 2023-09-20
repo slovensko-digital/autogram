@@ -40,7 +40,7 @@ public class UserSettings {
         Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         var signatureType = prefs.get("SIGNATURE_LEVEL", null);
-        var driver = prefs.get("DRIVER", null);
+        var driverName = prefs.get("DRIVER", null);
         var en319132 = prefs.getBoolean("EN319132", false);
         var signIndividually = prefs.getBoolean("SIGN_INDIVIDUALLY", true);
         var correctDocumentDisplay = prefs.getBoolean("CORRECT_DOCUMENT_DISPLAY", true);
@@ -49,10 +49,10 @@ public class UserSettings {
         var serverEnabled = prefs.getBoolean("SERVER_ENABLED", true);
         var trustedList = prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU");
 
-        var tokenDriver = new DefaultDriverDetector()
+        var driver = new DefaultDriverDetector()
                 .getAvailableDrivers()
                 .stream()
-                .filter(d -> d.getShortname().equals(driver))
+                .filter(d -> d.getShortname().equals(driverName))
                 .findFirst();
 
         SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
@@ -65,7 +65,7 @@ public class UserSettings {
                 .findFirst();
 
         return new UserSettings(signatureLevel.isEmpty() ? SignatureLevel.PAdES_BASELINE_B : signatureLevel.get(),
-                tokenDriver.isEmpty() ? null : tokenDriver.get(),
+                driver.isEmpty() ? null : driver.get(),
                 en319132,
                 signIndividually,
                 correctDocumentDisplay,
