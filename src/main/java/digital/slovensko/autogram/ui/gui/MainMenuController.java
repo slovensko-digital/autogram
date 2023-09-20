@@ -99,11 +99,11 @@ public class MainMenuController implements SuppressedFocusController {
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram, userSettings.signPDFAsPades()), userSettings.isPdfaCompliance(), userSettings.signPDFAsPades(), userSettings.isEn319132());
+            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()), userSettings.isPdfaCompliance(), userSettings.shouldSignPDFAsPades(), userSettings.isEn319132());
             autogram.sign(job);
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
-                    filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(), userSettings.signPDFAsPades(), userSettings.isEn319132()));
+                    filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(), userSettings.shouldSignPDFAsPades(), userSettings.isEn319132()));
         }
     }
 
@@ -117,7 +117,7 @@ public class MainMenuController implements SuppressedFocusController {
         var targetDirectoryName = dir.getName() + "_signed";
         var targetDirectory = dir.toPath().getParent().resolve(targetDirectoryName);
         autogram.batchStart(filesList.size(),
-                new BatchGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(), userSettings.signPDFAsPades(), userSettings.isEn319132()));
+                new BatchGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(), userSettings.shouldSignPDFAsPades(), userSettings.isEn319132()));
     }
 
     public void onAboutButtonAction() {

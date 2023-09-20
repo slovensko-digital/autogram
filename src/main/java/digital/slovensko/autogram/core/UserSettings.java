@@ -11,47 +11,15 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 public class UserSettings {
-
-    private enum UserSettingsKeys {
-        SIGNATURE_LEVEL("signature_level"),
-        DRIVER("driver"),
-        EN319132("en319132"),
-        SIGN_INDIVIDUALLY("sign_individually"),
-        CORRECT_DOCUMENT_DISPLAY("correct_document_display"),
-        SIGNATURES_VALIDITY("signatures_validity"),
-        PDFA_COMPLIANCE("pdfa_compliance"),
-        SERVER_ENABLED("server_enabled"),
-        TRUSTED_LIST("trusted_list"),;
-
-        private String key;
-
-        UserSettingsKeys(String key) {
-            this.key = key;
-        }
-
-        public String getKey() {
-            return key;
-        }
-    }
-
     private SignatureLevel signatureLevel;
-
     private TokenDriver driver;
-
     private boolean en319132;
-
     private boolean signIndividually;
-
     private boolean correctDocumentDisplay;
-
     private boolean signaturesValidity;
-
     private boolean pdfaCompliance;
-
     private boolean serverEnabled;
-
     private List<String> trustedList;
-
 
     private UserSettings(SignatureLevel signatureLevel, TokenDriver driver, boolean en319132,
                          boolean signIndividually, boolean correctDocumentDisplay,
@@ -71,15 +39,15 @@ public class UserSettings {
     public static UserSettings load() {
         Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
 
-        var signatureType = prefs.get(UserSettingsKeys.SIGNATURE_LEVEL.getKey(), null);
-        var driver = prefs.get(UserSettingsKeys.DRIVER.getKey(), null);
-        var en319132 = prefs.getBoolean(UserSettingsKeys.EN319132.getKey(), false);
-        var signIndividually = prefs.getBoolean(UserSettingsKeys.SIGN_INDIVIDUALLY.getKey(), true);
-        var correctDocumentDisplay = prefs.getBoolean(UserSettingsKeys.CORRECT_DOCUMENT_DISPLAY.getKey(), true);
-        var signaturesValidity = prefs.getBoolean(UserSettingsKeys.SIGNATURES_VALIDITY.getKey(), true);
-        var pdfaCompliance = prefs.getBoolean(UserSettingsKeys.PDFA_COMPLIANCE.getKey(), true);
-        var serverEnabled = prefs.getBoolean(UserSettingsKeys.SERVER_ENABLED.getKey(), true);
-        var trustedList = prefs.get(UserSettingsKeys.TRUSTED_LIST.getKey(), "SK,CZ,AT,PL,HU");
+        var signatureType = prefs.get("SIGNATURE_LEVEL", null);
+        var driver = prefs.get("DRIVER", null);
+        var en319132 = prefs.getBoolean("EN319132", false);
+        var signIndividually = prefs.getBoolean("SIGN_INDIVIDUALLY", true);
+        var correctDocumentDisplay = prefs.getBoolean("CORRECT_DOCUMENT_DISPLAY", true);
+        var signaturesValidity = prefs.getBoolean("SIGNATURES_VALIDITY", true);
+        var pdfaCompliance = prefs.getBoolean("PDFA_COMPLIANCE", true);
+        var serverEnabled = prefs.getBoolean("SERVER_ENABLED", true);
+        var trustedList = prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU");
 
         var tokenDriver = new DefaultDriverDetector()
                 .getAvailableDrivers()
@@ -187,18 +155,18 @@ public class UserSettings {
         Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
-        prefs.put(UserSettingsKeys.SIGNATURE_LEVEL.getKey(), signatureLevelStringConverter.toString(signatureLevel));
-        prefs.put(UserSettingsKeys.DRIVER.getKey(), driver == null ? "" : driver.getShortname());
-        prefs.putBoolean(UserSettingsKeys.EN319132.getKey(), en319132);
-        prefs.putBoolean(UserSettingsKeys.SIGN_INDIVIDUALLY.getKey(), signIndividually);
-        prefs.putBoolean(UserSettingsKeys.CORRECT_DOCUMENT_DISPLAY.getKey(), correctDocumentDisplay);
-        prefs.putBoolean(UserSettingsKeys.SIGNATURES_VALIDITY.getKey(), signaturesValidity);
-        prefs.putBoolean(UserSettingsKeys.PDFA_COMPLIANCE.getKey(), pdfaCompliance);
-        prefs.putBoolean(UserSettingsKeys.SERVER_ENABLED.getKey(), serverEnabled);
-        prefs.put(UserSettingsKeys.TRUSTED_LIST.getKey(), trustedList.stream().collect(Collectors.joining(",")));
+        prefs.put("SIGNATURE_LEVEL", signatureLevelStringConverter.toString(signatureLevel));
+        prefs.put("DRIVER", driver == null ? "" : driver.getShortname());
+        prefs.putBoolean("EN319132", en319132);
+        prefs.putBoolean("SIGN_INDIVIDUALLY", signIndividually);
+        prefs.putBoolean("CORRECT_DOCUMENT_DISPLAY", correctDocumentDisplay);
+        prefs.putBoolean("SIGNATURES_VALIDITY", signaturesValidity);
+        prefs.putBoolean("PDFA_COMPLIANCE", pdfaCompliance);
+        prefs.putBoolean("SERVER_ENABLED", serverEnabled);
+        prefs.put("TRUSTED_LIST", trustedList.stream().collect(Collectors.joining(",")));
     }
 
-    public boolean signPDFAsPades() {
+    public boolean shouldSignPDFAsPades() {
         return signatureLevel == SignatureLevel.PAdES_BASELINE_B;
     }
 }
