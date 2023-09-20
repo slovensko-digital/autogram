@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.util.ArrayList;
-
+import eu.europa.esig.dss.validation.reports.Reports;
+import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
 import javafx.scene.layout.HBox;
@@ -82,53 +82,80 @@ public abstract class SignatureBadgeFactory {
         }
     }
 
-    private static boolean allTSQualified(ArrayList<TimestampQualification> timestampQualifications) {
-        for (var timestampQualification : timestampQualifications)
-            if (timestampQualification != TimestampQualification.QTSA)
-                return false;
-
-        return timestampQualifications.size() > 0;
-    }
-
     public static VBox createCombinedBadgeFromQualification(SignatureQualification signatureQualification,
-            ArrayList<TimestampQualification> timestampQualifications) {
+            Reports reports, String signatureId) {
         if (signatureQualification == null)
             return createInProgressBadge();
 
+        if (areTimestampsFailed(reports, signatureId))
+            return createMultipleBadges(signatureQualification, reports, signatureId);
+
         switch (signatureQualification) {
             case QESIG: {
-                if (timestampQualifications.size() == 0)
+                if (reports.getSimpleReport().getSignatureTimestamps(signatureId).size() == 0)
                     return createValidQualifiedBadge("Vlastnoručný podpis");
 
-                if (allTSQualified(timestampQualifications))
+                if (areTimestampsQualified(reports, signatureId))
                     return createValidQualifiedBadge("Osvedčený pdopis");
 
-                return createMultipleBadges(signatureQualification, timestampQualifications);
+                return createMultipleBadges(signatureQualification, reports, signatureId);
             }
             case QESEAL: {
-                if (allTSQualified(timestampQualifications))
+                if (areTimestampsQualified(reports, signatureId))
                     return createValidQualifiedBadge("Elektronická pečať");
-                return createMultipleBadges(signatureQualification, timestampQualifications);
+                return createMultipleBadges(signatureQualification, reports, signatureId);
             }
             case ADESIG_QC: {
-                if (timestampQualifications.size() == 0 || allTSQualified(timestampQualifications))
+                if (areTimestampsQualified(reports, signatureId))
                     return createValidQualifiedBadge("Uznaný spôsob autorizácie");
-                return createMultipleBadges(signatureQualification, timestampQualifications);
+                return createMultipleBadges(signatureQualification, reports, signatureId);
             }
             case ADESEAL, ADESEAL_QC, ADESIG:
-                return createMultipleBadges(signatureQualification, timestampQualifications);
+                return createMultipleBadges(signatureQualification, reports, signatureId);
             default:
                 return createBadgeFromQualification(signatureQualification);
         }
     }
 
-    private static VBox createMultipleBadges(SignatureQualification signatureQualification,
-            ArrayList<TimestampQualification> timestampQualifications) {
+    private static VBox createMultipleBadges(SignatureQualification signatureQualification, Reports reports,
+            String signatureId) {
         var hBox = new HBox(10);
-        hBox.getChildren().add(createCustomValidQualifiedBadge(signatureQualification.getReadable()));
-        for (var timestampQualification : timestampQualifications)
-            hBox.getChildren().add(createCustomValidQualifiedBadge(timestampQualification.getReadable()));
+        hBox.getChildren().add(createValidQualifiedBadge(signatureQualification.getReadable()));
+
+        var simple = reports.getSimpleReport();
+        for (var timestamp : simple.getSignatureTimestamps(signatureId)) {
+            var isQualified = timestamp.getQualificationDetails() != null;
+            var isFailed = timestamp.getIndication() == Indication.TOTAL_FAILED
+                    || timestamp.getIndication() == Indication.FAILED;
+
+            if (isFailed)
+                hBox.getChildren().add(createInvalidBadge("Neplatná ČP"));
+            else if (isQualified)
+                hBox.getChildren().add(
+                        createValidQualifiedBadge(simple.getTimestampQualification(timestamp.getId()).getReadable()));
+            else
+                hBox.getChildren()
+                        .add(createUnknownBadge(simple.getTimestampQualification(timestamp.getId()).getReadable()));
+        }
 
         return new VBox(hBox);
+    }
+
+    private static boolean areTimestampsQualified(Reports reports, String signatureId) {
+        var simple = reports.getSimpleReport();
+        for (var timestamp : simple.getSignatureTimestamps(signatureId))
+            if (!simple.getTimestampQualification(timestamp.getId()).equals(TimestampQualification.QTSA))
+                return false;
+
+        return true;
+    }
+
+    private static boolean areTimestampsFailed(Reports reports, String signatureId) {
+        for (var timestamp : reports.getSimpleReport().getSignatureTimestamps(signatureId))
+            if (timestamp.getIndication().equals(Indication.TOTAL_FAILED)
+                    || timestamp.getIndication().equals(Indication.FAILED))
+                return true;
+
+        return false;
     }
 }

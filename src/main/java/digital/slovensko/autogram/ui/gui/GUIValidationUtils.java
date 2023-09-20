@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -10,7 +9,6 @@ import javax.security.auth.x500.X500Principal;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
-import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.simplereport.jaxb.XmlTimestamp;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -32,28 +30,20 @@ public class GUIValidationUtils {
     }
 
     public static VBox createSignatureTableRows(Reports reports, boolean isValidated, Consumer<String> callback) {
-
         var r = new VBox();
         for (var signatureId : reports.getSimpleReport().getSignatureIdList()) {
-            var name = reports.getSimpleReport().getSignedBy(signatureId);
-            var signatureType = reports.getDetailedReport().getSignatureQualification(signatureId);
-            var isFailed = reports.getDetailedReport().getBasicValidationIndication(signatureId)
-                    .equals(Indication.FAILED);
-
-            var timestampQualifications = new ArrayList<TimestampQualification>();
-            for (var timestampId : reports.getSimpleReport().getSignatureTimestamps(signatureId))
-                timestampQualifications.add(reports.getDetailedReport().getTimestampQualification(timestampId.getId()));
-
-            r.getChildren().add(createSignatureTableRow(name, signatureType, timestampQualifications, isValidated,
-                    isFailed, callback));
+            r.getChildren().add(createSignatureTableRow(signatureId, isValidated, callback, reports));
         }
 
         return r;
     }
 
-    public static HBox createSignatureTableRow(String name, SignatureQualification signatureType,
-            ArrayList<TimestampQualification> timestampQualifications, boolean isValidated,
-            boolean isFailed, Consumer<String> callback) {
+    public static HBox createSignatureTableRow(String signatureId, boolean isValidated, Consumer<String> callback,
+            Reports reports) {
+        var name = reports.getSimpleReport().getSignedBy(signatureId);
+        var signatureType = reports.getDetailedReport().getSignatureQualification(signatureId);
+        var isFailed = reports.getDetailedReport().getBasicValidationIndication(signatureId).equals(Indication.FAILED);
+
         var whoSignedButton = new Button(name);
         whoSignedButton.getStyleClass().addAll("autogram-link", "autogram-table__left-column");
         whoSignedButton.wrapTextProperty().setValue(true);
@@ -62,7 +52,7 @@ public class GUIValidationUtils {
         });
 
         var signatureTypeBox = SignatureBadgeFactory
-                .createCombinedBadgeFromQualification(isValidated ? signatureType : null, timestampQualifications);
+                .createCombinedBadgeFromQualification(isValidated ? signatureType : null, reports, signatureId);
         if (isValidated && isFailed)
             signatureTypeBox = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
 
@@ -87,21 +77,15 @@ public class GUIValidationUtils {
         var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null;
         var timestamps = simple.getSignatureTimestamps(signatureId);
 
-        var timestampQualifications = new ArrayList<TimestampQualification>();
-        for (var timestampId : reports.getSimpleReport().getSignatureTimestamps(signatureId))
-            timestampQualifications.add(reports.getDetailedReport().getTimestampQualification(timestampId.getId()));
-
-        return createSignatureBox(isValidated, isValid, isFailed, name, signingTime, subject, issuer,
-                signatureType, timestampQualifications,
-                createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
+        return createSignatureBox(isValidated, isValid, isFailed, name, signingTime, subject, issuer, signatureType,
+                reports, createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
                     callback.accept(null);
-                }));
+                }), signatureId);
     }
 
     public static VBox createSignatureBox(boolean isValidated, boolean isValid, boolean isFailed, String name,
-            String signingTime,
-            String subjectStr, String issuerStr, SignatureQualification signatureQualification,
-            ArrayList<TimestampQualification> timestampQualifications, VBox timestamps) {
+            String signingTime, String subjectStr, String issuerStr, SignatureQualification signatureQualification,
+            Reports reports, VBox timestampsBox, String signatureId) {
 
         var nameFlow = new TextFlow(new Text(name));
         nameFlow.getStyleClass().add("autogram-summary-header__title");
@@ -113,7 +97,7 @@ public class GUIValidationUtils {
             badge = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
         else
             badge = SignatureBadgeFactory.createCombinedBadgeFromQualification(
-                    isValidated ? signatureQualification : null, timestampQualifications);
+                    isValidated ? signatureQualification : null, reports, signatureId);
 
         var validFlow = new TextFlow(badge);
         validFlow.getStyleClass().add("autogram-summary-header__badge");
@@ -124,10 +108,10 @@ public class GUIValidationUtils {
                 createTableRow("Certifikát", subjectStr),
                 createTableRow("Vydavateľ", issuerStr));
 
-        if (timestamps.getChildren().size() > 0) {
+        if (timestampsBox.getChildren().size() > 0) {
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
                     SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), false));
-            signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestamps, true));
+            signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestampsBox, true));
         } else
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
                     SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), true));
