@@ -26,6 +26,7 @@ import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
+import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
@@ -63,6 +64,8 @@ public class SignatureValidator {
 
     public synchronized Reports validate(SignedDocumentValidator docValidator) {
         docValidator.setCertificateVerifier(verifier);
+
+        // TODO: do not print stack trace of DSSExternalResourceException when OCSP request fails offline inside DSS
         return docValidator.validateDocument();
     }
 
@@ -103,7 +106,7 @@ public class SignatureValidator {
         validationJob.setListOfTrustedListSources(lotlSource);
         validationJob.setSynchronizationStrategy(new ExpirationAndSignatureCheckStrategy());
         validationJob.setExecutorService(executorService);
-        validationJob.setDebug(true);
+        validationJob.setDebug(false);
 
         logger.debug("Starting signature validator offline refresh");
         validationJob.offlineRefresh();
@@ -167,5 +170,10 @@ public class SignatureValidator {
 
         validator.setCertificateVerifier(new CommonCertificateVerifier());
         return new ValidationReports(validator.validateDocument(), job);
+    }
+
+    public synchronized boolean areTLsLoaded() {
+        // TODO: consider validation turned off as well
+        return validationJob.getSummary().getNumberOfProcessedTLs() > 0;
     }
 }

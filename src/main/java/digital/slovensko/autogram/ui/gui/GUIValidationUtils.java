@@ -30,11 +30,20 @@ public class GUIValidationUtils {
         return r;
     }
 
+    public static VBox createWarningText(String message) {
+        var warningText = new Text("Chyba v internetovom pripojení: Dôveryhodnosť certifiátov nemohla byť overená");
+        warningText.getStyleClass().add("autogram-heading-s");
+        var warningTextFlow = new VBox(warningText);
+        warningTextFlow.setStyle(
+                "-fx-padding: 0.625em 0 1.625em 0; -fx-background-color: #ffdf0f; -fx-background-insets: 0 0 1em 0;");
+
+        return warningTextFlow;
+    }
+
     public static VBox createSignatureTableRows(Reports reports, boolean isValidated, Consumer<String> callback) {
         var r = new VBox();
-        for (var signatureId : reports.getSimpleReport().getSignatureIdList()) {
+        for (var signatureId : reports.getSimpleReport().getSignatureIdList())
             r.getChildren().add(createSignatureTableRow(signatureId, isValidated, callback, reports));
-        }
 
         return r;
     }
@@ -63,7 +72,7 @@ public class GUIValidationUtils {
     }
 
     public static VBox createSignatureBox(Reports reports, boolean isValidated, String signatureId,
-            Consumer<String> callback) {
+            Consumer<String> callback, boolean areTLsLoaded) {
         var simple = reports.getSimpleReport();
         var diagnostic = reports.getDiagnosticData();
 
@@ -78,18 +87,25 @@ public class GUIValidationUtils {
         var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null;
         var timestamps = simple.getSignatureTimestamps(signatureId);
 
-        return createSignatureBox(isValidated, isValid, isFailed, name, signingTime, subject, issuer, signatureType,
+        return createSignatureBox(isValidated, isValid, isFailed, areTLsLoaded, name, signingTime, subject, issuer,
+                signatureType,
                 reports, createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
                     callback.accept(null);
                 }), signatureId);
     }
 
-    public static VBox createSignatureBox(boolean isValidated, boolean isValid, boolean isFailed, String name,
+    public static VBox createSignatureBox(boolean isValidated, boolean isValid, boolean isFailed, boolean areTLsLoaded,
+            String name,
             String signingTime, String subjectStr, String issuerStr, SignatureQualification signatureQualification,
             Reports reports, VBox timestampsBox, String signatureId) {
 
         var nameFlow = new TextFlow(new Text(name));
         nameFlow.getStyleClass().add("autogram-summary-header__title");
+        var errors = reports.getSimpleReport().getAdESValidationErrors(signatureId);
+        var isRevocationValidated = true;
+        for (var error : errors)
+            if (error.getValue().contains("No revocation data found for the certificate"))
+                isRevocationValidated = false;
 
         HBox badge = null;
         if (!isValidated)
@@ -105,7 +121,8 @@ public class GUIValidationUtils {
         var nameBox = new HBox(nameFlow, validFlow);
 
         var signatureDetailsBox = new VBox(
-                createTableRow("Výsledok overenia", validityToString(isValid, isFailed)),
+                createTableRow("Výsledok overenia",
+                        validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated)),
                 createTableRow("Certifikát", subjectStr),
                 createTableRow("Vydavateľ", issuerStr),
                 createTableRow("Negarantovaný čas podpisu", signingTime));
@@ -123,12 +140,19 @@ public class GUIValidationUtils {
         return signatureBox;
     }
 
-    private static String validityToString(boolean isValid, boolean isFailed) {
-        if (isValid)
-            return "Platný";
-
+    private static String validityToString(boolean isValid, boolean isFailed, boolean areTLsLoaded,
+            boolean isRevocationValidated) {
         if (isFailed)
             return "Neplatný";
+
+        if (!areTLsLoaded)
+            return "Nepodarilo sa overiť";
+
+        if (!isRevocationValidated)
+            return "Nepodarilo sa overiť platnosť certifikátu";
+
+        if (isValid)
+            return "Platný";
 
         return "Neznámy podpis";
     }

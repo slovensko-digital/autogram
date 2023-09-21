@@ -1,10 +1,9 @@
 package digital.slovensko.autogram.ui.gui;
 
-import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
-import javafx.scene.Node;
+import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
@@ -17,7 +16,11 @@ public abstract class SignatureBadgeFactory {
     }
 
     public static HBox createInProgressBadge() {
-        return createBadge("Prebieha overovanie...", "autogram-tag-processing");
+        return createInProgressBadge("Prebieha overovanie...");
+    }
+
+    public static HBox createInProgressBadge(String label) {
+        return createBadge(label, "autogram-tag-processing");
     }
 
     public static HBox createInvalidBadge(String label) {
@@ -52,14 +55,24 @@ public abstract class SignatureBadgeFactory {
             case ADESIG_QC:
                 return createValidQualifiedBadge("Zdokonalený elektronický podpis");
             case ADESIG, ADESEAL, ADESEAL_QC:
-                return createCustomValidQualifiedBadge("Iný elektronický podpis");
+                return createCustomValidQualifiedBadge("Iný zdokonalený elektronický podpis");
             case UNKNOWN_QC, UNKNOWN_QC_QSCD, NOT_ADES_QC, NOT_ADES_QC_QSCD:
                 return createUnknownBadge("Neznámy kvalifikovaný podpis");
             case NOT_ADES, UNKNOWN, NA:
                 return createUnknownBadge("Neznámy podpis");
+            case INDETERMINATE_QESIG:
+                return createInProgressBadge("Predbežne platný kvalifikovaný podpis");
+            case INDETERMINATE_QESEAL:
+                return createInProgressBadge("Predbežne platná elektronická pečať");
+            case INDETERMINATE_ADESIG_QC:
+                return createInProgressBadge("Predbežne platný zdokonalený podpis");
+            case INDETERMINATE_ADESIG, INDETERMINATE_ADESEAL, INDETERMINATE_ADESEAL_QC:
+                return createInProgressBadge("Predbežne platný iný zdokonalený podpis");
+            case INDETERMINATE_UNKNOWN_QC, INDETERMINATE_UNKNOWN_QC_QSCD:
+                return createInProgressBadge("Predbežne platný neznámy kvalifikovaný podpis");
             default:
                 if (qualification.name().contains("INDETERMINATE"))
-                    return createWarningBadge("Predbežne platný podpis");
+                    return createInProgressBadge("Predbežne platný neznámy podpis");
                 else
                     return createInvalidBadge("Neznámy podpis");
         }
@@ -153,11 +166,10 @@ public abstract class SignatureBadgeFactory {
                 return createUnknownBadge("Neznámy podpis");
             default:
                 if (qualification.name().contains("INDETERMINATE"))
-                    return createWarningBadge(qualification.getReadable());
+                    return createInProgressBadge(qualification.getReadable());
                 else
                     return createInvalidBadge("Neznámy podpis");
         }
-
     }
 
     private static boolean areTimestampsQualified(Reports reports, String signatureId) {

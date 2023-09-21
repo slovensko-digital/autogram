@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
@@ -181,7 +182,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void onSignatureCheckCompleted(Reports reports) {
         signatureCheckReports = reports;
         signatureCheckCompleted = true;
-        renderSignatures(reports, false);
+        renderSignatures(reports, false, true);
 
         if (signaturesNotValidatedDialogController != null)
             signaturesNotValidatedDialogController.close();
@@ -190,7 +191,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void onSignatureValidationCompleted(Reports reports) {
         signatureValidationCompleted = true;
         signatureValidationReports = reports;
-        renderSignatures(reports, true);
+        renderSignatures(reports, true, SignatureValidator.getInstance().areTLsLoaded());
         if (signaturesController != null)
             signaturesController.onSignatureValidationCompleted(reports);
 
@@ -198,18 +199,22 @@ public class SigningDialogController implements SuppressedFocusController, Visua
             signaturesNotValidatedDialogController.close();
     }
 
-    public void renderSignatures(Reports reports, boolean isValidated) {
+    public void renderSignatures(Reports reports, boolean isValidated, boolean areTLsLoaded) {
         if (reports == null) {
             signatureCheckMessage.setText("Dokument ešte neobsahuje žiadne podpisy.");
             return;
         }
 
         signaturesTable.getChildren().clear();
-        signaturesTable.getChildren().addAll(
+        if (!areTLsLoaded)
+            signaturesTable.getChildren().add(
+                    createWarningText("Chyba v internetovom pripojení: Dôveryhodnosť podpisov nemohla byť overená"));
+
+        signaturesTable.getChildren().add(new VBox(
                 createSignatureTableHeader(isValidated),
                 createSignatureTableRows(reports, isValidated, e -> {
                     onShowSignaturesButtonPressed(null);
-                }));
+                })));
 
         var stage = (Stage) mainButton.getScene().getWindow();
         stage.sizeToScene();

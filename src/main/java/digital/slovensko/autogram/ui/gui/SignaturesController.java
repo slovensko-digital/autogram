@@ -87,6 +87,6 @@ public class SignaturesController implements SuppressedFocusController {
         for (var signatureId : reports.getDiagnosticData().getSignatureIdList())
             signaturesBox.getChildren().add(createSignatureBox(reports, isValidated, signatureId, e -> {
                 getNodeForLoosingFocus().requestFocus();
-            }));
+            }, isValidated ? SignatureValidator.getInstance().areTLsLoaded() : false));
     }
 }
