@@ -668,8 +668,8 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-tag-unknown {
-  -fx-background-color: #EEEFEF;
-  -fx-border-color: #EEEFEF;
+  -fx-background-color: #FFF7BF;
+  -fx-border-color: #FFF7BF;
 }
 
 .autogram-tag-warning {
@@ -698,8 +698,8 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-tag-unknown > Text {
-  -fx-text-fill: #383F43;
-  -fx-fill: #383F43;
+  -fx-text-fill: #594D00;
+  -fx-fill: #594D00;
 }
 
 .autogram-tag-warning > Text {
