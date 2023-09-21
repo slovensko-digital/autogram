@@ -4,43 +4,43 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
+import javafx.scene.Node;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 
 public abstract class SignatureBadgeFactory {
-    public static VBox createBadge(String label, String styleClass) {
-        var box = new VBox(new Text(label));
+    public static HBox createBadge(String label, String styleClass) {
+        var box = new HBox(new Text(label));
         box.getStyleClass().addAll("autogram-tag", styleClass);
 
         return box;
     }
 
-    public static VBox createInProgressBadge() {
+    public static HBox createInProgressBadge() {
         return createBadge("Prebieha overovanie...", "autogram-tag-processing");
     }
 
-    public static VBox createInvalidBadge(String label) {
+    public static HBox createInvalidBadge(String label) {
         return createBadge(label, "autogram-tag-invalid");
     }
 
-    public static VBox createValidQualifiedBadge(String label) {
+    public static HBox createValidQualifiedBadge(String label) {
         return createBadge(label, "autogram-tag-valid");
     }
 
-    public static VBox createCustomValidQualifiedBadge(String label) {
+    public static HBox createCustomValidQualifiedBadge(String label) {
         return createBadge(label, "autogram-tag-custom-valid");
     }
 
-    public static VBox createUnknownBadge(String label) {
+    public static HBox createUnknownBadge(String label) {
         return createBadge(label, "autogram-tag-unknown");
     }
 
-    public static VBox createWarningBadge(String label) {
+    public static HBox createWarningBadge(String label) {
         return createBadge(label, "autogram-tag-warning");
     }
 
-    public static VBox createBadgeFromQualification(SignatureQualification qualification) {
+    public static HBox createBadgeFromQualification(SignatureQualification qualification) {
         if (qualification == null)
             return createInProgressBadge();
 
@@ -65,7 +65,7 @@ public abstract class SignatureBadgeFactory {
         }
     }
 
-    public static VBox createBadgeFromTSQualification(boolean isFailed, TimestampQualification timestampQualification) {
+    public static HBox createBadgeFromTSQualification(boolean isFailed, TimestampQualification timestampQualification) {
         if (timestampQualification == null)
             return createInProgressBadge();
 
@@ -82,7 +82,7 @@ public abstract class SignatureBadgeFactory {
         }
     }
 
-    public static VBox createCombinedBadgeFromQualification(SignatureQualification signatureQualification,
+    public static HBox createCombinedBadgeFromQualification(SignatureQualification signatureQualification,
             Reports reports, String signatureId) {
         if (signatureQualification == null)
             return createInProgressBadge();
@@ -117,10 +117,10 @@ public abstract class SignatureBadgeFactory {
         }
     }
 
-    private static VBox createMultipleBadges(SignatureQualification signatureQualification, Reports reports,
+    private static HBox createMultipleBadges(SignatureQualification signatureQualification, Reports reports,
             String signatureId) {
-        var hBox = new HBox(10);
-        hBox.getChildren().add(createValidQualifiedBadge(signatureQualification.getReadable()));
+        var hBox = new HBox(createReadableBadgeFromQualification(signatureQualification));
+        hBox.getStyleClass().add("autogram-tag-multiple-box");
 
         var simple = reports.getSimpleReport();
         for (var timestamp : simple.getSignatureTimestamps(signatureId)) {
@@ -138,7 +138,26 @@ public abstract class SignatureBadgeFactory {
                         .add(createUnknownBadge(simple.getTimestampQualification(timestamp.getId()).getReadable()));
         }
 
-        return new VBox(hBox);
+        return hBox;
+    }
+
+    private static HBox createReadableBadgeFromQualification(SignatureQualification qualification) {
+        switch (qualification) {
+            case QESIG, QESEAL, ADESIG_QC:
+                return createValidQualifiedBadge(qualification.getReadable());
+            case ADESIG, ADESEAL, ADESEAL_QC:
+                return createCustomValidQualifiedBadge(qualification.getReadable());
+            case UNKNOWN_QC, UNKNOWN_QC_QSCD, NOT_ADES_QC, NOT_ADES_QC_QSCD:
+                return createUnknownBadge(qualification.getReadable());
+            case NOT_ADES, UNKNOWN, NA:
+                return createUnknownBadge("Neznámy podpis");
+            default:
+                if (qualification.name().contains("INDETERMINATE"))
+                    return createWarningBadge(qualification.getReadable());
+                else
+                    return createInvalidBadge("Neznámy podpis");
+        }
+
     }
 
     private static boolean areTimestampsQualified(Reports reports, String signatureId) {

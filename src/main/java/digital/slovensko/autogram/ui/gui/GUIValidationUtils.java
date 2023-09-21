@@ -14,6 +14,7 @@ import eu.europa.esig.dss.simplereport.jaxb.XmlTimestamp;
 import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
@@ -90,7 +91,7 @@ public class GUIValidationUtils {
         var nameFlow = new TextFlow(new Text(name));
         nameFlow.getStyleClass().add("autogram-summary-header__title");
 
-        VBox badge = null;
+        HBox badge = null;
         if (!isValidated)
             badge = SignatureBadgeFactory.createInProgressBadge();
         else if (isFailed)
@@ -104,9 +105,10 @@ public class GUIValidationUtils {
         var nameBox = new HBox(nameFlow, validFlow);
 
         var signatureDetailsBox = new VBox(
-                createTableRow("Negarantovaný čas podpisu", signingTime),
+                createTableRow("Výsledok overenia", validityToString(isValid, isFailed)),
                 createTableRow("Certifikát", subjectStr),
-                createTableRow("Vydavateľ", issuerStr));
+                createTableRow("Vydavateľ", issuerStr),
+                createTableRow("Negarantovaný čas podpisu", signingTime));
 
         if (timestampsBox.getChildren().size() > 0) {
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
@@ -121,11 +123,21 @@ public class GUIValidationUtils {
         return signatureBox;
     }
 
+    private static String validityToString(boolean isValid, boolean isFailed) {
+        if (isValid)
+            return "Platný";
+
+        if (isFailed)
+            return "Neplatný";
+
+        return "Neznámy podpis";
+    }
+
     public static HBox createTableRow(String label, String value) {
         return createTableRow(label, value, false);
     }
 
-    public static HBox createTableRow(String label, VBox valueNode, boolean isLast) {
+    public static HBox createTableRow(String label, Pane valueNode, boolean isLast) {
         var labelNode = createTableCell(label, "autogram-heading-s", isLast, true);
         var cell = new TextFlow(valueNode);
         cell.getStyleClass().addAll(isLast ? "autogram-table-cell--last" : "autogram-table-cell");
