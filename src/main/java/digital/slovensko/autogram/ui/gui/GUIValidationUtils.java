@@ -39,33 +39,40 @@ public class GUIValidationUtils {
         return warningTextFlow;
     }
 
-    public static VBox createSignatureTableRows(Reports reports, boolean isValidated, Consumer<String> callback) {
+    public static VBox createSignatureTableRows(Reports reports, boolean isValidated) {
         var r = new VBox();
         for (var signatureId : reports.getSimpleReport().getSignatureIdList())
-            r.getChildren().add(createSignatureTableRow(signatureId, isValidated, callback, reports));
+            r.getChildren().add(createSignatureTableRow(signatureId, isValidated, reports));
 
         return r;
     }
 
-    public static HBox createSignatureTableRow(String signatureId, boolean isValidated, Consumer<String> callback,
+    public static HBox createSignatureTableLink(Consumer<String> callback) {
+        var whoSignedButton = new Button("Zobraziť detail podpisov");
+        whoSignedButton.getStyleClass().addAll("autogram-link", "autogram-table__footer");
+        whoSignedButton.wrapTextProperty().setValue(true);
+        whoSignedButton.setOnMouseClicked(event -> {
+            callback.accept(null);
+        });
+
+        return new HBox(whoSignedButton);
+    }
+
+    public static HBox createSignatureTableRow(String signatureId, boolean isValidated,
             Reports reports) {
         var name = reports.getSimpleReport().getSignedBy(signatureId);
         var signatureType = reports.getDetailedReport().getSignatureQualification(signatureId);
         var isFailed = reports.getDetailedReport().getBasicValidationIndication(signatureId).equals(Indication.FAILED);
 
-        var whoSignedButton = new Button(name);
-        whoSignedButton.getStyleClass().addAll("autogram-link", "autogram-table__left-column");
-        whoSignedButton.wrapTextProperty().setValue(true);
-        whoSignedButton.setOnMouseClicked(event -> {
-            callback.accept(null);
-        });
+        var whoSigned = new TextFlow(new Text(name));
+        whoSigned.getStyleClass().addAll("autogram-table-text", "autogram-table__left-column");
 
         var signatureTypeBox = SignatureBadgeFactory
                 .createCombinedBadgeFromQualification(isValidated ? signatureType : null, reports, signatureId);
         if (isValidated && isFailed)
             signatureTypeBox = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
 
-        var r = new HBox(new HBox(whoSignedButton), new VBox(signatureTypeBox));
+        var r = new HBox(new HBox(whoSigned), new VBox(signatureTypeBox));
         r.getStyleClass().add("autogram-table-cell");
         return r;
     }
