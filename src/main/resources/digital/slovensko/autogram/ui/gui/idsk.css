@@ -33,6 +33,8 @@
   -fx-font-size: 16px;
 
   -fx-font-smoothing-type: gray;
+
+  -autogram-warning-color: #ffdf0f;
 }
 
 #mainBox {
@@ -872,5 +874,11 @@ TextFlow.autogram-body-s {
   -fx-fill: -autogram-text-colour;
 
   -fx-font-size: 1.125em;
+}
+
+.autgoram-warning-textflow {
+  -fx-padding: 0.625em 0 1.625em 0;
+  -fx-background-color: -autogram-warning-color;
+  -fx-background-insets: 0 0 1em 0;
 }
 

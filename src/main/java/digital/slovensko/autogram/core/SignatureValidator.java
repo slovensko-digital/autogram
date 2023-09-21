@@ -26,7 +26,6 @@ import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
-import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
@@ -65,7 +64,7 @@ public class SignatureValidator {
     public synchronized Reports validate(SignedDocumentValidator docValidator) {
         docValidator.setCertificateVerifier(verifier);
 
-        // TODO: do not print stack trace of DSSExternalResourceException when OCSP request fails offline inside DSS
+        // TODO: do not print stack trace inside DSS
         return docValidator.validateDocument();
     }
 

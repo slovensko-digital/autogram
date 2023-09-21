@@ -31,11 +31,10 @@ public class GUIValidationUtils {
     }
 
     public static VBox createWarningText(String message) {
-        var warningText = new Text("Chyba v internetovom pripojení: Dôveryhodnosť certifiátov nemohla byť overená");
+        var warningText = new Text("Chyba v internetovom pripojení: Dôveryhodnosť podpisov nemohla byť overená");
         warningText.getStyleClass().add("autogram-heading-s");
         var warningTextFlow = new VBox(warningText);
-        warningTextFlow.setStyle(
-                "-fx-padding: 0.625em 0 1.625em 0; -fx-background-color: #ffdf0f; -fx-background-insets: 0 0 1em 0;");
+        warningTextFlow.getStyleClass().add("autgoram-warning-textflow");
 
         return warningTextFlow;
     }
