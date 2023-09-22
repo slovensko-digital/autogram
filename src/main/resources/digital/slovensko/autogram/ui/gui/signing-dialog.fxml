@@ -65,9 +65,6 @@
 
 
     <VBox fx:id="signaturesTable">
-        <TextFlow>
-            <Text fx:id="signatureCheckMessage" styleClass="autogram-heading-s" text="Hľadajú sa podpisy..." />
-        </TextFlow>
     </VBox>
 
     <HBox styleClass="autogram-actions">

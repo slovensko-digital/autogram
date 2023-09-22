@@ -63,8 +63,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     @FXML
     VBox signaturesTable;
     @FXML
-    Text signatureCheckMessage;
-    @FXML
     Text headerText;
 
     public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui, String title) {
@@ -76,6 +74,8 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
     public void initialize() {
         headerText.setText(title);
+        signaturesTable.setManaged(false);
+        signaturesTable.setVisible(false);
         refreshSigningKey();
         visualization.initialize(this);
         autogram.checkPDFACompliance(visualization.getJob());
@@ -200,11 +200,11 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void renderSignatures(Reports reports, boolean isValidated, boolean areTLsLoaded) {
-        if (reports == null) {
-            signatureCheckMessage.setText("Dokument ešte neobsahuje žiadne podpisy.");
+        if (reports == null)
             return;
-        }
 
+        signaturesTable.setManaged(true);
+        signaturesTable.setVisible(true);
         signaturesTable.getChildren().clear();
         if (!areTLsLoaded)
             signaturesTable.getChildren().add(
