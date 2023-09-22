@@ -17,43 +17,31 @@ import javafx.stage.Stage;
 import java.util.List;
 
 public class SettingsDialogController {
-
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
-
     @FXML
     private CheckBox en319132CheckBox;
-
     @FXML
     private HBox batchSigningRadioButtons;
-
-    private ToggleGroup toggleGroup;
-
     @FXML
     private ChoiceBox<TokenDriver> driverChoiceBox;
-
     @FXML
     private VBox trustedCountriesList;
-
     @FXML
     private CheckBox correctDocumentDisplayCheckBox;
-
     @FXML
     private CheckBox signatureValidationCheckBox;
-
     @FXML
     private CheckBox checkPDFAComplianceCheckBox;
-
     @FXML
     private CheckBox localServerEnabledCheckBox;
-
     @FXML
     private Button saveButton;
-
     @FXML
     private Button closeButton;
 
     private final UserSettings userSettings;
+
 
     public SettingsDialogController(UserSettings userSettings) {
         this.userSettings = userSettings;
@@ -135,7 +123,7 @@ public class SettingsDialogController {
     }
 
     private void initializeBatchSigningRadioButtons() {
-        toggleGroup = new ToggleGroup();
+        var toggleGroup = new ToggleGroup();
 
         var togetherRadioButton = new RadioButton("Spoločne");
         togetherRadioButton.setToggleGroup(toggleGroup);

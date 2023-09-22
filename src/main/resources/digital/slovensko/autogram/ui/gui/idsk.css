@@ -46,8 +46,8 @@
       #d0190f 66.6%,
       #d0190f 100%
     );
-  -fx-padding: 30px;
-  -fx-spacing: 30px;
+  -fx-padding: 2em;
+  -fx-spacing: 2em;
 }
 
 /* Radio buttons */
@@ -361,7 +361,7 @@
 .autogram-description {
   -fx-text-fill: gray;
   -fx-fill: gray;
-  -fx-font-size: 1em;
+  -fx-font-size: 1.125em;
 }
 
 .autogram-visualizer-plaintext,
@@ -518,8 +518,9 @@ TextFlow.autogram-body-s {
   -fx-background-color: #f3f2f1;
   -fx-border-color: #929191;
   -fx-cursor: hand;
-  -fx-padding: 10px 13px 10px 13px;
-  -fx-font-size: 1.125em;
+  -fx-padding: 0.6875em 1.25em 0.6875em 1em;
+  -fx-background-insets: 0.1875em 0.25em 0.1875em 0;
+  -fx-font-size: 1.25em;
   -fx-font-weight: bold;
   -fx-border-width: 0 0 0 0;
 }
@@ -527,6 +528,56 @@ TextFlow.autogram-body-s {
 .tab:selected .tab-label {
   -fx-background-color: white;
   -fx-border-width: 1px 1px 0 1px;
+  -fx-background-insets: 0.125em 0.25em 0 0;
+  -fx-border-insets: 0 0.25em 0 0;
+  -fx-padding: 0.6875em 0.9375em 0.6875em 0.9375em;
+  -fx-border-color: black;
+}
+
+.tab:selected {
+  -fx-padding: 0 -1em 0 0;
+}
+
+.autogram-settings-tab-pane AnchorPane {
+  -fx-border-color: black;
+  -fx-border-width: 1px;
+  -fx-max-width: 52em;
+  -fx-min-width: 52em;
+}
+
+.autogram-settings-tab-pane AnchorPane > VBox {
+  -fx-padding: 2em;
+  -fx-max-width: 52em;
+  -fx-min-width: 52em;
+}
+
+.autogram-settings-row {
+  -fx-border-width: 0 0 1px 0;
+  -fx-border-color: -autogram-border-colour;
+  -fx-padding: 0.75em 0;
+}
+
+.autogram-settings-row > .left {
+  -fx-min-width: 24em;
+  -fx-max-width: 24em;
+  -fx-padding: 0 2em 0 0;
+}
+
+.autogram-settings-tab-header-text {
+  -fx-padding: 0.5em 0;
+}
+
+.autogram-checkbox {
+  -fx-alignment: center-left;
+}
+
+.autogram-dropdown {
+  -fx-alignment: center-left;
+}
+
+.autogram-dropdown > ChoiceBox {
+  -fx-min-width: 19.5em;
+  -fx-max-width: 19.5em;
 }
 
 /* Choice boxes */
@@ -729,7 +780,7 @@ TextFlow.autogram-body-s {
 .autogram-confirmation .autogram-body {
   -fx-text-fill: #ffffff;
   -fx-fill:  #ffffff;
- 
+
   -fx-font-size: 1.1875em;
   -fx-text-alignment: center;
 }
@@ -737,11 +788,11 @@ TextFlow.autogram-body-s {
 .autogram-confirmation .autogram-heading-m {
   -fx-text-fill: #ffffff;
   -fx-fill:  #ffffff;
- 
+
   -fx-font-size: 1.5em;
   -fx-font-weight: bold;
   -fx-text-alignment: center;
 }
 .autogram-confirmation Hyperlink {
-  -fx-font-size: 2em; 
+  -fx-font-size: 2em;
 }
