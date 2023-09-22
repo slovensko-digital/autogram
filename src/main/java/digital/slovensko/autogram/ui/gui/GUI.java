@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
@@ -114,13 +115,15 @@ public class GUI implements UI {
             callback.accept(drivers.get(0));
         } else {
             if (!driverWasAlreadySet && userSettings.getDriver() != null) {
-                var defaultDriver = drivers.stream().filter(d -> d.getName().equals(userSettings.getDriver()))
-                        .findFirst();
+                try {
+                    var defaultDriver = drivers.stream().filter(d -> d.getName().equals(userSettings.getDriver()))
+                            .findFirst().get();
 
-                if (defaultDriver != null) {
-                    callback.accept(defaultDriver.get());
-                    return;
-                }
+                    if (defaultDriver != null) {
+                        callback.accept(defaultDriver);
+                        return;
+                    }
+                } catch (NoSuchElementException e){}
             }
 
             PickDriverDialogController controller = new PickDriverDialogController(drivers, callback, userSettings);
