@@ -77,18 +77,21 @@ public class SettingsDialogController {
                 SignatureLevel.PAdES_BASELINE_B));
         signatureLevelChoiceBoxBox.setConverter(new SignatureLevelStringConverter());
         signatureLevelChoiceBoxBox.setValue(userSettings.getSignatureLevel());
-        signatureLevelChoiceBoxBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setSignatureLevel(newValue);
-        });
+        signatureLevelChoiceBoxBox.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    userSettings.setSignatureLevel(newValue);
+                });
     }
 
     private void initializeDriverChoiceBox() {
         driverChoiceBox.setConverter(new TokenDriverStringConverter());
         driverChoiceBox.getItems().add(null);
         driverChoiceBox.getItems().addAll(new DefaultDriverDetector().getAvailableDrivers());
-        driverChoiceBox.setValue(userSettings.getDriver());
+        var defaultDriver = driverChoiceBox.getItems().stream()
+                .filter(d -> d != null && d.getName().equals(userSettings.getDriver())).findFirst();
+        driverChoiceBox.setValue(defaultDriver.orElse(null));
         driverChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setDriver(newValue);
+            userSettings.setDriver(newValue.getName());
         });
     }
 
@@ -181,8 +184,7 @@ public class SettingsDialogController {
                 new Country("Slovinsko", "SI"),
                 new Country("Španielsko", "ES"),
                 new Country("Švédsko", "SE"),
-                new Country("Taliansko", "IT")
-        );
+                new Country("Taliansko", "IT"));
 
         List<String> trustedList = userSettings.getTrustedList();
         for (Country country : europeanCountries) {

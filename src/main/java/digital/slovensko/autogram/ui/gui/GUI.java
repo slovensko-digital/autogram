@@ -35,6 +35,7 @@ import javafx.stage.Window;
 public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
+    private boolean driverWasAlreadySet = false;
     private final HostServices hostServices;
     private final UserSettings userSettings;
     private BatchDialogController batchController;
@@ -112,6 +113,16 @@ public class GUI implements UI {
             // short-circuit if only one driver present
             callback.accept(drivers.get(0));
         } else {
+            if (!driverWasAlreadySet && userSettings.getDriver() != null) {
+                var defaultDriver = drivers.stream().filter(d -> d.getName().equals(userSettings.getDriver()))
+                        .findFirst();
+
+                if (defaultDriver != null) {
+                    callback.accept(defaultDriver.get());
+                    return;
+                }
+            }
+
             PickDriverDialogController controller = new PickDriverDialogController(drivers, callback, userSettings);
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
@@ -170,7 +181,7 @@ public class GUI implements UI {
     }
 
     private void refreshKeyOnAllJobs() {
-        jobControllers.values().forEach(signingDialogController -> signingDialogController.refreshSigningKey(userSettings.getDriver()));
+        jobControllers.values().forEach(SigningDialogController::refreshSigningKey);
         if (batchController != null) {
             batchController.refreshSigningKey();
         }
@@ -252,8 +263,6 @@ public class GUI implements UI {
         stage.setOnCloseRequest(e -> cancelJob(visualization.getJob()));
 
         stage.sizeToScene();
-
-
 
         GUIUtils.suppressDefaultFocus(stage, controller);
         GUIUtils.showOnTop(stage);
@@ -376,6 +385,7 @@ public class GUI implements UI {
         if (activeKey != null)
             activeKey.close();
         activeKey = newKey;
+        driverWasAlreadySet = true;
         refreshKeyOnAllJobs();
     }
 
@@ -410,12 +420,15 @@ public class GUI implements UI {
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         var sceneWidth = stage.getScene().getWidth();
         var availabeWidth = (bounds.getWidth() - sceneWidth);
-        var singleOffsetXPx = Math.round(Math.min(maxOffset, (availabeWidth / 2) / maxWindows)); // spread windows into half of availabe screen width
+        var singleOffsetXPx = Math.round(Math.min(maxOffset, (availabeWidth / 2) / maxWindows)); // spread windows into
+                                                                                                 // half of availabe
+                                                                                                 // screen width
         var offsetX = singleOffsetXPx * (nWindows - maxWindows / 2);
         double idealX = bounds.getMinX() + availabeWidth / 2 + offsetX;
         double x = Math.max(bounds.getMinX(), Math.min(bounds.getMaxX() - sceneWidth, idealX));
         var sceneHeight = stage.getScene().getHeight();
-        double y = Math.max(bounds.getMinY(), Math.min(bounds.getMaxY() - sceneHeight, bounds.getMinY() + (bounds.getHeight() - sceneHeight)/2));
+        double y = Math.max(bounds.getMinY(),
+                Math.min(bounds.getMaxY() - sceneHeight, bounds.getMinY() + (bounds.getHeight() - sceneHeight) / 2));
         stage.setX(x);
         stage.setY(y);
         stage.setMaxHeight(bounds.getHeight());

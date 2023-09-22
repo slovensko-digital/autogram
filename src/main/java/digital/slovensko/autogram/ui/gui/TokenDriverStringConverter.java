@@ -4,8 +4,6 @@ import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import javafx.util.StringConverter;
 
-import java.util.Optional;
-
 public class TokenDriverStringConverter extends StringConverter<TokenDriver> {
     @Override
     public String toString(TokenDriver driver) {

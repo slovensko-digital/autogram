@@ -2,7 +2,6 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.visualization.Visualization;
-import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -52,8 +51,8 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         this.autogram = autogram;
     }
 
-    public void initialize(TokenDriver driver) {
-        refreshSigningKey(driver);
+    public void initialize() {
+        refreshSigningKey();
         visualization.initialize(this);
         autogram.checkPDFACompliance(visualization.getJob());
     }
@@ -74,18 +73,13 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
     }
 
-    public void refreshSigningKey(TokenDriver driver) {
+    public void refreshSigningKey() {
         mainButton.setDisable(false);
-
         var key = gui.getActiveSigningKey();
         if (key == null) {
-            if (driver != null) {
-                autogram.requestPasswordAndThen(driver, gui::setActiveSigningKey);
-            } else {
-                mainButton.setText("Vybrať podpisový certifikát");
-                mainButton.getStyleClass().add("autogram-button--secondary");
-                changeKeyButton.setVisible(false);
-            }
+            mainButton.setText("Vybrať podpisový certifikát");
+            mainButton.getStyleClass().add("autogram-button--secondary");
+            changeKeyButton.setVisible(false);
         } else {
             mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
             mainButton.getStyleClass().removeIf(style -> style.equals("autogram-button--secondary"));

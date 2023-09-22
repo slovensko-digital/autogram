@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.gui.SignatureLevelStringConverter;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class UserSettings {
     private SignatureLevel signatureLevel;
-    private TokenDriver driver;
+    private String driver;
     private boolean en319132;
     private boolean signIndividually;
     private boolean correctDocumentDisplay;
@@ -21,10 +20,10 @@ public class UserSettings {
     private boolean serverEnabled;
     private List<String> trustedList;
 
-    private UserSettings(SignatureLevel signatureLevel, TokenDriver driver, boolean en319132,
-                         boolean signIndividually, boolean correctDocumentDisplay,
-                         boolean signaturesValidity, boolean pdfaCompliance,
-                         boolean serverEnabled, List<String> trustedList) {
+    private UserSettings(SignatureLevel signatureLevel, String driver, boolean en319132,
+            boolean signIndividually, boolean correctDocumentDisplay,
+            boolean signaturesValidity, boolean pdfaCompliance,
+            boolean serverEnabled, List<String> trustedList) {
         this.signatureLevel = signatureLevel;
         this.driver = driver;
         this.en319132 = en319132;
@@ -40,7 +39,7 @@ public class UserSettings {
         Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         var signatureType = prefs.get("SIGNATURE_LEVEL", null);
-        var driverName = prefs.get("DRIVER", null);
+        var driver = prefs.get("DRIVER", null);
         var en319132 = prefs.getBoolean("EN319132", false);
         var signIndividually = prefs.getBoolean("SIGN_INDIVIDUALLY", true);
         var correctDocumentDisplay = prefs.getBoolean("CORRECT_DOCUMENT_DISPLAY", true);
@@ -48,12 +47,6 @@ public class UserSettings {
         var pdfaCompliance = prefs.getBoolean("PDFA_COMPLIANCE", true);
         var serverEnabled = prefs.getBoolean("SERVER_ENABLED", true);
         var trustedList = prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU");
-
-        var driver = new DefaultDriverDetector()
-                .getAvailableDrivers()
-                .stream()
-                .filter(d -> d.getShortname().equals(driverName))
-                .findFirst();
 
         SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
         var signatureLevel = Arrays
@@ -65,7 +58,7 @@ public class UserSettings {
                 .findFirst();
 
         return new UserSettings(signatureLevel.isEmpty() ? SignatureLevel.PAdES_BASELINE_B : signatureLevel.get(),
-                driver.isEmpty() ? null : driver.get(),
+                driver.isEmpty() ? null : driver,
                 en319132,
                 signIndividually,
                 correctDocumentDisplay,
@@ -83,11 +76,11 @@ public class UserSettings {
         this.signatureLevel = signatureLevel;
     }
 
-    public TokenDriver getDriver() {
+    public String getDriver() {
         return driver;
     }
 
-    public void setDriver(TokenDriver driver) {
+    public void setDriver(String driver) {
         this.driver = driver;
     }
 
@@ -156,7 +149,7 @@ public class UserSettings {
 
         SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
         prefs.put("SIGNATURE_LEVEL", signatureLevelStringConverter.toString(signatureLevel));
-        prefs.put("DRIVER", driver == null ? "" : driver.getShortname());
+        prefs.put("DRIVER", driver == null ? "" : driver);
         prefs.putBoolean("EN319132", en319132);
         prefs.putBoolean("SIGN_INDIVIDUALLY", signIndividually);
         prefs.putBoolean("CORRECT_DOCUMENT_DISPLAY", correctDocumentDisplay);
