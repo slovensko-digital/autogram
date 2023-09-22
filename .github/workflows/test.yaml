@@ -8,10 +8,10 @@ on:
 jobs:
   test:
     runs-on: ${{ matrix.config.os }}
-    
+
     permissions:
       checks: write
-    
+
     strategy:
       matrix:
         config:
@@ -43,10 +43,10 @@ jobs:
         run: ./mvnw test
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-     
+
       - name: JaCoCo Code Coverage Report
         id: jacoco_report
-        uses: PavanMudigonda/jacoco-reporter@v4.8
+        uses: PavanMudigonda/jacoco-reporter@ffe0b95c14292be4d076e56d50ba6c3b94c43a77
         with:
           coverage_results_path: ${{ github.workspace }}/target/site/jacoco/jacoco.xml
           coverage_report_name: Coverage
