@@ -570,6 +570,50 @@ TextFlow.autogram-body-s {
   -fx-pref-width: 320px;
 }
 
+.autogram-signatures-table {
+  -fx-max-height: 16em;
+}
+
+.table-row-cell {
+  -fx-background-insets: 0, 0 0 0 0;
+}
+
+.column-header {
+  -fx-background-insets: 0, 0 0 0 0;
+}
+
+.autogram-signatures-table .table-cell {
+  -fx-border-style: hidden hidden solid hidden;
+  -fx-border-width: 1px;
+  -fx-border-color: -autogram-border-colour;
+  -fx-alignment: center-left;
+  -fx-padding: 0.5em 0 0.3125em 0;
+
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
+  -fx-font-size: 1.1875em;
+}
+
+.autogram-signatures-table .column-header TextFlow,
+.autogram-signatures-table .column-header HBox {
+  -fx-border-style: hidden hidden solid hidden;
+  -fx-border-width: 1px;
+  -fx-border-color: -autogram-border-colour;
+  -fx-alignment: center-left;
+  -fx-padding: 0.5em 0 0.75em 0;
+}
+
+.autogram-signatures-table .column-header Text {
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
+  -fx-font-size: 1.1875em;
+  -fx-font-weight: bold;
+}
+
+.autogram-signatures-table .column-header .autogram-link {
+  -fx-font-weight: normal;
+}
+
 
 /* Custom styles */
 
@@ -646,10 +690,10 @@ TextFlow.autogram-body-s {
   -fx-background-color: -autogram-border-colour;
 }
 
-
 .autogram-tag {
-  -fx-border-width: 2px;
-  -fx-padding: 0.1875em 0.25em;
+  -fx-padding: 0.1875em 0.375em 0.1875em 0.375em;
+  -fx-pref-height: 1.75em;
+  -fx-max-height: 1.75em;
 }
 
 .autogram-tag > Text {
@@ -661,7 +705,13 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-tag-multiple-box {
-  -fx-spacing: 0.5em;
+  -fx-hgap: 0.5em;
+  -fx-vgap: 0.5em;
+  -fx-padding: 0;
+  -fx-background-color: red;
+  /* -fx-min-height: 1em; */
+  /* -fx-pref-height: 1em; */
+  -fx-fit-to-height: true;
 }
 
 .autogram-tag-processing {
@@ -888,8 +938,9 @@ TextFlow.autogram-body-s {
 }
 
 .autgoram-warning-textflow {
-  -fx-padding: 0.625em 0 1.625em 0;
+  -fx-padding: 0.5em 0 1.5em 0;
   -fx-background-color: -autogram-warning-color;
   -fx-background-insets: 0 0 1em 0;
+  -fx-font-size: 1.125em;
 }
 

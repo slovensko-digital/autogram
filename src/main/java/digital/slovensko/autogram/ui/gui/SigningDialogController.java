@@ -211,9 +211,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
                     createWarningText("Chyba v internetovom pripojení: Dôveryhodnosť podpisov nemohla byť overená"));
 
         signaturesTable.getChildren().addAll(new VBox(
-                createSignatureTableHeader(isValidated),
-                createSignatureTableRows(reports, isValidated),
-                createSignatureTableLink(e -> {
+                createSignatureTableRows(reports, isValidated, e -> {
                     onShowSignaturesButtonPressed(null);
                 })));
 

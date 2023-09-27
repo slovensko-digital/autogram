@@ -12,7 +12,13 @@ import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.simplereport.jaxb.XmlTimestamp;
 import eu.europa.esig.dss.validation.reports.Reports;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -23,13 +29,6 @@ import javafx.scene.text.TextFlow;
 public class GUIValidationUtils {
     public static final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
-    public static HBox createSignatureTableHeader(boolean isValidated) {
-        var whoSigned = new TextFlow(new Text("Podpisy na dokumente"));
-        var r = new HBox(whoSigned);
-        r.getStyleClass().add("autogram-table-header");
-        return r;
-    }
-
     public static VBox createWarningText(String message) {
         var warningText = new Text("Chyba v internetovom pripojení: Dôveryhodnosť podpisov nemohla byť overená");
         warningText.getStyleClass().add("autogram-heading-s");
@@ -39,42 +38,77 @@ public class GUIValidationUtils {
         return warningTextFlow;
     }
 
-    public static VBox createSignatureTableRows(Reports reports, boolean isValidated) {
-        var r = new VBox();
-        for (var signatureId : reports.getSimpleReport().getSignatureIdList())
-            r.getChildren().add(createSignatureTableRow(signatureId, isValidated, reports));
+    public static TableView<SginatureTableRow> createSignatureTableRows(Reports reports, boolean isValidated,
+            Consumer<String> callback) {
+        TableView<SginatureTableRow> table = new TableView<SginatureTableRow>();
+        table.getStyleClass().add("autogram-signatures-table");
 
-        return r;
+        var subjectColumn = new TableColumn<SginatureTableRow, String>();
+        subjectColumn.setCellValueFactory(data -> data.getValue().subject);
+        subjectColumn.setGraphic(new TextFlow(new Text("Podpisy na dokumente")));
+        subjectColumn.prefWidthProperty().bind(table.widthProperty().multiply(0.47));
+
+        var signatureTypeColumn = new TableColumn<SginatureTableRow, HBox>();
+        signatureTypeColumn.setCellValueFactory(data -> data.getValue().signatureType);
+        signatureTypeColumn.setGraphic(new TextFlow(createSignatureTableLink(callback)));
+        signatureTypeColumn.prefWidthProperty().bind(table.widthProperty().multiply(0.47));
+
+        table.setItems(
+                FXCollections.observableArrayList(
+                    reports.getSimpleReport().getSignatureIdList().stream().map(
+                        signatureId -> new SginatureTableRow(
+                            reports.getSimpleReport().getSignedBy(signatureId),
+                            // "This is a very long text that should be wrapped in the tablecell",
+                            new HBox(
+                                SignatureBadgeFactory.createCombinedBadgeFromQualification(
+                                    isValidated
+                                        ? reports.getDetailedReport().getSignatureQualification(signatureId) : null,
+                                    reports, signatureId)),
+                            table))
+                        .collect(java.util.stream.Collectors.toList())));
+
+        table.getColumns().add(0, subjectColumn);
+        table.getColumns().add(1, signatureTypeColumn);
+        table.setPrefHeight(table.getItems().size() * 52 + 46);
+        table.setMinHeight(Math.min(table.getItems().size() * 52 + 46, 256));
+
+        return table;
     }
 
-    public static HBox createSignatureTableLink(Consumer<String> callback) {
+    public static class SginatureTableRow {
+        private final SimpleStringProperty subject;
+        private final SimpleObjectProperty<HBox> signatureType;
+        private final TableView<SginatureTableRow> table;
+
+        private SginatureTableRow(String subject, HBox signatureType, TableView<SginatureTableRow> table) {
+            this.subject = new SimpleStringProperty(subject);
+            this.signatureType = new SimpleObjectProperty<HBox>(signatureType);
+            this.table = table;
+        }
+
+        public TextFlow getSubject() {
+            var t = new Text(subject.get());
+            // t.setWrapText(true);
+            // t.prefWidth(120);
+            t.wrappingWidthProperty().bind(table.widthProperty().divide(2).subtract(20));
+            // t.setWrappingWidth(120);
+            return new TextFlow(t);
+        }
+
+        public HBox getSignatureType() {
+            return signatureType.get();
+        }
+    }
+
+    public static Button createSignatureTableLink(Consumer<String> callback) {
         var whoSignedButton = new Button("Zobraziť detail podpisov");
-        whoSignedButton.getStyleClass().addAll("autogram-link", "autogram-table__footer");
+        whoSignedButton.getStyleClass().addAll("autogram-link");
         whoSignedButton.wrapTextProperty().setValue(true);
         whoSignedButton.setOnMouseClicked(event -> {
             callback.accept(null);
         });
 
-        return new HBox(whoSignedButton);
-    }
-
-    public static HBox createSignatureTableRow(String signatureId, boolean isValidated,
-            Reports reports) {
-        var name = reports.getSimpleReport().getSignedBy(signatureId);
-        var signatureType = reports.getDetailedReport().getSignatureQualification(signatureId);
-        var isFailed = reports.getDetailedReport().getBasicValidationIndication(signatureId).equals(Indication.FAILED);
-
-        var whoSigned = new TextFlow(new Text(name));
-        whoSigned.getStyleClass().addAll("autogram-table-text", "autogram-table__left-column");
-
-        var signatureTypeBox = SignatureBadgeFactory
-                .createCombinedBadgeFromQualification(isValidated ? signatureType : null, reports, signatureId);
-        if (isValidated && isFailed)
-            signatureTypeBox = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
-
-        var r = new HBox(new HBox(whoSigned), new VBox(signatureTypeBox));
-        r.getStyleClass().add("autogram-table-cell");
-        return r;
+        return whoSignedButton;
     }
 
     public static VBox createSignatureBox(Reports reports, boolean isValidated, String signatureId,
@@ -128,7 +162,7 @@ public class GUIValidationUtils {
 
         var signatureDetailsBox = new VBox(
                 createTableRow("Výsledok overenia",
-                        validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated)),
+                        validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated, signatureQualification)),
                 createTableRow("Certifikát", subjectStr),
                 createTableRow("Vydavateľ", issuerStr),
                 createTableRow("Negarantovaný čas podpisu", signingTime));
@@ -147,7 +181,7 @@ public class GUIValidationUtils {
     }
 
     private static String validityToString(boolean isValid, boolean isFailed, boolean areTLsLoaded,
-            boolean isRevocationValidated) {
+            boolean isRevocationValidated, SignatureQualification signatureQualification) {
         if (isFailed)
             return "Neplatný";
 
@@ -159,6 +193,9 @@ public class GUIValidationUtils {
 
         if (isValid)
             return "Platný";
+
+        if (signatureQualification.getReadable().contains("INDETERMINATE"))
+            return "Predbežne platný";
 
         return "Neznámy podpis";
     }

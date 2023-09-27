@@ -1,9 +1,12 @@
 package digital.slovensko.autogram.ui.gui;
 
+import java.util.List;
+
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.validation.reports.Reports;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
@@ -132,26 +135,29 @@ public abstract class SignatureBadgeFactory {
 
     private static HBox createMultipleBadges(SignatureQualification signatureQualification, Reports reports,
             String signatureId) {
-        var hBox = new HBox(createReadableBadgeFromQualification(signatureQualification));
-        hBox.getStyleClass().add("autogram-tag-multiple-box");
+        var flowPane = new FlowPane(createReadableBadgeFromQualification(signatureQualification));
+        flowPane.getStyleClass().add("autogram-tag-multiple-box");
+        flowPane.setStyle("-fx-padding: 0; -fx-background-insets: 0;");
+        flowPane.setPrefWrapLength(300);
 
         var simple = reports.getSimpleReport();
+        for (var i : List.of(0, 1, 2, 3, 4, 5, 6))
         for (var timestamp : simple.getSignatureTimestamps(signatureId)) {
             var isQualified = timestamp.getQualificationDetails() != null;
             var isFailed = timestamp.getIndication() == Indication.TOTAL_FAILED
                     || timestamp.getIndication() == Indication.FAILED;
 
             if (isFailed)
-                hBox.getChildren().add(createInvalidBadge("Neplatná ČP"));
+                flowPane.getChildren().add(createInvalidBadge("Neplatná ČP"));
             else if (isQualified)
-                hBox.getChildren().add(
+                flowPane.getChildren().add(
                         createValidQualifiedBadge(simple.getTimestampQualification(timestamp.getId()).getReadable()));
             else
-                hBox.getChildren()
+                flowPane.getChildren()
                         .add(createUnknownBadge(simple.getTimestampQualification(timestamp.getId()).getReadable()));
         }
 
-        return hBox;
+        return new HBox(flowPane);
     }
 
     private static HBox createReadableBadgeFromQualification(SignatureQualification qualification) {
