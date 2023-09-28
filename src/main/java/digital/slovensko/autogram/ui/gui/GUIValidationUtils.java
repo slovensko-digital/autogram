@@ -60,7 +60,7 @@ public class GUIValidationUtils {
             var type = new HBox(
                     SignatureBadgeFactory.createCombinedBadgeFromQualification(
                             isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null,
-                            reports, signatureId, 300));
+                            reports, signatureId, 0));
             table.addRow(table.getChildren().size(), subject, type);
         }
 

@@ -136,9 +136,8 @@ public abstract class SignatureBadgeFactory {
             String signatureId, double prefWrapLength) {
         var flowPane = new FlowPane(createReadableBadgeFromQualification(signatureQualification));
         flowPane.getStyleClass().add("autogram-tag-multiple-box");
-        if (prefWrapLength < 1) prefWrapLength = 300;
-        System.out.println(prefWrapLength);
-        flowPane.setPrefWrapLength(prefWrapLength);
+        if (prefWrapLength > 1)
+            flowPane.setPrefWrapLength(prefWrapLength);
 
         var simple = reports.getSimpleReport();
         for (var timestamp : simple.getSignatureTimestamps(signatureId)) {
