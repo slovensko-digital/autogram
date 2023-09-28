@@ -7,10 +7,11 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 public abstract class SignatureBadgeFactory {
     public static HBox createBadge(String label, String styleClass) {
-        var box = new HBox(new Text(label));
+        var box = new HBox(new TextFlow(new Text(label)));
         box.getStyleClass().addAll("autogram-tag", styleClass);
 
         return box;

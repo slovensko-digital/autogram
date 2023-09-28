@@ -685,7 +685,7 @@ TextFlow.autogram-body-s {
   -fx-max-height: 1.75em;
 }
 
-.autogram-tag > Text {
+.autogram-tag Text {
   -fx-text-fill: -autogram-text-colour;
   -fx-fill: -autogram-text-colour;
 
@@ -731,32 +731,32 @@ TextFlow.autogram-body-s {
   -fx-border-color: #FFF7BF;
 }
 
-.autogram-tag-processing > Text {
+.autogram-tag-processing Text {
   -fx-text-fill: #144E81;
   -fx-fill: #144E81;
 }
 
-.autogram-tag-invalid > Text {
+.autogram-tag-invalid Text {
   -fx-text-fill: #721c24;
   -fx-fill: #721c24;
 }
 
-.autogram-tag-valid > Text {
+.autogram-tag-valid Text {
   -fx-text-fill: #005a30;
   -fx-fill: #005a30;
 }
 
-.autogram-tag-custom-valid > Text {
+.autogram-tag-custom-valid Text {
   -fx-text-fill: #144E81;
   -fx-fill: #144E81;
 }
 
-.autogram-tag-unknown > Text {
+.autogram-tag-unknown Text {
   -fx-text-fill: #594D00;
   -fx-fill: #594D00;
 }
 
-.autogram-tag-warning > Text {
+.autogram-tag-warning Text {
   -fx-text-fill: #594D00;
   -fx-fill: #594D00;
 }

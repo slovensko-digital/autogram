@@ -65,18 +65,36 @@ public class GUIValidationUtils {
         }
 
         if (reports.getSimpleReport().getSignatureIdList().size() > maxRows) {
-            var text = new HBox(new TextFlow(new Text("Nie všetky podpisy sú zobrazené")));
-            text.getStyleClass().addAll("autogram-body", "autogram-signatures-table-cell--left");
+            var text = new HBox(
+                    new TextFlow(new Text(
+                            "Dokument obsahuje ešte "
+                            + createRemainingSignaturesCountString(
+                                    reports.getSimpleReport().getSignatureIdList().size() - maxRows)
+                            + ". ")));
             var button = new Button("Zobraziť všetky podpisy");
             button.getStyleClass().addAll("autogram-link");
             button.wrapTextProperty().setValue(true);
             button.setOnMouseClicked(event -> {
                 callback.accept(null);
             });
-            table.addRow(table.getChildren().size(), text, new TextFlow(button));
+
+            var box = new HBox(text, button);
+            box.getStyleClass().addAll("autogram-body", "autogram-signatures-table-cell--left");
+            table.add(box, 0, maxRows * 2 - 1, 2, 1);
         }
 
         return table;
+    }
+
+    private static String createRemainingSignaturesCountString(int i) {
+        switch (i) {
+            case 1:
+                return "1 podpis";
+            case 2, 3, 4:
+                return i + " podpisy";
+            default:
+                return i + " podpisov";
+        }
     }
 
     public static Button createSignatureTableLink(Consumer<String> callback) {
