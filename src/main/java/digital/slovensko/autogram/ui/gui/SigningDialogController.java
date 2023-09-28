@@ -123,6 +123,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         signaturesInvalidDialogController.initialize(signatureValidationReports);
         GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
         stage.show();
+        stage.sizeToScene();
 
         return;
     }
@@ -173,6 +174,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         stage.setScene(new Scene(root));
         GUIUtils.suppressDefaultFocus(stage, signaturesController);
         signaturesController.showSignatures();
+        stage.setResizable(false);
         stage.show();
 
         if (signatureValidationCompleted)
@@ -206,16 +208,22 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         signaturesTable.setManaged(true);
         signaturesTable.setVisible(true);
         signaturesTable.getChildren().clear();
+
         if (!areTLsLoaded)
             signaturesTable.getChildren().add(
-                    createWarningText("Chyba v internetovom pripojení: Dôveryhodnosť podpisov nemohla byť overená"));
+                createWarningText("Chyba v internetovom pripojení: Dôveryhodnosť podpisov nemohla byť overená"));
 
-        signaturesTable.getChildren().addAll(new VBox(
+        signaturesTable.getChildren().add(
                 createSignatureTableRows(reports, isValidated, e -> {
                     onShowSignaturesButtonPressed(null);
-                })));
+                }, 4));
 
         var stage = (Stage) mainButton.getScene().getWindow();
+        stage.sizeToScene();
+
+        // Magic code to make the window resize to the correct size
+        signaturesTable.setManaged(true);
+        signaturesTable.setVisible(true);
         stage.sizeToScene();
     }
 

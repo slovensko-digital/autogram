@@ -64,8 +64,7 @@
     </VBox>
 
 
-    <VBox fx:id="signaturesTable">
-    </VBox>
+    <VBox fx:id="signaturesTable" />
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button"

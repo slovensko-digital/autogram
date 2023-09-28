@@ -571,43 +571,32 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-signatures-table {
-  -fx-max-height: 16em;
 }
 
-.table-row-cell {
-  -fx-background-insets: 0, 0 0 0 0;
-}
-
-.column-header {
-  -fx-background-insets: 0, 0 0 0 0;
-}
-
-.autogram-signatures-table .table-cell {
+.autogram-signatures-table > HBox {
   -fx-border-style: hidden hidden solid hidden;
   -fx-border-width: 1px;
   -fx-border-color: -autogram-border-colour;
-  -fx-alignment: center-left;
-  -fx-padding: 0.5em 0 0.3125em 0;
+  -fx-padding: 0.5em 0 0.5em 0;
 
   -fx-text-fill: -autogram-text-colour;
   -fx-fill: -autogram-text-colour;
   -fx-font-size: 1.1875em;
 }
 
-.autogram-signatures-table .column-header TextFlow,
-.autogram-signatures-table .column-header HBox {
+.autogram-signatures-table > TextFlow {
   -fx-border-style: hidden hidden solid hidden;
   -fx-border-width: 1px;
   -fx-border-color: -autogram-border-colour;
-  -fx-alignment: center-left;
-  -fx-padding: 0.5em 0 0.75em 0;
-}
+  -fx-padding: 0.75em 0 0.75em 0;
 
-.autogram-signatures-table .column-header Text {
   -fx-text-fill: -autogram-text-colour;
   -fx-fill: -autogram-text-colour;
   -fx-font-size: 1.1875em;
-  -fx-font-weight: bold;
+}
+
+.autogram-signatures-table-cell--left {
+  -fx-padding: 0.75em 1em 0.75em 0;
 }
 
 .autogram-signatures-table .column-header .autogram-link {
@@ -708,10 +697,8 @@ TextFlow.autogram-body-s {
   -fx-hgap: 0.5em;
   -fx-vgap: 0.5em;
   -fx-padding: 0;
-  -fx-background-color: red;
-  /* -fx-min-height: 1em; */
-  /* -fx-pref-height: 1em; */
   -fx-fit-to-height: true;
+  -fx-background-insets: 0;
 }
 
 .autogram-tag-processing {

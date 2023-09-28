@@ -9,7 +9,7 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      prefWidth="640" minWidth="450"
+      prefWidth="768" minWidth="450"
       fx:id="mainBox">
 
     <VBox styleClass="autogram-error-summary">

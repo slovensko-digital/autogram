@@ -55,6 +55,6 @@ public class SignaturesInvalidDialogController implements SuppressedFocusControl
         signaturesTable.getChildren().addAll(
                 createSignatureTableRows(signatureValidationReports, true, e -> {
                     signingDialogController.onShowSignaturesButtonPressed(null);
-                }));
+                }, 6));
     }
 }

@@ -1,7 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.util.List;
-
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
@@ -99,12 +97,12 @@ public abstract class SignatureBadgeFactory {
     }
 
     public static HBox createCombinedBadgeFromQualification(SignatureQualification signatureQualification,
-            Reports reports, String signatureId) {
+            Reports reports, String signatureId, double prefWrapLength) {
         if (signatureQualification == null)
             return createInProgressBadge();
 
         if (areTimestampsFailed(reports, signatureId))
-            return createMultipleBadges(signatureQualification, reports, signatureId);
+            return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength);
 
         switch (signatureQualification) {
             case QESIG: {
@@ -114,34 +112,34 @@ public abstract class SignatureBadgeFactory {
                 if (areTimestampsQualified(reports, signatureId))
                     return createValidQualifiedBadge("Osvedčený pdopis");
 
-                return createMultipleBadges(signatureQualification, reports, signatureId);
+                return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength);
             }
             case QESEAL: {
                 if (areTimestampsQualified(reports, signatureId))
                     return createValidQualifiedBadge("Elektronická pečať");
-                return createMultipleBadges(signatureQualification, reports, signatureId);
+                return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength);
             }
             case ADESIG_QC: {
                 if (areTimestampsQualified(reports, signatureId))
                     return createValidQualifiedBadge("Uznaný spôsob autorizácie");
-                return createMultipleBadges(signatureQualification, reports, signatureId);
+                return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength);
             }
             case ADESEAL, ADESEAL_QC, ADESIG:
-                return createMultipleBadges(signatureQualification, reports, signatureId);
+                return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength);
             default:
                 return createBadgeFromQualification(signatureQualification);
         }
     }
 
     private static HBox createMultipleBadges(SignatureQualification signatureQualification, Reports reports,
-            String signatureId) {
+            String signatureId, double prefWrapLength) {
         var flowPane = new FlowPane(createReadableBadgeFromQualification(signatureQualification));
         flowPane.getStyleClass().add("autogram-tag-multiple-box");
-        flowPane.setStyle("-fx-padding: 0; -fx-background-insets: 0;");
-        flowPane.setPrefWrapLength(300);
+        if (prefWrapLength < 1) prefWrapLength = 300;
+        System.out.println(prefWrapLength);
+        flowPane.setPrefWrapLength(prefWrapLength);
 
         var simple = reports.getSimpleReport();
-        for (var i : List.of(0, 1, 2, 3, 4, 5, 6))
         for (var timestamp : simple.getSignatureTimestamps(signatureId)) {
             var isQualified = timestamp.getQualificationDetails() != null;
             var isFailed = timestamp.getIndication() == Indication.TOTAL_FAILED

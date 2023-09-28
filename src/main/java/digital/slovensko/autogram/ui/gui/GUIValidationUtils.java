@@ -12,13 +12,9 @@ import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.simplereport.jaxb.XmlTimestamp;
 import eu.europa.esig.dss.validation.reports.Reports;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -38,66 +34,49 @@ public class GUIValidationUtils {
         return warningTextFlow;
     }
 
-    public static TableView<SginatureTableRow> createSignatureTableRows(Reports reports, boolean isValidated,
-            Consumer<String> callback) {
-        TableView<SginatureTableRow> table = new TableView<SginatureTableRow>();
+    public static GridPane createSignatureTableRows(Reports reports, boolean isValidated,
+            Consumer<String> callback, int maxRows) {
+        var table = new GridPane();
         table.getStyleClass().add("autogram-signatures-table");
 
-        var subjectColumn = new TableColumn<SginatureTableRow, String>();
-        subjectColumn.setCellValueFactory(data -> data.getValue().subject);
-        subjectColumn.setGraphic(new TextFlow(new Text("Podpisy na dokumente")));
-        subjectColumn.prefWidthProperty().bind(table.widthProperty().multiply(0.47));
+        var headerText = new TextFlow(new Text("Podpisy na dokumente"));
+        headerText.getStyleClass().addAll("autogram-heading-s", "autogram-signatures-table-cell--left");
+        var headerLink = new TextFlow(createSignatureTableLink(callback));
+        table.addRow(0, headerText, headerLink);
 
-        var signatureTypeColumn = new TableColumn<SginatureTableRow, HBox>();
-        signatureTypeColumn.setCellValueFactory(data -> data.getValue().signatureType);
-        signatureTypeColumn.setGraphic(new TextFlow(createSignatureTableLink(callback)));
-        signatureTypeColumn.prefWidthProperty().bind(table.widthProperty().multiply(0.47));
+        var leftConstraints = new ColumnConstraints();
+        leftConstraints.prefWidthProperty().bind(table.widthProperty().multiply(0.5));
+        var rightConstraints = new ColumnConstraints();
+        rightConstraints.prefWidthProperty().bind(table.widthProperty().multiply(0.5));
+        table.getColumnConstraints().addAll(leftConstraints, rightConstraints);
 
-        table.setItems(
-                FXCollections.observableArrayList(
-                    reports.getSimpleReport().getSignatureIdList().stream().map(
-                        signatureId -> new SginatureTableRow(
-                            reports.getSimpleReport().getSignedBy(signatureId),
-                            // "This is a very long text that should be wrapped in the tablecell",
-                            new HBox(
-                                SignatureBadgeFactory.createCombinedBadgeFromQualification(
-                                    isValidated
-                                        ? reports.getDetailedReport().getSignatureQualification(signatureId) : null,
-                                    reports, signatureId)),
-                            table))
-                        .collect(java.util.stream.Collectors.toList())));
+        var signatures = reports.getSimpleReport().getSignatureIdList();
+        if (signatures.size() > maxRows)
+            signatures = signatures.subList(0, maxRows - 1);
 
-        table.getColumns().add(0, subjectColumn);
-        table.getColumns().add(1, signatureTypeColumn);
-        table.setPrefHeight(table.getItems().size() * 52 + 46);
-        table.setMinHeight(Math.min(table.getItems().size() * 52 + 46, 256));
+        for (var signatureId : signatures) {
+            var subject = new HBox(new TextFlow(new Text(reports.getSimpleReport().getSignedBy(signatureId))));
+            subject.getStyleClass().add("autogram-signatures-table-cell--left");
+            var type = new HBox(
+                    SignatureBadgeFactory.createCombinedBadgeFromQualification(
+                            isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null,
+                            reports, signatureId, 300));
+            table.addRow(table.getChildren().size(), subject, type);
+        }
+
+        if (reports.getSimpleReport().getSignatureIdList().size() > maxRows) {
+            var text = new HBox(new TextFlow(new Text("Nie všetky podpisy sú zobrazené")));
+            text.getStyleClass().addAll("autogram-body", "autogram-signatures-table-cell--left");
+            var button = new Button("Zobraziť všetky podpisy");
+            button.getStyleClass().addAll("autogram-link");
+            button.wrapTextProperty().setValue(true);
+            button.setOnMouseClicked(event -> {
+                callback.accept(null);
+            });
+            table.addRow(table.getChildren().size(), text, new TextFlow(button));
+        }
 
         return table;
-    }
-
-    public static class SginatureTableRow {
-        private final SimpleStringProperty subject;
-        private final SimpleObjectProperty<HBox> signatureType;
-        private final TableView<SginatureTableRow> table;
-
-        private SginatureTableRow(String subject, HBox signatureType, TableView<SginatureTableRow> table) {
-            this.subject = new SimpleStringProperty(subject);
-            this.signatureType = new SimpleObjectProperty<HBox>(signatureType);
-            this.table = table;
-        }
-
-        public TextFlow getSubject() {
-            var t = new Text(subject.get());
-            // t.setWrapText(true);
-            // t.prefWidth(120);
-            t.wrappingWidthProperty().bind(table.widthProperty().divide(2).subtract(20));
-            // t.setWrappingWidth(120);
-            return new TextFlow(t);
-        }
-
-        public HBox getSignatureType() {
-            return signatureType.get();
-        }
     }
 
     public static Button createSignatureTableLink(Consumer<String> callback) {
@@ -124,20 +103,9 @@ public class GUIValidationUtils {
                 diagnostic.getSignatureById(signatureId).getSigningCertificate().getCertificateDN());
         var issuer = getPrettyDN(diagnostic
                 .getCertificateIssuerDN(diagnostic.getSignatureById(signatureId).getSigningCertificate().getId()));
-        var signatureType = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null;
+        var signatureQualification = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId)
+                : null;
         var timestamps = simple.getSignatureTimestamps(signatureId);
-
-        return createSignatureBox(isValidated, isValid, isFailed, areTLsLoaded, name, signingTime, subject, issuer,
-                signatureType,
-                reports, createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
-                    callback.accept(null);
-                }), signatureId);
-    }
-
-    public static VBox createSignatureBox(boolean isValidated, boolean isValid, boolean isFailed, boolean areTLsLoaded,
-            String name,
-            String signingTime, String subjectStr, String issuerStr, SignatureQualification signatureQualification,
-            Reports reports, VBox timestampsBox, String signatureId) {
 
         var nameFlow = new TextFlow(new Text(name));
         nameFlow.getStyleClass().add("autogram-summary-header__title");
@@ -147,6 +115,11 @@ public class GUIValidationUtils {
             if (error.getValue().contains("No revocation data found for the certificate"))
                 isRevocationValidated = false;
 
+        var isTimestampInvalid = false;
+        for (var timestamp : timestamps)
+            if (timestamp.getIndication().equals(Indication.FAILED))
+                isTimestampInvalid = true;
+
         HBox badge = null;
         if (!isValidated)
             badge = SignatureBadgeFactory.createInProgressBadge();
@@ -154,19 +127,23 @@ public class GUIValidationUtils {
             badge = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
         else
             badge = SignatureBadgeFactory.createCombinedBadgeFromQualification(
-                    isValidated ? signatureQualification : null, reports, signatureId);
+                    isValidated ? signatureQualification : null, reports, signatureId, 300);
 
-        var validFlow = new TextFlow(badge);
+        var validFlow = new HBox(badge);
         validFlow.getStyleClass().add("autogram-summary-header__badge");
         var nameBox = new HBox(nameFlow, validFlow);
 
         var signatureDetailsBox = new VBox(
                 createTableRow("Výsledok overenia",
-                        validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated, signatureQualification)),
-                createTableRow("Certifikát", subjectStr),
-                createTableRow("Vydavateľ", issuerStr),
+                        validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated, signatureQualification,
+                                isTimestampInvalid)),
+                createTableRow("Certifikát", subject),
+                createTableRow("Vydavateľ", issuer),
                 createTableRow("Negarantovaný čas podpisu", signingTime));
 
+        var timestampsBox = createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
+            callback.accept(null);
+        });
         if (timestampsBox.getChildren().size() > 0) {
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
                     SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), false));
@@ -181,8 +158,8 @@ public class GUIValidationUtils {
     }
 
     private static String validityToString(boolean isValid, boolean isFailed, boolean areTLsLoaded,
-            boolean isRevocationValidated, SignatureQualification signatureQualification) {
-        if (isFailed)
+            boolean isRevocationValidated, SignatureQualification signatureQualification, boolean isTimestampInvalid) {
+        if (isFailed || isTimestampInvalid)
             return "Neplatný";
 
         if (!areTLsLoaded)
