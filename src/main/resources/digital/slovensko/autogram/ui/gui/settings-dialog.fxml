@@ -107,8 +107,8 @@
                 <Tab text="Overovanie podpisu">
                     <content>
                         <AnchorPane>
-                            <ScrollPane hbarPolicy="NEVER" maxHeight="500">
-                                <VBox>
+                            <ScrollPane hbarPolicy="NEVER" maxHeight="500" fx:id="trustedCountriesListScrollPane">
+                                <VBox styleClass="container">
                                     <TextFlow>
                                         <Text styleClass="autogram-heading-m">
                                             Overovanie podpisov
@@ -121,8 +121,8 @@
                                             overenie podpisov iba z krajín, ktoré potrebujete.
                                         </Text>
                                     </TextFlow>
-                                    <VBox prefWidth="200" alignment="center"
-                                        fx:id="trustedCountriesList" />
+                                    <VBox alignment="center"
+                                        fx:id="trustedCountriesList" styleClass="autogram-trusted-countries-list" />
                                 </VBox>
                             </ScrollPane>
                         </AnchorPane>

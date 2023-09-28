@@ -28,6 +28,8 @@ public class SettingsDialogController {
     @FXML
     private VBox trustedCountriesList;
     @FXML
+    private ScrollPane trustedCountriesListScrollPane;
+    @FXML
     private CheckBox correctDocumentDisplayCheckBox;
     @FXML
     private CheckBox signatureValidationCheckBox;
@@ -184,15 +186,13 @@ public class SettingsDialogController {
 
     private HBox createCountryElement(Country country, boolean isCountryInTrustedList) {
         var hbox = new HBox();
-        hbox.setStyle("-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 5px;");
+        hbox.setStyle("-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 0.5em 0;");
 
-        var countryBox = new VBox();
+        var textFlow = new TextFlow(new Text(country.getName()));
+        textFlow.getStyleClass().add("autogram-heading-s");
+        textFlow.setStyle("-fx-padding: 0.25em 0;");
+        var countryBox = new VBox(textFlow);
         countryBox.setMinWidth(325);
-        var countryText = new Text(country.getName());
-        countryText.getStyleClass().add("autogram-heading-s");
-        var textFlow = new TextFlow(countryText);
-        textFlow.getStyleClass().add("autogram-heading");
-        countryBox.getChildren().add(textFlow);
 
         var checkBoxBox = new VBox();
         checkBoxBox.setAlignment(Pos.CENTER_LEFT);

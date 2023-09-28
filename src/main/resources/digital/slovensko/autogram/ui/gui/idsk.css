@@ -545,7 +545,8 @@ TextFlow.autogram-body-s {
   -fx-min-width: 52em;
 }
 
-.autogram-settings-tab-pane AnchorPane > VBox {
+.autogram-settings-tab-pane AnchorPane > VBox,
+  .autogram-settings-tab-pane .container {
   -fx-padding: 2em;
   -fx-max-width: 52em;
   -fx-min-width: 52em;
@@ -565,6 +566,10 @@ TextFlow.autogram-body-s {
 
 .autogram-settings-tab-header-text {
   -fx-padding: 0.5em 0;
+}
+
+.autogram-trusted-countries-list {
+
 }
 
 .autogram-checkbox {
