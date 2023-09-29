@@ -193,11 +193,10 @@ public class SettingsDialogController {
         textFlow.getStyleClass().add("autogram-heading-s");
         textFlow.setStyle("-fx-padding: 0.25em 0;");
         var countryBox = new VBox(textFlow);
-        countryBox.setMinWidth(325);
+        countryBox.getStyleClass().add("left");
 
         var checkBoxBox = new VBox();
         checkBoxBox.setAlignment(Pos.CENTER_LEFT);
-        checkBoxBox.setMinWidth(325);
         var checkBoxLabel = isCountryInTrustedList ? "Zapnuté" : "Vypnuté";
         var checkBox = new CheckBox(checkBoxLabel);
         checkBox.setSelected(isCountryInTrustedList);
