@@ -174,6 +174,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         stage.setScene(new Scene(root));
         GUIUtils.suppressDefaultFocus(stage, signaturesController);
         signaturesController.showSignatures();
+        stage.show();
         stage.setResizable(false);
         stage.show();
 
