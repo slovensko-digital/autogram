@@ -133,7 +133,7 @@ public class GUIValidationUtils {
         if (!isValidated)
             badge = SignatureBadgeFactory.createInProgressBadge();
         else if (isFailed)
-            badge = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis Neplatný podpis Neplatný podpis Neplatný podpis");
+            badge = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
         else
             badge = SignatureBadgeFactory.createCombinedBadgeFromQualification(
                     isValidated ? signatureQualification : null, reports, signatureId, 300);
