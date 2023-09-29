@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
+import digital.slovensko.autogram.drivers.FakeTokenDriver;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
@@ -75,7 +76,7 @@ public class SettingsDialogController {
 
     private void initializeDriverChoiceBox() {
         driverChoiceBox.setConverter(new TokenDriverStringConverter());
-        driverChoiceBox.getItems().add(null);
+        driverChoiceBox.getItems().add(new FakeTokenDriver("Žiadny", null, false, "none"));
         driverChoiceBox.getItems().addAll(new DefaultDriverDetector().getAvailableDrivers());
         var defaultDriver = driverChoiceBox.getItems().stream()
                 .filter(d -> d != null && d.getName().equals(userSettings.getDriver())).findFirst();
