@@ -9,7 +9,7 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       maxHeight="900"
-      minWidth="768"
+      prefWidth="768"
       fx:id="mainBox">
 
     <TextFlow><Text styleClass="autogram-heading-m" text="Podpisy"/></TextFlow>

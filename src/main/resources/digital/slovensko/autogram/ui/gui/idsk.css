@@ -542,7 +542,7 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-table-cell--left {
-  -fx-pref-width: 320px;
+  -fx-pref-width: 308px;
 }
 
 .autogram-table-cell--right {
@@ -564,10 +564,6 @@ TextFlow.autogram-body-s {
   -fx-font-weight: bold;
   -fx-padding: 0 0 15px 0;
 
-}
-
-.autogram-table__left-column {
-  -fx-pref-width: 320px;
 }
 
 .autogram-signatures-table {
@@ -843,7 +839,7 @@ TextFlow.autogram-body-s {
 
 .autogram-summary-header__title {
   -fx-padding: 1.11em 0.75em;
-  -fx-pref-width: 312px;
+  -fx-pref-width: 300px;
 }
 
 .autogram-summary-header__title > Text {
