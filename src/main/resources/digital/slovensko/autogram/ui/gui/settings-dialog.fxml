@@ -7,7 +7,7 @@
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:id="mainBox"
     prefWidth="896">
     <VBox>
-        <TabPane maxHeight="600" prefWidth="896" xmlns="http://javafx.com/javafx"
+        <TabPane maxHeight="760" prefHeight="760" prefWidth="896" xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml" styleClass="autogram-settings-tab-pane">
             <tabs>
                 <Tab text="Podpisovanie">
@@ -107,7 +107,7 @@
                 <Tab text="Overovanie podpisu">
                     <content>
                         <AnchorPane>
-                            <ScrollPane hbarPolicy="NEVER" maxHeight="500" fx:id="trustedCountriesListScrollPane">
+                            <ScrollPane hbarPolicy="NEVER" maxHeight="680" fx:id="trustedCountriesListScrollPane">
                                 <VBox styleClass="container">
                                     <TextFlow>
                                         <Text styleClass="autogram-heading-m">
