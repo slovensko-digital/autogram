@@ -13,6 +13,7 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
@@ -170,7 +171,7 @@ public class GUI implements UI {
         }
     }
 
-    private void refreshKeyOnAllJobs() {
+    public void refreshKeyOnAllJobs() {
         jobControllers.values().forEach(SigningDialogController::refreshSigningKey);
         if (batchController != null) {
             batchController.refreshSigningKey();
@@ -240,26 +241,40 @@ public class GUI implements UI {
     }
 
     @Override
+    public void onSignatureValidationCompleted(ValidationReports reports) {
+        var controller = jobControllers.get(reports.getSigningJob());
+        controller.onSignatureValidationCompleted(reports.getReports());
+    }
+
+    @Override
+    public void onSignatureCheckCompleted(ValidationReports reports) {
+        var controller = jobControllers.get(reports.getSigningJob());
+        controller.onSignatureCheckCompleted(reports.haveSignatures() ? reports.getReports() : null);
+    }
+
     public void showVisualization(Visualization visualization, Autogram autogram) {
-        var controller = new SigningDialogController(visualization, autogram, this);
+        var title = "Dokument";
+        if (visualization.getJob().getDocument().getName() != null)
+            title = "Dokument " + visualization.getJob().getDocument().getName();
+
+        var controller = new SigningDialogController(visualization, autogram, this, title);
         jobControllers.put(visualization.getJob(), controller);
 
         var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
-
         var stage = new Stage();
-
-        stage.setTitle("Podpisovanie dokumentu"); // TODO use document name?
+        stage.setTitle(title);
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> cancelJob(visualization.getJob()));
 
         stage.sizeToScene();
 
-
-
         GUIUtils.suppressDefaultFocus(stage, controller);
         GUIUtils.showOnTop(stage);
         GUIUtils.hackToForceRelayout(stage);
         setUserFriendlyPositionAndLimits(stage);
+
+        onWorkThreadDo(()
+        -> autogram.checkAndValidateSignatures(visualization.getJob()));
     }
 
     @Override

@@ -167,7 +167,7 @@ public class BatchDialogController implements SuppressedFocusController {
     }
 
     public void disableKeyPicking() {
-        chooseKeyButton.setText("Načítavam certifikáty...");
+        chooseKeyButton.setText("Načítavam certifikáty…");
         chooseKeyButton.setDisable(true);
     }
 
