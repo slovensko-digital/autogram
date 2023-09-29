@@ -642,20 +642,23 @@ TextFlow.autogram-body-s {
 .check-box {
   -fx-label-padding: 0 0 0 5px;
   -fx-font-size: 20px;
+  -fx-padding: 0 10px 0 -10px;
 }
 
 .check-box .box {
-  -fx-pref-height: 25px;
-  -fx-pref-width: 25px;
+  -fx-pref-height: 44px;
+  -fx-pref-width: 44px;
   -fx-border-color: black;
-  -fx-border-width: 2px 2px 2px 2px;
-  -fx-padding: 3px 3px 3px 3px;
+  -fx-border-width: 2px;
+  -fx-border-insets: 10px;
+  -fx-padding: 3px;
 }
 
 .check-box .mark {
- -fx-shape: "M1.73,12.91 8.1,19.28 22.79,4.59 22.79,1.59 8.1,16.28 1.73,9.91";
- -fx-pref-height: 15px;
- -fx-pref-width: 15px;
+  /* TODO make the mark thicker */
+  -fx-shape: "M1.73,12.91 8.1,19.28 22.79,4.59 22.79,1.59 8.1,16.28 1.73,9.91";
+  -fx-pref-height: 15px;
+  -fx-pref-width: 15px;
 }
 
 .check-box:selected .mark {
@@ -664,6 +667,23 @@ TextFlow.autogram-body-s {
 
 .check-box:selected .box {
   -fx-background-color: white;
+}
+
+.check-box:hover .box {
+  -fx-background-color: #bfc1c3, white;
+  -fx-background-insets: 0, 10px;
+}
+
+.check-box:focused .box {
+  -fx-background-color: transparent, -autogram-focus-colour, white;
+  -fx-border-width: 4px;
+  -fx-background-insets: 0, 7px, 10px;
+}
+
+.check-box:focused:hover .box {
+  -fx-background-color: #bfc1c3, -autogram-focus-colour, white;
+  -fx-border-width: 4px;
+  -fx-background-insets: 0, 7px, 10px;
 }
 
 /* Custom styles */
