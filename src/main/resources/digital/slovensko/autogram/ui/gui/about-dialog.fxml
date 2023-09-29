@@ -18,7 +18,7 @@
                 <VBox styleClass="autogram-prose">
                     <TextFlow styleClass="autogram-body">
                         <Text styleClass="autogram-body"
-                              text="Autogram je jednoduchý nástroj na podpisovanie a overovanie podpisov podľa európskeho nariadenia eIDAS, slovenských zákonov a&#160;štandardov. Môžete ho používať komerčne aj nekomerčne a&#160;úplne zadarmo."/>
+                              text="Autogram je jednoduchý nástroj na podpisovanie a&#160;overovanie podpisov podľa európskeho nariadenia eIDAS, slovenských zákonov a&#160;štandardov. Môžete ho používať komerčne aj nekomerčne a&#160;úplne zadarmo."/>
                     </TextFlow>
 
                     <TextFlow styleClass="autogram-heading-s">

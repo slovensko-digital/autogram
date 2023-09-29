@@ -12,11 +12,11 @@ import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.simplereport.jaxb.XmlTimestamp;
 import eu.europa.esig.dss.validation.reports.Reports;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
@@ -25,17 +25,16 @@ import javafx.scene.text.TextFlow;
 public class GUIValidationUtils {
     public static final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
-    public static VBox createWarningText(String message) {
-        var warningText = new Text("Chyba v internetovom pripojení: Dôveryhodnosť podpisov nemohla byť overená");
+    public static Node createWarningText(String message) {
+        var warningText = new Text(message);
         warningText.getStyleClass().add("autogram-heading-s");
-        var warningTextFlow = new VBox(warningText);
-        warningTextFlow.getStyleClass().add("autgoram-warning-textflow");
+        var warningTextFlow = new TextFlow(warningText);
+        warningTextFlow.getStyleClass().add("autogram-warning-textflow");
 
         return warningTextFlow;
     }
 
-    public static GridPane createSignatureTableRows(Reports reports, boolean isValidated,
-            Consumer<String> callback, int maxRows) {
+    public static GridPane createSignatureTableRows(Reports reports, boolean isValidated, Consumer<String> callback, int maxRows) {
         var table = new GridPane();
         table.getStyleClass().add("autogram-signatures-table");
 
@@ -51,7 +50,8 @@ public class GUIValidationUtils {
         table.getColumnConstraints().addAll(leftConstraints, rightConstraints);
 
         var signatures = reports.getSimpleReport().getSignatureIdList();
-        if (signatures.size() > maxRows)
+        var totalSignatures = signatures.size();
+        if (totalSignatures > maxRows)
             signatures = signatures.subList(0, maxRows - 1);
 
         for (var signatureId : signatures) {
@@ -64,37 +64,28 @@ public class GUIValidationUtils {
             table.addRow(table.getChildren().size(), subject, type);
         }
 
-        if (reports.getSimpleReport().getSignatureIdList().size() > maxRows) {
-            var text = new HBox(
-                    new TextFlow(new Text(
-                            "Dokument obsahuje ešte "
-                            + createRemainingSignaturesCountString(
-                                    reports.getSimpleReport().getSignatureIdList().size() - maxRows)
-                            + ". ")));
+        if (totalSignatures > maxRows) {
+            var label = new Text("Na dokumente " + createRemainingSignaturesCountString(totalSignatures - maxRows + 1) + ". ");
+
             var button = new Button("Zobraziť všetky podpisy");
             button.getStyleClass().addAll("autogram-link");
             button.wrapTextProperty().setValue(true);
-            button.setOnMouseClicked(event -> {
-                callback.accept(null);
-            });
+            button.setOnMouseClicked(event -> callback.accept(null));
 
-            var box = new HBox(text, button);
-            box.getStyleClass().addAll("autogram-body", "autogram-signatures-table-cell--left");
-            table.add(box, 0, maxRows * 2 - 1, 2, 1);
+            var flow = new TextFlow(label, button);
+            flow.getStyleClass().addAll("autogram-body", "autogram-font-weight-bold");
+            table.add(flow, 0, maxRows * 2 - 1, 2, 1);
         }
 
         return table;
     }
 
     private static String createRemainingSignaturesCountString(int i) {
-        switch (i) {
-            case 1:
-                return "1 podpis";
-            case 2, 3, 4:
-                return i + " podpisy";
-            default:
-                return i + " podpisov";
-        }
+        return switch (i) {
+            case 1 -> "1 podpis";
+            case 2, 3, 4 -> "sú ďalšie " + i + " podpisy";
+            default -> "je ďalších " + i + " podpisov";
+        };
     }
 
     public static Button createSignatureTableLink(Consumer<String> callback) {
@@ -109,7 +100,7 @@ public class GUIValidationUtils {
     }
 
     public static VBox createSignatureBox(Reports reports, boolean isValidated, String signatureId,
-            Consumer<String> callback, boolean areTLsLoaded) {
+                                          Consumer<String> callback, boolean areTLsLoaded) {
         var simple = reports.getSimpleReport();
         var diagnostic = reports.getDiagnosticData();
 
@@ -138,7 +129,7 @@ public class GUIValidationUtils {
             if (timestamp.getIndication().equals(Indication.FAILED))
                 isTimestampInvalid = true;
 
-        HBox badge = null;
+        Node badge = null;
         if (!isValidated)
             badge = SignatureBadgeFactory.createInProgressBadge();
         else if (isFailed)
@@ -162,7 +153,7 @@ public class GUIValidationUtils {
         var timestampsBox = createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
             callback.accept(null);
         });
-        if (timestampsBox.getChildren().size() > 0) {
+        if (!timestampsBox.getChildren().isEmpty()) {
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
                     SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), false));
             signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestampsBox, true));
@@ -176,7 +167,7 @@ public class GUIValidationUtils {
     }
 
     private static String validityToString(boolean isValid, boolean isFailed, boolean areTLsLoaded,
-            boolean isRevocationValidated, SignatureQualification signatureQualification, boolean isTimestampInvalid) {
+                                           boolean isRevocationValidated, SignatureQualification signatureQualification, boolean isTimestampInvalid) {
         if (isFailed || isTimestampInvalid)
             return "Neplatný";
 
@@ -199,7 +190,7 @@ public class GUIValidationUtils {
         return createTableRow(label, value, false);
     }
 
-    public static HBox createTableRow(String label, Pane valueNode, boolean isLast) {
+    public static HBox createTableRow(String label, Node valueNode, boolean isLast) {
         var labelNode = createTableCell(label, "autogram-heading-s", isLast, true);
         var cell = new TextFlow(valueNode);
         cell.getStyleClass().addAll(isLast ? "autogram-table-cell--last" : "autogram-table-cell");
@@ -227,7 +218,7 @@ public class GUIValidationUtils {
     }
 
     public static VBox createTimestampsBox(boolean isValidated, List<XmlTimestamp> timestamps, SimpleReport simple,
-            DiagnosticData diagnostic, Consumer<String> callback) {
+                                           DiagnosticData diagnostic, Consumer<String> callback) {
         var vBox = new VBox();
         vBox.getStyleClass().add("autogram-timestamps-box");
 

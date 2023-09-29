@@ -170,7 +170,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         var root = GUIUtils.loadFXML(signaturesController, "present-signatures-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Prítomné podpisy"); // TODO lepsi nazov
+        stage.setTitle("Detailné informácie o podpisoch");
         stage.setScene(new Scene(root));
         GUIUtils.suppressDefaultFocus(stage, signaturesController);
         signaturesController.showSignatures();
@@ -211,12 +211,11 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
         if (!areTLsLoaded)
             signaturesTable.getChildren().add(
-                createWarningText("Chyba v internetovom pripojení: Dôveryhodnosť podpisov nemohla byť overená"));
+                createWarningText("Nastala chyba pri sťahovaní dôveryhodných zoznamov a podpisy nie je možné úplne overiť. Skontrolujte si internetové pripojenie."));
 
         signaturesTable.getChildren().add(
-                createSignatureTableRows(reports, isValidated, e -> {
-                    onShowSignaturesButtonPressed(null);
-                }, 4));
+                createSignatureTableRows(reports, isValidated, e -> onShowSignaturesButtonPressed(null), 3)
+        );
 
         var stage = (Stage) mainButton.getScene().getWindow();
         stage.sizeToScene();
@@ -247,12 +246,12 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void disableKeyPicking() {
-        mainButton.setText("Načítavam certifikáty...");
+        mainButton.setText("Načítavam certifikáty…");
         mainButton.setDisable(true);
     }
 
     public void disableSigning() {
-        mainButton.setText("Prebieha podpisovanie...");
+        mainButton.setText("Prebieha podpisovanie…");
         mainButton.setDisable(true);
     }
 

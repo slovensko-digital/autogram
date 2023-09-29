@@ -4,48 +4,49 @@ import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.validation.reports.Reports;
+import javafx.scene.Node;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 public abstract class SignatureBadgeFactory {
-    public static HBox createBadge(String label, String styleClass) {
+    public static Node createBadge(String label, String styleClass) {
         var box = new HBox(new TextFlow(new Text(label)));
         box.getStyleClass().addAll("autogram-tag", styleClass);
 
         return box;
     }
 
-    public static HBox createInProgressBadge() {
-        return createInProgressBadge("Prebieha overovanie...");
+    public static Node createInProgressBadge() {
+        return createInProgressBadge("Prebieha overovanie…");
     }
 
-    public static HBox createInProgressBadge(String label) {
+    public static Node createInProgressBadge(String label) {
         return createBadge(label, "autogram-tag-processing");
     }
 
-    public static HBox createInvalidBadge(String label) {
+    public static Node createInvalidBadge(String label) {
         return createBadge(label, "autogram-tag-invalid");
     }
 
-    public static HBox createValidQualifiedBadge(String label) {
+    public static Node createValidQualifiedBadge(String label) {
         return createBadge(label, "autogram-tag-valid");
     }
 
-    public static HBox createCustomValidQualifiedBadge(String label) {
+    public static Node createCustomValidQualifiedBadge(String label) {
         return createBadge(label, "autogram-tag-custom-valid");
     }
 
-    public static HBox createUnknownBadge(String label) {
+    public static Node createUnknownBadge(String label) {
         return createBadge(label, "autogram-tag-unknown");
     }
 
-    public static HBox createWarningBadge(String label) {
+    public static Node createWarningBadge(String label) {
         return createBadge(label, "autogram-tag-warning");
     }
 
-    public static HBox createBadgeFromQualification(SignatureQualification qualification) {
+    public static Node createBadgeFromQualification(SignatureQualification qualification) {
         if (qualification == null)
             return createInProgressBadge();
 
@@ -80,25 +81,22 @@ public abstract class SignatureBadgeFactory {
         }
     }
 
-    public static HBox createBadgeFromTSQualification(boolean isFailed, TimestampQualification timestampQualification) {
+    public static Node createBadgeFromTSQualification(boolean isFailed, TimestampQualification timestampQualification) {
         if (timestampQualification == null)
             return createInProgressBadge();
 
         if (isFailed)
             return createInvalidBadge("Neplatná časová pečiatka");
 
-        switch (timestampQualification) {
-            case QTSA:
-                return createValidQualifiedBadge("Kvalifikovaná časová pečiatka");
-            case TSA:
-                return createCustomValidQualifiedBadge("Časová pečiatka");
-            default:
-                return createUnknownBadge("Neznáma časová pečiatka");
-        }
+        return switch (timestampQualification) {
+            case QTSA -> createValidQualifiedBadge("Kvalifikovaná časová pečiatka");
+            case TSA -> createCustomValidQualifiedBadge("Časová pečiatka");
+            default -> createUnknownBadge("Neznáma časová pečiatka");
+        };
     }
 
-    public static HBox createCombinedBadgeFromQualification(SignatureQualification signatureQualification,
-            Reports reports, String signatureId, double prefWrapLength) {
+    public static Node createCombinedBadgeFromQualification(SignatureQualification signatureQualification,
+                                                            Reports reports, String signatureId, double prefWrapLength) {
         if (signatureQualification == null)
             return createInProgressBadge();
 
@@ -107,11 +105,11 @@ public abstract class SignatureBadgeFactory {
 
         switch (signatureQualification) {
             case QESIG: {
-                if (reports.getSimpleReport().getSignatureTimestamps(signatureId).size() == 0)
+                if (reports.getSimpleReport().getSignatureTimestamps(signatureId).isEmpty())
                     return createValidQualifiedBadge("Vlastnoručný podpis");
 
                 if (areTimestampsQualified(reports, signatureId))
-                    return createValidQualifiedBadge("Osvedčený pdopis");
+                    return createValidQualifiedBadge("Osvedčený podpis");
 
                 return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength);
             }
@@ -158,7 +156,7 @@ public abstract class SignatureBadgeFactory {
         return new HBox(flowPane);
     }
 
-    private static HBox createReadableBadgeFromQualification(SignatureQualification qualification) {
+    private static Node createReadableBadgeFromQualification(SignatureQualification qualification) {
         switch (qualification) {
             case QESIG, QESEAL, ADESIG_QC:
                 return createValidQualifiedBadge(qualification.getReadable());
