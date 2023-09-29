@@ -11,7 +11,10 @@ labels: release
 - [ ] funguje spustenie v GUI móde
 - [ ] funguje URL handler [autogram://go](autogram://go)
 - [ ] funguje GUI otvoriť jeden súbor, ten sa zobrazí, viem ho podpísať, vytvorí sa podpísaný súbor
-- [ ]  funguje CLI `autogram --help`
+- [ ] podpísaný súbor otvorím v autograme a pod náhľadom dokumentu je zobrazený môj podpis
+- [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
+- [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
+- [ ] funguje CLI `autogram --help`
 
 ## Linux
 - [ ] funguje inštalácia na Linux (Debian-based) cez stiahnutý .deb
@@ -19,13 +22,19 @@ labels: release
 - [ ] funguje spustenie v GUI móde
 - [ ] funguje URL handler [autogram://go](autogram://go)
 - [ ] funguje GUI otvoriť jeden súbor, ten sa zobrazí, viem ho podpísať, vytvorí sa podpísaný súbor
-- [ ]  funguje CLI `autogram --help`
+- [ ] podpísaný súbor otvorím v autograme a pod náhľadom dokumentu je zobrazený môj podpis
+- [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
+- [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
+- [ ] funguje CLI `autogram --help`
 
 ## MacOS
 - [ ] funguje inštalácia na MacOS cez stiahnutý .pkg
 - [ ] funguje spustenie v GUI móde
 - [ ] funguje URL handler [autogram://go](autogram://go)
 - [ ] funguje GUI otvoriť jeden súbor, ten sa zobrazí, viem ho podpísať, vytvorí sa podpísaný súbor
+- [ ] podpísaný súbor otvorím v autograme a pod náhľadom dokumentu je zobrazený môj podpis
+- [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
+- [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
 - [ ] funguje CLI `/Applications/Autogram.app/Contents/MacOS/AutogramApp --help`
 
 
