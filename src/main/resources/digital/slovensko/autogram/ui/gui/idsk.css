@@ -877,6 +877,7 @@ TextFlow.autogram-body-s {
 .autogram-signature-box {
   -fx-border-color: -autogram-border-colour;
   -fx-border-width: 2px;
+  -fx-max-width: 688px;
 }
 
 .autogram-signature-box > HBox {
