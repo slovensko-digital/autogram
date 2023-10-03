@@ -428,7 +428,6 @@
                                 <option>--strip-native-commands</option>
                                 <option>--add-modules</option>
                                 <option>${crypto.modules}</option>
-                                <option>--vm=${hotspot.vms}</option>
                             </options>
                         </configuration>
                     </execution>
@@ -502,7 +501,6 @@
             <properties>
                 <platform>win</platform>
                 <crypto.modules>jdk.crypto.cryptoki,jdk.crypto.mscapi</crypto.modules>
-                <hotspot.vms>client</hotspot.vms>
             </properties>
         </profile>
 
@@ -517,7 +515,6 @@
             <properties>
                 <platform>linux</platform>
                 <crypto.modules>jdk.crypto.cryptoki</crypto.modules>
-                <hotspot.vms>minimal</hotspot.vms>
             </properties>
         </profile>
 
@@ -532,7 +529,6 @@
             <properties>
                 <platform>mac</platform>
                 <crypto.modules>jdk.crypto.cryptoki</crypto.modules>
-                <hotspot.vms>client</hotspot.vms>
             </properties>
         </profile>
 
