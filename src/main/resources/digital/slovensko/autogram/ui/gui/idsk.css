@@ -613,17 +613,31 @@ TextFlow.autogram-body-s {
   -fx-padding: 0 2em 0 0;
 }
 
-#trustedCountriesList .left {
-  -fx-pref-width: 24em;
-  -fx-padding: 0 2em 0 0;
-}
-
 .autogram-settings-tab-header-text {
   -fx-padding: 0.5em 0;
 }
 
-.autogram-trusted-countries-list {
+.autogram-trusted-countries-list > HBox {
+  -fx-border-width: 0 0 1px 0;
+  -fx-border-color: gray;
+  -fx-padding: 0.125em 0;
+}
 
+.autogram-trusted-countries-list > HBox > .left {
+  -fx-pref-width: 24em;
+  -fx-padding: 0 2em 0 0;
+}
+
+.autogram-trusted-countries-list > HBox > .left > TextFlow {
+  -fx-padding: 0.25em 0;
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
+  -fx-font-size: 1.1875em;
+  -fx-font-weight: bold;
+}
+
+.autogram-trusted-countries-list > HBox > VBox {
+  -fx-alignment: center-left;
 }
 
 .autogram-checkbox-container {

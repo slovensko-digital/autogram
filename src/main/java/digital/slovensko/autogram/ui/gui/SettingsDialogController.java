@@ -7,7 +7,6 @@ import digital.slovensko.autogram.drivers.FakeTokenDriver;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -45,7 +44,6 @@ public class SettingsDialogController {
     private Button closeButton;
 
     private final UserSettings userSettings;
-
 
     public SettingsDialogController(UserSettings userSettings) {
         this.userSettings = userSettings;
@@ -87,7 +85,8 @@ public class SettingsDialogController {
         });
     }
 
-    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue, String yesText, String noText) {
+    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue, String yesText,
+            String noText) {
         var toggleGroup = new ToggleGroup();
 
         var yes = new RadioButton(yesText);
@@ -102,11 +101,10 @@ public class SettingsDialogController {
             consumer.accept(newValue);
         });
 
-        if (defaultValue) {
+        if (defaultValue)
             yes.setSelected(true);
-        } else {
+        else
             no.setSelected(true);
-        }
     }
 
     private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue) {
@@ -118,23 +116,28 @@ public class SettingsDialogController {
     }
 
     private void initializeCorrectDocumentDisplayCheckBox() {
-        initializeBooleanRadios(correctDocumentDisplayRadios, t -> userSettings.setCorrectDocumentDisplay(t), userSettings.isCorrectDocumentDisplay());
+        initializeBooleanRadios(correctDocumentDisplayRadios, t -> userSettings.setCorrectDocumentDisplay(t),
+                userSettings.isCorrectDocumentDisplay());
     }
 
     private void initializeSignatureValidationCheckBox() {
-        initializeBooleanRadios(signatureValidationRadios, t -> userSettings.setSignaturesValidity(t), userSettings.isSignaturesValidity());
+        initializeBooleanRadios(signatureValidationRadios, t -> userSettings.setSignaturesValidity(t),
+                userSettings.isSignaturesValidity());
     }
 
     private void initializeCheckPDFAComplianceCheckBox() {
-        initializeBooleanRadios(checkPDFAComplianceRadios, t -> userSettings.setPdfaCompliance(t), userSettings.isPdfaCompliance());
+        initializeBooleanRadios(checkPDFAComplianceRadios, t -> userSettings.setPdfaCompliance(t),
+                userSettings.isPdfaCompliance());
     }
 
     private void initializeLocalServerEnabledCheckBox() {
-        initializeBooleanRadios(localServerEnabledRadios, t -> userSettings.setServerEnabled(t), userSettings.isServerEnabled());
+        initializeBooleanRadios(localServerEnabledRadios, t -> userSettings.setServerEnabled(t),
+                userSettings.isServerEnabled());
     }
 
     private void initializeBatchSigningRadioButtons() {
-        initializeBooleanRadios(batchSigningRadios, t -> userSettings.setSignIndividually(t), userSettings.isSignIndividually(), "Samostatne", "Spoločne");
+        initializeBooleanRadios(batchSigningRadios, t -> userSettings.setSignIndividually(t),
+                userSettings.isSignIndividually(), "Samostatne", "Spoločne");
     }
 
     private void initializeTrustedCountriesList() {
@@ -167,31 +170,17 @@ public class SettingsDialogController {
                 new Country("Švédsko", "SE"),
                 new Country("Taliansko", "IT"));
 
-        List<String> trustedList = userSettings.getTrustedList();
-        for (Country country : europeanCountries) {
-            var isInTrustedList = trustedList.contains(country.getShortname());
-            var hbox = createCountryElement(country, isInTrustedList);
-            trustedCountriesList.getChildren().add(hbox);
-        }
+        var trustedList = userSettings.getTrustedList();
+        trustedCountriesList.getChildren().addAll(europeanCountries.stream()
+                .map(country -> createCountryElement(country, trustedList.contains(country.getShortname()))).toList());
     }
 
     private HBox createCountryElement(Country country, boolean isCountryInTrustedList) {
-        var hbox = new HBox();
-        hbox.setStyle("-fx-border-width: 0 0 1px 0; -fx-border-color: gray; -fx-padding: 0.5em 0;");
-
-        var textFlow = new TextFlow(new Text(country.getName()));
-        textFlow.getStyleClass().add("autogram-heading-s");
-        textFlow.setStyle("-fx-padding: 0.25em 0;");
-        var countryBox = new VBox(textFlow);
+        var countryBox = new VBox(new TextFlow(new Text(country.getName())));
         countryBox.getStyleClass().add("left");
 
-        var checkBoxBox = new VBox();
-        checkBoxBox.setAlignment(Pos.CENTER_LEFT);
-        var checkBoxLabel = isCountryInTrustedList ? "Zapnuté" : "Vypnuté";
-        var checkBox = new CheckBox(checkBoxLabel);
+        var checkBox = new CheckBox(isCountryInTrustedList ? "Zapnuté" : "Vypnuté");
         checkBox.setSelected(isCountryInTrustedList);
-        checkBoxBox.getChildren().add(checkBox);
-
         checkBox.setOnAction(event -> {
             if (checkBox.isSelected()) {
                 userSettings.addToTrustedList(country.getShortname());
@@ -202,8 +191,7 @@ public class SettingsDialogController {
             }
         });
 
-        hbox.getChildren().addAll(countryBox, checkBoxBox);
-        return hbox;
+        return new HBox(countryBox, new VBox(checkBox));
     }
 
     public void onSaveButtonAction() {
