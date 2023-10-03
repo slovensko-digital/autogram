@@ -27,10 +27,9 @@
     </VBox>
     </top>
     <bottom>
-        <HBox styleClass="autogram-footer" alignment="BASELINE_RIGHT">
-            <Button styleClass="autogram-link" onAction="#onSettingButtonAction">Nastavenia</Button>
-            <Region HBox.hgrow="ALWAYS" />
+        <HBox styleClass="autogram-footer">
             <Button styleClass="autogram-link" onAction="#onAboutButtonAction">O Autograme</Button>
+            <Button styleClass="autogram-link" onAction="#onSettingButtonAction">Nastavenia</Button>
         </HBox>
     </bottom>
 </BorderPane>
