@@ -5,3 +5,4 @@
 /mvnw @slovensko-digital/autogram-release-team
 /mvnw.cmd @slovensko-digital/autogram-release-team
 /.mvn @slovensko-digital/autogram-release-team
+/src/main/resources/digital/slovensko/autogram/core/lotlKeyStore.p12 @slovensko-digital/autogram-release-team

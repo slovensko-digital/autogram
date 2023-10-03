@@ -48,6 +48,10 @@ public interface UI {
 
     void onPDFAComplianceCheckFailed(SigningJob job);
 
+    public void onSignatureValidationCompleted(ValidationReports reports);
+
+    public void onSignatureCheckCompleted(ValidationReports reports);
+
     void showIgnorableExceptionDialog(IgnorableException exception);
 
     void showError(AutogramException exception);

@@ -9,7 +9,6 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
@@ -25,9 +24,10 @@ public class AutogramServer {
     private final HttpServer server;
     private final Autogram autogram;
 
-    public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps) {
+    public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps, ExecutorService executorService) {
         this.autogram = autogram;
         this.server = buildServer(hostname, port, isHttps);
+        this.server.setExecutor(executorService);
     }
 
     public void start() {
@@ -47,7 +47,6 @@ public class AutogramServer {
                 .add(new AutogramCorsFilter(List.of("POST", "DELETE")));
 
         // Start server
-        server.setExecutor(Executors.newCachedThreadPool());
         server.start();
     }
 

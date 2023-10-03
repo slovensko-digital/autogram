@@ -1,5 +1,9 @@
 package digital.slovensko.autogram.ui.gui;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
 import digital.slovensko.autogram.core.UserSettings;
@@ -10,6 +14,9 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class GUIApp extends Application {
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+    private final ExecutorService cachedExecutorService = Executors.newFixedThreadPool(8);
+
     @Override
     public void start(Stage windowStage) throws Exception {
         var userSettings = UserSettings.load();
@@ -18,6 +25,7 @@ public class GUIApp extends Application {
 
         Platform.setImplicitExit(false);
         autogram.checkForUpdate();
+        autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService);
 
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
 
@@ -27,7 +35,7 @@ public class GUIApp extends Application {
         var scene = new Scene(root);
 
         var params = LaunchParameters.fromParameters(getParameters());
-        var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps());
+        var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), cachedExecutorService);
 
         if (userSettings.isServerEnabled()) {
             server.start();
@@ -49,5 +57,14 @@ public class GUIApp extends Application {
         windowStage.setScene(scene);
         windowStage.setResizable(false);
         windowStage.show();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        if (!scheduledExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS))
+            scheduledExecutorService.shutdownNow();
+
+        if (!cachedExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS))
+            cachedExecutorService.shutdownNow();
     }
 }

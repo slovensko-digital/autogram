@@ -12,6 +12,7 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -204,6 +205,16 @@ class AutogramTests {
         @Override
         public void onPickSigningKeyFailed(AutogramException ae) {
             throw new RuntimeException();
+        }
+
+        @Override
+        public void onSignatureValidationCompleted(ValidationReports wrapper) {
+
+        }
+
+        @Override
+        public void onSignatureCheckCompleted(ValidationReports wrapper) {
+
         }
     }
 }
