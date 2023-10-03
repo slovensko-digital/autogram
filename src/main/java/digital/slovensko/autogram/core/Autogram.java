@@ -14,6 +14,7 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
@@ -218,9 +219,9 @@ public class Autogram {
         ui.onUIThreadDo(() -> ui.onSigningFailed(e));
     }
 
-    public void initializeSignatureValidator(ScheduledExecutorService scheduledExecutorService, ExecutorService cachedExecutorService) {
+    public void initializeSignatureValidator(ScheduledExecutorService scheduledExecutorService, ExecutorService cachedExecutorService, List<String> tlCountries) {
         ui.onWorkThreadDo(() -> {
-            SignatureValidator.getInstance().initialize(cachedExecutorService);
+            SignatureValidator.getInstance().initialize(cachedExecutorService, tlCountries);
         });
 
         scheduledExecutorService.scheduleAtFixedRate(() -> SignatureValidator.getInstance().refresh(),

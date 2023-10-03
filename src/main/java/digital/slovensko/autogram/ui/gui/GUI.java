@@ -269,7 +269,7 @@ public class GUI implements UI {
         if (visualization.getJob().getDocument().getName() != null)
             title = "Dokument " + visualization.getJob().getDocument().getName();
 
-        var controller = new SigningDialogController(visualization, autogram, this, title);
+        var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);
 
         var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");

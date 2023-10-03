@@ -25,7 +25,7 @@ public class GUIApp extends Application {
 
         Platform.setImplicitExit(false);
         autogram.checkForUpdate();
-        autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService);
+        autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService, userSettings.getTrustedList());
 
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
 
