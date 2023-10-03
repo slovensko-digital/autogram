@@ -16,14 +16,15 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public class SettingsDialogController {
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
     @FXML
-    private CheckBox en319132CheckBox;
+    private HBox en319132Radios;
     @FXML
-    private HBox batchSigningRadioButtons;
+    private HBox batchSigningRadios;
     @FXML
     private ChoiceBox<TokenDriver> driverChoiceBox;
     @FXML
@@ -31,13 +32,13 @@ public class SettingsDialogController {
     @FXML
     private ScrollPane trustedCountriesListScrollPane;
     @FXML
-    private CheckBox correctDocumentDisplayCheckBox;
+    private HBox correctDocumentDisplayRadios;
     @FXML
-    private CheckBox signatureValidationCheckBox;
+    private HBox signatureValidationRadios;
     @FXML
-    private CheckBox checkPDFAComplianceCheckBox;
+    private HBox checkPDFAComplianceRadios;
     @FXML
-    private CheckBox localServerEnabledCheckBox;
+    private HBox localServerEnabledRadios;
     @FXML
     private Button saveButton;
     @FXML
@@ -86,65 +87,54 @@ public class SettingsDialogController {
         });
     }
 
-    private void initializeEn319132CheckBox() {
-        en319132CheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setEn319132(newValue);
+    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue, String yesText, String noText) {
+        var toggleGroup = new ToggleGroup();
+
+        var yes = new RadioButton(yesText);
+        yes.setToggleGroup(toggleGroup);
+        parent.getChildren().add(yes);
+
+        var no = new RadioButton(noText);
+        no.setToggleGroup(toggleGroup);
+        parent.getChildren().add(no);
+
+        yes.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            consumer.accept(newValue);
         });
-        en319132CheckBox.setSelected(userSettings.isEn319132());
+
+        if (defaultValue) {
+            yes.setSelected(true);
+        } else {
+            no.setSelected(true);
+        }
+    }
+
+    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue) {
+        initializeBooleanRadios(parent, consumer, defaultValue, "Áno", "Nie");
+    }
+
+    private void initializeEn319132CheckBox() {
+        initializeBooleanRadios(en319132Radios, t -> userSettings.setEn319132(t), userSettings.isEn319132());
     }
 
     private void initializeCorrectDocumentDisplayCheckBox() {
-        correctDocumentDisplayCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setCorrectDocumentDisplay(newValue);
-            correctDocumentDisplayCheckBox.setText(newValue ? "Zapnutá" : "Vypnutá");
-        });
-        correctDocumentDisplayCheckBox.setSelected(userSettings.isCorrectDocumentDisplay());
+        initializeBooleanRadios(correctDocumentDisplayRadios, t -> userSettings.setCorrectDocumentDisplay(t), userSettings.isCorrectDocumentDisplay());
     }
 
     private void initializeSignatureValidationCheckBox() {
-        signatureValidationCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setSignaturesValidity(newValue);
-            signatureValidationCheckBox.setText(newValue ? "Zapnutá" : "Vypnutá");
-        });
-        signatureValidationCheckBox.setSelected(userSettings.isSignaturesValidity());
+        initializeBooleanRadios(signatureValidationRadios, t -> userSettings.setSignaturesValidity(t), userSettings.isSignaturesValidity());
     }
 
     private void initializeCheckPDFAComplianceCheckBox() {
-        checkPDFAComplianceCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setPdfaCompliance(newValue);
-            checkPDFAComplianceCheckBox.setText(newValue ? "Zapnutá" : "Vypnutá");
-        });
-        checkPDFAComplianceCheckBox.setSelected(userSettings.isPdfaCompliance());
+        initializeBooleanRadios(checkPDFAComplianceRadios, t -> userSettings.setPdfaCompliance(t), userSettings.isPdfaCompliance());
     }
 
     private void initializeLocalServerEnabledCheckBox() {
-        localServerEnabledCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setServerEnabled(newValue);
-            localServerEnabledCheckBox.setText(newValue ? "Zapnutý" : "Vypnutý");
-        });
-        localServerEnabledCheckBox.setSelected(userSettings.isServerEnabled());
+        initializeBooleanRadios(localServerEnabledRadios, t -> userSettings.setServerEnabled(t), userSettings.isServerEnabled());
     }
 
     private void initializeBatchSigningRadioButtons() {
-        var toggleGroup = new ToggleGroup();
-
-        var togetherRadioButton = new RadioButton("Spoločne");
-        togetherRadioButton.setToggleGroup(toggleGroup);
-        batchSigningRadioButtons.getChildren().add(togetherRadioButton);
-
-        var individaullyRadioButton = new RadioButton("Samostatne");
-        individaullyRadioButton.setToggleGroup(toggleGroup);
-        batchSigningRadioButtons.getChildren().add(individaullyRadioButton);
-
-        individaullyRadioButton.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setSignIndividually(newValue);
-        });
-
-        if (userSettings.isSignIndividually()) {
-            individaullyRadioButton.setSelected(true);
-        } else {
-            togetherRadioButton.setSelected(true);
-        }
+        initializeBooleanRadios(batchSigningRadios, t -> userSettings.setSignIndividually(t), userSettings.isSignIndividually(), "Samostatne", "Spoločne");
     }
 
     private void initializeTrustedCountriesList() {

@@ -57,8 +57,9 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-checkbox">
-                                        <CheckBox fx:id="en319132CheckBox" text="Použiť štandard" />
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="en319132Radios"
+                                            styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -75,9 +76,9 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-checkbox">
-                                        <HBox fx:id="batchSigningRadioButtons" spacing="50"
-                                            styleClass="custom-radio-button" />
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="batchSigningRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -106,7 +107,8 @@
                 <Tab text="Overovanie podpisu">
                     <content>
                         <AnchorPane>
-                            <ScrollPane hbarPolicy="NEVER" maxHeight="560" fx:id="trustedCountriesListScrollPane">
+                            <ScrollPane hbarPolicy="NEVER" maxHeight="560"
+                                fx:id="trustedCountriesListScrollPane">
                                 <VBox styleClass="container">
                                     <TextFlow>
                                         <Text styleClass="autogram-heading-m">
@@ -120,8 +122,8 @@
                                             overenie podpisov iba z krajín, ktoré potrebujete.
                                         </Text>
                                     </TextFlow>
-                                    <VBox alignment="center"
-                                        fx:id="trustedCountriesList" styleClass="autogram-trusted-countries-list" />
+                                    <VBox alignment="center" fx:id="trustedCountriesList"
+                                        styleClass="autogram-trusted-countries-list" />
                                 </VBox>
                             </ScrollPane>
                         </AnchorPane>
@@ -157,9 +159,9 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-checkbox">
-                                        <CheckBox fx:id="correctDocumentDisplayCheckBox"
-                                            text="Vypnutá" />
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="correctDocumentDisplayRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -175,8 +177,9 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-checkbox">
-                                        <CheckBox fx:id="signatureValidationCheckBox" text="Vypnutá" />
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="signatureValidationRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -193,8 +196,9 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-checkbox">
-                                        <CheckBox fx:id="checkPDFAComplianceCheckBox" text="Vypnutá" />
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="checkPDFAComplianceRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                             </VBox>
@@ -229,8 +233,9 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-checkbox">
-                                        <CheckBox fx:id="localServerEnabledCheckBox" text="Vypnutý" />
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="localServerEnabledRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                             </VBox>
