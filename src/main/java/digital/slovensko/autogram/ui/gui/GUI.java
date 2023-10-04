@@ -126,7 +126,7 @@ public class GUI implements UI {
                 } catch (NoSuchElementException e){}
             }
 
-            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback, userSettings);
+            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
             var stage = new Stage();
