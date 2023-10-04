@@ -144,8 +144,11 @@ public class GUIValidationUtils {
 
         var signatureDetailsBox = new VBox(
                 createTableRow("Výsledok overenia",
-                        validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated, signatureQualification,
-                                isTimestampInvalid)),
+                        isValidated
+                                ? validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated,
+                                        signatureQualification,
+                                        isTimestampInvalid)
+                                : "Prebieha overovanie"),
                 createTableRow("Certifikát", subject),
                 createTableRow("Vydavateľ", issuer),
                 createTableRow("Negarantovaný čas podpisu", signingTime));
