@@ -66,25 +66,6 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Hromadné podpisovanie dokumentov
-                                            </Text>
-                                        </TextFlow>
-                                        <TextFlow>
-                                            <Text styleClass="autogram-description">
-                                                Jeden výstupný dokument, resp. každý dokument
-                                                podpísaný individuálne
-                                            </Text>
-                                        </TextFlow>
-                                    </VBox>
-                                    <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="batchSigningRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
-                                    </VBox>
-                                </HBox>
-                                <HBox styleClass="autogram-settings-row">
-                                    <VBox styleClass="left">
-                                        <TextFlow>
-                                            <Text styleClass="autogram-heading-s">
                                                 Podpisovací certifikát
                                             </Text>
                                         </TextFlow>

@@ -23,8 +23,6 @@ public class SettingsDialogController {
     @FXML
     private HBox en319132Radios;
     @FXML
-    private HBox batchSigningRadios;
-    @FXML
     private ChoiceBox<TokenDriver> driverChoiceBox;
     @FXML
     private VBox trustedCountriesList;
@@ -57,7 +55,6 @@ public class SettingsDialogController {
         initializeSignatureValidationCheckBox();
         initializeCheckPDFAComplianceCheckBox();
         initializeLocalServerEnabledCheckBox();
-        initializeBatchSigningRadioButtons();
         initializeTrustedCountriesList();
     }
 
@@ -133,11 +130,6 @@ public class SettingsDialogController {
     private void initializeLocalServerEnabledCheckBox() {
         initializeBooleanRadios(localServerEnabledRadios, t -> userSettings.setServerEnabled(t),
                 userSettings.isServerEnabled());
-    }
-
-    private void initializeBatchSigningRadioButtons() {
-        initializeBooleanRadios(batchSigningRadios, t -> userSettings.setSignIndividually(t),
-                userSettings.isSignIndividually(), "Samostatne", "Spoločne");
     }
 
     private void initializeTrustedCountriesList() {
