@@ -4,6 +4,8 @@ import digital.slovensko.autogram.core.errors.SlotIdIsNotANumberException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.core.errors.TokenDriverDoesNotExistException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
@@ -99,5 +101,10 @@ public class CliParameters {
     public boolean shouldSignAsEn319132() {
         // TODO
         return false;
+    }
+
+    public SignatureLevel pdfSignatureLevel() {
+        // TODO
+        return SignatureLevel.PAdES_BASELINE_B;
     }
 }

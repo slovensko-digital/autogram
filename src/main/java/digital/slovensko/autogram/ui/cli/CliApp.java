@@ -37,7 +37,7 @@ public class CliApp {
             var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
                     .map(f -> SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, targetPathBuilder),
-                            params.shouldCheckPDFACompliance(), params.shouldSignPDFAsPades(), params.shouldSignAsEn319132()))
+                            params.shouldCheckPDFACompliance(), params.pdfSignatureLevel(), params.shouldSignAsEn319132()))
                     .toList();
             if (params.shouldCheckPDFACompliance()) {
                 jobs.forEach(job -> {

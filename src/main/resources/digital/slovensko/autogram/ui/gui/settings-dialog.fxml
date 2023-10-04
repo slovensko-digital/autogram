@@ -33,7 +33,7 @@
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Typ podpisu pre PDF dokumenty. PAdES by mal byť všeobecne akceptovaný, no niektoré úrady môžu vyžadovať XAdES alebo CAdES.
+                                                PAdES je všeobecne akceptovaný a najjednoduchší na používanie, no niektoré úrady zvyknú vyžadovať XAdES alebo CAdES.
                                             </Text>
                                         </TextFlow>
                                     </VBox>

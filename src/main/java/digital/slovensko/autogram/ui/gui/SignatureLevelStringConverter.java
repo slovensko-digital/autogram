@@ -6,25 +6,26 @@ import javafx.util.StringConverter;
 
 public class SignatureLevelStringConverter extends StringConverter<SignatureLevel> {
 
-    public static final String ASIC_XADES = "ASiC XAdES";
+    public static final String ASIC_XADES = "XAdES ASiC-E";
+    public static final String ASIC_CADES = "CAdES ASiC-E";
     public static final String PADES = "PAdES";
     @Override
     public String toString(SignatureLevel signatureLevel) {
-        if (SignatureLevel.XAdES_BASELINE_B == signatureLevel) {
-            return ASIC_XADES;
-        } else if (SignatureLevel.PAdES_BASELINE_B == signatureLevel) {
-            return PADES;
-        }
-        return "";
+        return switch (signatureLevel) {
+            case XAdES_BASELINE_B -> ASIC_XADES;
+            case PAdES_BASELINE_B -> PADES;
+            case CAdES_BASELINE_B -> ASIC_CADES;
+            default -> "";
+        };
     }
 
     @Override
     public SignatureLevel fromString(String signatureLevel) {
-        if (ASIC_XADES.equals(signatureLevel)) {
-            return SignatureLevel.XAdES_BASELINE_B;
-        } else if (PADES.equals(signatureLevel)) {
-            return SignatureLevel.PAdES_BASELINE_B;
-        }
-        return null;
+        return switch (signatureLevel) {
+            case ASIC_XADES -> SignatureLevel.XAdES_BASELINE_B;
+            case PADES -> SignatureLevel.PAdES_BASELINE_B;
+            case ASIC_CADES -> SignatureLevel.CAdES_BASELINE_B;
+            default -> null;
+        };
     }
 }

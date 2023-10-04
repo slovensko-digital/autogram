@@ -181,6 +181,12 @@ public class SigningParameters {
                 null, null, null, "", false, 640);
     }
 
+    public static SigningParameters buildForASiCWithCAdES(String filename, boolean signAsEn319132) {
+        return new SigningParameters(SignatureLevel.CAdES_BASELINE_B, ASiCContainerType.ASiC_E,
+                null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
+                null, null, null, "", false, 640);
+    }
+
     public String getIdentifier() {
         return identifier;
     }

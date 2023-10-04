@@ -61,7 +61,8 @@ public class SettingsDialogController {
     private void initializeSignatureLevelChoiceBox() {
         signatureLevelChoiceBoxBox.getItems().addAll(List.of(
                 SignatureLevel.XAdES_BASELINE_B,
-                SignatureLevel.PAdES_BASELINE_B));
+                SignatureLevel.PAdES_BASELINE_B,
+                SignatureLevel.CAdES_BASELINE_B));
         signatureLevelChoiceBoxBox.setConverter(new SignatureLevelStringConverter());
         signatureLevelChoiceBoxBox.setValue(userSettings.getSignatureLevel());
         signatureLevelChoiceBoxBox.getSelectionModel().selectedItemProperty()
