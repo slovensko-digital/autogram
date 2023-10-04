@@ -98,6 +98,12 @@
                                             Zoznam krajín, pre ktoré sa overuje platnosť podpisov. Ak potrebujete overovať podpisy z ďalších krajín, vyberte ich v zozname. Počet vybraných krajín vplýva na rýchlosť overovania podpisov.
                                         </Text>
                                     </TextFlow>
+                                    <TextFlow styleClass="autogram-settings-tab-header-text">
+                                        <Text styleClass="autogram-body">
+                                            Zmeny v tomto nastavení sa prejavia až po reštarte aplikácie.
+                                        </Text>
+                                    </TextFlow>
+
                                     <VBox alignment="center" fx:id="trustedCountriesList"
                                         styleClass="autogram-trusted-countries-list" />
                                 </VBox>
@@ -202,7 +208,12 @@
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Spúšťanie lokálneho servera spolu s desktopovou aplikáciou, ktorý umožňuje podpisovať dokumenty z webového prehliadača a iných aplikácií.
+                                                Spúšťanie lokálneho servera, ktorý umožňuje podpisovať dokumenty z webového prehliadača a iných aplikácií.
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Zmeny v tomto nastavení sa prejavia až po reštarte aplikácie.
                                             </Text>
                                         </TextFlow>
                                     </VBox>
