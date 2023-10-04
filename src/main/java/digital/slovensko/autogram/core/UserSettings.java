@@ -36,7 +36,7 @@ public class UserSettings {
     }
 
     public static UserSettings load() {
-        Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
+        var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         var signatureType = prefs.get("SIGNATURE_LEVEL", null);
         var driver = prefs.get("DRIVER", null);
@@ -48,7 +48,7 @@ public class UserSettings {
         var serverEnabled = prefs.getBoolean("SERVER_ENABLED", true);
         var trustedList = prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU");
 
-        SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
+        var signatureLevelStringConverter = new SignatureLevelStringConverter();
         var signatureLevel = Arrays
                 .asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B)
                 .stream()
@@ -72,8 +72,13 @@ public class UserSettings {
         return signatureLevel;
     }
 
+    public boolean shouldSignPDFAsPades() {
+        return signatureLevel == SignatureLevel.PAdES_BASELINE_B;
+    }
+
     public void setSignatureLevel(SignatureLevel signatureLevel) {
         this.signatureLevel = signatureLevel;
+        save();
     }
 
     public String getDriver() {
@@ -82,6 +87,7 @@ public class UserSettings {
 
     public void setDriver(String driver) {
         this.driver = driver;
+        save();
     }
 
     public boolean isEn319132() {
@@ -90,6 +96,7 @@ public class UserSettings {
 
     public void setEn319132(boolean en319132) {
         this.en319132 = en319132;
+        save();
     }
 
     public boolean isSignIndividually() {
@@ -98,6 +105,7 @@ public class UserSettings {
 
     public void setSignIndividually(boolean signIndividually) {
         this.signIndividually = signIndividually;
+        save();
     }
 
     public boolean isCorrectDocumentDisplay() {
@@ -106,6 +114,7 @@ public class UserSettings {
 
     public void setCorrectDocumentDisplay(boolean correctDocumentDisplay) {
         this.correctDocumentDisplay = correctDocumentDisplay;
+        save();
     }
 
     public boolean isSignaturesValidity() {
@@ -114,6 +123,7 @@ public class UserSettings {
 
     public void setSignaturesValidity(boolean signaturesValidity) {
         this.signaturesValidity = signaturesValidity;
+        save();
     }
 
     public boolean isPdfaCompliance() {
@@ -122,6 +132,7 @@ public class UserSettings {
 
     public void setPdfaCompliance(boolean pdfaCompliance) {
         this.pdfaCompliance = pdfaCompliance;
+        save();
     }
 
     public boolean isServerEnabled() {
@@ -130,6 +141,7 @@ public class UserSettings {
 
     public void setServerEnabled(boolean serverEnabled) {
         this.serverEnabled = serverEnabled;
+        save();
     }
 
     public List<String> getTrustedList() {
@@ -137,18 +149,19 @@ public class UserSettings {
     }
 
     public void addToTrustedList(String country) {
-        this.trustedList.add(country);
+        trustedList.add(country);
+        save();
     }
 
     public void removeFromTrustedList(String country) {
-        this.trustedList.remove(country);
+        trustedList.remove(country);
+        save();
     }
 
-    public void save() {
-        Preferences prefs = Preferences.userNodeForPackage(UserSettings.class);
+    private void save() {
+        var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
-        SignatureLevelStringConverter signatureLevelStringConverter = new SignatureLevelStringConverter();
-        prefs.put("SIGNATURE_LEVEL", signatureLevelStringConverter.toString(signatureLevel));
+        prefs.put("SIGNATURE_LEVEL", new SignatureLevelStringConverter().toString(signatureLevel));
         prefs.put("DRIVER", driver == null ? "" : driver);
         prefs.putBoolean("EN319132", en319132);
         prefs.putBoolean("SIGN_INDIVIDUALLY", signIndividually);
@@ -157,9 +170,5 @@ public class UserSettings {
         prefs.putBoolean("PDFA_COMPLIANCE", pdfaCompliance);
         prefs.putBoolean("SERVER_ENABLED", serverEnabled);
         prefs.put("TRUSTED_LIST", trustedList.stream().collect(Collectors.joining(",")));
-    }
-
-    public boolean shouldSignPDFAsPades() {
-        return signatureLevel == SignatureLevel.PAdES_BASELINE_B;
     }
 }

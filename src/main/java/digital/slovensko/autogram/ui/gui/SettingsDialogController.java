@@ -194,12 +194,6 @@ public class SettingsDialogController {
         return new HBox(countryBox, new VBox(checkBox));
     }
 
-    public void onSaveButtonAction() {
-        userSettings.save();
-        var stage = (Stage) saveButton.getScene().getWindow();
-        stage.close();
-    }
-
     public void onCancelButtonAction() {
         var stage = (Stage) closeButton.getScene().getWindow();
         stage.close();
