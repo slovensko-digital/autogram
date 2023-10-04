@@ -22,24 +22,6 @@
         <VBox fx:id="radios" styleClass="autogram-radios"/>
     </VBox>
 
-
-    <TextFlow styleClass="autogram-body-s">
-        <Button fx:id="showSignatureTypeButton"
-                styleClass="autogram-link,autogram-error-summary__more"
-                text="Typ podpisu"
-                onAction="#onShowSignatureTypeAction">
-            <graphic>
-                <Polygon points="0.0, 0.0, 9.0, 6.0, 0.0, 12.0">
-                </Polygon>
-            </graphic>
-        </Button>
-    </TextFlow>
-
-    <VBox fx:id="signatureType" styleClass="autogram-details__text,autogram-body-s"
-          visible="false" managed="false" >
-        <ChoiceBox fx:id="signatureLevelChoiceBoxBox" minWidth="325" style=""/>
-    </VBox>
-
     <Button styleClass="autogram-button" fx:id="mainButton" text="Vybrať úložisko"
             onAction="#onPickDriverButtonAction"/>
 
