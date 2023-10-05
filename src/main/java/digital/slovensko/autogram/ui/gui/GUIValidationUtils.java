@@ -144,8 +144,11 @@ public class GUIValidationUtils {
 
         var signatureDetailsBox = new VBox(
                 createTableRow("Výsledok overenia",
-                        validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated, signatureQualification,
-                                isTimestampInvalid)),
+                        isValidated
+                                ? validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated,
+                                        signatureQualification,
+                                        isTimestampInvalid)
+                                : "Prebieha overovanie"),
                 createTableRow("Certifikát", subject),
                 createTableRow("Vydavateľ", issuer),
                 createTableRow("Negarantovaný čas podpisu", signingTime));
@@ -180,7 +183,8 @@ public class GUIValidationUtils {
         if (isValid)
             return "Platný";
 
-        if (signatureQualification.getReadable().contains("INDETERMINATE"))
+        if (signatureQualification.getReadable().contains("INDETERMINATE")
+                || signatureQualification.getReadable().contains("ndeterminate"))
             return "Predbežne platný";
 
         return "Neznámy podpis";
