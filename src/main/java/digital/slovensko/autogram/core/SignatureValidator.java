@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.core;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
