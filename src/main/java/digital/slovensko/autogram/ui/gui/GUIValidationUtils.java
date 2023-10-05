@@ -183,7 +183,8 @@ public class GUIValidationUtils {
         if (isValid)
             return "Platný";
 
-        if (signatureQualification.getReadable().contains("INDETERMINATE"))
+        if (signatureQualification.getReadable().contains("INDETERMINATE")
+                || signatureQualification.getReadable().contains("ndeterminate"))
             return "Predbežne platný";
 
         return "Neznámy podpis";
