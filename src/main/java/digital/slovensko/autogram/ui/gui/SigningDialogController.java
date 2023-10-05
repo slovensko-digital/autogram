@@ -84,7 +84,9 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void onMainButtonPressed(ActionEvent event) {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
-            autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
+            autogram.pickSigningKeyAndThen(key -> {
+                gui.setActiveSigningKeyAndThen(key, this::checkExistingSignatureValidityAndSign);
+            });
         } else {
             gui.disableSigning();
             getNodeForLoosingFocus().requestFocus();
@@ -152,7 +154,9 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void sign() {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
-            autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
+            autogram.pickSigningKeyAndThen(key -> {
+                gui.setActiveSigningKeyAndThen(key, this::checkExistingSignatureValidityAndSign);
+            });
         } else {
             autogram.sign(visualization.getJob(), signingKey);
         }
@@ -160,7 +164,9 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
         gui.resetSigningKey();
-        autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
+        autogram.pickSigningKeyAndThen(key -> {
+            gui.setActiveSigningKeyAndThen(key, this::checkExistingSignatureValidityAndSign);
+        });
     }
 
     public void onShowSignaturesButtonPressed(ActionEvent event) {
@@ -228,15 +234,23 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void refreshSigningKey() {
-        mainButton.setDisable(false);
         SigningKey key = gui.getActiveSigningKey();
         if (key == null) {
-            mainButton.setText("Vybrať podpisový certifikát");
+            mainButton.setText("Podpísať");
             changeKeyButton.setVisible(false);
         } else {
             mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
             changeKeyButton.setVisible(true);
         }
+    }
+
+    public void enableSigning() {
+        mainButton.setDisable(false);
+        changeKeyButton.setDisable(false);
+    }
+
+    public void enableSigningOnAllJobs() {
+        gui.enableSigningOnAllJobs();
     }
 
     public void close() {
@@ -249,11 +263,13 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void disableKeyPicking() {
         mainButton.setText("Načítavam certifikáty…");
         mainButton.setDisable(true);
+        changeKeyButton.setDisable(true);
     }
 
     public void disableSigning() {
         mainButton.setText("Prebieha podpisovanie…");
         mainButton.setDisable(true);
+        changeKeyButton.setDisable(true);
     }
 
     public void showPlainTextVisualization(String text) {
@@ -319,9 +335,5 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     @Override
     public void setPrefWidth(double prefWidth) {
         mainBox.setPrefWidth(prefWidth);
-    }
-
-    public void enableSigning() {
-        gui.refreshKeyOnAllJobs();
     }
 }

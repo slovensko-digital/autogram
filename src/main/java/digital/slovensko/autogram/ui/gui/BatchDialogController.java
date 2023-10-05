@@ -78,7 +78,7 @@ public class BatchDialogController implements SuppressedFocusController {
 
     public void onChooseKeyButtonPressed(ActionEvent event) {
         autogram.pickSigningKeyAndThen(key -> {
-            gui.setActiveSigningKey(key);
+            gui.setActiveSigningKeyAndThen(key, null);
             refreshSigningKey();
             enableKeyChange();
         });
@@ -104,7 +104,7 @@ public class BatchDialogController implements SuppressedFocusController {
         if (batch.isKeyChangeAllowed()) {
             gui.resetSigningKey();
             autogram.pickSigningKeyAndThen((key) -> {
-                gui.setActiveSigningKey(key);
+                gui.setActiveSigningKeyAndThen(key, null);
                 refreshSigningKey();
             });
         }
@@ -117,14 +117,13 @@ public class BatchDialogController implements SuppressedFocusController {
 
     public void refreshSigningKey() {
         if (batch.isKeyChangeAllowed()) {
-            SigningKey key = gui.getActiveSigningKey();
+            var key = gui.getActiveSigningKey();
             if (key == null) {
                 signButton.setVisible(false);
                 signButton.setManaged(false);
 
                 chooseKeyButton.setVisible(true);
                 chooseKeyButton.setManaged(true);
-                chooseKeyButton.setDisable(false);
 
                 disableKeyChange();
             } else {
@@ -134,13 +133,17 @@ public class BatchDialogController implements SuppressedFocusController {
                 chooseKeyButton.setVisible(false);
                 chooseKeyButton.setManaged(false);
 
-                signButton.setDisable(false);
                 signButton.setText("Podpísať ako "
                         + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
 
                 enableKeyChange();
             }
         }
+    }
+
+    public void enableSigning() {
+        signButton.setDisable(false);
+        chooseKeyButton.setDisable(false);
     }
 
     public void close() {

@@ -50,6 +50,9 @@ public class PickKeyDialogController {
             tooltip.setPrefWidth(400);
             radioButton.setTooltip(tooltip);
         }
+
+        if (keys.size() == 1)
+            toggleGroup.getToggles().get(0).setSelected(true);
     }
 
     public void onPickCertificateButtonAction(ActionEvent actionEvent) {

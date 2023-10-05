@@ -68,8 +68,8 @@
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button"
-            text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed" />
-        <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="Zmeniť" visible="false"
+            text="Podpísať" onAction="#onMainButtonPressed" />
+        <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="Podpísať iným certifikátom" visible="false"
             onAction="#onChangeKeyButtonPressed" />
     </HBox>
 </VBox>

@@ -75,6 +75,7 @@ public class GUI implements UI {
         batchController.close();
         batch.end();
         refreshKeyOnAllJobs();
+        enableSigningOnAllJobs();
     }
 
     @Override
@@ -110,6 +111,7 @@ public class GUI implements UI {
         if (drivers.isEmpty()) {
             showError(new NoDriversDetectedException());
             refreshKeyOnAllJobs();
+            enableSigningOnAllJobs();
         } else if (drivers.size() == 1) {
             // short-circuit if only one driver present
             callback.accept(drivers.get(0));
@@ -120,8 +122,10 @@ public class GUI implements UI {
             var stage = new Stage();
             stage.setTitle("Výber úložiska certifikátu");
             stage.setScene(new Scene(root));
-            stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
-
+            stage.setOnCloseRequest(e -> {
+                refreshKeyOnAllJobs();
+                enableSigningOnAllJobs();
+            });
             stage.sizeToScene();
             stage.setResizable(false);
             stage.initModality(Modality.APPLICATION_MODAL);
@@ -142,39 +146,51 @@ public class GUI implements UI {
         var stage = new Stage();
         stage.setTitle("Načítanie klúčov z úložiska");
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
+        stage.setOnCloseRequest(e -> {
+            refreshKeyOnAllJobs();
+            enableSigningOnAllJobs();
+        });
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.show();
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys,
-            Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
         if (keys.isEmpty()) {
             showError(new NoKeysDetectedException());
             refreshKeyOnAllJobs();
-        } else if (keys.size() == 1) {
-            // short-circuit if only one key present
-            callback.accept(keys.get(0));
-        } else {
-            var controller = new PickKeyDialogController(keys, callback);
-            var root = GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
+            enableSigningOnAllJobs();
 
-            var stage = new Stage();
-            stage.setTitle("Výber certifikátu");
-            stage.setScene(new Scene(root));
-            stage.setOnCloseRequest(e -> refreshKeyOnAllJobs());
-            stage.setResizable(false);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.show();
+            return;
         }
+
+        var controller = new PickKeyDialogController(keys, callback);
+        var root = GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Výber certifikátu");
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> {
+            refreshKeyOnAllJobs();
+            enableSigningOnAllJobs();
+        });
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
     }
 
     public void refreshKeyOnAllJobs() {
         jobControllers.values().forEach(SigningDialogController::refreshSigningKey);
         if (batchController != null) {
             batchController.refreshSigningKey();
+        }
+    }
+
+    public void enableSigningOnAllJobs() {
+        jobControllers.values().forEach(SigningDialogController::enableSigning);
+        if (batchController != null) {
+            batchController.enableSigning();
         }
     }
 
@@ -306,6 +322,7 @@ public class GUI implements UI {
     public void onSigningSuccess(SigningJob job) {
         jobControllers.get(job).close();
         refreshKeyOnAllJobs();
+        enableSigningOnAllJobs();
         updateBatch();
     }
 
@@ -317,6 +334,7 @@ public class GUI implements UI {
         } else {
             refreshKeyOnAllJobs();
         }
+        enableSigningOnAllJobs();
     }
 
     @Override
@@ -385,14 +403,20 @@ public class GUI implements UI {
         return activeKey;
     }
 
-    public void setActiveSigningKey(SigningKey newKey) {
-        if (!isActiveSigningKeyChangeAllowed()) {
+    public void setActiveSigningKeyAndThen(SigningKey newKey, Consumer<SigningKey> callback) {
+        if (!isActiveSigningKeyChangeAllowed())
             throw new RuntimeException("Signing key change is not allowed");
-        }
+
         if (activeKey != null)
             activeKey.close();
+
         activeKey = newKey;
         refreshKeyOnAllJobs();
+
+        if (callback != null)
+            callback.accept(newKey);
+        else
+            enableSigningOnAllJobs();
     }
 
     public boolean isActiveSigningKeyChangeAllowed() {
@@ -404,7 +428,7 @@ public class GUI implements UI {
     }
 
     public void resetSigningKey() {
-        setActiveSigningKey(null);
+        setActiveSigningKeyAndThen(null, null);
     }
 
     public void cancelJob(SigningJob job) {
