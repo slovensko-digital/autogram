@@ -189,9 +189,8 @@ public class GUI implements UI {
 
     public void enableSigningOnAllJobs() {
         jobControllers.values().forEach(SigningDialogController::enableSigning);
-        if (batchController != null) {
+        if (batchController != null)
             batchController.enableSigning();
-        }
     }
 
     @Override
@@ -310,12 +309,15 @@ public class GUI implements UI {
 
     private void disableKeyPicking() {
         jobControllers.values().forEach(SigningDialogController::disableKeyPicking);
+        if (batchController != null)
+            batchController.disableKeyPicking();
     }
 
     @Override
     public void onPickSigningKeyFailed(AutogramException e) {
         showError(e);
         resetSigningKey();
+        enableSigningOnAllJobs();
     }
 
     @Override
@@ -369,6 +371,8 @@ public class GUI implements UI {
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, controller);
         stage.show();
+
+        enableSigningOnAllJobs();
     }
 
     @Override
@@ -425,6 +429,8 @@ public class GUI implements UI {
 
     public void disableSigning() {
         jobControllers.values().forEach(SigningDialogController::disableSigning);
+        if (batchController != null)
+            batchController.disableSigning();
     }
 
     public void resetSigningKey() {

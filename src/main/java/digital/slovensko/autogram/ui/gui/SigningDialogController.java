@@ -234,7 +234,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void refreshSigningKey() {
-        SigningKey key = gui.getActiveSigningKey();
+        var key = gui.getActiveSigningKey();
         if (key == null) {
             mainButton.setText("Podpísať");
             changeKeyButton.setVisible(false);
