@@ -85,19 +85,14 @@ public class SignatureValidator {
         lotlSource.setPivotSupport(true);
         lotlSource.setTlPredicate(TLPredicateFactory.createEUTLCountryCodePredicate("SK", "CZ", "AT", "HU", "PL"));
 
-        var targetLocation = new File(SignatureValidator.class.getResource("tl-certs").getPath());
-        targetLocation.mkdirs();
-
         var offlineFileLoader = new FileCacheDataLoader();
         offlineFileLoader.setCacheExpirationTime(21600000);
         offlineFileLoader.setDataLoader(new CommonsDataLoader());
-        offlineFileLoader.setFileCacheDirectory(targetLocation);
         validationJob.setOfflineDataLoader(offlineFileLoader);
 
         var onlineFileLoader = new FileCacheDataLoader();
         onlineFileLoader.setCacheExpirationTime(0);
         onlineFileLoader.setDataLoader(new CommonsDataLoader());
-        onlineFileLoader.setFileCacheDirectory(targetLocation);
         validationJob.setOnlineDataLoader(onlineFileLoader);
 
         var trustedListCertificateSource = new TrustedListsCertificateSource();
