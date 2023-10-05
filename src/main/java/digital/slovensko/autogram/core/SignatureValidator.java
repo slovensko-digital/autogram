@@ -1,9 +1,9 @@
 package digital.slovensko.autogram.core;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
@@ -85,7 +85,7 @@ public class SignatureValidator {
         lotlSource.setPivotSupport(true);
         lotlSource.setTlPredicate(TLPredicateFactory.createEUTLCountryCodePredicate("SK", "CZ", "AT", "HU", "PL"));
 
-        var targetLocation = Path.of(System.getProperty("user.dir"), ".autogram", "cache", "certs").toFile();
+        var targetLocation = new File(SignatureValidator.class.getResource("tl-certs").getPath());
         targetLocation.mkdirs();
 
         var offlineFileLoader = new FileCacheDataLoader();
