@@ -1,8 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import digital.slovensko.autogram.core.errors.AutogramException;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

@@ -282,7 +282,26 @@
   visibility: true;
 }
 
+.autogram-warning-summary {
+}
+
+.autogram-warning-summary > VBox {
+  -fx-padding: 0 0 20px 0;
+}
+
+.autogram-warning-summary > HBox {
+  -fx-spacing: 10px;
+}
+
+.autogram-warning-summary> HBox > .autogram-icon {
+  -fx-stroke-width: 0;
+  -fx-fill: -autogram-text-colour;
+}
+
 .autogram-error-summary {
+  -fx-padding: 20px;
+  -fx-border-width: 5px;
+  -fx-border-color: -autogram-error-colour;
 }
 
 .autogram-error-summary__description > Text {
@@ -290,10 +309,6 @@
   -fx-fill: -autogram-text-colour;
 
   -fx-font-size: 1.1875em;
-}
-
-.autogram-error-summary > VBox {
-  -fx-padding: 0 0 20px 0;
 }
 
 .autogram-error-summary__title {
@@ -307,16 +322,6 @@
 
 .autogram-error-summary__title > Text {
   -fx-fill: -autogram-text-colour;
-}
-
-.autogram-error-summary > HBox {
-  -fx-spacing: 10px;
-}
-
-.autogram-error-summary> HBox > .autogram-icon {
-  -fx-stroke-width: 0;
-  -fx-fill: -autogram-text-colour;
-  /* -fx-padding: 0 10px 0 0; */
 }
 
 .autogram-error-summary__error {
