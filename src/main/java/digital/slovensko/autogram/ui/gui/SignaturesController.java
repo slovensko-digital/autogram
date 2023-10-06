@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
@@ -68,6 +69,8 @@ public class SignaturesController implements SuppressedFocusController {
         var stage = new Stage();
         stage.setTitle("Detaily podpisov");
         stage.setScene(new Scene(root));
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(mainBox.getScene().getWindow());
         stage.setResizable(false);
         stage.show();
     }
