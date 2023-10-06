@@ -82,16 +82,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void onMainButtonPressed(ActionEvent event) {
-        var signingKey = gui.getActiveSigningKey();
-        if (signingKey == null) {
-            autogram.pickSigningKeyAndThen(key -> {
-                gui.setActiveSigningKeyAndThen(key, this::checkExistingSignatureValidityAndSign);
-            });
-        } else {
-            gui.disableSigning();
-            getNodeForLoosingFocus().requestFocus();
-            checkExistingSignatureValidityAndSign(signingKey);
-        }
+        checkExistingSignatureValidityAndSign();
     }
 
     private void showSignaturesNotValidatedDialog() {
@@ -130,7 +121,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         return;
     }
 
-    private void checkExistingSignatureValidityAndSign(SigningKey signingKey) {
+    private void checkExistingSignatureValidityAndSign() {
         if ((!signatureCheckCompleted) || ((signatureCheckReports != null) && !signatureValidationCompleted)) {
             showSignaturesNotValidatedDialog();
             return;
@@ -155,18 +146,22 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
             autogram.pickSigningKeyAndThen(key -> {
-                gui.setActiveSigningKeyAndThen(key, this::checkExistingSignatureValidityAndSign);
+                gui.setActiveSigningKeyAndThen(key, k -> {
+                    gui.disableSigning();
+                    getNodeForLoosingFocus().requestFocus();
+                    autogram.sign(visualization.getJob(), k);
+                });
             });
         } else {
+            gui.disableSigning();
+            getNodeForLoosingFocus().requestFocus();
             autogram.sign(visualization.getJob(), signingKey);
         }
     }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
         gui.resetSigningKey();
-        autogram.pickSigningKeyAndThen(key -> {
-            gui.setActiveSigningKeyAndThen(key, this::checkExistingSignatureValidityAndSign);
-        });
+        sign();
     }
 
     public void onShowSignaturesButtonPressed(ActionEvent event) {
@@ -245,6 +240,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void enableSigning() {
+        refreshSigningKey();
         mainButton.setDisable(false);
         changeKeyButton.setDisable(false);
     }

@@ -76,6 +76,7 @@ public class BatchDialogController implements SuppressedFocusController {
                     showProgress();
                     showCancelButton();
                     getNodeForLoosingFocus().requestFocus();
+                    gui.disableSigning();
                     gui.onWorkThreadDo(() -> {
                         startBatchCallback.accept(k);
                     });
@@ -86,6 +87,7 @@ public class BatchDialogController implements SuppressedFocusController {
             showProgress();
             showCancelButton();
             getNodeForLoosingFocus().requestFocus();
+            gui.disableSigning();
             gui.onWorkThreadDo(() -> {
                 startBatchCallback.accept(signingKey);
             });
@@ -102,6 +104,7 @@ public class BatchDialogController implements SuppressedFocusController {
                     showProgress();
                     showCancelButton();
                     getNodeForLoosingFocus().requestFocus();
+                    gui.disableSigning();
                     gui.onWorkThreadDo(() -> {
                         startBatchCallback.accept(k);
                     });
@@ -132,7 +135,9 @@ public class BatchDialogController implements SuppressedFocusController {
 
     public void enableSigning() {
         mainButton.setDisable(false);
+        changeKeyButton.setManaged(true);
         changeKeyButton.setDisable(false);
+        changeKeyButton.setVisible(true);
     }
 
     public void close() {
@@ -162,12 +167,16 @@ public class BatchDialogController implements SuppressedFocusController {
         mainButton.setText("Načítavam certifikáty…");
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
+        changeKeyButton.setManaged(false);
+        changeKeyButton.setVisible(false);
     }
 
     public void disableSigning() {
         mainButton.setText("Prebieha podpisovanie…");
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
+        changeKeyButton.setManaged(false);
+        changeKeyButton.setVisible(false);
     }
 
     private void updateVisualizationCount() {
