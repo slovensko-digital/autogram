@@ -298,17 +298,31 @@
   -fx-fill: -autogram-text-colour;
 }
 
-.autogram-error-summary {
-  -fx-padding: 20px;
-  -fx-border-width: 5px;
-  -fx-border-color: -autogram-error-colour;
-}
-
-.autogram-error-summary__description > Text {
+.autogram-warning-summary__description > Text {
   -fx-text-fill: -autogram-text-colour;
   -fx-fill: -autogram-text-colour;
 
   -fx-font-size: 1.1875em;
+}
+
+.autogram-warning-summary__title {
+  -fx-font-size: 1.5em;
+  -fx-font-weight: bold;
+
+  -fx-padding: 0 0 20px 0;
+  -fx-border-insets: 0 0 20px 0;
+  -fx-background-insets: 0 0 20px 0;
+}
+
+.autogram-warning-summary__title > Text {
+  -fx-fill: -autogram-text-colour;
+}
+
+
+.autogram-error-summary {
+  -fx-padding: 20px;
+  -fx-border-width: 5px;
+  -fx-border-color: -autogram-error-colour;
 }
 
 .autogram-error-summary__title {
@@ -336,7 +350,6 @@
 .autogram-error-summary__error > Text {
   -fx-fill: -autogram-error-colour;
 }
-
 .autogram-details .title .text {
   -fx-font-size: 1.1875em;
 
