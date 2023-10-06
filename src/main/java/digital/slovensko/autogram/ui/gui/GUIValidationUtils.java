@@ -43,11 +43,9 @@ public class GUIValidationUtils {
         var headerLink = new TextFlow(createSignatureTableLink(callback));
         table.addRow(0, headerText, headerLink);
 
-        var leftConstraints = new ColumnConstraints();
-        leftConstraints.prefWidthProperty().bind(table.widthProperty().multiply(0.5));
-        var rightConstraints = new ColumnConstraints();
-        rightConstraints.prefWidthProperty().bind(table.widthProperty().multiply(0.5));
-        table.getColumnConstraints().addAll(leftConstraints, rightConstraints);
+        ColumnConstraints half = new ColumnConstraints();
+        half.setPercentWidth(50);
+        table.getColumnConstraints().addAll(half, half);
 
         var signatures = reports.getSimpleReport().getSignatureIdList();
         var totalSignatures = signatures.size();
@@ -69,7 +67,7 @@ public class GUIValidationUtils {
 
             var button = new Button("Zobraziť všetky podpisy");
             button.getStyleClass().addAll("autogram-link");
-            button.wrapTextProperty().setValue(true);
+            button.setWrapText(true);
             button.setOnMouseClicked(event -> callback.accept(null));
 
             var flow = new TextFlow(label, button);
