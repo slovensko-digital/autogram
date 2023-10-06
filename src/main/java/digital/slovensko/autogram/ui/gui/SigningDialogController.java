@@ -88,7 +88,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         } else {
             gui.disableSigning();
             getNodeForLoosingFocus().requestFocus();
-            checkExistingSignatureValidityAndSign(signingKey);
+            checkExistingSignatureValidityAndSign();
         }
     }
 
@@ -100,35 +100,35 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         var stage = new Stage();
         stage.setTitle("Upozornenie");
         stage.setScene(new Scene(root));
+
+        stage.sizeToScene();
         stage.initModality(Modality.WINDOW_MODAL);
-        stage.setOnCloseRequest(event -> {
-            signaturesNotValidatedDialogController.close();
-        });
+        stage.setOnCloseRequest(event -> signaturesNotValidatedDialogController.close());
+
         GUIUtils.suppressDefaultFocus(stage, signaturesNotValidatedDialogController);
+
         stage.show();
     }
 
     private void showSignaturesInvalidDialog() {
         if (signaturesInvalidDialogController == null)
-            signaturesInvalidDialogController = new SignaturesInvalidDialogController(this);
+            signaturesInvalidDialogController = new SignaturesInvalidDialogController(this, signatureValidationReports);
 
         var root = GUIUtils.loadFXML(signaturesInvalidDialogController, "signatures-invalid-dialog.fxml");
         var stage = new Stage();
         stage.setTitle("Upozornenie");
         stage.setScene(new Scene(root));
-        stage.initModality(Modality.WINDOW_MODAL);
-        stage.setOnCloseRequest(event -> {
-            signaturesInvalidDialogController.close();
-        });
-        signaturesInvalidDialogController.initialize(signatureValidationReports);
-        GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
-        stage.show();
-        stage.sizeToScene();
 
-        return;
+        stage.sizeToScene();
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.setOnCloseRequest(event -> signaturesInvalidDialogController.close());;
+
+        GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
+
+        stage.show();
     }
 
-    private void checkExistingSignatureValidityAndSign(SigningKey signingKey) {
+    private void checkExistingSignatureValidityAndSign() {
         if ((!signatureCheckCompleted) || ((signatureCheckReports != null) && !signatureValidationCompleted)) {
             showSignaturesNotValidatedDialog();
             return;
@@ -173,7 +173,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         stage.setTitle("Detailné informácie o podpisoch");
         stage.setScene(new Scene(root));
         GUIUtils.suppressDefaultFocus(stage, signaturesController);
-        signaturesController.showSignatures();
         stage.show();
         stage.setResizable(false);
         stage.show();
