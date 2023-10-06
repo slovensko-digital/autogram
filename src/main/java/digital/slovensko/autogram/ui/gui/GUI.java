@@ -287,6 +287,7 @@ public class GUI implements UI {
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(getJobWindow(e.getJob()));
         GUIUtils.suppressDefaultFocus(stage, controller);
 
         GUIUtils.showOnTop(stage);

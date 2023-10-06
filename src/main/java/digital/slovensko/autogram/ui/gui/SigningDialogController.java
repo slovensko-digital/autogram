@@ -35,7 +35,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     private final String title;
     private SignaturesController signaturesController;
     private SignaturesNotValidatedDialogController signaturesNotValidatedDialogController;
-    private SignaturesInvalidDialogController signaturesInvalidDialogController;
     private boolean signatureValidationCompleted = false;
     private boolean signatureCheckCompleted = false;
     private final Visualization visualization;
@@ -103,6 +102,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
         stage.sizeToScene();
         stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(mainButton.getScene().getWindow());
         stage.setOnCloseRequest(event -> signaturesNotValidatedDialogController.close());
 
         GUIUtils.suppressDefaultFocus(stage, signaturesNotValidatedDialogController);
@@ -111,8 +111,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     private void showSignaturesInvalidDialog() {
-        if (signaturesInvalidDialogController == null)
-            signaturesInvalidDialogController = new SignaturesInvalidDialogController(this, signatureValidationReports);
+        var signaturesInvalidDialogController = new SignaturesInvalidDialogController(this, signatureValidationReports);
 
         var root = GUIUtils.loadFXML(signaturesInvalidDialogController, "signatures-invalid-dialog.fxml");
         var stage = new Stage();
@@ -121,6 +120,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
         stage.sizeToScene();
         stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(mainButton.getScene().getWindow());
         stage.setOnCloseRequest(event -> signaturesInvalidDialogController.close());;
 
         GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
@@ -172,6 +172,8 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         var stage = new Stage();
         stage.setTitle("Detailné informácie o podpisoch");
         stage.setScene(new Scene(root));
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(mainButton.getScene().getWindow());
         GUIUtils.suppressDefaultFocus(stage, signaturesController);
         stage.show();
         stage.setResizable(false);
