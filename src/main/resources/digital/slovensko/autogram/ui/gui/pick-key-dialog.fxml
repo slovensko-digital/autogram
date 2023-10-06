@@ -15,5 +15,5 @@
         <VBox fx:id="radios" styleClass="autogram-radios"/>
     </VBox>
 
-    <Button styleClass="autogram-button" fx:id="mainButton" text="Vybrať certifikát" onAction="#onPickCertificateButtonAction" />
+    <Button styleClass="autogram-button" fx:id="mainButton" text="Podpísať" onAction="#onPickCertificateButtonAction" />
 </VBox>

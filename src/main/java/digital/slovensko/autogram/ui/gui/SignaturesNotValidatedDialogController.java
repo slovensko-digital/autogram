@@ -24,7 +24,7 @@ public class SignaturesNotValidatedDialogController implements SuppressedFocusCo
         if (window instanceof Stage)
             ((Stage) window).close();
 
-        signigDialogController.enableSigning();
+        signigDialogController.enableSigningOnAllJobs();
     }
 
     public void onCancelAction() {

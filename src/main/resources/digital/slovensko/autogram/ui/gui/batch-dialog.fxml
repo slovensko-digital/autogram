@@ -61,12 +61,9 @@
     </VBox>
 
     <HBox styleClass="autogram-actions">
-        <Button fx:id="chooseKeyButton" styleClass="autogram-button,autogram-button--secondary"
-            text="Vybrať podpisový certifikát" onAction="#onChooseKeyButtonPressed" />
-        <Button fx:id="signButton" styleClass="autogram-button"
-            text="Podpísať" onAction="#onSignButtonPressed" />
-        <Button fx:id="changeKeyButton" styleClass="autogram-link" text="Zmeniť" visible="false"
-            managed="false"
+        <Button fx:id="mainButton" styleClass="autogram-button"
+            text="Podpísať" onAction="#onMainButtonPressed" />
+        <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="Podpísať iným certifikátom" visible="false"
             onAction="#onChangeKeyButtonPressed" />
         <Button fx:id="cancelBatchButton" styleClass="autogram-button,autogram-button--warning"
             text="Zrušiť hromadné podpisovanie" visible="false" managed="false"
