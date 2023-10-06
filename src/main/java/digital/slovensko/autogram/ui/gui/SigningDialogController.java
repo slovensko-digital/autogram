@@ -2,7 +2,6 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SignatureValidator;
-import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
@@ -161,7 +160,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
         gui.resetSigningKey();
-        sign();
+        checkExistingSignatureValidityAndSign();
     }
 
     public void onShowSignaturesButtonPressed(ActionEvent event) {
