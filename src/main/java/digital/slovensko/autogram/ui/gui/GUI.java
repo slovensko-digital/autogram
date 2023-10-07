@@ -6,14 +6,10 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
+import digital.slovensko.autogram.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
@@ -209,6 +205,34 @@ public class GUI implements UI {
 
         GUIUtils.suppressDefaultFocus(stage, controller);
 
+        stage.show();
+    }
+
+    public void showErrorPortInUse(Stage stage, Autogram autogram, int portNumber, AutogramException e) {
+        logger.debug("GUI showing error", e);
+        var controller = new ErrorBeforeMainMenuController(this ,stage, autogram, portNumber);
+        var root = GUIUtils.loadFXML(controller, "port-in-use-dialog.fxml");
+
+        stage.setTitle(e.getHeading());
+
+        stage.setScene(new Scene(root));
+
+        stage.sizeToScene();
+        stage.setResizable(false);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+
+        stage.show();
+    }
+
+    public void showMainMenu(Stage stage, Autogram autogram){
+        var controller = new MainMenuController(autogram);
+        var root = GUIUtils.loadFXML(controller, "main-menu.fxml");
+        var scene = new Scene(root);
+
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.setTitle("Autogram");
+        stage.setScene(scene);
+        stage.setResizable(false);
         stage.show();
     }
 

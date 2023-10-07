@@ -18,6 +18,7 @@ import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.server.filters.AutogramCorsFilter;
 
 public class AutogramServer {
@@ -89,7 +90,7 @@ public class AutogramServer {
             return server;
 
         } catch (BindException e) {
-            throw new RuntimeException("error.launchFailed.header port is already in use", e); // TODO
+            throw new PortIsUsedException();
 
         } catch (Exception e) {
             throw new RuntimeException("error.serverNotCreated", e); // TODO
