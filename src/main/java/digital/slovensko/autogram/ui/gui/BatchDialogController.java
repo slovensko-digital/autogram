@@ -26,29 +26,20 @@ public class BatchDialogController implements SuppressedFocusController {
 
     @FXML
     VBox mainBox;
-
     @FXML
     VBox progressBarBox;
-
     @FXML
     VBox batchVisualization;
-
     @FXML
     Text batchVisualizationCount;
-
     @FXML
-    public Button chooseKeyButton;
-    @FXML
-    public Button signButton;
+    public Button mainButton;
     @FXML
     public Button changeKeyButton;
-
     @FXML
     public ProgressBar progressBar;
-
     @FXML
     public Text progressBarText;
-
     @FXML
     public Button cancelBatchButton;
 
@@ -76,36 +67,48 @@ public class BatchDialogController implements SuppressedFocusController {
         }
     }
 
-    public void onChooseKeyButtonPressed(ActionEvent event) {
-        autogram.pickSigningKeyAndThen(key -> {
-            gui.setActiveSigningKey(key);
-            refreshSigningKey();
-            enableKeyChange();
-        });
-    }
-
-    public void onSignButtonPressed(ActionEvent event) {
+    public void onMainButtonPressed(ActionEvent event) {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
-            return;
+            autogram.pickSigningKeyAndThen(key -> {
+                gui.setActiveSigningKeyAndThen(key, k -> {
+                    hideVisualization();
+                    showProgress();
+                    showCancelButton();
+                    getNodeForLoosingFocus().requestFocus();
+                    gui.disableSigning();
+                    gui.onWorkThreadDo(() -> {
+                        startBatchCallback.accept(k);
+                    });
+                });
+            });
+        } else {
+            hideVisualization();
+            showProgress();
+            showCancelButton();
+            getNodeForLoosingFocus().requestFocus();
+            gui.disableSigning();
+            gui.onWorkThreadDo(() -> {
+                startBatchCallback.accept(signingKey);
+            });
         }
-        disableSigning();
-        disableKeyChange();
-        hideVisualization();
-        showProgress();
-        showCancelButton();
-        getNodeForLoosingFocus().requestFocus();
-        gui.onWorkThreadDo(() -> {
-            startBatchCallback.accept(signingKey);
-        });
     }
+
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
         if (batch.isKeyChangeAllowed()) {
             gui.resetSigningKey();
-            autogram.pickSigningKeyAndThen((key) -> {
-                gui.setActiveSigningKey(key);
-                refreshSigningKey();
+            autogram.pickSigningKeyAndThen(key -> {
+                gui.setActiveSigningKeyAndThen(key, k -> {
+                    hideVisualization();
+                    showProgress();
+                    showCancelButton();
+                    getNodeForLoosingFocus().requestFocus();
+                    gui.disableSigning();
+                    gui.onWorkThreadDo(() -> {
+                        startBatchCallback.accept(k);
+                    });
+                });
             });
         }
     }
@@ -117,30 +120,24 @@ public class BatchDialogController implements SuppressedFocusController {
 
     public void refreshSigningKey() {
         if (batch.isKeyChangeAllowed()) {
-            SigningKey key = gui.getActiveSigningKey();
+            var key = gui.getActiveSigningKey();
+
             if (key == null) {
-                signButton.setVisible(false);
-                signButton.setManaged(false);
+                mainButton.setText("Podpísať");
+                changeKeyButton.setVisible(false);
 
-                chooseKeyButton.setVisible(true);
-                chooseKeyButton.setManaged(true);
-                chooseKeyButton.setDisable(false);
-
-                disableKeyChange();
             } else {
-                signButton.setVisible(true);
-                signButton.setManaged(true);
-
-                chooseKeyButton.setVisible(false);
-                chooseKeyButton.setManaged(false);
-
-                signButton.setDisable(false);
-                signButton.setText("Podpísať ako "
-                        + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
-
-                enableKeyChange();
+                mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+                changeKeyButton.setVisible(true);
             }
         }
+    }
+
+    public void enableSigning() {
+        mainButton.setDisable(false);
+        changeKeyButton.setManaged(true);
+        changeKeyButton.setDisable(false);
+        changeKeyButton.setVisible(true);
     }
 
     public void close() {
@@ -167,25 +164,19 @@ public class BatchDialogController implements SuppressedFocusController {
     }
 
     public void disableKeyPicking() {
-        chooseKeyButton.setText("Načítavam certifikáty…");
-        chooseKeyButton.setDisable(true);
+        mainButton.setText("Načítavam certifikáty…");
+        mainButton.setDisable(true);
+        changeKeyButton.setDisable(true);
+        changeKeyButton.setManaged(false);
+        changeKeyButton.setVisible(false);
     }
 
     public void disableSigning() {
-        signButton.setVisible(false);
-        signButton.setManaged(false);
-        // signButton.setText("Prebieha hromadné podpisovanie...");
-        // signButton.setDisable(true);
-    }
-
-    public void disableKeyChange() {
-        changeKeyButton.setVisible(false);
+        mainButton.setText("Prebieha podpisovanie…");
+        mainButton.setDisable(true);
+        changeKeyButton.setDisable(true);
         changeKeyButton.setManaged(false);
-    }
-
-    public void enableKeyChange() {
-        changeKeyButton.setVisible(true);
-        changeKeyButton.setManaged(true);
+        changeKeyButton.setVisible(false);
     }
 
     private void updateVisualizationCount() {

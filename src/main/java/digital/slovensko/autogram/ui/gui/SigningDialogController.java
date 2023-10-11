@@ -34,7 +34,6 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     private final String title;
     private SignaturesController signaturesController;
     private SignaturesNotValidatedDialogController signaturesNotValidatedDialogController;
-    private SignaturesInvalidDialogController signaturesInvalidDialogController;
     private boolean signatureValidationCompleted = false;
     private boolean signatureCheckCompleted = false;
     private final Visualization visualization;
@@ -84,17 +83,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void onMainButtonPressed(ActionEvent event) {
-        var signingKey = gui.getActiveSigningKey();
-        if (signingKey == null) {
-            autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
-        } else {
-            gui.disableSigning();
-            getNodeForLoosingFocus().requestFocus();
-            if (shouldCheckValidityBeforeSigning)
-                checkExistingSignatureValidityAndSign();
-            else
-                sign();
-        }
+        checkExistingSignatureValidityAndSign();
     }
 
     private void showSignaturesNotValidatedDialog() {
@@ -105,32 +94,33 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         var stage = new Stage();
         stage.setTitle("Upozornenie");
         stage.setScene(new Scene(root));
+
+        stage.sizeToScene();
         stage.initModality(Modality.WINDOW_MODAL);
-        stage.setOnCloseRequest(event -> {
-            signaturesNotValidatedDialogController.close();
-        });
+        stage.initOwner(mainButton.getScene().getWindow());
+        stage.setOnCloseRequest(event -> signaturesNotValidatedDialogController.close());
+
         GUIUtils.suppressDefaultFocus(stage, signaturesNotValidatedDialogController);
+
         stage.show();
     }
 
     private void showSignaturesInvalidDialog() {
-        if (signaturesInvalidDialogController == null)
-            signaturesInvalidDialogController = new SignaturesInvalidDialogController(this);
+        var signaturesInvalidDialogController = new SignaturesInvalidDialogController(this, signatureValidationReports);
 
         var root = GUIUtils.loadFXML(signaturesInvalidDialogController, "signatures-invalid-dialog.fxml");
         var stage = new Stage();
         stage.setTitle("Upozornenie");
         stage.setScene(new Scene(root));
-        stage.initModality(Modality.WINDOW_MODAL);
-        stage.setOnCloseRequest(event -> {
-            signaturesInvalidDialogController.close();
-        });
-        signaturesInvalidDialogController.initialize(signatureValidationReports);
-        GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
-        stage.show();
-        stage.sizeToScene();
 
-        return;
+        stage.sizeToScene();
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(mainButton.getScene().getWindow());
+        stage.setOnCloseRequest(event -> signaturesInvalidDialogController.close());;
+
+        GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
+
+        stage.show();
     }
 
     private void checkExistingSignatureValidityAndSign() {
@@ -157,15 +147,23 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void sign() {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
-            autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
+            autogram.pickSigningKeyAndThen(key -> {
+                gui.setActiveSigningKeyAndThen(key, k -> {
+                    gui.disableSigning();
+                    getNodeForLoosingFocus().requestFocus();
+                    autogram.sign(visualization.getJob(), k);
+                });
+            });
         } else {
+            gui.disableSigning();
+            getNodeForLoosingFocus().requestFocus();
             autogram.sign(visualization.getJob(), signingKey);
         }
     }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
         gui.resetSigningKey();
-        autogram.pickSigningKeyAndThen(gui::setActiveSigningKey);
+        checkExistingSignatureValidityAndSign();
     }
 
     public void onShowSignaturesButtonPressed(ActionEvent event) {
@@ -177,8 +175,9 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         var stage = new Stage();
         stage.setTitle("Detailné informácie o podpisoch");
         stage.setScene(new Scene(root));
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(mainButton.getScene().getWindow());
         GUIUtils.suppressDefaultFocus(stage, signaturesController);
-        signaturesController.showSignatures();
         stage.show();
         stage.setResizable(false);
         stage.show();
@@ -233,15 +232,24 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void refreshSigningKey() {
-        mainButton.setDisable(false);
         var key = gui.getActiveSigningKey();
         if (key == null) {
-            mainButton.setText("Vybrať podpisový certifikát");
+            mainButton.setText("Podpísať");
             changeKeyButton.setVisible(false);
         } else {
             mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
             changeKeyButton.setVisible(true);
         }
+    }
+
+    public void enableSigning() {
+        refreshSigningKey();
+        mainButton.setDisable(false);
+        changeKeyButton.setDisable(false);
+    }
+
+    public void enableSigningOnAllJobs() {
+        gui.enableSigningOnAllJobs();
     }
 
     public void close() {
@@ -254,11 +262,13 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void disableKeyPicking() {
         mainButton.setText("Načítavam certifikáty…");
         mainButton.setDisable(true);
+        changeKeyButton.setDisable(true);
     }
 
     public void disableSigning() {
         mainButton.setText("Prebieha podpisovanie…");
         mainButton.setDisable(true);
+        changeKeyButton.setDisable(true);
     }
 
     public void showPlainTextVisualization(String text) {
@@ -324,9 +334,5 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     @Override
     public void setPrefWidth(double prefWidth) {
         mainBox.setPrefWidth(prefWidth);
-    }
-
-    public void enableSigning() {
-        gui.refreshKeyOnAllJobs();
     }
 }

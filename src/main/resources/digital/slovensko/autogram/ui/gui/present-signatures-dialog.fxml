@@ -8,7 +8,7 @@
 <?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      maxHeight="900"
+      maxHeight="800"
       prefWidth="768"
       fx:id="mainBox">
 

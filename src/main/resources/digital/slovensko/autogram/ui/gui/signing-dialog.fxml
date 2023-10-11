@@ -11,7 +11,7 @@
 <VBox xmlns="http://javafx.com/javafx"
     xmlns:fx="http://javafx.com/fxml"
     minHeight="400"
-    maxHeight="900"
+    maxHeight="800"
     minWidth="640"
     prefWidth="768"
     fx:id="mainBox">
@@ -68,8 +68,8 @@
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button"
-            text="Vybrať podpisový certifikát" onAction="#onMainButtonPressed" />
-        <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="Zmeniť" visible="false"
+            text="Podpísať" onAction="#onMainButtonPressed" />
+        <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="Podpísať iným certifikátom" visible="false"
             onAction="#onChangeKeyButtonPressed" />
     </HBox>
 </VBox>

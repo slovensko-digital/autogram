@@ -6,6 +6,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 
 public class SignatureDetailsController {
+    private final String htmlReport;
     @FXML
     VBox mainBox;
     @FXML
@@ -13,10 +14,11 @@ public class SignatureDetailsController {
     @FXML
     VBox webViewContainer;
 
-    public SignatureDetailsController() {
+    public SignatureDetailsController(String htmlReport) {
+        this.htmlReport = htmlReport;
     }
 
-    public void showHTMLReport(String htmlReport) {
+    public void initialize() {
         webView.setContextMenuEnabled(false);
         webView.getEngine().setJavaScriptEnabled(true);
         var engine = webView.getEngine();

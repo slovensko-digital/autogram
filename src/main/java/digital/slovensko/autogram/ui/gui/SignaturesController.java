@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
@@ -37,6 +38,10 @@ public class SignaturesController implements SuppressedFocusController {
         this.gui = gui;
     }
 
+    public void initialize() {
+        renderSignatures();
+    }
+
     @Override
     public Node getNodeForLoosingFocus() {
         return mainBox;
@@ -48,7 +53,7 @@ public class SignaturesController implements SuppressedFocusController {
 
         signatureValidationReports = reports;
 
-        showSignatures();
+        renderSignatures();
 
         gui.onWorkThreadDo(() -> {
             signatureValidationReportsHTML = SignatureValidator
@@ -58,13 +63,14 @@ public class SignaturesController implements SuppressedFocusController {
     }
 
     public void onSignatureDetailsButtonAction() {
-        var controller = new SignatureDetailsController();
+        var controller = new SignatureDetailsController(signatureValidationReportsHTML);
         var root = GUIUtils.loadFXML(controller, "signature-details.fxml");
 
         var stage = new Stage();
         stage.setTitle("Detaily podpisov");
         stage.setScene(new Scene(root));
-        controller.showHTMLReport(signatureValidationReportsHTML);
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initOwner(mainBox.getScene().getWindow());
         stage.setResizable(false);
         stage.show();
     }
@@ -73,7 +79,7 @@ public class SignaturesController implements SuppressedFocusController {
         GUIUtils.closeWindow(mainBox);
     }
 
-    public void showSignatures() {
+    public void renderSignatures() {
         if (signatureValidationReports != null)
             renderSignatures(signatureValidationReports, true);
 
@@ -87,6 +93,6 @@ public class SignaturesController implements SuppressedFocusController {
         for (var signatureId : reports.getDiagnosticData().getSignatureIdList())
             signaturesBox.getChildren().add(createSignatureBox(reports, isValidated, signatureId, e -> {
                 getNodeForLoosingFocus().requestFocus();
-            }, isValidated ? SignatureValidator.getInstance().areTLsLoaded() : false));
+            }, isValidated && SignatureValidator.getInstance().areTLsLoaded()));
     }
 }

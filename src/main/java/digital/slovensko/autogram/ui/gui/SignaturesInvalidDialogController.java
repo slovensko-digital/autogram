@@ -11,6 +11,7 @@ import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
 
 public class SignaturesInvalidDialogController implements SuppressedFocusController {
     private final SigningDialogController signingDialogController;
+    private final Reports reports;
 
     @FXML
     Button cancelButton;
@@ -21,8 +22,17 @@ public class SignaturesInvalidDialogController implements SuppressedFocusControl
     @FXML
     VBox signaturesTable;
 
-    public SignaturesInvalidDialogController(SigningDialogController signigDialogController) {
-        this.signingDialogController = signigDialogController;
+    public SignaturesInvalidDialogController(SigningDialogController controller, Reports reports) {
+        this.signingDialogController = controller;
+        this.reports = reports;
+    }
+
+    public void initialize() {
+        signaturesTable.getChildren().clear();
+        signaturesTable.getChildren().addAll(
+                createSignatureTableRows(reports, true, e -> {
+                    signingDialogController.onShowSignaturesButtonPressed(null);
+                }, 6));
     }
 
     public void close() {
@@ -30,7 +40,7 @@ public class SignaturesInvalidDialogController implements SuppressedFocusControl
         if (window instanceof Stage)
             ((Stage) window).close();
 
-        signingDialogController.enableSigning();
+        signingDialogController.enableSigningOnAllJobs();
     }
 
     public void onCancelAction() {
@@ -48,13 +58,5 @@ public class SignaturesInvalidDialogController implements SuppressedFocusControl
     @Override
     public Node getNodeForLoosingFocus() {
         return mainBox;
-    }
-
-    public void initialize(Reports signatureValidationReports) {
-        signaturesTable.getChildren().clear();
-        signaturesTable.getChildren().addAll(
-                createSignatureTableRows(signatureValidationReports, true, e -> {
-                    signingDialogController.onShowSignaturesButtonPressed(null);
-                }, 6));
     }
 }
