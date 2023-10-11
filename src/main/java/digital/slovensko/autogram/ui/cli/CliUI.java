@@ -20,6 +20,7 @@ import digital.slovensko.autogram.core.errors.InitializationFailedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.PDFAComplianceException;
+import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PINLockedException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
@@ -265,6 +266,8 @@ public class CliUI implements UI {
             errMessage = "Target directory does not exist";
         } else if (e instanceof SlotIdIsNotANumberException) {
             errMessage = "Slot ID is not a number";
+        } else if (e instanceof PDFSignatureLevelIsNotValidException) {
+            errMessage = "PDF signature level is not valid";
         } else {
             errMessage = "Unknown error occurred";
             e.printStackTrace();

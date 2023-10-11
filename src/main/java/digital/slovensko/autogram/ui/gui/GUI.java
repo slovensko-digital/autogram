@@ -3,17 +3,14 @@ package digital.slovensko.autogram.ui.gui;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
+import digital.slovensko.autogram.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
@@ -39,14 +36,17 @@ import javafx.stage.Window;
 public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
+    private boolean driverWasAlreadySet = false;
     private final HostServices hostServices;
+    private final UserSettings userSettings;
     private BatchDialogController batchController;
     private static final boolean DEBUG = false;
     private static Logger logger = LoggerFactory.getLogger(GUI.class);
     private int nWindows = 0;
 
-    public GUI(HostServices hostServices) {
+    public GUI(HostServices hostServices, UserSettings userSettings) {
         this.hostServices = hostServices;
+        this.userSettings = userSettings;
     }
 
     @Override
@@ -116,6 +116,19 @@ public class GUI implements UI {
             // short-circuit if only one driver present
             callback.accept(drivers.get(0));
         } else {
+            if (!driverWasAlreadySet && userSettings.getDriver() != null) {
+                try {
+                    driverWasAlreadySet = true;
+                    var defaultDriver = drivers.stream().filter(d -> d.getName().equals(userSettings.getDriver()))
+                            .findFirst().get();
+
+                    if (defaultDriver != null) {
+                        callback.accept(defaultDriver);
+                        return;
+                    }
+                } catch (NoSuchElementException e){}
+            }
+
             PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
@@ -272,7 +285,7 @@ public class GUI implements UI {
         if (visualization.getJob().getDocument().getName() != null)
             title = "Dokument " + visualization.getJob().getDocument().getName();
 
-        var controller = new SigningDialogController(visualization, autogram, this, title);
+        var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);
 
         var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
@@ -416,6 +429,7 @@ public class GUI implements UI {
             activeKey.close();
 
         activeKey = newKey;
+        driverWasAlreadySet = true;
         refreshKeyOnAllJobs();
 
         if (callback != null)
@@ -457,12 +471,15 @@ public class GUI implements UI {
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         var sceneWidth = stage.getScene().getWidth();
         var availabeWidth = (bounds.getWidth() - sceneWidth);
-        var singleOffsetXPx = Math.round(Math.min(maxOffset, (availabeWidth / 2) / maxWindows)); // spread windows into half of availabe screen width
+        var singleOffsetXPx = Math.round(Math.min(maxOffset, (availabeWidth / 2) / maxWindows)); // spread windows into
+                                                                                                 // half of availabe
+                                                                                                 // screen width
         var offsetX = singleOffsetXPx * (nWindows - maxWindows / 2);
         double idealX = bounds.getMinX() + availabeWidth / 2 + offsetX;
         double x = Math.max(bounds.getMinX(), Math.min(bounds.getMaxX() - sceneWidth, idealX));
         var sceneHeight = stage.getScene().getHeight();
-        double y = Math.max(bounds.getMinY(), Math.min(bounds.getMaxY() - sceneHeight, bounds.getMinY() + (bounds.getHeight() - sceneHeight)/2));
+        double y = Math.max(bounds.getMinY(),
+                Math.min(bounds.getMaxY() - sceneHeight, bounds.getMinY() + (bounds.getHeight() - sceneHeight) / 2));
         stage.setX(x);
         stage.setY(y);
         stage.setMaxHeight(bounds.getHeight());

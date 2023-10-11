@@ -21,9 +21,8 @@ public class CliApp {
 
         try {
             var params = new CliParameters(cmd);
-
-            var autogram = params.getDriver() == null ? new Autogram(ui, params.getSlotId())
-                    : new Autogram(ui, () -> Collections.singletonList(params.getDriver()), params.getSlotId());
+            var autogram = params.getDriver() == null ? new Autogram(ui, false, params.getSlotId())
+                    : new Autogram(ui, false, () -> Collections.singletonList(params.getDriver()), params.getSlotId());
 
             if (params.getSource() == null)
                 throw new SourceNotDefindedException();
@@ -36,9 +35,9 @@ public class CliApp {
 
             var source = params.getSource();
             var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
-            var jobs = Arrays
-                    .stream(sourceList).filter(f -> f.isFile()).map(f -> SigningJob.buildFromFile(f,
-                            new SaveFileResponder(f, autogram, targetPathBuilder), params.shouldCheckPDFACompliance()))
+            var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
+                    .map(f -> SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, targetPathBuilder),
+                            params.shouldCheckPDFACompliance(), params.pdfSignatureLevel(), params.shouldSignAsEn319132()))
                     .toList();
             if (params.shouldCheckPDFACompliance()) {
                 jobs.forEach(job -> {

@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -71,7 +72,7 @@ public class SignatureValidator {
         validationJob.offlineRefresh();
     }
 
-    public synchronized void initialize(ExecutorService executorService) {
+    public synchronized void initialize(ExecutorService executorService, List<String> tlCountries) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         logger.debug("Initializing signature validator at {}", formatter.format(new Date()));
 
@@ -82,7 +83,7 @@ public class SignatureValidator {
         lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(OJ_URL));
         lotlSource.setUrl(LOTL_URL);
         lotlSource.setPivotSupport(true);
-        lotlSource.setTlPredicate(TLPredicateFactory.createEUTLCountryCodePredicate("SK", "CZ", "AT", "HU", "PL"));
+        lotlSource.setTlPredicate(TLPredicateFactory.createEUTLCountryCodePredicate(tlCountries.toArray(new String[0])));
 
         var offlineFileLoader = new FileCacheDataLoader();
         offlineFileLoader.setCacheExpirationTime(21600000);

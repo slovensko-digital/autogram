@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -18,16 +19,17 @@ public class GUIApp extends Application {
 
     @Override
     public void start(Stage windowStage) throws Exception {
-        var ui = new GUI(getHostServices());
-        var autogram = new Autogram(ui);
+        var userSettings = UserSettings.load();
+        var ui = new GUI(getHostServices(), userSettings);
+        var autogram = new Autogram(ui, userSettings.isCorrectDocumentDisplay());
 
         Platform.setImplicitExit(false);
         autogram.checkForUpdate();
-        autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService);
+        autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService, userSettings.getTrustedList());
 
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
 
-        var controller = new MainMenuController(autogram);
+        var controller = new MainMenuController(autogram, userSettings);
         var root = GUIUtils.loadFXML(controller, "main-menu.fxml");
 
         var scene = new Scene(root);
@@ -35,10 +37,14 @@ public class GUIApp extends Application {
         var params = LaunchParameters.fromParameters(getParameters());
         var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), cachedExecutorService);
 
-        server.start();
+        if (userSettings.isServerEnabled()) {
+            server.start();
+        }
 
         windowStage.setOnCloseRequest(event -> {
-            new Thread(server::stop).start();
+            if (userSettings.isServerEnabled()) {
+                new Thread(server::stop).start();
+            }
 
             Platform.exit();
         });

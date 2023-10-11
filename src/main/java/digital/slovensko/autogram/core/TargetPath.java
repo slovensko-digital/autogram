@@ -19,19 +19,20 @@ public class TargetPath {
     private final boolean useUniqueFileName;
     private final boolean isForMultipleFiles;
     private final boolean isParents;
-
+    private final boolean isSignatureLevelPades;
     private final FileSystem fs;
 
-    public TargetPath(String target, Path source, boolean force, boolean parents, FileSystem fileSystem) {
-        this(target, source, force, parents, Files.isDirectory(source), fileSystem);
+    public TargetPath(String target, Path source, boolean force, boolean parents, FileSystem fileSystem, boolean isSignatureLevelPades) {
+        this(target, source, force, parents, Files.isDirectory(source), fileSystem, isSignatureLevelPades);
     }
 
     public TargetPath(String target, Path source, boolean force, boolean parents, boolean multipleFiles,
-            FileSystem fileSystem) {
+            FileSystem fileSystem, boolean isSignatureLevelPades) {
         fs = fileSystem;
         sourceFile = source;
         isForce = force;
         isParents = parents;
+        this.isSignatureLevelPades = isSignatureLevelPades;
 
         isGenerated = target == null;
         var isTargetMissing = target == null;
@@ -81,16 +82,16 @@ public class TargetPath {
 
     public static TargetPath fromParams(CliParameters params) {
         return new TargetPath(params.getTarget(), params.getSource().toPath(), params.isForce(),
-                params.shouldMakeParentDirectories(), FileSystems.getDefault());
+                params.shouldMakeParentDirectories(), FileSystems.getDefault(), params.shouldSignPDFAsPades());
     }
 
-    public static TargetPath fromSource(Path source) {
-        return new TargetPath(null, source, false, false, FileSystems.getDefault());
+    public static TargetPath fromSource(Path source, boolean isSignatureLevelPades) {
+        return new TargetPath(null, source, false, false, FileSystems.getDefault(), isSignatureLevelPades);
     }
 
-    public static TargetPath fromTargetDirectory(Path targetDirectory) {
+    public static TargetPath fromTargetDirectory(Path targetDirectory, boolean isSignatureLevelPades) {
         return new TargetPath(targetDirectory.toString(), null, false, false, true,
-                FileSystems.getDefault());
+                FileSystems.getDefault(), isSignatureLevelPades);
     }
 
     public Path getTargetDirectory() {
@@ -196,7 +197,9 @@ public class TargetPath {
     }
 
     private String generateTargetName(Path singleSourceFile) {
-        var extension = singleSourceFile.getFileName().toString().endsWith(".pdf") ? ".pdf" : ".asice";
+        var isSourceFileExtensionPdf = singleSourceFile.getFileName().toString().endsWith(".pdf");
+
+        var extension = isSourceFileExtensionPdf && isSignatureLevelPades ? ".pdf" : ".asice";
         if (useUniqueFileName || isForMultipleFiles)
             return com.google.common.io.Files.getNameWithoutExtension(singleSourceFile.getFileName().toString())
                     + "_signed"

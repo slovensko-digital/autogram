@@ -14,8 +14,8 @@ public class SaveFileResponder extends Responder {
     private final Autogram autogram;
     private final TargetPath targetPathBuilder;
 
-    public SaveFileResponder(File file, Autogram autogram) {
-        this(file, autogram, TargetPath.fromSource(file.toPath()));
+    public SaveFileResponder(File file, Autogram autogram, boolean isSignatureLevelPades) {
+        this(file, autogram, TargetPath.fromSource(file.toPath(), isSignatureLevelPades));
     }
 
     public SaveFileResponder(File file, Autogram autogram, TargetPath targetPathBuilder) {

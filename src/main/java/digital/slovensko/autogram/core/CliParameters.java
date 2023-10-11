@@ -1,9 +1,12 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
 import digital.slovensko.autogram.core.errors.SlotIdIsNotANumberException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.core.errors.TokenDriverDoesNotExistException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
@@ -17,9 +20,11 @@ public class CliParameters {
     private final Integer slotId;
     private final boolean checkPDFACompliance;
     private final boolean makeParentDirectories;
+    private final SignatureLevel pdfSignatureLevel;
+    private final boolean en319132;
 
-
-    public CliParameters(CommandLine cmd) throws SourceDoesNotExistException, TokenDriverDoesNotExistException, SlotIdIsNotANumberException {
+    public CliParameters(CommandLine cmd) throws SourceDoesNotExistException, TokenDriverDoesNotExistException,
+            SlotIdIsNotANumberException, PDFSignatureLevelIsNotValidException {
         source = getValidSource(cmd.getOptionValue("s"));
         target = cmd.getOptionValue("t");
         driver = getValidTokenDriver(cmd.getOptionValue("d"));
@@ -27,6 +32,17 @@ public class CliParameters {
         force = cmd.hasOption("f");
         checkPDFACompliance = cmd.hasOption("pdfa");
         makeParentDirectories = cmd.hasOption("parents");
+        pdfSignatureLevel = getValidSignatureLevel(
+                cmd.getOptionValue("pdf-level", SignatureLevel.PAdES_BASELINE_B.name()));
+        en319132 = cmd.hasOption("en319132");
+    }
+
+    private SignatureLevel getValidSignatureLevel(String optionValue) throws PDFSignatureLevelIsNotValidException {
+        try {
+            return SignatureLevel.valueOf(optionValue);
+        } catch (Exception e) {
+            throw new PDFSignatureLevelIsNotValidException(optionValue);
+        }
     }
 
     private Integer getValidSlotId(String optionValue) throws SlotIdIsNotANumberException {
@@ -80,14 +96,26 @@ public class CliParameters {
             return null;
 
         Optional<TokenDriver> tokenDriver = new DefaultDriverDetector()
-            .getAvailableDrivers()
-            .stream()
-            .filter(d -> d.getShortname().equals(driverName))
-            .findFirst();
+                .getAvailableDrivers()
+                .stream()
+                .filter(d -> d.getShortname().equals(driverName))
+                .findFirst();
 
         if (tokenDriver.isEmpty())
             throw new TokenDriverDoesNotExistException(driverName);
 
         return tokenDriver.get();
+    }
+
+    public boolean shouldSignPDFAsPades() {
+        return pdfSignatureLevel == SignatureLevel.PAdES_BASELINE_B;
+    }
+
+    public boolean shouldSignAsEn319132() {
+        return en319132;
+    }
+
+    public SignatureLevel pdfSignatureLevel() {
+        return pdfSignatureLevel;
     }
 }

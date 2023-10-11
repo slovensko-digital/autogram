@@ -32,9 +32,9 @@ class AutogramTests {
     void testSignHappyScenario() {
         var newUI = new FakeUI();
         List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, new FakeDriverDetector(drivers));
+        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
 
-        var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml");
+        var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml", false);
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 
@@ -58,9 +58,9 @@ class AutogramTests {
     void testSignWithExpiredCertificate() {
         var newUI = new FakeUI();
         List<TokenDriver> drivers = List.of(new FakeTokenDriverWithExpiredCertificate());
-        var autogram = new Autogram(newUI, new FakeDriverDetector(drivers));
+        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
 
-        var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml");
+        var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml", false);
         var document = new FileDocument("pom.xml");
         var responder = mock(Responder.class);
 

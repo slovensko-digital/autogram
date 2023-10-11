@@ -29,6 +29,7 @@
     <bottom>
         <HBox styleClass="autogram-footer">
             <Button styleClass="autogram-link" onAction="#onAboutButtonAction">O Autograme</Button>
+            <Button styleClass="autogram-link" onAction="#onSettingButtonAction">Nastavenia</Button>
         </HBox>
     </bottom>
 </BorderPane>

@@ -14,6 +14,7 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
@@ -23,24 +24,26 @@ public class Autogram {
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
     private final DriverDetector driverDetector;
+    private final boolean shouldDisplayVisualizationError;
     private final Integer slotId;
 
-    public Autogram(UI ui) {
-        this(ui, new DefaultDriverDetector(), -1);
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError) {
+        this(ui, shouldDisplayVisualizationError, new DefaultDriverDetector(), -1);
     }
 
-    public Autogram(UI ui, DriverDetector driverDetector) {
-        this(ui, driverDetector, -1);
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector) {
+        this(ui, shouldDisplayVisualizationError, driverDetector, -1);
     }
 
-    public Autogram(UI ui, Integer slotId) {
-        this(ui, new DefaultDriverDetector(), slotId);
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError , Integer slotId) {
+        this(ui, shouldDisplayVisualizationError, new DefaultDriverDetector(), slotId);
     }
 
-    public Autogram(UI ui, DriverDetector driverDetector, Integer slotId) {
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, Integer slotId) {
         this.ui = ui;
         this.driverDetector = driverDetector;
         this.slotId = slotId;
+        this.shouldDisplayVisualizationError = shouldDisplayVisualizationError;
     }
 
     public void sign(SigningJob job) {
@@ -90,8 +93,12 @@ public class Autogram {
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
 
-                ui.onUIThreadDo(
-                        () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+                if (shouldDisplayVisualizationError) {
+                    ui.onUIThreadDo(
+                            () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+                } else {
+                    ui.onUIThreadDo(onContinue);
+                }
             }
         });
     }
@@ -168,8 +175,12 @@ public class Autogram {
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
         var drivers = driverDetector.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers,
-                (driver) -> ui.requestPasswordAndThen(driver, (password) -> ui.onWorkThreadDo(
-                        () -> fetchKeysAndThen(driver, password, callback))));
+                (driver) -> requestPasswordAndThen(driver, callback));
+    }
+
+    public void requestPasswordAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
+        ui.requestPasswordAndThen(driver, (password) -> ui.onWorkThreadDo(
+                () -> fetchKeysAndThen(driver, password, callback)));
     }
 
     private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {
@@ -208,9 +219,9 @@ public class Autogram {
         ui.onUIThreadDo(() -> ui.onSigningFailed(e));
     }
 
-    public void initializeSignatureValidator(ScheduledExecutorService scheduledExecutorService, ExecutorService cachedExecutorService) {
+    public void initializeSignatureValidator(ScheduledExecutorService scheduledExecutorService, ExecutorService cachedExecutorService, List<String> tlCountries) {
         ui.onWorkThreadDo(() -> {
-            SignatureValidator.getInstance().initialize(cachedExecutorService);
+            SignatureValidator.getInstance().initialize(cachedExecutorService, tlCountries);
         });
 
         scheduledExecutorService.scheduleAtFixedRate(() -> SignatureValidator.getInstance().refresh(),

@@ -4,17 +4,25 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.shape.Polygon?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.ChoiceBox?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       prefHeight="200" prefWidth="450" minWidth="450"
       fx:id="mainBox">
 
     <VBox fx:id="formGroup" styleClass="autogram-form-group">
-        <TextFlow><Text styleClass="autogram-heading-l" VBox.vgrow="ALWAYS">Kde je uložený podpisový certifikát?</Text></TextFlow>
-        <TextFlow><Text fx:id="error" styleClass="autogram-error-message" managed="false">Vyberte úložisko certifikátov</Text></TextFlow>
+        <TextFlow>
+            <Text styleClass="autogram-heading-l" VBox.vgrow="ALWAYS">Kde je uložený podpisový certifikát?</Text>
+        </TextFlow>
+        <TextFlow>
+            <Text fx:id="error" styleClass="autogram-error-message" managed="false">Vyberte úložisko certifikátov</Text>
+        </TextFlow>
         <VBox fx:id="radios" styleClass="autogram-radios"/>
     </VBox>
 
-    <Button styleClass="autogram-button" fx:id="mainButton" text="Vybrať úložisko" onAction="#onPickDriverButtonAction"/>
+    <Button styleClass="autogram-button" fx:id="mainButton" text="Vybrať úložisko"
+            onAction="#onPickDriverButtonAction"/>
 
 </VBox>

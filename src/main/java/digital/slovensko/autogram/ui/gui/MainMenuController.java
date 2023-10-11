@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
@@ -9,9 +10,11 @@ import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -19,12 +22,14 @@ import java.util.List;
 
 public class MainMenuController implements SuppressedFocusController {
     private final Autogram autogram;
+    private final UserSettings userSettings;
 
     @FXML
     VBox dropZone;
 
-    public MainMenuController(Autogram autogram) {
+    public MainMenuController(Autogram autogram, UserSettings userSettings) {
         this.autogram = autogram;
+        this.userSettings = userSettings;
     }
 
     public void initialize() {
@@ -94,11 +99,14 @@ public class MainMenuController implements SuppressedFocusController {
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-            var job = SigningJob.buildFromFile(file, new SaveFileResponder(file, autogram), false);
+            var job = SigningJob.buildFromFile(file,
+                    new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
+                    userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132());
             autogram.sign(job);
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
-                    filesList.get(0).toPath().getParent().resolve("signed")));
+                    filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(),
+                    userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(), userSettings.isEn319132()));
         }
     }
 
@@ -112,11 +120,25 @@ public class MainMenuController implements SuppressedFocusController {
         var targetDirectoryName = dir.getName() + "_signed";
         var targetDirectory = dir.toPath().getParent().resolve(targetDirectoryName);
         autogram.batchStart(filesList.size(),
-                new BatchGuiFileResponder(autogram, filesList, targetDirectory));
+                new BatchGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(),
+                        userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(),
+                        userSettings.isEn319132()));
     }
 
     public void onAboutButtonAction() {
         autogram.onAboutInfo();
+    }
+
+    public void onSettingButtonAction() {
+        var controller = new SettingsDialogController(userSettings);
+        var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Nastavenia");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
     }
 
     @Override

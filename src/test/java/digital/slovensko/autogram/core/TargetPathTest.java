@@ -22,7 +22,7 @@ public class TargetPathTest {
     /**
      * Used in GUI mode with single file
      * or used in CLI mode without target eg. `--cli -s /test/virtual/source.pdf`
-     * 
+     *
      * @throws IOException
      */
     @Test
@@ -32,7 +32,7 @@ public class TargetPathTest {
         Files.createDirectories(sourceFile.getParent());
         Files.createFile(sourceFile);
 
-        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, true);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/source_signed.pdf", target);
@@ -42,7 +42,7 @@ public class TargetPathTest {
      * Used in GUI mode with single file
      * or used in CLI mode without target eg. `--cli -s source.pdf` on path
      * `/test/virtual/`
-     * 
+     *
      * @throws IOException
      */
     @Test
@@ -54,7 +54,7 @@ public class TargetPathTest {
         var sourceFile = fs.getPath("source.pdf");
         Files.createFile(sourceFile);
 
-        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, true);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/source_signed.pdf", target);
@@ -64,7 +64,7 @@ public class TargetPathTest {
      * Used in GUI mode with single file and no target when generated target file
      * exits
      * or used in CLI mode without target eg. `--cli -s /test/virtual/source.pdf`
-     * 
+     *
      * @throws IOException
      */
     @Test
@@ -75,7 +75,7 @@ public class TargetPathTest {
         Files.createFile(sourceFile);
         Files.createFile(fs.getPath("/test/virtual/source_signed.pdf"));
 
-        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, true);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/source_signed (1).pdf", target);
@@ -84,7 +84,7 @@ public class TargetPathTest {
     /**
      * Used in GUI mode with single file
      * or used in CLI mode without target eg. `--cli -s /test/virtual/source.pdf`
-     * 
+     *
      * @throws IOException
      */
     @Test
@@ -94,7 +94,7 @@ public class TargetPathTest {
         Files.createDirectories(sourceFile.getParent());
         Files.createFile(sourceFile);
 
-        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs);
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, true);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/source_signed.asice", target);
@@ -103,7 +103,7 @@ public class TargetPathTest {
     /**
      * Used in CLI mode eg. `--cli -s /test/virtual/source.pdf -t
      * /test/virtual/target.pdf`
-     * 
+     *
      * @throws IOException
      */
     @Test
@@ -113,7 +113,7 @@ public class TargetPathTest {
         Files.createDirectories(sourceFile.getParent());
         Files.createFile(sourceFile);
 
-        var targetPath = new TargetPath("/test/virtual/other/target.pdf", sourceFile, false, false, fs);
+        var targetPath = new TargetPath("/test/virtual/other/target.pdf", sourceFile, false, false, fs, true);
         var target = targetPath.getSaveFilePath(sourceFile);
 
         assertEqualPath("/test/virtual/other/target.pdf", target);
@@ -132,7 +132,7 @@ public class TargetPathTest {
         var source1 = fs.getPath("/test/virtual/source", "source1.pdf");
         var source2 = fs.getPath("/test/virtual/source", "source2.pdf");
 
-        var targetPath = new TargetPath("/test/virtual/target/", sourceDirectory, false, false, fs);
+        var targetPath = new TargetPath("/test/virtual/target/", sourceDirectory, false, false, fs, true);
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
@@ -153,7 +153,7 @@ public class TargetPathTest {
         var source1 = fs.getPath("/test/virtual/source", "source1.pdf");
         var source2 = fs.getPath("/test/virtual/source", "source2.pdf");
 
-        var targetPath = new TargetPath(null, sourceDirectory, false, false, fs);
+        var targetPath = new TargetPath(null, sourceDirectory, false, false, fs, true);
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
@@ -176,7 +176,7 @@ public class TargetPathTest {
         var source1 = fs.getPath("source", "source1.pdf");
         var source2 = fs.getPath("source", "source2.pdf");
 
-        var targetPath = new TargetPath(null, sourceDirectory, false, false, fs);
+        var targetPath = new TargetPath(null, sourceDirectory, false, false, fs, true);
         var target1 = targetPath.getSaveFilePath(source1);
         var target2 = targetPath.getSaveFilePath(source2);
 
@@ -192,7 +192,7 @@ public class TargetPathTest {
         var sourceDirectory = fs.getPath("/test/virtual/source");
         Files.createDirectories(sourceDirectory);
 
-        var targetPath = new TargetPath(null, sourceDirectory, false, false, fs);
+        var targetPath = new TargetPath(null, sourceDirectory, false, false, fs, true);
         targetPath.mkdirIfDir();
 
         assertTrue(Files.exists(fs.getPath("/test/virtual/source_signed")));
@@ -208,7 +208,7 @@ public class TargetPathTest {
         Files.createDirectories(fs.getPath("/test/output"));
 
         assertThrows(digital.slovensko.autogram.core.errors.TargetAlreadyExistsException.class, () -> {
-            new TargetPath("/test/output", sourceDirectory, false, false, fs);
+            new TargetPath("/test/output", sourceDirectory, false, false, fs, true);
         });
     }
 
@@ -223,7 +223,7 @@ public class TargetPathTest {
         Files.createFile(fs.getPath("/test/output.pdf"));
 
         assertThrows(digital.slovensko.autogram.core.errors.TargetAlreadyExistsException.class, () -> {
-            new TargetPath("/test/output.pdf", sourceFile, false, false, fs);
+            new TargetPath("/test/output.pdf", sourceFile, false, false, fs, true);
         });
     }
 
@@ -236,7 +236,7 @@ public class TargetPathTest {
         Files.createDirectories(sourceDirectory);
         Files.createDirectories(fs.getPath("/test/output"));
 
-        var targetPath = new TargetPath("/test/output", sourceDirectory, true, false, fs);
+        var targetPath = new TargetPath("/test/output", sourceDirectory, true, false, fs, true);
         targetPath.mkdirIfDir();
     }
 
@@ -247,7 +247,7 @@ public class TargetPathTest {
         FileSystem fs = Jimfs.newFileSystem(com.google.common.jimfs.Configuration.unix());
         var sourceDirectory = fs.getPath("/test/virtual/");
         Files.createDirectories(sourceDirectory);
-        var targetPath = new TargetPath("/test/output/parent/directories", sourceDirectory, false, true, fs);
+        var targetPath = new TargetPath("/test/output/parent/directories", sourceDirectory, false, true, fs, true);
         targetPath.mkdirIfDir();
 
     }
@@ -257,7 +257,7 @@ public class TargetPathTest {
         FileSystem fs = Jimfs.newFileSystem(com.google.common.jimfs.Configuration.unix());
         Files.createDirectories(fs.getPath("/test/virtual/"));
 
-        var targetPath = new TargetPath("/test/target/", null, false, false, true, fs);
+        var targetPath = new TargetPath("/test/target/", null, false, false, true, fs, true);
         targetPath.mkdirIfDir();
 
         IntStream.range(0, 5).forEach(i -> {
@@ -279,7 +279,7 @@ public class TargetPathTest {
         Files.createDirectories(fs.getPath("/test/virtual/"));
         Files.createDirectories(fs.getPath("/test/target/"));
 
-        var targetPath = new TargetPath("/test/target/", null, false, false, true, fs);
+        var targetPath = new TargetPath("/test/target/", null, false, false, true, fs, true);
         targetPath.mkdirIfDir();
 
         IntStream.range(0, 5).forEach(i -> {
