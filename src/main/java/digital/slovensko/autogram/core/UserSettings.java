@@ -39,7 +39,7 @@ public class UserSettings {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         var signatureType = prefs.get("SIGNATURE_LEVEL", null);
-        var driver = prefs.get("DRIVER", null);
+        var driver = prefs.get("DRIVER", "");
         var en319132 = prefs.getBoolean("EN319132", false);
         var signIndividually = prefs.getBoolean("SIGN_INDIVIDUALLY", true);
         var correctDocumentDisplay = prefs.getBoolean("CORRECT_DOCUMENT_DISPLAY", true);
