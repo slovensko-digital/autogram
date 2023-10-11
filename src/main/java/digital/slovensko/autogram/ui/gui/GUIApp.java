@@ -6,6 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
+import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -27,30 +28,27 @@ public class GUIApp extends Application {
 
         setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
 
-        var controller = new MainMenuController(autogram);
-        var root = GUIUtils.loadFXML(controller, "main-menu.fxml");
-
-        var scene = new Scene(root);
-
         var params = LaunchParameters.fromParameters(getParameters());
-        var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), cachedExecutorService);
 
-        server.start();
+        try {
+            var server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), cachedExecutorService);
+            server.start();
+
+            windowStage.setOnHidden(event -> {
+                new Thread(server::stop).start();
+            });
+
+            if (!params.isStandaloneMode())
+                GUIUtils.startIconified(windowStage);
+
+            ui.showMainMenu(windowStage, autogram);
+        } catch (PortIsUsedException e) {
+            ui.showErrorPortInUse(windowStage, autogram, params.getPort(), new PortIsUsedException());
+        }
 
         windowStage.setOnCloseRequest(event -> {
-            new Thread(server::stop).start();
-
             Platform.exit();
         });
-
-        if (!params.isStandaloneMode())
-            GUIUtils.startIconified(windowStage);
-
-        GUIUtils.suppressDefaultFocus(windowStage, controller);
-        windowStage.setTitle("Autogram");
-        windowStage.setScene(scene);
-        windowStage.setResizable(false);
-        windowStage.show();
     }
 
     @Override
