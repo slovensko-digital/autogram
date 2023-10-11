@@ -38,13 +38,17 @@ public class PickKeyDialogController {
 
     public void initialize() {
         toggleGroup = new ToggleGroup();
-        for (DSSPrivateKeyEntry key : keys) {
-            var radioButton = new RadioButton(parseCN(key.getCertificate().getSubject().getRFC2253()));
+        for (var key : keys) {
+            var text = parseCN(key.getCertificate().getSubject().getRFC2253());
+            if (!key.getCertificate().isValid())
+                text += " (neplatný certifikát)";
+
+            var radioButton = new RadioButton(text);
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(key);
             radios.getChildren().add(radioButton);
 
-            Tooltip tooltip = new Tooltip(buildTooltipLabel(key));
+            var tooltip = new Tooltip(buildTooltipLabel(key));
             tooltip.setShowDuration(Duration.seconds(10));
             tooltip.setWrapText(true);
             tooltip.setPrefWidth(400);
