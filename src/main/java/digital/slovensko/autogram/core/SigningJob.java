@@ -182,14 +182,14 @@ public class SigningJob {
 
         var filename = document.getName();
         if (isPDF(document.getMimeType())) switch (signatureType) {
-                case PAdES_BASELINE_B:
-                    return SigningParameters.buildForPDF(filename, checkPDFACompliance, isEn319132);
-                case XAdES_BASELINE_B:
-                    return SigningParameters.buildForASiCWithXAdES(filename, isEn319132);
-                case CAdES_BASELINE_B:
-                    return SigningParameters.buildForASiCWithCAdES(filename, isEn319132);
-                default:
-                    ;
+            case PAdES_BASELINE_B:
+                return SigningParameters.buildForPDF(filename, checkPDFACompliance, isEn319132);
+            case XAdES_BASELINE_B:
+                return SigningParameters.buildForASiCWithXAdES(filename, isEn319132);
+            case CAdES_BASELINE_B:
+                return SigningParameters.buildForASiCWithCAdES(filename, isEn319132);
+            default:
+                ;
         }
 
         return SigningParameters.buildForASiCWithXAdES(filename, isEn319132);
