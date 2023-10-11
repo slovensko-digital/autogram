@@ -124,6 +124,11 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     private void checkExistingSignatureValidityAndSign() {
+        if (!shouldCheckValidityBeforeSigning) {
+            sign();
+            return;
+        }
+
         if ((!signatureCheckCompleted) || ((signatureCheckReports != null) && !signatureValidationCompleted)) {
             showSignaturesNotValidatedDialog();
             return;

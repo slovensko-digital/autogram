@@ -118,6 +118,7 @@ public class GUI implements UI {
         } else {
             if (!driverWasAlreadySet && userSettings.getDriver() != null) {
                 try {
+                    driverWasAlreadySet = true;
                     var defaultDriver = drivers.stream().filter(d -> d.getName().equals(userSettings.getDriver()))
                             .findFirst().get();
 
