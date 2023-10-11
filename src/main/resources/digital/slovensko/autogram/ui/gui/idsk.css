@@ -460,7 +460,7 @@
   -fx-border-color: -autogram-border-colour;
   -fx-background-color: -autogram-secondary-background-colour;
   -fx-padding: 1em 2em;
-  -fx-spacing: 2em;
+  -fx-spacing: 1em;
 }
 
 .autogram-footer .autogram-link {
@@ -574,6 +574,7 @@ TextFlow.autogram-body-s {
 
 /* Tabs */
 .tab .tab-label {
+  -fx-underline: true;
   -fx-text-fill: -autogram-text-colour;
   -fx-background-color: -autogram-secondary-background-colour;
   -fx-border-color: -autogram-border-colour;
@@ -581,11 +582,12 @@ TextFlow.autogram-body-s {
   -fx-padding: 0.6875em 1.25em 0.6875em 1em;
   -fx-background-insets: 0.1875em 0.25em 0.1875em 0;
   -fx-font-size: 1.25em;
-  -fx-font-weight: bold;
+  -fx-font-weight: normal;
   -fx-border-width: 0 0 0 0;
 }
 
 .tab:selected .tab-label {
+  -fx-underline: false;
   -fx-background-color: -autogram-background-colour;
   -fx-border-width: 1px 1px 0 1px;
   -fx-background-insets: 0.125em 0.25em 0 0;

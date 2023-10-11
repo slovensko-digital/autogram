@@ -21,19 +21,37 @@
                                 </TextFlow>
                                 <TextFlow styleClass="autogram-settings-tab-header-text">
                                     <Text styleClass="autogram-body">
-                                        Predvolené nastavenia typu a spôsobu podpisovania v desktopovom móde Autogramu.
+                                        Predvolené nastavenia typu a spôsobu podpisovania Autogramu.
                                     </Text>
                                 </TextFlow>
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Typ podpisu PDF
+                                                Predvolené úložisko certifikátov
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                PAdES je všeobecne akceptovaný a najjednoduchší na používanie, no niektoré úrady zvyknú vyžadovať XAdES alebo CAdES.
+                                                Zvolené úložisko certifikátov sa automaticky použije a nebude ponúkaný výber úložiska.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-dropdown">
+                                        <ChoiceBox fx:id="driverChoiceBox"
+                                                   styleClass="autogram-choicebox" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
+                                                Typ podpisu pre PDF
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                PAdES je všeobecne akceptovaný a&#160;najjednoduchší na používanie, no niektoré úrady môžu ešte vyžadovať XAdES alebo CAdES.
                                             </Text>
                                         </TextFlow>
                                     </VBox>
@@ -50,8 +68,8 @@
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Podpisovanie štandardom ETSI EN 319 132 a ETSI EN 319 122.
-                                                Pozor, systémy verejnej správy tento štandard zatiaľ nepodporujú.
+                                                Podpisovanie štandardom ETSI EN 319 132 a&#160;ETSI EN 319 122.
+                                                Pozor, systémy verejnej správy tento štandard väčšinou nepodporujú.
                                             </Text>
                                         </TextFlow>
                                     </VBox>
@@ -60,29 +78,11 @@
                                             styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
-                                <HBox styleClass="autogram-settings-row">
-                                    <VBox styleClass="left">
-                                        <TextFlow>
-                                            <Text styleClass="autogram-heading-s">
-                                                Predvolené úložisko certifikátov
-                                            </Text>
-                                        </TextFlow>
-                                        <TextFlow>
-                                            <Text styleClass="autogram-description">
-                                                Ak toto úložisko existuje, automaticky sa predvyberie pri podpise.
-                                            </Text>
-                                        </TextFlow>
-                                    </VBox>
-                                    <VBox styleClass="autogram-dropdown">
-                                        <ChoiceBox fx:id="driverChoiceBox"
-                                            styleClass="autogram-choicebox" />
-                                    </VBox>
-                                </HBox>
                             </VBox>
                         </AnchorPane>
                     </content>
                 </Tab>
-                <Tab text="Overovanie podpisu">
+                <Tab text="Overovanie podpisov">
                     <content>
                         <AnchorPane>
                             <ScrollPane hbarPolicy="NEVER" maxHeight="560"
@@ -90,12 +90,12 @@
                                 <VBox styleClass="container">
                                     <TextFlow>
                                         <Text styleClass="autogram-heading-m">
-                                            Overovanie podpisu
+                                            Overovanie podpisov
                                         </Text>
                                     </TextFlow>
                                     <TextFlow styleClass="autogram-settings-tab-header-text">
                                         <Text styleClass="autogram-body">
-                                            Zoznam krajín, pre ktoré sa overuje platnosť podpisov. Ak potrebujete overovať podpisy z ďalších krajín, vyberte ich v zozname. Počet vybraných krajín vplýva na rýchlosť overovania podpisov.
+                                            Zoznam krajín, pre ktoré sa overuje platnosť podpisov. Vyšší počet vybraných krajín spomaľuje overovanie podpisov.
                                         </Text>
                                     </TextFlow>
                                     <TextFlow styleClass="autogram-settings-tab-header-text">
@@ -129,26 +129,7 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Správne zobrazenie dokumentu
-                                            </Text>
-                                        </TextFlow>
-                                        <TextFlow>
-                                            <Text styleClass="autogram-description">
-                                                Zobrazenie chyby, ktorá nastala pri zobrazovaní
-                                                dokumentu.
-                                            </Text>
-                                        </TextFlow>
-                                    </VBox>
-                                    <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="correctDocumentDisplayRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
-                                    </VBox>
-                                </HBox>
-                                <HBox styleClass="autogram-settings-row">
-                                    <VBox styleClass="left">
-                                        <TextFlow>
-                                            <Text styleClass="autogram-heading-s">
-                                                Platnosť podpisov
+                                                Kontrola platnosti podpisov
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
@@ -165,20 +146,33 @@
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
-                                            <Text styleClass="autogram-heading-s">
-                                                Súlad s PDF/A-1a formátom
-                                            </Text>
+                                            <Text styleClass="autogram-heading-s" text="Kontrola súladu s&#160;PDF/A-1a formátom"/>
                                         </TextFlow>
                                         <TextFlow>
-                                            <Text styleClass="autogram-description">
-                                                Kontrola súladu podpisovaného dokumentu s PDF/A-1a
-                                                formátom.
-                                            </Text>
+                                            <Text styleClass="autogram-description" text="Kontrola súladu podpisovaného dokumentu s&#160;PDF/A-1a formátom. Niektoré úrady tento formát vyžadujú na komunikáciu."/>
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
                                         <HBox fx:id="checkPDFAComplianceRadios"
                                             styleClass="autogram-smaller-radio-buttons" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
+                                                Zobrazovať detailné chyby
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Zobrazovať detailné chyby pri neúspešnom otváraní súboru na podpis.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="correctDocumentDisplayRadios"
+                                              styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                             </VBox>
@@ -196,19 +190,19 @@
                                 </TextFlow>
                                 <TextFlow styleClass="autogram-settings-tab-header-text">
                                     <Text styleClass="autogram-body">
-                                        Ďalšie nastavenia Autogramu, ktoré nezapadajú do ostatných kategórií.
+                                        Ďalšie špeciálne nastavenia Autogramu.
                                     </Text>
                                 </TextFlow>
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Autogram API
+                                                Zapnúť Autogram API
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Spúšťanie lokálneho servera, ktorý umožňuje podpisovať dokumenty z webového prehliadača a iných aplikácií.
+                                                Spustí lokálny server, ktorý umožňuje podpisovať dokumenty z iných aplikácií.
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
@@ -232,7 +226,7 @@
     <HBox styleClass="autogram-actions">
         <Button fx:id="closeButton" onAction="#onCancelButtonAction"
             styleClass="autogram-button,autogram-button--secondary">
-            Zavrieť
+            Zavrieť nastavenia
         </Button>
     </HBox>
 </VBox>
