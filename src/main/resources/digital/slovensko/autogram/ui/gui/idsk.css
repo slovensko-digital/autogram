@@ -881,6 +881,11 @@ TextFlow.autogram-body-s {
   -fx-spacing: 10px;
 }
 
+.autogram-radios HBox {
+  -fx-spacing: 1em;
+  -fx-alignment: center-left;
+}
+
 .autogram-actions {
   -fx-spacing: 15px;
   -fx-alignment: center-left;
@@ -997,6 +1002,11 @@ TextFlow.autogram-body-s {
   -fx-border-color: #FFF7BF;
 }
 
+.autogram-tag-info {
+  -fx-background-color: #eeefef;
+  -fx-border-color: #eeefef;
+}
+
 .autogram-tag-processing Text {
   -fx-text-fill: #144E81;
   -fx-fill: #144E81;
@@ -1025,6 +1035,11 @@ TextFlow.autogram-body-s {
 .autogram-tag-warning Text {
   -fx-text-fill: #594D00;
   -fx-fill: #594D00;
+}
+
+.autogram-tag-info Text {
+  -fx-text-fill: #383f43;
+  -fx-fill: #383f43;
 }
 
 .autogram-progress-bar {

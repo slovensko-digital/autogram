@@ -3,9 +3,11 @@ package digital.slovensko.autogram.ui.gui;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -41,18 +43,18 @@ public class PickKeyDialogController {
     public void initialize() {
         toggleGroup = new ToggleGroup();
         for (var key : keys) {
-            var text = parseCN(key.getCertificate().getSubject().getRFC2253());
+            Node badge = new HBox();
             if (!key.getCertificate().isValidOn(new java.util.Date())) {
-                text += " (ekspirovaný certifikát)";
+                badge = SignatureBadgeFactory.createInfoBadge("Ekspirovaný certifikát");
 
                 if (!expiredCertsEnabled)
                     continue;
             }
 
-            var radioButton = new RadioButton(text);
+            var radioButton = new RadioButton(parseCN(key.getCertificate().getSubject().getRFC2253()));
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(key);
-            radios.getChildren().add(radioButton);
+            radios.getChildren().add(new HBox(radioButton, badge));
 
             var tooltip = new Tooltip(buildTooltipLabel(key));
             tooltip.setShowDuration(Duration.seconds(10));
