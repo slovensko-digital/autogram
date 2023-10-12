@@ -18,12 +18,13 @@ public class UserSettings {
     private boolean signaturesValidity;
     private boolean pdfaCompliance;
     private boolean serverEnabled;
+    private boolean expiredCertsEnabled;
     private List<String> trustedList;
 
     private UserSettings(SignatureLevel signatureLevel, String driver, boolean en319132,
             boolean signIndividually, boolean correctDocumentDisplay,
             boolean signaturesValidity, boolean pdfaCompliance,
-            boolean serverEnabled, List<String> trustedList) {
+            boolean serverEnabled, boolean expiredCertsEnabled, List<String> trustedList) {
         this.signatureLevel = signatureLevel;
         this.driver = driver;
         this.en319132 = en319132;
@@ -32,6 +33,7 @@ public class UserSettings {
         this.signaturesValidity = signaturesValidity;
         this.pdfaCompliance = pdfaCompliance;
         this.serverEnabled = serverEnabled;
+        this.expiredCertsEnabled = expiredCertsEnabled;
         this.trustedList = trustedList;
     }
 
@@ -46,6 +48,7 @@ public class UserSettings {
         var signaturesValidity = prefs.getBoolean("SIGNATURES_VALIDITY", true);
         var pdfaCompliance = prefs.getBoolean("PDFA_COMPLIANCE", true);
         var serverEnabled = prefs.getBoolean("SERVER_ENABLED", true);
+        var expiredCertsEnabled = prefs.getBoolean("EXPIRED_CERTS_ENABLED", false);
         var trustedList = prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU");
 
         var signatureLevelStringConverter = new SignatureLevelStringConverter();
@@ -65,6 +68,7 @@ public class UserSettings {
                 signaturesValidity,
                 pdfaCompliance,
                 serverEnabled,
+                expiredCertsEnabled,
                 trustedList == null ? new ArrayList<>() : new ArrayList<>(List.of(trustedList.split(","))));
     }
 
@@ -144,6 +148,15 @@ public class UserSettings {
         save();
     }
 
+    public boolean isExpiredCertsEnabled() {
+        return expiredCertsEnabled;
+    }
+
+    public void setExpiredCertsEnabled(boolean expiredCertsEnabled) {
+        this.expiredCertsEnabled = expiredCertsEnabled;
+        save();
+    }
+
     public List<String> getTrustedList() {
         return trustedList;
     }
@@ -169,6 +182,7 @@ public class UserSettings {
         prefs.putBoolean("SIGNATURES_VALIDITY", signaturesValidity);
         prefs.putBoolean("PDFA_COMPLIANCE", pdfaCompliance);
         prefs.putBoolean("SERVER_ENABLED", serverEnabled);
+        prefs.putBoolean("EXPIRED_CERTS_ENABLED", expiredCertsEnabled);
         prefs.put("TRUSTED_LIST", trustedList.stream().collect(Collectors.joining(",")));
     }
 }

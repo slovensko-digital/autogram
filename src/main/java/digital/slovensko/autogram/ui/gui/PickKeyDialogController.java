@@ -3,9 +3,11 @@ package digital.slovensko.autogram.ui.gui;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -19,6 +21,7 @@ import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 public class PickKeyDialogController {
     private final Consumer<DSSPrivateKeyEntry> callback;
     private final List<DSSPrivateKeyEntry> keys;
+    private final boolean expiredCertsEnabled;
 
     @FXML
     VBox formGroup;
@@ -31,20 +34,29 @@ public class PickKeyDialogController {
     private ToggleGroup toggleGroup;
 
 
-    public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+    public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback, boolean expiredCertsEnabled) {
         this.keys = keys;
         this.callback = callback;
+        this.expiredCertsEnabled = expiredCertsEnabled;
     }
 
     public void initialize() {
         toggleGroup = new ToggleGroup();
-        for (DSSPrivateKeyEntry key : keys) {
+        for (var key : keys) {
+            Node badge = new HBox();
+            if (!key.getCertificate().isValidOn(new java.util.Date())) {
+                badge = SignatureBadgeFactory.createInfoBadge("Ekspirovaný certifikát");
+
+                if (!expiredCertsEnabled)
+                    continue;
+            }
+
             var radioButton = new RadioButton(parseCN(key.getCertificate().getSubject().getRFC2253()));
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(key);
-            radios.getChildren().add(radioButton);
+            radios.getChildren().add(new HBox(radioButton, badge));
 
-            Tooltip tooltip = new Tooltip(buildTooltipLabel(key));
+            var tooltip = new Tooltip(buildTooltipLabel(key));
             tooltip.setShowDuration(Duration.seconds(10));
             tooltip.setWrapText(true);
             tooltip.setPrefWidth(400);

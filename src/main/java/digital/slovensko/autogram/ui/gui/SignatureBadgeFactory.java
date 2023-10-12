@@ -46,6 +46,10 @@ public abstract class SignatureBadgeFactory {
         return createBadge(label, "autogram-tag-warning");
     }
 
+    public static Node createInfoBadge(String label) {
+        return createBadge(label, "autogram-tag-info");
+    }
+
     public static Node createBadgeFromQualification(SignatureQualification qualification) {
         if (qualification == null)
             return createInProgressBadge();

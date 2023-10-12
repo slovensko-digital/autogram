@@ -618,18 +618,17 @@ TextFlow.autogram-body-s {
   -fx-padding: 0 -1em 0 0;
 }
 
-.autogram-settings-tab-pane AnchorPane {
+.autogram-settings-tab-pane ScrollPane {
   -fx-border-color: -autogram-input-border-colour;
   -fx-border-width: 1px;
-  -fx-max-width: 52em;
-  -fx-min-width: 52em;
+  -fx-max-height: 560px;
+  -fx-hbar-policy: never;
 }
 
-.autogram-settings-tab-pane AnchorPane > VBox,
-  .autogram-settings-tab-pane .container {
-  -fx-padding: 2em;
-  -fx-max-width: 52em;
-  -fx-min-width: 52em;
+.autogram-settings-tab-pane ScrollPane .container {
+  -fx-padding: 2em 0 2em 2em;
+  -fx-max-width: 50em;
+  -fx-min-width: 50em;
 }
 
 .autogram-settings-row {
@@ -882,6 +881,11 @@ TextFlow.autogram-body-s {
   -fx-spacing: 10px;
 }
 
+.autogram-radios HBox {
+  -fx-spacing: 1em;
+  -fx-alignment: center-left;
+}
+
 .autogram-actions {
   -fx-spacing: 15px;
   -fx-alignment: center-left;
@@ -998,6 +1002,11 @@ TextFlow.autogram-body-s {
   -fx-border-color: #FFF7BF;
 }
 
+.autogram-tag-info {
+  -fx-background-color: #eeefef;
+  -fx-border-color: #eeefef;
+}
+
 .autogram-tag-processing Text {
   -fx-text-fill: #144E81;
   -fx-fill: #144E81;
@@ -1026,6 +1035,11 @@ TextFlow.autogram-body-s {
 .autogram-tag-warning Text {
   -fx-text-fill: #594D00;
   -fx-fill: #594D00;
+}
+
+.autogram-tag-info Text {
+  -fx-text-fill: #383f43;
+  -fx-fill: #383f43;
 }
 
 .autogram-progress-bar {

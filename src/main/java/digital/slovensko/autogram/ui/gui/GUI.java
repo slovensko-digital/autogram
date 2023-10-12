@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
+import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.visualization.Visualization;
@@ -178,7 +179,18 @@ public class GUI implements UI {
             return;
         }
 
-        var controller = new PickKeyDialogController(keys, callback);
+        if (!userSettings.isExpiredCertsEnabled())
+            keys = keys.stream().filter(k -> k.getCertificate().isValidOn(new java.util.Date())).toList();
+
+        if (keys.isEmpty()) {
+            showError(new NoValidKeysDetectedException());
+            refreshKeyOnAllJobs();
+            enableSigningOnAllJobs();
+
+            return;
+        }
+
+        var controller = new PickKeyDialogController(keys, callback, userSettings.isExpiredCertsEnabled());
         var root = GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
 
         var stage = new Stage();

@@ -130,15 +130,17 @@ public class CliUI implements UI {
             return;
         }
 
-        var i = new AtomicInteger(1);
         System.out.println("Pick Key:");
-        keys.forEach(key -> {
-            System.out.print("[" + i + "] ");
-            System.out.println(parseCN(key.getCertificate().getSubject().getRFC2253()));
-            i.addAndGet(1);
-        });
-        var pickedKey = keys.get(CliUtils.readInteger() - 1);
+        var i = 1;
+        for (var key : keys) {
+            var keyText = parseCN(key.getCertificate().getSubject().getRFC2253());
+            if (!key.getCertificate().isValidOn(new java.util.Date()))
+                keyText += " (expired certificate)";
 
+            System.out.println("[" + i++ + "] " + keyText);
+        }
+
+        var pickedKey = keys.get(CliUtils.readInteger() - 1);
         callback.accept(pickedKey);
     }
 

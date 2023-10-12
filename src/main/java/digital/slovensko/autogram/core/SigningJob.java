@@ -80,6 +80,7 @@ public class SigningJob {
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
 
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
@@ -102,6 +103,7 @@ public class SigningJob {
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
 
         var dataToSign = service.getDataToSign(doc, signatureParameters);
         var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
@@ -117,6 +119,7 @@ public class SigningJob {
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
 
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
@@ -132,6 +135,7 @@ public class SigningJob {
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
 
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
@@ -147,6 +151,7 @@ public class SigningJob {
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
 
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
