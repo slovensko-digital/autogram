@@ -10,6 +10,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
+import digital.slovensko.autogram.core.errors.TransformationOutputMimeTypeExeption;
 import eu.europa.esig.dss.model.DSSDocument;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -61,20 +62,21 @@ public class SignRequestBody {
         return new InMemoryDocument(content, filename, getMimetype());
     }
 
-    public SigningParameters getParameters() throws RequestValidationException, MalformedBodyException {
+    public SigningParameters getParameters()
+            throws RequestValidationException, MalformedBodyException, TransformationOutputMimeTypeExeption {
         if (parameters == null)
             throw new RequestValidationException("Parameters are required", "");
 
         parameters.validate(getDocument().getMimeType());
 
         var signingParameters = parameters.getSigningParameters(isBase64());
+        signingParameters.getTransformationOutputMimeTypeString();
         var parsedPaylodMimeType = getMimetype();
         if (isAsice(parsedPaylodMimeType) || isXML(parsedPaylodMimeType) || isXDC(parsedPaylodMimeType))
             validateXml(signingParameters);
 
         return signingParameters;
     }
-
 
     private MimeType getMimetype() {
         return AutogramMimeType.fromMimeTypeString(payloadMimeType.split(";")[0]);
@@ -88,7 +90,8 @@ public class SignRequestBody {
         return payloadMimeType.contains("base64");
     }
 
-    private void validateXml(SigningParameters signingParameters) throws RequestValidationException, MalformedBodyException {
+    private void validateXml(SigningParameters signingParameters)
+            throws RequestValidationException, MalformedBodyException {
         var xsdSchema = signingParameters.getSchema();
 
         try {
@@ -109,23 +112,25 @@ public class SignRequestBody {
         }
     }
 
-    private String getXmlContent(SigningParameters signingParameters) throws XMLValidationException, InvalidXMLException {
+    private String getXmlContent(SigningParameters signingParameters)
+            throws XMLValidationException, InvalidXMLException {
         if (isAsice(getMimetype())) {
             return getXmlContentFromAsice(signingParameters);
         } else if (isXDC(getMimetype())) {
             return getXmlContentFromXdc(signingParameters, getDocument());
-        }  else {
+        } else {
             return new String(decodeDocumentContent());
         }
     }
 
-    private String getXmlContentFromAsice(SigningParameters signingParameters) throws XMLValidationException, InvalidXMLException {
+    private String getXmlContentFromAsice(SigningParameters signingParameters)
+            throws XMLValidationException, InvalidXMLException {
         DSSDocument originalDocument = AsicContainerUtils.getOriginalDocument(getDocument());
         if (!isXDC(originalDocument.getMimeType()) && !isXML(originalDocument.getMimeType())) {
             return null;
         }
-        return isXDC(originalDocument.getMimeType()) ? getXmlContentFromXdc(signingParameters, originalDocument) :
-                getXmlContentFromOriginalDocument(originalDocument);
+        return isXDC(originalDocument.getMimeType()) ? getXmlContentFromXdc(signingParameters, originalDocument)
+                : getXmlContentFromOriginalDocument(originalDocument);
     }
 
     private String getXmlContentFromOriginalDocument(DSSDocument originalDocument) throws InvalidXMLException {
@@ -140,7 +145,8 @@ public class SignRequestBody {
         }
     }
 
-    private String getXmlContentFromXdc(SigningParameters signingParameters, DSSDocument document) throws InvalidXMLException, XMLValidationException {
+    private String getXmlContentFromXdc(SigningParameters signingParameters, DSSDocument document)
+            throws InvalidXMLException, XMLValidationException {
         var xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
         if (signingParameters.getSchema() != null && !xdcTransformer.validateXsdDigest())
             throw new XMLValidationException("XML Datacontainer validation failed", "XSD scheme digest mismatch");

@@ -202,5 +202,9 @@ class AutogramTests {
         public void onSignatureCheckCompleted(ValidationReports wrapper) {
 
         }
+
+        @Override
+        public void closeController(SigningJob job) {
+        }
     }
 }

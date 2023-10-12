@@ -10,20 +10,15 @@ import static java.util.Objects.requireNonNull;
 public class DocumentationEndpoint implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        boolean isYaml = exchange.getRequestURI().getPath().endsWith(".yml");
+        var isYaml = exchange.getRequestURI().getPath().endsWith(".yml");
         var mimeType = isYaml ? "text/yaml" : "text/html";
         var filename = isYaml ? "server.yml" : "index.html";
+        var stream = getClass().getResourceAsStream(filename);
 
-        exchange.getResponseHeaders().set("Content-Type", mimeType);
-
-        // automatically closes both streams
-        try (var stream = getClass().getResourceAsStream(filename);
-             var responseStream = exchange.getResponseBody()) {
+        try (exchange) {
+            exchange.getResponseHeaders().set("Content-Type", mimeType);
             exchange.sendResponseHeaders(200, 0);
-
-            requireNonNull(stream).transferTo(responseStream);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            requireNonNull(stream).transferTo(exchange.getResponseBody());
         }
     }
 }

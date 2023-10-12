@@ -55,4 +55,6 @@ public interface UI {
     void showIgnorableExceptionDialog(IgnorableException exception);
 
     void showError(AutogramException exception);
+
+    void closeController(SigningJob job);
 }

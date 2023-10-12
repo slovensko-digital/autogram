@@ -276,4 +276,10 @@ public class CliUI implements UI {
         }
         System.err.println(errMessage);
     }
+
+    @Override
+    public void closeController(SigningJob job) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'closeController'");
+    }
 }

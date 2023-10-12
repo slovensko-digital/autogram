@@ -1,7 +1,16 @@
 package digital.slovensko.autogram.core;
 
-import javax.xml.crypto.dsig.CanonicalizationMethod;
+import java.io.IOException;
+import java.io.StringReader;
 
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import digital.slovensko.autogram.core.errors.TransformationOutputMimeTypeExeption;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
@@ -203,4 +212,30 @@ public class SigningParameters {
         return (visualizationWidth > 0) ? visualizationWidth : 640;
     }
 
+    public String getTransformationOutputMimeTypeString() throws TransformationOutputMimeTypeExeption {
+        if (transformation == null)
+            return "TXT";
+
+        var method = "";
+        try {
+            var builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setNamespaceAware(true);
+            var document = builderFactory.newDocumentBuilder()
+                .parse(new InputSource(new StringReader(transformation)));
+            var elem = document.getDocumentElement();
+            var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
+            method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
+
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            throw new TransformationOutputMimeTypeExeption("Failed to parse transformation");
+        }
+
+        if (method.equals("html"))
+            return "HTML";
+
+        if (method.equals("text"))
+            return "TXT";
+
+        throw new TransformationOutputMimeTypeExeption("Unsupported transformation output method: " + method);
+    }
 }

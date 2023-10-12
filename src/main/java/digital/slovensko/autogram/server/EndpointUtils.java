@@ -2,6 +2,8 @@ package digital.slovensko.autogram.server;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
+
+import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.EmptyBodyException;
 import java.io.IOException;
@@ -17,7 +19,7 @@ public class EndpointUtils {
                 exchange.getResponseBody().write(gson.toJson(error.getBody()).getBytes());
             exchange.getResponseBody().close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ResponseNetworkErrorException("Externá aplikácia nečakala na odpoveď", e);
         }
     }
 
@@ -28,7 +30,7 @@ public class EndpointUtils {
             exchange.getResponseBody().write(gson.toJson(response).getBytes());
             exchange.getResponseBody().close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ResponseNetworkErrorException("Externá aplikácia nečakala na odpoveď", e);
         }
     }
 
