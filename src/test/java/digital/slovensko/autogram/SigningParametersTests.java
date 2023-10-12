@@ -3,6 +3,7 @@ package digital.slovensko.autogram;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.errors.TransformationParsingErrorExeption;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -10,7 +11,6 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXParseException;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
@@ -32,7 +32,7 @@ public class SigningParametersTests {
             this.getClass().getResourceAsStream("crystal_test_data/rozhodnutie_X4564-2.xml"), "rozhodnutie_X4564-2.xml");
 
         var job = new SigningJob(document, params, mock(Responder.class));
-        assertThrows(SAXParseException.class, () -> {
+        assertThrows(TransformationParsingErrorExeption.class, () -> {
             DocumentVisualizationBuilder.fromJob(job);
         });
     }

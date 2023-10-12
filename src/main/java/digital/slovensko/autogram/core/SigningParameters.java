@@ -10,7 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.errors.TransformationOutputMimeTypeExeption;
+import digital.slovensko.autogram.core.errors.TransformationParsingErrorExeption;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
@@ -212,7 +212,7 @@ public class SigningParameters {
         return (visualizationWidth > 0) ? visualizationWidth : 640;
     }
 
-    public String getTransformationOutputMimeTypeString() throws TransformationOutputMimeTypeExeption {
+    public String getTransformationOutputMimeTypeString() throws TransformationParsingErrorExeption {
         if (transformation == null)
             return "TXT";
 
@@ -224,10 +224,13 @@ public class SigningParameters {
                 .parse(new InputSource(new StringReader(transformation)));
             var elem = document.getDocumentElement();
             var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
+            if (outputElements.getLength() == 0)
+                throw new TransformationParsingErrorExeption("Failed to parse transformation. Missing output element");
+
             method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
 
         } catch (SAXException | IOException | ParserConfigurationException e) {
-            throw new TransformationOutputMimeTypeExeption("Failed to parse transformation");
+            throw new TransformationParsingErrorExeption("Failed to parse transformation");
         }
 
         if (method.equals("html"))
@@ -236,6 +239,6 @@ public class SigningParameters {
         if (method.equals("text"))
             return "TXT";
 
-        throw new TransformationOutputMimeTypeExeption("Unsupported transformation output method: " + method);
+        throw new TransformationParsingErrorExeption("Unsupported transformation output method: " + method);
     }
 }
