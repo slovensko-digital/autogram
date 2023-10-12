@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
@@ -164,6 +166,19 @@ public class SignatureValidator {
 
         validator.setCertificateVerifier(new CommonCertificateVerifier());
         return new ValidationReports(validator.validateDocument(), job);
+    }
+
+    public static SignatureLevel getSignedDocumentSignatureLevel(DSSDocument document) {
+        var validator = createDocumentValidator(document);
+        if (validator == null)
+            return null;
+
+        validator.setCertificateVerifier(new CommonCertificateVerifier());
+        var report = validator.validateDocument().getSimpleReport();
+        if (report.getSignatureIdList().size() == 0)
+            return null;
+
+        return report.getSignatureFormat(report.getSignatureIdList().get(0));
     }
 
     public synchronized boolean areTLsLoaded() {

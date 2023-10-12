@@ -31,6 +31,7 @@ public record AutogramMimeType(
 
 		return new AutogramMimeType(mimeTypeString.split(";")[0], null);
 	}
+
     public static boolean isAsice(MimeType mimeType) {
         return mimeType.equals(MimeTypeEnum.ASICE);
     }
@@ -41,5 +42,9 @@ public record AutogramMimeType(
 
     public static boolean isXDC(MimeType mimeType) {
         return mimeType.equals(XML_DATACONTAINER);
+    }
+
+    public static boolean isPDF(MimeType mimeType) {
+        return mimeType.equals(MimeTypeEnum.PDF);
     }
 }

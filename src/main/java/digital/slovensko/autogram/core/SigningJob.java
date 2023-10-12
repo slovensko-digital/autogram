@@ -8,7 +8,6 @@ import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.MimeType;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -16,6 +15,8 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+
+import static digital.slovensko.autogram.core.AutogramMimeType.isPDF;
 
 public class SigningJob {
     private final Responder responder;
@@ -161,37 +162,45 @@ public class SigningJob {
 
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {
         var document = new FileDocument(file);
-        SigningParameters parameters = getParametersForFile(file, checkPDFACompliance, signatureType, isEn319132);
+        SigningParameters parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132);
         return new SigningJob(document, parameters, responder);
     }
 
     public static SigningJob buildFromFileBatch(File file, Autogram autogram, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {
         var document = new FileDocument(file);
-        var parameters = getParametersForFile(file, checkPDFACompliance, signatureType, isEn319132);
+        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132);
         return new SigningJob(document, parameters, responder);
     }
 
-    private static SigningParameters getParametersForFile(File file, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {
-        var filename = file.getName();
+    private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {
+        var level = SignatureValidator.getSignedDocumentSignatureLevel(document);
+        if (level != null) switch (level) {
+            case PAdES_BASELINE_B:
+                return SigningParameters.buildForPDF(document.getName(), checkPDFACompliance, isEn319132);
+            case XAdES_BASELINE_B:
+                return SigningParameters.buildForASiCWithXAdES(document.getName(), isEn319132);
+            case CAdES_BASELINE_B:
+                return SigningParameters.buildForASiCWithCAdES(document.getName(), isEn319132);
+            default:
+                ;
+        }
 
-        var isFilePdf = filename.endsWith(".pdf");
-
-        if (isFilePdf)
-            switch (signatureType) {
-                case PAdES_BASELINE_B:
-                    return SigningParameters.buildForPDF(filename, checkPDFACompliance, isEn319132);
-                case XAdES_BASELINE_B:
-                    return SigningParameters.buildForASiCWithXAdES(filename, isEn319132);
-                case CAdES_BASELINE_B:
-                    return SigningParameters.buildForASiCWithCAdES(filename, isEn319132);
-                default:
-                    ;
-            }
+        var filename = document.getName();
+        if (isPDF(document.getMimeType())) switch (signatureType) {
+            case PAdES_BASELINE_B:
+                return SigningParameters.buildForPDF(filename, checkPDFACompliance, isEn319132);
+            case XAdES_BASELINE_B:
+                return SigningParameters.buildForASiCWithXAdES(filename, isEn319132);
+            case CAdES_BASELINE_B:
+                return SigningParameters.buildForASiCWithCAdES(filename, isEn319132);
+            default:
+                ;
+        }
 
         return SigningParameters.buildForASiCWithXAdES(filename, isEn319132);
     }
 
     public boolean shouldCheckPDFCompliance() {
-        return parameters.getCheckPDFACompliance() && document.getMimeType().equals(MimeTypeEnum.PDF);
+        return parameters.getCheckPDFACompliance() && isPDF(document.getMimeType());
     }
 }

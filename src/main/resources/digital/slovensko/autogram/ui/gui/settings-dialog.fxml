@@ -54,6 +54,11 @@
                                                 PAdES je všeobecne akceptovaný a&#160;najjednoduchší na používanie, no niektoré úrady môžu ešte vyžadovať XAdES alebo CAdES.
                                             </Text>
                                         </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Ak je zvolený dokument už podpísaný iným typom podpisu, bude použitý rovnaký typ a toto nastavenie sa ignoruje.
+                                            </Text>
+                                        </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-dropdown">
                                         <ChoiceBox fx:id="signatureLevelChoiceBoxBox" />
