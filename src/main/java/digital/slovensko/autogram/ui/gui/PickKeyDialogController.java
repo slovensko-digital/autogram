@@ -19,6 +19,7 @@ import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 public class PickKeyDialogController {
     private final Consumer<DSSPrivateKeyEntry> callback;
     private final List<DSSPrivateKeyEntry> keys;
+    private final boolean expiredCertsEnabled;
 
     @FXML
     VBox formGroup;
@@ -31,17 +32,22 @@ public class PickKeyDialogController {
     private ToggleGroup toggleGroup;
 
 
-    public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+    public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback, boolean expiredCertsEnabled) {
         this.keys = keys;
         this.callback = callback;
+        this.expiredCertsEnabled = expiredCertsEnabled;
     }
 
     public void initialize() {
         toggleGroup = new ToggleGroup();
         for (var key : keys) {
             var text = parseCN(key.getCertificate().getSubject().getRFC2253());
-            if (!key.getCertificate().isValid())
-                text += " (neplatný certifikát)";
+            if (!key.getCertificate().isValidOn(new java.util.Date())) {
+                text += " (ekspirovaný certifikát)";
+
+                if (!expiredCertsEnabled)
+                    continue;
+            }
 
             var radioButton = new RadioButton(text);
             radioButton.setToggleGroup(toggleGroup);

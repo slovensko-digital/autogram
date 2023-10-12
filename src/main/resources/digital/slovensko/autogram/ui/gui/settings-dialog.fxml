@@ -12,8 +12,8 @@
             <tabs>
                 <Tab text="Podpisovanie">
                     <content>
-                        <AnchorPane>
-                            <VBox>
+                        <ScrollPane fx:id="trustedCountriesListScrollPane">
+                            <VBox styleClass="container">
                                 <TextFlow>
                                     <Text styleClass="autogram-heading-m">
                                         Podpisovanie
@@ -79,42 +79,39 @@
                                     </VBox>
                                 </HBox>
                             </VBox>
-                        </AnchorPane>
+                        </ScrollPane>
                     </content>
                 </Tab>
                 <Tab text="Overovanie podpisov">
                     <content>
-                        <AnchorPane>
-                            <ScrollPane hbarPolicy="NEVER" maxHeight="560"
-                                fx:id="trustedCountriesListScrollPane">
-                                <VBox styleClass="container">
-                                    <TextFlow>
-                                        <Text styleClass="autogram-heading-m">
-                                            Overovanie podpisov
-                                        </Text>
-                                    </TextFlow>
-                                    <TextFlow styleClass="autogram-settings-tab-header-text">
-                                        <Text styleClass="autogram-body">
-                                            Zoznam krajín, pre ktoré sa overuje platnosť podpisov. Vyšší počet vybraných krajín spomaľuje overovanie podpisov.
-                                        </Text>
-                                    </TextFlow>
-                                    <TextFlow styleClass="autogram-settings-tab-header-text">
-                                        <Text styleClass="autogram-body">
-                                            Zmeny v tomto nastavení sa prejavia až po reštarte aplikácie.
-                                        </Text>
-                                    </TextFlow>
+                        <ScrollPane fx:id="trustedCountriesListScrollPane">
+                            <VBox styleClass="container">
+                                <TextFlow>
+                                    <Text styleClass="autogram-heading-m">
+                                        Overovanie podpisov
+                                    </Text>
+                                </TextFlow>
+                                <TextFlow styleClass="autogram-settings-tab-header-text">
+                                    <Text styleClass="autogram-body">
+                                        Zoznam krajín, pre ktoré sa overuje platnosť podpisov. Vyšší počet vybraných krajín spomaľuje overovanie podpisov.
+                                    </Text>
+                                </TextFlow>
+                                <TextFlow styleClass="autogram-settings-tab-header-text">
+                                    <Text styleClass="autogram-body">
+                                        Zmeny v tomto nastavení sa prejavia až po reštarte aplikácie.
+                                    </Text>
+                                </TextFlow>
 
-                                    <VBox alignment="center" fx:id="trustedCountriesList"
-                                        styleClass="autogram-trusted-countries-list" />
-                                </VBox>
-                            </ScrollPane>
-                        </AnchorPane>
+                                <VBox alignment="center" fx:id="trustedCountriesList"
+                                    styleClass="autogram-trusted-countries-list" />
+                            </VBox>
+                        </ScrollPane>
                     </content>
                 </Tab>
                 <Tab text="Bezpečnosť">
                     <content>
-                        <AnchorPane>
-                            <VBox>
+                        <ScrollPane>
+                            <VBox styleClass="container">
                                 <TextFlow>
                                     <Text styleClass="autogram-heading-m">
                                         Bezpečnosť
@@ -161,6 +158,24 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
+                                                Povoliť podpisovanie ekspriovanými certifikátmi
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Povoliť podpisovanie ekspirovanými certifikátmi a zobrazovať ich vo výbere certifikátov.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="expiredCertsRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
                                                 Zobrazovať detailné chyby
                                             </Text>
                                         </TextFlow>
@@ -172,17 +187,17 @@
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
                                         <HBox fx:id="correctDocumentDisplayRadios"
-                                              styleClass="autogram-smaller-radio-buttons" />
+                                            styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                             </VBox>
-                        </AnchorPane>
+                        </ScrollPane>
                     </content>
                 </Tab>
                 <Tab text="Iné">
                     <content>
-                        <AnchorPane>
-                            <VBox>
+                        <ScrollPane fx:id="trustedCountriesListScrollPane">
+                            <VBox styleClass="container">
                                 <TextFlow>
                                     <Text styleClass="autogram-heading-m">
                                         Iné
@@ -217,7 +232,7 @@
                                     </VBox>
                                 </HBox>
                             </VBox>
-                        </AnchorPane>
+                        </ScrollPane>
                     </content>
                 </Tab>
             </tabs>

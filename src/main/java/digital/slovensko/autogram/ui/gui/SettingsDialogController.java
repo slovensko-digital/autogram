@@ -35,6 +35,8 @@ public class SettingsDialogController {
     @FXML
     private HBox checkPDFAComplianceRadios;
     @FXML
+    private HBox expiredCertsRadios;
+    @FXML
     private HBox localServerEnabledRadios;
     @FXML
     private Button saveButton;
@@ -54,6 +56,7 @@ public class SettingsDialogController {
         initializeCorrectDocumentDisplayCheckBox();
         initializeSignatureValidationCheckBox();
         initializeCheckPDFAComplianceCheckBox();
+        initializeExpiredCertsEnabledCheckBox();
         initializeLocalServerEnabledCheckBox();
         initializeTrustedCountriesList();
     }
@@ -126,6 +129,11 @@ public class SettingsDialogController {
     private void initializeCheckPDFAComplianceCheckBox() {
         initializeBooleanRadios(checkPDFAComplianceRadios, t -> userSettings.setPdfaCompliance(t),
                 userSettings.isPdfaCompliance());
+    }
+
+    private void initializeExpiredCertsEnabledCheckBox() {
+        initializeBooleanRadios(expiredCertsRadios, t -> userSettings.setExpiredCertsEnabled(t),
+                userSettings.isExpiredCertsEnabled());
     }
 
     private void initializeLocalServerEnabledCheckBox() {
