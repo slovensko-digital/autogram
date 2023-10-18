@@ -70,11 +70,10 @@ public abstract class Transformation {
             e.printStackTrace();
         }
 
-        // var xsltDigest = computeDigest(xsltString, CanonicalizationMethod.INCLUSIVE);
-        // var xdcXsltDigest = getXdcXsltDigest(xdc);
-        // if (!xsltDigest.equals(xdcXsltDigest))
-        // throw new AutogramException("XSLT digest mismatch", "XSLT digest mismatch",
-        // "XSLT digest mismatch: " + xsltDigest + " != " + xdcXsltDigest);
+        var xsltDigest = computeDigest(xsltString, CanonicalizationMethod.INCLUSIVE);
+        var xdcXsltDigest = getXdcXsltDigest(xdc);
+        if (!xsltDigest.equals(xdcXsltDigest))
+            throw new AutogramException("XSLT digest mismatch", "XSLT digest mismatch", "XSLT digest mismatch: " + xsltDigest + " != " + xdcXsltDigest);
 
         return new String(xsltString, StandardCharsets.UTF_8);
     }
@@ -107,7 +106,7 @@ public abstract class Transformation {
 
     private static String getXdcXsltDigest(Element xdc) {
         return xdc.getElementsByTagNameNS(
-                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "UsedXSDReference").item(0).getAttributes()
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "UsedPresentationSchemaReference").item(0).getAttributes()
                 .getNamedItem("DigestValue").getNodeValue();
 
     }
