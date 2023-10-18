@@ -1,16 +1,11 @@
 package digital.slovensko.autogram.core;
 
-import java.io.IOException;
-import java.io.StringReader;
+import java.util.ArrayList;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
+import digital.slovensko.autogram.core.eforms.Transformation;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
@@ -37,12 +32,13 @@ public class SigningParameters {
     private final String identifier;
     private final boolean checkPDFACompliance;
     private final int visualizationWidth;
+    private final boolean autoLoadEform;
 
     public SigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
             String keyInfoCanonicalization, String schema, String transformation, String identifier,
-            boolean checkPDFACompliance, int preferredPreviewWidth) {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform) {
         this.level = level;
         this.asicContainer = container;
         this.containerXmlns = containerXmlns;
@@ -57,6 +53,7 @@ public class SigningParameters {
         this.identifier = identifier;
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
+        this.autoLoadEform = autoLoadEform;
     }
 
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
@@ -181,19 +178,19 @@ public class SigningParameters {
                 DigestAlgorithm.SHA256,
                 signAsEn319132, null,
                 null, null,
-                null, null, "", checkPDFACompliance, 640);
+                null, null, "", checkPDFACompliance, 640, false);
     }
 
     public static SigningParameters buildForASiCWithXAdES(String filename, boolean signAsEn319132) {
         return new SigningParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
-                null, null, null, "", false, 640);
+                null, null, null, "", false, 640, false);
     }
 
     public static SigningParameters buildForASiCWithCAdES(String filename, boolean signAsEn319132) {
         return new SigningParameters(SignatureLevel.CAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
-                null, null, null, "", false, 640);
+                null, null, null, "", false, 640, false);
     }
 
     public String getIdentifier() {
@@ -209,37 +206,18 @@ public class SigningParameters {
     }
 
     public int getVisualizationWidth() {
-        return (visualizationWidth > 0) ? visualizationWidth : 640;
+        return (visualizationWidth > 0) ? visualizationWidth : 768;
+    }
+
+    public boolean getAutoLoadEform() {
+        return autoLoadEform;
     }
 
     public String extractTransformationOutputMimeTypeString() throws TransformationParsingErrorException {
-        if (transformation == null)
-            return "TXT";
+        var mimeType = Transformation.extractTransformationOutputMimeTypeString(transformation);
+        if (! new ArrayList<String>() {{ add("HTML"); add("TXT"); }}.contains(mimeType))
+            throw new TransformationParsingErrorException("Unsupported transformation output method: " + mimeType);
 
-        var method = "";
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            var document = builderFactory.newDocumentBuilder()
-                .parse(new InputSource(new StringReader(transformation)));
-            var elem = document.getDocumentElement();
-            var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
-            if (outputElements.getLength() == 0)
-                throw new TransformationParsingErrorException("Failed to parse transformation. Missing output element");
-
-            method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
-
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            throw new TransformationParsingErrorException("Failed to parse transformation");
-        }
-
-        if (method.equals("html"))
-            return "HTML";
-
-        if (method.equals("text"))
-            return "TXT";
-
-        throw new TransformationParsingErrorException("Unsupported transformation output method: " + method);
+        return mimeType;
     }
 }

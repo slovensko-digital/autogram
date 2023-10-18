@@ -37,7 +37,7 @@ class XDCTransformerTests {
             null,
             transformation,
             "id1/asa",
-            false, 800);
+            false, 800, false);
 
         var out = XDCTransformer.buildFromSigningParameters(params).transform(document);
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
@@ -64,7 +64,8 @@ class XDCTransformerTests {
                 null,
                 null,
                 false,
-                0
+                0,
+                false
         );
 
         Assertions.assertThrows(InvalidXMLException.class, () -> XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document));
@@ -90,7 +91,8 @@ class XDCTransformerTests {
                 null,
                 null,
                 false,
-                0
+                0,
+                false
         );
 
         XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
@@ -118,7 +120,8 @@ class XDCTransformerTests {
                 null,
                 null,
                 false,
-                0
+                0,
+                false
         );
 
         XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
@@ -146,7 +149,8 @@ class XDCTransformerTests {
                 null,
                 null,
                 false,
-                0
+                0,
+                false
         );
 
         XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
@@ -173,7 +177,8 @@ class XDCTransformerTests {
                 null,
                 null,
                 false,
-                0
+                0,
+                false
         );
 
         XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
@@ -200,7 +205,8 @@ class XDCTransformerTests {
                 null,
                 null,
                 false,
-                0
+                0,
+                false
         );
 
         XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);

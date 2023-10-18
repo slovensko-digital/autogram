@@ -39,7 +39,8 @@ public class SigningJobTests {
                 transformation,
                 null,
                 false,
-                ServerSigningParameters.VisualizationWidthEnum.sm);
+                null,
+                false);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
         var job = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null);

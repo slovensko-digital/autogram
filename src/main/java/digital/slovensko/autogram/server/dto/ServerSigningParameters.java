@@ -49,6 +49,7 @@ public class ServerSigningParameters {
     private final String identifier;
     private final boolean checkPDFACompliance;
     private final VisualizationWidthEnum visualizationWidth;
+    private final boolean autoLoadEform;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -56,7 +57,7 @@ public class ServerSigningParameters {
             Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
             LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
             String schema, String transformation,
-            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth) {
+            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth, boolean autoLoadEform) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -71,6 +72,7 @@ public class ServerSigningParameters {
         this.identifier = Identifier;
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
+        this.autoLoadEform = autoLoadEform;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64) {
@@ -86,7 +88,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, getVisualizationWidth());
+                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform);
     }
 
     private String getTransformation(boolean isBase64) throws MalformedBodyException {

@@ -6,9 +6,7 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-import java.util.Base64;
 
-import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -19,8 +17,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.xades.DSSXMLUtils;
 
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -28,11 +24,12 @@ import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
+import static digital.slovensko.autogram.core.eforms.Transformation.findTransformation;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.eforms.Transformation;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 
@@ -68,7 +65,7 @@ public class DocumentVisualizationBuilder {
         }
 
         var transformation = getTransformation(documentToDisplay);
-        var transformationOutputMimeType = parameters.extractTransformationOutputMimeTypeString();
+        var transformationOutputMimeType = Transformation.extractTransformationOutputMimeTypeString(transformation);
 
         if (isDocumentSupportingTransformation(documentToDisplay) && isTranformationAvailable(transformation)) {
             if (transformationOutputMimeType.equals("HTML"))
@@ -125,62 +122,6 @@ public class DocumentVisualizationBuilder {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private String findTransformation(String uri, String xdcXsltDigest) {
-        var parts = uri.split("/");
-        var lastPart = parts[parts.length - 1];
-        var secondLastPart = parts[parts.length - 2];
-        var directory = secondLastPart + "/" + lastPart;
-        var metaFile = DocumentVisualizationBuilder.class.getResourceAsStream(directory + "/META-INF/manifest.xml");
-
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
-
-        try {
-            var inputSource = new InputSource(metaFile);
-            inputSource.setEncoding(encoding.displayName());
-            var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
-            var xml = parsedDocument.getDocumentElement();
-
-            String xslt = null;
-            var entries = xml.getElementsByTagName("manifest:file-entry");
-
-            for (int i = 0; i < entries.getLength(); i++) {
-                var entry = entries.item(i);
-                var mediaDestinationNode = entry.getAttributes().getNamedItem("media-destination");
-                if (mediaDestinationNode == null)
-                    continue;
-
-                var mediaDestination = mediaDestinationNode.getNodeValue();
-                var fullPath = entry.getAttributes().getNamedItem("full-path");
-                if (!mediaDestination.equals("sign") || fullPath == null)
-                    continue;
-
-                xslt = fullPath.getNodeValue().replace("\\", "/");
-                var transformation = DocumentVisualizationBuilder.class.getResourceAsStream(directory + "/" + xslt).readAllBytes();
-
-                var canonicalizedData = DSSXMLUtils.canonicalize(CanonicalizationMethod.INCLUSIVE, transformation);
-                var digest = DSSUtils.digest(DigestAlgorithm.SHA256, canonicalizedData);
-                var asBase64 = Base64.getEncoder().encode(digest);
-
-                var xsltDigest = new String(asBase64, StandardCharsets.UTF_8);
-
-                if (xsltDigest.equals(xdcXsltDigest))
-                    ;
-                else
-                    System.out.println("XSLT digest mismatch: " + xsltDigest + " != " + xdcXsltDigest);
-
-
-                System.out.println("Content: " + new String(transformation, encoding));
-                return new String(transformation, encoding);
-            }
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return null;
     }
 
     private boolean isTranformationAvailable(String transformation) {

@@ -202,7 +202,10 @@ public class SignHttpSmokeTest {
                 keyInfoCanonicalization,
                 schema,
                 transformation,
-                identifier, checkPDFACompliance, visualizationWidth);
+                identifier,
+                checkPDFACompliance,
+                visualizationWidth,
+                false);
     }
 
     private static <T extends Enum<T>> T fromMapToEnum(Class<T> clazz, Object obj) {

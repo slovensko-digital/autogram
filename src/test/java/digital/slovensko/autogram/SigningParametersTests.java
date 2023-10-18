@@ -25,7 +25,7 @@ public class SigningParametersTests {
             ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
             DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
             CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE, null,
-            transformation, "id1/asa", false, 800);
+            transformation, "id1/asa", false, 800, false);
 
 
         var document = new InMemoryDocument(
