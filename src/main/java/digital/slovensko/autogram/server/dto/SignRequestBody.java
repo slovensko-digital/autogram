@@ -132,6 +132,7 @@ public class SignRequestBody {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             org.w3c.dom.Document document = builderFactory.newDocumentBuilder().parse(new InputSource(originalDocument.openStream()));
             var xml = document.getDocumentElement();
             return XDCTransformer.transformElementToString(xml);

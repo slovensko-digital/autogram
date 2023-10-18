@@ -125,6 +125,7 @@ public class DocumentVisualizationBuilder {
 
         var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
+        builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
         var document = builderFactory.newDocumentBuilder()
             .parse(new InputSource(new StringReader(transformation)));
         var elem = document.getDocumentElement();
@@ -150,13 +151,14 @@ public class DocumentVisualizationBuilder {
         // We are using try catch instead of try-with-resources because
         // when debugging with VSCode on M2 MacOS, it throws self-suppression error
         // (which is weird)
-        final var is = documentToDisplay.openStream();
+        final var inputStream = documentToDisplay.openStream();
         Throwable originalException = null;
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
 
-            var inputSource = new InputSource(is);
+            var inputSource = new InputSource(inputStream);
             inputSource.setEncoding(encoding.displayName());
             var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
 
@@ -164,17 +166,13 @@ public class DocumentVisualizationBuilder {
             if (isDocumentXDC(documentToDisplay))
                 xmlSource = extractFromXDC(parsedDocument, builderFactory);
 
-            var outputTarget = new StreamResult(new StringWriter());
-
-            // var transformerFactory = TransformerFactory.newDefaultInstance();
-
             var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
-
             var transformer = transformerFactory.newTransformer(new StreamSource(
                 new ByteArrayInputStream(getTransformation().getBytes(encoding))));
             var outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
             transformer.setOutputProperties(outputProperties);
+            var outputTarget = new StreamResult(new StringWriter());
             transformer.transform(xmlSource, outputTarget);
 
             return outputTarget.getWriter().toString().trim();
@@ -182,16 +180,16 @@ public class DocumentVisualizationBuilder {
             originalException = transformationException;
             throw transformationException;
         } finally {
-            if (is != null) {
+            if (inputStream != null) {
                 if (originalException != null) {
                     try {
-                        is.close();
+                        inputStream.close();
                     } catch (Throwable closeException) {
                         originalException.addSuppressed(closeException);
                     }
 
                 } else {
-                    is.close();
+                    inputStream.close();
                 }
             }
         }

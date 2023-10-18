@@ -92,6 +92,7 @@ public class AsicContainerUtils {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             var document = builderFactory.newDocumentBuilder().parse(new InputSource(manifest.openStream()));
             return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
         } catch (Exception e) {

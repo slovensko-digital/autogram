@@ -138,6 +138,8 @@ public class SignatureValidator {
         builderFactory.setNamespaceAware(true);
 
         try {
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+
             var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
             var xmlSource = new DOMSource(document);
 

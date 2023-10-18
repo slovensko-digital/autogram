@@ -49,7 +49,7 @@ public class XDCTransformer {
     private String documentXmlns;
 
     /**
-     * 
+     *
      * @param sp
      * @param visualizationMimeType - this is because getting transformation mime type can throw
      * @return
@@ -84,6 +84,7 @@ public class XDCTransformer {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
 
             return new XDCTransformer(sp.getSchema(),
                     sp.getTransformation(),
@@ -130,6 +131,7 @@ public class XDCTransformer {
     private void parseDOMDocument(String xmlContent) throws ParserConfigurationException, IOException, SAXException {
         var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
+        builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
 
         var source = new InputSource(new StringReader(xmlContent));
         this.document = builderFactory.newDocumentBuilder().parse(source);
@@ -307,6 +309,7 @@ public class XDCTransformer {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
 
             var document = builderFactory.newDocumentBuilder().newDocument();
             var node = document.importNode(element, true);
