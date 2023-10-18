@@ -220,6 +220,7 @@ public class SigningParameters {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             var document = builderFactory.newDocumentBuilder()
                 .parse(new InputSource(new StringReader(transformation)));
             var elem = document.getDocumentElement();
