@@ -71,7 +71,7 @@ public class DocumentVisualizationBuilder {
             if (transformationOutputMimeType.equals("HTML"))
                 return new HTMLVisualization(transform(documentToDisplay, transformation), job);
 
-            if (transformationOutputMimeType.equals("TEXT"))
+            if (transformationOutputMimeType.equals("TXT"))
                 return new PlainTextVisualization(transform(documentToDisplay, transformation), job);
 
             return new UnsupportedVisualization(job);
@@ -92,36 +92,14 @@ public class DocumentVisualizationBuilder {
         return new UnsupportedVisualization(job);
     }
 
-    private String getTransformation(DSSDocument documentToDisplay) {
+    private String getTransformation(DSSDocument documentToDisplay) throws AutogramException {
         if (parameters.getTransformation() != null)
             return parameters.getTransformation();
 
         if (!documentToDisplay.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER))
             return null;
 
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
-
-        try {
-            var is = documentToDisplay.openStream();
-            var inputSource = new InputSource(is);
-            inputSource.setEncoding(encoding.displayName());
-            var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
-            var xdc = parsedDocument.getDocumentElement();
-            var xmlData = xdc.getElementsByTagNameNS(
-                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData").item(0);
-
-            if (xmlData == null)
-                return null;
-
-            var uri = xmlData.getAttributes().getNamedItem("Identifier").getNodeValue();
-            var xdcXsltDigest = xdc.getElementsByTagNameNS(
-                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "UsedXSDReference").item(0).getAttributes().getNamedItem("DigestValue").getNodeValue();
-            return findTransformation(uri, xdcXsltDigest);
-
-        } catch (Exception e) {
-            return null;
-        }
+        return findTransformation(documentToDisplay);
     }
 
     private boolean isTranformationAvailable(String transformation) {
