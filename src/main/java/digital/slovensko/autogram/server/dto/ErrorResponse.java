@@ -36,6 +36,7 @@ public class ErrorResponse {
             case "RequestValidationException" -> new ErrorResponse(422, "UNPROCESSABLE_INPUT", (AutogramException) e);
             case "MalformedBodyException" -> new ErrorResponse(400, "MALFORMED_INPUT", (AutogramException) e);
             case "TransformationException" -> new ErrorResponse(400, "TRANSFORMATION_FAILED", (AutogramException) e);
+            case "TransformationOutputMimeTypeExeption" -> new ErrorResponse(400, "TRANSFORMATION_FAILED", (AutogramException) e);
             case "AutogramException" -> new ErrorResponse(502, "SIGNING_FAILED", (AutogramException) e);
             case "EmptyBodyException" -> new ErrorResponse(400, "EMPTY_BODY", (AutogramException) e);
             case "BatchEndedException" -> new ErrorResponse(400, "BATCH_ENDED", (AutogramException) e);

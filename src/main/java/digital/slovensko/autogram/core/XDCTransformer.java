@@ -2,8 +2,6 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.InvalidXMLException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.MimeType;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.DSSUtils;
@@ -31,11 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class XDCTransformer {
-
-    public enum DestinationMediaType {
-        TXT, HTML, XHTML
-    }
-
     private final String identifierUri;
     private final String identifierVersion;
     private final String xsdSchema;
@@ -43,7 +36,7 @@ public class XDCTransformer {
     private final String canonicalizationMethod;
     private final String containerXmlns;
     private final DigestAlgorithm digestAlgorithm;
-    private final DestinationMediaType mediaDestinationTypeDescription;
+    private final String mediaDestinationTypeDescription;
 
     private Document document;
     private String documentXmlns;
@@ -54,18 +47,14 @@ public class XDCTransformer {
      * @param visualizationMimeType - this is because getting transformation mime type can throw
      * @return
      */
-    public static XDCTransformer buildFromSigningParameters(SigningParameters sp, MimeType visualizationMimeType) {
-        var mediaType = DestinationMediaType.TXT;
-        if (visualizationMimeType != null && visualizationMimeType.equals(MimeTypeEnum.HTML))
-            mediaType = DestinationMediaType.HTML;
-
+    public static XDCTransformer buildFromSigningParameters(SigningParameters sp) {
         return new XDCTransformer(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),
-                sp.getPropertiesCanonicalization(), sp.getDigestAlgorithm(), mediaType);
+                sp.getPropertiesCanonicalization(), sp.getDigestAlgorithm(), sp.extractTransformationOutputMimeTypeString());
     }
 
     private XDCTransformer(String identifier, String xsdSchema, String xsltSchema, String containerXmlns,
             String canonicalizationMethod, DigestAlgorithm digestAlgorithm,
-            DestinationMediaType mediaDestinationTypeDescription) {
+            String mediaDestinationTypeDescription) {
         int lastSlashIndex = identifier.lastIndexOf("/");
         if (lastSlashIndex == -1)
             throw new RuntimeException("Identifier contains no slash: " + identifier);
@@ -243,7 +232,7 @@ public class XDCTransformer {
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue", computeDigest(xsltSchema));
         element.setAttribute("ContentType", "application/xslt+xml");
-        element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription.name());
+        element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription);
         element.setAttribute("Language", "sk");
         element.setTextContent(buildXSLTReference());
 

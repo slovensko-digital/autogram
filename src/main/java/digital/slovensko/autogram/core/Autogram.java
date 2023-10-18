@@ -3,6 +3,7 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
 import digital.slovensko.autogram.core.errors.BatchNotStartedException;
+import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
@@ -112,6 +113,8 @@ public class Autogram {
                 onSigningFailed(AutogramException.createFromDSSException(e));
             } catch (IllegalArgumentException e) {
                 onSigningFailed(AutogramException.createFromIllegalArgumentException(e));
+            } catch (ResponseNetworkErrorException e) {
+                onSigningFailed(e, job);
             } catch (Exception e) {
                 onSigningFailed(new UnrecognizedException(e));
             }
@@ -213,6 +216,10 @@ public class Autogram {
 
     public void onDocumentBatchSaved(BatchUiResult result) {
         ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(result));
+    }
+
+    public void onSigningFailed(AutogramException e, SigningJob job) {
+        ui.onUIThreadDo(() -> ui.onSigningFailed(e, job));
     }
 
     public void onSigningFailed(AutogramException e) {
