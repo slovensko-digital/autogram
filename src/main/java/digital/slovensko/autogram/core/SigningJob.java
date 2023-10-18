@@ -7,7 +7,6 @@ import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -22,21 +21,11 @@ public class SigningJob {
     private final Responder responder;
     private final CommonDocument document;
     private final SigningParameters parameters;
-    private final MimeType transformationOutputMimeTypeForXdc;
-
-    public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder,
-            MimeType transformationOutputMimeTypeForXdc) {
-        this.document = document;
-        this.parameters = parameters;
-        this.responder = responder;
-        this.transformationOutputMimeTypeForXdc = transformationOutputMimeTypeForXdc;
-    }
 
     public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
-        this.transformationOutputMimeTypeForXdc = null;
     }
 
     public CommonDocument getDocument() {
@@ -55,7 +44,7 @@ public class SigningJob {
         return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
     }
 
-    public void signWithKeyAndRespond(SigningKey key) throws InterruptedException {
+    public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
 
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
@@ -92,8 +81,7 @@ public class SigningJob {
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
         DSSDocument doc = getDocument();
         if (getParameters().shouldCreateDatacontainer() && !isDocumentXDC()) {
-            var transformer = XDCTransformer.buildFromSigningParameters(getParameters(),
-                    transformationOutputMimeTypeForXdc);
+            var transformer = XDCTransformer.buildFromSigningParameters(getParameters());
             doc = transformer.transform(doc);
             doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
         }

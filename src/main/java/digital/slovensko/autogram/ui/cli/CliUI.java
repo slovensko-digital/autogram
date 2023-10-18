@@ -160,6 +160,11 @@ public class CliUI implements UI {
     }
 
     @Override
+    public void onSigningFailed(AutogramException e, SigningJob job) {
+        throw e;
+    }
+
+    @Override
     public void onSigningFailed(AutogramException e) {
         throw e;
     }

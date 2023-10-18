@@ -2,7 +2,6 @@ package digital.slovensko.autogram.core.visualization;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +27,6 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
-import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
 
@@ -48,11 +46,10 @@ public class DocumentVisualizationBuilder {
     }
 
     private Visualization build(SigningJob job) throws IOException, ParserConfigurationException, TransformerException, SAXException {
-        var transformationOutputMime = getTransformationOutputMimeType(getTransformation());
-        return createVisualization(job, transformationOutputMime);
+        return createVisualization(job);
     }
 
-    private Visualization createVisualization(SigningJob job, MimeType transformationOutputMimeType)
+    private Visualization createVisualization(SigningJob job)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
         var documentToDisplay = this.document;
@@ -66,10 +63,11 @@ public class DocumentVisualizationBuilder {
 
         if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(documentToDisplay)) {
 
+                var transformationOutputMimeType = parameters.extractTransformationOutputMimeTypeString();
                 // Applying transformation
-                if (transformationOutputMimeType.equals(MimeTypeEnum.HTML)) {
+                if (transformationOutputMimeType.equals("HTML")) {
                     return new HTMLVisualization(transform(documentToDisplay), job);
-                } else if (transformationOutputMimeType.equals(MimeTypeEnum.TEXT)) {
+                } else if (transformationOutputMimeType.equals("TEXT")) {
                     return new PlainTextVisualization(transform(documentToDisplay), job);
                 } else {
                     return new UnsupportedVisualization(job);
@@ -116,28 +114,6 @@ public class DocumentVisualizationBuilder {
      */
     private boolean isDocumentXDC(DSSDocument documentToDisplay) {
         return documentToDisplay.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
-    }
-
-    public static MimeType getTransformationOutputMimeType(String transformation)
-        throws SAXException, IOException, ParserConfigurationException {
-        if (transformation == null)
-            return null;
-
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
-        var document = builderFactory.newDocumentBuilder()
-            .parse(new InputSource(new StringReader(transformation)));
-        var elem = document.getDocumentElement();
-        var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
-        var method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
-
-        if (method.equals("html"))
-            return MimeTypeEnum.HTML;
-
-        if (method.equals("text"))
-            return MimeTypeEnum.TEXT;
-
-        throw new RuntimeException("Unsupported transformation output method: " + method);
     }
 
     /**
