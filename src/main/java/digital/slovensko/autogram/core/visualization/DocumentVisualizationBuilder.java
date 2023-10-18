@@ -7,7 +7,9 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.Base64;
 
+import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -18,6 +20,9 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.spi.DSSUtils;
+import eu.europa.esig.dss.xades.DSSXMLUtils;
+
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -28,6 +33,7 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.CommonDocument;
@@ -48,72 +54,147 @@ public class DocumentVisualizationBuilder {
     }
 
     private Visualization build(SigningJob job) throws IOException, ParserConfigurationException, TransformerException, SAXException {
-        var transformationOutputMime = getTransformationOutputMimeType(getTransformation());
-        return createVisualization(job, transformationOutputMime);
+        return createVisualization(job);
     }
 
-    private Visualization createVisualization(SigningJob job, MimeType transformationOutputMimeType)
+    private Visualization createVisualization(SigningJob job)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
 
-        var documentToDisplay = this.document;
+        var documentToDisplay = document;
         if (isAsice(documentToDisplay.getMimeType())) {
             try {
-                documentToDisplay = AsicContainerUtils.getOriginalDocument(this.document);
+                documentToDisplay = AsicContainerUtils.getOriginalDocument(document);
             } catch (AutogramException e) {
                 return new UnsupportedVisualization(job);
             }
         }
 
-        if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(documentToDisplay)) {
+        var transformation = getTransformation(documentToDisplay);
+        var transformationOutputMimeType = getTransformationOutputMimeType(transformation);
 
-                // Applying transformation
-                if (transformationOutputMimeType.equals(MimeTypeEnum.HTML)) {
-                    return new HTMLVisualization(transform(documentToDisplay), job);
-                } else if (transformationOutputMimeType.equals(MimeTypeEnum.TEXT)) {
-                    return new PlainTextVisualization(transform(documentToDisplay), job);
-                } else {
-                    return new UnsupportedVisualization(job);
-                }
+        if (isDocumentSupportingTransformation(documentToDisplay) && isTranformationAvailable(transformation)) {
+            if (transformationOutputMimeType.equals(MimeTypeEnum.HTML))
+                return new HTMLVisualization(transform(documentToDisplay, transformation), job);
+
+            if (transformationOutputMimeType.equals(MimeTypeEnum.TEXT))
+                return new PlainTextVisualization(transform(documentToDisplay, transformation), job);
+
+            return new UnsupportedVisualization(job);
         }
 
-        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.HTML)) {
-            return new HTMLVisualization(transform(documentToDisplay), job);
-        } else if (documentToDisplay.getMimeType().equals(MimeTypeEnum.TEXT)) {
+        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.HTML))
+            return new HTMLVisualization(transform(documentToDisplay, transformation), job);
+
+        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.TEXT))
             return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes()), job);
-        } else if (documentToDisplay.getMimeType().equals(MimeTypeEnum.PDF)) {
+
+        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.PDF))
             return new PDFVisualization(documentToDisplay, job);
-        } else if (documentToDisplay.getMimeType().equals(MimeTypeEnum.JPEG)
-            || documentToDisplay.getMimeType().equals(MimeTypeEnum.PNG)) {
+
+        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.JPEG) || documentToDisplay.getMimeType().equals(MimeTypeEnum.PNG))
             return new ImageVisualization(documentToDisplay, job);
-        }
 
         return new UnsupportedVisualization(job);
     }
 
+    private String getTransformation(DSSDocument documentToDisplay) {
+        if (parameters.getTransformation() != null)
+            return parameters.getTransformation();
+
+        if (!documentToDisplay.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER))
+            return null;
+
+        var builderFactory = DocumentBuilderFactory.newInstance();
+        builderFactory.setNamespaceAware(true);
+
+        try {
+            var is = documentToDisplay.openStream();
+            var inputSource = new InputSource(is);
+            inputSource.setEncoding(encoding.displayName());
+            var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
+            var xdc = parsedDocument.getDocumentElement();
+            var xmlData = xdc.getElementsByTagNameNS(
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData").item(0);
+
+            if (xmlData == null)
+                return null;
+
+            var uri = xmlData.getAttributes().getNamedItem("Identifier").getNodeValue();
+            var xdcXsltDigest = xdc.getElementsByTagNameNS(
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "UsedXSDReference").item(0).getAttributes().getNamedItem("DigestValue").getNodeValue();
+            return findTransformation(uri, xdcXsltDigest);
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String findTransformation(String uri, String xdcXsltDigest) {
+        var parts = uri.split("/");
+        var lastPart = parts[parts.length - 1];
+        var secondLastPart = parts[parts.length - 2];
+        var directory = secondLastPart + "/" + lastPart;
+        var metaFile = DocumentVisualizationBuilder.class.getResourceAsStream(directory + "/META-INF/manifest.xml");
+
+        var builderFactory = DocumentBuilderFactory.newInstance();
+        builderFactory.setNamespaceAware(true);
+
+        try {
+            var inputSource = new InputSource(metaFile);
+            inputSource.setEncoding(encoding.displayName());
+            var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
+            var xml = parsedDocument.getDocumentElement();
+
+            String xslt = null;
+            var entries = xml.getElementsByTagName("manifest:file-entry");
+
+            for (int i = 0; i < entries.getLength(); i++) {
+                var entry = entries.item(i);
+                var mediaDestinationNode = entry.getAttributes().getNamedItem("media-destination");
+                if (mediaDestinationNode == null)
+                    continue;
+
+                var mediaDestination = mediaDestinationNode.getNodeValue();
+                var fullPath = entry.getAttributes().getNamedItem("full-path");
+                if (!mediaDestination.equals("sign") || fullPath == null)
+                    continue;
+
+                xslt = fullPath.getNodeValue().replace("\\", "/");
+                var transformation = DocumentVisualizationBuilder.class.getResourceAsStream(directory + "/" + xslt).readAllBytes();
+
+                var canonicalizedData = DSSXMLUtils.canonicalize(CanonicalizationMethod.INCLUSIVE, transformation);
+                var digest = DSSUtils.digest(DigestAlgorithm.SHA256, canonicalizedData);
+                var asBase64 = Base64.getEncoder().encode(digest);
+
+                var xsltDigest = new String(asBase64, StandardCharsets.UTF_8);
+
+                if (xsltDigest.equals(xdcXsltDigest))
+                    ;
+                else
+                    System.out.println("XSLT digest mismatch: " + xsltDigest + " != " + xdcXsltDigest);
 
 
-    private String getTransformation() {
-        return parameters.getTransformation();
+                System.out.println("Content: " + new String(transformation, encoding));
+                return new String(transformation, encoding);
+            }
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     private boolean isTranformationAvailable(String transformation) {
         return transformation != null;
     }
 
-    /**
-     * Is document type which we can transform?
-     *
-     * @return
-     */
     private boolean isDocumentSupportingTransformation(DSSDocument document) {
         return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER)
             || document.getMimeType().equals(AutogramMimeType.APPLICATION_XML)
             || document.getMimeType().equals(MimeTypeEnum.XML);
     }
 
-    /**
-     * Is document xml data container?
-     */
     private boolean isDocumentXDC(DSSDocument documentToDisplay) {
         return documentToDisplay.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
     }
@@ -142,10 +223,11 @@ public class DocumentVisualizationBuilder {
 
     /**
      * Transform document (XML) using transformation (XSLT)
+     * @param transformation
      *
      * @return transformed document string
      */
-    private String transform(DSSDocument documentToDisplay)
+    private String transform(DSSDocument documentToDisplay, String transformation)
         throws IOException, ParserConfigurationException, SAXException, TransformerException {
         // We are using try catch instead of try-with-resources because
         // when debugging with VSCode on M2 MacOS, it throws self-suppression error
@@ -159,19 +241,15 @@ public class DocumentVisualizationBuilder {
             var inputSource = new InputSource(is);
             inputSource.setEncoding(encoding.displayName());
             var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
-
             var xmlSource = new DOMSource(parsedDocument);
             if (isDocumentXDC(documentToDisplay))
                 xmlSource = extractFromXDC(parsedDocument, builderFactory);
 
             var outputTarget = new StreamResult(new StringWriter());
-
-            // var transformerFactory = TransformerFactory.newDefaultInstance();
-
             var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
-
             var transformer = transformerFactory.newTransformer(new StreamSource(
-                new ByteArrayInputStream(getTransformation().getBytes(encoding))));
+                new ByteArrayInputStream(transformation.getBytes(encoding))));
+
             var outputProperties = new Properties();
             outputProperties.setProperty(OutputKeys.ENCODING, encoding.displayName());
             transformer.setOutputProperties(outputProperties);

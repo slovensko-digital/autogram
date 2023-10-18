@@ -281,6 +281,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         plainTextArea.setText(text);
         plainTextArea.setVisible(true);
         plainTextArea.setManaged(true);
+        plainTextArea.setPrefHeight(400);
     }
 
     public void showHTMLVisualization(String html) {
