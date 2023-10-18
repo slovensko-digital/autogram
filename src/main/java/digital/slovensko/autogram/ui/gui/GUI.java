@@ -356,6 +356,14 @@ public class GUI implements UI {
     }
 
     @Override
+    public void onSigningFailed(AutogramException e, SigningJob job) {
+        var controller = jobControllers.get(job);
+        controller.close();
+        jobControllers.remove(job);
+        onSigningFailed(e);
+    }
+
+    @Override
     public void onSigningFailed(AutogramException e) {
         showError(e);
         if (e instanceof TokenRemovedException) {
@@ -364,13 +372,6 @@ public class GUI implements UI {
             refreshKeyOnAllJobs();
         }
         enableSigningOnAllJobs();
-    }
-
-    @Override
-    public void closeController(SigningJob job) {
-        var controller = jobControllers.get(job);
-        controller.close();
-        jobControllers.remove(job);
     }
 
     @Override

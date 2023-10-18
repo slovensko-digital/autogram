@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.server.dto;
 
-import digital.slovensko.autogram.core.errors.TransformationParsingErrorExeption;
+import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -217,7 +217,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(TransformationParsingErrorExeption.class, signRequestBody::getParameters);
+        Assertions.assertThrows(TransformationParsingErrorException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -277,7 +277,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(TransformationParsingErrorExeption.class, signRequestBody::getParameters);
+        Assertions.assertThrows(TransformationParsingErrorException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -487,7 +487,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(TransformationParsingErrorExeption.class, signRequestBody::getParameters);
+        Assertions.assertThrows(TransformationParsingErrorException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -517,7 +517,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(TransformationParsingErrorExeption.class, signRequestBody::getParameters);
+        Assertions.assertThrows(TransformationParsingErrorException.class, signRequestBody::getParameters);
     }
 
     @Test

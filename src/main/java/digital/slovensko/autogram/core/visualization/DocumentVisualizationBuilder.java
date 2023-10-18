@@ -63,7 +63,7 @@ public class DocumentVisualizationBuilder {
 
         if (isTranformationAvailable(getTransformation()) && isDocumentSupportingTransformation(documentToDisplay)) {
 
-                var transformationOutputMimeType = parameters.getTransformationOutputMimeTypeString();
+                var transformationOutputMimeType = parameters.extractTransformationOutputMimeTypeString();
                 // Applying transformation
                 if (transformationOutputMimeType.equals("HTML")) {
                     return new HTMLVisualization(transform(documentToDisplay), job);

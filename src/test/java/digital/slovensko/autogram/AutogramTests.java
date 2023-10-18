@@ -174,6 +174,11 @@ class AutogramTests {
         }
 
         @Override
+        public void onSigningFailed(AutogramException e, SigningJob job) {
+            throw e;
+        }
+
+        @Override
         public void onSigningFailed(AutogramException e) {
             throw e;
         }
@@ -201,10 +206,6 @@ class AutogramTests {
         @Override
         public void onSignatureCheckCompleted(ValidationReports wrapper) {
 
-        }
-
-        @Override
-        public void closeController(SigningJob job) {
         }
     }
 }

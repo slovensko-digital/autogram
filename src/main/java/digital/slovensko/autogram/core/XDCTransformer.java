@@ -49,7 +49,7 @@ public class XDCTransformer {
      */
     public static XDCTransformer buildFromSigningParameters(SigningParameters sp) {
         return new XDCTransformer(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),
-                sp.getPropertiesCanonicalization(), sp.getDigestAlgorithm(), sp.getTransformationOutputMimeTypeString());
+                sp.getPropertiesCanonicalization(), sp.getDigestAlgorithm(), sp.extractTransformationOutputMimeTypeString());
     }
 
     private XDCTransformer(String identifier, String xsdSchema, String xsltSchema, String containerXmlns,

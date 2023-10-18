@@ -160,6 +160,11 @@ public class CliUI implements UI {
     }
 
     @Override
+    public void onSigningFailed(AutogramException e, SigningJob job) {
+        throw e;
+    }
+
+    @Override
     public void onSigningFailed(AutogramException e) {
         throw e;
     }
@@ -275,11 +280,5 @@ public class CliUI implements UI {
             e.printStackTrace();
         }
         System.err.println(errMessage);
-    }
-
-    @Override
-    public void closeController(SigningJob job) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'closeController'");
     }
 }

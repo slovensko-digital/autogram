@@ -114,8 +114,7 @@ public class Autogram {
             } catch (IllegalArgumentException e) {
                 onSigningFailed(AutogramException.createFromIllegalArgumentException(e));
             } catch (ResponseNetworkErrorException e) {
-                ui.onUIThreadDo(() -> ui.closeController(job));
-                onSigningFailed(e);
+                onSigningFailed(e, job);
             } catch (Exception e) {
                 onSigningFailed(new UnrecognizedException(e));
             }
@@ -217,6 +216,10 @@ public class Autogram {
 
     public void onDocumentBatchSaved(BatchUiResult result) {
         ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(result));
+    }
+
+    public void onSigningFailed(AutogramException e, SigningJob job) {
+        ui.onUIThreadDo(() -> ui.onSigningFailed(e, job));
     }
 
     public void onSigningFailed(AutogramException e) {

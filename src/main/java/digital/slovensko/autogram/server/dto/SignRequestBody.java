@@ -10,7 +10,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
-import digital.slovensko.autogram.core.errors.TransformationParsingErrorExeption;
+import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import eu.europa.esig.dss.model.DSSDocument;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -63,14 +63,14 @@ public class SignRequestBody {
     }
 
     public SigningParameters getParameters()
-            throws RequestValidationException, MalformedBodyException, TransformationParsingErrorExeption {
+            throws RequestValidationException, MalformedBodyException, TransformationParsingErrorException {
         if (parameters == null)
             throw new RequestValidationException("Parameters are required", "");
 
         parameters.validate(getDocument().getMimeType());
 
         var signingParameters = parameters.getSigningParameters(isBase64());
-        signingParameters.getTransformationOutputMimeTypeString();
+        signingParameters.extractTransformationOutputMimeTypeString();
         var parsedPaylodMimeType = getMimetype();
         if (isAsice(parsedPaylodMimeType) || isXML(parsedPaylodMimeType) || isXDC(parsedPaylodMimeType))
             validateXml(signingParameters);

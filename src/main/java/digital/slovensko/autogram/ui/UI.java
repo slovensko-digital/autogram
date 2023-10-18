@@ -32,6 +32,8 @@ public interface UI {
 
     void onSigningSuccess(SigningJob job);
 
+    void onSigningFailed(AutogramException e, SigningJob job);
+
     void onSigningFailed(AutogramException e);
 
     void onDocumentSaved(File targetFile);
@@ -48,13 +50,11 @@ public interface UI {
 
     void onPDFAComplianceCheckFailed(SigningJob job);
 
-    public void onSignatureValidationCompleted(ValidationReports reports);
+    void onSignatureValidationCompleted(ValidationReports reports);
 
-    public void onSignatureCheckCompleted(ValidationReports reports);
+    void onSignatureCheckCompleted(ValidationReports reports);
 
     void showIgnorableExceptionDialog(IgnorableException exception);
 
     void showError(AutogramException exception);
-
-    void closeController(SigningJob job);
 }

@@ -3,7 +3,7 @@ package digital.slovensko.autogram;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.errors.TransformationParsingErrorExeption;
+import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -32,7 +32,7 @@ public class SigningParametersTests {
             this.getClass().getResourceAsStream("crystal_test_data/rozhodnutie_X4564-2.xml"), "rozhodnutie_X4564-2.xml");
 
         var job = new SigningJob(document, params, mock(Responder.class));
-        assertThrows(TransformationParsingErrorExeption.class, () -> {
+        assertThrows(TransformationParsingErrorException.class, () -> {
             DocumentVisualizationBuilder.fromJob(job);
         });
     }

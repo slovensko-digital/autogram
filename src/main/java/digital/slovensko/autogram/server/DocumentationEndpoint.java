@@ -20,5 +20,7 @@ public class DocumentationEndpoint implements HttpHandler {
             exchange.sendResponseHeaders(200, 0);
             requireNonNull(stream).transferTo(exchange.getResponseBody());
         }
+
+        stream.close();
     }
 }
