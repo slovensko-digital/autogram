@@ -12,13 +12,13 @@ import java.util.Properties;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -128,7 +128,7 @@ public abstract class EFormUtils {
         }
     }
 
-    public static Element getXmlFromDocument(DSSDocument documentToDisplay) {
+    public static Document getXmlFromDocument(DSSDocument documentToDisplay) {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
@@ -139,7 +139,7 @@ public abstract class EFormUtils {
             inputSource.setEncoding(ENCODING.displayName());
             var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
 
-            return parsedDocument.getDocumentElement();
+            return parsedDocument;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,10 +157,10 @@ public abstract class EFormUtils {
             var node = document.importNode(element, true);
             document.appendChild(node);
 
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
+            var factory = TransformerFactory.newInstance();
+            var transformer = factory.newTransformer();
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            StringWriter writer = new StringWriter();
+            var writer = new StringWriter();
             transformer.transform(new DOMSource(document), new StreamResult(writer));
 
             return writer.toString();
@@ -184,10 +184,9 @@ public abstract class EFormUtils {
             var parsedDocument = getXmlFromDocument(documentToDisplay);
             var xmlSource = new DOMSource(parsedDocument);
             if (documentToDisplay.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER))
-                xmlSource = new DOMSource(EFormUtils.getContentFromXdc(parsedDocument));
+                xmlSource = new DOMSource(EFormUtils.getContentFromXdc(parsedDocument.getDocumentElement()));
 
             var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
-            transformerFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             var transformer = transformerFactory.newTransformer(new StreamSource(
                 new ByteArrayInputStream(transformation.getBytes(ENCODING))));
 

@@ -130,7 +130,7 @@ public class XDCValidatorTests {
         var content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:UsedSchemasReferenced><xdc:UsedXSDReference DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"/Ctn0B9D7HKn6URFR8iPUKfyGe4mBYpK+25dc1iYWuE=\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd</xdc:UsedXSDReference><xdc:UsedPresentationSchemaReference ContentType=\"application/xslt+xml\" DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"Qo1jYX1JWydvM/OL/rnirphk1rM1z41fPRXBEgp/qbg=\" Language=\"sk\" MediaDestinationTypeDescription=\"TXT\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt</xdc:UsedPresentationSchemaReference></xdc:UsedSchemasReferenced></xdc:XMLDataContainer>";
         var document =  new InMemoryDocument(content.getBytes(), null);
 
-        Assertions.assertThrows(InvalidXMLException.class, () -> EFormUtils.getContentFromXdc(EFormUtils.getXmlFromDocument(document)));
+        Assertions.assertThrows(InvalidXMLException.class, () -> EFormUtils.getContentFromXdc(EFormUtils.getXmlFromDocument(document).getDocumentElement()));
     }
 
     @Test
@@ -139,7 +139,7 @@ public class XDCValidatorTests {
         var document =  new InMemoryDocument(content.getBytes(), null);
 
 
-        Assertions.assertThrows(InvalidXMLException.class, () -> EFormUtils.getContentFromXdc(EFormUtils.getXmlFromDocument(document)));
+        Assertions.assertThrows(InvalidXMLException.class, () -> EFormUtils.getContentFromXdc(EFormUtils.getXmlFromDocument(document).getDocumentElement()));
     }
 
 }

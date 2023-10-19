@@ -99,7 +99,7 @@ public class SignRequestBody {
             if (xmlDocument == null)
                 return;
 
-            var xmlContent = EFormUtils.transformElementToString(EFormUtils.getXmlFromDocument(xmlDocument));
+            var xmlContent = EFormUtils.transformElementToString(EFormUtils.getXmlFromDocument(xmlDocument).getDocumentElement());
             if (isXDC(xmlDocument.getMimeType()))
                 validateXdcDigests(signingParameters, xmlContent);
 

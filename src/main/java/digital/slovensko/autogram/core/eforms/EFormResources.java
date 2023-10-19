@@ -26,7 +26,7 @@ public class EFormResources {
     }
 
     public static EFormResources buildEFormResources(DSSDocument document, String canonicalizationMethod) throws InvalidXMLException {
-        var xdc = getXmlFromDocument(document);
+        var xdc = getXmlFromDocument(document).getDocumentElement();
         var formUri = getFormUri(xdc);
         var parts = formUri.split("/");
         var formVersion = parts[parts.length - 1];
