@@ -1,23 +1,19 @@
-package digital.slovensko.autogram.core;
+package digital.slovensko.autogram.core.eforms;
 
-import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.SigningParameters;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.xades.DSSXMLUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -25,10 +21,12 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
-public class XDCTransformer {
+public class XDCBuilder {
+    private static final Charset ENCODING = StandardCharsets.UTF_8;
+
     private final String identifierUri;
     private final String identifierVersion;
     private final String xsdSchema;
@@ -41,18 +39,12 @@ public class XDCTransformer {
     private Document document;
     private String documentXmlns;
 
-    /**
-     *
-     * @param sp
-     * @param visualizationMimeType - this is because getting transformation mime type can throw
-     * @return
-     */
-    public static XDCTransformer buildFromSigningParameters(SigningParameters sp) {
-        return new XDCTransformer(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),
+    public static XDCBuilder buildFromSigningParameters(SigningParameters sp) {
+        return new XDCBuilder(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),
                 sp.getPropertiesCanonicalization(), sp.getDigestAlgorithm(), sp.extractTransformationOutputMimeTypeString());
     }
 
-    private XDCTransformer(String identifier, String xsdSchema, String xsltSchema, String containerXmlns,
+    private XDCBuilder(String identifier, String xsdSchema, String xsltSchema, String containerXmlns,
             String canonicalizationMethod, DigestAlgorithm digestAlgorithm,
             String mediaDestinationTypeDescription) {
         int lastSlashIndex = identifier.lastIndexOf("/");
@@ -69,43 +61,15 @@ public class XDCTransformer {
         this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
     }
 
-    public static XDCTransformer buildFromSigningParametersAndDocument(SigningParameters sp, DSSDocument document) throws InvalidXMLException {
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-
-            return new XDCTransformer(sp.getSchema(),
-                    sp.getTransformation(),
-                    sp.getPropertiesCanonicalization(),
-                    sp.getDigestAlgorithm(),
-                    builderFactory.newDocumentBuilder().parse(new InputSource(document.openStream())));
-        } catch (Exception e) {
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to process document");
-        }
-    }
-
-    private XDCTransformer(String xsdSchema, String xsltSchema, String canonicalizationMethod,
-                          DigestAlgorithm digestAlgorithm, Document document) {
-        this.xsdSchema = xsdSchema;
-        this.xsltSchema = xsltSchema;
-        this.canonicalizationMethod = canonicalizationMethod;
-        this.digestAlgorithm = digestAlgorithm;
-        this.identifierUri = null;
-        this.identifierVersion = null;
-        this.containerXmlns = null;
-        this.mediaDestinationTypeDescription = null;
-        this.document = document;
-    }
-
     public DSSDocument transform(DSSDocument dssDocument) {
         try {
             var xmlByteArrayInput = dssDocument.openStream().readAllBytes();
-            parseDOMDocument(new String(xmlByteArrayInput, StandardCharsets.UTF_8));
+            parseDOMDocument(new String(xmlByteArrayInput, ENCODING));
             transformDocument();
-            var content = getDocumentContent().getBytes(StandardCharsets.UTF_8);
+            var content = getDocumentContent().getBytes(ENCODING);
 
             return new InMemoryDocument(content, dssDocument.getName());
+
         } catch (SAXException | IOException e) {
             throw new RuntimeException(e);
         } catch (ParserConfigurationException e) {
@@ -191,15 +155,6 @@ public class XDCTransformer {
         return element;
     }
 
-    private String computeDigest(String data) {
-        var asBytes = data.getBytes(StandardCharsets.UTF_8);
-        var canonicalizedData = DSSXMLUtils.canonicalize(canonicalizationMethod, asBytes);
-        var digest = DSSUtils.digest(digestAlgorithm, canonicalizedData);
-        var asBase64 = Base64.getEncoder().encode(digest);
-
-        return new String(asBase64, StandardCharsets.UTF_8);
-    }
-
     // TODO: These should be configurable
     private String buildXSDReference() {
         return toURIString(documentXmlns, "form.xsd");
@@ -220,7 +175,7 @@ public class XDCTransformer {
         var element = document.createElement("xdc:UsedXSDReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
-        element.setAttribute("DigestValue", computeDigest(xsdSchema));
+        element.setAttribute("DigestValue", computeDigest(xsdSchema.getBytes(ENCODING), canonicalizationMethod, digestAlgorithm, ENCODING));
         element.setTextContent(buildXSDReference());
 
         return element;
@@ -230,7 +185,7 @@ public class XDCTransformer {
         var element = document.createElement("xdc:UsedPresentationSchemaReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
-        element.setAttribute("DigestValue", computeDigest(xsltSchema));
+        element.setAttribute("DigestValue", computeDigest(xsltSchema.getBytes(ENCODING), canonicalizationMethod, digestAlgorithm, ENCODING));
         element.setAttribute("ContentType", "application/xslt+xml");
         element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription);
         element.setAttribute("Language", "sk");
@@ -242,78 +197,4 @@ public class XDCTransformer {
     private static String toNamespacedString(DigestAlgorithm digestAlgorithm) {
         return "urn:oid:" + digestAlgorithm.getOid();
     }
-
-    public boolean validateXsdDigest() throws InvalidXMLException {
-        try {
-            String xsdSchemaHash = computeDigest(xsdSchema);
-            String xsdDigestValue = getDigestValueFromElement("UsedXSDReference");
-            return xsdSchemaHash.equals(xsdDigestValue);
-        } catch (Exception e) {
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Invalid XSD");
-        }
-    }
-
-    public boolean validateXsltDigest() throws InvalidXMLException {
-        try {
-            String xsltSchemaHash = computeDigest(xsltSchema);
-            String xsltDigestValue = getDigestValueFromElement("UsedPresentationSchemaReference");
-            return xsltSchemaHash.equals(xsltDigestValue);
-        } catch (Exception e) {
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Invalid XSLT");
-        }
-    }
-
-    private String getDigestValueFromElement(String elementLocalName) throws InvalidXMLException {
-        var xdc = document.getDocumentElement();
-
-        var element = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", elementLocalName)
-                .item(0);
-        if (element == null)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Element " + elementLocalName + " not found");
-
-        var attributes = element.getAttributes();
-        if (attributes == null || attributes.getLength() == 0)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Attributes of " + elementLocalName + " not found");
-
-        var digestValue = attributes.getNamedItem("DigestValue");
-        if (digestValue == null)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "DigestValue of " + elementLocalName + " not found");
-
-        return digestValue.getNodeValue();
-    }
-
-    public String getContentFromXdc() throws InvalidXMLException {
-        var xdc = document.getDocumentElement();
-
-        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
-                .item(0);
-
-        if (xmlData == null)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "XMLData not found in XDC");
-
-        return transformElementToString(xmlData.getFirstChild());
-    }
-
-    public static String transformElementToString(Node element) throws InvalidXMLException {
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-
-            var document = builderFactory.newDocumentBuilder().newDocument();
-            var node = document.importNode(element, true);
-            document.appendChild(node);
-
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Transformer transformer = factory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            StringWriter writer = new StringWriter();
-            transformer.transform(new DOMSource(document), new StreamResult(writer));
-
-            return writer.toString();
-        } catch (Exception e) {
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to get xml content");
-        }
-    }
-
 }

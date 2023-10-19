@@ -189,13 +189,13 @@ public class ServerSigningParameters {
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")
                 && !isXDC(mimeType)) {
 
-            if (transformation == null || transformation.isEmpty())
+            if (!autoLoadEform && (transformation == null || transformation.isEmpty()))
                 throw new RequestValidationException("Parameters.Transformation is null",
-                        "Parameters.Transformation is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
+                        "Parameters.Transformation or Parameters.AutoLoadEform is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
 
-            if (schema == null || schema.isEmpty())
+            if (!autoLoadEform && (schema == null || schema.isEmpty()))
                 throw new RequestValidationException("Parameters.Schema is null",
-                        "Parameters.Schema is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
+                        "Parameters.Schema or Parameters.AutoLoadEform is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
 
             if (identifier == null || identifier.isEmpty())
                 throw new RequestValidationException("Parameters.Identifier is null",

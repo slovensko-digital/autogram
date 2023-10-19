@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import java.io.File;
 
+import digital.slovensko.autogram.core.eforms.XDCBuilder;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
@@ -81,7 +82,7 @@ public class SigningJob {
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
         DSSDocument doc = getDocument();
         if (getParameters().shouldCreateDatacontainer() && !isDocumentXDC()) {
-            var transformer = XDCTransformer.buildFromSigningParameters(getParameters());
+            var transformer = XDCBuilder.buildFromSigningParameters(getParameters());
             doc = transformer.transform(doc);
             doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
         }

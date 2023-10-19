@@ -1,52 +1,19 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.XDCTransformer;
-import digital.slovensko.autogram.core.errors.InvalidXMLException;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.model.InMemoryDocument;
+import java.io.IOException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.crypto.dsig.CanonicalizationMethod;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.eforms.EFormUtils;
+import digital.slovensko.autogram.core.eforms.XDCValidator;
+import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import eu.europa.esig.dss.model.InMemoryDocument;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-class XDCTransformerTests {
+public class XDCValidatorTests {
     @Test
-    void testTransformsPlainHtmlWithoutAddingNamespaces() throws IOException {
-        var transformation = new String(this.getClass().getResourceAsStream("abc.xslt").readAllBytes());
-
-        var document = new InMemoryDocument(this.getClass().getResourceAsStream("abc.xml"));
-
-        var params = new SigningParameters(
-            SignatureLevel.XAdES_BASELINE_B,
-            ASiCContainerType.ASiC_E,
-            "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
-            SignaturePackaging.ENVELOPING,
-            DigestAlgorithm.SHA256,
-            false,
-            CanonicalizationMethod.INCLUSIVE,
-            CanonicalizationMethod.INCLUSIVE,
-            CanonicalizationMethod.INCLUSIVE,
-            null,
-            transformation,
-            "id1/asa",
-            false, 800, false);
-
-        var out = XDCTransformer.buildFromSigningParameters(params).transform(document);
-        var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
-
-        assertEquals(-1, transformed.lastIndexOf(":p>"));
-    }
-
-    @Test
-    void testBuildXDCTransformerFromInvalidDocument() {
+    void testBuildXDCValidatorFromInvalidDocument() {
         var content = "";
         var document =  new InMemoryDocument(content.getBytes(), null);
 
@@ -68,7 +35,7 @@ class XDCTransformerTests {
                 false
         );
 
-        Assertions.assertThrows(InvalidXMLException.class, () -> XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document));
+        Assertions.assertThrows(InvalidXMLException.class, () -> XDCValidator.buildFromSigningParametersAndDocument(signingParameters, document));
     }
 
     @Test
@@ -95,9 +62,9 @@ class XDCTransformerTests {
                 false
         );
 
-        XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
+        var xdcValidator = XDCValidator.buildFromSigningParametersAndDocument(signingParameters, document);
 
-        Assertions.assertThrows(InvalidXMLException.class, xdcTransformer::validateXsdDigest);
+        Assertions.assertThrows(InvalidXMLException.class, xdcValidator::validateXsdDigest);
     }
 
     @Test
@@ -124,9 +91,9 @@ class XDCTransformerTests {
                 false
         );
 
-        XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
+        var xdcValidator = XDCValidator.buildFromSigningParametersAndDocument(signingParameters, document);
 
-        Assertions.assertThrows(InvalidXMLException.class, xdcTransformer::validateXsdDigest);
+        Assertions.assertThrows(InvalidXMLException.class, xdcValidator::validateXsdDigest);
     }
 
     @Test
@@ -153,9 +120,9 @@ class XDCTransformerTests {
                 false
         );
 
-        XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
+        var xdcValidator = XDCValidator.buildFromSigningParametersAndDocument(signingParameters, document);
 
-        Assertions.assertThrows(InvalidXMLException.class, xdcTransformer::validateXsdDigest);
+        Assertions.assertThrows(InvalidXMLException.class, xdcValidator::validateXsdDigest);
     }
 
     @Test
@@ -163,27 +130,7 @@ class XDCTransformerTests {
         var content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:UsedSchemasReferenced><xdc:UsedXSDReference DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"/Ctn0B9D7HKn6URFR8iPUKfyGe4mBYpK+25dc1iYWuE=\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd</xdc:UsedXSDReference><xdc:UsedPresentationSchemaReference ContentType=\"application/xslt+xml\" DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"Qo1jYX1JWydvM/OL/rnirphk1rM1z41fPRXBEgp/qbg=\" Language=\"sk\" MediaDestinationTypeDescription=\"TXT\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt</xdc:UsedPresentationSchemaReference></xdc:UsedSchemasReferenced></xdc:XMLDataContainer>";
         var document =  new InMemoryDocument(content.getBytes(), null);
 
-        var signingParameters = new SigningParameters(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                0,
-                false
-        );
-
-        XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
-
-        Assertions.assertThrows(InvalidXMLException.class, xdcTransformer::getContentFromXdc);
+        Assertions.assertThrows(InvalidXMLException.class, () -> EFormUtils.getContentFromXdc(EFormUtils.getXmlFromDocument(document)));
     }
 
     @Test
@@ -191,26 +138,8 @@ class XDCTransformerTests {
         var content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData></xdc:XMLData></xdc:XMLDataContainer>";
         var document =  new InMemoryDocument(content.getBytes(), null);
 
-        var signingParameters = new SigningParameters(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                0,
-                false
-        );
 
-        XDCTransformer xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
-
-        Assertions.assertThrows(InvalidXMLException.class, xdcTransformer::getContentFromXdc);
+        Assertions.assertThrows(InvalidXMLException.class, () -> EFormUtils.getContentFromXdc(EFormUtils.getXmlFromDocument(document)));
     }
+
 }

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
-import digital.slovensko.autogram.core.eforms.Transformation;
+import digital.slovensko.autogram.core.eforms.EFormUtils;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
@@ -184,13 +184,13 @@ public class SigningParameters {
     public static SigningParameters buildForASiCWithXAdES(String filename, boolean signAsEn319132) {
         return new SigningParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
-                null, null, null, "", false, 640, false);
+                null, null, null, "", false, 640, true);
     }
 
     public static SigningParameters buildForASiCWithCAdES(String filename, boolean signAsEn319132) {
         return new SigningParameters(SignatureLevel.CAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
-                null, null, null, "", false, 640, false);
+                null, null, null, "", false, 640, true);
     }
 
     public String getIdentifier() {
@@ -214,7 +214,7 @@ public class SigningParameters {
     }
 
     public String extractTransformationOutputMimeTypeString() throws TransformationParsingErrorException {
-        var mimeType = Transformation.extractTransformationOutputMimeTypeString(transformation);
+        var mimeType = EFormUtils.extractTransformationOutputMimeTypeString(transformation);
         if (! new ArrayList<String>() {{ add("HTML"); add("TXT"); }}.contains(mimeType))
             throw new TransformationParsingErrorException("Unsupported transformation output method: " + mimeType);
 
