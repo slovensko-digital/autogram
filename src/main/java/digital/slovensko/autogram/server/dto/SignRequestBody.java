@@ -1,17 +1,10 @@
 package digital.slovensko.autogram.server.dto;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.Base64;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
 
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import eu.europa.esig.dss.model.DSSDocument;
-import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
@@ -69,7 +62,7 @@ public class SignRequestBody {
 
         parameters.validate(getDocument().getMimeType());
 
-        var signingParameters = parameters.getSigningParameters(isBase64());
+        var signingParameters = parameters.getSigningParameters(isBase64(), getDocument());
         signingParameters.extractTransformationOutputMimeTypeString();
         var parsedPaylodMimeType = getMimetype();
         if (isAsice(parsedPaylodMimeType) || isXML(parsedPaylodMimeType) || isXDC(parsedPaylodMimeType))
@@ -103,7 +96,7 @@ public class SignRequestBody {
             if (isXDC(xmlDocument.getMimeType()))
                 validateXdcDigests(signingParameters, xmlContent);
 
-            if (!validateXmlContentAgainstXsd(xmlContent, xsdSchema))
+            if (!EFormUtils.validateXmlContentAgainstXsd(xmlContent, xsdSchema))
                 throw new XMLValidationException("XML validation failed", "XML validation against XSD failed");
 
         } catch (OriginalDocumentNotFoundException e) {
@@ -149,26 +142,9 @@ public class SignRequestBody {
     private DSSDocument getXmlDocumentFromXdc(SigningParameters signingParameters, DSSDocument document)
             throws InvalidXMLException {
         var doc = EFormUtils.getXmlFromDocument(document);
-        var data = EFormUtils.transformElementToString(doc).getBytes();
+        var xml = EFormUtils.getEformXmlFromXdcDocument(document);
+        var data = EFormUtils.transformElementToString(xml).getBytes();
         return new InMemoryDocument(data, document.getName(), MimeTypeEnum.XML);
-    }
-
-    private boolean validateXmlContentAgainstXsd(String xmlContent, String xsdSchema) {
-        if (xsdSchema == null)
-            return true;
-
-        try {
-            var factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            var schema = factory.newSchema(new StreamSource(new StringReader(xsdSchema)));
-            var validator = schema.newValidator();
-            validator.validate(new StreamSource(new StringReader(xmlContent)));
-
-            return true;
-
-        } catch (SAXException | IOException | IllegalArgumentException e) {
-            return false;
-        }
     }
 
     private byte[] decodeDocumentContent() throws MalformedBodyException {

@@ -18,6 +18,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import javax.xml.XMLConstants;
+import javax.xml.validation.SchemaFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -29,10 +32,16 @@ import digital.slovensko.autogram.core.errors.InvalidXMLException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.xades.DSSXMLUtils;
+import net.sf.saxon.s9api.DocumentBuilder;
+
+import org.w3c.dom.DOMException;
+
+import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 public abstract class EFormUtils {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
@@ -104,6 +113,14 @@ public abstract class EFormUtils {
         return xmlData.getAttributes().getNamedItem("Identifier").getNodeValue();
     }
 
+    public static String getNamespaceFromEformXml(Node xml) {
+        var xmlns = xml.getAttributes().getNamedItem("xmlns");
+        if (xmlns == null)
+            return null;
+
+        return xmlns.getNodeValue();
+    }
+
     public static byte[] getTransformation(String url) {
         return getResource(url + "/form.sb.xslt");
     }
@@ -117,7 +134,13 @@ public abstract class EFormUtils {
         offlineFileLoader.setCacheExpirationTime(21600000);
         offlineFileLoader.setDataLoader(new CommonsDataLoader());
 
-        var xsltDoc = offlineFileLoader.getDocument(url);
+        DSSDocument xsltDoc;
+        try {
+            xsltDoc = offlineFileLoader.getDocument(url);
+        } catch (DSSException e) {
+            return null;
+        }
+
         if (xsltDoc == null)
             return null;
 
@@ -147,6 +170,31 @@ public abstract class EFormUtils {
         }
     }
 
+    public static Document getEformXmlFromXdcDocument(DSSDocument document) throws InvalidXMLException {
+        var xmlDocument = getXmlFromDocument(document);
+        var xmlData = xmlDocument.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
+                .item(0).getFirstChild();
+
+        if (xmlData == null)
+            throw new InvalidXMLException("XML Datacontainer validation failed", "XMLData not found in XDC");
+
+            var builderFactory = DocumentBuilderFactory.newInstance();
+        builderFactory.setNamespaceAware(true);
+
+        Document responseDocument = null;
+        try {
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            responseDocument = builderFactory.newDocumentBuilder().newDocument();
+        } catch (ParserConfigurationException e) {
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to create response document");
+        }
+
+        var node = responseDocument.importNode(xmlData, true);
+        responseDocument.appendChild(node);
+
+        return responseDocument;
+    }
+
     public static String transformElementToString(Node element) throws InvalidXMLException {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
@@ -154,7 +202,13 @@ public abstract class EFormUtils {
             builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
 
             var document = builderFactory.newDocumentBuilder().newDocument();
-            var node = document.importNode(element, true);
+            Node node;
+            try {
+                node = document.importNode(element, true);
+            } catch (DOMException e) {
+                node = document.importNode(element.getFirstChild(), true);
+            }
+
             document.appendChild(node);
 
             var factory = TransformerFactory.newInstance();
@@ -169,22 +223,13 @@ public abstract class EFormUtils {
         }
     }
 
-    public static Node getContentFromXdc(Element xdc) throws InvalidXMLException {
-        var xmlData = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
-                .item(0);
-
-        if (xmlData == null)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "XMLData not found in XDC");
-
-        return xmlData.getFirstChild();
-    }
-
     public static String transform(DSSDocument documentToDisplay, String transformation) throws TransformerException {
         try {
             var parsedDocument = getXmlFromDocument(documentToDisplay);
             var xmlSource = new DOMSource(parsedDocument);
-            if (documentToDisplay.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER))
-                xmlSource = new DOMSource(EFormUtils.getContentFromXdc(parsedDocument.getDocumentElement()));
+            if (isXDC(documentToDisplay.getMimeType())) {
+                xmlSource = new DOMSource(getEformXmlFromXdcDocument(documentToDisplay));
+            }
 
             var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
             var transformer = transformerFactory.newTransformer(new StreamSource(
@@ -194,12 +239,53 @@ public abstract class EFormUtils {
             outputProperties.setProperty(OutputKeys.ENCODING, ENCODING.displayName());
             transformer.setOutputProperties(outputProperties);
             var outputTarget = new StreamResult(new StringWriter());
+
             transformer.transform(xmlSource, outputTarget);
 
-            return outputTarget.getWriter().toString().trim();
+            return outputTarget.getWriter().toString();
 
         } catch (Exception e) {
             throw new TransformerException("Transformation failed", e);
+        }
+    }
+
+    public static boolean validateXmlContentAgainstXsd(String xmlContent, String xsdSchema) {
+        if (xsdSchema == null)
+            return true;
+
+        try {
+            var factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            var schema = factory.newSchema(new StreamSource(new StringReader(xsdSchema)));
+            var validator = schema.newValidator();
+            validator.validate(new StreamSource(new StringReader(xmlContent)));
+
+            return true;
+
+        } catch (SAXException | IOException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public static boolean isXDCContent(DSSDocument document) {
+        var doc = getXmlFromDocument(document);
+        if (doc == null)
+            return false;
+
+        var docString = "";
+        try {
+            docString = transformElementToString(doc.getDocumentElement());
+
+        } catch (InvalidXMLException e) {
+            return false;
+        }
+
+        try {
+        var xdcSchema = EFormUtils.class.getResourceAsStream("xmldatacontainer.xsd");
+            return validateXmlContentAgainstXsd(docString, new String(xdcSchema.readAllBytes(), ENCODING));
+
+        } catch (IOException | NullPointerException e) {
+            return false;
         }
     }
 }

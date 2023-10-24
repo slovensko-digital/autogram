@@ -34,8 +34,8 @@ class AutogramTests {
         List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
         var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
 
-        var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml", false);
         var document = new FileDocument("pom.xml");
+        var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml", document, false);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(

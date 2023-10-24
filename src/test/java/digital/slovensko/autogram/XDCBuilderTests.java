@@ -22,7 +22,7 @@ class XDCBuilderTests {
 
         var document = new InMemoryDocument(this.getClass().getResourceAsStream("abc.xml"));
 
-        var params = new SigningParameters(
+        var params = SigningParameters.buildFromRequest(
             SignatureLevel.XAdES_BASELINE_B,
             ASiCContainerType.ASiC_E,
             "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
@@ -35,7 +35,7 @@ class XDCBuilderTests {
             null,
             transformation,
             "id1/asa",
-            false, 800, false);
+            false, 800, false, null);
 
         var out = XDCBuilder.buildFromSigningParameters(params).transform(document);
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);

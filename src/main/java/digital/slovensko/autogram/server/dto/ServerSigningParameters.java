@@ -5,17 +5,16 @@ import java.util.Base64;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
 import eu.europa.esig.dss.enumerations.*;
+import eu.europa.esig.dss.model.DSSDocument;
 
 import java.nio.charset.StandardCharsets;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
+import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
@@ -75,8 +74,8 @@ public class ServerSigningParameters {
         this.autoLoadEform = autoLoadEform;
     }
 
-    public SigningParameters getSigningParameters(boolean isBase64) {
-        return new SigningParameters(
+    public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document) {
+        return SigningParameters.buildFromRequest(
                 getSignatureLevel(),
                 getContainer(),
                 containerXmlns,
@@ -88,7 +87,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform);
+                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform, document);
     }
 
     private String getTransformation(boolean isBase64) throws MalformedBodyException {
@@ -178,7 +177,7 @@ public class ServerSigningParameters {
         }
 
         if (level.getSignatureForm() == SignatureForm.XAdES) {
-            if (!isXMLMimeType(mimeType) && !isXDCMimeType(mimeType) && !isAsiceMimeType(mimeType) && container == null)
+            if (!isXML(mimeType) && !isXDC(mimeType) && !isAsice(mimeType) && container == null)
                 if (!(packaging != null && packaging == SignaturePackaging.ENVELOPING))
                     throw new RequestValidationException(
                             "PayloadMimeType, Parameters.Level, Parameters.Container and Parameters.Packaging mismatch",
@@ -206,17 +205,5 @@ public class ServerSigningParameters {
                         "Parameters.ContainerXmlns: XML datacontainer is not supported for this payload: "
                                 + mimeType.getMimeTypeString());
         }
-    }
-
-    private static boolean isXMLMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(AutogramMimeType.APPLICATION_XML);
-    }
-
-    private static boolean isXDCMimeType(MimeType mimeType) {
-        return mimeType.equals(AutogramMimeType.XML_DATACONTAINER);
-    }
-
-    private static boolean isAsiceMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeTypeEnum.ASICE);
     }
 }

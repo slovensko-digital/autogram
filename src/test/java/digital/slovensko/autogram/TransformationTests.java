@@ -50,11 +50,11 @@ public class TransformationTests {
                                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                                 "rozhodnutie_X4564-2.xml");
 
-                var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
+                var params = SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B,
                                 ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
                                 DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
                                 CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
-                                null, transformation, "id1/asa", false, 800, false);
+                                null, transformation, "id1/asa", false, 800, false, null);
 
                 SigningJob job = new SigningJob(document, params, dummyResponder);
 
@@ -109,11 +109,11 @@ public class TransformationTests {
                                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                                 "rozhodnutie_X4564-2.xml");
 
-                var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
+                var params = SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B,
                                 ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
                                 DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
                                 CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
-                                null, transformation, "id1/asa", false, 800, false);
+                                null, transformation, "id1/asa", false, 800, false, null);
 
                 SigningJob job = new SigningJob(document, params, dummyResponder);
 

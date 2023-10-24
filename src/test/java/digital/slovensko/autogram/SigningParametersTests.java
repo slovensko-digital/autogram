@@ -21,11 +21,11 @@ public class SigningParametersTests {
     @Test
     void testInvalidTransformation() {
         var transformation = "invalid transformation";
-        var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
+        var params = SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B,
             ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
             DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
             CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE, null,
-            transformation, "id1/asa", false, 800, false);
+            transformation, "id1/asa", false, 800, false, null);
 
 
         var document = new InMemoryDocument(
