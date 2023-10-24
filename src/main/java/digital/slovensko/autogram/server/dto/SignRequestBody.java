@@ -16,10 +16,10 @@ import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.MimeType;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 
 public class SignRequestBody {
     private final Document document;
@@ -63,10 +63,11 @@ public class SignRequestBody {
         parameters.validate(getDocument().getMimeType());
 
         var signingParameters = parameters.getSigningParameters(isBase64(), getDocument());
-        signingParameters.extractTransformationOutputMimeTypeString();
         var parsedPaylodMimeType = getMimetype();
         if (isAsice(parsedPaylodMimeType) || isXML(parsedPaylodMimeType) || isXDC(parsedPaylodMimeType))
-            validateXml(signingParameters);
+        validateXml(signingParameters);
+
+        signingParameters.extractTransformationOutputMimeTypeString();
 
         return signingParameters;
     }
@@ -92,11 +93,23 @@ public class SignRequestBody {
             if (xmlDocument == null)
                 return;
 
-            var xmlContent = EFormUtils.transformElementToString(EFormUtils.getXmlFromDocument(xmlDocument).getDocumentElement());
-            if (isXDC(xmlDocument.getMimeType()))
+            var xml = EFormUtils.getXmlFromDocument(xmlDocument);
+            if (xml == null)
+                throw new XMLValidationException("XML Datacontainer validation failed", "Unable to process document");
+
+            var xmlContent = EFormUtils.transformElementToString(xml.getDocumentElement());
+            if (isXDC(xmlDocument.getMimeType())) {
                 validateXdcDigests(signingParameters, xmlContent);
 
-            if (!EFormUtils.validateXmlContentAgainstXsd(xmlContent, xsdSchema))
+                if (!isXDCContent(xmlDocument))
+                    throw new XMLValidationException("XML Datacontainer validation failed",
+                            "Provided XML document is not a valid XML Datacontainer validated by it's XSD schema");
+            }
+
+            var eformContent = EFormUtils.transformElementToString(isXDC(xmlDocument.getMimeType())
+                    ? EFormUtils.getEformXmlFromXdcDocument(xmlDocument).getDocumentElement()
+                    : xml.getDocumentElement());
+            if (!EFormUtils.validateXmlContentAgainstXsd(eformContent, xsdSchema))
                 throw new XMLValidationException("XML validation failed", "XML validation against XSD failed");
 
         } catch (OriginalDocumentNotFoundException e) {
@@ -111,15 +124,13 @@ public class SignRequestBody {
     private DSSDocument getXmlDocument(SigningParameters signingParameters)
             throws XMLValidationException, InvalidXMLException {
         if (isAsice(getMimetype())) {
-            return getDocumentFromAsice(signingParameters);
-        } else if (isXDC(getMimetype())) {
-            return getXmlDocumentFromXdc(signingParameters, getDocument());
+            return getXdcDocumentFromAsice(signingParameters);
         } else {
             return getDocument();
         }
     }
 
-    private DSSDocument getDocumentFromAsice(SigningParameters signingParameters)
+    private DSSDocument getXdcDocumentFromAsice(SigningParameters signingParameters)
             throws XMLValidationException, InvalidXMLException {
         var originalDocument = AsicContainerUtils.getOriginalDocument(getDocument());
         if (!isXDC(originalDocument.getMimeType())) {
@@ -130,21 +141,14 @@ public class SignRequestBody {
 
     private void validateXdcDigests(SigningParameters signingParameters, String content)
             throws InvalidXMLException, XMLValidationException {
-        var xdcValidator = XDCValidator.buildFromSigningParametersAndDocument(signingParameters, new InMemoryDocument(content.getBytes()));
+        var xdcValidator = XDCValidator.buildFromSigningParametersAndDocument(signingParameters,
+                new InMemoryDocument(content.getBytes()));
         if (signingParameters.getSchema() != null && !xdcValidator.validateXsdDigest())
             throw new XMLValidationException("XML Datacontainer validation failed", "XSD scheme digest mismatch");
 
         if (signingParameters.getTransformation() != null && !xdcValidator.validateXsltDigest())
             throw new XMLValidationException("XML Datacontainer validation failed",
                     "XSLT transformation digest mismatch");
-    }
-
-    private DSSDocument getXmlDocumentFromXdc(SigningParameters signingParameters, DSSDocument document)
-            throws InvalidXMLException {
-        var doc = EFormUtils.getXmlFromDocument(document);
-        var xml = EFormUtils.getEformXmlFromXdcDocument(document);
-        var data = EFormUtils.transformElementToString(xml).getBytes();
-        return new InMemoryDocument(data, document.getName(), MimeTypeEnum.XML);
     }
 
     private byte[] decodeDocumentContent() throws MalformedBodyException {

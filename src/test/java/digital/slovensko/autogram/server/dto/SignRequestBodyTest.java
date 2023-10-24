@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.server.dto;
 
-import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -224,7 +223,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(TransformationParsingErrorException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -286,7 +285,101 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(TransformationParsingErrorException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+    }
+
+    @Test
+    void testValidateXDCMissingDigestvalues() {
+        var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData ContentType=\"application/xml; charset=UTF-8\" Identifier=\"http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9\" Version=\"1.9\"><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><subject>Nové podanie</subject><text>Podávam toto nové podanie.</text></GeneralAgenda></xdc:XMLData><xdc:UsedSchemasReferenced><xdc:UsedXSDReference DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd</xdc:UsedXSDReference><xdc:UsedPresentationSchemaReference ContentType=\"application/xslt+xml\" DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" Language=\"sk\" MediaDestinationTypeDescription=\"TXT\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt</xdc:UsedPresentationSchemaReference></xdc:UsedSchemasReferenced></xdc:XMLDataContainer>";
+        var document = new Document(xmlContent);
+
+        var transformation = "";
+        var signingParameters = new ServerSigningParameters(
+                SignatureLevel.XAdES_BASELINE_B,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                transformation,
+                null,
+                false,
+                null,
+                false);
+
+        var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
+
+        SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
+
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+    }
+
+    @Test
+    void testValidateXDCMissingReferences() {
+        var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData ContentType=\"application/xml; charset=UTF-8\" Identifier=\"http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9\" Version=\"1.9\"><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><subject>Nové podanie</subject><text>Podávam toto nové podanie.</text></GeneralAgenda></xdc:XMLData><xdc:UsedSchemasReferenced></xdc:XMLDataContainer>";
+        var document = new Document(xmlContent);
+
+        var transformation = "";
+        var signingParameters = new ServerSigningParameters(
+                SignatureLevel.XAdES_BASELINE_B,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                transformation,
+                null,
+                false,
+                null,
+                false);
+
+        var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
+
+        SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
+
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+    }
+
+
+    @Test
+    void testValidateXDCEmptyXmlData() {
+        var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData ContentType=\"application/xml; charset=UTF-8\" Identifier=\"http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9\" Version=\"1.9\"></xdc:XMLData><xdc:UsedSchemasReferenced><xdc:UsedXSDReference DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"/Ctn0B9D7HKn6URFR8iPUKfyGe4mBYpK+25dc1iYWuE=\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd</xdc:UsedXSDReference><xdc:UsedPresentationSchemaReference ContentType=\"application/xslt+xml\" DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"\" Language=\"sk\" MediaDestinationTypeDescription=\"TXT\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt</xdc:UsedPresentationSchemaReference></xdc:UsedSchemasReferenced></xdc:XMLDataContainer>";
+        var document = new Document(xmlContent);
+
+        var transformation = "";
+        var signingParameters = new ServerSigningParameters(
+                SignatureLevel.XAdES_BASELINE_B,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                transformation,
+                null,
+                false,
+                null,
+                false);
+
+        var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
+
+        SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
+
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -503,7 +596,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(TransformationParsingErrorException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -534,7 +627,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(TransformationParsingErrorException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -816,7 +909,7 @@ class SignRequestBodyTest {
 
     @Test
     void testValidateXmlWithoutXSD() {
-        var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n";
+        var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>\n<subject>Nové podanie</subject>\n<text>Podávam toto nové podanie.</text>\n</root>\n";
         var document = new Document(xmlContent);
 
         var signingParameters = new ServerSigningParameters(
@@ -846,7 +939,7 @@ class SignRequestBodyTest {
 
     @Test
     void testValidateXmlInvalidXmlAgainstXSD() {
-        var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n";
+        var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root>\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</root>\n";
         var document = new Document(xmlContent);
 
         var schema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>\n";
@@ -968,7 +1061,7 @@ class SignRequestBodyTest {
 
     @Test
     void testValidateXmlBase64InvalidXmlAgainstXSD() {
-        var xmlContent = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KICA8c3ViamVjdD5Ob3bDqSBwb2RhbmllPC9zdWJqZWN0PgogIDx0ZXh0PlBvZMOhdmFtIHRvdG8gbm92w6kgcG9kYW5pZS48L3RleHQ+Cg==";
+        var xmlContent = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxyb290Pg0KICA8c3ViamVjdD5Ob3bDqSBwb2RhbmllPC9zdWJqZWN0Pg0KICA8dGV4dD5Qb2TDoXZhbSB0b3RvIG5vdsOpIHBvZGFuaWUuPC90ZXh0Pg0KPC9yb290Pg0K";
         var document = new Document(xmlContent);
 
         var schema = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHhzOnNjaGVtYSBlbGVtZW50Rm9ybURlZmF1bHQ9InF1YWxpZmllZCIgYXR0cmlidXRlRm9ybURlZmF1bHQ9InVucXVhbGlmaWVkIiB4bWxuczp4cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHRhcmdldE5hbWVzcGFjZT0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45IiB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45Ij4KPHhzOnNpbXBsZVR5cGUgbmFtZT0idGV4dEFyZWEiPgo8eHM6cmVzdHJpY3Rpb24gYmFzZT0ieHM6c3RyaW5nIj4KPC94czpyZXN0cmljdGlvbj4KPC94czpzaW1wbGVUeXBlPgo8eHM6c2ltcGxlVHlwZSBuYW1lPSJtZW5vIj4KPHhzOnJlc3RyaWN0aW9uIGJhc2U9InhzOnN0cmluZyI+CjwveHM6cmVzdHJpY3Rpb24+CjwveHM6c2ltcGxlVHlwZT4KPHhzOmVsZW1lbnQgbmFtZT0iR2VuZXJhbEFnZW5kYSI+Cjx4czpjb21wbGV4VHlwZT4KPHhzOnNlcXVlbmNlPgo8eHM6ZWxlbWVudCBuYW1lPSJzdWJqZWN0IiB0eXBlPSJtZW5vIiBtaW5PY2N1cnM9IjAiIG5pbGxhYmxlPSJ0cnVlIiAvPgo8eHM6ZWxlbWVudCBuYW1lPSJ0ZXh0IiB0eXBlPSJ0ZXh0QXJlYSIgbWluT2NjdXJzPSIwIiBuaWxsYWJsZT0idHJ1ZSIgLz4KPC94czpzZXF1ZW5jZT4KPC94czpjb21wbGV4VHlwZT4KPC94czplbGVtZW50Pgo8L3hzOnNjaGVtYT4K";
@@ -1151,7 +1244,7 @@ class SignRequestBodyTest {
 
     @Test
     void testValidateXmlInAsiceBase64OriginalDocumentInvalid() {
-        var xmlContent = "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";
+        var xmlContent = "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";
         var document = new Document(xmlContent);
 
         var signingParameters = new ServerSigningParameters(

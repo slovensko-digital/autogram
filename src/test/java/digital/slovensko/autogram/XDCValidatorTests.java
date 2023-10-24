@@ -138,12 +138,11 @@ public class XDCValidatorTests {
     }
 
     @Test
-    void testGetContentFromXDCInvalidContent() throws InvalidXMLException {
+    void testGetContentFromXDCEmptyContent() throws InvalidXMLException {
         var content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData></xdc:XMLData></xdc:XMLDataContainer>";
         var document =  new InMemoryDocument(content.getBytes(), null);
 
 
         Assertions.assertThrows(InvalidXMLException.class, () -> EFormUtils.getEformXmlFromXdcDocument(document));
     }
-
 }

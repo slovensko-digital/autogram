@@ -27,7 +27,6 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.errors.InvalidXMLException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -37,7 +36,6 @@ import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.xades.DSSXMLUtils;
-import net.sf.saxon.s9api.DocumentBuilder;
 
 import org.w3c.dom.DOMException;
 
@@ -151,7 +149,7 @@ public abstract class EFormUtils {
         }
     }
 
-    public static Document getXmlFromDocument(DSSDocument documentToDisplay) {
+    public static Document getXmlFromDocument(DSSDocument documentToDisplay) throws InvalidXMLException {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
@@ -165,20 +163,18 @@ public abstract class EFormUtils {
             return parsedDocument;
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to parse xml content");
         }
     }
 
     public static Document getEformXmlFromXdcDocument(DSSDocument document) throws InvalidXMLException {
         var xmlDocument = getXmlFromDocument(document);
-        var xmlData = xmlDocument.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData")
-                .item(0).getFirstChild();
+        var xmlData = xmlDocument.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData").item(0);
 
         if (xmlData == null)
             throw new InvalidXMLException("XML Datacontainer validation failed", "XMLData not found in XDC");
 
-            var builderFactory = DocumentBuilderFactory.newInstance();
+        var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
 
         Document responseDocument = null;
@@ -189,7 +185,10 @@ public abstract class EFormUtils {
             throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to create response document");
         }
 
-        var node = responseDocument.importNode(xmlData, true);
+        if (xmlData.getFirstChild() == null)
+            throw new InvalidXMLException("XML Datacontainer validation failed", "XMLData is empty");
+
+        var node = responseDocument.importNode(xmlData.getFirstChild(), true);
         responseDocument.appendChild(node);
 
         return responseDocument;
@@ -268,9 +267,13 @@ public abstract class EFormUtils {
     }
 
     public static boolean isXDCContent(DSSDocument document) {
-        var doc = getXmlFromDocument(document);
-        if (doc == null)
+        Document doc;
+
+        try {
+            doc = getXmlFromDocument(document);
+        } catch (InvalidXMLException e) {
             return false;
+        }
 
         var docString = "";
         try {
