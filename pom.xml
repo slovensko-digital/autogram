@@ -176,7 +176,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>3.2.1</version>
                     <configuration>
                         <jvm>${jlink.jdk.path}${file.separator}bin${file.separator}java</jvm>
                         <!-- done this way because you can't override excludedGroups in a profile
@@ -551,7 +551,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>3.1.2</version>
+                        <version>3.2.1</version>
                         <configuration>
                             <jvm>${jlink.jdk.path}${file.separator}bin${file.separator}java</jvm>
                             <groups>HttpSmokeTest</groups>
