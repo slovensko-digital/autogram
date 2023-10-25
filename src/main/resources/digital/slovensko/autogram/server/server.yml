@@ -403,7 +403,13 @@ components:
 
         autoLoadEform:
           type: boolean
-          description: Try to find XSD and XSLT for a given eForm and load them automatically. Useful for visualizing and signing eForms.
+          description:
+            Try to find XSD and XSLT for a given eForm and load them automatically. Useful for visualizing and signing eForms.
+            If true, schema, transformation, conatinerXmlns, container, packaging, and identifier parameters are ignored.
+            If true and resources are not found, the response is 422.
+            If provided document is an ASiC_E container conatining XML Datacontainer or it is an XML Datacontainer itself, XSLT found is used for visualiztion of signing document. Also, XSD and XSLT hashes are compared with hashes of XSD and XSLT found in XML Data Container EForm. If they differ, the response is 422.
+            If the provided document is an XML document, Autogram will try to parse xmlns from root element and find resources based on its value.
+            If successful, XML Datacontainer with xmls="http://data.gov.sk/def/container/xmldatacontainer+xml/1.1" is created, the document is validated against the XSD and visualized using the XSLT. If XSD validation fails, the response is 422.
 
         level:
           type: string
@@ -417,22 +423,21 @@ components:
         container:
           type: string
           enum:
-            - ASiC_S
             - ASiC_E
           example: ASiC_E
-          description: Optional container type that should be used to place the file with signature to.
+          description: Optional container type that should be used to place the file with signature to. Is overridden by autoLoadEform.
 
         containerXmlns:
           type: string
           enum:
             - http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
           example: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
-          description: XML namespace for the ASiC container. Specifies if xmldatacontainer should be created from XML. Doesn't create xmldatacontainer if payloadMimeType application/vnd.gov.sk.xmldatacontainer+xml already. Accepts http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 only.
+          description: XML namespace for the XML Datacontainer. Specifies if xmldatacontainer should be created from XML. Doesn't create xmldatacontainer if payloadMimeType application/vnd.gov.sk.xmldatacontainer+xml already. Accepts http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 only. Is overridden by autoLoadEform.
 
         identifier:
           type: string
           example: https://data.gov.sk/id/egov/eform/App.GeneralAgenda/1.9
-          description: Optional identifier of the document template. Required if containerXmlns is http://data.gov.sk/def/container/xmldatacontainer+xml/1.1.
+          description: Optional identifier of the document template. Required if containerXmlns is http://data.gov.sk/def/container/xmldatacontainer+xml/1.1. Is overridden by autoLoadEform.
 
         packaging:
           type: string
@@ -440,7 +445,7 @@ components:
             - ENVELOPED
             - ENVELOPING
           example: ENVELOPED
-          description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Defaults to ENVELOPED. Only applies to XAdES signatures. Must be ENVELOPING when used without ASiC container and with non XML documents.
+          description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Defaults to ENVELOPED. Only applies to XAdES signatures. Must be ENVELOPING when used without ASiC container and with non XML documents. Is overridden by autoLoadEform.
 
         digestAlgorithm:
           type: string
@@ -495,12 +500,12 @@ components:
         schema:
           type: string
           example: '<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="Document"><xs:complexType><xs:sequence><xs:element name="Title" type="xs:string" /></xs:sequence></xs:complexType></xs:element></xs:schema>'
-          description: "Optional XML schema. Format is dictated by `payloadMimeType`."
+          description: Optional XML schema. Format is dictated by `payloadMimeType`. Is overridden by autoLoadEform.
 
         transformation:
           type: string
           example: '<?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>'
-          description: "Optional XML transformation used to . Format is dictated by `payloadMimeType`."
+          description: Optional XML transformation used to . Format is dictated by `payloadMimeType`. Is overridden by autoLoadEform.
 
         visualizationWidth:
           type: string
@@ -515,7 +520,7 @@ components:
 
       required:
         - level
-# PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48eHM6c2NoZW1hIGVsZW1lbnRGb3JtRGVmYXVsdD0icXVhbGlmaWVkIiBhdHRyaWJ1dGVGb3JtRGVmYXVsdD0idW5xdWFsaWZpZWQiIHhtbG5zOnhzPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYSIgdGFyZ2V0TmFtZXNwYWNlPSJodHRwOi8vc2NoZW1hcy5nb3Yuc2svZm9ybS9BcHAuR2VuZXJhbEFnZW5kYS8xLjkiIHhtbG5zPSJodHRwOi8vc2NoZW1hcy5nb3Yuc2svZm9ybS9BcHAuR2VuZXJhbEFnZW5kYS8xLjkiPg0KPHhzOnNpbXBsZVR5cGUgbmFtZT0idGV4dEFyZWEiPg0KPHhzOnJlc3RyaWN0aW9uIGJhc2U9InhzOnN0cmluZyI+DQo8L3hzOnJlc3RyaWN0aW9uPg0KPC94czpzaW1wbGVUeXBlPg0KPHhzOnNpbXBsZVR5cGUgbmFtZT0ibWVubyI+DQo8eHM6cmVzdHJpY3Rpb24gYmFzZT0ieHM6c3RyaW5nIj4NCjwveHM6cmVzdHJpY3Rpb24+DQo8L3hzOnNpbXBsZVR5cGU+DQoNCg0KPHhzOmVsZW1lbnQgbmFtZT0iR2VuZXJhbEFnZW5kYSI+DQo8eHM6Y29tcGxleFR5cGU+DQo8eHM6c2VxdWVuY2U+DQo8eHM6ZWxlbWVudCBuYW1lPSJzdWJqZWN0IiB0eXBlPSJtZW5vIiBtaW5PY2N1cnM9IjAiIG5pbGxhYmxlPSJ0cnVlIiAvPg0KPHhzOmVsZW1lbnQgbmFtZT0idGV4dCIgdHlwZT0idGV4dEFyZWEiIG1pbk9jY3Vycz0iMCIgbmlsbGFibGU9InRydWUiIC8+DQo8L3hzOnNlcXVlbmNlPg0KPC94czpjb21wbGV4VHlwZT4NCjwveHM6ZWxlbWVudD4NCjwveHM6c2NoZW1hPg0KDQo=
+
   examples:
     XAdES-XML-Base64-HTML_md:
       value:
