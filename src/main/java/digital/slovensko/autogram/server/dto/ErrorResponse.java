@@ -33,7 +33,7 @@ public class ErrorResponse {
             case "SigningCanceledByUserException" -> new ErrorResponse(204, "USER_CANCELLED", (AutogramException) e);
             case "UnrecognizedException" -> new ErrorResponse(502, "UNRECOGNIZED_DSS_ERROR", (AutogramException) e);
             case "UnsupportedSignatureLevelExceptionError" -> new ErrorResponse(422, "UNSUPPORTED_SIGNATURE_LEVEL", (AutogramException) e);
-            case "RequestValidationException" -> new ErrorResponse(422, "UNPROCESSABLE_INPUT", (AutogramException) e);
+            case "RequestValidationException", "XMLValidationException", "InvalidXMLException" -> new ErrorResponse(422, "UNPROCESSABLE_INPUT", (AutogramException) e);
             case "MalformedBodyException" -> new ErrorResponse(400, "MALFORMED_INPUT", (AutogramException) e);
             case "TransformationException" -> new ErrorResponse(400, "TRANSFORMATION_FAILED", (AutogramException) e);
             case "TransformationOutputMimeTypeExeption" -> new ErrorResponse(400, "TRANSFORMATION_FAILED", (AutogramException) e);

@@ -1,11 +1,11 @@
 package digital.slovensko.autogram.core.errors;
 
-public class XMLException extends Exception {
+public class XMLException extends AutogramException {
 
     private final String description;
 
     public XMLException(String message, String description) {
-        super(message);
+        super("Chyba XML dát", message, description);
         this.description = description;
     }
 

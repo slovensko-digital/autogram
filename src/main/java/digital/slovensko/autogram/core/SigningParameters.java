@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
-import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
@@ -179,7 +179,7 @@ public class SigningParameters {
                 : CanonicalizationMethod.INCLUSIVE;
     }
 
-    public static EFormAttributes tryToLoadEFormAttributes(DSSDocument document, String propertiesCanonicalization) {
+    public static EFormAttributes tryToLoadEFormAttributes(DSSDocument document, String propertiesCanonicalization) throws AutogramException {
         if (isAsice(document.getMimeType()))
             try {
                 document = AsicContainerUtils.getOriginalDocument(document);
@@ -190,33 +190,28 @@ public class SigningParameters {
         if (!isXDC(document.getMimeType()) && !isXML(document.getMimeType()))
             return null;
 
-        try {
-            EFormResources eformResources;
-            if (isXDC(document.getMimeType()) || EFormUtils.isXDCContent(document))
-                eformResources = EFormResources.buildEFormResourcesFromXDC(document, propertiesCanonicalization);
-            else
-                eformResources = EFormResources.buildEFormResourcesFromEformXml(document, propertiesCanonicalization);
+        EFormResources eformResources;
+        if (isXDC(document.getMimeType()) || EFormUtils.isXDCContent(document))
+            eformResources = EFormResources.buildEFormResourcesFromXDC(document, propertiesCanonicalization);
+        else
+            eformResources = EFormResources.buildEFormResourcesFromEformXml(document, propertiesCanonicalization);
 
-            if (eformResources == null)
-                return null;
-
-            var transformation = eformResources.findTransformation();
-            var schema = eformResources.findSchema();
-            var identifier = eformResources.getIdentifier();
-            var containerXmlns = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
-
-            return new EFormAttributes(identifier, transformation, schema, containerXmlns);
-
-        } catch (InvalidXMLException e) {
+        if (eformResources == null)
             return null;
-        }
+
+        var transformation = eformResources.findTransformation();
+        var schema = eformResources.findSchema();
+        var identifier = eformResources.getIdentifier();
+        var containerXmlns = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
+
+        return new EFormAttributes(identifier, transformation, schema, containerXmlns);
     }
 
     public static SigningParameters buildFromRequest(SignatureLevel level, ASiCContainerType container,
             String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
             String keyInfoCanonicalization, String schema, String transformation, String identifier,
-            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document) {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document) throws AutogramException {
 
         return buildParameters(level, container, containerXmlns, packaging, digestAlgorithm, en319132,
                 infoCanonicalization, propertiesCanonicalization, keyInfoCanonicalization, schema, transformation,
@@ -227,7 +222,7 @@ public class SigningParameters {
             String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
             String keyInfoCanonicalization, String schema, String transformation, String identifier,
-            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document) {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document) throws AutogramException {
 
         if (autoLoadEform) {
             var eformAttributes = tryToLoadEFormAttributes(document, propertiesCanonicalization);
@@ -245,7 +240,7 @@ public class SigningParameters {
                 identifier, checkPDFACompliance, preferredPreviewWidth, autoLoadEform);
     }
 
-    public static SigningParameters buildForPDF(String filename, DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132) {
+    public static SigningParameters buildForPDF(String filename, DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132) throws AutogramException {
         return buildParameters(
                 SignatureLevel.PAdES_BASELINE_B,
                 null,
@@ -256,13 +251,13 @@ public class SigningParameters {
                 null, null, "", checkPDFACompliance, 640, false, document);
     }
 
-    public static SigningParameters buildForASiCWithXAdES(String filename, DSSDocument document, boolean signAsEn319132) {
+    public static SigningParameters buildForASiCWithXAdES(String filename, DSSDocument document, boolean signAsEn319132) throws AutogramException {
         return buildParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
                 null, null, null, "", false, 640, true, document);
     }
 
-    public static SigningParameters buildForASiCWithCAdES(String filename, DSSDocument document, boolean signAsEn319132) {
+    public static SigningParameters buildForASiCWithCAdES(String filename, DSSDocument document, boolean signAsEn319132) throws AutogramException {
         return buildParameters(SignatureLevel.CAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
                 null, null, null, "", false, 640, true, document);

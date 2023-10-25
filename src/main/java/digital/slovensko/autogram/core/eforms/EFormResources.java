@@ -5,8 +5,8 @@ import java.nio.charset.StandardCharsets;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
-import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 
@@ -65,28 +65,26 @@ public class EFormResources {
         return "http://data.gov.sk/doc/eform/" + url;
     }
 
-    public String findTransformation() throws AutogramException {
+    public String findTransformation() throws XMLValidationException {
         var xsltString = getTransformation(SOURCE_URL + url);
         if (xsltString == null)
             return null;
 
         var xsltDigest = computeDigest(xsltString, CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256, ENCODING);
         if (this.xsltDigest != null && !xsltDigest.equals(this.xsltDigest))
-            throw new AutogramException("XSLT digest mismatch", "XSLT digest mismatch",
-                    "XSLT digest mismatch: " + xsltDigest + " != " + this.xsltDigest);
+            throw new XMLValidationException("XML Datacontainer validation failed", "Autoloaded XSLT transformation digest mismatch");
 
         return new String(xsltString, ENCODING);
     }
 
-    public String findSchema() throws AutogramException {
+    public String findSchema() throws XMLValidationException {
         var xsdString = getSchema(SOURCE_URL + url);
         if (xsdString == null)
             return null;
 
         var xsdDigest = computeDigest(xsdString, CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256, ENCODING);
         if (this.xsdDigest != null && !xsdDigest.equals(this.xsdDigest))
-            throw new AutogramException("XSD digest mismatch", "XSD digest mismatch",
-                    "XSD digest mismatch: " + xsdDigest + " != " + this.xsdDigest);
+            throw new XMLValidationException("XML Datacontainer validation failed", "Autoloaded XSD scheme digest mismatch");
 
         return new String(xsdString, ENCODING);
     }
