@@ -10,7 +10,7 @@
 <?import javafx.scene.image.ImageView?>
 <VBox xmlns="http://javafx.com/javafx"
     xmlns:fx="http://javafx.com/fxml"
-    minHeight="600"
+    minHeight="400"
     maxHeight="800"
     minWidth="768"
     prefWidth="768"
