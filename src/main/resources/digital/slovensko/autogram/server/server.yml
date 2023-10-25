@@ -4,7 +4,7 @@ info:
   description: |
     This documentation describes Autogram running in the server mode.
 
-    If you have the custom protocol configured, you can launch it using the link `autogram://launch/37200/*/key` or `autogram://go`.
+    If you have the custom protocol configured, you can launch it using the link `autogram://go`.
   termsOfService: https://sluzby.slovensko.digital/autogram
   contact:
     name: Autogram
