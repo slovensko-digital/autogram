@@ -28,7 +28,11 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
+import digital.slovensko.autogram.server.errors.MalformedBodyException;
+import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
@@ -289,6 +293,36 @@ public abstract class EFormUtils {
 
         } catch (IOException | NullPointerException e) {
             return false;
+        }
+    }
+
+    public static void validateXml(String xsdSchema, DSSDocument xmlDocument)
+            throws RequestValidationException, MalformedBodyException {
+        if (xmlDocument == null)
+            return;
+
+        try {
+            var xml = EFormUtils.getXmlFromDocument(xmlDocument);
+            if (xml == null)
+                throw new XMLValidationException("XML Datacontainer validation failed", "Unable to process document");
+
+            if (isXDC(xmlDocument.getMimeType()) && !isXDCContent(xmlDocument))
+                throw new XMLValidationException("XML Datacontainer validation failed",
+                        "Provided XML document is not a valid XML Datacontainer validated by it's XSD schema");
+
+            var eformContent = EFormUtils.transformElementToString(isXDC(xmlDocument.getMimeType())
+                    ? EFormUtils.getEformXmlFromXdcDocument(xmlDocument).getDocumentElement()
+                    : xml.getDocumentElement());
+
+            if (!EFormUtils.validateXmlContentAgainstXsd(eformContent, xsdSchema))
+                throw new XMLValidationException("XML validation failed", "XML validation against XSD failed");
+
+        } catch (OriginalDocumentNotFoundException e) {
+            throw new MalformedBodyException(e.getMessage(), e.getDescription());
+        } catch (InvalidXMLException e) {
+            throw new MalformedBodyException(e.getMessage(), e.getDescription());
+        } catch (XMLValidationException e) {
+            throw new RequestValidationException(e.getMessage(), e.getDescription());
         }
     }
 }
