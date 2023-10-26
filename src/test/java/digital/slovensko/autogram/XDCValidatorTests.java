@@ -5,10 +5,11 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import digital.slovensko.autogram.core.SigningParameters;
+import javax.xml.crypto.dsig.CanonicalizationMethod;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.XDCValidator;
 import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
 public class XDCValidatorTests {
@@ -17,26 +18,7 @@ public class XDCValidatorTests {
         var content = "";
         var document =  new InMemoryDocument(content.getBytes(), null);
 
-        var signingParameters = SigningParameters.buildFromRequest(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                0,
-                false,
-                null
-        );
-
-        Assertions.assertThrows(InvalidXMLException.class, () -> XDCValidator.buildFromSigningParametersAndDocument(signingParameters, document));
+        Assertions.assertThrows(InvalidXMLException.class, () -> XDCValidator.validateXml(null, document, CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256));
     }
 
     @Test
@@ -45,28 +27,8 @@ public class XDCValidatorTests {
         var document =  new InMemoryDocument(content.getBytes(), null);
 
         var schema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n\n\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>";
-        var signingParameters = SigningParameters.buildFromRequest(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                schema,
-                null,
-                null,
-                false,
-                0,
-                false,
-                null
-        );
 
-        var xdcValidator = XDCValidator.buildFromSigningParametersAndDocument(signingParameters, document);
-
-        Assertions.assertThrows(InvalidXMLException.class, xdcValidator::validateXsdDigest);
+        Assertions.assertThrows(InvalidXMLException.class, () -> XDCValidator.validateXsdDigest(schema, EFormUtils.getXmlFromDocument(document).getDocumentElement(), CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256));
     }
 
     @Test
@@ -75,28 +37,8 @@ public class XDCValidatorTests {
         var document =  new InMemoryDocument(content.getBytes(), null);
 
         var schema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n\n\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>";
-        var signingParameters = SigningParameters.buildFromRequest(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                schema,
-                null,
-                null,
-                false,
-                0,
-                false,
-                null
-        );
 
-        var xdcValidator = XDCValidator.buildFromSigningParametersAndDocument(signingParameters, document);
-
-        Assertions.assertThrows(InvalidXMLException.class, xdcValidator::validateXsdDigest);
+        Assertions.assertThrows(InvalidXMLException.class, () -> XDCValidator.validateXsdDigest(schema, EFormUtils.getXmlFromDocument(document).getDocumentElement(), CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256));
     }
 
     @Test
@@ -105,28 +47,8 @@ public class XDCValidatorTests {
         var document =  new InMemoryDocument(content.getBytes(), null);
 
         var schema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n\n\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>";
-        var signingParameters = SigningParameters.buildFromRequest(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                schema,
-                null,
-                null,
-                false,
-                0,
-                false,
-                null
-        );
 
-        var xdcValidator = XDCValidator.buildFromSigningParametersAndDocument(signingParameters, document);
-
-        Assertions.assertThrows(InvalidXMLException.class, xdcValidator::validateXsdDigest);
+        Assertions.assertThrows(InvalidXMLException.class, () -> XDCValidator.validateXsdDigest(schema, EFormUtils.getXmlFromDocument(document).getDocumentElement(), CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256));
     }
 
     @Test

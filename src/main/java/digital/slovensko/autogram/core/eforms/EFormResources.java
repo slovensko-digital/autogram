@@ -5,11 +5,17 @@ import java.nio.charset.StandardCharsets;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
+import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
+import digital.slovensko.autogram.util.AsicContainerUtils;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
+import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import org.w3c.dom.Node;
@@ -21,6 +27,36 @@ public class EFormResources {
     private final String url;
     private final String xsdDigest;
     private final String xsltDigest;
+
+    public static EFormAttributes tryToLoadEFormAttributes(DSSDocument document, String propertiesCanonicalization) throws AutogramException {
+        if (isAsice(document.getMimeType()))
+            try {
+                document = AsicContainerUtils.getOriginalDocument(document);
+            } catch (MultipleOriginalDocumentsFoundException | OriginalDocumentNotFoundException e) {
+                return null;
+            }
+
+        if (!isXDC(document.getMimeType()) && !isXML(document.getMimeType()))
+            return null;
+
+        EFormResources eformResources;
+        if (isXDC(document.getMimeType()) || XDCValidator.isXDCContent(document))
+            eformResources = EFormResources.buildEFormResourcesFromXDC(document, propertiesCanonicalization);
+        else
+            eformResources = EFormResources.buildEFormResourcesFromEformXml(document, propertiesCanonicalization);
+
+        if (eformResources == null)
+            return null;
+
+        var transformation = eformResources.findTransformation();
+        var schema = eformResources.findSchema();
+        var identifier = eformResources.getIdentifier();
+        var containerXmlns = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
+        var container = ASiCContainerType.ASiC_E;
+
+        return new EFormAttributes(identifier, transformation, schema, containerXmlns, container);
+    }
+
 
     public static EFormResources buildEFormResourcesFromXDC(DSSDocument document, String canonicalizationMethod)
             throws InvalidXMLException {

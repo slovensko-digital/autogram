@@ -2,8 +2,8 @@ package digital.slovensko.autogram.core;
 
 import java.io.File;
 
-import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.XDCBuilder;
+import digital.slovensko.autogram.core.eforms.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
@@ -149,7 +149,7 @@ public class SigningJob {
     public static FileDocument createDSSFileDocumentFromFile(File file) {
         var fileDocument = new FileDocument(file);
 
-        if (isXML(fileDocument.getMimeType()) && EFormUtils.isXDCContent(fileDocument))
+        if (isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
             fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER);
 
         return fileDocument;

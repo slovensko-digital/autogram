@@ -1,16 +1,20 @@
 package digital.slovensko.autogram.core.eforms;
 
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+
 public class EFormAttributes {
     private final String identifier;
     private final String transformation;
     private final String schema;
     private final String containerXmlns;
+    private final ASiCContainerType container;
 
-    public EFormAttributes(String identifier, String transformation, String schema, String containerXmlns) {
+    public EFormAttributes(String identifier, String transformation, String schema, String containerXmlns, ASiCContainerType container) {
         this.identifier = identifier;
         this.transformation = transformation;
         this.schema = schema;
         this.containerXmlns = containerXmlns;
+        this.container = container;
     }
 
     public String getIdentifier() {
@@ -27,5 +31,9 @@ public class EFormAttributes {
 
     public String getContainerXmlns() {
         return containerXmlns;
+    }
+
+    public ASiCContainerType getContainer() {
+        return container;
     }
 }

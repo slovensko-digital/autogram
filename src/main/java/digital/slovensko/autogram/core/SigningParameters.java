@@ -5,13 +5,10 @@ import java.util.ArrayList;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
-import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
-import digital.slovensko.autogram.util.AsicContainerUtils;
-import digital.slovensko.autogram.core.eforms.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.EFormResources;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
+import digital.slovensko.autogram.core.eforms.XDCValidator;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
@@ -179,34 +176,6 @@ public class SigningParameters {
                 : CanonicalizationMethod.INCLUSIVE;
     }
 
-    public static EFormAttributes tryToLoadEFormAttributes(DSSDocument document, String propertiesCanonicalization) throws AutogramException {
-        if (isAsice(document.getMimeType()))
-            try {
-                document = AsicContainerUtils.getOriginalDocument(document);
-            } catch (MultipleOriginalDocumentsFoundException | OriginalDocumentNotFoundException e) {
-                return null;
-            }
-
-        if (!isXDC(document.getMimeType()) && !isXML(document.getMimeType()))
-            return null;
-
-        EFormResources eformResources;
-        if (isXDC(document.getMimeType()) || EFormUtils.isXDCContent(document))
-            eformResources = EFormResources.buildEFormResourcesFromXDC(document, propertiesCanonicalization);
-        else
-            eformResources = EFormResources.buildEFormResourcesFromEformXml(document, propertiesCanonicalization);
-
-        if (eformResources == null)
-            return null;
-
-        var transformation = eformResources.findTransformation();
-        var schema = eformResources.findSchema();
-        var identifier = eformResources.getIdentifier();
-        var containerXmlns = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
-
-        return new EFormAttributes(identifier, transformation, schema, containerXmlns);
-    }
-
     public static SigningParameters buildFromRequest(SignatureLevel level, ASiCContainerType container,
             String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
@@ -225,14 +194,21 @@ public class SigningParameters {
             boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document) throws AutogramException {
 
         if (autoLoadEform) {
-            var eformAttributes = tryToLoadEFormAttributes(document, propertiesCanonicalization);
+            var eformAttributes = EFormResources.tryToLoadEFormAttributes(document, propertiesCanonicalization);
 
             if (eformAttributes != null) {
                 schema = eformAttributes.getSchema();
                 transformation = eformAttributes.getTransformation();
                 identifier = eformAttributes.getIdentifier();
                 containerXmlns = eformAttributes.getContainerXmlns();
+                container = eformAttributes.getContainer();
             }
+        }
+
+        if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")) {
+            var mimeType = document.getMimeType();
+            if (isAsice(mimeType) || isXML(mimeType) || isXDC(mimeType))
+                XDCValidator.validateXml(schema, EFormUtils.getXmlDocument(document), propertiesCanonicalization, digestAlgorithm);
         }
 
         return new SigningParameters(level, container, containerXmlns, packaging, digestAlgorithm, en319132,

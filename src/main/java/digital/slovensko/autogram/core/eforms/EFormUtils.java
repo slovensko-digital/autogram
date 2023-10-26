@@ -18,9 +18,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import javax.xml.XMLConstants;
-import javax.xml.validation.SchemaFactory;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,11 +25,11 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
-import digital.slovensko.autogram.server.errors.MalformedBodyException;
-import digital.slovensko.autogram.server.errors.RequestValidationException;
+import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
@@ -252,77 +249,17 @@ public abstract class EFormUtils {
         }
     }
 
-    public static boolean validateXmlContentAgainstXsd(String xmlContent, String xsdSchema) {
-        if (xsdSchema == null)
-            return true;
+    public static DSSDocument getXmlDocument(DSSDocument document)
+            throws XMLValidationException, InvalidXMLException, OriginalDocumentNotFoundException,
+            MultipleOriginalDocumentsFoundException {
+        if (isAsice(document.getMimeType())) {
+            var originalDocument = AsicContainerUtils.getOriginalDocument(document);
+            if (!isXDC(originalDocument.getMimeType()))
+                return null;
 
-        try {
-            var factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            var schema = factory.newSchema(new StreamSource(new StringReader(xsdSchema)));
-            var validator = schema.newValidator();
-            validator.validate(new StreamSource(new StringReader(xmlContent)));
-
-            return true;
-
-        } catch (SAXException | IOException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public static boolean isXDCContent(DSSDocument document) {
-        Document doc;
-
-        try {
-            doc = getXmlFromDocument(document);
-        } catch (InvalidXMLException e) {
-            return false;
+            return originalDocument;
         }
 
-        var docString = "";
-        try {
-            docString = transformElementToString(doc.getDocumentElement());
-
-        } catch (InvalidXMLException e) {
-            return false;
-        }
-
-        try {
-        var xdcSchema = EFormUtils.class.getResourceAsStream("xmldatacontainer.xsd");
-            return validateXmlContentAgainstXsd(docString, new String(xdcSchema.readAllBytes(), ENCODING));
-
-        } catch (IOException | NullPointerException e) {
-            return false;
-        }
-    }
-
-    public static void validateXml(String xsdSchema, DSSDocument xmlDocument)
-            throws RequestValidationException, MalformedBodyException {
-        if (xmlDocument == null)
-            return;
-
-        try {
-            var xml = EFormUtils.getXmlFromDocument(xmlDocument);
-            if (xml == null)
-                throw new XMLValidationException("XML Datacontainer validation failed", "Unable to process document");
-
-            if (isXDC(xmlDocument.getMimeType()) && !isXDCContent(xmlDocument))
-                throw new XMLValidationException("XML Datacontainer validation failed",
-                        "Provided XML document is not a valid XML Datacontainer validated by it's XSD schema");
-
-            var eformContent = EFormUtils.transformElementToString(isXDC(xmlDocument.getMimeType())
-                    ? EFormUtils.getEformXmlFromXdcDocument(xmlDocument).getDocumentElement()
-                    : xml.getDocumentElement());
-
-            if (!EFormUtils.validateXmlContentAgainstXsd(eformContent, xsdSchema))
-                throw new XMLValidationException("XML validation failed", "XML validation against XSD failed");
-
-        } catch (OriginalDocumentNotFoundException e) {
-            throw new MalformedBodyException(e.getMessage(), e.getDescription());
-        } catch (InvalidXMLException e) {
-            throw new MalformedBodyException(e.getMessage(), e.getDescription());
-        } catch (XMLValidationException e) {
-            throw new RequestValidationException(e.getMessage(), e.getDescription());
-        }
+        return document;
     }
 }
