@@ -18,7 +18,7 @@
         <dss.version>5.12.1</dss.version>
         <gson.version>2.10.1</gson.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
-        <pdfjs.version>2.10.377</pdfjs.version>
+        <pdfjs.version>2.16.105</pdfjs.version>
         <saxon.version>12.3</saxon.version>
         <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.9</slf4j.version>
@@ -176,7 +176,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>3.2.1</version>
                     <configuration>
                         <jvm>${jlink.jdk.path}${file.separator}bin${file.separator}java</jvm>
                         <!-- done this way because you can't override excludedGroups in a profile
@@ -275,7 +275,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.1</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -336,7 +336,7 @@
                             <fromDir>cmaps</fromDir>
                             <toDir>
                                 ${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs/cmaps</toDir>
-                            <!-- <skip>true</skip> -->
+                            <skipIfExists>true</skipIfExists>
                         </configuration>
                     </execution>
                 </executions>
@@ -551,7 +551,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>3.1.2</version>
+                        <version>3.2.1</version>
                         <configuration>
                             <jvm>${jlink.jdk.path}${file.separator}bin${file.separator}java</jvm>
                             <groups>HttpSmokeTest</groups>
