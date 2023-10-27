@@ -208,7 +208,7 @@ public class SigningParameters {
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")) {
             var mimeType = document.getMimeType();
             if (isAsice(mimeType) || isXML(mimeType) || isXDC(mimeType))
-                XDCValidator.validateXml(schema, EFormUtils.getXmlDocument(document), propertiesCanonicalization, digestAlgorithm);
+                XDCValidator.validateXml(schema, transformation, EFormUtils.getXmlDocument(document), propertiesCanonicalization, digestAlgorithm);
         }
 
         return new SigningParameters(level, container, containerXmlns, packaging, digestAlgorithm, en319132,

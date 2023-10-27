@@ -13,7 +13,7 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.transform.stream.StreamSource;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
-import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 
@@ -37,33 +37,33 @@ public abstract class XDCValidator {
         }
     }
 
-    public static void validateXml(String xsdSchema, DSSDocument xmlDocument, String cannonicalizationMethod, DigestAlgorithm digestAlgorithm)
-            throws OriginalDocumentNotFoundException, InvalidXMLException, XMLValidationException {
+    public static void validateXml(String xsd, String xslt, DSSDocument xmlDocument, String cannonicalizationMethod, DigestAlgorithm digestAlgorithm)
+            throws OriginalDocumentNotFoundException, XMLValidationException, XMLValidationException {
         if (xmlDocument == null)
-            throw new XMLValidationException("XML Datacontainer validation failed", "Unable to parse document");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument");
 
         var xml = EFormUtils.getXmlFromDocument(xmlDocument);
         if (xml == null)
-            throw new XMLValidationException("XML Datacontainer validation failed", "Unable to process document");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dáta z XML Datacontainera");
 
         if (AutogramMimeType.isXDC(xmlDocument.getMimeType())) {
             if (!XDCValidator.isXDCContent(xmlDocument))
-                throw new XMLValidationException("XML Datacontainer validation failed",
-                        "Provided XML document is not a valid XML Datacontainer validated by it's XSD schema");
+                throw new XMLValidationException("Zlyhala validácia XML Datacontainera",
+                        "Poskytnutý XML dokument nie je validný XML Datacontainer podľa XSD schémy");
 
-            if (!XDCValidator.validateXsdDigest(xsdSchema, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
-                throw new XMLValidationException("XML Datacontainer validation failed", "XSD digest value mismatch");
+            if (xsd != null && !XDCValidator.validateXsdDigest(xsd, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
+                throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XSD schéma sa nezhoduje s odtlačkom v XML Datacontaineri");
 
-            if (!XDCValidator.validateXsltDigest(xsdSchema, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
-                throw new XMLValidationException("XML Datacontainer validation failed", "XSLT digest value mismatch");
+            if (xslt != null && !XDCValidator.validateXsltDigest(xslt, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
+                throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XSLT transformácia sa nezhoduje s odtlačkom v XML Datacontaineri");
         }
 
         var eformContent = EFormUtils.transformElementToString(AutogramMimeType.isXDC(xmlDocument.getMimeType())
                 ? EFormUtils.getEformXmlFromXdcDocument(xmlDocument).getDocumentElement()
                 : xml.getDocumentElement());
 
-        if (!validateXmlContentAgainstXsd(eformContent, xsdSchema))
-            throw new XMLValidationException("XML validation failed", "XML validation against XSD failed");
+        if (xsd != null && !validateXmlContentAgainstXsd(eformContent, xsd))
+            throw new XMLValidationException("Zlyhala validícia XML dokumentu", "XML dokument sa nezhoduje s XSD schémou");
     }
 
     public static boolean validateXmlContentAgainstXsd(String xmlContent, String xsdSchema) {
@@ -85,18 +85,18 @@ public abstract class XDCValidator {
     }
 
     public static boolean validateXsdDigest(String content, Element document, String canonicalizationMethod,
-            DigestAlgorithm digestAlgorithm) throws InvalidXMLException {
-        return validateDigest(content, document, "xdc:UsedXSDReference", canonicalizationMethod, digestAlgorithm);
+            DigestAlgorithm digestAlgorithm) throws XMLValidationException {
+        return validateDigest(content, document, "UsedXSDReference", canonicalizationMethod, digestAlgorithm);
     }
 
     public static boolean validateXsltDigest(String content, Element document, String canonicalizationMethod,
-            DigestAlgorithm digestAlgorithm) throws InvalidXMLException {
-        return validateDigest(content, document, "xdc:UsedPresentationSchemaReference", canonicalizationMethod,
+            DigestAlgorithm digestAlgorithm) throws XMLValidationException {
+        return validateDigest(content, document, "UsedPresentationSchemaReference", canonicalizationMethod,
                 digestAlgorithm);
     }
 
     private static boolean validateDigest(String content, Element document, String fieldWithDigest,
-            String canonicalizationMethod, DigestAlgorithm digestAlgorithm) throws InvalidXMLException {
+            String canonicalizationMethod, DigestAlgorithm digestAlgorithm) throws XMLValidationException {
         var contentBytes = content.getBytes(ENCODING);
         var contentHash = computeDigest(contentBytes, canonicalizationMethod, digestAlgorithm, ENCODING);
         var digestValue = getDigestValueFromElement(document, fieldWithDigest);

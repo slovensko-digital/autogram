@@ -6,10 +6,9 @@ import java.nio.charset.StandardCharsets;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
-import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
@@ -59,7 +58,7 @@ public class EFormResources {
 
 
     public static EFormResources buildEFormResourcesFromXDC(DSSDocument document, String canonicalizationMethod)
-            throws InvalidXMLException {
+            throws XMLValidationException {
         var xdc = getXmlFromDocument(document).getDocumentElement();
         var formUri = getFormUri(xdc);
         var xml = getEformXmlFromXdcDocument(document);
@@ -71,7 +70,7 @@ public class EFormResources {
     }
 
     public static EFormResources buildEFormResourcesFromEformXml(DSSDocument document, String canonicalizationMethod)
-            throws InvalidXMLException {
+            throws XMLValidationException {
         var xml = getXmlFromDocument(document).getDocumentElement();
         var formUri = getNamespaceFromEformXml(xml);
 
@@ -108,7 +107,7 @@ public class EFormResources {
 
         var xsltDigest = computeDigest(xsltString, CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256, ENCODING);
         if (this.xsltDigest != null && !xsltDigest.equals(this.xsltDigest))
-            throw new XMLValidationException("XML Datacontainer validation failed", "Autoloaded XSLT transformation digest mismatch");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Automaticky nájdená XSLT transformácia sa nezhoduje s odtlačkom v XML Datacontaineri");
 
         return new String(xsltString, ENCODING);
     }
@@ -120,7 +119,7 @@ public class EFormResources {
 
         var xsdDigest = computeDigest(xsdString, CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256, ENCODING);
         if (this.xsdDigest != null && !xsdDigest.equals(this.xsdDigest))
-            throw new XMLValidationException("XML Datacontainer validation failed", "Autoloaded XSD scheme digest mismatch");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Automaticky nájdená XSD schéma sa nezhoduje s odtlačkom v XML Datacontaineri");
 
         return new String(xsdString, ENCODING);
     }

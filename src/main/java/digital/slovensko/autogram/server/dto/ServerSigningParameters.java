@@ -8,7 +8,7 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
-import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
+import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
 import eu.europa.esig.dss.enumerations.*;
 import eu.europa.esig.dss.model.DSSDocument;
 
@@ -164,7 +164,7 @@ public class ServerSigningParameters {
                 SignatureLevel.CAdES_BASELINE_B);
 
         if (!supportedLevels.contains(level))
-            throw new UnsupportedSignatureLevelExceptionError(level.name());
+            throw new UnsupportedSignatureLevelException(level.name());
 
         if (level.getSignatureForm() == SignatureForm.PAdES) {
             if (!mimeType.equals(MimeTypeEnum.PDF))

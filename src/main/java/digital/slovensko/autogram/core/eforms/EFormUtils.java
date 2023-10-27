@@ -24,11 +24,11 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.errors.InvalidXMLException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
-import digital.slovensko.autogram.core.errors.XMLValidationException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -85,19 +85,19 @@ public abstract class EFormUtils {
         return new String(asBase64, encoding);
     }
 
-    public static String getDigestValueFromElement(Element xdc, String elementLocalName) throws InvalidXMLException {
+    public static String getDigestValueFromElement(Element xdc, String elementLocalName) throws XMLValidationException {
         var element = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", elementLocalName)
                 .item(0);
         if (element == null)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Element " + elementLocalName + " not found");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element " + elementLocalName + " nebol nájdený");
 
         var attributes = element.getAttributes();
         if (attributes == null || attributes.getLength() == 0)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Attributes of " + elementLocalName + " not found");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Atribúty v " + elementLocalName + " neboli nájdené");
 
         var digestValue = attributes.getNamedItem("DigestValue");
         if (digestValue == null)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "DigestValue of " + elementLocalName + " not found");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Hodnota odtlačku v " + elementLocalName + " nebola nájdená");
 
         return digestValue.getNodeValue();
     }
@@ -150,7 +150,7 @@ public abstract class EFormUtils {
         }
     }
 
-    public static Document getXmlFromDocument(DSSDocument documentToDisplay) throws InvalidXMLException {
+    public static Document getXmlFromDocument(DSSDocument documentToDisplay) throws XMLValidationException {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
@@ -164,16 +164,16 @@ public abstract class EFormUtils {
             return parsedDocument;
 
         } catch (Exception e) {
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to parse xml content");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
         }
     }
 
-    public static Document getEformXmlFromXdcDocument(DSSDocument document) throws InvalidXMLException {
+    public static Document getEformXmlFromXdcDocument(DSSDocument document) throws XMLValidationException {
         var xmlDocument = getXmlFromDocument(document);
         var xmlData = xmlDocument.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData").item(0);
 
         if (xmlData == null)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "XMLData not found in XDC");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData sa nepodarilo nájsť v XML Dataconatineri");
 
         var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
@@ -183,19 +183,34 @@ public abstract class EFormUtils {
             builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
             responseDocument = builderFactory.newDocumentBuilder().newDocument();
         } catch (ParserConfigurationException e) {
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to create response document");
+            throw new UnrecognizedException(e);
         }
 
         if (xmlData.getFirstChild() == null)
-            throw new InvalidXMLException("XML Datacontainer validation failed", "XMLData is empty");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData je prázdny");
 
-        var node = responseDocument.importNode(xmlData.getFirstChild(), true);
-        responseDocument.appendChild(node);
+        var idk = xmlData.getFirstChild();
+        if (idk.getNodeType() == Node.TEXT_NODE) {
+            if (!idk.getNodeValue().matches("\\s*"))
+                throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XMLData obsahuje neplatný text");
+
+            idk = idk.getNextSibling();
+        }
+
+        if (idk == null)
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData je prázdny");
+
+        try {
+            var node = responseDocument.importNode(xmlData.getFirstChild(), true);
+            responseDocument.appendChild(node);
+        } catch (DOMException e) {
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
+        }
 
         return responseDocument;
     }
 
-    public static String transformElementToString(Node element) throws InvalidXMLException {
+    public static String transformElementToString(Node element) throws XMLValidationException {
         try {
             var builderFactory = DocumentBuilderFactory.newInstance();
             builderFactory.setNamespaceAware(true);
@@ -219,7 +234,7 @@ public abstract class EFormUtils {
 
             return writer.toString();
         } catch (Exception e) {
-            throw new InvalidXMLException("XML Datacontainer validation failed", "Unable to get xml content");
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
         }
     }
 
@@ -250,7 +265,7 @@ public abstract class EFormUtils {
     }
 
     public static DSSDocument getXmlDocument(DSSDocument document)
-            throws XMLValidationException, InvalidXMLException, OriginalDocumentNotFoundException,
+            throws XMLValidationException, OriginalDocumentNotFoundException,
             MultipleOriginalDocumentsFoundException {
         if (isAsice(document.getMimeType())) {
             var originalDocument = AsicContainerUtils.getOriginalDocument(document);
