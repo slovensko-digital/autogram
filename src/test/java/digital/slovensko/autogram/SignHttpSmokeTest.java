@@ -29,6 +29,7 @@ import org.junit.platform.commons.util.ReflectionUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import digital.slovensko.autogram.server.dto.Document;
+import digital.slovensko.autogram.server.dto.ErrorResponseBody;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters.VisualizationWidthEnum;
@@ -126,7 +127,7 @@ public class SignHttpSmokeTest {
     public void testPositiveFromYaml(String exampleName)
             throws ClientProtocolException, IOException, IllegalAccessException,
             NoSuchFieldException, SecurityException {
-        testFromYaml(exampleName, HttpStatus.SC_OK);
+        testFromYaml(exampleName, HttpStatus.SC_OK, SignResponse.class);
     }
 
     @ParameterizedTest
@@ -136,10 +137,10 @@ public class SignHttpSmokeTest {
     public void testNegativeFromYaml(String exampleName)
             throws ClientProtocolException, IOException, IllegalAccessException,
             NoSuchFieldException, SecurityException {
-        testFromYaml(exampleName, HttpStatus.SC_UNPROCESSABLE_ENTITY);
+        testFromYaml(exampleName, HttpStatus.SC_UNPROCESSABLE_ENTITY, ErrorResponseBody.class);
     }
 
-    public void testFromYaml(String exampleName, int expectedStatus)
+    public void testFromYaml(String exampleName, int expectedStatus, Class responseClass)
             throws ClientProtocolException, IOException, IllegalAccessException,
             NoSuchFieldException, SecurityException {
         System.out.println("Testing example: " + exampleName);
@@ -169,10 +170,10 @@ public class SignHttpSmokeTest {
         var responseStr = new String(
                 signResponse.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
         assertEquals(expectedStatus, signResponse.getStatusLine().getStatusCode());
-        var response = gson.fromJson(responseStr, SignResponse.class);
+        var response = gson.fromJson(responseStr, responseClass);
 
         ReflectionUtils
-                .findFields(SignResponse.class, (e) -> true,
+                .findFields(responseClass, (e) -> true,
                         ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
                 .forEach(f -> {
                     f.setAccessible(true);

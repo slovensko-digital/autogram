@@ -7,8 +7,6 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
-import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
-import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
@@ -29,11 +27,7 @@ public class EFormResources {
 
     public static EFormAttributes tryToLoadEFormAttributes(DSSDocument document, String propertiesCanonicalization) throws AutogramException {
         if (isAsice(document.getMimeType()))
-            try {
-                document = AsicContainerUtils.getOriginalDocument(document);
-            } catch (MultipleOriginalDocumentsFoundException | OriginalDocumentNotFoundException e) {
-                return null;
-            }
+            document = AsicContainerUtils.getOriginalDocument(document);
 
         if (!isXDC(document.getMimeType()) && !isXML(document.getMimeType()))
             return null;
@@ -57,7 +51,7 @@ public class EFormResources {
     }
 
 
-    public static EFormResources buildEFormResourcesFromXDC(DSSDocument document, String canonicalizationMethod)
+    private static EFormResources buildEFormResourcesFromXDC(DSSDocument document, String canonicalizationMethod)
             throws XMLValidationException {
         var xdc = getXmlFromDocument(document).getDocumentElement();
         var formUri = getFormUri(xdc);
@@ -69,7 +63,7 @@ public class EFormResources {
         return buildEFormResourcesFromEformXml(xml, canonicalizationMethod, formUri, xsdDigest, xsltDigest);
     }
 
-    public static EFormResources buildEFormResourcesFromEformXml(DSSDocument document, String canonicalizationMethod)
+    private static EFormResources buildEFormResourcesFromEformXml(DSSDocument document, String canonicalizationMethod)
             throws XMLValidationException {
         var xml = getXmlFromDocument(document).getDocumentElement();
         var formUri = getNamespaceFromEformXml(xml);
@@ -79,7 +73,7 @@ public class EFormResources {
 
     private static EFormResources buildEFormResourcesFromEformXml(Node xml, String canonicalizationMethod,
             String formUri, String xsdDigest, String xsltDigest) {
-        if (formUri == null)
+        if (formUri == null || !(formUri.startsWith("http://schemas.gov.sk/form/") || formUri.startsWith("http://data.gov.sk/doc/eform/")))
             return null;
 
         var parts = formUri.split("/");

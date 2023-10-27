@@ -1,14 +1,26 @@
 package digital.slovensko.autogram.server.dto;
 
+import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
-import digital.slovensko.autogram.server.errors.RequestValidationException;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
 
 class SignRequestBodyTest {
+    private static String xsdSchema;
+    private static String xsltTransformation;
+    private static String defaultIdentifier;
+
+    @BeforeAll
+    static void setDefaultValues() throws IOException {
+        xsdSchema = new String(SignRequestBodyTest.class.getResourceAsStream("../../general_agenda.xsd").readAllBytes());
+        xsltTransformation = new String(SignRequestBodyTest.class.getResourceAsStream("../../general_agenda.xslt").readAllBytes());
+        defaultIdentifier = "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9";
+    }
 
     @Test
     void testValidateXDCWithoutXSD() throws IOException {
@@ -45,7 +57,6 @@ class SignRequestBodyTest {
         var xmlContent = new String(this.getClass().getResourceAsStream("xdc.xml").readAllBytes());
         var document = new Document(xmlContent);
 
-        var schema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n\n\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>";
         var signingParameters = new ServerSigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
@@ -57,7 +68,7 @@ class SignRequestBodyTest {
                 null,
                 null,
                 null,
-                schema,
+                xsdSchema,
                 null,
                 null,
                 false,
@@ -76,30 +87,29 @@ class SignRequestBodyTest {
         var xmlContent = new String(this.getClass().getResourceAsStream("testValidateXDCWithInvalidXmlAgainstXSD-xmlContent.xml").readAllBytes());
         var document = new Document(xmlContent);
 
-        var schema = new String(this.getClass().getResourceAsStream("testValidateXDCWithInvalidXmlAgainstXSD-xsd.xml").readAllBytes());
         var signingParameters = new ServerSigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                schema,
-                null,
-                null,
+                xsdSchema,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
-        SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
+        var signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -107,21 +117,20 @@ class SignRequestBodyTest {
         var xmlContent = new String(this.getClass().getResourceAsStream("testValidateXDCDigestMismatchXSD-xmlContent.xml").readAllBytes());
         var document = new Document(xmlContent);
 
-        var schema = new String(this.getClass().getResourceAsStream("testValidateXDCDigestMismatchXSD-xsd.xml").readAllBytes());
         var signingParameters = new ServerSigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                schema,
-                null,
-                null,
+                xsdSchema,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -130,7 +139,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -143,16 +152,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
+                xsdSchema,
                 transformation,
-                null,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -161,7 +170,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -174,16 +183,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                 null,
-                null,
-                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
                 schema,
-                null,
-                null,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -192,11 +201,11 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
-    void testValidateXDCInvalidXSLT() {
+    void testValidateXDCInvalidXSLT() throws IOException {
         var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData ContentType=\"application/xml; charset=UTF-8\" Identifier=\"http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9\" Version=\"1.9\"><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><subject>Nové podanie</subject><text>Podávam toto nové podanie.</text></GeneralAgenda></xdc:XMLData><xdc:UsedSchemasReferenced><xdc:UsedXSDReference DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"/Ctn0B9D7HKn6URFR8iPUKfyGe4mBYpK+25dc1iYWuE=\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd</xdc:UsedXSDReference><xdc:UsedPresentationSchemaReference ContentType=\"application/xslt+xml\" DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"\" Language=\"sk\" MediaDestinationTypeDescription=\"TXT\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt</xdc:UsedPresentationSchemaReference></xdc:UsedSchemasReferenced></xdc:XMLDataContainer>";
         var document = new Document(xmlContent);
 
@@ -205,16 +214,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
+                xsdSchema,
                 transformation,
-                null,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -223,7 +232,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -236,16 +245,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                 null,
-                null,
-                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
                 schema,
-                null,
-                null,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -254,7 +263,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -267,16 +276,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
+                xsdSchema,
                 transformation,
-                null,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -285,7 +294,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -293,21 +302,20 @@ class SignRequestBodyTest {
         var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData ContentType=\"application/xml; charset=UTF-8\" Identifier=\"http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9\" Version=\"1.9\"><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><subject>Nové podanie</subject><text>Podávam toto nové podanie.</text></GeneralAgenda></xdc:XMLData><xdc:UsedSchemasReferenced><xdc:UsedXSDReference DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd</xdc:UsedXSDReference><xdc:UsedPresentationSchemaReference ContentType=\"application/xslt+xml\" DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" Language=\"sk\" MediaDestinationTypeDescription=\"TXT\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt</xdc:UsedPresentationSchemaReference></xdc:UsedSchemasReferenced></xdc:XMLDataContainer>";
         var document = new Document(xmlContent);
 
-        var transformation = "";
         var signingParameters = new ServerSigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                transformation,
-                null,
+                xsdSchema,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -316,7 +324,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -324,21 +332,20 @@ class SignRequestBodyTest {
         var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData ContentType=\"application/xml; charset=UTF-8\" Identifier=\"http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9\" Version=\"1.9\"><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><subject>Nové podanie</subject><text>Podávam toto nové podanie.</text></GeneralAgenda></xdc:XMLData><xdc:UsedSchemasReferenced></xdc:XMLDataContainer>";
         var document = new Document(xmlContent);
 
-        var transformation = "";
         var signingParameters = new ServerSigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                transformation,
-                null,
+                xsdSchema,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -347,7 +354,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
 
@@ -356,21 +363,20 @@ class SignRequestBodyTest {
         var xmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData ContentType=\"application/xml; charset=UTF-8\" Identifier=\"http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9\" Version=\"1.9\"></xdc:XMLData><xdc:UsedSchemasReferenced><xdc:UsedXSDReference DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"/Ctn0B9D7HKn6URFR8iPUKfyGe4mBYpK+25dc1iYWuE=\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd</xdc:UsedXSDReference><xdc:UsedPresentationSchemaReference ContentType=\"application/xslt+xml\" DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"\" Language=\"sk\" MediaDestinationTypeDescription=\"TXT\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt</xdc:UsedPresentationSchemaReference></xdc:UsedSchemasReferenced></xdc:XMLDataContainer>";
         var document = new Document(xmlContent);
 
-        var transformation = "";
         var signingParameters = new ServerSigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
-                transformation,
-                null,
+                xsdSchema,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -379,7 +385,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -392,16 +398,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                 null,
-                null,
-                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
                 schema,
-                null,
-                null,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -423,16 +429,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                 null,
-                null,
-                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
                 schema,
-                null,
-                null,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -454,16 +460,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
+                xsdSchema,
                 transformation,
-                null,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -472,7 +478,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -485,16 +491,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
+                xsdSchema,
                 transformation,
-                null,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -503,7 +509,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -516,16 +522,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                 null,
-                null,
-                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
                 schema,
-                null,
-                null,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -547,16 +553,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                 null,
-                null,
-                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
                 schema,
-                null,
-                null,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -573,21 +579,22 @@ class SignRequestBodyTest {
         var xmlContent = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48eGRjOlhNTERhdGFDb250YWluZXIgeG1sbnM6eGRjPSJodHRwOi8vZGF0YS5nb3Yuc2svZGVmL2NvbnRhaW5lci94bWxkYXRhY29udGFpbmVyK3htbC8xLjEiPjx4ZGM6WE1MRGF0YSBDb250ZW50VHlwZT0iYXBwbGljYXRpb24veG1sOyBjaGFyc2V0PVVURi04IiBJZGVudGlmaWVyPSJodHRwOi8vZGF0YS5nb3Yuc2svZG9jL2Vmb3JtL0FwcC5HZW5lcmFsQWdlbmRhLzEuOSIgVmVyc2lvbj0iMS45Ij48R2VuZXJhbEFnZW5kYSB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45IiB4bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hLWluc3RhbmNlIj48c3ViamVjdD5Ob3bDqSBwb2RhbmllPC9zdWJqZWN0Pjx0ZXh0PlBvZMOhdmFtIHRvdG8gbm92w6kgcG9kYW5pZS48L3RleHQ+PC9HZW5lcmFsQWdlbmRhPjwveGRjOlhNTERhdGE+PHhkYzpVc2VkU2NoZW1hc1JlZmVyZW5jZWQ+PHhkYzpVc2VkWFNEUmVmZXJlbmNlIERpZ2VzdE1ldGhvZD0idXJuOm9pZDoyLjE2Ljg0MC4xLjEwMS4zLjQuMi4xIiBEaWdlc3RWYWx1ZT0iL0N0bjBCOUQ3SEtuNlVSRlI4aVBVS2Z5R2U0bUJZcEsrMjVkYzFpWVd1RT0iIFRyYW5zZm9ybUFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvVFIvMjAwMS9SRUMteG1sLWMxNG4tMjAwMTAzMTUiPmh0dHA6Ly9zY2hlbWFzLmdvdi5zay9mb3JtL0FwcC5HZW5lcmFsQWdlbmRhLzEuOS9mb3JtLnhzZDwveGRjOlVzZWRYU0RSZWZlcmVuY2U+PHhkYzpVc2VkUHJlc2VudGF0aW9uU2NoZW1hUmVmZXJlbmNlIENvbnRlbnRUeXBlPSJhcHBsaWNhdGlvbi94c2x0K3htbCIgRGlnZXN0TWV0aG9kPSJ1cm46b2lkOjIuMTYuODQwLjEuMTAxLjMuNC4yLjEiIERpZ2VzdFZhbHVlPSJRbzFqWVgxSld5ZHZNL09ML3JuaXJwaGsxck0xejQxZlBSWEJFZ3AvcWJnPSIgTGFuZ3VhZ2U9InNrIiBNZWRpYURlc3RpbmF0aW9uVHlwZURlc2NyaXB0aW9uPSJUWFQiIFRyYW5zZm9ybUFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvVFIvMjAwMS9SRUMteG1sLWMxNG4tMjAwMTAzMTUiPmh0dHA6Ly9zY2hlbWFzLmdvdi5zay9mb3JtL0FwcC5HZW5lcmFsQWdlbmRhLzEuOS9mb3JtLnhzbHQ8L3hkYzpVc2VkUHJlc2VudGF0aW9uU2NoZW1hUmVmZXJlbmNlPjwveGRjOlVzZWRTY2hlbWFzUmVmZXJlbmNlZD48L3hkYzpYTUxEYXRhQ29udGFpbmVyPg==";
         var document = new Document(xmlContent);
 
+        var schema = "";
         var transformation = "";
         var signingParameters = new ServerSigningParameters(
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
+                schema,
                 transformation,
-                null,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -596,7 +603,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(XMLValidationException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -609,16 +616,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
+                xsdSchema,
                 transformation,
-                null,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -640,16 +647,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                 null,
-                null,
-                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
                 schema,
-                null,
-                null,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -658,7 +665,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -671,16 +678,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                 null,
-                null,
-                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
                 schema,
-                null,
-                null,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -689,7 +696,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -702,16 +709,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
+                xsdSchema,
                 transformation,
-                null,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -720,7 +727,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -733,16 +740,16 @@ class SignRequestBodyTest {
                 SignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
+                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
-                null,
+                xsdSchema,
                 transformation,
-                null,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -751,7 +758,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -894,8 +901,8 @@ class SignRequestBodyTest {
                 null,
                 null,
                 schema,
-                null,
-                null,
+                xsltTransformation,
+                defaultIdentifier,
                 false,
                 null,
                 false);
@@ -904,7 +911,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 
     @Test
@@ -965,7 +972,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertDoesNotThrow(signRequestBody::getParameters);
     }
 
     @Test
@@ -1087,7 +1094,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertThrows(RequestValidationException.class, signRequestBody::getParameters);
+        Assertions.assertDoesNotThrow(signRequestBody::getParameters);
     }
 
     @Test
@@ -1153,66 +1160,6 @@ class SignRequestBodyTest {
     }
 
     @Test
-    void testValidateXmlInAsiceBase64OriginalDocumentNotFound() {
-        var xmlContent = "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";
-        var document = new Document(xmlContent);
-
-        var signingParameters = new ServerSigningParameters(
-                SignatureLevel.XAdES_BASELINE_B,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                null,
-                false);
-
-        var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
-
-        SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
-
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
-    }
-
-    @Test
-    void testValidateXmlInAsiceBase64SignaturesNotFound() {
-        var xmlContent = "UEsDBBQAAAAIAHhXEFeZuploLAIAANsEAAAMAAAAZG9jdW1lbnQueG1sxZTPctowEMZfRaNrBskiJA0UOwMhSVtCSwkkcFSsxSgxkiuJP+nb9NjnyItVthMIHZqZTg89avfT6tvfrt08Xc9TtARjpVYhZiTACFSshVRJiEfDi8oJPo2aaxE3xr2rDnf8TCvHpQKD/E1lGz4V4plzWYNS4fMk0UtiH6iAKY1ftNRr8+QmcOADlBGGd2qjvDgoN3zMIMQ8y1IZc+ed5fffo3jGjQUXlrbQR+GlcirB7DegYwpTbea0lWXkEvyrPG0loAT3L9cxutl2Xfc+dhRlc5u6Np7BnNuX0m9VfaZi5ebyarUiq0OiTUKrQcCob/a6qFeRyjquYvCv28XdPcQu+qyXTz9RpgVXEpr0Jdx0sHZRX4unH0s+R047jdRrKWnSQtKkO578+RXfEvbIgigN2AFMwfh5g9imxtedTRh1ZALW9cDNtAjxwqiGlqJRJeyYnNQC4icYMHJIasSH8LP6hqcLPz565lTQrnfefeiq49HgYnAi+6Pu9PESavP2JOseVI9EzOTkdnEeYjQ0XNmcaytNtJFuNt/HbzgoEQ7OzyoedCVmNVXJI8EhO8LR306rSJG1FSWl37vfMukbsH7Zil0s0W0R/XlnberyPcf/QvGrZveTMft0+yiWPfrliholTTZ7YKbHvtfYtD8Yt8+TjH67898ruuIqWfDE37MPGPVASN7xtaQqHOUW/TE2MnPF4g/Hw/9MPnVb9G9AjraqPZv7esU3v6foF1BLAwQUAAAACAB4VxBXuT2EmMAAAACFAQAAFQAAAE1FVEEtSU5GL21hbmlmZXN0LnhtbI2QwU4DMQxEf2Xla5UscEJR0974AvgAK/EWi8SJNt4V5etJkVoWcenNI83MG3l//MxpWGluXMTDo32AgSSUyHLy8Pb6Yp7heNhnFJ6oqbseQ49Ju0kPyyyuYOPmBDM1p8GVShJLWDKJur9+9wO6qQ3/CTa0iROZnp7Pv95pSclU1HcP46YiU2Q0eq7kAWtNHFB75bhKtKSNbd8WDO2+uMJ4P+K63/b9d9JOZbXt4xKIqBiKKLLQvLs0dPL475eHb1BLAwQUAAAAAAB4VxBXiiH5RR8AAAAfAAAACAAAAG1pbWV0eXBlYXBwbGljYXRpb24vdm5kLmV0c2kuYXNpYy1lK3ppcFBLAQIUABQAAAAIAHhXEFeZuploLAIAANsEAAAMAAAAAAAAAAEAIAAAAAAAAABkb2N1bWVudC54bWxQSwECFAAUAAAACAB4VxBXuT2EmMAAAACFAQAAFQAAAAAAAAABACAAAABWAgAATUVUQS1JTkYvbWFuaWZlc3QueG1sUEsBAhQAFAAAAAAAeFcQV4oh+UUfAAAAHwAAAAgAAAAAAAAAAQAgAAAASQMAAG1pbWV0eXBlUEsFBgAAAAADAAMAswAAAI4DAAAAAA==";
-        var document = new Document(xmlContent);
-
-        var signingParameters = new ServerSigningParameters(
-                SignatureLevel.XAdES_BASELINE_B,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                null,
-                false);
-
-        var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
-
-        SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
-
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
-    }
-
-    @Test
     void testValidateTxtInAsiceBase64() {
         var xmlContent = "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";
         var document = new Document(xmlContent);
@@ -1240,35 +1187,5 @@ class SignRequestBodyTest {
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
         Assertions.assertDoesNotThrow(signRequestBody::getParameters);
-    }
-
-    @Test
-    void testValidateXmlInAsiceBase64OriginalDocumentInvalid() {
-        var xmlContent = "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";
-        var document = new Document(xmlContent);
-
-        var signingParameters = new ServerSigningParameters(
-                SignatureLevel.XAdES_BASELINE_B,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                false,
-                null,
-                false);
-
-        var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
-
-        SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
-
-        Assertions.assertThrows(MalformedBodyException.class, signRequestBody::getParameters);
     }
 }

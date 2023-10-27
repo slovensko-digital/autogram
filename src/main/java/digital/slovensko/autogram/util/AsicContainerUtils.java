@@ -18,7 +18,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 public class AsicContainerUtils {
     public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,
             MultipleOriginalDocumentsFoundException {
-        var documentValidator = SignedDocumentValidator.fromDocument(asice);
+        SignedDocumentValidator documentValidator;
+        try {
+            documentValidator = SignedDocumentValidator.fromDocument(asice);
+        } catch (UnsupportedOperationException e) {
+            throw new OriginalDocumentNotFoundException("Súbor sa nepodarilo načítať");
+        }
+
         documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
         var signatures = documentValidator.getSignatures();
         if (signatures.isEmpty())

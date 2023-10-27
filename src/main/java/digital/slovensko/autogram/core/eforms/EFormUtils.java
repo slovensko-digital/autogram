@@ -77,12 +77,16 @@ public abstract class EFormUtils {
         return null;
     }
 
-    public static String computeDigest(byte[] data, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, Charset encoding) {
-        var canonicalizedData = DSSXMLUtils.canonicalize(canonicalizationMethod, data);
-        var digest = DSSUtils.digest(digestAlgorithm, canonicalizedData);
-        var asBase64 = Base64.getEncoder().encode(digest);
+    public static String computeDigest(byte[] data, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, Charset encoding) throws XMLValidationException {
+        try {
+            var canonicalizedData = DSSXMLUtils.canonicalize(canonicalizationMethod, data);
+            var digest = DSSUtils.digest(digestAlgorithm, canonicalizedData);
+            var asBase64 = Base64.getEncoder().encode(digest);
 
-        return new String(asBase64, encoding);
+            return new String(asBase64, encoding);
+        } catch (DSSException e) {
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa vypočítať odtlačok", e);
+        }
     }
 
     public static String getDigestValueFromElement(Element xdc, String elementLocalName) throws XMLValidationException {
@@ -201,7 +205,7 @@ public abstract class EFormUtils {
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData je prázdny");
 
         try {
-            var node = responseDocument.importNode(xmlData.getFirstChild(), true);
+            var node = responseDocument.importNode(idk, true);
             responseDocument.appendChild(node);
         } catch (DOMException e) {
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);

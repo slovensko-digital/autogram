@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.eforms.EFormResources;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
@@ -193,7 +194,17 @@ public class SigningParameters {
             String keyInfoCanonicalization, String schema, String transformation, String identifier,
             boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document) throws AutogramException {
 
-        if (autoLoadEform) {
+        if (level == null)
+            throw new SigningParametersException("Nebol zadaný typ podpisu", "Typ/level podpisu je povinný atribút");
+
+        if (document == null)
+            throw new SigningParametersException("Dokument je prázdny", "Dokument poskytnutý na podpis je prázdny");
+
+        if (document.getMimeType() == null)
+            throw new SigningParametersException("Dokument nemá definovaný MIME type", "Dokument poskytnutý na podpis nemá definovaný MIME type");
+
+        var mimeType = document.getMimeType();
+        if (autoLoadEform && (isAsice(mimeType) || isXML(mimeType) || isXDC(mimeType))) {
             var eformAttributes = EFormResources.tryToLoadEFormAttributes(document, propertiesCanonicalization);
 
             if (eformAttributes != null) {
@@ -206,7 +217,18 @@ public class SigningParameters {
         }
 
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")) {
-            var mimeType = document.getMimeType();
+            if (schema == null)
+                throw new SigningParametersException("Chýba XSD schéma", "XSD Schéma je povinný atribút pre XML Datacontainer");
+
+            if (transformation == null)
+                throw new SigningParametersException("Chýba XSLT transformácia", "XSLT transformácia je povinný atribút pre XML Datacontainer");
+
+            if (identifier == null)
+                throw new SigningParametersException("Chýba identifikátor", "Identifikátor je povinný atribút pre XML Datacontainer");
+
+            if (digestAlgorithm == null)
+                digestAlgorithm = DigestAlgorithm.SHA256;
+
             if (isAsice(mimeType) || isXML(mimeType) || isXDC(mimeType))
                 XDCValidator.validateXml(schema, transformation, EFormUtils.getXmlDocument(document), propertiesCanonicalization, digestAlgorithm);
         }
