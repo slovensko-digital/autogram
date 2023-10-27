@@ -3,7 +3,6 @@ package digital.slovensko.autogram.core.visualization;
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import eu.europa.esig.dss.model.DSSDocument;
 
@@ -30,16 +29,16 @@ public class DocumentVisualizationBuilder {
         this.parameters = parameters;
     }
 
-    public static Visualization fromJob(SigningJob job) throws IOException, ParserConfigurationException, TransformerException, SAXException {
+    public static Visualization fromJob(SigningJob job) throws IOException, ParserConfigurationException, SAXException {
         return new DocumentVisualizationBuilder(job.getDocument(), job.getParameters()).build(job);
     }
 
-    private Visualization build(SigningJob job) throws IOException, ParserConfigurationException, TransformerException, SAXException {
+    private Visualization build(SigningJob job) throws IOException, ParserConfigurationException, SAXException {
         return createVisualization(job);
     }
 
     private Visualization createVisualization(SigningJob job)
-        throws IOException, ParserConfigurationException, SAXException, TransformerException {
+        throws IOException, ParserConfigurationException, SAXException {
 
         var documentToDisplay = document;
         if (isAsice(documentToDisplay.getMimeType())) {

@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
@@ -40,7 +39,7 @@ public class TransformationTests {
 
         @Test
         void testSigningJobTransformToHtml() throws IOException, ParserConfigurationException,
-                        SAXException, TransformerException {
+                        SAXException {
                 var transformation = new String(this.getClass().getResourceAsStream(
                                 "crystal_test_data/PovolenieZdravotnictvo.html.xslt")
                                 .readAllBytes());
@@ -98,7 +97,7 @@ public class TransformationTests {
 
         @Test
         void testSigningJobTransformSb() throws IOException, ParserConfigurationException,
-                        SAXException, TransformerException {
+                        SAXException {
                 var transformation = new String(this.getClass()
                                 .getResourceAsStream(
                                                 "crystal_test_data/PovolenieZdravotnictvo.sb.xslt")

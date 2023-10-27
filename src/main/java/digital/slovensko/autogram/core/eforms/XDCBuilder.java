@@ -1,11 +1,12 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.errors.TransformationException;
+
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -70,14 +71,10 @@ public class XDCBuilder {
 
             return new InMemoryDocument(content, dssDocument.getName());
 
-        } catch (SAXException | IOException e) {
-            throw new RuntimeException(e);
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        } catch (DOMException e) {
-            throw new RuntimeException(e);
-        } catch (TransformerException e) {
-            throw new RuntimeException(e);
+        } catch (TransformationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new TransformationException("Nastala chyba počas transformácie dokumentu", "Nastala chyba počas transformácie dokumentu", e);
         }
     }
 
@@ -104,7 +101,7 @@ public class XDCBuilder {
         document.appendChild(xmlDataContainer);
     }
 
-    private String getDocumentContent() throws TransformerException {
+    private String getDocumentContent() throws TransformationException, TransformerException {
         document.setXmlStandalone(true);
         var xmlSource = new DOMSource(document);
         var outputTarget = new StreamResult(new StringWriter());

@@ -15,7 +15,6 @@ import javax.xml.transform.stream.StreamSource;
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
-import digital.slovensko.autogram.core.errors.XMLValidationException;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;

@@ -12,7 +12,6 @@ import java.util.Properties;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -27,6 +26,7 @@ import org.xml.sax.SAXException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
+import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
@@ -238,7 +238,7 @@ public abstract class EFormUtils {
         }
     }
 
-    public static String transform(DSSDocument documentToDisplay, String transformation) throws TransformerException {
+    public static String transform(DSSDocument documentToDisplay, String transformation) throws TransformationException {
         try {
             var parsedDocument = getXmlFromDocument(documentToDisplay);
             var xmlSource = new DOMSource(parsedDocument);
@@ -260,7 +260,7 @@ public abstract class EFormUtils {
             return outputTarget.getWriter().toString();
 
         } catch (Exception e) {
-            throw new TransformerException("Transformation failed", e);
+            throw new TransformationException("Zlyhala transformácia podľa XSLT", "Nepodarilo sa transformovať XML dokument podľa XSLT transformácie", e);
         }
     }
 
