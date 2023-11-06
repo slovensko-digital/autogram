@@ -102,7 +102,7 @@ public class SignHttpSmokeTest {
                     "payloadMimeType": "text/plain"
                 }
                 """;
-        // System.out.println("Sign request body: " + signRequestBody);
+        System.out.println("Sign request body: " + signRequestBody);
 
         signRequest.setEntity(new StringEntity(signRequestBody, "UTF-8"));
         var signResponse = clientBuilder.build().execute(signRequest);
