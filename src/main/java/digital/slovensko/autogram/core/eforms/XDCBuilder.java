@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core.eforms;
 
+import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.TransformationException;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
@@ -27,9 +28,8 @@ import java.nio.charset.StandardCharsets;
 public abstract class XDCBuilder {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
 
-    public static DSSDocument transform(String identifier, String xsdSchema, String xsltSchema, String containerXmlns,
-            String canonicalizationMethod, DigestAlgorithm digestAlgorithm,
-            String mediaDestinationTypeDescription, DSSDocument dssDocument) {
+    public static DSSDocument transform(SigningParameters params, DSSDocument dssDocument) {
+        var identifier = params.getIdentifier();
         var lastSlashIndex = identifier.lastIndexOf("/");
         if (lastSlashIndex == -1)
             throw new RuntimeException("Identifier contains no slash: " + identifier);
@@ -38,8 +38,10 @@ public abstract class XDCBuilder {
         try {
             var xmlByteArrayInput = dssDocument.openStream().readAllBytes();
             var parsedDocument = parseDOMDocument(new String(xmlByteArrayInput, ENCODING));
-            var transformedDocument = transformDocument(parsedDocument, containerXmlns, identifier, identifierVersion,
-                    xsdSchema, xsltSchema, canonicalizationMethod, digestAlgorithm, mediaDestinationTypeDescription);
+            var transformedDocument = transformDocument(parsedDocument, params.getContainerXmlns(), identifier,
+                    identifierVersion,
+                    params.getSchema(), params.getTransformation(), params.getPropertiesCanonicalization(),
+                    params.getDigestAlgorithm(), params.extractTransformationOutputMimeTypeString());
             var content = getDocumentContent(transformedDocument).getBytes(ENCODING);
 
             return new InMemoryDocument(content, dssDocument.getName());

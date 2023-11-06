@@ -40,9 +40,7 @@ class XDCBuilderTests {
             "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
             false, 800, false, document);
 
-        var out = XDCBuilder.transform(params.getIdentifier(), params.getSchema(), params.getTransformation(),
-                params.getContainerXmlns(), params.getPropertiesCanonicalization(), params.getDigestAlgorithm(),
-                params.extractTransformationOutputMimeTypeString(), document);
+        var out = XDCBuilder.transform(params, document);
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
 
         var expected = new String(this.getClass().getResourceAsStream("general_agenda_xdc.xml").readAllBytes(), StandardCharsets.UTF_8);
