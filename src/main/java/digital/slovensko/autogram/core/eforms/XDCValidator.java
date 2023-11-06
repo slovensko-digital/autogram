@@ -31,7 +31,7 @@ public abstract class XDCValidator {
 
             return validateXmlContentAgainstXsd(docString, new String(xdcSchema.readAllBytes(), ENCODING));
 
-        } catch (IOException | NullPointerException e) {
+        } catch (IOException | NullPointerException | XMLValidationException e) {
             return false;
         }
     }

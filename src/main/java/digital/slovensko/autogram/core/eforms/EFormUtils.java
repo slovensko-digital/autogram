@@ -22,6 +22,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
@@ -124,17 +125,9 @@ public abstract class EFormUtils {
         return xmlns.getNodeValue();
     }
 
-    public static byte[] getTransformation(String url) {
-        return getResource(url + "/form.sb.xslt");
-    }
-
-    public static byte[] getSchema(String url) {
-        return getResource(url + "/form.xsd");
-    }
-
-    private static byte[] getResource(String url) {
+    public static byte[] getResource(String url) {
         var offlineFileLoader = new FileCacheDataLoader();
-        offlineFileLoader.setCacheExpirationTime(21600000);
+        offlineFileLoader.setCacheExpirationTime(21600000);  // 6 hours
         offlineFileLoader.setDataLoader(new CommonsDataLoader());
 
         DSSDocument xsltDoc;
@@ -194,6 +187,8 @@ public abstract class EFormUtils {
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData je prázdny");
 
         var idk = xmlData.getFirstChild();
+        // In an indented XML, whitespaces between XMLData and its content are considered as text nodes.
+        // If there is a text node, validate it against all-whitespace regex and skip it.
         if (idk.getNodeType() == Node.TEXT_NODE) {
             if (!idk.getNodeValue().matches("\\s*"))
                 throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XMLData obsahuje neplatný text");

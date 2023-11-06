@@ -168,7 +168,24 @@ public class SigningParametersTests {
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#unknownEfomXmlProvider")
     void testThrowsAutogramExceptionWithUnknownEformXmlWithAutoLoadEform(DSSDocument document) {
-        Assertions.assertThrows(SigningParametersException.class,
+        Assertions.assertThrows(XMLValidationException.class,
+                () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, null, null, null, null,
+                        false, null, null, null, null, null, null, false, 800, true, document));
+    }
+
+    @ParameterizedTest
+    @MethodSource("digital.slovensko.autogram.TestMethodSources#mismatchedDigestsXmlProvider")
+    void testThrowsAutogramExceptionWithMismatchedDigestsXml(DSSDocument document) {
+        Assertions.assertThrows(XMLValidationException.class,
+                () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
+                        false, null, null, null, xsdSchema, xsltTransformation, identifier, false, 800, false,
+                        document));
+    }
+
+    @ParameterizedTest
+    @MethodSource("digital.slovensko.autogram.TestMethodSources#mismatchedDigestsXmlProvider")
+    void testThrowsAutogramExceptionWithMismatchedDigestsXmlWithAutoLoadEform(DSSDocument document) {
+        Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, null, null, null, null,
                         false, null, null, null, null, null, null, false, 800, true, document));
     }

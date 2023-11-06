@@ -153,6 +153,60 @@ public abstract class TestMethodSources {
         );
     }
 
+    public static Stream<InMemoryDocument> xdcDocumentsProvider() throws IOException {
+        var generalAgendaXdcIndented = cls.getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
+        var generalAgendaXdc = cls.getResourceAsStream("general_agenda_xdc.xml").readAllBytes();
+        var mismatchedXsdGAXdc = cls.getResourceAsStream("mismatched_xsd_ga_xdc.xml").readAllBytes();
+        var mismatchedXsltGAXdc = cls.getResourceAsStream("mismatched_xslt_ga_xdc.xml").readAllBytes();
+        var unknownEfomXdc = cls.getResourceAsStream("unknown_eform_xdc.xml").readAllBytes();
+        var wrongSchemaGAXdc = cls.getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(generalAgendaXdcIndented, "generalAgendaXdcIndented.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(generalAgendaXdc, "generalAgendaXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsdGAXdc, "mismatchedXsdGAXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsltGAXdc, "mismatchedXsltGAXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(unknownEfomXdc, "unknownEfomXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(wrongSchemaGAXdc, "wrongSchemaGAXdc.xml", AutogramMimeType.XML_DATACONTAINER)
+        );
+    }
+
+    public static Stream<InMemoryDocument> xdcDocumentsWithXmlMimetypeProvider() throws IOException {
+        var generalAgendaXdcIndented = cls.getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
+        var generalAgendaXdc = cls.getResourceAsStream("general_agenda_xdc.xml").readAllBytes();
+        var mismatchedXsdGAXdc = cls.getResourceAsStream("mismatched_xsd_ga_xdc.xml").readAllBytes();
+        var mismatchedXsltGAXdc = cls.getResourceAsStream("mismatched_xslt_ga_xdc.xml").readAllBytes();
+        var unknownEfomXdc = cls.getResourceAsStream("unknown_eform_xdc.xml").readAllBytes();
+        var wrongSchemaGAXdc = cls.getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(generalAgendaXdcIndented, "generalAgendaXdcIndented.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(generalAgendaXdc, "generalAgendaXdc.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(mismatchedXsdGAXdc, "mismatchedXsdGAXdc.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(mismatchedXsltGAXdc, "mismatchedXsltGAXdc.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(unknownEfomXdc, "unknownEfomXdc.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(wrongSchemaGAXdc, "wrongSchemaGAXdc.xml", MimeTypeEnum.XML)
+        );
+    }
+
+    public static Stream<InMemoryDocument> nonXdcXmlDocumentsProvider() throws IOException {
+        var documentContentNoUsedXSDReference = cls.getResourceAsStream("document-content-no-UsedXSDReference.xml").readAllBytes();
+        var documentContentUsedXSDReferenceNoAttributes = cls.getResourceAsStream("document-content-UsedXSDReference-no-attributes.xml").readAllBytes();
+        var documentContentUsedXSDReferenceNoDigestValue = cls.getResourceAsStream("document-content-UsedXSDReference-no-DigestValue.xml").readAllBytes();
+        var emptyXml = cls.getResourceAsStream("empty_xml.xml").readAllBytes();
+        var nonEformXml = cls.getResourceAsStream("non_eform.xml").readAllBytes();
+        var wrongSchemaXdcXml = cls.getResourceAsStream("wrong_schema_xdc.xml").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(documentContentNoUsedXSDReference, "documentContentNoUsedXSDReference.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(documentContentUsedXSDReferenceNoAttributes, "documentContentUsedXSDReferenceNoAttributes.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(documentContentUsedXSDReferenceNoDigestValue, "documentContentUsedXSDReferenceNoDigestValue.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(emptyXml, "emptyXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(nonEformXml, "nonEformXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(wrongSchemaXdcXml, "wrongSchemaXdcXml.xml", MimeTypeEnum.XML)
+        );
+    }
+
     public static Stream<InMemoryDocument> validCadesDocumentsProvider() throws IOException {
         var samplePdfCadesAsice = cls.getResourceAsStream("sample_pdf_cades.asice").readAllBytes();
 
