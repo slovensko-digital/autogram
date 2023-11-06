@@ -24,11 +24,11 @@ public class SignEndpoint implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
-            var responder = body.getBatchId() == null ? new ServerResponder(exchange)
-                    : new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
-
             body.validateDocument();
             body.validateSigningParameters();
+
+            var responder = body.getBatchId() == null ? new ServerResponder(exchange)
+                    : new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
             var job = new SigningJob(body.getDocument(), body.getParameters(), responder);
 
             if (body.getBatchId() != null)
