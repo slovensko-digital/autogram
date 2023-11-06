@@ -17,14 +17,13 @@ import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.model.CommonDocument;
 
 public class DocumentVisualizationBuilder {
 
     private final DSSDocument document;
     private final SigningParameters parameters;
 
-    private DocumentVisualizationBuilder(CommonDocument document, SigningParameters parameters) {
+    private DocumentVisualizationBuilder(DSSDocument document, SigningParameters parameters) {
         this.document = document;
         this.parameters = parameters;
     }
@@ -50,7 +49,7 @@ public class DocumentVisualizationBuilder {
         }
 
         var transformation = parameters.getTransformation();
-        var transformationOutputMimeType = EFormUtils.extractTransformationOutputMimeTypeString(transformation);
+        var transformationOutputMimeType = parameters.getTransformationOutputMimeTypeString();
 
         if (isDocumentSupportingTransformation(documentToDisplay) && isTranformationAvailable(transformation)) {
             if (transformationOutputMimeType.equals("HTML"))

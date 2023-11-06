@@ -11,15 +11,10 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -27,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 public abstract class XDCBuilder {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
 
-    public static DSSDocument transform(SigningParameters params, DSSDocument dssDocument) {
+    public static DSSDocument transform(SigningParameters params, String filename, Document parsedDocument) {
         var identifier = params.getIdentifier();
         var lastSlashIndex = identifier.lastIndexOf("/");
         if (lastSlashIndex == -1)
@@ -35,15 +30,13 @@ public abstract class XDCBuilder {
 
         var identifierVersion = identifier.substring(lastSlashIndex + 1);
         try {
-            var xmlByteArrayInput = dssDocument.openStream().readAllBytes();
-            var parsedDocument = parseDOMDocument(new String(xmlByteArrayInput, ENCODING));
             var transformedDocument = transformDocument(parsedDocument, params.getContainerXmlns(), identifier,
                     identifierVersion,
                     params.getSchema(), params.getTransformation(), params.getPropertiesCanonicalization(),
-                    params.getDigestAlgorithm(), params.extractTransformationOutputMimeTypeString());
+                    params.getDigestAlgorithm(), params.getTransformationOutputMimeTypeString());
             var content = getDocumentContent(transformedDocument).getBytes(ENCODING);
 
-            return new InMemoryDocument(content, dssDocument.getName());
+            return new InMemoryDocument(content, filename);
 
         } catch (TransformationException e) {
             throw e;
@@ -51,12 +44,6 @@ public abstract class XDCBuilder {
             throw new TransformationException("Nastala chyba počas transformácie dokumentu",
                     "Nastala chyba počas transformácie dokumentu", e);
         }
-    }
-
-    private static Document parseDOMDocument(String xmlContent)
-            throws ParserConfigurationException, IOException, SAXException {
-        var source = new InputSource(new StringReader(xmlContent));
-        return XMLUtils.getSecureDocumentBuilder().parse(source);
     }
 
     private static Document transformDocument(Document document, String containerXmlns, String identifierUri,

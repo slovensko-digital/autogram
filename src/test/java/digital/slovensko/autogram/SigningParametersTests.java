@@ -3,6 +3,7 @@ package digital.slovensko.autogram;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
+import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -72,7 +73,7 @@ public class SigningParametersTests {
 
         Assertions.assertThrows(SigningParametersException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, enveloping,
-                        null, false, inclusive, inclusive, inclusive, null, "<xml/>", "id1/asa", false, 800, false,
+                        null, false, inclusive, inclusive, inclusive, null, xsltTransformation, "id1/asa", false, 800, false,
                         document));
     }
 
@@ -206,4 +207,17 @@ public class SigningParametersTests {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildForASiCWithXAdES("empty_xml.asice", document, false));
     }
+
+    @Test
+    void testInvalidTransformation() throws IOException {
+        var generalAgendaXml = this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes();
+        var document = new InMemoryDocument(generalAgendaXml, "doc.xml", MimeTypeEnum.XML);
+
+        var transformation = "invalid transformation";
+        Assertions.assertThrows(TransformationParsingErrorException.class,
+                () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
+                        false, null, null, null, xsdSchema, transformation, identifier, false, 800, false,
+                        document));
+    }
+
 }

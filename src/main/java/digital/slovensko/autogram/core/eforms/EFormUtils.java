@@ -22,12 +22,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.errors.XMLValidationException;
-import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
-import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.util.AsicContainerUtils;
 import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -196,29 +193,6 @@ public abstract class EFormUtils {
         return responseDocument;
     }
 
-    public static String transformElementToString(Node element) throws XMLValidationException {
-        try {
-            var document = XMLUtils.getSecureDocumentBuilder().newDocument();
-            Node node;
-            try {
-                node = document.importNode(element, true);
-            } catch (DOMException e) {
-                node = document.importNode(element.getFirstChild(), true);
-            }
-
-            document.appendChild(node);
-
-            var transformer = XMLUtils.getSecureTransformerFactory().newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            var writer = new StringWriter();
-            transformer.transform(new DOMSource(document), new StreamResult(writer));
-
-            return writer.toString();
-        } catch (Exception e) {
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
-        }
-    }
-
     public static String transform(DSSDocument documentToDisplay, String transformation) throws TransformationException {
         try {
             var parsedDocument = getXmlFromDocument(documentToDisplay);
@@ -242,19 +216,5 @@ public abstract class EFormUtils {
         } catch (Exception e) {
             throw new TransformationException("Zlyhala transformácia podľa XSLT", "Nepodarilo sa transformovať XML dokument podľa XSLT transformácie", e);
         }
-    }
-
-    public static DSSDocument getXmlDocument(DSSDocument document)
-            throws XMLValidationException, OriginalDocumentNotFoundException,
-            MultipleOriginalDocumentsFoundException {
-        if (isAsice(document.getMimeType())) {
-            var originalDocument = AsicContainerUtils.getOriginalDocument(document);
-            if (!isXDC(originalDocument.getMimeType()))
-                return null;
-
-            return originalDocument;
-        }
-
-        return document;
     }
 }

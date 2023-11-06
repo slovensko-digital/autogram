@@ -7,7 +7,6 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
-import digital.slovensko.autogram.util.AsicContainerUtils;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
@@ -28,9 +27,6 @@ public class EFormResources {
     private final String xsltDigest;
 
     public static EFormAttributes tryToLoadEFormAttributes(DSSDocument document, String propertiesCanonicalization) throws AutogramException {
-        if (isAsice(document.getMimeType()))
-            document = AsicContainerUtils.getOriginalDocument(document);
-
         if (!isXDC(document.getMimeType()) && !isXML(document.getMimeType()))
             return null;
 

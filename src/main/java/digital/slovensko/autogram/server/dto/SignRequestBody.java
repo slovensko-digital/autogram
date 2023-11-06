@@ -54,9 +54,6 @@ public class SignRequestBody {
             throw new RequestValidationException("Parameters are required", "");
 
         parameters.validate(getDocument().getMimeType());
-
-        var signingParameters = parameters.getSigningParameters(isBase64(), getDocument());
-        signingParameters.extractTransformationOutputMimeTypeString();
     }
 
     public SigningParameters getParameters() {

@@ -1,9 +1,6 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
 import digital.slovensko.autogram.core.visualization.Visualization;
@@ -11,21 +8,14 @@ import digital.slovensko.autogram.server.dto.Document;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.model.InMemoryDocument;
 
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 public class SigningJobTests {
 
@@ -54,7 +44,7 @@ public class SigningJobTests {
                 false);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-        var job = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null);
+        var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(), null);
         Visualization visualization = null;
         try {
             visualization = DocumentVisualizationBuilder.fromJob(job);
@@ -70,21 +60,5 @@ public class SigningJobTests {
         } catch (Exception e) {
             fail();
         }
-    }
-
-    @Test
-    void testInvalidTransformation() throws IOException {
-        var generalAgendaXml = this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes();
-        var document = new InMemoryDocument(generalAgendaXml, "doc.xml", MimeTypeEnum.XML);
-
-        var transformation = "invalid transformation";
-        var params = SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
-                DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE, null, transformation, "id1/asa", false, 800, false,
-                document);
-
-        var job = new SigningJob(document, params, mock(Responder.class));
-        assertThrows(TransformationParsingErrorException.class, () -> {
-            DocumentVisualizationBuilder.fromJob(job);
-        });
     }
 }

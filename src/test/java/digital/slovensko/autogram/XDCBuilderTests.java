@@ -1,6 +1,7 @@
 package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.XDCBuilder;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -40,7 +41,7 @@ class XDCBuilderTests {
             "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
             false, 800, false, document);
 
-        var out = XDCBuilder.transform(params, document);
+        var out = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
 
         var expected = new String(this.getClass().getResourceAsStream("general_agenda_xdc.xml").readAllBytes(), StandardCharsets.UTF_8);

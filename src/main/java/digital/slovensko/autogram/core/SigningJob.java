@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import java.io.File;
 
+import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.XDCBuilder;
 import digital.slovensko.autogram.core.eforms.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -10,7 +11,6 @@ import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.model.CommonDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
@@ -21,16 +21,16 @@ import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 public class SigningJob {
     private final Responder responder;
-    private final CommonDocument document;
+    private final DSSDocument document;
     private final SigningParameters parameters;
 
-    public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
+    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
     }
 
-    public CommonDocument getDocument() {
+    public DSSDocument getDocument() {
         return this.document;
     }
 
@@ -77,12 +77,6 @@ public class SigningJob {
     }
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
-        DSSDocument doc = getDocument();
-        if (getParameters().shouldCreateDatacontainer() && !(isXDC(doc.getMimeType()) || isAsice(doc.getMimeType()))) {
-            doc = XDCBuilder.transform(getParameters(), doc);
-            doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
-        }
-
         var commonCertificateVerifier = new CommonCertificateVerifier();
         var service = new ASiCWithXAdESService(commonCertificateVerifier);
         var signatureParameters = getParameters().getASiCWithXAdESSignatureParameters();
@@ -91,10 +85,10 @@ public class SigningJob {
         signatureParameters.setCertificateChain(key.getCertificateChain());
         signatureParameters.setSignWithExpiredCertificate(true);
 
-        var dataToSign = service.getDataToSign(doc, signatureParameters);
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
 
-        return service.signDocument(doc, signatureParameters, signatureValue);
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsXAdeS(SigningKey key) {
@@ -148,10 +142,26 @@ public class SigningJob {
     public static FileDocument createDSSFileDocumentFromFile(File file) {
         var fileDocument = new FileDocument(file);
 
-        if (isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
+        if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
             fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER);
 
         return fileDocument;
+    }
+
+    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
+        if (params.shouldCreateXdc()) {
+            var mimeType = document.getMimeType();
+            if (!isXDC(mimeType) && !isAsice(mimeType)) {
+                document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
+                document.setMimeType(AutogramMimeType.XML_DATACONTAINER);
+            }
+        }
+
+        return new SigningJob(document, params, responder);
+    }
+
+    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
+        return build(document, params, responder);
     }
 
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {

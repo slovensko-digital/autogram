@@ -7,6 +7,7 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
+import digital.slovensko.autogram.util.AsicContainerUtils;
 import digital.slovensko.autogram.core.eforms.EFormResources;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.XDCValidator;
@@ -40,12 +41,14 @@ public class SigningParameters {
     private final boolean checkPDFACompliance;
     private final int visualizationWidth;
     private final boolean autoLoadEform;
+    private final String transformationOutputMimeTypeString;
 
     private SigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
             String keyInfoCanonicalization, String schema, String transformation, String identifier,
-            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform) {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform,
+            String transformationOutputMimeTypeString) {
         this.level = level;
         this.asicContainer = container;
         this.containerXmlns = containerXmlns;
@@ -61,6 +64,7 @@ public class SigningParameters {
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
         this.autoLoadEform = autoLoadEform;
+        this.transformationOutputMimeTypeString = transformationOutputMimeTypeString;
     }
 
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
@@ -181,7 +185,8 @@ public class SigningParameters {
             String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
             String keyInfoCanonicalization, String schema, String transformation, String identifier,
-            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document) throws AutogramException {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document)
+            throws AutogramException {
 
         return buildParameters(level, container, containerXmlns, packaging, digestAlgorithm, en319132,
                 infoCanonicalization, propertiesCanonicalization, keyInfoCanonicalization, schema, transformation,
@@ -203,9 +208,13 @@ public class SigningParameters {
         if (document.getMimeType() == null)
             throw new SigningParametersException("Dokument nemá definovaný MIME type", "Dokument poskytnutý na podpis nemá definovaný MIME type");
 
+        var extractedDocument = document;
         var mimeType = document.getMimeType();
+        if (isAsice(mimeType))
+            extractedDocument = AsicContainerUtils.getOriginalDocument(document);
+
         if (autoLoadEform && (isAsice(mimeType) || isXML(mimeType) || isXDC(mimeType))) {
-            var eformAttributes = EFormResources.tryToLoadEFormAttributes(document, propertiesCanonicalization);
+            var eformAttributes = EFormResources.tryToLoadEFormAttributes(extractedDocument, propertiesCanonicalization);
 
             if (eformAttributes != null) {
                 schema = eformAttributes.schema();
@@ -215,6 +224,10 @@ public class SigningParameters {
                 container = eformAttributes.container();
             }
         }
+
+        var transformationOutputMimeTypeString = EFormUtils.extractTransformationOutputMimeTypeString(transformation);
+        if (!List.of("TXT", "HTML").contains(transformationOutputMimeTypeString))
+            throw new TransformationParsingErrorException("Unsupported transformation output method: " + mimeType);
 
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")) {
             if (schema == null)
@@ -229,13 +242,17 @@ public class SigningParameters {
             if (digestAlgorithm == null)
                 digestAlgorithm = DigestAlgorithm.SHA256;
 
-            if (isAsice(mimeType) || isXML(mimeType) || isXDC(mimeType))
-                XDCValidator.validateXml(schema, transformation, EFormUtils.getXmlDocument(document), propertiesCanonicalization, digestAlgorithm);
+            if (isXML(extractedDocument.getMimeType()) || isXDC(extractedDocument.getMimeType()))
+                XDCValidator.validateXml(schema, transformation, extractedDocument, propertiesCanonicalization, digestAlgorithm);
+
+            else
+                throw new SigningParametersException("Nesprávny typ dokumentu", "Zadaný dokument nemožno podpísať ako elektronický formulár v XML Datacontaineri");
         }
 
         return new SigningParameters(level, container, containerXmlns, packaging, digestAlgorithm, en319132,
                 infoCanonicalization, propertiesCanonicalization, keyInfoCanonicalization, schema, transformation,
-                identifier, checkPDFACompliance, preferredPreviewWidth, autoLoadEform);
+                identifier, checkPDFACompliance, preferredPreviewWidth, autoLoadEform,
+                transformationOutputMimeTypeString);
     }
 
     public static SigningParameters buildForPDF(String filename, DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132) throws AutogramException {
@@ -265,10 +282,6 @@ public class SigningParameters {
         return identifier;
     }
 
-    public boolean shouldCreateDatacontainer() {
-        return getContainerXmlns() != null && getContainerXmlns().contains("xmldatacontainer");
-    }
-
     public boolean getCheckPDFACompliance() {
         return checkPDFACompliance;
     }
@@ -281,11 +294,11 @@ public class SigningParameters {
         return autoLoadEform;
     }
 
-    public String extractTransformationOutputMimeTypeString() throws TransformationParsingErrorException {
-        var mimeType = EFormUtils.extractTransformationOutputMimeTypeString(transformation);
-        if (!List.of("TXT", "HTML").contains(mimeType))
-            throw new TransformationParsingErrorException("Unsupported transformation output method: " + mimeType);
+    public String getTransformationOutputMimeTypeString() {
+        return transformationOutputMimeTypeString;
+    }
 
-        return mimeType;
+    public boolean shouldCreateXdc() {
+        return containerXmlns != null && containerXmlns.contains("xmldatacontainer");
     }
 }

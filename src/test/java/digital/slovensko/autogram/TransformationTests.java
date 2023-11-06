@@ -55,7 +55,7 @@ public class TransformationTests {
                                 CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
                                 null, transformation, "id1/asa", false, 800, false, document);
 
-                SigningJob job = new SigningJob(document, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job);
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -114,7 +114,7 @@ public class TransformationTests {
                                 CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
                                 null, transformation, "id1/asa", false, 800, false, document);
 
-                SigningJob job = new SigningJob(document, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job);
                 if (visualizedDocument instanceof HTMLVisualization d) {
