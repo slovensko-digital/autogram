@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.core;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
@@ -283,12 +283,7 @@ public class SigningParameters {
 
     public String extractTransformationOutputMimeTypeString() throws TransformationParsingErrorException {
         var mimeType = EFormUtils.extractTransformationOutputMimeTypeString(transformation);
-        if (!new ArrayList<String>() {
-            {
-                add("HTML");
-                add("TXT");
-            }
-        }.contains(mimeType))
+        if (!List.of("TXT", "HTML").contains(mimeType))
             throw new TransformationParsingErrorException("Unsupported transformation output method: " + mimeType);
 
         return mimeType;
