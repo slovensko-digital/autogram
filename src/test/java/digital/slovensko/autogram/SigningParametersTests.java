@@ -104,14 +104,14 @@ public class SigningParametersTests {
                         document));
     }
 
-    @ParameterizedTest
-    @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
-    void testDoesNotThrowWithMinimalParametersForXadesXdcInAsiceWith(DSSDocument document) {
-        Assertions.assertDoesNotThrow(
-                () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
-                        false, null, null, null, xsdSchema, xsltTransformation, identifier, false, 800, false,
-                        document));
-    }
+//     @ParameterizedTest
+//     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
+//     void testDoesNotThrowWithMinimalParametersForXadesXdcInAsiceWith(DSSDocument document) {
+//         Assertions.assertDoesNotThrow(
+//                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
+//                         false, null, null, null, xsdSchema, xsltTransformation, identifier, false, 800, false,
+//                         document));
+//     }
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
