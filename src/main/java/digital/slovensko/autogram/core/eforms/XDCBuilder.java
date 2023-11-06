@@ -2,21 +2,20 @@ package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.TransformationException;
+import digital.slovensko.autogram.util.XMLUtils;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
@@ -56,12 +55,8 @@ public abstract class XDCBuilder {
 
     private static Document parseDOMDocument(String xmlContent)
             throws ParserConfigurationException, IOException, SAXException {
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
-        builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-
         var source = new InputSource(new StringReader(xmlContent));
-        return builderFactory.newDocumentBuilder().parse(source);
+        return XMLUtils.getSecureDocumentBuilder().parse(source);
     }
 
     private static Document transformDocument(Document document, String containerXmlns, String identifierUri,
@@ -86,9 +81,7 @@ public abstract class XDCBuilder {
         document.setXmlStandalone(true);
         var xmlSource = new DOMSource(document);
         var outputTarget = new StreamResult(new StringWriter());
-        var transformerFactory = TransformerFactory.newInstance();
-        transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        transformerFactory.newTransformer().transform(xmlSource, outputTarget);
+        XMLUtils.getSecureTransformerFactory().newTransformer().transform(xmlSource, outputTarget);
 
         return outputTarget.getWriter().toString();
     }

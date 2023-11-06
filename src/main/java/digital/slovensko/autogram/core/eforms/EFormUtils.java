@@ -9,10 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Properties;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -22,7 +20,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
@@ -31,6 +28,7 @@ import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
+import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
@@ -53,10 +51,7 @@ public abstract class EFormUtils {
 
         var method = "";
         try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            var document = builderFactory.newDocumentBuilder()
+            var document = XMLUtils.getSecureDocumentBuilder()
                     .parse(new InputSource(new StringReader(transformation)));
             var elem = document.getDocumentElement();
             var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
@@ -149,14 +144,10 @@ public abstract class EFormUtils {
 
     public static Document getXmlFromDocument(DSSDocument documentToDisplay) throws XMLValidationException {
         try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-
             var is = documentToDisplay.openStream();
             var inputSource = new InputSource(is);
             inputSource.setEncoding(ENCODING.displayName());
-            var parsedDocument = builderFactory.newDocumentBuilder().parse(inputSource);
+            var parsedDocument = XMLUtils.getSecureDocumentBuilder().parse(inputSource);
 
             return parsedDocument;
 
@@ -172,13 +163,9 @@ public abstract class EFormUtils {
         if (xmlData == null)
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData sa nepodarilo nájsť v XML Dataconatineri");
 
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
-
         Document responseDocument = null;
         try {
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            responseDocument = builderFactory.newDocumentBuilder().newDocument();
+            responseDocument = XMLUtils.getSecureDocumentBuilder().newDocument();
         } catch (ParserConfigurationException e) {
             throw new UnrecognizedException(e);
         }
@@ -211,11 +198,7 @@ public abstract class EFormUtils {
 
     public static String transformElementToString(Node element) throws XMLValidationException {
         try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-
-            var document = builderFactory.newDocumentBuilder().newDocument();
+            var document = XMLUtils.getSecureDocumentBuilder().newDocument();
             Node node;
             try {
                 node = document.importNode(element, true);
@@ -225,8 +208,7 @@ public abstract class EFormUtils {
 
             document.appendChild(node);
 
-            var factory = TransformerFactory.newInstance();
-            var transformer = factory.newTransformer();
+            var transformer = XMLUtils.getSecureTransformerFactory().newTransformer();
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             var writer = new StringWriter();
             transformer.transform(new DOMSource(document), new StreamResult(writer));
@@ -245,8 +227,7 @@ public abstract class EFormUtils {
                 xmlSource = new DOMSource(getEformXmlFromXdcDocument(documentToDisplay));
             }
 
-            var transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
-            var transformer = transformerFactory.newTransformer(new StreamSource(
+            var transformer = XMLUtils.getSecureTransformerFactory().newTransformer(new StreamSource(
                 new ByteArrayInputStream(transformation.getBytes(ENCODING))));
 
             var outputProperties = new Properties();

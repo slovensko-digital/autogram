@@ -8,12 +8,11 @@ import java.io.StringReader;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
-import javax.xml.validation.SchemaFactory;
 import javax.xml.transform.stream.StreamSource;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
+import digital.slovensko.autogram.util.XMLUtils;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
@@ -70,9 +69,7 @@ public abstract class XDCValidator {
             return true;
 
         try {
-            var factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            var schema = factory.newSchema(new StreamSource(new StringReader(xsdSchema)));
+            var schema = XMLUtils.getSecureSchemaFactory().newSchema(new StreamSource(new StringReader(xsdSchema)));
             var validator = schema.newValidator();
             validator.validate(new StreamSource(new StringReader(xmlContent)));
 

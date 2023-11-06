@@ -13,8 +13,6 @@ import org.xml.sax.InputSource;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
 public class AsicContainerUtils {
     public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,
             MultipleOriginalDocumentsFoundException {
@@ -98,10 +96,7 @@ public class AsicContainerUtils {
 
     private static NodeList getFileEntriesFromManifest(DSSDocument manifest) {
         try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(manifest.openStream()));
+            var document = XMLUtils.getSecureDocumentBuilder().parse(new InputSource(manifest.openStream()));
             return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
         } catch (Exception e) {
             return null;
