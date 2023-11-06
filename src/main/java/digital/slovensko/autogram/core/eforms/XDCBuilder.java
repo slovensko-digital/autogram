@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.core.eforms;
 
-import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.TransformationException;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
@@ -25,73 +24,52 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public class XDCBuilder {
+public abstract class XDCBuilder {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
 
-    private final String identifierUri;
-    private final String identifierVersion;
-    private final String xsdSchema;
-    private final String xsltSchema;
-    private final String canonicalizationMethod;
-    private final String containerXmlns;
-    private final DigestAlgorithm digestAlgorithm;
-    private final String mediaDestinationTypeDescription;
-
-    private Document document;
-    private String documentXmlns;
-
-    public static XDCBuilder buildFromSigningParameters(SigningParameters sp) {
-        return new XDCBuilder(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(), sp.getContainerXmlns(),
-                sp.getPropertiesCanonicalization(), sp.getDigestAlgorithm(), sp.extractTransformationOutputMimeTypeString());
-    }
-
-    private XDCBuilder(String identifier, String xsdSchema, String xsltSchema, String containerXmlns,
+    public static DSSDocument transform(String identifier, String xsdSchema, String xsltSchema, String containerXmlns,
             String canonicalizationMethod, DigestAlgorithm digestAlgorithm,
-            String mediaDestinationTypeDescription) {
-        int lastSlashIndex = identifier.lastIndexOf("/");
+            String mediaDestinationTypeDescription, DSSDocument dssDocument) {
+        var lastSlashIndex = identifier.lastIndexOf("/");
         if (lastSlashIndex == -1)
             throw new RuntimeException("Identifier contains no slash: " + identifier);
 
-        this.identifierUri = identifier;
-        this.identifierVersion = identifier.substring(lastSlashIndex + 1);
-        this.containerXmlns = containerXmlns;
-        this.canonicalizationMethod = canonicalizationMethod;
-        this.xsdSchema = xsdSchema;
-        this.xsltSchema = xsltSchema;
-        this.digestAlgorithm = digestAlgorithm;
-        this.mediaDestinationTypeDescription = mediaDestinationTypeDescription;
-    }
-
-    public DSSDocument transform(DSSDocument dssDocument) {
+        var identifierVersion = identifier.substring(lastSlashIndex + 1);
         try {
             var xmlByteArrayInput = dssDocument.openStream().readAllBytes();
-            parseDOMDocument(new String(xmlByteArrayInput, ENCODING));
-            transformDocument();
-            var content = getDocumentContent().getBytes(ENCODING);
+            var parsedDocument = parseDOMDocument(new String(xmlByteArrayInput, ENCODING));
+            var transformedDocument = transformDocument(parsedDocument, containerXmlns, identifier, identifierVersion,
+                    xsdSchema, xsltSchema, canonicalizationMethod, digestAlgorithm, mediaDestinationTypeDescription);
+            var content = getDocumentContent(transformedDocument).getBytes(ENCODING);
 
             return new InMemoryDocument(content, dssDocument.getName());
 
         } catch (TransformationException e) {
             throw e;
         } catch (Exception e) {
-            throw new TransformationException("Nastala chyba počas transformácie dokumentu", "Nastala chyba počas transformácie dokumentu", e);
+            throw new TransformationException("Nastala chyba počas transformácie dokumentu",
+                    "Nastala chyba počas transformácie dokumentu", e);
         }
     }
 
-    private void parseDOMDocument(String xmlContent) throws ParserConfigurationException, IOException, SAXException {
+    private static Document parseDOMDocument(String xmlContent)
+            throws ParserConfigurationException, IOException, SAXException {
         var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
         builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
 
         var source = new InputSource(new StringReader(xmlContent));
-        this.document = builderFactory.newDocumentBuilder().parse(source);
+        return builderFactory.newDocumentBuilder().parse(source);
     }
 
-    private void transformDocument() {
+    private static Document transformDocument(Document document, String containerXmlns, String identifierUri,
+            String identifierVersion, String xsdSchema, String xsltSchema, String canonicalizationMethod,
+            DigestAlgorithm digestAlgorithm, String mediaDestinationTypeDescription) {
         var root = document.getDocumentElement();
-        var xmlDataContainer = createXMLDataContainer();
-        var xmlData = createXMLData();
-        var usedSchemasReferenced = createUsedSchemasReferenced();
+        var xmlDataContainer = createXMLDataContainer(document, containerXmlns);
+        var xmlData = createXMLData(document, identifierUri, identifierVersion);
+        var usedSchemasReferenced = createUsedSchemasReferenced(document, xsdSchema, xsltSchema, canonicalizationMethod,
+                digestAlgorithm, mediaDestinationTypeDescription);
 
         xmlDataContainer.appendChild(xmlData);
         xmlData.appendChild(root);
@@ -99,9 +77,10 @@ public class XDCBuilder {
             xmlDataContainer.appendChild(usedSchemasReferenced);
 
         document.appendChild(xmlDataContainer);
+        return document;
     }
 
-    private String getDocumentContent() throws TransformationException, TransformerException {
+    private static String getDocumentContent(Document document) throws TransformationException, TransformerException {
         document.setXmlStandalone(true);
         var xmlSource = new DOMSource(document);
         var outputTarget = new StreamResult(new StringWriter());
@@ -112,7 +91,7 @@ public class XDCBuilder {
         return outputTarget.getWriter().toString();
     }
 
-    private Element createXMLDataContainer() {
+    private static Element createXMLDataContainer(Document document, String containerXmlns) {
         var element = document.createElement("xdc:XMLDataContainer");
         if (containerXmlns != null)
             element.setAttribute("xmlns:xdc", containerXmlns);
@@ -120,7 +99,7 @@ public class XDCBuilder {
         return element;
     }
 
-    private Element createXMLData() {
+    private static Element createXMLData(Document document, String identifierUri, String identifierVersion) {
         var element = document.createElement("xdc:XMLData");
         element.setAttribute("ContentType", "application/xml; charset=UTF-8");
         element.setAttribute("Identifier", identifierUri);
@@ -133,31 +112,33 @@ public class XDCBuilder {
         return value == null || value.isBlank();
     }
 
-    private Element createUsedSchemasReferenced() {
+    private static Element createUsedSchemasReferenced(Document document, String xsdSchema, String xsltSchema,
+            String cannonicalizationMethod, DigestAlgorithm digestAlgorithm, String mediaDestinationTypeDescription) {
         var element = document.createElement("xdc:UsedSchemasReferenced");
+        var documentXmlns = "";
         if ((!isNullOrBlank(xsdSchema)) || (!isNullOrBlank(xsltSchema))) {
             var documentXmlnsNode = document.getFirstChild().getAttributes().getNamedItem("xmlns");
             if (documentXmlnsNode != null)
                 documentXmlns = documentXmlnsNode.getNodeValue();
-            else
-                documentXmlns = "";
         }
 
         if (xsdSchema != null)
-            element.appendChild(createUsedXSDReference());
+            element.appendChild(createUsedXSDReference(document, cannonicalizationMethod, digestAlgorithm, xsdSchema,
+                    documentXmlns));
 
         if (xsltSchema != null)
-            element.appendChild(createUsedPresentationSchemaReference());
+            element.appendChild(createUsedPresentationSchemaReference(document, cannonicalizationMethod,
+                    digestAlgorithm, xsltSchema, mediaDestinationTypeDescription, documentXmlns));
 
         return element;
     }
 
     // TODO: These should be configurable
-    private String buildXSDReference() {
+    private static String buildXSDReference(String documentXmlns) {
         return toURIString(documentXmlns, "form.xsd");
     }
 
-    private String buildXSLTReference() {
+    private static String buildXSLTReference(String documentXmlns) {
         return toURIString(documentXmlns, "form.xslt");
     }
 
@@ -168,25 +149,30 @@ public class XDCBuilder {
         return base + "/" + attached;
     }
 
-    private Element createUsedXSDReference() {
+    private static Element createUsedXSDReference(Document document, String canonicalizationMethod,
+            DigestAlgorithm digestAlgorithm, String xsdSchema, String documentXmlns) {
         var element = document.createElement("xdc:UsedXSDReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
-        element.setAttribute("DigestValue", computeDigest(xsdSchema.getBytes(ENCODING), canonicalizationMethod, digestAlgorithm, ENCODING));
-        element.setTextContent(buildXSDReference());
+        element.setAttribute("DigestValue",
+                computeDigest(xsdSchema.getBytes(ENCODING), canonicalizationMethod, digestAlgorithm, ENCODING));
+        element.setTextContent(buildXSDReference(documentXmlns));
 
         return element;
     }
 
-    private Element createUsedPresentationSchemaReference() {
+    private static Element createUsedPresentationSchemaReference(Document document, String canonicalizationMethod,
+            DigestAlgorithm digestAlgorithm, String xsltSchema, String mediaDestinationTypeDescription,
+            String documentXmlns) {
         var element = document.createElement("xdc:UsedPresentationSchemaReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
-        element.setAttribute("DigestValue", computeDigest(xsltSchema.getBytes(ENCODING), canonicalizationMethod, digestAlgorithm, ENCODING));
+        element.setAttribute("DigestValue",
+                computeDigest(xsltSchema.getBytes(ENCODING), canonicalizationMethod, digestAlgorithm, ENCODING));
         element.setAttribute("ContentType", "application/xslt+xml");
         element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription);
         element.setAttribute("Language", "sk");
-        element.setTextContent(buildXSLTReference());
+        element.setTextContent(buildXSLTReference(documentXmlns));
 
         return element;
     }

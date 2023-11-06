@@ -37,12 +37,16 @@ class XDCBuilderTests {
             CanonicalizationMethod.INCLUSIVE,
             xsdSchema,
             transformation,
-            "id1/asa",
+            "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
             false, 800, false, document);
 
-        var out = XDCBuilder.buildFromSigningParameters(params).transform(document);
+        var out = XDCBuilder.transform(params.getIdentifier(), params.getSchema(), params.getTransformation(),
+                params.getContainerXmlns(), params.getPropertiesCanonicalization(), params.getDigestAlgorithm(),
+                params.extractTransformationOutputMimeTypeString(), document);
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
 
-        assertEquals(-1, transformed.lastIndexOf(":p>"));
+        var expected = new String(this.getClass().getResourceAsStream("general_agenda_xdc.xml").readAllBytes(), StandardCharsets.UTF_8);
+        // couldn't find a way to compare XMLs without the newline at the end
+        assertEquals(expected, transformed + "\n");
     }
 }

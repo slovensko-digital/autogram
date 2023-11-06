@@ -79,8 +79,10 @@ public class SigningJob {
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
         DSSDocument doc = getDocument();
         if (getParameters().shouldCreateDatacontainer() && !(isXDC(doc.getMimeType()) || isAsice(doc.getMimeType()))) {
-            var transformer = XDCBuilder.buildFromSigningParameters(getParameters());
-            doc = transformer.transform(doc);
+            var sp = getParameters();
+            doc = XDCBuilder.transform(sp.getIdentifier(), sp.getSchema(), sp.getTransformation(),
+                    sp.getContainerXmlns(), sp.getPropertiesCanonicalization(), sp.getDigestAlgorithm(),
+                    sp.extractTransformationOutputMimeTypeString(), doc);
             doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
         }
 
