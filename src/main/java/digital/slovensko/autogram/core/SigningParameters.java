@@ -208,11 +208,11 @@ public class SigningParameters {
             var eformAttributes = EFormResources.tryToLoadEFormAttributes(document, propertiesCanonicalization);
 
             if (eformAttributes != null) {
-                schema = eformAttributes.getSchema();
-                transformation = eformAttributes.getTransformation();
-                identifier = eformAttributes.getIdentifier();
-                containerXmlns = eformAttributes.getContainerXmlns();
-                container = eformAttributes.getContainer();
+                schema = eformAttributes.schema();
+                transformation = eformAttributes.transformation();
+                identifier = eformAttributes.identifier();
+                containerXmlns = eformAttributes.containerXmlns();
+                container = eformAttributes.container();
             }
         }
 
