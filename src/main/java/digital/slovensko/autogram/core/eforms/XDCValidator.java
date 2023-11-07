@@ -105,6 +105,8 @@ public abstract class XDCValidator {
         var contentHash = computeDigest(contentBytes, canonicalizationMethod, digestAlgorithm, ENCODING);
         var digestValue = getDigestValueFromElement(document, fieldWithDigest);
 
+        System.out.println("================ contentHash: " + contentHash + " digestValue: " + digestValue);
+
         return contentHash.equals(digestValue);
     }
 

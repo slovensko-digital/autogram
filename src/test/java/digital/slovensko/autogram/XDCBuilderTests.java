@@ -19,33 +19,37 @@ import java.nio.charset.StandardCharsets;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class XDCBuilderTests {
-    // @Test
-    // void testTransformsPlainHtmlWithoutAddingNamespaces() throws IOException {
-    //     var transformation = new String(this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes());
-    //     var xsdSchema = new String(this.getClass().getResourceAsStream("general_agenda.xsd").readAllBytes());
+    @Test
+    void testTransformsPlainHtmlWithoutAddingNamespaces() throws IOException {
+        var transformation = new String(this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes());
+        var xsdSchema = new String(this.getClass().getResourceAsStream("general_agenda.xsd").readAllBytes());
 
-    //     var document = new InMemoryDocument(this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes(), "general_agenda.xml", MimeTypeEnum.XML);
+        var document = new InMemoryDocument(this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes(), "general_agenda.xml", MimeTypeEnum.XML);
 
-    //     var params = SigningParameters.buildFromRequest(
-    //         SignatureLevel.XAdES_BASELINE_B,
-    //         ASiCContainerType.ASiC_E,
-    //         "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
-    //         SignaturePackaging.ENVELOPING,
-    //         DigestAlgorithm.SHA256,
-    //         false,
-    //         CanonicalizationMethod.INCLUSIVE,
-    //         CanonicalizationMethod.INCLUSIVE,
-    //         CanonicalizationMethod.INCLUSIVE,
-    //         xsdSchema,
-    //         transformation,
-    //         "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
-    //         false, 800, false, document);
+        var params = SigningParameters.buildFromRequest(
+            SignatureLevel.XAdES_BASELINE_B,
+            ASiCContainerType.ASiC_E,
+            "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+            SignaturePackaging.ENVELOPING,
+            DigestAlgorithm.SHA256,
+            false,
+            CanonicalizationMethod.INCLUSIVE,
+            CanonicalizationMethod.INCLUSIVE,
+            CanonicalizationMethod.INCLUSIVE,
+            xsdSchema,
+            transformation,
+            "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
+            false, 800, false, document);
 
-    //     var out = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
-    //     var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
+        var out = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
+        var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
 
-    //     var expected = new String(this.getClass().getResourceAsStream("general_agenda_xdc.xml").readAllBytes(), StandardCharsets.UTF_8);
-    //     // couldn't find a way to compare XMLs without the newline at the end
-    //     assertEquals(expected, transformed + "\n");
-    // }
+        var expected = new String(this.getClass().getResourceAsStream("general_agenda_xdc.xml").readAllBytes(), StandardCharsets.UTF_8);
+
+        System.out.println("Expected in base64: " + java.util.Base64.getEncoder().encodeToString(expected.getBytes(StandardCharsets.UTF_8)));
+        System.out.println("Transformed in base64: " + java.util.Base64.getEncoder().encodeToString(transformed.getBytes(StandardCharsets.UTF_8)));
+
+        // couldn't find a way to compare XMLs without the newline at the end
+        assertEquals(expected, transformed + "\n");
+    }
 }
