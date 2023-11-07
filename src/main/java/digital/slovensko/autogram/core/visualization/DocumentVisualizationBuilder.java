@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core.visualization;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -65,7 +66,7 @@ public class DocumentVisualizationBuilder {
             return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
         if (documentToDisplay.getMimeType().equals(MimeTypeEnum.TEXT))
-            return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), "UTF-8"), job);
+            return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), job);
 
         if (documentToDisplay.getMimeType().equals(MimeTypeEnum.PDF))
             return new PDFVisualization(documentToDisplay, job);
