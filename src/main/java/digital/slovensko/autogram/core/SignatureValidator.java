@@ -147,7 +147,7 @@ public class SignatureValidator {
             var r = outputTarget.getWriter().toString().trim();
 
             var templateFile = SignatureValidator.class.getResourceAsStream("simple-report-template.html");
-            var templateString = new String(templateFile.readAllBytes());
+            var templateString = new String(templateFile.readAllBytes(), "UTF-8");
             return templateString.replace("{{content}}", r);
 
         } catch (SAXException | IOException | ParserConfigurationException | TransformerException e) {

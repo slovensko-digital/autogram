@@ -31,7 +31,7 @@ public abstract class XDCValidator {
     public static boolean isXDCContent(DSSDocument document) {
         try {
             var is = document.openStream();
-            var docString = new String(is.readAllBytes());
+            var docString = new String(is.readAllBytes(), ENCODING);
             var xdcSchema = EFormUtils.class.getResourceAsStream("xmldatacontainer.xsd");
 
             return validateXmlContentAgainstXsd(docString, new String(xdcSchema.readAllBytes(), ENCODING));
@@ -104,9 +104,6 @@ public abstract class XDCValidator {
         var contentBytes = content.getBytes(ENCODING);
         var contentHash = computeDigest(contentBytes, canonicalizationMethod, digestAlgorithm, ENCODING);
         var digestValue = getDigestValueFromElement(document, fieldWithDigest);
-
-        System.out.println("================ contentHash: " + contentHash + " digestValue: " + digestValue);
-        System.out.println("================ content in base64: " + java.util.Base64.getEncoder().encodeToString(contentBytes));
 
         return contentHash.equals(digestValue);
     }

@@ -46,9 +46,6 @@ class XDCBuilderTests {
 
         var expected = new String(this.getClass().getResourceAsStream("general_agenda_xdc.xml").readAllBytes(), StandardCharsets.UTF_8);
 
-        System.out.println("Expected in base64: " + java.util.Base64.getEncoder().encodeToString(expected.getBytes(StandardCharsets.UTF_8)));
-        System.out.println("Transformed in base64: " + java.util.Base64.getEncoder().encodeToString(transformed.getBytes(StandardCharsets.UTF_8)));
-
         // couldn't find a way to compare XMLs without the newline at the end
         // delete \n or \r\n from the end of the string
         expected = expected.replaceAll("\\r\\n$|\\n$", "");

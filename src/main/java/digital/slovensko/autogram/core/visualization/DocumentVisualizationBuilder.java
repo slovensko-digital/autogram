@@ -65,7 +65,7 @@ public class DocumentVisualizationBuilder {
             return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
         if (documentToDisplay.getMimeType().equals(MimeTypeEnum.TEXT))
-            return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes()), job);
+            return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), "UTF-8"), job);
 
         if (documentToDisplay.getMimeType().equals(MimeTypeEnum.PDF))
             return new PDFVisualization(documentToDisplay, job);
