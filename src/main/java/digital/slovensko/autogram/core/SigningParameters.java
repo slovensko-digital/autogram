@@ -1,12 +1,9 @@
 package digital.slovensko.autogram.core;
 
-import java.util.List;
-
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
-import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import digital.slovensko.autogram.core.eforms.EFormResources;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
@@ -222,6 +219,7 @@ public class SigningParameters {
                 identifier = eformAttributes.identifier();
                 containerXmlns = eformAttributes.containerXmlns();
                 container = eformAttributes.container();
+                packaging = eformAttributes.packaging();
             }
         }
 
