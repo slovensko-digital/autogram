@@ -55,10 +55,14 @@ public abstract class EFormUtils {
             if (outputElements.getLength() == 0)
                 throw new TransformationParsingErrorException("Failed to parse transformation. Missing output element");
 
-            method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
+            var methodAttribute = outputElements.item(0).getAttributes().getNamedItem("method");
+            if (methodAttribute == null)
+                throw new TransformationParsingErrorException("Failed to parse transformation. Missing output method attrbiute");
+
+            method = methodAttribute.getNodeValue();
 
         } catch (SAXException | IOException | ParserConfigurationException e) {
-            throw new TransformationParsingErrorException("Failed to parse transformation");
+            throw new TransformationParsingErrorException("Failed to parse transformation output method");
         }
 
         if (method.equals("html"))
@@ -67,7 +71,7 @@ public abstract class EFormUtils {
         if (method.equals("text"))
             return "TXT";
 
-        return null;
+        throw new TransformationParsingErrorException("Failed to parse transformation. Unsupported output method: " + method);
     }
 
     public static String computeDigest(byte[] data, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, Charset encoding) throws XMLValidationException {

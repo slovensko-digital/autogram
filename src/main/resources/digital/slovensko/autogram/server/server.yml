@@ -165,7 +165,14 @@ paths:
                   code:
                     type: string
                     enum:
+                      - BATCH_CONFLICT
+                      - BATCH_ENDED
+                      - BATCH_EXPIRED
+                      - BATCH_NOT_STARTED
+                      - EMPTY_BODY
                       - MALFORMED_INPUT
+                      - MULTIPLE_ORIGINAL_DOCUMENTS
+                      - ORIGINAL_DOCUMENT_NOT_FOUND
                     example: MALFORMED_INPUT
                     description: Code that can be used to identify the error.
                   message:
@@ -176,6 +183,27 @@ paths:
                     type: string
                     example: "JsonSyntaxException: Unexpected token END OF FILE at position 0."
                     description: Optional details.
+        404:
+          description: Batch with the given `batchId` was not found or the batch session has ended.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_NOT_FOUND
+                    example: BATCH_NOT_FOUND
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Invalid BatchId provided
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Batch signing attempt failed. Batch with the given `batchId` was not found or the batch session has ended.
+                    description: More detailed human readable error message.
         422:
           description: The request body is valid but the document cannot be signed.
           content:
@@ -296,7 +324,6 @@ components:
         status:
           type: string
           enum:
-            - LOADING
             - READY
 
     SignRequestBody:

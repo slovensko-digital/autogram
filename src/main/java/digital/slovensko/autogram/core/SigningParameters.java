@@ -226,9 +226,6 @@ public class SigningParameters {
         }
 
         var transformationOutputMimeTypeString = EFormUtils.extractTransformationOutputMimeTypeString(transformation);
-        if (!List.of("TXT", "HTML").contains(transformationOutputMimeTypeString))
-            throw new TransformationParsingErrorException("Unsupported transformation output method: " + mimeType);
-
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")) {
             if (schema == null)
                 throw new SigningParametersException("Chýba XSD schéma", "XSD Schéma je povinný atribút pre XML Datacontainer");
