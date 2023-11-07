@@ -3,6 +3,7 @@ package digital.slovensko.autogram.core;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -147,7 +148,7 @@ public class SignatureValidator {
             var r = outputTarget.getWriter().toString().trim();
 
             var templateFile = SignatureValidator.class.getResourceAsStream("simple-report-template.html");
-            var templateString = new String(templateFile.readAllBytes());
+            var templateString = new String(templateFile.readAllBytes(), StandardCharsets.UTF_8);
             return templateString.replace("{{content}}", r);
 
         } catch (SAXException | IOException | ParserConfigurationException | TransformerException e) {

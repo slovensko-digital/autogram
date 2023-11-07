@@ -21,8 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class XDCBuilderTests {
     @Test
     void testTransformsPlainHtmlWithoutAddingNamespaces() throws IOException {
-        var transformation = new String(this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes());
-        var xsdSchema = new String(this.getClass().getResourceAsStream("general_agenda.xsd").readAllBytes());
+        var transformation = new String(this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes(), StandardCharsets.UTF_8);
+        var xsdSchema = new String(this.getClass().getResourceAsStream("general_agenda.xsd").readAllBytes(), StandardCharsets.UTF_8);
 
         var document = new InMemoryDocument(this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes(), "general_agenda.xml", MimeTypeEnum.XML);
 
@@ -45,7 +45,10 @@ class XDCBuilderTests {
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
 
         var expected = new String(this.getClass().getResourceAsStream("general_agenda_xdc.xml").readAllBytes(), StandardCharsets.UTF_8);
+
         // couldn't find a way to compare XMLs without the newline at the end
-        assertEquals(expected, transformed + "\n");
+        // delete \n or \r\n from the end of the string
+        expected = expected.replaceAll("\\r\\n$|\\n$", "");
+        assertEquals(expected, transformed);
     }
 }

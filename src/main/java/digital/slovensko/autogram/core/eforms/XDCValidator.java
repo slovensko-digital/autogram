@@ -31,7 +31,7 @@ public abstract class XDCValidator {
     public static boolean isXDCContent(DSSDocument document) {
         try {
             var is = document.openStream();
-            var docString = new String(is.readAllBytes());
+            var docString = new String(is.readAllBytes(), ENCODING);
             var xdcSchema = EFormUtils.class.getResourceAsStream("xmldatacontainer.xsd");
 
             return validateXmlContentAgainstXsd(docString, new String(xdcSchema.readAllBytes(), ENCODING));
