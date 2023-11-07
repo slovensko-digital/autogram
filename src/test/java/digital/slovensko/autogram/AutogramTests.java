@@ -13,6 +13,7 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -30,6 +31,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class AutogramTests {
+    private static final Path tempTestsPath = Path.of(System.getProperty("java.io.tmpdir"), "autogram-tests");
+
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
@@ -81,6 +84,11 @@ class AutogramTests {
         verify(responder).onDocumentSigned(any());
     }
 
+    @BeforeAll
+    public static void setupTempTestDirectory() {
+        tempTestsPath.toFile().mkdirs();
+    }
+
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
@@ -92,7 +100,7 @@ class AutogramTests {
         List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
         var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
 
-        var file = new File(document.getName());
+        var file = new File(Path.of(tempTestsPath.toString(), document.getName()).toString());
         var outputStream = new FileOutputStream(file);
         outputStream.write(document.getBytes());
         outputStream.close();
