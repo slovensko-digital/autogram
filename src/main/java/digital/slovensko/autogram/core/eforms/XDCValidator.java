@@ -106,6 +106,7 @@ public abstract class XDCValidator {
         var digestValue = getDigestValueFromElement(document, fieldWithDigest);
 
         System.out.println("================ contentHash: " + contentHash + " digestValue: " + digestValue);
+        System.out.println("================ content in base64: " + java.util.Base64.getEncoder().encodeToString(contentBytes));
 
         return contentHash.equals(digestValue);
     }

@@ -21,8 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class XDCBuilderTests {
     @Test
     void testTransformsPlainHtmlWithoutAddingNamespaces() throws IOException {
-        var transformation = new String(this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes());
-        var xsdSchema = new String(this.getClass().getResourceAsStream("general_agenda.xsd").readAllBytes());
+        var transformation = new String(this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes(), StandardCharsets.UTF_8);
+        var xsdSchema = new String(this.getClass().getResourceAsStream("general_agenda.xsd").readAllBytes(), StandardCharsets.UTF_8);
 
         var document = new InMemoryDocument(this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes(), "general_agenda.xml", MimeTypeEnum.XML);
 
