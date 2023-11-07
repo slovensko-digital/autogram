@@ -498,7 +498,7 @@ components:
             - INCLUSIVE_11
             - INCLUSIVE_11_WITH_COMMENTS
           example: INCLUSIVE
-          description: Optional info canonicalization method. Defaults to INCLUSIVE.
+          description: Optional info canonicalization method.
 
         propertiesCanonicalization:
           type: string
@@ -510,7 +510,7 @@ components:
             - INCLUSIVE_11
             - INCLUSIVE_11_WITH_COMMENTS
           example: INCLUSIVE
-          description: Optional properties canonicalization method. Defaults to INCLUSIVE.
+          description: Optional properties canonicalization method.
 
         keyInfoCanonicalization:
           type: string
@@ -522,7 +522,7 @@ components:
             - INCLUSIVE_11
             - INCLUSIVE_11_WITH_COMMENTS
           example: INCLUSIVE
-          description: Optional key info canonicalization method. Defaults to INCLUSIVE.
+          description: Optional key info canonicalization method.
 
         schema:
           type: string
