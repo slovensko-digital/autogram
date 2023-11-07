@@ -498,7 +498,7 @@ components:
             - INCLUSIVE_11
             - INCLUSIVE_11_WITH_COMMENTS
           example: INCLUSIVE
-          description: Optional info canonicalization method.
+          description: Optional info canonicalization method. Defaults to INCLUSIVE.
 
         propertiesCanonicalization:
           type: string
@@ -510,7 +510,7 @@ components:
             - INCLUSIVE_11
             - INCLUSIVE_11_WITH_COMMENTS
           example: INCLUSIVE
-          description: Optional properties canonicalization method.
+          description: Optional properties canonicalization method. Defaults to INCLUSIVE.
 
         keyInfoCanonicalization:
           type: string
@@ -522,17 +522,46 @@ components:
             - INCLUSIVE_11
             - INCLUSIVE_11_WITH_COMMENTS
           example: INCLUSIVE
-          description: Optional key info canonicalization method.
+          description: Optional key info canonicalization method. Defaults to INCLUSIVE.
 
         schema:
           type: string
           example: '<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="Document"><xs:complexType><xs:sequence><xs:element name="Title" type="xs:string" /></xs:sequence></xs:complexType></xs:element></xs:schema>'
-          description: Optional XML schema. Format is dictated by `payloadMimeType`. Is overridden by autoLoadEform.
+          description: Optional XML schema used to validate the signing document and to compute digest used in "UsedXSDReference" in "DigestValue" attribute inside created XML Datacontainer. Format (plaintext or base64) is dictated by `payloadMimeType`. Is overridden by autoLoadEform.
+
+        schemaIdentifier:
+          type: string
+          example: http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd
+          description: Optional identifier of the XML schema. The value is used in "UsedXSDReference" field inside created XML Datacontainer. Schema must be provided with this parameter. Is overridden by autoLoadEform. Default value is "http://schemas.gov.sk/form/<form-idnetifier>/<version>/form.xsd".
 
         transformation:
           type: string
           example: '<?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>'
-          description: Optional XML transformation used to . Format is dictated by `payloadMimeType`. Is overridden by autoLoadEform.
+          description: Optional XML transformation used to present the signing document to user and to compute digest used in "UsedPresentationSchemaReference" in "DigestValue" attribute inside created XML Datacontainer. Format (plaintext or base64) is dictated by `payloadMimeType`. Is overridden by autoLoadEform.
+
+        transformationIdentifier:
+          type: string
+          example: http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt
+          description: Optional identifier of the XML transformation. The value is used in "UsedPresentationSchemaReference" field inside created XML Datacontainer. Transformation must be provided with this parameter. Is overridden by autoLoadEform. Default value is "http://schemas.gov.sk/form/<form-idnetifier>/<version>/form.xslt".
+
+        transformationLanguage:
+          type: string
+          example: sk
+          description: Optional language of the XML transformation. The value is used in "UsedPresentationSchemaReference" in "Language" attribute inside created XML Datacontainer. Transformation must be provided with this parameter. Is overridden by autoLoadEform. Default value is "sk".
+
+        transformationMediaDestinationTypeDescription:
+          type: string
+          enum:
+            - TXT
+            - HTML
+            - XHTML
+          example: TXT
+          description: Optional media destination type description of the XML transformation. The value is used in "UsedPresentationSchemaReference" in "MediaDestinationTypeDescription" attribute inside created XML Datacontainer. Transformation must be provided with this parameter. Overrides value of output method in XSLT which is used by default. Is overridden by autoLoadEform.
+
+        transformationTargetEnvironment:
+          type: string
+          example: example-value
+          description: Optional target environment of the XML transformation. The value is used in "UsedPresentationSchemaReference" in "TargetEnvironment" attribute inside created XML Datacontainer. Transformation must be provided with this parameter. Is removed by autoLoadEform. Null and not used by default.
 
         visualizationWidth:
           type: string
