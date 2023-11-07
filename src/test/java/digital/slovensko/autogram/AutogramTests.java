@@ -2,21 +2,24 @@ package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.SigningWithExpiredCertificateException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
-import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.KeyStore;
@@ -28,18 +31,84 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class AutogramTests {
-    @Test
-    void testSignHappyScenario() {
+    private static final Path tempTestsPath = Path.of(System.getProperty("java.io.tmpdir"), "autogram-tests");
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
+            "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider"})
+    void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
         List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
         var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
 
-        var parameters = SigningParameters.buildForASiCWithXAdES("pom.xml", false);
-        var document = new FileDocument("pom.xml");
+        var parameters = SigningParameters.buildForASiCWithXAdES(document.getName(), document, false);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(new SigningJob(document, parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @ParameterizedTest
+    @MethodSource({"digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider"})
+    void testSignAsiceCadesHappyScenario(InMemoryDocument document) {
+        var newUI = new FakeUI();
+        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
+        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
+
+        var parameters = SigningParameters.buildForASiCWithCAdES(document.getName(), document, false);
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
+    void testSignPadesHappyScenario(InMemoryDocument document) {
+        var newUI = new FakeUI();
+        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
+        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
+
+        var parameters = SigningParameters.buildForPDF(document.getName(), document, false, false);
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @BeforeAll
+    public static void setupTempTestDirectory() {
+        tempTestsPath.toFile().mkdirs();
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
+            "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
+    void testSignBuildFromFileHappyScenario(InMemoryDocument document) throws IOException {
+        var newUI = new FakeUI();
+        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
+        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
+
+        var file = new File(Path.of(tempTestsPath.toString(), document.getName()).toString());
+        var outputStream = new FileOutputStream(file);
+        outputStream.write(document.getBytes());
+        outputStream.close();
+
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false), key));
 
         verify(responder).onDocumentSigned(any());
     }

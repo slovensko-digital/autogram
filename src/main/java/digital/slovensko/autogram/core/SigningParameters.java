@@ -1,16 +1,16 @@
 package digital.slovensko.autogram.core;
 
-import java.io.IOException;
-import java.io.StringReader;
+import java.util.List;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
+import digital.slovensko.autogram.util.AsicContainerUtils;
+import digital.slovensko.autogram.core.eforms.EFormResources;
+import digital.slovensko.autogram.core.eforms.EFormUtils;
+import digital.slovensko.autogram.core.eforms.XDCValidator;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
@@ -19,8 +19,11 @@ import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
+
+import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 public class SigningParameters {
     private final ASiCContainerType asicContainer;
@@ -37,12 +40,15 @@ public class SigningParameters {
     private final String identifier;
     private final boolean checkPDFACompliance;
     private final int visualizationWidth;
+    private final boolean autoLoadEform;
+    private final String transformationOutputMimeTypeString;
 
-    public SigningParameters(SignatureLevel level, ASiCContainerType container,
+    private SigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
             String keyInfoCanonicalization, String schema, String transformation, String identifier,
-            boolean checkPDFACompliance, int preferredPreviewWidth) {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform,
+            String transformationOutputMimeTypeString) {
         this.level = level;
         this.asicContainer = container;
         this.containerXmlns = containerXmlns;
@@ -57,6 +63,8 @@ public class SigningParameters {
         this.identifier = identifier;
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
+        this.autoLoadEform = autoLoadEform;
+        this.transformationOutputMimeTypeString = transformationOutputMimeTypeString;
     }
 
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
@@ -173,35 +181,105 @@ public class SigningParameters {
                 : CanonicalizationMethod.INCLUSIVE;
     }
 
-    public static SigningParameters buildForPDF(String filename, boolean checkPDFACompliance, boolean signAsEn319132) {
-        return new SigningParameters(
+    public static SigningParameters buildFromRequest(SignatureLevel level, ASiCContainerType container,
+            String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
+            Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
+            String keyInfoCanonicalization, String schema, String transformation, String identifier,
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document)
+            throws AutogramException {
+
+        return buildParameters(level, container, containerXmlns, packaging, digestAlgorithm, en319132,
+                infoCanonicalization, propertiesCanonicalization, keyInfoCanonicalization, schema, transformation,
+                identifier, checkPDFACompliance, preferredPreviewWidth, autoLoadEform, document);
+    }
+
+    private static SigningParameters buildParameters(SignatureLevel level, ASiCContainerType container,
+            String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
+            Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
+            String keyInfoCanonicalization, String schema, String transformation, String identifier,
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, DSSDocument document) throws AutogramException {
+
+        if (level == null)
+            throw new SigningParametersException("Nebol zadaný typ podpisu", "Typ/level podpisu je povinný atribút");
+
+        if (document == null)
+            throw new SigningParametersException("Dokument je prázdny", "Dokument poskytnutý na podpis je prázdny");
+
+        if (document.getMimeType() == null)
+            throw new SigningParametersException("Dokument nemá definovaný MIME type", "Dokument poskytnutý na podpis nemá definovaný MIME type");
+
+        var extractedDocument = document;
+        var mimeType = document.getMimeType();
+        if (isAsice(mimeType))
+            extractedDocument = AsicContainerUtils.getOriginalDocument(document);
+
+        if (autoLoadEform && (isAsice(mimeType) || isXML(mimeType) || isXDC(mimeType))) {
+            var eformAttributes = EFormResources.tryToLoadEFormAttributes(extractedDocument, propertiesCanonicalization);
+
+            if (eformAttributes != null) {
+                schema = eformAttributes.schema();
+                transformation = eformAttributes.transformation();
+                identifier = eformAttributes.identifier();
+                containerXmlns = eformAttributes.containerXmlns();
+                container = eformAttributes.container();
+            }
+        }
+
+        var transformationOutputMimeTypeString = EFormUtils.extractTransformationOutputMimeTypeString(transformation);
+        if (!List.of("TXT", "HTML").contains(transformationOutputMimeTypeString))
+            throw new TransformationParsingErrorException("Unsupported transformation output method: " + mimeType);
+
+        if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")) {
+            if (schema == null)
+                throw new SigningParametersException("Chýba XSD schéma", "XSD Schéma je povinný atribút pre XML Datacontainer");
+
+            if (transformation == null)
+                throw new SigningParametersException("Chýba XSLT transformácia", "XSLT transformácia je povinný atribút pre XML Datacontainer");
+
+            if (identifier == null)
+                throw new SigningParametersException("Chýba identifikátor", "Identifikátor je povinný atribút pre XML Datacontainer");
+
+            if (digestAlgorithm == null)
+                digestAlgorithm = DigestAlgorithm.SHA256;
+
+            if (isXML(extractedDocument.getMimeType()) || isXDC(extractedDocument.getMimeType()))
+                XDCValidator.validateXml(schema, transformation, extractedDocument, propertiesCanonicalization, digestAlgorithm);
+
+            else
+                throw new SigningParametersException("Nesprávny typ dokumentu", "Zadaný dokument nemožno podpísať ako elektronický formulár v XML Datacontaineri");
+        }
+
+        return new SigningParameters(level, container, containerXmlns, packaging, digestAlgorithm, en319132,
+                infoCanonicalization, propertiesCanonicalization, keyInfoCanonicalization, schema, transformation,
+                identifier, checkPDFACompliance, preferredPreviewWidth, autoLoadEform,
+                transformationOutputMimeTypeString);
+    }
+
+    public static SigningParameters buildForPDF(String filename, DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132) throws AutogramException {
+        return buildParameters(
                 SignatureLevel.PAdES_BASELINE_B,
                 null,
                 null, null,
                 DigestAlgorithm.SHA256,
                 signAsEn319132, null,
                 null, null,
-                null, null, "", checkPDFACompliance, 640);
+                null, null, "", checkPDFACompliance, 640, false, document);
     }
 
-    public static SigningParameters buildForASiCWithXAdES(String filename, boolean signAsEn319132) {
-        return new SigningParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
+    public static SigningParameters buildForASiCWithXAdES(String filename, DSSDocument document, boolean signAsEn319132) throws AutogramException {
+        return buildParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
-                null, null, null, "", false, 640);
+                null, null, null, "", false, 640, true, document);
     }
 
-    public static SigningParameters buildForASiCWithCAdES(String filename, boolean signAsEn319132) {
-        return new SigningParameters(SignatureLevel.CAdES_BASELINE_B, ASiCContainerType.ASiC_E,
+    public static SigningParameters buildForASiCWithCAdES(String filename, DSSDocument document, boolean signAsEn319132) throws AutogramException {
+        return buildParameters(SignatureLevel.CAdES_BASELINE_B, ASiCContainerType.ASiC_E,
                 null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
-                null, null, null, "", false, 640);
+                null, null, null, "", false, 640, true, document);
     }
 
     public String getIdentifier() {
         return identifier;
-    }
-
-    public boolean shouldCreateDatacontainer() {
-        return getContainerXmlns() != null && getContainerXmlns().contains("xmldatacontainer");
     }
 
     public boolean getCheckPDFACompliance() {
@@ -209,37 +287,18 @@ public class SigningParameters {
     }
 
     public int getVisualizationWidth() {
-        return (visualizationWidth > 0) ? visualizationWidth : 640;
+        return (visualizationWidth > 0) ? visualizationWidth : 768;
     }
 
-    public String extractTransformationOutputMimeTypeString() throws TransformationParsingErrorException {
-        if (transformation == null)
-            return "TXT";
+    public boolean getAutoLoadEform() {
+        return autoLoadEform;
+    }
 
-        var method = "";
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            var document = builderFactory.newDocumentBuilder()
-                .parse(new InputSource(new StringReader(transformation)));
-            var elem = document.getDocumentElement();
-            var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
-            if (outputElements.getLength() == 0)
-                throw new TransformationParsingErrorException("Failed to parse transformation. Missing output element");
+    public String getTransformationOutputMimeTypeString() {
+        return transformationOutputMimeTypeString;
+    }
 
-            method = outputElements.item(0).getAttributes().getNamedItem("method").getNodeValue();
-
-        } catch (SAXException | IOException | ParserConfigurationException e) {
-            throw new TransformationParsingErrorException("Failed to parse transformation");
-        }
-
-        if (method.equals("html"))
-            return "HTML";
-
-        if (method.equals("text"))
-            return "TXT";
-
-        throw new TransformationParsingErrorException("Unsupported transformation output method: " + method);
+    public boolean shouldCreateXdc() {
+        return containerXmlns != null && containerXmlns.contains("xmldatacontainer");
     }
 }

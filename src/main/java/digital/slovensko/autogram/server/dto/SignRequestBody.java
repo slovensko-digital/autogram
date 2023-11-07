@@ -1,28 +1,12 @@
 package digital.slovensko.autogram.server.dto;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.Base64;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
-
-import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
-import eu.europa.esig.dss.model.DSSDocument;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.XDCTransformer;
-import digital.slovensko.autogram.core.errors.InvalidXMLException;
-import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
-import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
@@ -46,7 +30,7 @@ public class SignRequestBody {
         this.batchId = batchId;
     }
 
-    public InMemoryDocument getDocument() throws RequestValidationException {
+    public void validateDocument() throws RequestValidationException, MalformedBodyException {
         if (payloadMimeType == null)
             throw new RequestValidationException("PayloadMimeType is required", "");
 
@@ -55,136 +39,47 @@ public class SignRequestBody {
 
         if (document.getContent() == null)
             throw new RequestValidationException("Document.Content is required", "");
+    }
 
-        var content = decodeDocumentContent();
+    public InMemoryDocument getDocument() {
+        var content = decodeDocumentContent(document.getContent(), isBase64());
         var filename = document.getFilename();
 
         return new InMemoryDocument(content, filename, getMimetype());
     }
 
-    public SigningParameters getParameters()
-            throws RequestValidationException, MalformedBodyException, TransformationParsingErrorException {
+    public void validateSigningParameters() throws RequestValidationException, MalformedBodyException,
+            TransformationParsingErrorException {
         if (parameters == null)
             throw new RequestValidationException("Parameters are required", "");
 
         parameters.validate(getDocument().getMimeType());
-
-        var signingParameters = parameters.getSigningParameters(isBase64());
-        signingParameters.extractTransformationOutputMimeTypeString();
-        var parsedPaylodMimeType = getMimetype();
-        if (isAsice(parsedPaylodMimeType) || isXML(parsedPaylodMimeType) || isXDC(parsedPaylodMimeType))
-            validateXml(signingParameters);
-
-        return signingParameters;
     }
 
-    private MimeType getMimetype() {
-        return AutogramMimeType.fromMimeTypeString(payloadMimeType.split(";")[0]);
+    public SigningParameters getParameters() {
+        return parameters.getSigningParameters(isBase64(), getDocument());
     }
 
     public String getBatchId() {
         return batchId;
     }
 
+    private MimeType getMimetype() {
+        return fromMimeTypeString(payloadMimeType.split(";")[0]);
+    }
+
     private boolean isBase64() {
         return payloadMimeType.contains("base64");
     }
 
-    private void validateXml(SigningParameters signingParameters)
-            throws RequestValidationException, MalformedBodyException {
-        var xsdSchema = signingParameters.getSchema();
-
-        try {
-            var xmlContent = getXmlContent(signingParameters);
-            if (xmlContent == null) {
-                return;
+    private static byte[] decodeDocumentContent(String content, boolean isBase64) throws MalformedBodyException {
+        if (isBase64)
+            try {
+                return Base64.getDecoder().decode(content);
+            } catch (IllegalArgumentException e) {
+                throw new MalformedBodyException("Base64 decoding failed", "Invalid document content");
             }
 
-            if (!validateXmlContentAgainstXsd(xmlContent, xsdSchema))
-                throw new XMLValidationException("XML validation failed", "XML validation against XSD failed");
-
-        } catch (OriginalDocumentNotFoundException e) {
-            throw new MalformedBodyException(e.getMessage(), e.getDescription());
-        } catch (InvalidXMLException e) {
-            throw new MalformedBodyException(e.getMessage(), e.getDescription());
-        } catch (XMLValidationException e) {
-            throw new RequestValidationException(e.getMessage(), e.getDescription());
-        }
-    }
-
-    private String getXmlContent(SigningParameters signingParameters)
-            throws XMLValidationException, InvalidXMLException {
-        if (isAsice(getMimetype())) {
-            return getXmlContentFromAsice(signingParameters);
-        } else if (isXDC(getMimetype())) {
-            return getXmlContentFromXdc(signingParameters, getDocument());
-        } else {
-            return new String(decodeDocumentContent());
-        }
-    }
-
-    private String getXmlContentFromAsice(SigningParameters signingParameters)
-            throws XMLValidationException, InvalidXMLException {
-        DSSDocument originalDocument = AsicContainerUtils.getOriginalDocument(getDocument());
-        if (!isXDC(originalDocument.getMimeType()) && !isXML(originalDocument.getMimeType())) {
-            return null;
-        }
-        return isXDC(originalDocument.getMimeType()) ? getXmlContentFromXdc(signingParameters, originalDocument)
-                : getXmlContentFromOriginalDocument(originalDocument);
-    }
-
-    private String getXmlContentFromOriginalDocument(DSSDocument originalDocument) throws InvalidXMLException {
-        try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            org.w3c.dom.Document document = builderFactory.newDocumentBuilder().parse(new InputSource(originalDocument.openStream()));
-            var xml = document.getDocumentElement();
-            return XDCTransformer.transformElementToString(xml);
-        } catch (Exception e) {
-            throw new InvalidXMLException("XML validation failed", "Unable to get xml from original document");
-        }
-    }
-
-    private String getXmlContentFromXdc(SigningParameters signingParameters, DSSDocument document)
-            throws InvalidXMLException, XMLValidationException {
-        var xdcTransformer = XDCTransformer.buildFromSigningParametersAndDocument(signingParameters, document);
-        if (signingParameters.getSchema() != null && !xdcTransformer.validateXsdDigest())
-            throw new XMLValidationException("XML Datacontainer validation failed", "XSD scheme digest mismatch");
-
-        if (signingParameters.getTransformation() != null && !xdcTransformer.validateXsltDigest())
-            throw new XMLValidationException("XML Datacontainer validation failed",
-                    "XSLT transformation digest mismatch");
-
-        return xdcTransformer.getContentFromXdc();
-    }
-
-    private boolean validateXmlContentAgainstXsd(String xmlContent, String xsdSchema) {
-        if (xsdSchema == null)
-            return true;
-
-        try {
-            var factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            var schema = factory.newSchema(new StreamSource(new StringReader(xsdSchema)));
-            var validator = schema.newValidator();
-            validator.validate(new StreamSource(new StringReader(xmlContent)));
-
-            return true;
-
-        } catch (SAXException | IOException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    private byte[] decodeDocumentContent() throws MalformedBodyException {
-        try {
-            if (isBase64())
-                return Base64.getDecoder().decode(document.getContent());
-
-            return document.getContent().getBytes();
-
-        } catch (IllegalArgumentException e) {
-            throw new MalformedBodyException("Base64 decoding failed", "Invalid document content");
-        }
+        return content.getBytes();
     }
 }

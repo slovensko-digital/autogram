@@ -91,6 +91,8 @@ public class Autogram {
             try {
                 var visualization = DocumentVisualizationBuilder.fromJob(job);
                 ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
+            } catch (AutogramException e) {
+                ui.onUIThreadDo(() -> ui.showError(e));
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
 

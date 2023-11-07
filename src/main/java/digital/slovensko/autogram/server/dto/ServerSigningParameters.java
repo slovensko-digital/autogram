@@ -5,17 +5,16 @@ import java.util.Base64;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
-import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelExceptionError;
+import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
 import eu.europa.esig.dss.enumerations.*;
+import eu.europa.esig.dss.model.DSSDocument;
 
 import java.nio.charset.StandardCharsets;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
+import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
@@ -49,6 +48,7 @@ public class ServerSigningParameters {
     private final String identifier;
     private final boolean checkPDFACompliance;
     private final VisualizationWidthEnum visualizationWidth;
+    private final boolean autoLoadEform;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -56,7 +56,7 @@ public class ServerSigningParameters {
             Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
             LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
             String schema, String transformation,
-            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth) {
+            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth, boolean autoLoadEform) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -71,10 +71,11 @@ public class ServerSigningParameters {
         this.identifier = Identifier;
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
+        this.autoLoadEform = autoLoadEform;
     }
 
-    public SigningParameters getSigningParameters(boolean isBase64) {
-        return new SigningParameters(
+    public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document) {
+        return SigningParameters.buildFromRequest(
                 getSignatureLevel(),
                 getContainer(),
                 containerXmlns,
@@ -86,7 +87,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, getVisualizationWidth());
+                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform, document);
     }
 
     private String getTransformation(boolean isBase64) throws MalformedBodyException {
@@ -163,7 +164,7 @@ public class ServerSigningParameters {
                 SignatureLevel.CAdES_BASELINE_B);
 
         if (!supportedLevels.contains(level))
-            throw new UnsupportedSignatureLevelExceptionError(level.name());
+            throw new UnsupportedSignatureLevelException(level.name());
 
         if (level.getSignatureForm() == SignatureForm.PAdES) {
             if (!mimeType.equals(MimeTypeEnum.PDF))
@@ -176,7 +177,7 @@ public class ServerSigningParameters {
         }
 
         if (level.getSignatureForm() == SignatureForm.XAdES) {
-            if (!isXMLMimeType(mimeType) && !isXDCMimeType(mimeType) && !isAsiceMimeType(mimeType) && container == null)
+            if (!isXML(mimeType) && !isXDC(mimeType) && !isAsice(mimeType) && container == null)
                 if (!(packaging != null && packaging == SignaturePackaging.ENVELOPING))
                     throw new RequestValidationException(
                             "PayloadMimeType, Parameters.Level, Parameters.Container and Parameters.Packaging mismatch",
@@ -187,13 +188,13 @@ public class ServerSigningParameters {
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")
                 && !isXDC(mimeType)) {
 
-            if (transformation == null || transformation.isEmpty())
+            if (!autoLoadEform && (transformation == null || transformation.isEmpty()))
                 throw new RequestValidationException("Parameters.Transformation is null",
-                        "Parameters.Transformation is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
+                        "Parameters.Transformation or Parameters.AutoLoadEform is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
 
-            if (schema == null || schema.isEmpty())
+            if (!autoLoadEform && (schema == null || schema.isEmpty()))
                 throw new RequestValidationException("Parameters.Schema is null",
-                        "Parameters.Schema is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
+                        "Parameters.Schema or Parameters.AutoLoadEform is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
 
             if (identifier == null || identifier.isEmpty())
                 throw new RequestValidationException("Parameters.Identifier is null",
@@ -204,17 +205,5 @@ public class ServerSigningParameters {
                         "Parameters.ContainerXmlns: XML datacontainer is not supported for this payload: "
                                 + mimeType.getMimeTypeString());
         }
-    }
-
-    private static boolean isXMLMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeTypeEnum.XML) || mimeType.equals(AutogramMimeType.APPLICATION_XML);
-    }
-
-    private static boolean isXDCMimeType(MimeType mimeType) {
-        return mimeType.equals(AutogramMimeType.XML_DATACONTAINER);
-    }
-
-    private static boolean isAsiceMimeType(MimeType mimeType) {
-        return mimeType.equals(MimeTypeEnum.ASICE);
     }
 }

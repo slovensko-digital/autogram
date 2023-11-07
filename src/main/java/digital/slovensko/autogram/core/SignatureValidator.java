@@ -3,15 +3,14 @@ package digital.slovensko.autogram.core;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -21,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
@@ -134,26 +134,21 @@ public class SignatureValidator {
     }
 
     public static String getSignatureValidationReportHTML(Reports signatureValidationReport) {
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        builderFactory.setNamespaceAware(true);
-
         try {
-            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
+            var document = XMLUtils.getSecureDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
             var xmlSource = new DOMSource(document);
 
             var xsltFile = SignatureValidator.class.getResourceAsStream("simple-report-bootstrap4.xslt");
             var xsltSource = new StreamSource(xsltFile);
 
             var outputTarget = new StreamResult(new StringWriter());
-            var transformer = TransformerFactory.newInstance().newTransformer(xsltSource);
+            var transformer = XMLUtils.getSecureTransformerFactory().newTransformer(xsltSource);
             transformer.transform(xmlSource, outputTarget);
 
             var r = outputTarget.getWriter().toString().trim();
 
             var templateFile = SignatureValidator.class.getResourceAsStream("simple-report-template.html");
-            var templateString = new String(templateFile.readAllBytes());
+            var templateString = new String(templateFile.readAllBytes(), StandardCharsets.UTF_8);
             return templateString.replace("{{content}}", r);
 
         } catch (SAXException | IOException | ParserConfigurationException | TransformerException e) {

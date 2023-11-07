@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://data.gov.sk/def/container/xmldatacontainer+xml/1.1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://data.gov.sk/def/container/xmldatacontainer+xml/1.1">
+
+    <xsd:element name="XMLDataContainer" type="XMLDataContainerCType">
+        <xsd:annotation>
+            <xsd:documentation>
+            D.4 Zlozeny datovy prvok pre prenos obsahu XML udajov vratane elektronickych formularov.
+            Hodnoty: Neobsahuje.
+            Poznamky: Ide o hlavny korenovy prvok.
+            </xsd:documentation>
+        </xsd:annotation>
+ </xsd:element>
+
+    <xsd:complexType name="XMLDataContainerCType">
+        <xsd:sequence>
+            <xsd:element name="XMLData" type="XMLDataCType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        D.4.1 Datovy obsah XML udajov, ktore su kontajnerom prenasane, spravidla vyplnenych udajov elektronickeho formulara.
+                        Stav: Povinny.
+                        Hodnoty: Datovy obsah vo formate XML.
+                        Atributy: Identifier, Version, ContentType.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:choice>
+                <xsd:element name="UsedSchemasEmbedded" type="UsedSchemasEmbeddedCType">
+                    <xsd:annotation>
+                        <xsd:documentation>D.4.4 Zlozeny datovy prvok obsahujuci priamo vlozene schemy.</xsd:documentation>
+                    </xsd:annotation>
+                </xsd:element>
+                <xsd:element name="UsedSchemasReferenced" type="UsedSchemasReferencedCType">
+                    <xsd:annotation>
+                        <xsd:documentation>D.4.5 Zlozeny datovy prvok obsahujuci referencie pouzitych schem.</xsd:documentation>
+                    </xsd:annotation>
+            </xsd:element>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="XMLDataCType" mixed="true">
+        <xsd:sequence>
+            <xsd:any namespace="##any" processContents="lax" minOccurs="1" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>D.4.1 Datovy obsah XML udajov, ktore su kontajnerom prenasane, spravidla vyplnenych udajov elektronickeho formulara.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:any>
+        </xsd:sequence>
+        <xsd:attribute name="Identifier" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Retazec sluzi ako identifikator elektronickeho formulara, ku ktoremu patria dane udaje.
+                    Stav: Povinny pre vyplnene udaje elektronickeho formulara, pre ine XML udaje nepovinny.
+                    Hodnoty: Identifikator elektronickeho formulara v tvare Uniform Resource Identifier (URI) podla prilohy c. 3 bodu 2.2.1 pism. b ) Vynosu o standardoch pre informacne systemy verejnej spravy c. 55/2014 Z.z..
+                    Pravidla pouzitia: Ak nejde o elektronicky formular, tento atribut sa nemusi pouzit, ale je mozne jeho vyuzitie na interne potreby informacnych systemov verejnej spravy.
+                    Poznamky: Cielom pouzitia je previazanie udajov s elektronickym formularom.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="Version" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Retazec sluzi ako jednoznacny identifikator verzie elektronickeho formulara.
+                    Stav: Povinny pre vyplnene udaje elektronickeho formulara, pre ine XML udaje nepovinny.
+                    Hodnoty: Hodnota obsahujuca cislo verzie elektronickeho formulara, podla prilohy c. 3 bodu 2.2.1 pism. g) Vynosu o standardoch c. 55/2014 Z.z..
+                    Pravidla pouzitia: Ak nejde o elektronicky formular, tento atribut sa nemusi pouzit, ale je mozne jeho vyuzitie na interne potreby informacnych systemov verejnej spravy.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="ContentType" type="XMLDataContentTypeType" use="required">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Urcuje datovy obsah objektu pre dalsie spracovanie informacnymi systemami.
+                    Stav: Povinny.
+                    Hodnoty: Predpisany textovy retazec "application/xml; charset=UTF-8".
+                    Poznamky: Existuje iba jedina hodnota, ktora je uvedena vyssie. Je nepripustne pouzit ako XML udaje formaty, ktore pouzivaju alebo maju zaregistrovanu inu hodnotu alebo ktore nemaju vo svojej dokumentacii ako obvykly sposob prezentacie definovany ten, ktory je pouzity v datovom prvku Pouzita prezentacna schema.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="UsedSchemasEmbeddedCType">
+        <xsd:annotation>
+            <xsd:documentation>
+                D.4.4 Zlozeny datovy prvok obsahujuci priamo vlozene schemy.
+                Pravidla pouzitia: Ak ide o prenos inych XML udajov, vyplnenie podradenych prvkov tohto prvku je povinne. Pre prenos vyplnenych udajov elektronickeho formulara sa nepouziva.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="UsedXSDEmbedded" type="UsedXSDEmbeddedCType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        D.4.2.2 Jednoznacna identifikacia XSD schemy pouzitej pre XML udaje pri podpisovani, ktora obsahuje celu pouzitu XSD schemu.
+                        Stav: Povinny pre XML udaje, ktore nie su vyplnenymi udajmi elektronickeho formulara.
+                        Hodnoty: Pri prenose vyplnenych udajov elektronickeho formulara sa nepouziva, pri prenose inych XML udajov obsahuje vlastnu XSD schemu vo forme priamej integracie.
+                        Pravidla pouzitia: Pouziva sa len pre XML udaje, ktore nie su vyplnenymi udajmi elektronickeho formulara.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="UsedPresentationSchemaEmbedded" type="UsedPresentationSchemaEmbeddedCType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        D.4.3.2 Jednoznacna identifikacia prezentacnej schemy, pouzitej pre XML udaje pri podpisovani, ktora obsahuje celu pouzitu prezentacnu schemu.
+                        Stav: Povinny pre XML udaje, ktore nie su vyplnenymi udajmi elektronickeho formulara.
+                        Hodnoty: Pri prenose vyplnenych udajov elektronickeho formulara sa nepouziva, pri prenose inych XML obsahuje vlastnu schemu vo forme priamej integracie.
+                        Pravidla pouzitia: Pouziva sa len pre XML udaje, ktore nie su vyplnenymi udajmi elektronickeho formulara.
+                        Atributy: ContentType, MediaDestinationTypeDescription, Language, TargetEnvironment.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="UsedSchemasReferencedCType">
+        <xsd:annotation>
+            <xsd:documentation>
+                D.4.5 Zlozeny datovy prvok obsahujuci referencie pouzitych schem.
+                Pravidla pouzitia: Ak ide o vyplnene udaje elektronickeho formulara, vyplnenie podradenych datovych prvkov tohto prvku je povinne. Pre ine XML udaje sa nepouziva.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="UsedXSDReference" type="UsedXSDReferenceSCType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        D.4.2.1 Jednoznacna identifikacia XSD schemy pouzitej pre XML udaje pri podpisovani prostrednictvom referencie.
+                        Stav: Povinny pre vyplnene udaje elektronickeho formulara.
+                        Hodnoty: Pri prenose vyplnenych udajov elektronickeho formulara sa vyplna v tvare Uniform Resource Identifier (URI), pri prenose inych XML udajov sa nepouziva.
+                        Pravidla pouzitia: Pouziva sa len pre vyplnene udaje elektronickeho formulara, pricom definicia datovej struktury vo forme XSD schemy je pripojena ako jej referencia a digitalny odtlacok.
+                        Atributy: TransformAlgorithm, DigestMethod, DigestValue.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="UsedPresentationSchemaReference" type="UsedPresentationSchemaReferenceSCType">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        D.4.3.1 Jednoznacna identifikacia prezentacnej schemy pre XML udaje pri podpisovani prostrednictvom referencie.
+                        Stav: Povinny pre vyplnene udaje elektronickeho formulara.
+            Hodnoty: Pri prenose vyplnenych udajov elektronickeho formulara sa vyplna v tvare Uniform Resource Identifier (URI), pri prenose inych XML udajov sa nepouziva.
+                        Pravidla pouzitia: Pouziva sa len pre vyplnene udaje elektronickeho formulara, pricom definicia datovej struktury vo forme prezentacnej schemy je pripojena ako jej referencia a digitalny odtlacok.
+                        Atributy: TransformAlgorithm, DigestMethod, DigestValue, ContentType, MediaDestinationTypeDescription, Language, TargetEnvironment.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="UsedXSDEmbeddedCType">
+        <xsd:annotation>
+            <xsd:documentation>D.4.2.2 Jednoznacna identifikacia XSD schemy pouzitej pri podpisovani, ktora obsahuje celu pouzitu XSD schemu.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:any namespace="##any" processContents="lax" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="UsedPresentationSchemaEmbeddedCType">
+        <xsd:annotation>
+            <xsd:documentation>D.4.3.2 Jednoznacna identifikacia prezentacnej schemy, pouzitej pri podpisovani, ktora obsahuje celu pouzitu prezentacnu schemu.</xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:any namespace="##any" processContents="lax" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="ContentType" type="UsedPresentationSchemaContentTypeType" use="required">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Popisuje typ prezentacnej schemy najma pre zahranicne pouzitie.
+                    Stav: Povinny.
+                    Hodnoty: Pre vyplnene udaje elektronickeho formulara aj ine XML udaje sa uvadza "application/xslt+xml"
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="MediaDestinationTypeDescription" type="MediaDestinationTypeDescriptionType" use="required">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Sluzi na automatizovanu identifikaciu vystupu transformacie s cielom, aby aplikacia dokazala identifikovat, ci dany typ vystupu podporuje a bude ho vediet zobrazit.
+                    Stav: Povinny.
+                    Hodnoty: Povolenou hodnotou pre povinne prezentacne schemy pre podpisovanie inych XML udajov je prave jedna z moznosti „TXT“, „HTML“ a „XHTML“ podla prislusneho vystupu. Pre ine ako povinne transformacie sa pouzivaju ine identifikacie ako tie pre povinne prezentacie. Ine identifikacie sa pouzivaju iba podla § 57c pism. b) Vynosu o standardoch c. 55/2014 Z.z. so zohladnenim moznych nasledkov.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="Language" type="LanguageCodType" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Jazyk pouzitej prezentacnej schemy.
+                    Stav: Nepovinny.
+                    Poznamky: Pouziva sa pre identifikaciu jazyka prezentacie XML udajov.
+                    Hodnoty: Hodnota je zo zakladneho ciselnika CL010076 Jazyky. Podla bodu 7.9.5 prilohy c. 3 Vynosu o standardoch pre informacne systemy verejnej spravy c. 55/2014 Z.z..
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="TargetEnvironment" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    Sluzi na odlisenie nastroja alebo prostredia, pre ktore je prezentacna schema urcena.
+                    Stav: Nepovinny.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="UsedXSDReferenceSCType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:anyURI">
+                <xsd:annotation>
+                        <xsd:documentation>D.4.2.1 Jednoznacna identifikacia XSD schemy pouzitej pre XML udaje pri podpisovani prostrednictvom referencie.</xsd:documentation>
+                </xsd:annotation>
+                <xsd:attribute name="TransformAlgorithm" type="TransformAlgorithmType" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Atribut identifikuje pouzity transformacny algoritmus.
+                            Stav: Povinny.
+                            Hodnoty: Hodnotou je Uniform Resource Identifier (URI) podla pouziteho kanonikalizacneho algoritmu, a to v tvare: „http://www.w3.org/TR/2001/REC-xml-c14n-20010315“ pre Canonical XML vo verzii 1.0, „http://www.w3.org/2001/10/xml-exc-c14n#“ pre Exclusive XML Canonicalization vo verzii 1.0 alebo „http://www.w3.org/2006/12/xml-c14n11“ pre Canonical XML 1.1.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                        <xsd:attribute name="DigestMethod" type="DigestMethodType" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Atribut identifikuje hasovaciu funkciu, ktora bola pouzita na vypocet digitalneho odtlacku.
+                            Stav: Povinny.
+                            Format reprezentacie: Identifikator z pouzitej podpisovej politiky v tvare Object Identifier (OID) vo forme Uniform Resource Name (URN) zapisu podla technickej normy RFC 3061.
+                            Hodnoty: Pouziva sa niektora z hasovacich funkcii uvedenych v podpisovej politike podla osobitneho predpisu, na zaklade ktorej je vytvoreny podpis kontajnera XML udajov. Ak je kontajner XML udajov pouzivany bez podpisu, pouziva sa niektora z hasovacich funkcii podla osobitneho predpisu, napriklad „urn:oid:2.16.840.1.101.3.4.2.3“ pre hasovaciu funkciu SHA-512.
+                            Zalozene na: ETSI TS 102 176-1 – Elektronicke podpisy a infrastruktury (ESI): Algoritmy a parametre pre bezpecne elektronicke podpisy. Cast 1: Hasovacie funkcie a asymetricke algoritmy, Vyhlaska Narodneho bezpecnostneho uradu c. 135/2009 Z. z. o formate a sposobe vyhotovenia zaruceneho elektronickeho podpisu, sposobe zverejnovania verejneho kluca uradu, podmienkach platnosti pre zaruceny elektronicky podpis, postupe pri overovani a podmienkach overovania zaruceneho elektronickeho podpisu, formate casovej peciatky a sposobe jej vyhotovenia, poziadavkach na zdroj casovych udajov a poziadavkach na vedenie dokumentacie casovych peciatok (o vyhotoveni a overovani elektronickeho podpisu a casovej peciatky) v zneni neskorsich predpisov.
+                            Poznamky: Ak hodnotou nie je niektory z algoritmov podla podpisovej politiky, nie je mozne vytvorit platny zaruceny elektronicky podpis.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                        <xsd:attribute name="DigestValue" type="xsd:base64Binary" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Urcuje hodnotu digitalneho odtlacku referencovaneho suboru.
+                            Stav: Povinny.
+                            Format reprezentacie: Textovy retazec vo formate Base64.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="UsedPresentationSchemaReferenceSCType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:anyURI">
+                <xsd:annotation>
+                    <xsd:documentation>D.4.3.1 Jednoznacna identifikacia prezentacnej schemy pre XML udaje pri podpisovani prostrednictvom referencie.</xsd:documentation>
+                </xsd:annotation>
+                <xsd:attribute name="TransformAlgorithm" type="TransformAlgorithmType" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Atribut identifikuje pouzity transformacny algoritmus.
+                            Stav: Povinny.
+                            Hodnoty: Hodnotou je Uniform Resource Identifier (URI) podla pouziteho kanonikalizacneho algoritmu, a to v tvare: „http://www.w3.org/TR/2001/REC-xml-c14n-20010315“ pre Canonical XML vo verzii 1.0, „http://www.w3.org/2001/10/xml-exc-c14n#“ pre Exclusive XML Canonicalization vo verzii 1.0 alebo „http://www.w3.org/2006/12/xml-c14n11“ pre Canonical XML 1.1.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="DigestMethod" type="DigestMethodType" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Atribut identifikuje algoritmus pouzity na vypocet digitalneho odtlacku.
+                            Stav: Povinny.
+                            Format reprezentacie: Identifikator z pouzitej podpisovej politiky v tvare Object Identifier (OID) vo forme Uniform Resource Name (URN) zapisu podla technickej normy RFC 3061.
+                            Hodnoty: Pouziva sa niektora z hasovacich funkcii uvedenych v podpisovej politike podla osobitneho predpisu, na zaklade ktorej je vytvoreny podpis kontajnera XML udajov. Ak je kontajner XML udajov pouzivany bez podpisu, pouziva sa niektora z hasovacich funkcii podla osobitneho predpisu, napriklad „urn:oid:2.16.840.1.101.3.4.2.3“ pre hasovaciu funkciu SHA-512.
+                            Zalozene na: ETSI TS 102 176-1 – Elektronicke podpisy a infrastruktury (ESI): Algoritmy a parametre pre bezpecne elektronicke podpisy. Cast 1: Hasovacie funkcie a asymetricke algoritmy, Vyhlaska Narodneho bezpecnostneho uradu c. 135/2009 Z. z. o formate a sposobe vyhotovenia zaruceneho elektronickeho podpisu, sposobe zverejnovania verejneho kluca uradu, podmienkach platnosti pre zaruceny elektronicky podpis, postupe pri overovani a podmienkach overovania zaruceneho elektronickeho podpisu, formate casovej peciatky a sposobe jej vyhotovenia, poziadavkach na zdroj casovych udajov a poziadavkach na vedenie dokumentacie casovych peciatok (o vyhotoveni a overovani elektronickeho podpisu a casovej peciatky) v zneni neskorsich predpisov.
+                            Poznamky: Ak hodnotou nie je niektory z algoritmov podla podpisovej politiky, nie je mozne vytvorit platny zaruceny elektronicky podpis.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="DigestValue" type="xsd:base64Binary" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Urcuje hodnotu digitalneho odtlacku referencovaneho suboru.
+                            Stav: Povinny.
+                            Format reprezentacie: Textovy retazec vo formate Base64.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="ContentType" type="UsedPresentationSchemaContentTypeType" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Popisuje typ prezentacnej schemy najma pre zahranicne pouzitie.
+                            Stav: Povinny.
+                            Hodnoty: Pre vyplnene udaje elektronickeho formulara aj ine XML udaje sa uvadza "application/xslt+xml".
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="MediaDestinationTypeDescription" type="MediaDestinationTypeDescriptionType" use="required">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Sluzi na automatizovanu identifikaciu vystupu transformacie s cielom, aby aplikacia dokazala identifikovat, ci dany typ vystupu podporuje a bude ho vediet zobrazit.
+                            Stav: Povinny.
+                            Hodnoty: Povolenou hodnotou pre povinne prezentacne schemy pre podpisovanie vyplnenych udajov elektronickeho formulara podla bodu 2.6.7 Prilohy c. 3 Vynosu o standardoch c. 55/2014 Z.z. je prave jedna z moznosti „TXT“, „HTML“ a „XHTML“ podla prislusneho vystupu. Pre ine ako povinne transformacie sa pouzivaju ine identifikacie ako tie pre povinne prezentacie. Ine identifikacie sa pouzivaju iba podla § 57c pism. b) Vynosu o standardoch c. 55/2014 Z.z. so zohladnenim moznych nasledkov.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="Language" type="LanguageCodType" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Jazyk pouzitej prezentacnej schemy.
+                            Stav: Nepovinny.
+                            Poznamky: Pouziva sa, ak elektronicky formular poskytuje pre rozne jazyky rozdielne prezentacne schemy.
+                            Hodnoty: Hodnota je zo zakladneho ciselnika CL010076 Jazyky. Podla bodu 7.9.5 prilohy c. 3.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="TargetEnvironment" type="TargetEnvironmentCodType" use="optional">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            Sluzi na odlisenie nastroja alebo prostredia, pre ktore je prezentacna schema urcena.
+                            Stav: Nepovinny podla pravidiel pouzitia.
+              Hodnoty: Pre tieto udaje sa hodnota atributu tvori v sulade s ciselnikom pre prostredia elektronickych formularov zverejnenym v module elektronickych formularov.
+                            Pravidla pouzitia: Ak je prezentacna schema urcena na vykonanie transformacie do prezentacie modulom elektronickych formularov, pouzitie atributu je pre vyplnene udaje elektronickeho formulara nepovinne.
+                        </xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:simpleType name="TransformAlgorithmType">
+        <xsd:restriction base="xsd:anyURI">
+            <xsd:enumeration value="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+            <xsd:enumeration value="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+            <xsd:enumeration value="http://www.w3.org/2006/12/xml-c14n11"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="XMLDataContentTypeType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="application/xml; charset=UTF-8"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="UsedPresentationSchemaContentTypeType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="application/xslt+xml"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="DigestMethodType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="urn:oid:[0-2]((\.[1-3]?[0-9])(\.\d+)*)?"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="LanguageCodType">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="MediaDestinationTypeDescriptionType">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="TargetEnvironmentCodType">
+        <xsd:restriction base="xsd:string">
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>

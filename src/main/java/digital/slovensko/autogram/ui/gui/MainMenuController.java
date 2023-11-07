@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import javafx.fxml.FXML;
@@ -54,7 +55,12 @@ public class MainMenuController implements SuppressedFocusController {
     public void onUploadButtonAction() {
         var chooser = new FileChooser();
         var list = chooser.showOpenMultipleDialog(new Stage());
-        onFilesSelected(list);
+
+        try {
+            onFilesSelected(list);
+        } catch (Exception e) {
+            autogram.onSigningFailed(new UnrecognizedException(e));
+        }
     }
 
     public void onFilesSelected(List<File> list) {
