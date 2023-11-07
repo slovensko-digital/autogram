@@ -656,9 +656,6 @@ components:
         parameters:
           autoLoadEform: true
           level: XAdES_BASELINE_B
-          container: ASiC_E
-          identifier: "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9"
-          containerXmlns: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
         payloadMimeType: application/xml
 
     XAdES-ASiC_E-SKXDC-Base64-TXT:
@@ -714,7 +711,6 @@ components:
         parameters:
           autoLoadEform: true
           level: XAdES_BASELINE_B
-          container: ASiC_E
         payloadMimeType: "application/vnd.etsi.asic-e+zip; base64"
 
     Signed-XAdES-ASiC_E-SKXDC-Auto-WrongXSLT:
@@ -724,7 +720,6 @@ components:
         parameters:
           autoLoadEform: true
           level: XAdES_BASELINE_B
-          container: ASiC_E
         payloadMimeType: "application/vnd.etsi.asic-e+zip; base64"
 
     PAdES-PDF_lg:
