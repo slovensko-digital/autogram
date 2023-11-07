@@ -13,6 +13,7 @@ import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,9 +44,9 @@ public class SigningParametersTests {
         xdcXmlns = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
 
         generalAgendaXml = this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes();
-        xsdSchema = new String(this.getClass().getResourceAsStream("general_agenda.xsd").readAllBytes());
+        xsdSchema = new String(this.getClass().getResourceAsStream("general_agenda.xsd").readAllBytes(), StandardCharsets.UTF_8);
         xsltTransformation = new String(
-                this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes());
+                this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes(), StandardCharsets.UTF_8);
         identifier = "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9";
     }
 

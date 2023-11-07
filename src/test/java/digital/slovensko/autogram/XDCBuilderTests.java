@@ -50,6 +50,8 @@ class XDCBuilderTests {
         System.out.println("Transformed in base64: " + java.util.Base64.getEncoder().encodeToString(transformed.getBytes(StandardCharsets.UTF_8)));
 
         // couldn't find a way to compare XMLs without the newline at the end
-        assertEquals(expected, transformed + "\n");
+        // delete \n or \r\n from the end of the string
+        expected = expected.replaceAll("\\r\\n$|\\n$", "");
+        assertEquals(expected, transformed);
     }
 }
