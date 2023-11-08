@@ -560,7 +560,7 @@ components:
             - HTML
             - TXT
           example: HTML
-          description: Optional media destination type description of the XML transformation. If autoLoadEform is true, Autogram will try to find signing XSLT with this type. Otherwise transformation must be provided. Overrides value of the output method in provided transformation which is used by default.
+          description: Optional media destination type description of the XML transformation. If autoLoadEform is true, Autogram will try to find signing XSLT with this type. Otherwise transformation must be provided. Overrides value of the output method in provided or auto-loaded transformation which is used by default.
 
         transformationTargetEnvironment:
           type: string
