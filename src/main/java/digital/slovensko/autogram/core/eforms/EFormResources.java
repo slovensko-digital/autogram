@@ -13,6 +13,7 @@ import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
@@ -47,8 +48,9 @@ public class EFormResources {
         var identifier = eformResources.getIdentifier();
         var containerXmlns = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
         var container = ASiCContainerType.ASiC_E;
+        var packaging = SignaturePackaging.ENVELOPING;
 
-        return new EFormAttributes(identifier, transformation, schema, containerXmlns, container);
+        return new EFormAttributes(identifier, transformation, schema, containerXmlns, container, packaging);
     }
 
 
