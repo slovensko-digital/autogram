@@ -426,17 +426,21 @@ components:
       properties:
         checkPDFACompliance:
           type: boolean
+          default: false
           description: "Check for PDF/A compliance and show warning if not compliant."
 
         autoLoadEform:
           type: boolean
+          default: false
           description:
             Try to find XSD and XSLT for a given eForm and load them automatically. Useful for visualizing and signing eForms.
-            If true, schema, transformation, conatinerXmlns, container, packaging, and identifier parameters are ignored.
-            If true and resources are not found, the response is 422.
+            If true, schema, transformation, conatinerXmlns, container, packaging, identifier, transformationIdentifier, and schemaIdentifier parameters are ignored.
+            If resources are not found, the response is 422.
             If provided document is an ASiC_E container conatining XML Datacontainer or it is an XML Datacontainer itself, XSLT found is used for visualiztion of signing document. Also, XSD and XSLT hashes are compared with hashes of XSD and XSLT found in XML Data Container EForm. If they differ, the response is 422.
             If the provided document is an XML document, Autogram will try to parse xmlns from root element and find resources based on its value.
             If successful, XML Datacontainer with xmls="http://data.gov.sk/def/container/xmldatacontainer+xml/1.1" is created, the document is validated against the XSD and visualized using the XSLT. If XSD validation fails, the response is 422.
+            The XSLT transformation is found based on transformationLanguage (defaults to user preferred), transformationMediaDestinationTypeDescription (default XHTML, then HTML, then TXT), and transformationTargetEnvironment.
+            If multiple transformations meet the criteria, the first one found is used.
 
         level:
           type: string
@@ -452,27 +456,27 @@ components:
           enum:
             - ASiC_E
           example: ASiC_E
-          description: Optional container type that should be used to place the file with signature to. Is overridden by autoLoadEform.
+          description: Optional container type that should be used to place the file with signature to. Defaults to null. Is ignored with autoLoadEform true.
 
         containerXmlns:
           type: string
           enum:
             - http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
           example: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
-          description: XML namespace for the XML Datacontainer. Specifies if xmldatacontainer should be created from XML. Doesn't create xmldatacontainer if payloadMimeType application/vnd.gov.sk.xmldatacontainer+xml already. Accepts http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 only. Is overridden by autoLoadEform.
+          description: XML namespace for the XML Datacontainer. Specifies if xmldatacontainer should be created from XML. Doesn't create xmldatacontainer if payloadMimeType is application/vnd.gov.sk.xmldatacontainer+xml already. Accepts http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 only. Defaults to null. Is ignored with autoLoadEform true.
 
         identifier:
           type: string
           example: https://data.gov.sk/id/egov/eform/App.GeneralAgenda/1.9
-          description: Optional identifier of the document template. Required if containerXmlns is http://data.gov.sk/def/container/xmldatacontainer+xml/1.1. Is overridden by autoLoadEform.
+          description: Optional identifier of the document template. Required if containerXmlns is http://data.gov.sk/def/container/xmldatacontainer+xml/1.1. Defaults to null. Is ignored with autoLoadEform true.
 
         packaging:
           type: string
           enum:
             - ENVELOPED
             - ENVELOPING
-          example: ENVELOPED
-          description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Defaults to ENVELOPED. Only applies to XAdES signatures. Must be ENVELOPING when used without ASiC container and with non XML documents. Is overridden by autoLoadEform.
+          default: ENVELOPED
+          description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Only applies to XAdES signatures. Must be ENVELOPING when used without ASiC container and with non XML documents. Is ignored with autoLoadEform true.
 
         digestAlgorithm:
           type: string
@@ -480,13 +484,13 @@ components:
             - SHA256
             - SHA384
             - SHA512
-          example: SHA256
-          description: Optional algorithm used to calculate digests. Defaults to SHA256.
+          default: SHA256
+          description: Optional algorithm used to calculate digests.
 
         en319132:
           type: boolean
-          example: false
-          description: Optional flag to control whether the signature should be made according to ETSI EN 319132 for XAdES and ETSI EN 319122 for CAdES and PAdES. Defaults to false.
+          default: false
+          description: Optional flag to control whether the signature should be made according to ETSI EN 319132 for XAdES and ETSI EN 319122 for CAdES and PAdES.
 
         infoCanonicalization:
           type: string
@@ -497,7 +501,7 @@ components:
             - EXCLUSIVE_WITH_COMMENTS
             - INCLUSIVE_11
             - INCLUSIVE_11_WITH_COMMENTS
-          example: INCLUSIVE
+          default: INCLUSIVE
           description: Optional info canonicalization method.
 
         propertiesCanonicalization:
@@ -509,7 +513,7 @@ components:
             - EXCLUSIVE_WITH_COMMENTS
             - INCLUSIVE_11
             - INCLUSIVE_11_WITH_COMMENTS
-          example: INCLUSIVE
+          default: INCLUSIVE
           description: Optional properties canonicalization method.
 
         keyInfoCanonicalization:
@@ -521,47 +525,47 @@ components:
             - EXCLUSIVE_WITH_COMMENTS
             - INCLUSIVE_11
             - INCLUSIVE_11_WITH_COMMENTS
-          example: INCLUSIVE
+          default: INCLUSIVE
           description: Optional key info canonicalization method.
 
         schema:
           type: string
           example: '<?xml version="1.0"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"><xs:element name="Document"><xs:complexType><xs:sequence><xs:element name="Title" type="xs:string" /></xs:sequence></xs:complexType></xs:element></xs:schema>'
-          description: Optional XML schema used to validate the signing document and to compute digest used in "UsedXSDReference" in "DigestValue" attribute inside created XML Datacontainer. Format (plaintext or base64) is dictated by `payloadMimeType`. Is overridden by autoLoadEform.
+          description: Optional XML schema used to validate the signing document and to compute digest used in "UsedXSDReference" in "DigestValue" attribute inside created XML Datacontainer. Format (plaintext or base64) is dictated by `payloadMimeType`. Is ignored with autoLoadEform true.
 
         schemaIdentifier:
           type: string
           example: http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd
-          description: Optional identifier of the XML schema. The value is used in "UsedXSDReference" field inside created XML Datacontainer. Schema must be provided with this parameter. Is overridden by autoLoadEform. Default value is "http://schemas.gov.sk/form/<form-idnetifier>/<version>/form.xsd".
+          description: Optional identifier of the XML schema. The value is used in "UsedXSDReference" field inside created XML Datacontainer. If provided with autoLoadEform true, Autogram will try to find such schema. Default value is "http://schemas.gov.sk/form/<form-idnetifier>/<version>/form.xsd".
 
         transformation:
           type: string
           example: '<?xml version="1.0"?><xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"><xsl:template match = "/"><h1><xsl:value-of select="/Document/Title"/></h1></xsl:template></xsl:stylesheet>'
-          description: Optional XML transformation used to present the signing document to user and to compute digest used in "UsedPresentationSchemaReference" in "DigestValue" attribute inside created XML Datacontainer. Format (plaintext or base64) is dictated by `payloadMimeType`. Is overridden by autoLoadEform.
+          description: Optional XML transformation used to present the signing document to user and to compute digest used in "UsedPresentationSchemaReference" in "DigestValue" attribute inside created XML Datacontainer. Format (plaintext or base64) is dictated by `payloadMimeType`. Is ignored with autoLoadEform true.
 
         transformationIdentifier:
           type: string
           example: http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt
-          description: Optional identifier of the XML transformation. The value is used in "UsedPresentationSchemaReference" field inside created XML Datacontainer. Transformation must be provided with this parameter. Is overridden by autoLoadEform. Default value is "http://schemas.gov.sk/form/<form-idnetifier>/<version>/form.xslt".
+          description: Optional identifier of the XML transformation. If provided with autoLoadEform true, Autogram will try to find such transformation. Default value is "http://schemas.gov.sk/form/<form-idnetifier>/<version>/form.xslt".
 
         transformationLanguage:
           type: string
           example: sk
-          description: Optional language of the XML transformation. The value is used in "UsedPresentationSchemaReference" in "Language" attribute inside created XML Datacontainer. Transformation must be provided with this parameter. Is overridden by autoLoadEform. Default value is "sk".
+          description: Optional language of the XML transformation. If autoLoadEform is true, Autogram will try to find signing XSLT with this language. Otherwise transformation must be provided. Default value is user preferred or "sk".
 
         transformationMediaDestinationTypeDescription:
           type: string
           enum:
-            - TXT
-            - HTML
             - XHTML
-          example: TXT
-          description: Optional media destination type description of the XML transformation. The value is used in "UsedPresentationSchemaReference" in "MediaDestinationTypeDescription" attribute inside created XML Datacontainer. Transformation must be provided with this parameter. Overrides value of output method in XSLT which is used by default. Is overridden by autoLoadEform.
+            - HTML
+            - TXT
+          example: HTML
+          description: Optional media destination type description of the XML transformation. If autoLoadEform is true, Autogram will try to find signing XSLT with this type. Otherwise transformation must be provided. Overrides value of the output method in provided transformation which is used by default.
 
         transformationTargetEnvironment:
           type: string
           example: example-value
-          description: Optional target environment of the XML transformation. The value is used in "UsedPresentationSchemaReference" in "TargetEnvironment" attribute inside created XML Datacontainer. Transformation must be provided with this parameter. Is removed by autoLoadEform. Null and not used by default.
+          description: Optional target environment of the XML transformation. If autoLoadEform is true, Autogram will try to find signing XSLT with this target. Otherwise transformation must be provided. Null and not used by default.
 
         visualizationWidth:
           type: string
@@ -571,8 +575,8 @@ components:
             - lg
             - xl
             - xxl
-          example: md
-          description: "Optional width of the signing document visualization. Defaults to sm. Values are sm (640px), md (768px), lg (1024px), xl (1280px), xxl (1536px). The minimum visualization width is set to 640px. If the preferred visualization width is exceeds width of client's screen, the visualization width is set to the width of the client's screen."
+          default: sm
+          description: "Optional width of the signing document visualization. Values are sm (640px), md (768px), lg (1024px), xl (1280px), xxl (1536px). The minimum visualization width is set to 640px. If the preferred visualization width is exceeds width of client's screen, the visualization width is set to the width of the client's screen."
 
       required:
         - level
