@@ -20,11 +20,14 @@ public class UserSettings {
     private boolean serverEnabled;
     private boolean expiredCertsEnabled;
     private List<String> trustedList;
+    private String customKeystorePath;
+    private boolean customKeystorePasswordPrompt;
 
     private UserSettings(SignatureLevel signatureLevel, String driver, boolean en319132,
             boolean signIndividually, boolean correctDocumentDisplay,
             boolean signaturesValidity, boolean pdfaCompliance,
-            boolean serverEnabled, boolean expiredCertsEnabled, List<String> trustedList) {
+            boolean serverEnabled, boolean expiredCertsEnabled, List<String> trustedList,
+            String customKeystorePath, boolean customKeystorePassword) {
         this.signatureLevel = signatureLevel;
         this.driver = driver;
         this.en319132 = en319132;
@@ -35,6 +38,8 @@ public class UserSettings {
         this.serverEnabled = serverEnabled;
         this.expiredCertsEnabled = expiredCertsEnabled;
         this.trustedList = trustedList;
+        this.customKeystorePath = customKeystorePath;
+        this.customKeystorePasswordPrompt = customKeystorePassword;
     }
 
     public static UserSettings load() {
@@ -50,6 +55,8 @@ public class UserSettings {
         var serverEnabled = prefs.getBoolean("SERVER_ENABLED", true);
         var expiredCertsEnabled = prefs.getBoolean("EXPIRED_CERTS_ENABLED", false);
         var trustedList = prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU");
+        var customKeystorePath = prefs.get("CUSTOM_KEYSTORE_PATH", "");
+        var customKeystorePasswordPrompt = prefs.getBoolean("CUSTOM_KEYSTORE_PASSWORD_PROMPT", false);
 
         var signatureLevelStringConverter = new SignatureLevelStringConverter();
         var signatureLevel = Arrays
@@ -69,7 +76,9 @@ public class UserSettings {
                 pdfaCompliance,
                 serverEnabled,
                 expiredCertsEnabled,
-                trustedList == null ? new ArrayList<>() : new ArrayList<>(List.of(trustedList.split(","))));
+                trustedList == null ? new ArrayList<>() : new ArrayList<>(List.of(trustedList.split(","))),
+                customKeystorePath,
+                customKeystorePasswordPrompt);
     }
 
     public SignatureLevel getSignatureLevel() {
@@ -171,6 +180,24 @@ public class UserSettings {
         save();
     }
 
+    public String getCustomKeystorePath() {
+        return customKeystorePath;
+    }
+
+    public void setCustomKeystorePath(String value) {
+        customKeystorePath = value;
+        save();
+    }
+
+    public boolean getCustomKeystorePasswordPrompt() {
+        return customKeystorePasswordPrompt;
+    }
+
+    public void setCustomKeystorePasswordPrompt(boolean value) {
+        customKeystorePasswordPrompt = value;
+        save();
+    }
+
     private void save() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
@@ -184,5 +211,6 @@ public class UserSettings {
         prefs.putBoolean("SERVER_ENABLED", serverEnabled);
         prefs.putBoolean("EXPIRED_CERTS_ENABLED", expiredCertsEnabled);
         prefs.put("TRUSTED_LIST", trustedList.stream().collect(Collectors.joining(",")));
+        prefs.put("CUSTOM_KEYSTORE_PATH", customKeystorePath);
     }
 }

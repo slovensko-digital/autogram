@@ -236,6 +236,41 @@
                                             styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
+                                                Absolútna cesta k podpisovému keystore
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Absolútna cesta ku keystore súboru na disku, ktorý sa má použiť na podpisovanie.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-textfield-container">
+                                        <TextField fx:id="customKeystorePathTextField" styleClass="autogram-input" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
+                                                Vyžadovať heslo k podpisovému keystore
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Ak má keystore nastavené neprázdne heslo, zapnite toto nastavenie.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="customKeystoreRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
+                                    </VBox>
+                                </HBox>
                             </VBox>
                         </ScrollPane>
                     </content>

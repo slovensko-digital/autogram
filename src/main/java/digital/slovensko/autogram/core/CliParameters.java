@@ -95,7 +95,7 @@ public class CliParameters {
         if (driverName == null)
             return null;
 
-        Optional<TokenDriver> tokenDriver = new DefaultDriverDetector()
+        Optional<TokenDriver> tokenDriver = new DefaultDriverDetector("", false)
                 .getAvailableDrivers()
                 .stream()
                 .filter(d -> d.getShortname().equals(driverName))
