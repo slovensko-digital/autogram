@@ -27,7 +27,7 @@ public class CliParameters {
             SlotIdIsNotANumberException, PDFSignatureLevelIsNotValidException {
         source = getValidSource(cmd.getOptionValue("s"));
         target = cmd.getOptionValue("t");
-        driver = getValidTokenDriver(cmd.getOptionValue("d"));
+        driver = getValidTokenDriver(cmd.getOptionValue("d"), cmd.getOptionValue("keystore", ""));
         slotId = getValidSlotId(cmd.getOptionValue("slot-id"));
         force = cmd.hasOption("f");
         checkPDFACompliance = cmd.hasOption("pdfa");
@@ -91,11 +91,11 @@ public class CliParameters {
         return sourcePath == null ? null : new File(sourcePath);
     }
 
-    private static TokenDriver getValidTokenDriver(String driverName) throws TokenDriverDoesNotExistException {
+    private static TokenDriver getValidTokenDriver(String driverName, String customKeystorePath) throws TokenDriverDoesNotExistException {
         if (driverName == null)
             return null;
 
-        Optional<TokenDriver> tokenDriver = new DefaultDriverDetector("", false)
+        Optional<TokenDriver> tokenDriver = new DefaultDriverDetector(customKeystorePath, true)
                 .getAvailableDrivers()
                 .stream()
                 .filter(d -> d.getShortname().equals(driverName))

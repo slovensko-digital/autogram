@@ -22,7 +22,7 @@ public class CliApp {
 
         try {
             var params = new CliParameters(cmd);
-            var autogram = new Autogram(ui, false, params.getDriver() == null ?
+            var autogram = new Autogram(ui, false, params.getDriver() != null ?
                         () -> Collections.singletonList(params.getDriver())
                         : new DefaultDriverDetector("", false),
                     params.getSlotId());
