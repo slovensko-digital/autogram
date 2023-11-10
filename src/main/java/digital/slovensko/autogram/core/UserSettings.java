@@ -212,5 +212,6 @@ public class UserSettings {
         prefs.putBoolean("EXPIRED_CERTS_ENABLED", expiredCertsEnabled);
         prefs.put("TRUSTED_LIST", trustedList.stream().collect(Collectors.joining(",")));
         prefs.put("CUSTOM_KEYSTORE_PATH", customKeystorePath);
+        prefs.putBoolean("CUSTOM_KEYSTORE_PASSWORD_PROMPT", customKeystorePasswordPrompt);
     }
 }
