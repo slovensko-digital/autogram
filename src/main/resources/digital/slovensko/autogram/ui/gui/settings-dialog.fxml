@@ -163,12 +163,12 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Povoliť podpisovanie ekspriovanými certifikátmi
+                                                Povoliť podpisovanie exspirovanými certifikátmi
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Povoliť podpisovanie ekspirovanými certifikátmi a zobrazovať ich vo výbere certifikátov.
+                                                Povoliť podpisovanie exspirovanými certifikátmi a zobrazovať ich vo výbere certifikátov.
                                             </Text>
                                         </TextFlow>
                                     </VBox>
