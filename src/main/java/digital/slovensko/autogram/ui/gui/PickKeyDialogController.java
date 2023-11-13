@@ -45,7 +45,7 @@ public class PickKeyDialogController {
         for (var key : keys) {
             Node badge = new HBox();
             if (!key.getCertificate().isValidOn(new java.util.Date())) {
-                badge = SignatureBadgeFactory.createInfoBadge("Ekspirovaný certifikát");
+                badge = SignatureBadgeFactory.createInfoBadge("Exspirovaný certifikát");
 
                 if (!expiredCertsEnabled)
                     continue;
