@@ -150,7 +150,7 @@ public class GUI implements UI {
     @Override
     public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
         if (!driver.needsPassword()) {
-            callback.accept(null);
+            callback.accept("".toCharArray());
             return;
         }
 

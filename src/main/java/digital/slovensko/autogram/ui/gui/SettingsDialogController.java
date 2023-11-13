@@ -39,6 +39,10 @@ public class SettingsDialogController {
     @FXML
     private HBox localServerEnabledRadios;
     @FXML
+    private TextField customKeystorePathTextField;
+    @FXML
+    private HBox customKeystoreRadios;
+    @FXML
     private Button saveButton;
     @FXML
     private Button closeButton;
@@ -59,6 +63,7 @@ public class SettingsDialogController {
         initializeExpiredCertsEnabledCheckBox();
         initializeLocalServerEnabledCheckBox();
         initializeTrustedCountriesList();
+        initializeCustomKeystoreSettings();
     }
 
     private void initializeSignatureLevelChoiceBox() {
@@ -75,9 +80,10 @@ public class SettingsDialogController {
     }
 
     private void initializeDriverChoiceBox() {
-        driverChoiceBox.setConverter(new TokenDriverStringConverter());
+        var driverDetector = new DefaultDriverDetector(userSettings.getCustomKeystorePath(), userSettings.getCustomKeystorePasswordPrompt());
+        driverChoiceBox.setConverter(new TokenDriverStringConverter(driverDetector));
         driverChoiceBox.getItems().add(new FakeTokenDriver("Žiadne", null, false, "none"));
-        driverChoiceBox.getItems().addAll(new DefaultDriverDetector().getAvailableDrivers());
+        driverChoiceBox.getItems().addAll(driverDetector.getAvailableDrivers());
         var defaultDriver = driverChoiceBox.getItems().stream()
                 .filter(d -> d != null && d.getName().equals(userSettings.getDriver())).findFirst();
         driverChoiceBox.setValue(defaultDriver.orElse(null));
@@ -193,6 +199,16 @@ public class SettingsDialogController {
         });
 
         return new HBox(countryBox, new VBox(checkBox));
+    }
+
+    private void initializeCustomKeystoreSettings() {
+        initializeBooleanRadios(customKeystoreRadios, t -> userSettings.setCustomKeystorePasswordPrompt(t),
+                userSettings.getCustomKeystorePasswordPrompt());
+
+        customKeystorePathTextField.setText(userSettings.getCustomKeystorePath());
+        customKeystorePathTextField.setOnKeyTyped((e) -> {
+            userSettings.setCustomKeystorePath(customKeystorePathTextField.getText());
+        });
     }
 
     public void onCancelButtonAction() {

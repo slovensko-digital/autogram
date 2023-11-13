@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.LaunchParameters;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.server.AutogramServer;
@@ -21,7 +22,8 @@ public class GUIApp extends Application {
     public void start(Stage windowStage) throws Exception {
         var userSettings = UserSettings.load();
         var ui = new GUI(getHostServices(), userSettings);
-        var autogram = new Autogram(ui, userSettings.isCorrectDocumentDisplay());
+        var autogram = new Autogram(ui, userSettings.isCorrectDocumentDisplay(), new DefaultDriverDetector(
+                userSettings.getCustomKeystorePath(), userSettings.getCustomKeystorePasswordPrompt()));
 
         Platform.setImplicitExit(false);
         autogram.checkForUpdate();
