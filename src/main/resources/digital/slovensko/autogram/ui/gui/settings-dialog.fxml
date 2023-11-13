@@ -240,12 +240,12 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Absolútna cesta k podpisovému keystore
+                                                Cesta k vlastnému úložisku kľúčov
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Absolútna cesta ku keystore súboru na disku, ktorý sa má použiť na podpisovanie.
+                                                Cesta k Java Keystore súboru (JKS) na disku obsahujúcemu kľúče použiteľné na podpisovanie.
                                             </Text>
                                         </TextFlow>
                                     </VBox>
@@ -257,7 +257,7 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Vyžadovať heslo k podpisovému keystore
+                                                Vyžadovať heslo k vlastnému úložisku kľúčov
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
