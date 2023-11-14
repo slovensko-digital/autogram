@@ -28,16 +28,8 @@ public class Autogram {
     private final boolean shouldDisplayVisualizationError;
     private final Integer slotId;
 
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError) {
-        this(ui, shouldDisplayVisualizationError, new DefaultDriverDetector(), -1);
-    }
-
     public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector) {
         this(ui, shouldDisplayVisualizationError, driverDetector, -1);
-    }
-
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError , Integer slotId) {
-        this(ui, shouldDisplayVisualizationError, new DefaultDriverDetector(), slotId);
     }
 
     public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, Integer slotId) {

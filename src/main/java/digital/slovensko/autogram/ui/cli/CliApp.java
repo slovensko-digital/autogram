@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.CliParameters;
+import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.SourceNotDefindedException;
 import digital.slovensko.autogram.core.TargetPath;
@@ -21,8 +22,10 @@ public class CliApp {
 
         try {
             var params = new CliParameters(cmd);
-            var autogram = params.getDriver() == null ? new Autogram(ui, false, params.getSlotId())
-                    : new Autogram(ui, false, () -> Collections.singletonList(params.getDriver()), params.getSlotId());
+            var autogram = new Autogram(ui, false, params.getDriver() != null ?
+                        () -> Collections.singletonList(params.getDriver())
+                        : new DefaultDriverDetector("", false),
+                    params.getSlotId());
 
             if (params.getSource() == null)
                 throw new SourceNotDefindedException();

@@ -678,6 +678,15 @@ TextFlow.autogram-body-s {
   -fx-alignment: center-left;
 }
 
+.autogram-textfield-container {
+  -fx-alignment: center-left;
+}
+
+.autogram-textfield-container > TextField {
+  -fx-pref-width: 19.5em;
+}
+
+
 .autogram-dropdown {
   -fx-cursor: hand;
   -fx-alignment: center-left;
