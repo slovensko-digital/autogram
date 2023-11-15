@@ -33,6 +33,7 @@ import digital.slovensko.autogram.server.dto.ErrorResponseBody;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters.VisualizationWidthEnum;
+import digital.slovensko.autogram.server.dto.ServerSigningParameters.TransformationOutputMimeType;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -206,6 +207,11 @@ public class SignHttpSmokeTest {
         var checkPDFACompliance = (boolean) map.getOrDefault("checkPDFACompliance", false);
         var visualizationWidth = fromMapToEnum(VisualizationWidthEnum.class, map.get("visualizationWidth"));
         var autoLoadEform = (boolean) map.getOrDefault("autoLoadEform", false);
+        var schemaIdentifier = (String) map.get("schemaIdentifier");
+        var transformationIdentifier = (String) map.get("transformationIdentifier");
+        var transformationLanguage = (String) map.get("transformationLanguage");
+        var transformationMediaDestinationTypeDescription = fromMapToEnum(TransformationOutputMimeType.class, map.get("transformationMediaDestinationTypeDescription"));
+        var transformationTargetEnvironment = (String) map.get("transformationTargetEnvironment");
 
         return new ServerSigningParameters(
                 level,
@@ -223,7 +229,12 @@ public class SignHttpSmokeTest {
                 identifier,
                 checkPDFACompliance,
                 visualizationWidth,
-                autoLoadEform);
+                autoLoadEform,
+                schemaIdentifier,
+                transformationIdentifier,
+                transformationLanguage,
+                transformationMediaDestinationTypeDescription,
+                transformationTargetEnvironment);
     }
 
     private static <T extends Enum<T>> T fromMapToEnum(Class<T> clazz, Object obj) {

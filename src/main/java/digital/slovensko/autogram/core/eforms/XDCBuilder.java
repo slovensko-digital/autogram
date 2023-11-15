@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.util.XMLUtils;
 
@@ -30,10 +31,13 @@ public abstract class XDCBuilder {
 
         var identifierVersion = identifier.substring(lastSlashIndex + 1);
         try {
-            var transformedDocument = transformDocument(parsedDocument, params.getContainerXmlns(), identifier,
-                    identifierVersion,
-                    params.getSchema(), params.getTransformation(), params.getPropertiesCanonicalization(),
-                    params.getDigestAlgorithm(), params.getTransformationOutputMimeTypeString());
+            var usedSchemasReferenced = createUsedSchemasReferenced(parsedDocument, params.getSchema(),
+                    params.getTransformation(), params.getPropertiesCanonicalization(), params.getDigestAlgorithm(),
+                    params.getXsdIdentifier(), params.getXsltParams());
+
+            var transformedDocument = transformDocument(
+                    parsedDocument, params.getContainerXmlns(), identifier, identifierVersion, usedSchemasReferenced);
+
             var content = getDocumentContent(transformedDocument).getBytes(ENCODING);
 
             return new InMemoryDocument(content, filename);
@@ -47,13 +51,11 @@ public abstract class XDCBuilder {
     }
 
     private static Document transformDocument(Document document, String containerXmlns, String identifierUri,
-            String identifierVersion, String xsdSchema, String xsltSchema, String canonicalizationMethod,
-            DigestAlgorithm digestAlgorithm, String mediaDestinationTypeDescription) {
+            String identifierVersion, Element usedSchemasReferenced) {
         var root = document.getDocumentElement();
         var xmlDataContainer = createXMLDataContainer(document, containerXmlns);
         var xmlData = createXMLData(document, identifierUri, identifierVersion);
-        var usedSchemasReferenced = createUsedSchemasReferenced(document, xsdSchema, xsltSchema, canonicalizationMethod,
-                digestAlgorithm, mediaDestinationTypeDescription);
+
 
         xmlDataContainer.appendChild(xmlData);
         xmlData.appendChild(root);
@@ -90,71 +92,47 @@ public abstract class XDCBuilder {
         return element;
     }
 
-    private static boolean isNullOrBlank(String value) {
-        return value == null || value.isBlank();
-    }
-
     private static Element createUsedSchemasReferenced(Document document, String xsdSchema, String xsltSchema,
-            String cannonicalizationMethod, DigestAlgorithm digestAlgorithm, String mediaDestinationTypeDescription) {
+            String cannonicalizationMethod, DigestAlgorithm digestAlgorithm, String xsdIdentifier, XsltParams xsltParams) {
         var element = document.createElement("xdc:UsedSchemasReferenced");
-        var documentXmlns = "";
-        if ((!isNullOrBlank(xsdSchema)) || (!isNullOrBlank(xsltSchema))) {
-            var documentXmlnsNode = document.getFirstChild().getAttributes().getNamedItem("xmlns");
-            if (documentXmlnsNode != null)
-                documentXmlns = documentXmlnsNode.getNodeValue();
-        }
 
         if (xsdSchema != null)
             element.appendChild(createUsedXSDReference(document, cannonicalizationMethod, digestAlgorithm, xsdSchema,
-                    documentXmlns));
+                    xsdIdentifier));
 
         if (xsltSchema != null)
             element.appendChild(createUsedPresentationSchemaReference(document, cannonicalizationMethod,
-                    digestAlgorithm, xsltSchema, mediaDestinationTypeDescription, documentXmlns));
+                    digestAlgorithm, xsltSchema, xsltParams));
 
         return element;
     }
 
-    // TODO: These should be configurable
-    private static String buildXSDReference(String documentXmlns) {
-        return toURIString(documentXmlns, "form.xsd");
-    }
-
-    private static String buildXSLTReference(String documentXmlns) {
-        return toURIString(documentXmlns, "form.xslt");
-    }
-
-    private static String toURIString(String xmlns, String suffix) {
-        String base = xmlns.replaceAll("/+$", "");
-        String attached = suffix.replaceAll("^/+", "");
-
-        return base + "/" + attached;
-    }
-
     private static Element createUsedXSDReference(Document document, String canonicalizationMethod,
-            DigestAlgorithm digestAlgorithm, String xsdSchema, String documentXmlns) {
+            DigestAlgorithm digestAlgorithm, String xsdSchema, String xsdIdentifier) {
         var element = document.createElement("xdc:UsedXSDReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue",
                 computeDigest(xsdSchema.getBytes(ENCODING), canonicalizationMethod, digestAlgorithm, ENCODING));
-        element.setTextContent(buildXSDReference(documentXmlns));
+        element.setTextContent(xsdIdentifier);
 
         return element;
     }
 
     private static Element createUsedPresentationSchemaReference(Document document, String canonicalizationMethod,
-            DigestAlgorithm digestAlgorithm, String xsltSchema, String mediaDestinationTypeDescription,
-            String documentXmlns) {
+            DigestAlgorithm digestAlgorithm, String xsltSchema, XsltParams xsltParams) {
         var element = document.createElement("xdc:UsedPresentationSchemaReference");
         element.setAttribute("TransformAlgorithm", canonicalizationMethod);
         element.setAttribute("DigestMethod", toNamespacedString(digestAlgorithm));
         element.setAttribute("DigestValue",
                 computeDigest(xsltSchema.getBytes(ENCODING), canonicalizationMethod, digestAlgorithm, ENCODING));
-        element.setAttribute("ContentType", "application/xslt+xml");
-        element.setAttribute("MediaDestinationTypeDescription", mediaDestinationTypeDescription);
-        element.setAttribute("Language", "sk");
-        element.setTextContent(buildXSLTReference(documentXmlns));
+        element.setAttribute("ContentType", xsltParams.mediaType());
+        element.setAttribute("MediaDestinationTypeDescription", xsltParams.destinationType());
+        element.setAttribute("Language", xsltParams.language());
+        if (xsltParams.target() != null)
+            element.setAttribute("TargetEnvironment", xsltParams.target());
+
+        element.setTextContent(xsltParams.identifier());
 
         return element;
     }

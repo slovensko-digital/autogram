@@ -434,7 +434,7 @@ components:
           default: false
           description:
             Try to find XSD and XSLT for a given eForm and load them automatically. Useful for visualizing and signing eForms.
-            If true, schema, transformation, conatinerXmlns, container, packaging, identifier, transformationIdentifier, and schemaIdentifier parameters are ignored.
+            If true, schema, transformation, conatinerXmlns, container, packaging, and identifier parameters are ignored.
             If resources are not found, the response is 422.
             If provided document is an ASiC_E container conatining XML Datacontainer or it is an XML Datacontainer itself, XSLT found is used for visualiztion of signing document. Also, XSD and XSLT hashes are compared with hashes of XSD and XSLT found in XML Data Container EForm. If they differ, the response is 422.
             If the provided document is an XML document, Autogram will try to parse xmlns from root element and find resources based on its value.
