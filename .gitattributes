@@ -4,5 +4,5 @@
 mvnw                                		text eol=lf
 
 # skip test resources for language detection
-src/test/resources/* linguist-vendored
+src/test/resources/** linguist-vendored
 
