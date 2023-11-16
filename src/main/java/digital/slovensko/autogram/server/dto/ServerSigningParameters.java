@@ -1,5 +1,10 @@
 package digital.slovensko.autogram.server.dto;
 
+import static digital.slovensko.autogram.core.AutogramMimeType.isAsice;
+import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
+import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -9,12 +14,14 @@ import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
-import eu.europa.esig.dss.enumerations.*;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.MimeType;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
-
-import java.nio.charset.StandardCharsets;
-
-import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
@@ -24,6 +31,12 @@ public class ServerSigningParameters {
         EXCLUSIVE_WITH_COMMENTS,
         INCLUSIVE_11,
         INCLUSIVE_11_WITH_COMMENTS
+    }
+
+    public enum TransformationOutputMimeType {
+        TXT,
+        HTML,
+        XHTML
     }
 
     public enum VisualizationWidthEnum {
@@ -49,6 +62,11 @@ public class ServerSigningParameters {
     private final boolean checkPDFACompliance;
     private final VisualizationWidthEnum visualizationWidth;
     private final boolean autoLoadEform;
+    private final String schemaIdentifier;
+    private final String transformationIdentifier;
+    private final String transformationLanguage;
+    private final TransformationOutputMimeType transformationMediaDestinationTypeDescription;
+    private final String transformationTargetEnvironment;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -56,7 +74,10 @@ public class ServerSigningParameters {
             Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
             LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
             String schema, String transformation,
-            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth, boolean autoLoadEform) {
+            String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth,
+            boolean autoLoadEform, String schemaIdentifier, String transformationIdentifier,
+            String transformationLanguage, TransformationOutputMimeType transformationMediaDestinationTypeDescription,
+            String transformationTargetEnvironment) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -72,6 +93,11 @@ public class ServerSigningParameters {
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
         this.autoLoadEform = autoLoadEform;
+        this.schemaIdentifier = schemaIdentifier;
+        this.transformationIdentifier = transformationIdentifier;
+        this.transformationLanguage = transformationLanguage;
+        this.transformationMediaDestinationTypeDescription = transformationMediaDestinationTypeDescription;
+        this.transformationTargetEnvironment = transformationTargetEnvironment;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document) {
@@ -87,7 +113,10 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform, document);
+                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform,
+                schemaIdentifier, transformationIdentifier, transformationLanguage,
+                getTransformationMediaDestinationTypeDescription(), transformationTargetEnvironment,
+                document);
     }
 
     private String getTransformation(boolean isBase64) throws MalformedBodyException {
@@ -116,6 +145,17 @@ public class ServerSigningParameters {
         } catch (IllegalArgumentException e) {
             throw new MalformedBodyException("XML validation failed", "Invalid XSD");
         }
+    }
+
+    private String getTransformationMediaDestinationTypeDescription() {
+        if (transformationMediaDestinationTypeDescription == null)
+            return null;
+
+        return switch (transformationMediaDestinationTypeDescription) {
+            case TXT -> "TXT";
+            case HTML -> "HTML";
+            case XHTML -> "XHTML";
+        };
     }
 
     private static String getCanonicalizationMethodString(LocalCanonicalizationMethod method) {

@@ -50,7 +50,7 @@ public class DocumentVisualizationBuilder {
         }
 
         var transformation = parameters.getTransformation();
-        var transformationOutputMimeType = parameters.getTransformationOutputMimeTypeString();
+        var transformationOutputMimeType = parameters.getXsltDestinationType();
 
         if (isDocumentSupportingTransformation(documentToDisplay) && isTranformationAvailable(transformation)) {
             if (transformationOutputMimeType.equals("HTML"))

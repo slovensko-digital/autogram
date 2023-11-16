@@ -45,7 +45,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -75,7 +80,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -105,7 +115,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -135,7 +150,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -166,7 +186,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -197,7 +222,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -228,7 +258,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -259,7 +294,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -290,7 +330,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -320,7 +365,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -350,7 +400,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -381,7 +436,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml";
 
@@ -412,7 +472,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml; base64";
 
@@ -443,7 +508,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -474,7 +544,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml; base64";
 
@@ -505,7 +580,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -536,7 +616,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml; base64";
 
@@ -567,7 +652,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -599,7 +689,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml; base64";
 
@@ -630,7 +725,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -661,7 +761,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml; base64";
 
@@ -692,7 +797,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -723,7 +833,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml; base64";
 
@@ -754,7 +869,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -784,7 +904,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml; base64";
 
@@ -814,7 +939,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -845,7 +975,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml; base64";
 
@@ -876,7 +1011,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -907,7 +1047,12 @@ class SignRequestBodyTest {
                 defaultIdentifier,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.gov.sk.xmldatacontainer+xml; base64";
 
@@ -937,7 +1082,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/xml";
 
@@ -968,7 +1118,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/xml";
 
@@ -999,7 +1154,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/xml";
 
@@ -1029,7 +1189,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/xml;base64";
 
@@ -1059,7 +1224,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -1090,7 +1260,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/xml;base64";
 
@@ -1121,7 +1296,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/xml;base64";
 
@@ -1152,7 +1332,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 
@@ -1182,7 +1367,12 @@ class SignRequestBodyTest {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var payloadMimeType = "application/vnd.etsi.asic-e+zip; base64";
 

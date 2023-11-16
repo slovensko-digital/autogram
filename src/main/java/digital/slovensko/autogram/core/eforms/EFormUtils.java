@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.core.eforms;
 
+import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -15,16 +17,18 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.errors.XMLValidationException;
+import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -34,12 +38,9 @@ import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.xades.DSSXMLUtils;
 
-import org.w3c.dom.DOMException;
-
-import static digital.slovensko.autogram.core.AutogramMimeType.*;
-
 public abstract class EFormUtils {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
+    private static final String XDC_XMLNS = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
 
     public static String extractTransformationOutputMimeTypeString(String transformation)
             throws TransformationParsingErrorException {
@@ -61,17 +62,23 @@ public abstract class EFormUtils {
 
             method = methodAttribute.getNodeValue();
 
+            if (method.equals("html"))
+                return "HTML";
+
+            if (method.equals("text"))
+                return "TXT";
+
+            if (method.equals("xml")) {
+                var doctypeSystemAttribute = outputElements.item(0).getAttributes().getNamedItem("doctype-system");
+                if (doctypeSystemAttribute != null && doctypeSystemAttribute.getNodeValue().equals("http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"))
+                    return "XHTML";
+            }
+
+            throw new TransformationParsingErrorException("Failed to parse transformation. Unsupported output method: " + method);
+
         } catch (SAXException | IOException | ParserConfigurationException e) {
             throw new TransformationParsingErrorException("Failed to parse transformation output method");
         }
-
-        if (method.equals("html"))
-            return "HTML";
-
-        if (method.equals("text"))
-            return "TXT";
-
-        throw new TransformationParsingErrorException("Failed to parse transformation. Unsupported output method: " + method);
     }
 
     public static String computeDigest(byte[] data, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, Charset encoding) throws XMLValidationException {
@@ -87,8 +94,7 @@ public abstract class EFormUtils {
     }
 
     public static String getDigestValueFromElement(Element xdc, String elementLocalName) throws XMLValidationException {
-        var element = xdc.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", elementLocalName)
-                .item(0);
+        var element = xdc.getElementsByTagNameNS(XDC_XMLNS, elementLocalName).item(0);
         if (element == null)
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element " + elementLocalName + " nebol nájdený");
 
@@ -103,9 +109,43 @@ public abstract class EFormUtils {
         return digestValue.getNodeValue();
     }
 
+    public static String getValueFromElement(Element xdc, String elementLocalName) {
+        var element = xdc.getElementsByTagNameNS(XDC_XMLNS, elementLocalName).item(0);
+        if (element == null)
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element " + elementLocalName + " nebol nájdený");
+
+        return element.getTextContent();
+    }
+
+    public static XsltParams getXsltParamsFromXsltReference(Element xdc) {
+        var element = xdc.getElementsByTagNameNS(XDC_XMLNS, "UsedPresentationSchemaReference").item(0);
+        if (element == null)
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element UsedPresentationSchemaReference nebol nájdený");
+
+        var identifier = element.getTextContent();
+
+        var attributes = element.getAttributes();
+        if (attributes == null || attributes.getLength() == 0)
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Atribúty v UsedPresentationSchemaReference neboli nájdené");
+
+        var languageNode = attributes.getNamedItem("Language");
+        var language = languageNode == null ? null : languageNode.getNodeValue();
+
+        var mediaDestiantionTypeNode = attributes.getNamedItem("MediaDestinationTypeDescription");
+        var mediaDestiantionType = mediaDestiantionTypeNode == null ? null : mediaDestiantionTypeNode.getNodeValue();
+
+        var targetNode = attributes.getNamedItem("TargetEnvironment");
+        var target = targetNode == null ? null : targetNode.getNodeValue();
+
+        var mediaTypeNode = attributes.getNamedItem("MediaType");
+        var mediaType = mediaTypeNode == null ? null : mediaTypeNode.getNodeValue();
+
+        return new XsltParams(identifier, language, mediaDestiantionType, target, mediaType);
+    }
+
     public static String getFormUri(Element xdc) {
         var xmlData = xdc.getElementsByTagNameNS(
-                "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData").item(0);
+                XDC_XMLNS, "XMLData").item(0);
 
         if (xmlData == null)
             return null;
@@ -159,7 +199,7 @@ public abstract class EFormUtils {
 
     public static Document getEformXmlFromXdcDocument(DSSDocument document) throws XMLValidationException {
         var xmlDocument = getXmlFromDocument(document);
-        var xmlData = xmlDocument.getElementsByTagNameNS("http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", "XMLData").item(0);
+        var xmlData = xmlDocument.getElementsByTagNameNS(XDC_XMLNS, "XMLData").item(0);
 
         if (xmlData == null)
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData sa nepodarilo nájsť v XML Dataconatineri");
@@ -220,5 +260,38 @@ public abstract class EFormUtils {
         } catch (Exception e) {
             throw new TransformationException("Zlyhala transformácia podľa XSLT", "Nepodarilo sa transformovať XML dokument podľa XSLT transformácie", e);
         }
+    }
+
+    public static XsltParams fillXsltParams(String transformation, String formIdentifier, XsltParams xsltParams) {
+        var identifier = xsltParams.identifier();
+        if (identifier == null && formIdentifier != null) {
+            var t = formIdentifier.split("/");
+            var url = t[t.length - 2] + "/" + t[t.length - 1];
+            identifier = "http://schemas.gov.sk/form/" + url + "/form.xslt";
+        }
+
+        var language = xsltParams.language();
+        if (language == null)
+            language = "sk";
+
+        var mediaType = xsltParams.mediaType();
+        if (mediaType == null)
+            mediaType = "application/xslt+xml";
+
+        var destinationType = xsltParams.destinationType();
+        if (destinationType == null)
+            destinationType = extractTransformationOutputMimeTypeString(transformation);
+
+        return new XsltParams(identifier, language, destinationType, xsltParams.target(), mediaType);
+    }
+
+    public static String fillXsdIdentifier(String formIdentifier) {
+        if (formIdentifier == null)
+            throw new XMLValidationException("Zlyhala príprava XML Datacontainera", "Nepodarilo sa vyrobiť identifikátor XSD schémy z identifikátora formulára");
+
+        var t = formIdentifier.split("/");
+        var url = t[t.length - 2] + "/" + t[t.length - 1];
+
+        return "http://schemas.gov.sk/form/" + url + "/form.xsd";
     }
 }

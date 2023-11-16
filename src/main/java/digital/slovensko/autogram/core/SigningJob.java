@@ -167,13 +167,13 @@ public class SigningJob {
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {
         var document = createDSSFileDocumentFromFile(file);
         var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132);
-        return new SigningJob(document, parameters, responder);
+        return build(document, parameters, responder);
     }
 
     public static SigningJob buildFromFileBatch(File file, Autogram autogram, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {
         var document = createDSSFileDocumentFromFile(file);
         var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132);
-        return new SigningJob(document, parameters, responder);
+        return build(document, parameters, responder);
     }
 
     private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {

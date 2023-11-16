@@ -41,7 +41,12 @@ public class SigningJobTests {
                 null,
                 false,
                 null,
-                false);
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
         var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(), null);
