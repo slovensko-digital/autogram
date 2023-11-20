@@ -249,6 +249,7 @@ public abstract class EFormUtils {
                 xmlSource = new DOMSource(getEformXmlFromXdcDocument(documentToDisplay));
             }
 
+            transformation = transformation.replaceAll("\r\n", "\n");
             var transformer = XMLUtils.getSecureTransformerFactory().newTransformer(new StreamSource(
                 new ByteArrayInputStream(transformation.getBytes(ENCODING))));
 
