@@ -269,7 +269,9 @@ public class EFormResources {
 
     private static EFormResources buildEFormResourcesFromEformXml(Node xml, String canonicalizationMethod,
             String formUri, String xsdDigest, String xsltDigest, String xsdIdentifier, XsltParams xsltParams) {
-        if (formUri == null || !(formUri.startsWith("http://schemas.gov.sk/form/") || formUri.startsWith("http://data.gov.sk/doc/eform/")))
+        if (formUri == null || !(formUri.startsWith("http://schemas.gov.sk/form/")
+                || formUri.startsWith("http://data.gov.sk/doc/eform/")
+                || formUri.startsWith("https://data.gov.sk/id/egov/eform/")))
             return null;
 
         var parts = formUri.split("/");

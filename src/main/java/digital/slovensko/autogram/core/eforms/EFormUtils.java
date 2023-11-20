@@ -47,6 +47,10 @@ public abstract class EFormUtils {
         if (transformation == null)
             return "TXT";
 
+        // remove BOM if present
+        if (transformation.length() > 0 && transformation.charAt(0) == '\uFEFF')
+            transformation = transformation.substring(1);
+
         var method = "";
         try {
             var document = XMLUtils.getSecureDocumentBuilder()
