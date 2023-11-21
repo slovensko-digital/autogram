@@ -13,7 +13,7 @@ public class PKCS11TokenDriver extends TokenDriver {
     }
 
     @Override
-    public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
-        return new NativePkcs11SignatureToken(getPath().toString(), new PrefilledPasswordCallback(new KeyStore.PasswordProtection(password)), -1, slotId);
+    public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotIndex, char[] password) {
+        return new NativePkcs11SignatureToken(getPath().toString(), new PrefilledPasswordCallback(new KeyStore.PasswordProtection(password)), slotIndex);
     }
 }

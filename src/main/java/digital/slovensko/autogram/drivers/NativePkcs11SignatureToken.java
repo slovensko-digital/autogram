@@ -23,8 +23,8 @@ import java.util.Objects;
 public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private static final long CKU_CONTEXT_SPECIFIC = 2L;
 
-    public NativePkcs11SignatureToken(String pkcsPath, PrefilledPasswordCallback prefilledPasswordCallback, int slotId, Integer bogus) {
-        super(pkcsPath, prefilledPasswordCallback, slotId, null);
+    public NativePkcs11SignatureToken(String pkcsPath, PrefilledPasswordCallback prefilledPasswordCallback, int slotIndex) {
+        super(pkcsPath, prefilledPasswordCallback, -1, slotIndex, null);
     }
 
     private byte[] sign(final byte[] bytes, final String javaSignatureAlgorithm, final AlgorithmParameterSpec param, final DSSPrivateKeyEntry keyEntry) throws GeneralSecurityException {
