@@ -39,17 +39,14 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         var pk = ((KSPrivateKeyEntry) keyEntry).getPrivateKey();
 
         signature.initSign(pk);
-        if (isAlwaysAuthenticate(signature, pk)) {
-            var pin = "123456".toCharArray(); // TODO actually get this somehow from password protection
-            runContextSpecificLogin(signature, pk, pin);
-        }
+        runContextSpecificLoginIfNeeded(signature, pk);
         signature.update(bytes);
         return signature.sign();
     }
 
-    private boolean isAlwaysAuthenticate(Signature signature, PrivateKey pk) {
-        // TODO cache this?
+    private void runContextSpecificLoginIfNeeded(Signature signature, PrivateKey pk) throws GeneralSecurityException {
         try {
+            // TODO cache & short-circuit
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
             var keyID = getKeyID(pk);
@@ -57,25 +54,21 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
             p11.C_GetAttributeValue(sessionId, keyID, attrs);
 
-            var result = attrs[0].pValue;
-            if (result instanceof byte[]) {
-                return ((byte[]) result)[0] == 1;
-            } else {
-                return false; // CKA_ALWAYS_AUTHENTICATE not found
+            if (isAlwaysAuthenticate(attrs)) {
+                var pin = "123456".toCharArray(); // TODO actually get this somehow from password protection
+                p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, pin);
             }
         } catch (PKCS11Exception e) {
-            throw new RuntimeException(e);
+            throw new GeneralSecurityException(e);
         }
     }
 
-    private void runContextSpecificLogin(Signature signature, PrivateKey pk, char[] pin) throws GeneralSecurityException {
-        try {
-            var p11 = getP11(signature);
-            var sessionId = getSessionId(signature);
-
-            p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, pin);
-        } catch (PKCS11Exception e) {
-            throw new GeneralSecurityException(e);
+    private static boolean isAlwaysAuthenticate(CK_ATTRIBUTE[] attrs) {
+        var result = attrs[0].pValue;
+        if (result instanceof byte[]) {
+            return ((byte[]) result)[0] == 1;
+        } else {
+            return false; // CKA_ALWAYS_AUTHENTICATE not found
         }
     }
 
