@@ -72,9 +72,6 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         try {
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
-            var attrs = new CK_ATTRIBUTE[]{new CK_ATTRIBUTE(PKCS11Constants.CKA_ALWAYS_AUTHENTICATE)};
-            var keyID = getKeyID(pk);
-            p11.C_GetAttributeValue(sessionId, keyID, attrs); // TODO cache this?
 
             p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, pin);
         } catch (PKCS11Exception e) {
