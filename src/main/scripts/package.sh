@@ -27,7 +27,7 @@ while read -r key value; do
 done <"$resourcesDir/build.properties"
 unset IFS
 
-jvmOptions="-Dfile.encoding=UTF-8 -Dprism.maxvram=2G --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
+jvmOptions="-Dfile.encoding=UTF-8 -Dprism.maxvram=2G --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED --add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED"
 arguments=(
     "--input" "$appDirectory"
     "--runtime-image" "$jdkDirectory"
