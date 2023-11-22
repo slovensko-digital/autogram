@@ -23,8 +23,14 @@ import java.util.Objects;
 public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private static final long CKU_CONTEXT_SPECIFIC = 2L;
 
-    public NativePkcs11SignatureToken(String pkcsPath, PrefilledPasswordCallback prefilledPasswordCallback, int slotIndex) {
+    private final PrefilledPasswordCallback prefilledPasswordCallback;
+    private final boolean shouldProvidePasswordForCkaAA;
+
+    public NativePkcs11SignatureToken(String pkcsPath, PrefilledPasswordCallback prefilledPasswordCallback, int slotIndex, boolean shouldProvidePasswordForCkaAA) {
         super(pkcsPath, prefilledPasswordCallback, -1, slotIndex, null);
+
+        this.prefilledPasswordCallback = prefilledPasswordCallback;
+        this.shouldProvidePasswordForCkaAA = shouldProvidePasswordForCkaAA;
     }
 
     private byte[] sign(final byte[] bytes, final String javaSignatureAlgorithm, final AlgorithmParameterSpec param, final DSSPrivateKeyEntry keyEntry) throws GeneralSecurityException {
@@ -54,9 +60,8 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
             p11.C_GetAttributeValue(sessionId, keyID, attrs);
 
-            if (isAlwaysAuthenticate(attrs)) {
-                var pin = "123456".toCharArray(); // TODO actually get this somehow from password protection
-                p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, pin);
+            if (shouldProvidePasswordForCkaAA && isAlwaysAuthenticate(attrs)) {
+                p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, prefilledPasswordCallback.getPassword());
             }
         } catch (PKCS11Exception e) {
             throw new GeneralSecurityException(e);
