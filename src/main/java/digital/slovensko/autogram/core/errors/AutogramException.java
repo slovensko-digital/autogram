@@ -37,8 +37,8 @@ public class AutogramException extends RuntimeException {
     public static AutogramException createFromDSSException(DSSException e) {
         for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
             if (cause.getMessage() != null) {
-                if (cause instanceof KeyPinDifferentFromTokenPin)
-                    return (KeyPinDifferentFromTokenPin) cause;
+                if (cause instanceof KeyPinDifferentFromTokenPinException)
+                    return (KeyPinDifferentFromTokenPinException) cause;
                 if (cause instanceof java.security.ProviderException && cause.getMessage().contains("slotListIndex is 0 but token only has 0 slots")) {
                     return new InitializationFailedException();
                 } else if (cause.getMessage().equals("CKR_FUNCTION_CANCELED")) {
@@ -68,5 +68,9 @@ public class AutogramException extends RuntimeException {
         }
 
         return new UnrecognizedException(e);
+    }
+
+    public boolean batchCanContinue() {
+        return true;
     }
 }

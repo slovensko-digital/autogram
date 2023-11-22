@@ -255,7 +255,7 @@ public class CliUI implements UI {
             errMessage = "Slot ID is not a number";
         } else if (e instanceof PDFSignatureLevelIsNotValidException) {
             errMessage = "PDF signature level is not valid";
-        } else if (e instanceof KeyPinDifferentFromTokenPin) {
+        } else if (e instanceof KeyPinDifferentFromTokenPinException) {
             errMessage = "PIN for signing key is different from card PIN. Not supported.";
         } else {
             errMessage = "Unknown error occurred";

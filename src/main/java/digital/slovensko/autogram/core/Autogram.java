@@ -145,7 +145,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 ui.signBatch(job, batch.getSigningKey());
-            } catch (KeyPinDifferentFromTokenPin e) {
+            } catch (KeyPinDifferentFromTokenPinException e) {
                 ui.onUIThreadDo(() -> {
                     ui.cancelBatch(batch);
                 });

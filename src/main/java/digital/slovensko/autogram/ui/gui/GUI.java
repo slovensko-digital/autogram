@@ -75,14 +75,14 @@ public class GUI implements UI {
     }
 
     @Override
-    public void signBatch(SigningJob job, SigningKey key) throws KeyPinDifferentFromTokenPin {
+    public void signBatch(SigningJob job, SigningKey key) throws KeyPinDifferentFromTokenPinException {
         assertOnWorkThread();
         try {
             job.signWithKeyAndRespond(key);
             Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
         } catch (AutogramException e) {
             job.onDocumentSignFailed(e);
-            if (e instanceof KeyPinDifferentFromTokenPin)
+            if (!e.batchCanContinue())
                 throw  e;
         } catch (DSSException e) {
             job.onDocumentSignFailed(AutogramException.createFromDSSException(e));

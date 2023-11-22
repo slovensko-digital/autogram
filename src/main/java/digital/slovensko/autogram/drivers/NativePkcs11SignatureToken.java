@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.drivers;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.KeyPinDifferentFromTokenPin;
+import digital.slovensko.autogram.core.errors.KeyPinDifferentFromTokenPinException;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.SignatureValue;
@@ -66,7 +66,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
         } catch (PKCS11Exception e) {
             if (e.getMessage().equals("CKR_PIN_INCORRECT"))
-                throw new KeyPinDifferentFromTokenPin(e);
+                throw new KeyPinDifferentFromTokenPinException(e);
 
             throw new GeneralSecurityException(e);
         }
