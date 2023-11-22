@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.drivers;
 
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.KeyPinDifferentFromTokenPin;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.SignatureValue;
@@ -59,11 +61,13 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             var attrs = new CK_ATTRIBUTE[]{new CK_ATTRIBUTE(PKCS11Constants.CKA_ALWAYS_AUTHENTICATE)};
 
             p11.C_GetAttributeValue(sessionId, keyID, attrs);
-
-            if (shouldProvidePasswordForCkaAA && isAlwaysAuthenticate(attrs)) {
+            if (shouldProvidePasswordForCkaAA && isAlwaysAuthenticate(attrs))
                 p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, prefilledPasswordCallback.getPassword());
-            }
+
         } catch (PKCS11Exception e) {
+            if (e.getMessage().equals("CKR_PIN_INCORRECT"))
+                throw new KeyPinDifferentFromTokenPin(e);
+
             throw new GeneralSecurityException(e);
         }
     }
@@ -149,6 +153,8 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             value.setAlgorithm(signatureAlgorithm);
             value.setValue(signatureValue);
             return value;
+        } catch (AutogramException e) {
+            throw e;
         } catch (Exception e) {
             throw new DSSException(String.format("Unable to sign : %s", e.getMessage()), e);
         }

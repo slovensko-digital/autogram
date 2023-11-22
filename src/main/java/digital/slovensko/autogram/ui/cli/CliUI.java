@@ -14,27 +14,7 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.Updater;
 import digital.slovensko.autogram.core.ValidationReports;
-import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.FunctionCanceledException;
-import digital.slovensko.autogram.core.errors.InitializationFailedException;
-import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
-import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
-import digital.slovensko.autogram.core.errors.PDFAComplianceException;
-import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
-import digital.slovensko.autogram.core.errors.PINIncorrectException;
-import digital.slovensko.autogram.core.errors.PINLockedException;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
-import digital.slovensko.autogram.core.errors.SigningWithExpiredCertificateException;
-import digital.slovensko.autogram.core.errors.SlotIdIsNotANumberException;
-import digital.slovensko.autogram.core.errors.SourceAndTargetTypeMismatchException;
-import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
-import digital.slovensko.autogram.core.errors.SourceNotDefindedException;
-import digital.slovensko.autogram.core.errors.TargetAlreadyExistsException;
-import digital.slovensko.autogram.core.errors.TargetDirectoryDoesNotExistException;
-import digital.slovensko.autogram.core.errors.TokenDriverDoesNotExistException;
-import digital.slovensko.autogram.core.errors.TokenNotRecognizedException;
-import digital.slovensko.autogram.core.errors.TokenRemovedException;
-import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
+import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
@@ -275,6 +255,8 @@ public class CliUI implements UI {
             errMessage = "Slot ID is not a number";
         } else if (e instanceof PDFSignatureLevelIsNotValidException) {
             errMessage = "PDF signature level is not valid";
+        } else if (e instanceof KeyPinDifferentFromTokenPin) {
+            errMessage = "PIN for signing key is different from card PIN. Not supported.";
         } else {
             errMessage = "Unknown error occurred";
             e.printStackTrace();
