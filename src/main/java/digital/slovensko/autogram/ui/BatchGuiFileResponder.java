@@ -63,6 +63,7 @@ public class BatchGuiFileResponder extends BatchResponder {
                 autogram.batchSign(job, batch.getBatchId());
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);
+
                 break;
             }
         }

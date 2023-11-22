@@ -18,6 +18,9 @@ public class ResponderInBatch extends Responder {
 
     public void onDocumentSignFailed(AutogramException error) {
         batch.onJobFailure();
+        if (!error.batchCanContinue())
+            batch.end();
+
         responder.onDocumentSignFailed(error);
     }
 }

@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.drivers;
 
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
-import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.token.PrefilledPasswordCallback;
 
 import java.nio.file.Path;
@@ -13,7 +12,8 @@ public class PKCS11TokenDriver extends TokenDriver {
     }
 
     @Override
-    public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
-        return new Pkcs11SignatureToken(getPath().toString(), new PrefilledPasswordCallback(new KeyStore.PasswordProtection(password)), -1, slotId, null);
+    public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotIndex, char[] password) {
+        // TODO: shouldProvidePasswordForCkaAA happens to correlate with needsPassword() for now, because eID is different. Might be changed in the future.
+        return new NativePkcs11SignatureToken(getPath().toString(), new PrefilledPasswordCallback(new KeyStore.PasswordProtection(password)), slotIndex, needsPassword());
     }
 }

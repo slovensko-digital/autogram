@@ -8,15 +8,10 @@ import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
 import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.errors.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
-import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
-import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
-import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
@@ -80,13 +75,15 @@ public class GUI implements UI {
     }
 
     @Override
-    public void signBatch(SigningJob job, SigningKey key) {
+    public void signBatch(SigningJob job, SigningKey key) throws KeyPinDifferentFromTokenPinException {
         assertOnWorkThread();
         try {
             job.signWithKeyAndRespond(key);
             Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
         } catch (AutogramException e) {
             job.onDocumentSignFailed(e);
+            if (!e.batchCanContinue())
+                throw  e;
         } catch (DSSException e) {
             job.onDocumentSignFailed(AutogramException.createFromDSSException(e));
         } catch (Exception e) {
