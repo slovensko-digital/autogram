@@ -22,6 +22,7 @@ import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
@@ -100,7 +101,7 @@ public class ServerSigningParameters {
         this.transformationTargetEnvironment = transformationTargetEnvironment;
     }
 
-    public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document) {
+    public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource) {
         return SigningParameters.buildFromRequest(
                 getSignatureLevel(),
                 getContainer(),
@@ -116,7 +117,8 @@ public class ServerSigningParameters {
                 identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform,
                 schemaIdentifier, transformationIdentifier, transformationLanguage,
                 getTransformationMediaDestinationTypeDescription(), transformationTargetEnvironment,
-                document);
+                document,
+                tspSource);
     }
 
     private String getTransformation(boolean isBase64) throws MalformedBodyException {
@@ -201,7 +203,9 @@ public class ServerSigningParameters {
         var supportedLevels = Arrays.asList(
                 SignatureLevel.XAdES_BASELINE_B,
                 SignatureLevel.PAdES_BASELINE_B,
-                SignatureLevel.CAdES_BASELINE_B);
+                SignatureLevel.CAdES_BASELINE_B,
+                SignatureLevel.XAdES_BASELINE_T,
+                SignatureLevel.PAdES_BASELINE_T);
 
         if (!supportedLevels.contains(level))
             throw new UnsupportedSignatureLevelException(level.name());

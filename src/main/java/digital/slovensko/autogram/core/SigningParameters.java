@@ -19,6 +19,7 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
@@ -41,13 +42,14 @@ public class SigningParameters {
     private final boolean autoLoadEform;
     private final String xsdIdentifier;
     private final XsltParams xsltParams;
+    private final TSPSource tspSource;
 
     private SigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
             Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
             String keyInfoCanonicalization, String schema, String transformation, String identifier,
             boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, String xsdIdentifier,
-            XsltParams xsltParams) {
+            XsltParams xsltParams, TSPSource tspSource) {
         this.level = level;
         this.asicContainer = container;
         this.containerXmlns = containerXmlns;
@@ -65,6 +67,7 @@ public class SigningParameters {
         this.autoLoadEform = autoLoadEform;
         this.xsdIdentifier = xsdIdentifier;
         this.xsltParams = xsltParams;
+        this.tspSource = tspSource;
     }
 
     public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
@@ -182,18 +185,18 @@ public class SigningParameters {
     }
 
     public static SigningParameters buildFromRequest(SignatureLevel level, ASiCContainerType container,
-            String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
-            Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
-            String keyInfoCanonicalization, String schema, String transformation, String identifier,
-            boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, String xsdIdentifier,
-            String xsltIdentifier, String xsltLanguage, String xsltType, String xsltTarget, DSSDocument document)
+                                                     String containerXmlns, SignaturePackaging packaging, DigestAlgorithm digestAlgorithm,
+                                                     Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
+                                                     String keyInfoCanonicalization, String schema, String transformation, String identifier,
+                                                     boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, String xsdIdentifier,
+                                                     String xsltIdentifier, String xsltLanguage, String xsltType, String xsltTarget, DSSDocument document, TSPSource tspSource)
             throws AutogramException {
 
         return buildParameters(level, container, containerXmlns, packaging, digestAlgorithm, en319132,
                 infoCanonicalization, propertiesCanonicalization, keyInfoCanonicalization, schema, transformation,
                 identifier, checkPDFACompliance, preferredPreviewWidth, autoLoadEform, xsdIdentifier,
                 new XsltParams(xsltIdentifier, xsltLanguage, xsltType, xsltTarget, null),
-                document);
+                document, tspSource);
     }
 
     private static SigningParameters buildParameters(SignatureLevel level, ASiCContainerType container,
@@ -201,7 +204,7 @@ public class SigningParameters {
             Boolean en319132, String infoCanonicalization, String propertiesCanonicalization,
             String keyInfoCanonicalization, String schema, String transformation, String identifier,
             boolean checkPDFACompliance, int preferredPreviewWidth, boolean autoLoadEform, String xsdIdentifier,
-            XsltParams xsltParams, DSSDocument document)
+            XsltParams xsltParams, DSSDocument document, TSPSource tspSource)
             throws AutogramException {
 
         if (level == null)
@@ -263,30 +266,32 @@ public class SigningParameters {
 
         return new SigningParameters(level, container, containerXmlns, packaging, digestAlgorithm, en319132,
                 infoCanonicalization, propertiesCanonicalization, keyInfoCanonicalization, schema, transformation,
-                identifier, checkPDFACompliance, preferredPreviewWidth, autoLoadEform, xsdIdentifier, xsltParams);
+                identifier, checkPDFACompliance, preferredPreviewWidth, autoLoadEform, xsdIdentifier, xsltParams,
+                tspSource);
     }
 
-    public static SigningParameters buildForPDF(String filename, DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132) throws AutogramException {
+    public static SigningParameters buildForPDF(DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource) throws AutogramException {
         return buildParameters(
-                SignatureLevel.PAdES_BASELINE_B,
-                null,
-                null, null,
-                DigestAlgorithm.SHA256,
-                signAsEn319132, null,
-                null, null,
-                null, null, "", checkPDFACompliance, 640, false, null, null, document);
+                (tspSource == null) ? SignatureLevel.PAdES_BASELINE_B : SignatureLevel.PAdES_BASELINE_T,
+                null, null, null, DigestAlgorithm.SHA256, signAsEn319132, null,
+                null, null, null, null, "",
+                checkPDFACompliance, 640, false, null, null, document, tspSource);
     }
 
-    public static SigningParameters buildForASiCWithXAdES(String filename, DSSDocument document, boolean signAsEn319132) throws AutogramException {
-        return buildParameters(SignatureLevel.XAdES_BASELINE_B, ASiCContainerType.ASiC_E,
-                null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
-                null, null, null, "", false, 640, true, null, null, document);
+    public static SigningParameters buildForASiCWithXAdES(DSSDocument document, boolean signAsEn319132, TSPSource tspSource) throws AutogramException {
+        return buildParameters(
+                (tspSource == null) ? SignatureLevel.XAdES_BASELINE_B : SignatureLevel.XAdES_BASELINE_T,
+                ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null,
+                null, null, null, null, "",
+                false, 640, true, null, null, document, tspSource);
     }
 
-    public static SigningParameters buildForASiCWithCAdES(String filename, DSSDocument document, boolean signAsEn319132) throws AutogramException {
-        return buildParameters(SignatureLevel.CAdES_BASELINE_B, ASiCContainerType.ASiC_E,
-                null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null, null,
-                null, null, null, "", false, 640, true, null, null, document);
+    public static SigningParameters buildForASiCWithCAdES(DSSDocument document, boolean signAsEn319132, TSPSource tspSource) throws AutogramException {
+        return buildParameters(
+                SignatureLevel.CAdES_BASELINE_B,
+                ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null,
+                null, null, null, null, "",
+                false, 640, true, null, null, document, tspSource);
     }
 
     public String getIdentifier() {
@@ -299,10 +304,6 @@ public class SigningParameters {
 
     public int getVisualizationWidth() {
         return (visualizationWidth > 0) ? visualizationWidth : 768;
-    }
-
-    public boolean getAutoLoadEform() {
-        return autoLoadEform;
     }
 
     public String getXsltDestinationType() {
@@ -319,5 +320,9 @@ public class SigningParameters {
 
     public XsltParams getXsltParams() {
         return xsltParams;
+    }
+
+    public TSPSource getTspSource() {
+        return tspSource;
     }
 }

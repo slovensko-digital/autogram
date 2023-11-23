@@ -104,17 +104,20 @@ public class MainMenuController implements SuppressedFocusController {
     }
 
     private void signFiles(List<File> list) {
+        // send null tspSource if signature shouldn't be timestamped
+        var tspSource = userSettings.getTsaEnable() ? userSettings.getTspSource() : null;
+
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
             var job = SigningJob.buildFromFile(file,
                     new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
-                    userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132());
+                    userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource);
             autogram.sign(job);
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
                     filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(),
-                    userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(), userSettings.isEn319132()));
+                    userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(), userSettings.isEn319132(), tspSource));
         }
     }
 
@@ -126,10 +129,14 @@ public class MainMenuController implements SuppressedFocusController {
         var filesList = getFilesList(directoryFiles);
         var targetDirectoryName = dir.getName() + "_signed";
         var targetDirectory = dir.toPath().getParent().resolve(targetDirectoryName);
+
+        // send null tspSource if signature shouldn't be timestamped
+        var tspSource = userSettings.getTsaEnable() ? userSettings.getTspSource() : null;
+
         autogram.batchStart(filesList.size(),
                 new BatchGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(),
                         userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(),
-                        userSettings.isEn319132()));
+                        userSettings.isEn319132(), tspSource));
     }
 
     public void onAboutButtonAction() {

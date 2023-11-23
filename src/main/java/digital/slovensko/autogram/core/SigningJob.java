@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.XDCBuilder;
@@ -10,10 +11,15 @@ import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
+import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
+import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.DSSUtils;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
@@ -85,6 +91,9 @@ public class SigningJob {
         signatureParameters.setCertificateChain(key.getCertificateChain());
         signatureParameters.setSignWithExpiredCertificate(true);
 
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
+            service.setTspSource(getParameters().getTspSource());
+
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
 
@@ -133,6 +142,9 @@ public class SigningJob {
         signatureParameters.setCertificateChain(key.getCertificateChain());
         signatureParameters.setSignWithExpiredCertificate(true);
 
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.PAdES_BASELINE_T))
+            service.setTspSource(getParameters().getTspSource());
+
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
@@ -164,27 +176,21 @@ public class SigningJob {
         return build(document, params, responder);
     }
 
-    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {
+    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource) {
         var document = createDSSFileDocumentFromFile(file);
-        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132);
+        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource);
         return build(document, parameters, responder);
     }
 
-    public static SigningJob buildFromFileBatch(File file, Autogram autogram, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {
-        var document = createDSSFileDocumentFromFile(file);
-        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132);
-        return build(document, parameters, responder);
-    }
-
-    private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132) {
+    private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource) {
         var level = SignatureValidator.getSignedDocumentSignatureLevel(document);
         if (level != null) switch (level) {
             case PAdES_BASELINE_B:
-                return SigningParameters.buildForPDF(document.getName(), document, checkPDFACompliance, isEn319132);
+                return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
             case XAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithXAdES(document.getName(), document, isEn319132);
+                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource);
             case CAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithCAdES(document.getName(), document, isEn319132);
+                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, tspSource);
             default:
                 ;
         }
@@ -192,16 +198,16 @@ public class SigningJob {
         var filename = document.getName();
         if (isPDF(document.getMimeType())) switch (signatureType) {
             case PAdES_BASELINE_B:
-                return SigningParameters.buildForPDF(filename, document, checkPDFACompliance, isEn319132);
+                return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
             case XAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithXAdES(filename, document, isEn319132);
+                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource);
             case CAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithCAdES(filename, document, isEn319132);
+                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, tspSource);
             default:
                 ;
         }
 
-        return SigningParameters.buildForASiCWithXAdES(filename, document, isEn319132);
+        return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource);
     }
 
     public boolean shouldCheckPDFCompliance() {
