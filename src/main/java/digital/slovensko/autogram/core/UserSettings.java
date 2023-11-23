@@ -29,11 +29,11 @@ public class UserSettings {
     private boolean tsaEnable;
 
     private UserSettings(SignatureLevel signatureLevel, String driver, boolean en319132,
-                         boolean signIndividually, boolean correctDocumentDisplay,
-                         boolean signaturesValidity, boolean pdfaCompliance,
-                         boolean serverEnabled, boolean expiredCertsEnabled, List<String> trustedList,
-                         String customKeystorePath, boolean customKeystorePassword, String tsaServer,
-                         TSPSource tspSource, boolean tsaEnable) {
+            boolean signIndividually, boolean correctDocumentDisplay,
+            boolean signaturesValidity, boolean pdfaCompliance,
+            boolean serverEnabled, boolean expiredCertsEnabled, List<String> trustedList,
+            String customKeystorePath, boolean customKeystorePassword, String tsaServer,
+            TSPSource tspSource, boolean tsaEnable) {
         this.signatureLevel = signatureLevel;
         this.driver = driver;
         this.en319132 = en319132;
