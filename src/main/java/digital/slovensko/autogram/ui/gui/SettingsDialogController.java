@@ -21,13 +21,17 @@ public class SettingsDialogController {
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
     @FXML
+    private HBox tsaEnabledRadios;
+    @FXML
+    private ChoiceBox<String> tsaChoiceBox;
+    @FXML
+    private TextField customTsaServerTextField;
+    @FXML
     private HBox en319132Radios;
     @FXML
     private ChoiceBox<TokenDriver> driverChoiceBox;
     @FXML
     private VBox trustedCountriesList;
-    @FXML
-    private ScrollPane trustedCountriesListScrollPane;
     @FXML
     private HBox correctDocumentDisplayRadios;
     @FXML
@@ -48,6 +52,11 @@ public class SettingsDialogController {
     private Button closeButton;
 
     private final UserSettings userSettings;
+    private final List<String> preDefinedTsaServers = List.of(
+            "http://tsa.izenpe.com",
+            "http://tsa.belgium.be/connect",
+            "http://kstamp.keynectis.com/KSign/"
+    );
 
     public SettingsDialogController(UserSettings userSettings) {
         this.userSettings = userSettings;
@@ -56,6 +65,8 @@ public class SettingsDialogController {
     public void initialize() {
         initializeSignatureLevelChoiceBox();
         initializeDriverChoiceBox();
+        initializeTsaEnabled();
+        initializeTsaServer();
         initializeEn319132CheckBox();
         initializeCorrectDocumentDisplayCheckBox();
         initializeSignatureValidationCheckBox();
@@ -90,6 +101,43 @@ public class SettingsDialogController {
         driverChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setDriver(newValue.getName());
         });
+    }
+
+    private void initializeTsaEnabled() {
+        initializeBooleanRadios(tsaEnabledRadios, t -> userSettings.setTsaEnabled(t), userSettings.getTsaEnabled());
+    }
+
+    private void initializeTsaServer() {
+        final var USE_CUSTOM_TSA_LABEL = "Použiť vlastnú adresu TSA servera";
+
+        customTsaServerTextField.setText(userSettings.getCustomTsaServer());
+        customTsaServerTextField.setOnKeyTyped((e) -> {
+            userSettings.setCustomTsaServer(customTsaServerTextField.getText());
+            userSettings.setTsaServer(customTsaServerTextField.getText());
+        });
+
+        tsaChoiceBox.getItems().add(USE_CUSTOM_TSA_LABEL);
+        for (var server : preDefinedTsaServers)
+            tsaChoiceBox.getItems().add("Použiť "  + server);
+
+        tsaChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+           if (newValue.equals(USE_CUSTOM_TSA_LABEL)) {
+               userSettings.setTsaServer(customTsaServerTextField.getText());
+               customTsaServerTextField.setDisable(false);
+               return;
+           }
+
+           userSettings.setTsaServer(newValue.replaceFirst("Použiť ", ""));
+           customTsaServerTextField.setDisable(true);
+        });
+
+        if (!preDefinedTsaServers.contains(userSettings.getTsaServer())) {
+            tsaChoiceBox.setValue(USE_CUSTOM_TSA_LABEL);
+            return;
+        }
+
+        tsaChoiceBox.setValue("Použiť " + userSettings.getTsaServer());
+        customTsaServerTextField.setDisable(true);
     }
 
     private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue, String yesText,

@@ -105,7 +105,7 @@ public class MainMenuController implements SuppressedFocusController {
 
     private void signFiles(List<File> list) {
         // send null tspSource if signature shouldn't be timestamped
-        var tspSource = userSettings.getTsaEnable() ? userSettings.getTspSource() : null;
+        var tspSource = userSettings.getTsaEnabled() ? userSettings.getTspSource() : null;
 
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
@@ -131,7 +131,7 @@ public class MainMenuController implements SuppressedFocusController {
         var targetDirectory = dir.toPath().getParent().resolve(targetDirectoryName);
 
         // send null tspSource if signature shouldn't be timestamped
-        var tspSource = userSettings.getTsaEnable() ? userSettings.getTspSource() : null;
+        var tspSource = userSettings.getTsaEnabled() ? userSettings.getTspSource() : null;
 
         autogram.batchStart(filesList.size(),
                 new BatchGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(),

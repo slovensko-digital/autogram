@@ -289,6 +289,10 @@
   -fx-background-insets: -3, 2, 4;
 }
 
+.autogram-input:disabled {
+  -fx-opacity: 0.5;
+}
+
 .autogram-input--error {
   -fx-border-color: -autogram-error-colour;
 }
@@ -683,7 +687,7 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-textfield-container > TextField {
-  -fx-pref-width: 19.5em;
+  -fx-pref-width: 20.25em;
 }
 
 

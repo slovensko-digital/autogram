@@ -12,7 +12,7 @@
             <tabs>
                 <Tab text="Podpisovanie">
                     <content>
-                        <ScrollPane fx:id="trustedCountriesListScrollPane">
+                        <ScrollPane>
                             <VBox styleClass="container">
                                 <TextFlow>
                                     <Text styleClass="autogram-heading-m">
@@ -68,6 +68,68 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
+                                                Pridávanie časových pečiatok
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Pridávanie časových pečiatok pri podpisovaní v vstand-alone režime Autogramu.
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                V API režime sa riadi podľa requestu.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="tsaEnabledRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
+                                                Zdroj časových pečiatok
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Je možné použiť niektorý z preddefinovaných voľne dostupných poskytovateľov alebo nastaviť vlastnú adresu.
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Pre správne overenie platnosti časovej pečiatky je potrebné, aby bola TSA v zozname dôveryhodných poskytovateľov a aby krajina jej pôvodu bola nastavená v záložke "Overovanie podpisov".
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-dropdown">
+                                        <ChoiceBox fx:id="tsaChoiceBox" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
+                                                Vlastná adresa TSA servera
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                URL adresa iného servera autority časových pečiatok.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-textfield-container">
+                                        <TextField fx:id="customTsaServerTextField" styleClass="autogram-input" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
                                                 Použitie nového štandardu
                                             </Text>
                                         </TextFlow>
@@ -89,7 +151,7 @@
                 </Tab>
                 <Tab text="Overovanie podpisov">
                     <content>
-                        <ScrollPane fx:id="trustedCountriesListScrollPane">
+                        <ScrollPane>
                             <VBox styleClass="container">
                                 <TextFlow>
                                     <Text styleClass="autogram-heading-m">
@@ -201,7 +263,7 @@
                 </Tab>
                 <Tab text="Iné">
                     <content>
-                        <ScrollPane fx:id="trustedCountriesListScrollPane">
+                        <ScrollPane>
                             <VBox styleClass="container">
                                 <TextFlow>
                                     <Text styleClass="autogram-heading-m">
