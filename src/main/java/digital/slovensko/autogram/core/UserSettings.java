@@ -68,7 +68,7 @@ public class UserSettings {
         var trustedList = prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU");
         var customKeystorePath = prefs.get("CUSTOM_KEYSTORE_PATH", "");
         var customKeystorePasswordPrompt = prefs.getBoolean("CUSTOM_KEYSTORE_PASSWORD_PROMPT", false);
-        var tsaServer = prefs.get("TSA_SERVER", "");
+        var tsaServer = prefs.get("TSA_SERVER", "http://tsa.izenpe.com");
         var customTsaServer = prefs.get("CUSTOM_TSA_SERVER", "");
         var tsaEnabled = prefs.getBoolean("TSA_ENABLE", false);
 

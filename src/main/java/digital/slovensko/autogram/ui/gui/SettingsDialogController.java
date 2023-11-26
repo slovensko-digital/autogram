@@ -118,7 +118,7 @@ public class SettingsDialogController {
 
         tsaChoiceBox.getItems().add(USE_CUSTOM_TSA_LABEL);
         for (var server : preDefinedTsaServers)
-            tsaChoiceBox.getItems().add("Použiť "  + server);
+            tsaChoiceBox.getItems().add(server);
 
         tsaChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
            if (newValue.equals(USE_CUSTOM_TSA_LABEL)) {
@@ -127,7 +127,7 @@ public class SettingsDialogController {
                return;
            }
 
-           userSettings.setTsaServer(newValue.replaceFirst("Použiť ", ""));
+           userSettings.setTsaServer(newValue);
            customTsaServerTextField.setDisable(true);
         });
 
@@ -136,7 +136,7 @@ public class SettingsDialogController {
             return;
         }
 
-        tsaChoiceBox.setValue("Použiť " + userSettings.getTsaServer());
+        tsaChoiceBox.setValue(userSettings.getTsaServer());
         customTsaServerTextField.setDisable(true);
     }
 
