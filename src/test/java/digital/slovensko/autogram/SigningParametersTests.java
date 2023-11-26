@@ -15,6 +15,7 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,7 @@ public class SigningParametersTests {
     private String xsdSchema;
     private String xsltTransformation;
     private String identifier;
+    private TSPSource tspSource;
 
     @BeforeAll
     void setDefaultValues() throws IOException {
@@ -48,6 +50,7 @@ public class SigningParametersTests {
         xsltTransformation = new String(
                 this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes(), StandardCharsets.UTF_8);
         identifier = "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9";
+        tspSource = null;
     }
 
     @Test
@@ -57,7 +60,7 @@ public class SigningParametersTests {
         Assertions.assertThrows(SigningParametersException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, enveloping,
                         null, false, inclusive, inclusive, inclusive, null, null, "id1/asa", false, 800, false,
-                        null, null, null, null, null, document));
+                        null, null, null, null, null, document, tspSource));
     }
 
     @Test
@@ -65,7 +68,7 @@ public class SigningParametersTests {
         Assertions.assertThrows(SigningParametersException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, enveloping,
                         null, false, inclusive, inclusive, inclusive, null, "<xml/>", "id1/asa", false, 800, false,
-                        null, null, null, null, null, null));
+                        null, null, null, null, null, null, tspSource));
     }
 
     @Test
@@ -75,7 +78,7 @@ public class SigningParametersTests {
         Assertions.assertThrows(SigningParametersException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, enveloping,
                         null, false, inclusive, inclusive, inclusive, null, xsltTransformation, "id1/asa", false, 800, false,
-                        null, null, null, null, null, document));
+                        null, null, null, null, null, document, tspSource));
     }
 
     @Test
@@ -84,7 +87,7 @@ public class SigningParametersTests {
 
         Assertions.assertThrows(SigningParametersException.class,
                 () -> SigningParameters.buildFromRequest(null, asice, xdcXmlns, enveloping, null, false, inclusive,
-                        inclusive, inclusive, null, "<xml/>", "id1/asa", false, 800, false, null, null, null, null, null, document));
+                        inclusive, inclusive, null, "<xml/>", "id1/asa", false, 800, false, null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -93,7 +96,7 @@ public class SigningParametersTests {
         Assertions.assertDoesNotThrow(
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         null, false, null, null, null, null, null, null, false, 800, false,
-                        null, null, null, null, null, document));
+                        null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -102,7 +105,7 @@ public class SigningParametersTests {
         Assertions.assertDoesNotThrow(
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, null, null,
                         null, false, null, null, null, null, null, null, false, 800, false,
-                        null, null, null, null, null, document));
+                        null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -111,7 +114,7 @@ public class SigningParametersTests {
         Assertions.assertDoesNotThrow(
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
                         false, null, null, null, xsdSchema, xsltTransformation, identifier, false, 800, false,
-                        null, null, null, null, null, document));
+                        null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -120,7 +123,7 @@ public class SigningParametersTests {
         // TODO: mock eform S3 resource
         Assertions.assertDoesNotThrow(
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, null, null, null, null,
-                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document));
+                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -129,7 +132,7 @@ public class SigningParametersTests {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
                         false, null, null, null, xsdSchema, xsltTransformation, identifier, false, 800, false,
-                        null, null, null, null, null, document));
+                        null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -138,7 +141,7 @@ public class SigningParametersTests {
         // TODO: mock eform S3 resource
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, null, null, null, null,
-                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document));
+                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -147,7 +150,7 @@ public class SigningParametersTests {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
                         false, null, null, null, xsdSchema, xsltTransformation, identifier, false, 800, false,
-                        null, null, null, null, null, document));
+                        null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -156,7 +159,7 @@ public class SigningParametersTests {
         // TODO: mock eform S3 resource
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, null, null, null, null,
-                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document));
+                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -164,7 +167,7 @@ public class SigningParametersTests {
     void testThrowsAutogramExceptionWithUnknownEformXml(DSSDocument document) {
         Assertions.assertThrows(SigningParametersException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
-                        false, null, null, null, null, null, null, false, 800, false, null, null, null, null, null, document));
+                        false, null, null, null, null, null, null, false, 800, false, null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -172,7 +175,7 @@ public class SigningParametersTests {
     void testThrowsAutogramExceptionWithUnknownEformXmlWithAutoLoadEform(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, null, null, null, null,
-                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document));
+                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -181,7 +184,7 @@ public class SigningParametersTests {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
                         false, null, null, null, xsdSchema, xsltTransformation, identifier, false, 800, false,
-                        null, null, null, null, null, document));
+                        null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
@@ -189,14 +192,14 @@ public class SigningParametersTests {
     void testThrowsAutogramExceptionWithMismatchedDigestsXmlWithAutoLoadEform(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, null, null, null, null,
-                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document));
+                        false, null, null, null, null, null, null, false, 800, true, null, null, null, null, null, document, tspSource));
     }
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#invalidAsiceProvider")
     void testThrowsOriginalDocumentNotFoundWithAsiceWithoutSignature(DSSDocument document) throws IOException {
         Assertions.assertThrows(OriginalDocumentNotFoundException.class,
-                () -> SigningParameters.buildForASiCWithXAdES("no_signatures.asice", document, false));
+                () -> SigningParameters.buildForASiCWithXAdES(document, false, tspSource));
     }
 
     @Test
@@ -206,7 +209,7 @@ public class SigningParametersTests {
                 "empty_xml.asice");
 
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.buildForASiCWithXAdES("empty_xml.asice", document, false));
+                () -> SigningParameters.buildForASiCWithXAdES(document, false, tspSource));
     }
 
     @Test
@@ -218,7 +221,7 @@ public class SigningParametersTests {
         Assertions.assertThrows(TransformationParsingErrorException.class,
                 () -> SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B, asice, xdcXmlns, null, null,
                         false, null, null, null, xsdSchema, transformation, identifier, false, 800, false,
-                        null, null, null, null, null, document));
+                        null, null, null, null, null, document, tspSource));
     }
 
 }

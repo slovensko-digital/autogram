@@ -24,7 +24,8 @@ public class AppStarter {
         addOption(null, "keystore", true, "Absolute path to a keystore file that can be used for signing.").
         addOption(null, "slot-id", true, "Slot ID for PKCS11 driver. If not specified, first available slot is used.").
         addOption(null, "pdf-level", true, "PDF signature level. Supported values: PAdES_BASELINE_B (default), XAdES_BASELINE_B, CAdES_BASELINE_B.").
-        addOption(null, "en319132", false, "Sign according to EN 319 132 or EN 319 122.");
+        addOption(null, "en319132", false, "Sign according to EN 319 132 or EN 319 122.").
+        addOption(null, "tsa-server", true, "Url of TimeStamp Authority server that should be used for timestamping in signature level BASELINE_T. If provided, BASELINE_T signatures are made.");
 
     public static void start(String[] args) {
         try {
@@ -73,6 +74,7 @@ public class AppStarter {
                 autogram --cli -s target/directory-example -t target/non-existent-dir/output-example --parents
                 autogram --cli -s target/directory-example/file-example.pdf -pdfa
                 autogram --cli -s target/directory-example/file-example.pdf -d eid
+                autogram --cli -s target/file-example.pdf -d eid --tsa-server http://tsa.izenpe.com
                 """;
         final PrintWriter pw = new PrintWriter(System.out);
         formatter.printUsage(pw, 80, syntax);

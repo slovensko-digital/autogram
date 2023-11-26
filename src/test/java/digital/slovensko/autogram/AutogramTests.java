@@ -40,9 +40,9 @@ class AutogramTests {
     void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
         List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
+        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
 
-        var parameters = SigningParameters.buildForASiCWithXAdES(document.getName(), document, false);
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -57,9 +57,9 @@ class AutogramTests {
     void testSignAsiceCadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
         List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
+        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
 
-        var parameters = SigningParameters.buildForASiCWithCAdES(document.getName(), document, false);
+        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, null);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -73,9 +73,9 @@ class AutogramTests {
     void testSignPadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
         List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
+        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
 
-        var parameters = SigningParameters.buildForPDF(document.getName(), document, false, false);
+        var parameters = SigningParameters.buildForPDF(document, false, false, null);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -98,7 +98,7 @@ class AutogramTests {
     void testSignBuildFromFileHappyScenario(InMemoryDocument document) throws IOException {
         var newUI = new FakeUI();
         List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers));
+        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
 
         var file = new File(Path.of(tempTestsPath.toString(), document.getName()).toString());
         var outputStream = new FileOutputStream(file);
@@ -108,7 +108,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false), key));
+                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null), key));
 
         verify(responder).onDocumentSigned(any());
     }

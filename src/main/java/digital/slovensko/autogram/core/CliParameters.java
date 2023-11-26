@@ -7,6 +7,8 @@ import digital.slovensko.autogram.core.errors.TokenDriverDoesNotExistException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 
+import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
@@ -22,6 +24,7 @@ public class CliParameters {
     private final boolean makeParentDirectories;
     private final SignatureLevel pdfSignatureLevel;
     private final boolean en319132;
+    private final String tsaServer;
 
     public CliParameters(CommandLine cmd) throws SourceDoesNotExistException, TokenDriverDoesNotExistException,
             SlotIdIsNotANumberException, PDFSignatureLevelIsNotValidException {
@@ -35,6 +38,7 @@ public class CliParameters {
         pdfSignatureLevel = getValidSignatureLevel(
                 cmd.getOptionValue("pdf-level", SignatureLevel.PAdES_BASELINE_B.name()));
         en319132 = cmd.hasOption("en319132");
+        tsaServer = cmd.getOptionValue("tsa-server", null);
     }
 
     private SignatureLevel getValidSignatureLevel(String optionValue) throws PDFSignatureLevelIsNotValidException {
@@ -117,5 +121,12 @@ public class CliParameters {
 
     public SignatureLevel pdfSignatureLevel() {
         return pdfSignatureLevel;
+    }
+
+    public TSPSource getTspSource() {
+        if (tsaServer == null)
+            return null;
+
+        return new OnlineTSPSource(tsaServer);
     }
 }

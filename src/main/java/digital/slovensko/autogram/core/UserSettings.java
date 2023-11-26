@@ -2,6 +2,8 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.ui.gui.SignatureLevelStringConverter;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,12 +24,17 @@ public class UserSettings {
     private List<String> trustedList;
     private String customKeystorePath;
     private boolean customKeystorePasswordPrompt;
+    private String tsaServer;
+    private TSPSource tspSource;
+    private boolean tsaEnabled;
+    private String customTsaServer;
 
     private UserSettings(SignatureLevel signatureLevel, String driver, boolean en319132,
             boolean signIndividually, boolean correctDocumentDisplay,
             boolean signaturesValidity, boolean pdfaCompliance,
             boolean serverEnabled, boolean expiredCertsEnabled, List<String> trustedList,
-            String customKeystorePath, boolean customKeystorePassword) {
+            String customKeystorePath, boolean customKeystorePassword, String tsaServer,
+            String customTsaServer, TSPSource tspSource, boolean tsaEnabled) {
         this.signatureLevel = signatureLevel;
         this.driver = driver;
         this.en319132 = en319132;
@@ -40,6 +47,10 @@ public class UserSettings {
         this.trustedList = trustedList;
         this.customKeystorePath = customKeystorePath;
         this.customKeystorePasswordPrompt = customKeystorePassword;
+        this.tsaServer = tsaServer;
+        this.customTsaServer = customTsaServer;
+        this.tspSource = tspSource;
+        this.tsaEnabled = tsaEnabled;
     }
 
     public static UserSettings load() {
@@ -57,6 +68,11 @@ public class UserSettings {
         var trustedList = prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU");
         var customKeystorePath = prefs.get("CUSTOM_KEYSTORE_PATH", "");
         var customKeystorePasswordPrompt = prefs.getBoolean("CUSTOM_KEYSTORE_PASSWORD_PROMPT", false);
+        var tsaServer = prefs.get("TSA_SERVER", "http://tsa.izenpe.com");
+        var customTsaServer = prefs.get("CUSTOM_TSA_SERVER", "");
+        var tsaEnabled = prefs.getBoolean("TSA_ENABLE", false);
+
+        var tspSource = new OnlineTSPSource(tsaServer);
 
         var signatureLevelStringConverter = new SignatureLevelStringConverter();
         var signatureLevel = Arrays
@@ -78,7 +94,11 @@ public class UserSettings {
                 expiredCertsEnabled,
                 trustedList == null ? new ArrayList<>() : new ArrayList<>(List.of(trustedList.split(","))),
                 customKeystorePath,
-                customKeystorePasswordPrompt);
+                customKeystorePasswordPrompt,
+                tsaServer,
+                customTsaServer,
+                tspSource,
+                tsaEnabled);
     }
 
     public SignatureLevel getSignatureLevel() {
@@ -198,6 +218,38 @@ public class UserSettings {
         save();
     }
 
+    public String getTsaServer() {
+        return tsaServer;
+    }
+
+    public void setTsaServer(String value) {
+        tsaServer = value;
+        tspSource = new OnlineTSPSource(tsaServer);
+        save();
+    }
+
+    public String getCustomTsaServer() {
+        return customTsaServer;
+    }
+
+    public void setCustomTsaServer(String value) {
+        customTsaServer = value;
+        save();
+    }
+
+    public TSPSource getTspSource() {
+        return tspSource;
+    }
+
+    public boolean getTsaEnabled() {
+        return tsaEnabled;
+    }
+
+    public void setTsaEnabled(boolean value) {
+        tsaEnabled = value;
+        save();
+    }
+
     private void save() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
@@ -213,5 +265,8 @@ public class UserSettings {
         prefs.put("TRUSTED_LIST", trustedList.stream().collect(Collectors.joining(",")));
         prefs.put("CUSTOM_KEYSTORE_PATH", customKeystorePath);
         prefs.putBoolean("CUSTOM_KEYSTORE_PASSWORD_PROMPT", customKeystorePasswordPrompt);
+        prefs.put("TSA_SERVER", tsaServer);
+        prefs.put("CUSTOM_TSA_SERVER", customTsaServer);
+        prefs.putBoolean("TSA_ENABLE", tsaEnabled);
     }
 }

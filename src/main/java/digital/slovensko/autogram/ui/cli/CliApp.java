@@ -25,7 +25,7 @@ public class CliApp {
             var autogram = new Autogram(ui, false, params.getDriver() != null ?
                         () -> Collections.singletonList(params.getDriver())
                         : new DefaultDriverDetector("", false),
-                    params.getSlotId());
+                    params.getSlotId(), params.getTspSource());
 
             if (params.getSource() == null)
                 throw new SourceNotDefindedException();
@@ -40,7 +40,8 @@ public class CliApp {
             var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
                     .map(f -> SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, targetPathBuilder),
-                            params.shouldCheckPDFACompliance(), params.pdfSignatureLevel(), params.shouldSignAsEn319132()))
+                            params.shouldCheckPDFACompliance(), params.pdfSignatureLevel(), params.shouldSignAsEn319132(),
+                            params.getTspSource()))
                     .toList();
             if (params.shouldCheckPDFACompliance()) {
                 jobs.forEach(job -> {

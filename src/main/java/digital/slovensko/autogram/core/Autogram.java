@@ -9,6 +9,7 @@ import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.io.File;
 import java.util.List;
@@ -23,16 +24,18 @@ public class Autogram {
     private final DriverDetector driverDetector;
     private final boolean shouldDisplayVisualizationError;
     private final Integer slotId;
+    private final TSPSource tspSource;
 
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector) {
-        this(ui, shouldDisplayVisualizationError, driverDetector, -1);
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, TSPSource tspSource) {
+        this(ui, shouldDisplayVisualizationError, driverDetector, -1, tspSource);
     }
 
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, Integer slotId) {
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, Integer slotId, TSPSource tspSource) {
         this.ui = ui;
         this.driverDetector = driverDetector;
         this.slotId = slotId;
         this.shouldDisplayVisualizationError = shouldDisplayVisualizationError;
+        this.tspSource = tspSource;
     }
 
     public void sign(SigningJob job) {
@@ -233,5 +236,9 @@ public class Autogram {
 
         scheduledExecutorService.scheduleAtFixedRate(() -> SignatureValidator.getInstance().refresh(),
             480, 480, java.util.concurrent.TimeUnit.MINUTES);
+    }
+
+    public TSPSource getTspSource() {
+        return  tspSource;
     }
 }

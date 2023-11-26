@@ -15,6 +15,7 @@ import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 public class BatchGuiFileResponder extends BatchResponder {
     private final Autogram autogram;
@@ -26,14 +27,16 @@ public class BatchGuiFileResponder extends BatchResponder {
     private final boolean checkPDFACompliance;
     private final SignatureLevel pDFSignatureLevel;
     private final boolean isEn319132;
+    private final TSPSource tspSource;
 
-    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, boolean checkPDFACompliance, SignatureLevel pDFSignatureLevel, boolean signPDFAsPades, boolean isEn319132) {
+    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, boolean checkPDFACompliance, SignatureLevel pDFSignatureLevel, boolean signPDFAsPades, boolean isEn319132, TSPSource tspSource) {
         this.autogram = autogram;
         this.list = list;
         this.checkPDFACompliance = checkPDFACompliance;
         this.pDFSignatureLevel = pDFSignatureLevel;
         this.isEn319132 = isEn319132;
         this.targetPath = TargetPath.fromTargetDirectory(targetDirectory, signPDFAsPades);
+        this.tspSource = tspSource;
     }
 
     @Override
@@ -59,7 +62,7 @@ public class BatchGuiFileResponder extends BatchResponder {
                     onAllFilesSigned(batch);
                 }), batch);
 
-                var job = SigningJob.buildFromFileBatch(file, autogram, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132);
+                var job = SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource);
                 autogram.batchSign(job, batch.getBatchId());
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);

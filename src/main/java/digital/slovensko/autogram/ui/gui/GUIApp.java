@@ -23,7 +23,8 @@ public class GUIApp extends Application {
         var userSettings = UserSettings.load();
         var ui = new GUI(getHostServices(), userSettings);
         var autogram = new Autogram(ui, userSettings.isCorrectDocumentDisplay(), new DefaultDriverDetector(
-                userSettings.getCustomKeystorePath(), userSettings.getCustomKeystorePasswordPrompt()));
+                userSettings.getCustomKeystorePath(), userSettings.getCustomKeystorePasswordPrompt()),
+                userSettings.getTspSource());
 
         Platform.setImplicitExit(false);
         autogram.checkForUpdate();
