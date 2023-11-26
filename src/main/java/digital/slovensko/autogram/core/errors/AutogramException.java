@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core.errors;
 
 import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 
 public class AutogramException extends RuntimeException {
     private final String heading;
@@ -51,6 +52,10 @@ public class AutogramException extends RuntimeException {
                     return new PINLockedException();
                 } else if (cause.getMessage().equals("Token has been removed")) {
                     return new TokenRemovedException();
+                } else if (cause instanceof DSSExternalResourceException) {
+                    return new TsaServerMisconfiguredException("Nastavený TSA server odmietol pridať časovú pečiatku. Skontrolujte nastavenia TSA servera.", cause);
+                } else if (cause instanceof NullPointerException && cause.getMessage().contains("Host name")) {
+                    return new TsaServerMisconfiguredException("Nie je nastavená žiadna adresa TSA servera. Skontrolujte nastavenia TSA servera.", cause);
                 }
             }
         }

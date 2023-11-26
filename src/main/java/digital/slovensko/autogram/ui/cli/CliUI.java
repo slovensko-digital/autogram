@@ -257,6 +257,8 @@ public class CliUI implements UI {
             errMessage = "PDF signature level is not valid";
         } else if (e instanceof KeyPinDifferentFromTokenPinException) {
             errMessage = "PIN for signing key is different from card PIN. Not supported.";
+        } else if (e instanceof TsaServerMisconfiguredException) {
+            errMessage = "TSA server refused to add timestamp. Check TSA server configuration.";
         } else {
             errMessage = "Unknown error occurred";
             e.printStackTrace();
