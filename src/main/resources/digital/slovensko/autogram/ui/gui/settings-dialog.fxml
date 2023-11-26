@@ -73,12 +73,12 @@
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Pridávanie časových pečiatok pri podpisovaní v vstand-alone režime Autogramu.
+                                                Pridanie časovej pečiatky k podpisu zvyšuje jeho dôveryhodnosť.
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                V API režime sa riadi podľa requestu.
+                                                Na Slovensku je kvalifikovaný elektronický podpis s kvalifikovanou časovou pečiatkou považovaný až za osvedčený podpis (t.j. ako podpísané u notára).
                                             </Text>
                                         </TextFlow>
                                     </VBox>
