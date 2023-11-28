@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
