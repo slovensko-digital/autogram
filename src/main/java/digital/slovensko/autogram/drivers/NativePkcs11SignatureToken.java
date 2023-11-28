@@ -3,8 +3,6 @@ package digital.slovensko.autogram.drivers;
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.FunctionCanceledException;
-import digital.slovensko.autogram.core.errors.KeyPinDifferentFromTokenPinException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.errors.PasswordNotProvidedException;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;

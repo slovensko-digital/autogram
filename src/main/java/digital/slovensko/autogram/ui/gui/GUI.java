@@ -77,7 +77,7 @@ public class GUI implements UI {
     }
 
     @Override
-    public void signBatch(SigningJob job, SigningKey key) throws KeyPinDifferentFromTokenPinException {
+    public void signBatch(SigningJob job, SigningKey key) {
         assertOnWorkThread();
         try {
             job.signWithKeyAndRespond(key);
