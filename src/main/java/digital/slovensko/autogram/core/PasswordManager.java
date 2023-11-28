@@ -14,7 +14,7 @@ public class PasswordManager implements PasswordInputCallback {
     }
 
     public char[] getContextSpecificPassword() {
-        if (settings.cacheContextSpecificPasswordEnabled()) {
+        if (settings.getCacheContextSpecificPasswordEnabled()) {
             if (cachedPassword == null) {
                 cachedPassword = ui.getContextSpecificPassword();
             }

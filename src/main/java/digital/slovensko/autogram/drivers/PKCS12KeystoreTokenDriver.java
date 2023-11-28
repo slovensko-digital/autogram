@@ -18,7 +18,7 @@ public class PKCS12KeystoreTokenDriver extends TokenDriver {
     }
 
     @Override
-    public AbstractKeyStoreTokenConnection createToken(Integer slotId, PasswordManager pm, SignatureTokenSettings settings) {
+    public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
         try {
             var password = needsPassword ? pm.getPassword() : "".toCharArray();
             return new Pkcs12SignatureToken(getPath().toString(), new KeyStore.PasswordProtection(password));

@@ -38,9 +38,9 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider"})
     void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
+        var settings = new TestSettings();
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
+        var autogram = new Autogram(newUI, settings);
 
         var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null);
         var responder = mock(Responder.class);
@@ -56,8 +56,8 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider"})
     void testSignAsiceCadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
+        var settings = new TestSettings();
+        var autogram = new Autogram(newUI, settings);
 
         var parameters = SigningParameters.buildForASiCWithCAdES(document, false, null);
         var responder = mock(Responder.class);
@@ -72,8 +72,8 @@ class AutogramTests {
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
     void testSignPadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
+        var settings = new TestSettings();
+        var autogram = new Autogram(newUI, settings);
 
         var parameters = SigningParameters.buildForPDF(document, false, false, null);
         var responder = mock(Responder.class);
@@ -97,8 +97,8 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
     void testSignBuildFromFileHappyScenario(InMemoryDocument document) throws IOException {
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
+        var settings = new TestSettings();
+        var autogram = new Autogram(newUI, settings);
 
         var file = new File(Path.of(tempTestsPath.toString(), document.getName()).toString());
         var outputStream = new FileOutputStream(file);
@@ -136,7 +136,7 @@ class AutogramTests {
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createToken(Integer slotId, PasswordManager pm, SignatureTokenSettings settings) {
+        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("test.keystore")).getFile();
                 return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
@@ -153,7 +153,7 @@ class AutogramTests {
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createToken(Integer slotId, PasswordManager pm, SignatureTokenSettings settings) {
+        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("expired_certificate.keystore"))
                         .getFile();
@@ -280,6 +280,14 @@ class AutogramTests {
         @Override
         public void onSignatureCheckCompleted(ValidationReports wrapper) {
 
+        }
+    }
+
+    private class TestSettings extends UserSettings {
+        @Override
+        public DriverDetector getDriverDetector() {
+            List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
+            return new FakeDriverDetector(drivers);
         }
     }
 }

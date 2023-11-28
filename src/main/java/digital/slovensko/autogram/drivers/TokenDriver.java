@@ -30,7 +30,7 @@ public abstract class TokenDriver {
     }
 
 
-    public abstract AbstractKeyStoreTokenConnection createToken(Integer slotId, PasswordManager pm, SignatureTokenSettings settings);
+    public abstract AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings);
 
 
     public String getShortname() {

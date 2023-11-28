@@ -116,10 +116,10 @@ public class GUI implements UI {
             // short-circuit if only one driver present
             callback.accept(drivers.get(0));
         } else {
-            if (!driverWasAlreadySet && userSettings.getDriver() != null) {
+            if (!driverWasAlreadySet && userSettings.getDefaultDriver() != null) {
                 try {
                     driverWasAlreadySet = true;
-                    var defaultDriver = drivers.stream().filter(d -> d.getName().equals(userSettings.getDriver()))
+                    var defaultDriver = drivers.stream().filter(d -> d.getName().equals(userSettings.getDefaultDriver()))
                             .findFirst().get();
 
                     if (defaultDriver != null) {

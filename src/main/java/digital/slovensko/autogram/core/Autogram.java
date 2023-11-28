@@ -19,27 +19,14 @@ import java.util.function.Consumer;
 
 public class Autogram {
     private final UI ui;
-    private final Settings settings;
+    private final UserSettings settings;
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
-    private final DriverDetector driverDetector;
-    private final boolean shouldDisplayVisualizationError;
-    private final Integer slotId;
-    private final TSPSource tspSource;
     private final PasswordManager passwordManager;
 
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError, DriverDetector driverDetector, TSPSource tspSource) {
-        this(ui, shouldDisplayVisualizationError, driverDetector, -1, tspSource);
-    }
-
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError, DriverDetector driverDetector, Integer slotId, TSPSource tspSource) {
+    public Autogram(UI ui, UserSettings settings) {
         this.ui = ui;
-        this.settings = new DefaultSettings();
-        this.settings.setSlotId(slotId); // TODO pull out
-        this.driverDetector = driverDetector;
-        this.slotId = slotId;
-        this.shouldDisplayVisualizationError = shouldDisplayVisualizationError;
-        this.tspSource = tspSource;
+        this.settings = settings;
         this.passwordManager = new PasswordManager(ui, this.settings);
     }
 
@@ -92,7 +79,7 @@ public class Autogram {
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
 
-                if (shouldDisplayVisualizationError) {
+                if (settings.isCorrectDocumentDisplay()) {
                     ui.onUIThreadDo(
                             () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
                 } else {
@@ -187,7 +174,7 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
-        var drivers = driverDetector.getAvailableDrivers();
+        var drivers = settings.getDriverDetector().getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers,
                 (driver) -> {
                     ui.onWorkThreadDo(() -> {
@@ -199,7 +186,7 @@ public class Autogram {
 
     private void fetchKeysAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
         try {
-            var token = driver.createToken(slotId, passwordManager, settings);
+            var token = driver.createToken(passwordManager, settings);
             var keys = token.getKeys();
 
             ui.onUIThreadDo(
@@ -247,6 +234,6 @@ public class Autogram {
     }
 
     public TSPSource getTspSource() {
-        return tspSource;
+        return settings.getTspSource();
     }
 }

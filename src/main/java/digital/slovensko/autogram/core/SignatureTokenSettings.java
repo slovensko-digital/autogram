@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.core;
 
 public interface SignatureTokenSettings {
-    boolean forceContextSpecificLoginEnabled();
+    boolean getForceContextSpecificLoginEnabled();
     int getSlotId();
-    void setSlotId(int slotId);
 }

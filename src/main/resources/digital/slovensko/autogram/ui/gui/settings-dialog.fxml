@@ -130,6 +130,26 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
+                                                Hromadné podpisovanie
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Umožní hromadné podpisovanie dokumentov bez nutnosti opakovane zadávať podpisový PIN.
+
+                                                Podporuje aj hromadné podpisovanie pomocou občianskeho preukazu.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="bulkEnabledRadios"
+                                              styleClass="autogram-smaller-radio-buttons" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
                                                 Použitie nového štandardu
                                             </Text>
                                         </TextFlow>
@@ -341,9 +361,9 @@
         </TabPane>
     </VBox>
     <HBox styleClass="autogram-actions">
-        <Button fx:id="closeButton" onAction="#onCancelButtonAction"
+        <Button fx:id="saveButton" onAction="#onSaveButtonAction"
             styleClass="autogram-button,autogram-button--secondary">
-            Zavrieť nastavenia
+            Uložiť nastavenia
         </Button>
     </HBox>
 </VBox>
