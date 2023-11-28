@@ -217,7 +217,7 @@ public class GUI implements UI {
 
     public char[] getKeystorePassword() {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("Aký je kód k úložisku klúčov?", "Zadajte kód k úložisku klúčov.", false);
+            var controller = new PasswordController("Aký je kód k úložisku klúčov?", "Zadajte kód k úložisku klúčov.", false, true);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();
@@ -246,11 +246,11 @@ public class GUI implements UI {
 
     public char[] getContextSpecificPassword() {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("Aký je podpisový PIN alebo heslo?", "Zadajte podpisový PIN alebo heslo ku klúču.", true);
+            var controller = new PasswordController("Aký je podpisový PIN alebo heslo?", "Zadajte podpisový PIN alebo heslo ku klúču.", true, false);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Zadanie podpisového PINu"); // TODO
+            stage.setTitle("Zadanie podpisového PINu alebo hesla");
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();

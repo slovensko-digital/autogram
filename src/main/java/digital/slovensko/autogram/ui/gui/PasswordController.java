@@ -8,12 +8,11 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.util.function.Consumer;
-
 public class PasswordController {
     private final String questionText;
     private final String errorText;
     private final boolean isSigningStep;
+    private final boolean allowEmpty;
 
     private char[] password;
 
@@ -32,10 +31,11 @@ public class PasswordController {
     @FXML
     VBox mainBox;
 
-    public PasswordController(String questionText, String blankPasswordErrorText, boolean isSigningStep) {
+    public PasswordController(String questionText, String blankPasswordErrorText, boolean isSigningStep, boolean allowEmpty) {
         this.questionText = questionText;
         this.errorText = blankPasswordErrorText;
         this.isSigningStep = isSigningStep;
+        this.allowEmpty = allowEmpty;
     }
 
     public void initialize() {
@@ -49,7 +49,7 @@ public class PasswordController {
     }
 
     public void onPasswordAction() {
-        if (passwordField.getText().isEmpty()) {
+        if (passwordField.getText().isEmpty() && !allowEmpty) {
             error.setManaged(true);
             error.setVisible(true);
             formGroup.getStyleClass().add("autogram-form-group--error");

@@ -28,7 +28,7 @@ public class Autogram {
     private final TSPSource tspSource;
     private final PasswordManager passwordManager;
 
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, TSPSource tspSource) {
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError, DriverDetector driverDetector, TSPSource tspSource) {
         this(ui, shouldDisplayVisualizationError, driverDetector, -1, tspSource);
     }
 
@@ -106,7 +106,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 job.signWithKeyAndRespond(signingKey);
-                if(batch == null) passwordManager.reset();
+                if (batch == null) passwordManager.reset();
                 ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
             } catch (ResponseNetworkErrorException e) {
                 onSigningFailed(e, job);
@@ -189,7 +189,12 @@ public class Autogram {
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
         var drivers = driverDetector.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers,
-                (driver) -> fetchKeysAndThen(driver, callback));
+                (driver) -> {
+                    ui.onWorkThreadDo(() -> {
+                        fetchKeysAndThen(driver, callback);
+                    });
+                }
+        );
     }
 
     private void fetchKeysAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
@@ -238,10 +243,10 @@ public class Autogram {
         });
 
         scheduledExecutorService.scheduleAtFixedRate(() -> SignatureValidator.getInstance().refresh(),
-            480, 480, java.util.concurrent.TimeUnit.MINUTES);
+                480, 480, java.util.concurrent.TimeUnit.MINUTES);
     }
 
     public TSPSource getTspSource() {
-        return  tspSource;
+        return tspSource;
     }
 }
