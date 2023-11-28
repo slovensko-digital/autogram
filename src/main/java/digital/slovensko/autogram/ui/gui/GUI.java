@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
 import digital.slovensko.autogram.core.*;
@@ -83,7 +85,7 @@ public class GUI implements UI {
         } catch (AutogramException e) {
             job.onDocumentSignFailed(e);
             if (!e.batchCanContinue())
-                throw  e;
+                throw e;
         } catch (DSSException e) {
             job.onDocumentSignFailed(AutogramException.createFromDSSException(e));
         } catch (Exception e) {
@@ -124,7 +126,8 @@ public class GUI implements UI {
                         callback.accept(defaultDriver);
                         return;
                     }
-                } catch (NoSuchElementException e){}
+                } catch (NoSuchElementException e) {
+                }
             }
 
             PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
@@ -142,28 +145,6 @@ public class GUI implements UI {
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.show();
         }
-    }
-
-    @Override
-    public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
-        if (!driver.needsPassword()) {
-            callback.accept("".toCharArray());
-            return;
-        }
-
-        var controller = new PasswordController(callback);
-        var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
-
-        var stage = new Stage();
-        stage.setTitle("Načítanie klúčov z úložiska");
-        stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> {
-            refreshKeyOnAllJobs();
-            enableSigningOnAllJobs();
-        });
-        stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
     }
 
     @Override
@@ -232,6 +213,63 @@ public class GUI implements UI {
         GUIUtils.suppressDefaultFocus(stage, controller);
 
         stage.show();
+    }
+
+    public char[] getKeystorePassword() {
+        var futurePassword = new FutureTask<>(() -> {
+            var controller = new PasswordController("Aký je kód k úložisku klúčov?", "Zadajte kód k úložisku klúčov.", false);
+            var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
+
+            var stage = new Stage();
+            stage.setTitle("Načítanie klúčov z úložiska");
+            stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(e -> {
+                refreshKeyOnAllJobs();
+                enableSigningOnAllJobs();
+            });
+            stage.setResizable(false);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            return controller.getPassword();
+        });
+
+        Platform.runLater(futurePassword);
+
+        try {
+            return futurePassword.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public char[] getContextSpecificPassword() {
+        var futurePassword = new FutureTask<>(() -> {
+            var controller = new PasswordController("Aký je podpisový PIN alebo heslo?", "Zadajte podpisový PIN alebo heslo ku klúču.", true);
+            var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
+
+            var stage = new Stage();
+            stage.setTitle("Zadanie podpisového PINu"); // TODO
+            stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(e -> {
+                refreshKeyOnAllJobs();
+                enableSigningOnAllJobs();
+            });
+            stage.setResizable(false);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            return controller.getPassword();
+        });
+
+        Platform.runLater(futurePassword);
+
+        try {
+            return futurePassword.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -311,7 +349,7 @@ public class GUI implements UI {
         setUserFriendlyPositionAndLimits(stage);
 
         onWorkThreadDo(()
-        -> autogram.checkAndValidateSignatures(visualization.getJob()));
+                -> autogram.checkAndValidateSignatures(visualization.getJob()));
     }
 
     @Override
@@ -489,8 +527,8 @@ public class GUI implements UI {
         var sceneWidth = stage.getScene().getWidth();
         var availabeWidth = (bounds.getWidth() - sceneWidth);
         var singleOffsetXPx = Math.round(Math.min(maxOffset, (availabeWidth / 2) / maxWindows)); // spread windows into
-                                                                                                 // half of availabe
-                                                                                                 // screen width
+        // half of availabe
+        // screen width
         var offsetX = singleOffsetXPx * (nWindows - maxWindows / 2);
         double idealX = bounds.getMinX() + availabeWidth / 2 + offsetX;
         double x = Math.max(bounds.getMinX(), Math.min(bounds.getMaxX() - sceneWidth, idealX));

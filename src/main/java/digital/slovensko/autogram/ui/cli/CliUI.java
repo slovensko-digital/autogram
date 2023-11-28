@@ -4,6 +4,8 @@ import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -84,18 +86,6 @@ public class CliUI implements UI {
             pickedDriver = drivers.get(CliUtils.readInteger() - 1);
         }
         callback.accept(pickedDriver);
-    }
-
-    @Override
-    public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
-        if (!driver.needsPassword()) {
-            callback.accept(null);
-            return;
-        }
-
-        // Read password from CLI
-        var password = System.console().readPassword("Enter security code for driver (hidden): ");
-        callback.accept(password);
     }
 
     @Override
@@ -264,5 +254,14 @@ public class CliUI implements UI {
             e.printStackTrace();
         }
         System.err.println(errMessage);
+    }
+
+    @Override
+    public char[] getKeystorePassword() {
+        return System.console().readPassword("Enter keystore password (hidden): ");
+    }
+
+    public char[] getContextSpecificPassword() {
+        return System.console().readPassword("Enter key password (hidden): ");
     }
 }

@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -132,11 +133,11 @@ class AutogramTests {
 
     private static class FakeTokenDriver extends TokenDriver {
         public FakeTokenDriver(String name) {
-            super(name, Path.of(""), true, "fake");
+            super(name, Path.of(""), "fake");
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
+        public AbstractKeyStoreTokenConnection createToken(Integer slotId, PasswordManager pm, SignatureTokenSettings settings) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("test.keystore")).getFile();
                 return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
@@ -149,11 +150,11 @@ class AutogramTests {
     private static class FakeTokenDriverWithExpiredCertificate extends TokenDriver {
 
         public FakeTokenDriverWithExpiredCertificate() {
-            super("fake-token-driver-with-expired-certificate", Path.of(""), true, "fake");
+            super("fake-token-driver-with-expired-certificate", Path.of(""), "fake");
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
+        public AbstractKeyStoreTokenConnection createToken(Integer slotId, PasswordManager pm, SignatureTokenSettings settings) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("expired_certificate.keystore"))
                         .getFile();
@@ -185,11 +186,6 @@ class AutogramTests {
         @Override
         public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
             callback.accept(drivers.get(0));
-        }
-
-        @Override
-        public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
-            callback.accept(null);
         }
 
         @Override
@@ -235,6 +231,16 @@ class AutogramTests {
         @Override
         public void showError(AutogramException exception) {
 
+        }
+
+        @Override
+        public char[] getKeystorePassword() {
+            return null;
+        }
+
+        @Override
+        public char[] getContextSpecificPassword() {
+            return null;
         }
 
         @Override

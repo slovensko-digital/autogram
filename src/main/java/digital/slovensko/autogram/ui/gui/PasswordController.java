@@ -1,30 +1,55 @@
 package digital.slovensko.autogram.ui.gui;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 import java.util.function.Consumer;
 
 public class PasswordController {
-    private final Consumer<char[]> callback;
+    private final String questionText;
+    private final String errorText;
+    private final boolean isSigningStep;
+
+    private char[] password;
 
     @FXML
     PasswordField passwordField;
+    @FXML
+    Text question;
     @FXML
     Text error;
     @FXML
     VBox formGroup;
     @FXML
+    Button mainButton;
+    @FXML
+    Button cancelButton;
+    @FXML
     VBox mainBox;
 
-    public PasswordController(Consumer<char[]> callback) {
-        this.callback = callback;
+    public PasswordController(String questionText, String blankPasswordErrorText, boolean isSigningStep) {
+        this.questionText = questionText;
+        this.errorText = blankPasswordErrorText;
+        this.isSigningStep = isSigningStep;
+    }
+
+    public void initialize() {
+        question.setText(questionText);
+        error.setText(errorText);
+        if(isSigningStep) {
+            mainButton.setText("Podpísať");
+            cancelButton.setManaged(true);
+            cancelButton.setVisible(true);
+        }
     }
 
     public void onPasswordAction() {
-        if (passwordField.getText().equals("")) {
+        if (passwordField.getText().isEmpty()) {
             error.setManaged(true);
             error.setVisible(true);
             formGroup.getStyleClass().add("autogram-form-group--error");
@@ -33,10 +58,19 @@ public class PasswordController {
             formGroup.getScene().getWindow().sizeToScene();
             passwordField.requestFocus();
         } else {
+            this.password = passwordField.getText().toCharArray();
             GUIUtils.closeWindow(mainBox);
-            new Thread(() -> {
-                callback.accept(passwordField.getText().toCharArray());
-            }).start();
         }
+    }
+
+    public void onCancelButtonPressed(ActionEvent event) {
+        var window = mainBox.getScene().getRoot().getScene().getWindow();
+        if (window instanceof Stage) {
+            ((Stage) window).close();
+        }
+    }
+
+    public char[] getPassword() {
+        return password;
     }
 }

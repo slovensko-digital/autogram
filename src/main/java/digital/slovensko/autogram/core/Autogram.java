@@ -19,23 +19,28 @@ import java.util.function.Consumer;
 
 public class Autogram {
     private final UI ui;
+    private final Settings settings;
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
     private final DriverDetector driverDetector;
     private final boolean shouldDisplayVisualizationError;
     private final Integer slotId;
     private final TSPSource tspSource;
+    private final PasswordManager passwordManager;
 
     public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, TSPSource tspSource) {
         this(ui, shouldDisplayVisualizationError, driverDetector, -1, tspSource);
     }
 
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, Integer slotId, TSPSource tspSource) {
+    public Autogram(UI ui, boolean shouldDisplayVisualizationError, DriverDetector driverDetector, Integer slotId, TSPSource tspSource) {
         this.ui = ui;
+        this.settings = new DefaultSettings();
+        this.settings.setSlotId(slotId); // TODO pull out
         this.driverDetector = driverDetector;
         this.slotId = slotId;
         this.shouldDisplayVisualizationError = shouldDisplayVisualizationError;
         this.tspSource = tspSource;
+        this.passwordManager = new PasswordManager(ui, this.settings);
     }
 
     public void sign(SigningJob job) {
@@ -101,9 +106,12 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 job.signWithKeyAndRespond(signingKey);
+                if(batch == null) passwordManager.reset();
                 ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
             } catch (ResponseNetworkErrorException e) {
                 onSigningFailed(e, job);
+            } catch (PINIncorrectException e) {
+                passwordManager.reset();
             } catch (AutogramException e) {
                 onSigningFailed(e);
             } catch (DSSException e) {
@@ -181,17 +189,12 @@ public class Autogram {
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
         var drivers = driverDetector.getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers,
-                (driver) -> requestPasswordAndThen(driver, callback));
+                (driver) -> fetchKeysAndThen(driver, callback));
     }
 
-    public void requestPasswordAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
-        ui.requestPasswordAndThen(driver, (password) -> ui.onWorkThreadDo(
-                () -> fetchKeysAndThen(driver, password, callback)));
-    }
-
-    private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {
+    private void fetchKeysAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
         try {
-            var token = driver.createTokenWithPassword(slotId, password);
+            var token = driver.createToken(slotId, passwordManager, settings);
             var keys = token.getKeys();
 
             ui.onUIThreadDo(
