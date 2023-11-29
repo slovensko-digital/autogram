@@ -27,12 +27,10 @@ import java.util.Objects;
 public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private static final long CKU_CONTEXT_SPECIFIC = 2L;
     private final PasswordManager passwordManager;
-    private final SignatureTokenSettings settings;
 
     public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings) {
-        super(pkcsPath, pm, settings.getSlotId());
+        super(pkcsPath, pm, -1, settings.getSlotId(), null);
         this.passwordManager = pm;
-        this.settings = settings;
     }
 
     private byte[] sign(final byte[] bytes, final String javaSignatureAlgorithm, final AlgorithmParameterSpec param, final DSSPrivateKeyEntry keyEntry) throws GeneralSecurityException {
@@ -58,7 +56,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
 
-            if (settings.getForceContextSpecificLoginEnabled() && isAlwaysAuthenticate(p11, sessionId, pk)) {
+            if (isAlwaysAuthenticate(p11, sessionId, pk) && !isProtectedAuthenticationPath(p11, getSlotListIndex())) {
                 var password = passwordManager.getContextSpecificPassword();
                 if (password == null) throw new PasswordNotProvidedException(); // handle password not provided
                 p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, password);
@@ -84,6 +82,26 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             return ((byte[]) result)[0] == 1;
         } else {
             return false; // CKA_ALWAYS_AUTHENTICATE not found
+        }
+    }
+
+    private static boolean isProtectedAuthenticationPath(PKCS11 p11, int slotIndex) throws PKCS11Exception {
+        var slotList = p11.C_GetSlotList(false);
+        if (slotList.length <= slotIndex)
+            return false;
+
+        var slotId = slotList[slotIndex];
+        return (p11.C_GetTokenInfo(slotId).flags & PKCS11Constants.CKF_PROTECTED_AUTHENTICATION_PATH) != 0;
+    }
+
+    private int getSlotListIndex() {
+        try {
+            Field f = getClass().getSuperclass().getDeclaredField("slotListIndex");
+            f.setAccessible(true);
+            return (int) f.get(this);
+
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
         }
     }
 

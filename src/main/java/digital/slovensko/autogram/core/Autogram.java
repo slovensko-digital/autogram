@@ -93,7 +93,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 job.signWithKeyAndRespond(signingKey);
-                if (batch == null) passwordManager.reset();
+                if (batch == null || batch.isEnded()) passwordManager.reset();
                 ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
             } catch (ResponseNetworkErrorException e) {
                 onSigningFailed(e, job);
