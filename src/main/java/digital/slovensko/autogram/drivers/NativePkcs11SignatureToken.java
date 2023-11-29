@@ -88,9 +88,13 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     }
 
     private static boolean isProtectedAuthenticationPath(PKCS11 p11, int slotIndex) throws PKCS11Exception {
+
         var slotList = p11.C_GetSlotList(false);
-        if (slotList.length <= slotIndex)
+        if (slotList.length <= slotIndex || slotList.length < 1)
             return false;
+
+        if (slotIndex < 0)
+            slotIndex = 0;
 
         var slotId = slotList[slotIndex];
         return (p11.C_GetTokenInfo(slotId).flags & PKCS11Constants.CKF_PROTECTED_AUTHENTICATION_PATH) != 0;

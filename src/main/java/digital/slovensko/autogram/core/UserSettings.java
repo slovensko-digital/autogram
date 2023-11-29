@@ -62,7 +62,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.put("DRIVER", driver == null ? "" : driver);
         prefs.putInt("SLOT_ID", slotId);
         prefs.putBoolean("EN319132", en319132);
-        prefs.putBoolean("BULK_ENABLED", signIndividually);
+        prefs.putBoolean("BULK_ENABLED", bulkEnabled);
         prefs.putBoolean("SIGN_INDIVIDUALLY", signIndividually);
         prefs.putBoolean("CORRECT_DOCUMENT_DISPLAY", correctDocumentDisplay);
         prefs.putBoolean("SIGNATURES_VALIDITY", signaturesValidity);
