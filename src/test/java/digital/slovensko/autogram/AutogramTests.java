@@ -132,7 +132,7 @@ class AutogramTests {
 
     private static class FakeTokenDriver extends TokenDriver {
         public FakeTokenDriver(String name) {
-            super(name, Path.of(""), "fake");
+            super(name, Path.of(""), "fake", "");
         }
 
         @Override
@@ -149,7 +149,7 @@ class AutogramTests {
     private static class FakeTokenDriverWithExpiredCertificate extends TokenDriver {
 
         public FakeTokenDriverWithExpiredCertificate() {
-            super("fake-token-driver-with-expired-certificate", Path.of(""), "fake");
+            super("fake-token-driver-with-expired-certificate", Path.of(""), "fake", "");
         }
 
         @Override
