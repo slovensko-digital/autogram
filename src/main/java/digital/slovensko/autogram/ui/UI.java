@@ -9,6 +9,7 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
 public interface UI {
@@ -24,9 +25,7 @@ public interface UI {
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback);
 
-    void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback);
-
-    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback);
+    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback);
 
     void onPickSigningKeyFailed(AutogramException e);
 
@@ -57,4 +56,8 @@ public interface UI {
     void showIgnorableExceptionDialog(IgnorableException exception);
 
     void showError(AutogramException exception);
+
+    char[] getKeystorePassword();
+
+    char[] getContextSpecificPassword();
 }

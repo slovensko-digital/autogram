@@ -9,6 +9,7 @@ import digital.slovensko.autogram.core.errors.SourceAndTargetTypeMismatchExcepti
 import digital.slovensko.autogram.core.errors.TargetAlreadyExistsException;
 import digital.slovensko.autogram.core.errors.TargetDirectoryDoesNotExistException;
 import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
+import digital.slovensko.autogram.ui.cli.CliSettings;
 
 public class TargetPath {
     private final Path targetDirectory;
@@ -80,9 +81,9 @@ public class TargetPath {
         }
     }
 
-    public static TargetPath fromParams(CliParameters params) {
-        return new TargetPath(params.getTarget(), params.getSource().toPath(), params.isForce(),
-                params.shouldMakeParentDirectories(), FileSystems.getDefault(), params.shouldSignPDFAsPades());
+    public static TargetPath fromParams(CliSettings settings) {
+        return new TargetPath(settings.getTarget(), settings.getSource().toPath(), settings.isForce(),
+                settings.shouldMakeParentDirectories(), FileSystems.getDefault(), settings.shouldSignPDFAsPades());
     }
 
     public static TargetPath fromSource(Path source, boolean isSignatureLevelPades) {

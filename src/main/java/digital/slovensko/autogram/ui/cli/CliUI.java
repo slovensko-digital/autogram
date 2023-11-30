@@ -23,9 +23,14 @@ import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 public class CliUI implements UI {
+    private final CliSettings settings;
     SigningKey activeKey;
     int nJobsSigned = 1;
     int nJobsTotal = 0;
+
+    public CliUI(CliSettings settings) {
+        this.settings = settings;
+    }
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
@@ -71,8 +76,17 @@ public class CliUI implements UI {
         if (drivers.isEmpty()) {
             showError(new NoDriversDetectedException());
             return;
+
         } else if (drivers.size() == 1) {
             pickedDriver = drivers.get(0);
+
+        } else if (settings.getDefaultDriver() != null) {
+            var driver = drivers.stream().filter(d -> d.getShortname().equals(settings.getDefaultDriver())).findFirst();
+            if (driver.isEmpty())
+                throw new NoDriversDetectedException();
+
+            pickedDriver = driver.get();
+
         } else {
             var i = new AtomicInteger(1);
             System.out.println("Pick driver:");
@@ -87,21 +101,9 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
-        if (!driver.needsPassword()) {
-            callback.accept(null);
-            return;
-        }
-
-        // Read password from CLI
-        var password = System.console().readPassword("Enter security code for driver (hidden): ");
-        callback.accept(password);
-    }
-
-    @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
         if (keys.isEmpty()) {
-            showError(new NoKeysDetectedException());
+            showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
             return;
         }
 
@@ -212,57 +214,68 @@ public class CliUI implements UI {
         throw exception;
     }
 
+    public static String parseError(AutogramException e) {
+        if (e instanceof FunctionCanceledException) {
+            return "No security code entered";
+        } else if (e instanceof InitializationFailedException) {
+            return "Unable to read card";
+        } else if (e instanceof NoDriversDetectedException) {
+            return "No available drivers found";
+        } else if (e instanceof NoKeysDetectedException) {
+            return "No signing keys found";
+        } else if (e instanceof PDFAComplianceException) {
+            return "Document is not PDF/A compliant";
+        } else if (e instanceof PINIncorrectException) {
+            return "Incorrect security code";
+        } else if (e instanceof PINLockedException) {
+            return "PIN is blocked";
+        } else if (e instanceof SigningCanceledByUserException) {
+            return "Signing canceled by user";
+        } else if (e instanceof SigningWithExpiredCertificateException) {
+            return "Signing with expired certificate";
+        } else if (e instanceof TokenNotRecognizedException) {
+            return "Token not recognized";
+        } else if (e instanceof TokenRemovedException) {
+            return "Token removed";
+        } else if (e instanceof TargetAlreadyExistsException) {
+            return "Target already exists";
+        } else if (e instanceof SourceAndTargetTypeMismatchException) {
+            return "Source and target type mismatch (file / directory)";
+        } else if (e instanceof SourceDoesNotExistException) {
+            return "Source does not exist";
+        } else if (e instanceof SourceNotDefindedException) {
+            return "Source not defined";
+        } else if (e instanceof UnableToCreateDirectoryException) {
+            return "Unable to create directory";
+        } else if (e instanceof TokenDriverDoesNotExistException) {
+            return "Token driver does not exist";
+        } else if (e instanceof TargetDirectoryDoesNotExistException) {
+            return "Target directory does not exist";
+        } else if (e instanceof SlotIndexIsNotANumberException) {
+            return "Slot ID is not a number";
+        } else if (e instanceof PDFSignatureLevelIsNotValidException) {
+            return "PDF signature level is not valid";
+        } else if (e instanceof TsaServerMisconfiguredException) {
+            return "TSA server refused to add timestamp. Check TSA server configuration.";
+        } else if (e instanceof SlotIndexOutOfRangeException) {
+            return "Provided slot index is out of range for chosen driver.";
+        } else {
+            e.printStackTrace();
+            return "Unknown error occurred";
+        }
+    }
+
     @Override
     public void showError(AutogramException e) {
-        String errMessage = "";
-        if (e instanceof FunctionCanceledException) {
-            errMessage = "No security code entered";
-        } else if (e instanceof InitializationFailedException) {
-            errMessage = "Unable to read card";
-        } else if (e instanceof NoDriversDetectedException) {
-            errMessage = "No available drivers found";
-        } else if (e instanceof NoKeysDetectedException) {
-            errMessage = "No signing keys found";
-        } else if (e instanceof PDFAComplianceException) {
-            errMessage = "Document is not PDF/A compliant";
-        } else if (e instanceof PINIncorrectException) {
-            errMessage = "Incorrect security code";
-        } else if (e instanceof PINLockedException) {
-            errMessage = "PIN is blocked";
-        } else if (e instanceof SigningCanceledByUserException) {
-            errMessage = "Signing canceled by user";
-        } else if (e instanceof SigningWithExpiredCertificateException) {
-            errMessage = "Signing with expired certificate";
-        } else if (e instanceof TokenNotRecognizedException) {
-            errMessage = "Token not recognized";
-        } else if (e instanceof TokenRemovedException) {
-            errMessage = "Token removed";
-        } else if (e instanceof TargetAlreadyExistsException) {
-            errMessage = "Target already exists";
-        } else if (e instanceof SourceAndTargetTypeMismatchException) {
-            errMessage = "Source and target type mismatch (file / directory)";
-        } else if (e instanceof SourceDoesNotExistException) {
-            errMessage = "Source does not exist";
-        } else if (e instanceof SourceNotDefindedException) {
-            errMessage = "Source not defined";
-        } else if (e instanceof UnableToCreateDirectoryException) {
-            errMessage = "Unable to create directory";
-        } else if (e instanceof TokenDriverDoesNotExistException) {
-            errMessage = "Token driver does not exist";
-        } else if (e instanceof TargetDirectoryDoesNotExistException) {
-            errMessage = "Target directory does not exist";
-        } else if (e instanceof SlotIdIsNotANumberException) {
-            errMessage = "Slot ID is not a number";
-        } else if (e instanceof PDFSignatureLevelIsNotValidException) {
-            errMessage = "PDF signature level is not valid";
-        } else if (e instanceof KeyPinDifferentFromTokenPinException) {
-            errMessage = "PIN for signing key is different from card PIN. Not supported.";
-        } else if (e instanceof TsaServerMisconfiguredException) {
-            errMessage = "TSA server refused to add timestamp. Check TSA server configuration.";
-        } else {
-            errMessage = "Unknown error occurred";
-            e.printStackTrace();
-        }
-        System.err.println(errMessage);
+        System.err.println(parseError(e));
+    }
+
+    @Override
+    public char[] getKeystorePassword() {
+        return System.console().readPassword("Enter keystore password (hidden): ");
+    }
+
+    public char[] getContextSpecificPassword() {
+        return System.console().readPassword("Enter key password (hidden): ");
     }
 }

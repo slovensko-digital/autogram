@@ -38,9 +38,9 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider"})
     void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
+        var settings = new TestSettings();
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
+        var autogram = new Autogram(newUI, settings);
 
         var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null);
         var responder = mock(Responder.class);
@@ -56,8 +56,8 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider"})
     void testSignAsiceCadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
+        var settings = new TestSettings();
+        var autogram = new Autogram(newUI, settings);
 
         var parameters = SigningParameters.buildForASiCWithCAdES(document, false, null);
         var responder = mock(Responder.class);
@@ -72,8 +72,8 @@ class AutogramTests {
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
     void testSignPadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
+        var settings = new TestSettings();
+        var autogram = new Autogram(newUI, settings);
 
         var parameters = SigningParameters.buildForPDF(document, false, false, null);
         var responder = mock(Responder.class);
@@ -97,8 +97,8 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
     void testSignBuildFromFileHappyScenario(InMemoryDocument document) throws IOException {
         var newUI = new FakeUI();
-        List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
-        var autogram = new Autogram(newUI, true, new FakeDriverDetector(drivers), null);
+        var settings = new TestSettings();
+        var autogram = new Autogram(newUI, settings);
 
         var file = new File(Path.of(tempTestsPath.toString(), document.getName()).toString());
         var outputStream = new FileOutputStream(file);
@@ -132,11 +132,11 @@ class AutogramTests {
 
     private static class FakeTokenDriver extends TokenDriver {
         public FakeTokenDriver(String name) {
-            super(name, Path.of(""), true, "fake");
+            super(name, Path.of(""), "fake", "");
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
+        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("test.keystore")).getFile();
                 return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
@@ -149,11 +149,11 @@ class AutogramTests {
     private static class FakeTokenDriverWithExpiredCertificate extends TokenDriver {
 
         public FakeTokenDriverWithExpiredCertificate() {
-            super("fake-token-driver-with-expired-certificate", Path.of(""), true, "fake");
+            super("fake-token-driver-with-expired-certificate", Path.of(""), "fake", "");
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
+        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("expired_certificate.keystore"))
                         .getFile();
@@ -188,12 +188,7 @@ class AutogramTests {
         }
 
         @Override
-        public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
-            callback.accept(null);
-        }
-
-        @Override
-        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
             callback.accept(keys.get(0));
         }
 
@@ -238,6 +233,16 @@ class AutogramTests {
         }
 
         @Override
+        public char[] getKeystorePassword() {
+            return null;
+        }
+
+        @Override
+        public char[] getContextSpecificPassword() {
+            return null;
+        }
+
+        @Override
         public void onSigningSuccess(SigningJob signingJob) {
 
         }
@@ -275,6 +280,14 @@ class AutogramTests {
         @Override
         public void onSignatureCheckCompleted(ValidationReports wrapper) {
 
+        }
+    }
+
+    private class TestSettings extends UserSettings {
+        @Override
+        public DriverDetector getDriverDetector() {
+            List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
+            return new FakeDriverDetector(drivers);
         }
     }
 }

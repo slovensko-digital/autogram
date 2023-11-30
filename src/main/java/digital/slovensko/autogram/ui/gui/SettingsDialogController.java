@@ -27,6 +27,8 @@ public class SettingsDialogController {
     @FXML
     private TextField customTsaServerTextField;
     @FXML
+    private HBox bulkEnabledRadios;
+    @FXML
     private HBox en319132Radios;
     @FXML
     private ChoiceBox<TokenDriver> driverChoiceBox;
@@ -43,9 +45,9 @@ public class SettingsDialogController {
     @FXML
     private HBox localServerEnabledRadios;
     @FXML
-    private TextField customKeystorePathTextField;
+    private ChoiceBox<String> slotIndexChoiceBox;
     @FXML
-    private HBox customKeystoreRadios;
+    private TextField customKeystorePathTextField;
     @FXML
     private Button saveButton;
     @FXML
@@ -67,6 +69,7 @@ public class SettingsDialogController {
         initializeDriverChoiceBox();
         initializeTsaEnabled();
         initializeTsaServer();
+        initializeBulkEnabledCheckbox();
         initializeEn319132CheckBox();
         initializeCorrectDocumentDisplayCheckBox();
         initializeSignatureValidationCheckBox();
@@ -74,6 +77,7 @@ public class SettingsDialogController {
         initializeExpiredCertsEnabledCheckBox();
         initializeLocalServerEnabledCheckBox();
         initializeTrustedCountriesList();
+        initializeSlotIndexSettings();
         initializeCustomKeystoreSettings();
     }
 
@@ -91,12 +95,12 @@ public class SettingsDialogController {
     }
 
     private void initializeDriverChoiceBox() {
-        var driverDetector = new DefaultDriverDetector(userSettings.getCustomKeystorePath(), userSettings.getCustomKeystorePasswordPrompt());
+        var driverDetector = new DefaultDriverDetector(userSettings);
         driverChoiceBox.setConverter(new TokenDriverStringConverter(driverDetector));
-        driverChoiceBox.getItems().add(new FakeTokenDriver("Žiadne", null, false, "none"));
+        driverChoiceBox.getItems().add(new FakeTokenDriver("Žiadne", null, "none", ""));
         driverChoiceBox.getItems().addAll(driverDetector.getAvailableDrivers());
         var defaultDriver = driverChoiceBox.getItems().stream()
-                .filter(d -> d != null && d.getName().equals(userSettings.getDriver())).findFirst();
+                .filter(d -> d != null && d.getName().equals(userSettings.getDefaultDriver())).findFirst();
         driverChoiceBox.setValue(defaultDriver.orElse(null));
         driverChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             userSettings.setDriver(newValue.getName());
@@ -164,6 +168,10 @@ public class SettingsDialogController {
 
     private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue) {
         initializeBooleanRadios(parent, consumer, defaultValue, "Áno", "Nie");
+    }
+
+    private void initializeBulkEnabledCheckbox() {
+        initializeBooleanRadios(bulkEnabledRadios, t -> userSettings.setBulkEnabled(t), userSettings.isBulkEnabled());
     }
 
     private void initializeEn319132CheckBox() {
@@ -249,18 +257,29 @@ public class SettingsDialogController {
         return new HBox(countryBox, new VBox(checkBox));
     }
 
-    private void initializeCustomKeystoreSettings() {
-        initializeBooleanRadios(customKeystoreRadios, t -> userSettings.setCustomKeystorePasswordPrompt(t),
-                userSettings.getCustomKeystorePasswordPrompt());
+    private void initializeSlotIndexSettings() {
+        final var DEFAULT_LABEL = "Predvolený slot";
+        slotIndexChoiceBox.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
+        slotIndexChoiceBox.setValue(userSettings.getSlotIndex() == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getSlotIndex()));
+        slotIndexChoiceBox.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    if (newValue.equals(DEFAULT_LABEL))
+                        newValue = "-1";
 
+                    userSettings.setSlotIndex(Integer.parseInt(newValue));
+                });
+    }
+
+    private void initializeCustomKeystoreSettings() {
         customKeystorePathTextField.setText(userSettings.getCustomKeystorePath());
         customKeystorePathTextField.setOnKeyTyped((e) -> {
             userSettings.setCustomKeystorePath(customKeystorePathTextField.getText());
         });
     }
 
-    public void onCancelButtonAction() {
-        var stage = (Stage) closeButton.getScene().getWindow();
+    public void onSaveButtonAction() {
+        userSettings.save();
+        var stage = (Stage) saveButton.getScene().getWindow();
         stage.close();
     }
 }

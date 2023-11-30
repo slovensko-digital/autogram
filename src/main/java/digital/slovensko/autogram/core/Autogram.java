@@ -19,23 +19,15 @@ import java.util.function.Consumer;
 
 public class Autogram {
     private final UI ui;
+    private final UserSettings settings;
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
-    private final DriverDetector driverDetector;
-    private final boolean shouldDisplayVisualizationError;
-    private final Integer slotId;
-    private final TSPSource tspSource;
+    private final PasswordManager passwordManager;
 
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, TSPSource tspSource) {
-        this(ui, shouldDisplayVisualizationError, driverDetector, -1, tspSource);
-    }
-
-    public Autogram(UI ui, boolean shouldDisplayVisualizationError , DriverDetector driverDetector, Integer slotId, TSPSource tspSource) {
+    public Autogram(UI ui, UserSettings settings) {
         this.ui = ui;
-        this.driverDetector = driverDetector;
-        this.slotId = slotId;
-        this.shouldDisplayVisualizationError = shouldDisplayVisualizationError;
-        this.tspSource = tspSource;
+        this.settings = settings;
+        this.passwordManager = new PasswordManager(ui, this.settings);
     }
 
     public void sign(SigningJob job) {
@@ -87,7 +79,7 @@ public class Autogram {
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
 
-                if (shouldDisplayVisualizationError) {
+                if (settings.isCorrectDocumentDisplay()) {
                     ui.onUIThreadDo(
                             () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
                 } else {
@@ -101,9 +93,12 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 job.signWithKeyAndRespond(signingKey);
+                if (batch == null || batch.isEnded()) passwordManager.reset();
                 ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
             } catch (ResponseNetworkErrorException e) {
                 onSigningFailed(e, job);
+            } catch (PINIncorrectException e) {
+                passwordManager.reset();
             } catch (AutogramException e) {
                 onSigningFailed(e);
             } catch (DSSException e) {
@@ -148,7 +143,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 ui.signBatch(job, batch.getSigningKey());
-            } catch (KeyPinDifferentFromTokenPinException e) {
+            } catch (PINIncorrectException e) {
                 ui.onUIThreadDo(() -> {
                     ui.cancelBatch(batch);
                 });
@@ -179,23 +174,23 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
-        var drivers = driverDetector.getAvailableDrivers();
+        var drivers = settings.getDriverDetector().getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers,
-                (driver) -> requestPasswordAndThen(driver, callback));
+                (driver) -> {
+                    ui.onWorkThreadDo(() -> {
+                        fetchKeysAndThen(driver, callback);
+                    });
+                }
+        );
     }
 
-    public void requestPasswordAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
-        ui.requestPasswordAndThen(driver, (password) -> ui.onWorkThreadDo(
-                () -> fetchKeysAndThen(driver, password, callback)));
-    }
-
-    private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {
+    private void fetchKeysAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
         try {
-            var token = driver.createTokenWithPassword(slotId, password);
+            var token = driver.createToken(passwordManager, settings);
             var keys = token.getKeys();
 
             ui.onUIThreadDo(
-                    () -> ui.pickKeyAndThen(keys, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
+                    () -> ui.pickKeyAndThen(keys, driver, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
         } catch (DSSException e) {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         }
@@ -235,10 +230,10 @@ public class Autogram {
         });
 
         scheduledExecutorService.scheduleAtFixedRate(() -> SignatureValidator.getInstance().refresh(),
-            480, 480, java.util.concurrent.TimeUnit.MINUTES);
+                480, 480, java.util.concurrent.TimeUnit.MINUTES);
     }
 
     public TSPSource getTspSource() {
-        return  tspSource;
+        return settings.getTspSource();
     }
 }

@@ -22,9 +22,7 @@ public class GUIApp extends Application {
     public void start(Stage windowStage) throws Exception {
         var userSettings = UserSettings.load();
         var ui = new GUI(getHostServices(), userSettings);
-        var autogram = new Autogram(ui, userSettings.isCorrectDocumentDisplay(), new DefaultDriverDetector(
-                userSettings.getCustomKeystorePath(), userSettings.getCustomKeystorePasswordPrompt()),
-                userSettings.getTspSource());
+        var autogram = new Autogram(ui, userSettings);
 
         Platform.setImplicitExit(false);
         autogram.checkForUpdate();
