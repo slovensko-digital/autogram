@@ -23,7 +23,7 @@ public class CliSettings extends UserSettings {
         settings.setDriver(cmd.getOptionValue("d"));
         settings.setCustomKeystorePath(cmd.getOptionValue("keystore", ""));
         settings.setCustomKeystorePasswordPrompt(true);
-        settings.setSlotId(getValidSlotId(cmd.getOptionValue("slot-id")));
+        settings.setSlotIndex(getValidSlotId(cmd.getOptionValue("slot-id")));
         settings.setForce(cmd.hasOption("f"));
         settings.setPdfaCompliance(cmd.hasOption("pdfa"));
         settings.setMakeParentDirectories(cmd.hasOption("parents"));

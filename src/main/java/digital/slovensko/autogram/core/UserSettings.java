@@ -13,7 +13,7 @@ import java.util.prefs.Preferences;
 public class UserSettings implements PasswordManagerSettings, SignatureTokenSettings, DriverDetectorSettings {
     private SignatureLevel signatureLevel;
     private String driver;
-    private int slotId;
+    private int slotIndex;
     private boolean en319132;
     private boolean signIndividually;
     private boolean correctDocumentDisplay;
@@ -36,7 +36,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         var settings = new UserSettings();
         settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", null));
         settings.setDriver(prefs.get("DRIVER", ""));
-        settings.setSlotId(prefs.getInt("SLOT_ID", -1));
+        settings.setSlotIndex(prefs.getInt("SLOT_INDEX", -1));
         settings.setEn319132(prefs.getBoolean("EN319132", false));
         settings.setBulkEnabled(prefs.getBoolean("BULK_ENABLED", false));
         settings.setSignIndividually(prefs.getBoolean("SIGN_INDIVIDUALLY", true));
@@ -60,7 +60,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
         prefs.put("SIGNATURE_LEVEL", new SignatureLevelStringConverter().toString(signatureLevel));
         prefs.put("DRIVER", driver == null ? "" : driver);
-        prefs.putInt("SLOT_ID", slotId);
+        prefs.putInt("SLOT_INDEX", slotIndex);
         prefs.putBoolean("EN319132", en319132);
         prefs.putBoolean("BULK_ENABLED", bulkEnabled);
         prefs.putBoolean("SIGN_INDIVIDUALLY", signIndividually);
@@ -241,12 +241,12 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     @Override
-    public int getSlotId() {
-        return slotId;
+    public int getSlotIndex() {
+        return slotIndex;
     }
 
-    public void setSlotId(int value) {
-        slotId = value;
+    public void setSlotIndex(int value) {
+        slotIndex = value;
     }
 
     public DriverDetector getDriverDetector() {

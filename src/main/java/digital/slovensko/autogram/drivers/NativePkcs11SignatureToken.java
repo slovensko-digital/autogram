@@ -30,7 +30,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private final SignatureTokenSettings settings;
 
     public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings) {
-        super(pkcsPath, pm, -1, settings.getSlotId(), null);
+        super(pkcsPath, pm, -1, settings.getSlotIndex(), null);
         this.passwordManager = pm;
         this.settings = settings;
     }
