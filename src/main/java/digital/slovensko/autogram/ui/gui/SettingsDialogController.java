@@ -45,6 +45,8 @@ public class SettingsDialogController {
     @FXML
     private HBox localServerEnabledRadios;
     @FXML
+    private ChoiceBox<String> slotIndexChoiceBox;
+    @FXML
     private TextField customKeystorePathTextField;
     @FXML
     private HBox customKeystoreRadios;
@@ -77,6 +79,7 @@ public class SettingsDialogController {
         initializeExpiredCertsEnabledCheckBox();
         initializeLocalServerEnabledCheckBox();
         initializeTrustedCountriesList();
+        initializeSlotIndexSettings();
         initializeCustomKeystoreSettings();
     }
 
@@ -254,6 +257,19 @@ public class SettingsDialogController {
         });
 
         return new HBox(countryBox, new VBox(checkBox));
+    }
+
+    private void initializeSlotIndexSettings() {
+        final var DEFAULT_LABEL = "Predvolený slot";
+        slotIndexChoiceBox.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
+        slotIndexChoiceBox.setValue(userSettings.getSlotIndex() == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getSlotIndex()));
+        slotIndexChoiceBox.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    if (newValue.equals(DEFAULT_LABEL))
+                        newValue = "-1";
+
+                    userSettings.setSlotIndex(Integer.parseInt(newValue));
+                });
     }
 
     private void initializeCustomKeystoreSettings() {

@@ -322,6 +322,28 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
+                                                Vlastný slot index
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Na  niektorých kartách zvyknú byť certifikáty uložené v inom ako predvolenom slote.
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Napríklad na Gemalto ID Prime 940 sa môžu nachádzať v slote s indexom 8.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-dropdown">
+                                        <ChoiceBox fx:id="slotIndexChoiceBox" styleClass="autogram-choicebox" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
                                                 Cesta k vlastnému úložisku kľúčov
                                             </Text>
                                         </TextFlow>
