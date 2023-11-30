@@ -9,8 +9,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.DocumentNotSignedYetException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
-import digital.slovensko.autogram.server.dto.ValidateRequestBody;
-import digital.slovensko.autogram.server.dto.ValidateResponse;
+import digital.slovensko.autogram.server.dto.ValidationRequestBody;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -18,10 +17,10 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import java.io.IOException;
 import java.util.Base64;
 
-public class ValidateEndpoint implements HttpHandler {
+public class ValidationEndpoint implements HttpHandler {
     private final Autogram autogram;
 
-    public ValidateEndpoint(Autogram autogram) {
+    public ValidationEndpoint(Autogram autogram) {
         this.autogram = autogram;
     }
 
@@ -29,8 +28,13 @@ public class ValidateEndpoint implements HttpHandler {
     public void handle(HttpExchange exchange) {
         DSSDocument document = null;
         try {
-            var body = EndpointUtils.loadFromJsonExchange(exchange, ValidateRequestBody.class);
+            var body = EndpointUtils.loadFromJsonExchange(exchange, ValidationRequestBody.class);
+            if (body.dataB64() == null)
+                throw new IllegalArgumentException("Document to validate is not provided.");
+
             document = new InMemoryDocument(Base64.getDecoder().decode(body.dataB64()));
+            if (document == null || document.openStream().readAllBytes().length < 1)
+                throw new IllegalArgumentException("Document to validate is null.");
         } catch (JsonSyntaxException | IOException | IllegalArgumentException e) {
             var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
             EndpointUtils.respondWithError(response, exchange);
@@ -48,7 +52,7 @@ public class ValidateEndpoint implements HttpHandler {
             try {
                 exchange.getResponseHeaders().add("Content-Type", "txt/xml;utf-8");
                 exchange.sendResponseHeaders(200, 0);
-                exchange.getResponseBody().write(reports.getXmlSimpleReport().getBytes());
+                exchange.getResponseBody().write(reports.getXmlValidationReport().getBytes());
                 exchange.getResponseBody().close();
             } catch (IOException e) {
                 throw new ResponseNetworkErrorException("Externá aplikácia nečakala na odpoveď", e);

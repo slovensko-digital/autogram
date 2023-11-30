@@ -338,7 +338,7 @@ paths:
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/ValidationResponseBody"
 
 components:
   schemas:
@@ -615,6 +615,72 @@ components:
           type: string
           example: PD94bWwgdmVyc2lvbj0iMS4wIiBlb
           description: Base64 encoded document to validate signatures in
+
+    ValidationResponseBody:
+      type: object
+      properties:
+        formatSuboru:
+          type: string
+          example: ASiC-E
+        podpisy:
+          type: array
+          items:
+            type: object
+            properties:
+              vysledokOvereniaPodpisu:
+                type: object
+                properties:
+                  kod:
+                    type: integer
+                    example: 0
+                  popis:
+                    type: string
+                    example: VALID
+              informaciaOPodpise:
+                type: object
+                properties:
+                  datumACasPodpisuUtc:
+                    type: string
+                  datumACasCasovejPeciatkyPodpisuUtc:
+                    type: string
+                  typ:
+                    type: string
+                    enum:
+                      - XAdES_BASELINE_B
+                      - XAdES_BASELINE_T
+                      - XAdES_BASELINE_LT
+                      - XAdES_BASELINE_LTA
+                      - PAdES_BASELINE_B
+                      - PAdES_BASELINE_T
+                      - PAdES_BASELINE_LT
+                      - PAdES_BASELINE_LTA
+                      - CAdES_BASELINE_B
+                      - CAdES_BASELINE_T
+                      - CAdES_BASELINE_LT
+                      - CAdES_BASELINE_LTA
+                  legislativnyTyp:
+                    type: object
+                    properties:
+                      kod:
+                        type: integer
+                        example: 4
+                      popis:
+                        type: string
+                        example: Iný elektronický podpis/pečať
+                  podpisovycertifikat:
+                    type: object
+                    propertie:
+                      subjekt:
+                        type: string
+                        example: SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith
+                        description:
+                  obsahujeCasovuPeciatku:
+                    type: boolean
+                    example: true
+
+
+        podpisaneDatoveObjekty:
+          type: object
 
   examples:
     XAdES-XML-Base64-HTML_md:

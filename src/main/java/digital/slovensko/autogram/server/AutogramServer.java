@@ -47,7 +47,7 @@ public class AutogramServer {
                 .add(new AutogramCorsFilter(List.of("POST", "DELETE")));
 
         // Validate
-        server.createContext("/validate", new ValidateEndpoint(autogram)).getFilters()
+        server.createContext("/validate", new ValidationEndpoint(autogram)).getFilters()
                 .add(new AutogramCorsFilter(List.of("POST")));
 
         // Start server
