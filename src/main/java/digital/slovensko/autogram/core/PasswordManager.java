@@ -3,6 +3,8 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 
+import java.util.Arrays;
+
 public class PasswordManager implements PasswordInputCallback {
     private final UI ui;
     private final PasswordManagerSettings settings;
@@ -25,7 +27,8 @@ public class PasswordManager implements PasswordInputCallback {
     }
 
     public void reset() {
-        cachedPassword = null; // TODO nullify to be safe
+        if (cachedPassword != null)
+            Arrays.fill(cachedPassword, '\0');
     }
 
     @Override

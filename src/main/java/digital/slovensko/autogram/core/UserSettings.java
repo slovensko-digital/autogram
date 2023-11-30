@@ -23,7 +23,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private boolean expiredCertsEnabled;
     private List<String> trustedList;
     private String customKeystorePath;
-    private boolean customKeystorePasswordPrompt;
     private String tsaServer;
     private TSPSource tspSource;
     private boolean tsaEnabled;
@@ -47,7 +46,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setExpiredCertsEnabled(prefs.getBoolean("EXPIRED_CERTS_ENABLED", false));
         settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU"));
         settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", ""));
-        settings.setCustomKeystorePasswordPrompt(prefs.getBoolean("CUSTOM_KEYSTORE_PASSWORD_PROMPT", false));
         settings.setTsaServer(prefs.get("TSA_SERVER", "http://tsa.izenpe.com"));
         settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", ""));
         settings.setTsaEnabled(prefs.getBoolean("TSA_ENABLE", false));
@@ -71,7 +69,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putBoolean("EXPIRED_CERTS_ENABLED", expiredCertsEnabled);
         prefs.put("TRUSTED_LIST", String.join(",", trustedList));
         prefs.put("CUSTOM_KEYSTORE_PATH", customKeystorePath);
-        prefs.putBoolean("CUSTOM_KEYSTORE_PASSWORD_PROMPT", customKeystorePasswordPrompt);
         prefs.put("TSA_SERVER", tsaServer);
         prefs.put("CUSTOM_TSA_SERVER", customTsaServer);
         prefs.putBoolean("TSA_ENABLE", tsaEnabled);
@@ -189,21 +186,17 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         customKeystorePath = value;
     }
 
-    public boolean getCustomKeystorePasswordPrompt() {
-        return customKeystorePasswordPrompt;
-    }
-
-    public void setCustomKeystorePasswordPrompt(boolean value) {
-        customKeystorePasswordPrompt = value;
-    }
-
     public String getTsaServer() {
         return tsaServer;
     }
 
     public void setTsaServer(String value) {
         tsaServer = value;
-        tspSource = new OnlineTSPSource(tsaServer);
+        if (value == null)
+            tspSource = null;
+
+        else
+            tspSource = new OnlineTSPSource(tsaServer);
     }
 
     public String getCustomTsaServer() {

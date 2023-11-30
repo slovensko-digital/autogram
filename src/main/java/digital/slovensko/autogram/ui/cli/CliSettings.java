@@ -2,7 +2,7 @@ package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
-import digital.slovensko.autogram.core.errors.SlotIdIsNotANumberException;
+import digital.slovensko.autogram.core.errors.SlotIndexIsNotANumberException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import org.apache.commons.cli.CommandLine;
@@ -22,20 +22,17 @@ public class CliSettings extends UserSettings {
         settings.setTarget(cmd.getOptionValue("t"));
         settings.setDriver(cmd.getOptionValue("d"));
         settings.setCustomKeystorePath(cmd.getOptionValue("keystore", ""));
-        settings.setCustomKeystorePasswordPrompt(true);
-        settings.setSlotIndex(getValidSlotId(cmd.getOptionValue("slot-id")));
+        settings.setSlotIndex(getValidSlotIndex(cmd.getOptionValue("slot-id")));
         settings.setForce(cmd.hasOption("f"));
         settings.setPdfaCompliance(cmd.hasOption("pdfa"));
         settings.setMakeParentDirectories(cmd.hasOption("parents"));
-        settings.setPdfSignatureLevel(getValidSignatureLevel(cmd.getOptionValue("pdf-level", SignatureLevel.PAdES_BASELINE_B.name())));
+        settings.setSignatureLevel(getValidSignatureLevel(cmd.getOptionValue("pdf-level", SignatureLevel.PAdES_BASELINE_B.name())));
         settings.setEn319132(cmd.hasOption("en319132"));
         settings.setTsaServer(cmd.getOptionValue("tsa-server", null));
+        settings.setTsaEnabled(settings.getTsaServer() != null);
         settings.setBulkEnabled(true);
 
         return settings;
-    }
-
-    private void setPdfSignatureLevel(SignatureLevel value) {
     }
 
     private void setMakeParentDirectories(boolean value) {
@@ -77,13 +74,13 @@ public class CliSettings extends UserSettings {
         return sourcePath == null ? null : new File(sourcePath);
     }
 
-    private static Integer getValidSlotId(String optionValue) throws SlotIdIsNotANumberException {
+    private static Integer getValidSlotIndex(String optionValue) throws SlotIndexIsNotANumberException {
         if (optionValue == null)
             return -1;
         try {
             return Integer.parseInt(optionValue);
         } catch (NumberFormatException e) {
-            throw new SlotIdIsNotANumberException(optionValue);
+            throw new SlotIndexIsNotANumberException(optionValue);
         }
     }
 

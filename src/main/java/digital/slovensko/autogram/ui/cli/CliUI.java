@@ -4,8 +4,6 @@ import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -241,7 +239,7 @@ public class CliUI implements UI {
             errMessage = "Token driver does not exist";
         } else if (e instanceof TargetDirectoryDoesNotExistException) {
             errMessage = "Target directory does not exist";
-        } else if (e instanceof SlotIdIsNotANumberException) {
+        } else if (e instanceof SlotIndexIsNotANumberException) {
             errMessage = "Slot ID is not a number";
         } else if (e instanceof PDFSignatureLevelIsNotValidException) {
             errMessage = "PDF signature level is not valid";

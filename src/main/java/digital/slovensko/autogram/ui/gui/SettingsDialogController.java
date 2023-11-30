@@ -49,8 +49,6 @@ public class SettingsDialogController {
     @FXML
     private TextField customKeystorePathTextField;
     @FXML
-    private HBox customKeystoreRadios;
-    @FXML
     private Button saveButton;
     @FXML
     private Button closeButton;
@@ -273,9 +271,6 @@ public class SettingsDialogController {
     }
 
     private void initializeCustomKeystoreSettings() {
-        initializeBooleanRadios(customKeystoreRadios, t -> userSettings.setCustomKeystorePasswordPrompt(t),
-                userSettings.getCustomKeystorePasswordPrompt());
-
         customKeystorePathTextField.setText(userSettings.getCustomKeystorePath());
         customKeystorePathTextField.setOnKeyTyped((e) -> {
             userSettings.setCustomKeystorePath(customKeystorePathTextField.getText());
