@@ -11,8 +11,8 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 public class FakeTokenDriver extends TokenDriver {
-    public FakeTokenDriver(String name, Path path, String shortname) {
-        super(name, path, shortname);
+    public FakeTokenDriver(String name, Path path, String shortname, String noKeysHelperText) {
+        super(name, path, shortname, noKeysHelperText);
     }
 
     @Override

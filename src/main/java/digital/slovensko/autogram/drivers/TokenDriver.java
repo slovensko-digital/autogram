@@ -10,11 +10,13 @@ public abstract class TokenDriver {
     protected final String name;
     private final Path path;
     private final String shortname;
+    private final String noKeysHelperText;
 
-    public TokenDriver(String name, Path path, String shortname) {
+    public TokenDriver(String name, Path path, String shortname, String noKeysHelperText) {
         this.name = name;
         this.path = path;
         this.shortname = shortname;
+        this.noKeysHelperText = noKeysHelperText;
     }
 
     public String getName() {
@@ -35,5 +37,9 @@ public abstract class TokenDriver {
 
     public String getShortname() {
         return shortname;
+    }
+
+    public String getNoKeysHelperText() {
+        return noKeysHelperText;
     }
 }

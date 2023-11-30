@@ -13,10 +13,9 @@ import org.apache.commons.cli.CommandLine;
 
 public class CliApp {
     public static void start(CommandLine cmd) {
-        var ui = new CliUI();
-
         try {
             var settings = CliSettings.fromCmd(cmd);
+            var ui = new CliUI(settings);
             var autogram = new Autogram(ui, settings);
 
             if (settings.getSource() == null)
@@ -47,7 +46,7 @@ public class CliApp {
             jobs.forEach(autogram::sign);
 
         } catch (AutogramException e) {
-            ui.showError(e);
+            System.err.println(CliUI.parseError(e));
         }
     }
 }

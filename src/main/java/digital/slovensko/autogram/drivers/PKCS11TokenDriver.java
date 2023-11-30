@@ -9,8 +9,8 @@ import java.nio.file.Path;
 import java.security.KeyStore;
 
 public class PKCS11TokenDriver extends TokenDriver {
-    public PKCS11TokenDriver(String name, Path path, String shortname) {
-        super(name, path, shortname);
+    public PKCS11TokenDriver(String name, Path path, String shortname, String noKeysHelperText) {
+        super(name, path, shortname, noKeysHelperText);
     }
 
     public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {

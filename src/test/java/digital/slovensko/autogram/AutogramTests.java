@@ -188,7 +188,7 @@ class AutogramTests {
         }
 
         @Override
-        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
             callback.accept(keys.get(0));
         }
 

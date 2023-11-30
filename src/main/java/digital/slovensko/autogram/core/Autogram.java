@@ -190,7 +190,7 @@ public class Autogram {
             var keys = token.getKeys();
 
             ui.onUIThreadDo(
-                    () -> ui.pickKeyAndThen(keys, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
+                    () -> ui.pickKeyAndThen(keys, driver, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
         } catch (DSSException e) {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         }

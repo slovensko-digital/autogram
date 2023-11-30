@@ -10,8 +10,8 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 public class PKCS12KeystoreTokenDriver extends TokenDriver {
-    public PKCS12KeystoreTokenDriver(String name, Path path, String shortname) {
-        super(name, path, shortname);
+    public PKCS12KeystoreTokenDriver(String name, Path path, String shortname, String noKeysHelperText) {
+        super(name, path, shortname, noKeysHelperText);
     }
 
     @Override

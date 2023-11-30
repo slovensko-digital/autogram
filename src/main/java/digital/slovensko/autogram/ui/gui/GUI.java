@@ -148,9 +148,9 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
         if (keys.isEmpty()) {
-            showError(new NoKeysDetectedException());
+            showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
             refreshKeyOnAllJobs();
             enableSigningOnAllJobs();
 

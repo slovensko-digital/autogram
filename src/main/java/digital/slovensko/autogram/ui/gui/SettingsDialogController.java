@@ -97,7 +97,7 @@ public class SettingsDialogController {
     private void initializeDriverChoiceBox() {
         var driverDetector = new DefaultDriverDetector(userSettings);
         driverChoiceBox.setConverter(new TokenDriverStringConverter(driverDetector));
-        driverChoiceBox.getItems().add(new FakeTokenDriver("Žiadne", null, "none"));
+        driverChoiceBox.getItems().add(new FakeTokenDriver("Žiadne", null, "none", ""));
         driverChoiceBox.getItems().addAll(driverDetector.getAvailableDrivers());
         var defaultDriver = driverChoiceBox.getItems().stream()
                 .filter(d -> d != null && d.getName().equals(userSettings.getDefaultDriver())).findFirst();

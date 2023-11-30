@@ -38,8 +38,13 @@ public class AutogramException extends RuntimeException {
     public static AutogramException createFromDSSException(DSSException e) {
         for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
             if (cause.getMessage() != null) {
-                if (cause instanceof java.security.ProviderException && cause.getMessage().contains("slotListIndex is 0 but token only has 0 slots")) {
-                    return new InitializationFailedException();
+                if (cause instanceof java.security.ProviderException) {
+                    if (cause.getMessage().contains("slotListIndex is 0 but token only has 0 slots"))
+                        return new InitializationFailedException();
+
+                    if (cause.getMessage().matches("slotListIndex is \\d+ but token only has \\d+ slots"))
+                        return new SlotIndexOutOfRangeException(e);
+
                 } else if (cause.getMessage().equals("CKR_FUNCTION_CANCELED")) {
                     return new FunctionCanceledException();
                 } else if (cause.getMessage().equals("CKR_TOKEN_NOT_RECOGNIZED") || cause.getMessage().contains("no such algorithm: PKCS11 for provider")) {

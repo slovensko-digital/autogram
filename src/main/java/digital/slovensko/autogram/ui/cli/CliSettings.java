@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.ui.cli;
 
+import digital.slovensko.autogram.core.DefaultDriverDetector;
+import digital.slovensko.autogram.core.DriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
 import digital.slovensko.autogram.core.errors.SlotIndexIsNotANumberException;
@@ -33,6 +35,11 @@ public class CliSettings extends UserSettings {
         settings.setBulkEnabled(true);
 
         return settings;
+    }
+
+    @Override
+    public DriverDetector getDriverDetector() {
+        return new DefaultDriverDetector(this);
     }
 
     private void setMakeParentDirectories(boolean value) {

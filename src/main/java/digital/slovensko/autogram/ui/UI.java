@@ -25,7 +25,7 @@ public interface UI {
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback);
 
-    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback);
+    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback);
 
     void onPickSigningKeyFailed(AutogramException e);
 
