@@ -90,7 +90,7 @@ public class Autogram {
         });
     }
 
-    private void signCommon(SigningJob job, SigningKey signingKey, Consumer<SigningJob> callback) {
+    private void signCommonAndThen(SigningJob job, SigningKey signingKey, Consumer<SigningJob> callback) {
         try {
             job.signWithKeyAndRespond(signingKey);
             if (batch == null || batch.isEnded() || batch.isAllProcessed())
@@ -114,7 +114,7 @@ public class Autogram {
     public void sign(SigningJob job, SigningKey signingKey) {
         ui.onWorkThreadDo(() -> {
             try {
-                signCommon(job, signingKey, (jobNew) -> {
+                signCommonAndThen(job, signingKey, (jobNew) -> {
                     ui.onUIThreadDo(() -> ui.onSigningSuccess(jobNew));
                 });
             } catch (ResponseNetworkErrorException e) {
@@ -158,7 +158,7 @@ public class Autogram {
 
         ui.onWorkThreadDo(() -> {
             try {
-                signCommon(job, batch.getSigningKey(), (jobNew) -> {
+                signCommonAndThen(job, batch.getSigningKey(), (jobNew) -> {
                     Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
                 });
             } catch (AutogramException e) {
