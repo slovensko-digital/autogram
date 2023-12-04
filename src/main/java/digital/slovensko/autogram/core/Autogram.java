@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.Logging;
 import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
@@ -89,22 +90,37 @@ public class Autogram {
         });
     }
 
+    private void signCommonAndThen(SigningJob job, SigningKey signingKey, Consumer<SigningJob> callback) {
+        try {
+            job.signWithKeyAndRespond(signingKey);
+            if (batch == null || batch.isEnded() || batch.isAllProcessed())
+                passwordManager.reset();
+
+            callback.accept(job);
+        } catch (PINIncorrectException e) {
+            passwordManager.reset();
+            throw e;
+        } catch (AutogramException e) {
+            throw e;
+        } catch (DSSException e) {
+            throw AutogramException.createFromDSSException(e);
+        } catch (IllegalArgumentException e) {
+            throw AutogramException.createFromIllegalArgumentException(e);
+        } catch (Exception e) {
+            throw new UnrecognizedException(e);
+        }
+    }
+
     public void sign(SigningJob job, SigningKey signingKey) {
         ui.onWorkThreadDo(() -> {
             try {
-                job.signWithKeyAndRespond(signingKey);
-                if (batch == null || batch.isEnded()) passwordManager.reset();
-                ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
+                signCommonAndThen(job, signingKey, (jobNew) -> {
+                    ui.onUIThreadDo(() -> ui.onSigningSuccess(jobNew));
+                });
             } catch (ResponseNetworkErrorException e) {
                 onSigningFailed(e, job);
-            } catch (PINIncorrectException e) {
-                passwordManager.reset();
             } catch (AutogramException e) {
                 onSigningFailed(e);
-            } catch (DSSException e) {
-                onSigningFailed(AutogramException.createFromDSSException(e));
-            } catch (IllegalArgumentException e) {
-                onSigningFailed(AutogramException.createFromIllegalArgumentException(e));
             } catch (Exception e) {
                 onSigningFailed(new UnrecognizedException(e));
             }
@@ -142,14 +158,24 @@ public class Autogram {
 
         ui.onWorkThreadDo(() -> {
             try {
-                ui.signBatch(job, batch.getSigningKey());
-            } catch (PINIncorrectException e) {
-                ui.onUIThreadDo(() -> {
-                    ui.cancelBatch(batch);
+                signCommonAndThen(job, batch.getSigningKey(), (jobNew) -> {
+                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
                 });
-
-                throw e;
+            } catch (AutogramException e) {
+                job.onDocumentSignFailed(e);
+                if (!e.batchCanContinue()) {
+                    ui.onUIThreadDo(() -> {
+                        ui.cancelBatch(batch);
+                    });
+                    throw e;
+                }
+            } catch (Exception e) {
+                AutogramException autogramException = new AutogramException("Document signing has failed", "", "", e);
+                job.onDocumentSignFailed(autogramException);
             }
+            ui.onUIThreadDo(() -> {
+                ui.updateBatch();
+            });
         });
     }
 

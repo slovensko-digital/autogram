@@ -61,11 +61,6 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void signBatch(SigningJob job, SigningKey key) {
-        // TODO Auto-generated method stub
-    }
-
-    @Override
     public void cancelBatch(Batch batch) {
         // TODO Auto-generated method stub
     }
@@ -277,5 +272,10 @@ public class CliUI implements UI {
 
     public char[] getContextSpecificPassword() {
         return System.console().readPassword("Enter key password (hidden): ");
+    }
+
+    @Override
+    public void updateBatch() {
+        // TODO: no usage for this in CLI UI
     }
 }

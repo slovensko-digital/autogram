@@ -17,8 +17,6 @@ public interface UI {
 
     void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback);
 
-    void signBatch(SigningJob job, SigningKey key);
-
     void cancelBatch(Batch batch);
 
     void showVisualization(Visualization visualization, Autogram autogram);
@@ -60,4 +58,6 @@ public interface UI {
     char[] getKeystorePassword();
 
     char[] getContextSpecificPassword();
+
+    public void updateBatch();
 }

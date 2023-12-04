@@ -179,10 +179,6 @@ class AutogramTests {
         }
 
         @Override
-        public void signBatch(SigningJob job, SigningKey key) {
-        }
-
-        @Override
         public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
             callback.accept(drivers.get(0));
         }
@@ -279,6 +275,11 @@ class AutogramTests {
 
         @Override
         public void onSignatureCheckCompleted(ValidationReports wrapper) {
+
+        }
+
+        @Override
+        public void updateBatch() {
 
         }
     }

@@ -29,6 +29,8 @@ public class PasswordManager implements PasswordInputCallback {
     public void reset() {
         if (cachedPassword != null)
             Arrays.fill(cachedPassword, '\0');
+
+        cachedPassword = null;
     }
 
     @Override
