@@ -138,6 +138,8 @@ public class BatchDialogController implements SuppressedFocusController {
         changeKeyButton.setManaged(true);
         changeKeyButton.setDisable(false);
         changeKeyButton.setVisible(true);
+
+        refreshSigningKey();
     }
 
     public void close() {
