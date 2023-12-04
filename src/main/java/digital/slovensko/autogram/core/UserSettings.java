@@ -33,7 +33,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         var settings = new UserSettings();
-        settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", null));
+        settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", SignatureLevelStringConverter.PADES));
         settings.setDriver(prefs.get("DRIVER", ""));
         settings.setSlotIndex(prefs.getInt("SLOT_INDEX", -1));
         settings.setEn319132(prefs.getBoolean("EN319132", false));
