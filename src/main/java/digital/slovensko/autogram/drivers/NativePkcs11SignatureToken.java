@@ -1,7 +1,10 @@
 package digital.slovensko.autogram.drivers;
 
+import digital.slovensko.autogram.core.PasswordManager;
+import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.KeyPinDifferentFromTokenPinException;
+import digital.slovensko.autogram.core.errors.PINIncorrectException;
+import digital.slovensko.autogram.errors.PasswordNotProvidedException;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.SignatureValue;
@@ -9,7 +12,6 @@ import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
-import eu.europa.esig.dss.token.PrefilledPasswordCallback;
 import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
 import sun.security.pkcs11.wrapper.PKCS11;
 import sun.security.pkcs11.wrapper.PKCS11Constants;
@@ -24,15 +26,13 @@ import java.util.Objects;
 
 public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private static final long CKU_CONTEXT_SPECIFIC = 2L;
+    private final PasswordManager passwordManager;
+    private final SignatureTokenSettings settings;
 
-    private final PrefilledPasswordCallback prefilledPasswordCallback;
-    private final boolean shouldProvidePasswordForCkaAA;
-
-    public NativePkcs11SignatureToken(String pkcsPath, PrefilledPasswordCallback prefilledPasswordCallback, int slotIndex, boolean shouldProvidePasswordForCkaAA) {
-        super(pkcsPath, prefilledPasswordCallback, -1, slotIndex, null);
-
-        this.prefilledPasswordCallback = prefilledPasswordCallback;
-        this.shouldProvidePasswordForCkaAA = shouldProvidePasswordForCkaAA;
+    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings) {
+        super(pkcsPath, pm, -1, settings.getSlotIndex(), null);
+        this.passwordManager = pm;
+        this.settings = settings;
     }
 
     private byte[] sign(final byte[] bytes, final String javaSignatureAlgorithm, final AlgorithmParameterSpec param, final DSSPrivateKeyEntry keyEntry) throws GeneralSecurityException {
@@ -57,27 +57,57 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             // TODO cache & short-circuit
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
-            var keyID = getKeyID(pk);
-            var attrs = new CK_ATTRIBUTE[]{new CK_ATTRIBUTE(PKCS11Constants.CKA_ALWAYS_AUTHENTICATE)};
 
-            p11.C_GetAttributeValue(sessionId, keyID, attrs);
-            if (shouldProvidePasswordForCkaAA && isAlwaysAuthenticate(attrs))
-                p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, prefilledPasswordCallback.getPassword());
-
+            if (isAlwaysAuthenticate(p11, sessionId, pk) && (settings.getForceContextSpecificLoginEnabled() || !isProtectedAuthenticationPath(p11, getSlotListIndex()))) {
+                var password = passwordManager.getContextSpecificPassword();
+                if (password == null) throw new PasswordNotProvidedException(); // handle password not provided
+                p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, password);
+            }
+        } catch (AutogramException e) {
+            throw e; // rethrow autogram errors
         } catch (PKCS11Exception e) {
             if (e.getMessage().equals("CKR_PIN_INCORRECT"))
-                throw new KeyPinDifferentFromTokenPinException(e);
+                throw new PINIncorrectException();
 
             throw new GeneralSecurityException(e);
         }
     }
 
-    private static boolean isAlwaysAuthenticate(CK_ATTRIBUTE[] attrs) {
+    private static boolean isAlwaysAuthenticate(PKCS11 p11, long sessionId, PrivateKey pk) throws PKCS11Exception {
+        var keyID = getKeyID(pk);
+        var attrs = new CK_ATTRIBUTE[]{new CK_ATTRIBUTE(PKCS11Constants.CKA_ALWAYS_AUTHENTICATE)};
+
+        p11.C_GetAttributeValue(sessionId, keyID, attrs);
+
         var result = attrs[0].pValue;
         if (result instanceof byte[]) {
             return ((byte[]) result)[0] == 1;
         } else {
             return false; // CKA_ALWAYS_AUTHENTICATE not found
+        }
+    }
+
+    private static boolean isProtectedAuthenticationPath(PKCS11 p11, int slotIndex) throws PKCS11Exception {
+
+        var slotList = p11.C_GetSlotList(false);
+        if (slotList.length <= slotIndex || slotList.length < 1)
+            return false;
+
+        if (slotIndex < 0)
+            slotIndex = 0;
+
+        var slotId = slotList[slotIndex];
+        return (p11.C_GetTokenInfo(slotId).flags & PKCS11Constants.CKF_PROTECTED_AUTHENTICATION_PATH) != 0;
+    }
+
+    private int getSlotListIndex() {
+        try {
+            Field f = getClass().getSuperclass().getDeclaredField("slotListIndex");
+            f.setAccessible(true);
+            return (int) f.get(this);
+
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -135,7 +165,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         }
     }
 
-    // copy & paste just to call overridden private sign method
+    // mostly copy & paste just to call overridden private sign method
     @Override
     public SignatureValue sign(ToBeSigned toBeSigned, SignatureAlgorithm signatureAlgorithm, DSSPrivateKeyEntry keyEntry) throws DSSException {
         assertEncryptionAlgorithmValid(signatureAlgorithm, keyEntry);

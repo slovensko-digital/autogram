@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
 import digital.slovensko.autogram.core.*;
@@ -16,8 +18,6 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
-import digital.slovensko.autogram.util.Logging;
-import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -74,28 +74,7 @@ public class GUI implements UI {
         enableSigningOnAllJobs();
     }
 
-    @Override
-    public void signBatch(SigningJob job, SigningKey key) throws KeyPinDifferentFromTokenPinException {
-        assertOnWorkThread();
-        try {
-            job.signWithKeyAndRespond(key);
-            Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
-        } catch (AutogramException e) {
-            job.onDocumentSignFailed(e);
-            if (!e.batchCanContinue())
-                throw  e;
-        } catch (DSSException e) {
-            job.onDocumentSignFailed(AutogramException.createFromDSSException(e));
-        } catch (Exception e) {
-            AutogramException autogramException = new AutogramException("Document signing has failed", "", "", e);
-            job.onDocumentSignFailed(autogramException);
-        }
-        onUIThreadDo(() -> {
-            updateBatch();
-        });
-    }
-
-    private void updateBatch() {
+    public void updateBatch() {
         if (batchController == null)
             return;
         assertOnUIThread();
@@ -114,17 +93,18 @@ public class GUI implements UI {
             // short-circuit if only one driver present
             callback.accept(drivers.get(0));
         } else {
-            if (!driverWasAlreadySet && userSettings.getDriver() != null) {
+            if (!driverWasAlreadySet && userSettings.getDefaultDriver() != null) {
                 try {
                     driverWasAlreadySet = true;
-                    var defaultDriver = drivers.stream().filter(d -> d.getName().equals(userSettings.getDriver()))
+                    var defaultDriver = drivers.stream().filter(d -> d.getName().equals(userSettings.getDefaultDriver()))
                             .findFirst().get();
 
                     if (defaultDriver != null) {
                         callback.accept(defaultDriver);
                         return;
                     }
-                } catch (NoSuchElementException e){}
+                } catch (NoSuchElementException e) {
+                }
             }
 
             PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
@@ -145,31 +125,9 @@ public class GUI implements UI {
     }
 
     @Override
-    public void requestPasswordAndThen(TokenDriver driver, Consumer<char[]> callback) {
-        if (!driver.needsPassword()) {
-            callback.accept("".toCharArray());
-            return;
-        }
-
-        var controller = new PasswordController(callback);
-        var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
-
-        var stage = new Stage();
-        stage.setTitle("Načítanie klúčov z úložiska");
-        stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> {
-            refreshKeyOnAllJobs();
-            enableSigningOnAllJobs();
-        });
-        stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
-    }
-
-    @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
         if (keys.isEmpty()) {
-            showError(new NoKeysDetectedException());
+            showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
             refreshKeyOnAllJobs();
             enableSigningOnAllJobs();
 
@@ -232,6 +190,63 @@ public class GUI implements UI {
         GUIUtils.suppressDefaultFocus(stage, controller);
 
         stage.show();
+    }
+
+    public char[] getKeystorePassword() {
+        var futurePassword = new FutureTask<>(() -> {
+            var controller = new PasswordController("Aký je kód k úložisku klúčov?", "Zadajte kód k úložisku klúčov.", false, true);
+            var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
+
+            var stage = new Stage();
+            stage.setTitle("Načítanie klúčov z úložiska");
+            stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(e -> {
+                refreshKeyOnAllJobs();
+                enableSigningOnAllJobs();
+            });
+            stage.setResizable(false);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            return controller.getPassword();
+        });
+
+        Platform.runLater(futurePassword);
+
+        try {
+            return futurePassword.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public char[] getContextSpecificPassword() {
+        var futurePassword = new FutureTask<>(() -> {
+            var controller = new PasswordController("Aký je podpisový PIN alebo heslo?", "Zadajte podpisový PIN alebo heslo ku klúču.", true, false);
+            var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
+
+            var stage = new Stage();
+            stage.setTitle("Zadanie podpisového PINu alebo hesla");
+            stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(e -> {
+                refreshKeyOnAllJobs();
+                enableSigningOnAllJobs();
+            });
+            stage.setResizable(false);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            return controller.getPassword();
+        });
+
+        Platform.runLater(futurePassword);
+
+        try {
+            return futurePassword.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -311,7 +326,7 @@ public class GUI implements UI {
         setUserFriendlyPositionAndLimits(stage);
 
         onWorkThreadDo(()
-        -> autogram.checkAndValidateSignatures(visualization.getJob()));
+                -> autogram.checkAndValidateSignatures(visualization.getJob()));
     }
 
     @Override
@@ -489,8 +504,8 @@ public class GUI implements UI {
         var sceneWidth = stage.getScene().getWidth();
         var availabeWidth = (bounds.getWidth() - sceneWidth);
         var singleOffsetXPx = Math.round(Math.min(maxOffset, (availabeWidth / 2) / maxWindows)); // spread windows into
-                                                                                                 // half of availabe
-                                                                                                 // screen width
+        // half of availabe
+        // screen width
         var offsetX = singleOffsetXPx * (nWindows - maxWindows / 2);
         double idealX = bounds.getMinX() + availabeWidth / 2 + offsetX;
         double x = Math.max(bounds.getMinX(), Math.min(bounds.getMaxX() - sceneWidth, idealX));
