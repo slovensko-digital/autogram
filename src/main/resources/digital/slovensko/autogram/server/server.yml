@@ -621,33 +621,33 @@ components:
     ValidationResponseBody:
       type: object
       properties:
-        formatSuboru:
+        fileFormat:
           type: string
           enum:
             - ASiC-E
             - PAdES
-        podpisy:
+        signatures:
           type: array
           items:
             type: object
             properties:
-              vysledokOvereniaPodpisu:
+              validaitonResult:
                 type: object
                 properties:
-                  kod:
+                  code:
                     type: integer
                     example: 0
-                  popis:
+                  description:
                     type: string
                     example: TOTAL_PASSED
-              informaciaOPodpise:
+              signatureInfo:
                 type: object
                 properties:
-                  datumACasPodpisuUtc:
+                  claimedSigningTime:
                     type: string
-                  datumACasCasovejPeciatkyPodpisuUtc:
+                  timestampSigningTime:
                     type: string
-                  typ:
+                  level:
                     type: string
                     enum:
                       - XAdES_BASELINE_B
@@ -662,69 +662,69 @@ components:
                       - CAdES_BASELINE_T
                       - CAdES_BASELINE_LT
                       - CAdES_BASELINE_LTA
-                  podpisovycertifikat:
+                  signingCertificate:
                     type: object
                     properties:
-                      vydavatel:
+                      issuerDN:
                         type: string
                         example: C=SK, L=Bratislava, CN=Disig
-                      subjekt:
+                      subjectDN:
                         type: string
                         example: SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith
                         description:
-                      serioveCislo:
+                      serialNumber:
                         type: string
                         example: 12578200234
-                      platnostOd:
+                      notBefore:
                         type: string
-                      platnostDo:
+                      notAfter:
                         type: string
-                      typ:
+                      qualification:
                         type: object
                         properties:
-                          kod:
+                          code:
                             type: integer
                             example: 1
-                          popis:
+                          description:
                             type: string
                             example: QESeal
-                  obsahujeCasovuPeciatku:
+                  isTimestamped:
                     type: boolean
                     example: true
-                  certifikatyCasovejPeciatky:
+                  timestamps:
                     type: array
                     items:
                       type: object
                       properties:
-                        vydavatel:
+                        issuerDN:
                           type: string
                           example: C=SK,O=Ditec\, a.s.,CN=TS Signer
-                        subjekt:
+                        subjectDN:
                           type: string
                           example: C=SK,O=Ditec\, a.s.,CN=TS Signer
                           description:
-                        serioveCislo:
+                        serialNumber:
                           type: string
                           example: 12578200234
-                        platnostOd:
+                        notBefore:
                           type: string
-                        platnostDo:
+                        notAfter:
                           type: string
-                        typ:
+                        qualification:
                           type: object
                           properties:
-                            kod:
+                            code:
                               type: integer
                               example: 0
-                            popis:
+                            description:
                               type: string
                               example: QTSA
-                  podpisaneObjekty:
+                  signedObjectsIds:
                     type: array
                     items:
                       type: string
                       example: document.xdcf
-        podpisaneObjekty:
+        signedObjects:
           type: array
           items:
             type: object
@@ -735,7 +735,7 @@ components:
               mimeType:
                 type: string
                 example: text/xml
-              nazov:
+              filename:
                 type: string
                 example: document.xdcf
 
