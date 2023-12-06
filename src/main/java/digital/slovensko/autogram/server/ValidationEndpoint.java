@@ -5,11 +5,10 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SignatureValidator;
-import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.DocumentNotSignedYetException;
-import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.dto.ValidationRequestBody;
+import digital.slovensko.autogram.server.dto.ValidationResponseBody;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -47,18 +46,11 @@ public class ValidationEndpoint implements HttpHandler {
                 return;
             }
 
-            var html = SignatureValidator.getSignatureValidationReportHTML(reports);
-
             try {
-                exchange.getResponseHeaders().add("Content-Type", "txt/xml;utf-8");
-                exchange.sendResponseHeaders(200, 0);
-                exchange.getResponseBody().write(reports.getXmlValidationReport().getBytes());
-                exchange.getResponseBody().close();
-            } catch (IOException e) {
-                throw new ResponseNetworkErrorException("Externá aplikácia nečakala na odpoveď", e);
+                EndpointUtils.respondWith(ValidationResponseBody.build(reports, document), exchange);
+            } catch (Exception e) {
+                EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
             }
-
-//            EndpointUtils.respondWith(new ValidateResponse(reports.getXmlSimpleReport()), exchange);
 
         } catch (Exception e) {
             e.printStackTrace();

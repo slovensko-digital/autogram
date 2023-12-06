@@ -332,6 +332,8 @@ paths:
                 $ref: "#/components/examples/Signed-EForm"
               Not signed TXT:
                 $ref: "#/components/examples/Not-signed-TXT"
+              Signed MIRRI message:
+                $ref: "#/components/examples/Signed-MIRRI-thing"
       responses:
         200:
           description: Signature validation report
@@ -621,7 +623,9 @@ components:
       properties:
         formatSuboru:
           type: string
-          example: ASiC-E
+          enum:
+            - ASiC-E
+            - PAdES
         podpisy:
           type: array
           items:
@@ -658,29 +662,73 @@ components:
                       - CAdES_BASELINE_T
                       - CAdES_BASELINE_LT
                       - CAdES_BASELINE_LTA
-                  legislativnyTyp:
-                    type: object
-                    properties:
-                      kod:
-                        type: integer
-                        example: 4
-                      popis:
-                        type: string
-                        example: Iný elektronický podpis/pečať
                   podpisovycertifikat:
                     type: object
-                    propertie:
+                    properties:
+                      vydavatel:
+                        type: string
+                        example: C=SK, L=Bratislava, CN=Disig
                       subjekt:
                         type: string
                         example: SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith
                         description:
+                      serioveCislo:
+                        type: string
+                        example: 12578200234
+                      platnostOd:
+                        type: string
+                      platnostDo:
+                        type: string
+                      typ:
+                        type: object
+                        properties:
+                          kod:
+                            type: integer
+                            example: 10
+                          popis:
+                            type: string
+                            example: Iný certifikát pre elektronický podpis/pečať
                   obsahujeCasovuPeciatku:
                     type: boolean
                     example: true
-
-
-        podpisaneDatoveObjekty:
-          type: object
+                  certifikatyCasovejPeciatky:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        vydavatel:
+                          type: string
+                          example: C=SK,O=Ditec\, a.s.,CN=TS Signer
+                        subjekt:
+                          type: string
+                          example: C=SK,O=Ditec\, a.s.,CN=TS Signer
+                          description:
+                        serioveCislo:
+                          type: string
+                          example: 12578200234
+                        platnostOd:
+                          type: string
+                        platnostDo:
+                          type: string
+                  podpisaneObjekty:
+                    type: array
+                    items:
+                      type: string
+                      example: document.xdcf
+        podpisaneObjekty:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: document.xdcf
+              mimeType:
+                type: string
+                example: application/vnd.gov.sk.xmldatacontainer+xml
+              nazov:
+                type: string
+                example: document.xdcf
 
   examples:
     XAdES-XML-Base64-HTML_md:

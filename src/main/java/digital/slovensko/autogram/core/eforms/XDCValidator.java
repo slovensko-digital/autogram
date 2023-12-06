@@ -77,6 +77,9 @@ public abstract class XDCValidator {
             return true;
 
         try {
+            if (!xsdSchema.isEmpty() && xsdSchema.charAt(0) == '\uFEFF')
+                xsdSchema = xsdSchema.substring(1);
+
             var schema = XMLUtils.getSecureSchemaFactory().newSchema(new StreamSource(new StringReader(xsdSchema)));
             var validator = schema.newValidator();
             validator.validate(new StreamSource(new StringReader(xmlContent)));
