@@ -58,7 +58,7 @@ public record ValidationResponseBody(String fileFormat, List<Signature> signatur
                     timestamps.isEmpty() ? null : timestamps.stream().map((t) -> {
                         var tsCertificate = dd.getCertificateById(dd.getTimestampSigningCertificateId(t.getId()));
 
-                        return new CertificateInfo(
+                        return new TimestampCertificateInfo(
                             new X500Principal(tsCertificate.getCertificateIssuerDN()).getName(X500Principal.RFC1779),
                             new X500Principal(tsCertificate.getCertificateDN()).getName(X500Principal.RFC1779),
                             tsCertificate.getSerialNumber(),
@@ -68,7 +68,8 @@ public record ValidationResponseBody(String fileFormat, List<Signature> signatur
                             new Result(
                                 sr.getTimestampQualification(t.getId()).ordinal(),
                                 sr.getTimestampQualification(t.getId()).getReadable()
-                            )
+                            ),
+                            dd.getTimestampType(t.getId()).name()
                         );
                     }).toList(),
                     dd.getSignerDocuments(e.getId()).stream().map(SignerDataWrapper::getId).toList()
@@ -138,12 +139,16 @@ record Result(int code, String description) {
 }
 
 record SignatureInfo(String level, String claimedSigningTime, boolean isTimestamped, String timestampSigningTime,
-                     CertificateInfo signingCertificate, List<CertificateInfo> timestamps,
+                     CertificateInfo signingCertificate, List<TimestampCertificateInfo> timestamps,
                      List<String> signedObjectsIds) {
 }
 
 record CertificateInfo(String issuerDN, String subjectDN, String serialNumber, String productionTime, String notBefore,
                        String notAfter, Result qualification) {
+}
+
+record TimestampCertificateInfo(String issuerDN, String subjectDN, String serialNumber, String productionTime, String notBefore,
+                       String notAfter, Result qualification, String timestampType) {
 }
 
 record SignedObject(String id, String mimeType, String filename) {

@@ -723,6 +723,9 @@ components:
                             description:
                               type: string
                               example: QTSA
+                        timestampType:
+                          type: string
+                          example: ARCHIVE_TIMESTAMP
                   signedObjectsIds:
                     type: array
                     items:
