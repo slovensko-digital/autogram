@@ -639,7 +639,7 @@ components:
                     example: 0
                   popis:
                     type: string
-                    example: VALID
+                    example: TOTAL_PASSED
               informaciaOPodpise:
                 type: object
                 properties:
@@ -684,10 +684,10 @@ components:
                         properties:
                           kod:
                             type: integer
-                            example: 10
+                            example: 1
                           popis:
                             type: string
-                            example: Iný certifikát pre elektronický podpis/pečať
+                            example: QESeal
                   obsahujeCasovuPeciatku:
                     type: boolean
                     example: true
@@ -710,6 +710,15 @@ components:
                           type: string
                         platnostDo:
                           type: string
+                        typ:
+                          type: object
+                          properties:
+                            kod:
+                              type: integer
+                              example: 0
+                            popis:
+                              type: string
+                              example: QTSA
                   podpisaneObjekty:
                     type: array
                     items:
@@ -725,7 +734,7 @@ components:
                 example: document.xdcf
               mimeType:
                 type: string
-                example: application/vnd.gov.sk.xmldatacontainer+xml
+                example: text/xml
               nazov:
                 type: string
                 example: document.xdcf

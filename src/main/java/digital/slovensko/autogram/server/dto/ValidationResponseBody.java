@@ -8,12 +8,12 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.validation.reports.Reports;
 
+import javax.security.auth.x500.X500Principal;
 import java.util.List;
 
-public record ValidationResponseBody(String formatSuboru, List<Podpis> podpisy,
-                                     List<PodpisanyObjekt> podpisaneObjekty) {
+public record ValidationResponseBody(String formatSuboru, List<Podpis> podpisy, List<PodpisanyObjekt> podpisaneObjekty) {
 
-    public static ValidationResponseBody build(Reports reports, DSSDocument document) {
+    public static ValidationResponseBody build(Reports reports, DSSDocument document) throws DocumentNotSignedYetException {
         var sr = reports.getSimpleReport();
         var dd = reports.getDiagnosticData();
         var dr = reports.getDetailedReport();
@@ -39,8 +39,8 @@ public record ValidationResponseBody(String formatSuboru, List<Podpis> podpisy,
                             timestamps.isEmpty() ? null : sr.getProductionTime(timestamps.get(0).getId()).toString(),
                             sr.getSignatureFormat(e.getId()).name(),
                             new Podpisovycertifikat(
-                                    signingCertificate.getCertificateIssuerDN(),
-                                    signingCertificate.getCertificateDN(),
+                                    new X500Principal(signingCertificate.getCertificateIssuerDN()).getName(X500Principal.RFC1779),
+                                    new X500Principal(signingCertificate.getCertificateDN()).getName(X500Principal.RFC1779),
                                     signingCertificate.getSerialNumber(),
                                     signingCertificate.getNotBefore().toString(),
                                     signingCertificate.getNotAfter().toString(),
@@ -53,11 +53,16 @@ public record ValidationResponseBody(String formatSuboru, List<Podpis> podpisy,
                             timestamps.isEmpty() ? null : timestamps.stream().map((t) -> {
                                 var tsCertificate = dd.getCertificateById(dd.getTimestampSigningCertificateId(t.getId()));
                                 return new CertifikatCasovejPeciatky(
-                                    tsCertificate.getCertificateIssuerDN(),
-                                    tsCertificate.getCertificateDN(),
+                                    new X500Principal(tsCertificate.getCertificateIssuerDN()).getName(X500Principal.RFC1779),
+                                    new X500Principal(tsCertificate.getCertificateDN()).getName(X500Principal.RFC1779),
                                     tsCertificate.getSerialNumber(),
                                     tsCertificate.getNotBefore().toString(),
-                                    tsCertificate.getNotAfter().toString()
+                                    tsCertificate.getNotAfter().toString(),
+                                    new Typ(
+                                            sr.getTimestampQualification(t.getId()).ordinal(),
+                                            sr.getTimestampQualification(t.getId()).getReadable()
+                                    )
+
                             );}).toList(),
                             dd.getSignerDocuments(e.getId()).stream().map(SignerDataWrapper::getId).toList()
                     ));
@@ -122,9 +127,8 @@ record VysledokOvereniaPodpisu(int kod, String popis) {
 }
 
 record InformaciaOPodpise(String datumACasPodpisuUtc, String datumACasCasovejPeciatkyPodpisuUtc, String typ,
-                          Podpisovycertifikat podpisovycertifikat,
-                          boolean obsahujeCasovuPeciatku, List<CertifikatCasovejPeciatky> certifikatyCasovejPeciatky,
-                          List<String> podpisaneObjekty) {
+                          Podpisovycertifikat podpisovycertifikat, boolean obsahujeCasovuPeciatku,
+                          List<CertifikatCasovejPeciatky> certifikatyCasovejPeciatky, List<String> podpisaneObjekty) {
 }
 
 record Podpisovycertifikat(String vydavatel, String subjekt, String serioveCislo, String platnostOd, String platnostDo, Typ typ) {
@@ -133,7 +137,7 @@ record Podpisovycertifikat(String vydavatel, String subjekt, String serioveCislo
 record Typ(int kod, String popis) {
 }
 
-record CertifikatCasovejPeciatky(String vydavatel, String subjekt, String serioveCislo, String platnostOd, String platnostDo) {
+record CertifikatCasovejPeciatky(String vydavatel, String subjekt, String serioveCislo, String platnostOd, String platnostDo, Typ typ) {
 }
 
 record PodpisanyObjekt(String id, String mimeType, String nazov) {
