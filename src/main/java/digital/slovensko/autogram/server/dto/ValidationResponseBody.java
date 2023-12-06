@@ -2,6 +2,7 @@ package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.errors.DocumentNotSignedYetException;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESContainerExtractor;
+import eu.europa.esig.dss.asic.common.AbstractASiCContainerExtractor;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.diagnostic.SignerDataWrapper;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -12,7 +13,8 @@ import javax.security.auth.x500.X500Principal;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-public record ValidationResponseBody(String fileFormat, List<Signature> signatures, List<SignedObject> signedObjects) {
+public record ValidationResponseBody(String fileFormat, List<Signature> signatures, List<SignedObject> signedObjects,
+                                     List<UnsignedObject> unsignedObjects) {
     private static final SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd'T'HH:mm:ss Z");
 
     public static ValidationResponseBody build(Reports reports, DSSDocument document) throws DocumentNotSignedYetException {
@@ -73,7 +75,9 @@ public record ValidationResponseBody(String fileFormat, List<Signature> signatur
                 ));
         }).toList();
 
-        List<SignedObject> signedObjects = List.of();
+        List<SignedObject> signedObjects = null;
+        List<UnsignedObject> unsignedObjects = null;
+        AbstractASiCContainerExtractor extractor = null;
 
         switch (sr.getSignatureFormat(sr.getSignatureIdList().get(0)).getSignatureForm()) {
             case PAdES: {
@@ -85,45 +89,45 @@ public record ValidationResponseBody(String fileFormat, List<Signature> signatur
                 break;
             }
             case XAdES: {
-                var extractor = new ASiCWithXAdESContainerExtractor(document);
-                var docs = extractor.extract().getSignedDocuments();
-
-                signedObjects = dd.getAllSignerDocuments().stream().map((d) -> {
-                    var r = docs.stream().filter((i) -> i.getName().equals(d.getReferencedName())).toList();
-                    if (r.size() != 1)
-                        return null;
-
-                    var doc = r.get(0);
-                    return new SignedObject(
-                        d.getId(),
-                        doc.getMimeType().getMimeTypeString(),
-                        d.getReferencedName()
-                    );
-                }).toList();
+                extractor = new ASiCWithXAdESContainerExtractor(document);
                 break;
             }
             case CAdES: {
-                var extractor = new ASiCWithCAdESContainerExtractor(document);
-                var docs = extractor.extract().getSignedDocuments();
-
-                signedObjects = dd.getAllSignerDocuments().stream().map((d) -> {
-                    var r = docs.stream().filter((i) -> i.getName().equals(d.getReferencedName())).toList();
-                    if (r.size() != 1)
-                        return null;
-
-                    var doc = r.get(0);
-                    return new SignedObject(
-                        d.getId(),
-                        doc.getMimeType().getMimeTypeString(),
-                        d.getReferencedName()
-                    );
-                }).toList();
+                extractor = new ASiCWithCAdESContainerExtractor(document);
                 break;
             }
             default:
         }
 
-        return new ValidationResponseBody(fileFormat, signatures, signedObjects);
+        if (extractor != null) {
+            signedObjects = getSignedObjects(extractor.extract().getSignedDocuments(), dd.getAllSignerDocuments());
+            unsignedObjects = getUnsignedObjects(extractor.extract().getSignedDocuments(), dd.getAllSignerDocuments());
+        }
+
+        return new ValidationResponseBody(fileFormat, signatures, signedObjects, unsignedObjects);
+    }
+
+    private static List<SignedObject> getSignedObjects(List<DSSDocument> docs, List<SignerDataWrapper> signedObjects) {
+        return signedObjects.stream().map((signedObject) -> {
+            var r = docs.stream().filter((doc) -> doc.getName().equals(signedObject.getReferencedName())).toList();
+            if (r.isEmpty())
+                return null;
+
+            return new SignedObject(
+                    signedObject.getId(),
+                    r.get(0).getMimeType().getMimeTypeString(),
+                    signedObject.getReferencedName()
+            );
+        }).toList();
+    }
+
+    private static List<UnsignedObject> getUnsignedObjects(List<DSSDocument> docs, List<SignerDataWrapper> signedObjects) {
+        return docs.stream().filter((o) -> signedObjects.stream().filter((s) -> o.getName().equals(s.getReferencedName())).toList().isEmpty()).map((generalObject) ->
+            new UnsignedObject(
+                    generalObject.getMimeType().getMimeTypeString(),
+                    generalObject.getName()
+            )
+        ).toList();
     }
 }
 
@@ -143,4 +147,7 @@ record CertificateInfo(String issuerDN, String subjectDN, String serialNumber, S
 }
 
 record SignedObject(String id, String mimeType, String filename) {
+}
+
+record UnsignedObject(String mimeType, String filename) {
 }

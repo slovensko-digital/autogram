@@ -332,8 +332,6 @@ paths:
                 $ref: "#/components/examples/Signed-EForm"
               Not signed TXT:
                 $ref: "#/components/examples/Not-signed-TXT"
-              Signed MIRRI message:
-                $ref: "#/components/examples/Signed-MIRRI-thing"
       responses:
         200:
           description: Signature validation report
@@ -729,7 +727,7 @@ components:
                     type: array
                     items:
                       type: string
-                      example: document.xdcf
+                      example: "D-CE70D85E47F41DE68616A3695FE7569BF8F7409F052B74AE0356663393A68D8A"
         signedObjects:
           type: array
           items:
@@ -737,13 +735,24 @@ components:
             properties:
               id:
                 type: string
-                example: document.xdcf
+                example: "D-CE70D85E47F41DE68616A3695FE7569BF8F7409F052B74AE0356663393A68D8A"
               mimeType:
                 type: string
                 example: text/xml
               filename:
                 type: string
                 example: document.xdcf
+        unsignedObjects:
+          type: array
+          items:
+            type: object
+            properties:
+              mimeType:
+                type: string
+                example: text/xml
+              filename:
+                type: string
+                example: scam.xdcf
 
   examples:
     XAdES-XML-Base64-HTML_md:
