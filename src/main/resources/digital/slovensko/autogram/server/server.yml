@@ -675,6 +675,9 @@ components:
                       serialNumber:
                         type: string
                         example: 12578200234
+                      productionTime:
+                        type: string
+                        example: "2022-12-20T21:29:13 +0100"
                       notBefore:
                         type: string
                       notAfter:
@@ -706,6 +709,9 @@ components:
                         serialNumber:
                           type: string
                           example: 12578200234
+                        productionTime:
+                          type: string
+                          example: "2022-12-20T21:29:13 +0100"
                         notBefore:
                           type: string
                         notAfter:
