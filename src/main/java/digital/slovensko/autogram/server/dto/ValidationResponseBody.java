@@ -34,46 +34,46 @@ public record ValidationResponseBody(String fileFormat, List<Signature> signatur
             var signingCertificate = dd.getCertificateById(dd.getSigningCertificateId(e.getId()));
 
             return new Signature(
-                new Result(
-                    conclusion.getIndication().ordinal(),
-                    conclusion.getIndication().name()
-                ),
-                new SignatureInfo(
-                    sr.getSignatureFormat(e.getId()).name(),
-                    format.format(sr.getSigningTime(e.getId())),
-                    !timestamps.isEmpty(),
-                    timestamps.isEmpty() ? null : format.format(sr.getProductionTime(timestamps.get(0).getId())),
-                    new CertificateInfo(
-                        new X500Principal(signingCertificate.getCertificateIssuerDN()).getName(X500Principal.RFC1779),
-                        new X500Principal(signingCertificate.getCertificateDN()).getName(X500Principal.RFC1779),
-                        signingCertificate.getSerialNumber(),
-                        format.format(sr.getSigningTime(e.getId())),
-                        format.format(signingCertificate.getNotBefore()),
-                        format.format(signingCertificate.getNotAfter()),
-                        new Result(
-                            sr.getSignatureQualification(e.getId()).ordinal(),
-                            sr.getSignatureQualification(e.getId()).getReadable()
-                        )
+                    new Result(
+                            conclusion.getIndication().ordinal(),
+                            conclusion.getIndication().name()
                     ),
-                    timestamps.isEmpty() ? null : timestamps.stream().map((t) -> {
-                        var tsCertificate = dd.getCertificateById(dd.getTimestampSigningCertificateId(t.getId()));
-
-                        return new TimestampCertificateInfo(
-                            new X500Principal(tsCertificate.getCertificateIssuerDN()).getName(X500Principal.RFC1779),
-                            new X500Principal(tsCertificate.getCertificateDN()).getName(X500Principal.RFC1779),
-                            tsCertificate.getSerialNumber(),
-                            format.format(sr.getProductionTime(t.getId())),
-                            format.format(tsCertificate.getNotBefore()),
-                            format.format(tsCertificate.getNotAfter()),
-                            new Result(
-                                sr.getTimestampQualification(t.getId()).ordinal(),
-                                sr.getTimestampQualification(t.getId()).getReadable()
+                    new SignatureInfo(
+                            sr.getSignatureFormat(e.getId()).name(),
+                            format.format(sr.getSigningTime(e.getId())),
+                            !timestamps.isEmpty(),
+                            timestamps.isEmpty() ? null : format.format(sr.getProductionTime(timestamps.get(0).getId())),
+                            new CertificateInfo(
+                                    new X500Principal(signingCertificate.getCertificateIssuerDN()).getName(X500Principal.RFC1779),
+                                    new X500Principal(signingCertificate.getCertificateDN()).getName(X500Principal.RFC1779),
+                                    signingCertificate.getSerialNumber(),
+                                    format.format(sr.getSigningTime(e.getId())),
+                                    format.format(signingCertificate.getNotBefore()),
+                                    format.format(signingCertificate.getNotAfter()),
+                                    new Result(
+                                            sr.getSignatureQualification(e.getId()).ordinal(),
+                                            sr.getSignatureQualification(e.getId()).getReadable()
+                                    )
                             ),
-                            dd.getTimestampType(t.getId()).name()
-                        );
-                    }).toList(),
-                    dd.getSignerDocuments(e.getId()).stream().map(SignerDataWrapper::getId).toList()
-                ));
+                            timestamps.isEmpty() ? null : timestamps.stream().map((t) -> {
+                                var tsCertificate = dd.getCertificateById(dd.getTimestampSigningCertificateId(t.getId()));
+
+                                return new TimestampCertificateInfo(
+                                        new X500Principal(tsCertificate.getCertificateIssuerDN()).getName(X500Principal.RFC1779),
+                                        new X500Principal(tsCertificate.getCertificateDN()).getName(X500Principal.RFC1779),
+                                        tsCertificate.getSerialNumber(),
+                                        format.format(sr.getProductionTime(t.getId())),
+                                        format.format(tsCertificate.getNotBefore()),
+                                        format.format(tsCertificate.getNotAfter()),
+                                        new Result(
+                                                sr.getTimestampQualification(t.getId()).ordinal(),
+                                                sr.getTimestampQualification(t.getId()).getReadable()
+                                        ),
+                                        dd.getTimestampType(t.getId()).name()
+                                );
+                            }).toList(),
+                            dd.getSignerDocuments(e.getId()).stream().map(SignerDataWrapper::getId).toList()
+                    ));
         }).toList();
 
         List<SignedObject> signedObjects = null;
@@ -83,9 +83,9 @@ public record ValidationResponseBody(String fileFormat, List<Signature> signatur
         switch (sr.getSignatureFormat(sr.getSignatureIdList().get(0)).getSignatureForm()) {
             case PAdES: {
                 signedObjects = dd.getAllSignerDocuments().stream().map((d) -> new SignedObject(
-                    d.getId(),
-                    MimeTypeEnum.PDF.getMimeTypeString(),
-                    d.getReferencedName()
+                        d.getId(),
+                        MimeTypeEnum.PDF.getMimeTypeString(),
+                        d.getReferencedName()
                 )).toList();
                 break;
             }
@@ -101,8 +101,9 @@ public record ValidationResponseBody(String fileFormat, List<Signature> signatur
         }
 
         if (extractor != null) {
-            signedObjects = getSignedObjects(extractor.extract().getSignedDocuments(), dd.getAllSignerDocuments());
-            unsignedObjects = getUnsignedObjects(extractor.extract().getSignedDocuments(), dd.getAllSignerDocuments());
+            var allObjects = extractor.extract().getSignedDocuments();
+            signedObjects = getSignedObjects(allObjects, dd.getAllSignerDocuments());
+            unsignedObjects = getUnsignedObjects(allObjects, dd.getAllSignerDocuments());
         }
 
         return new ValidationResponseBody(fileFormat, signatures, signedObjects, unsignedObjects);
@@ -124,35 +125,37 @@ public record ValidationResponseBody(String fileFormat, List<Signature> signatur
 
     private static List<UnsignedObject> getUnsignedObjects(List<DSSDocument> docs, List<SignerDataWrapper> signedObjects) {
         return docs.stream().filter((o) -> signedObjects.stream().filter((s) -> o.getName().equals(s.getReferencedName())).toList().isEmpty()).map((generalObject) ->
-            new UnsignedObject(
-                    generalObject.getMimeType().getMimeTypeString(),
-                    generalObject.getName()
-            )
+                new UnsignedObject(
+                        generalObject.getMimeType().getMimeTypeString(),
+                        generalObject.getName()
+                )
         ).toList();
     }
-}
 
-record Signature(Result validaitonResult, SignatureInfo signatureInfo) {
-}
+    record Signature(Result validationResult, SignatureInfo signatureInfo) {
+    }
 
-record Result(int code, String description) {
-}
+    record Result(int code, String description) {
+    }
 
-record SignatureInfo(String level, String claimedSigningTime, boolean isTimestamped, String timestampSigningTime,
-                     CertificateInfo signingCertificate, List<TimestampCertificateInfo> timestamps,
-                     List<String> signedObjectsIds) {
-}
+    record SignatureInfo(String level, String claimedSigningTime, boolean isTimestamped, String timestampSigningTime,
+                         CertificateInfo signingCertificate, List<TimestampCertificateInfo> timestamps,
+                         List<String> signedObjectsIds) {
+    }
 
-record CertificateInfo(String issuerDN, String subjectDN, String serialNumber, String productionTime, String notBefore,
-                       String notAfter, Result qualification) {
-}
+    record CertificateInfo(String issuerDN, String subjectDN, String serialNumber, String productionTime,
+                           String notBefore,
+                           String notAfter, Result qualification) {
+    }
 
-record TimestampCertificateInfo(String issuerDN, String subjectDN, String serialNumber, String productionTime, String notBefore,
-                       String notAfter, Result qualification, String timestampType) {
-}
+    record TimestampCertificateInfo(String issuerDN, String subjectDN, String serialNumber, String productionTime,
+                                    String notBefore,
+                                    String notAfter, Result qualification, String timestampType) {
+    }
 
-record SignedObject(String id, String mimeType, String filename) {
-}
+    record SignedObject(String id, String mimeType, String filename) {
+    }
 
-record UnsignedObject(String mimeType, String filename) {
+    record UnsignedObject(String mimeType, String filename) {
+    }
 }
