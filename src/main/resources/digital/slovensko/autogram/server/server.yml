@@ -13,7 +13,7 @@ info:
   license:
     name: EUPL
     url: https://github.com/slovensko-digital/autogram/blob/main/LICENSE
-  version: 1.99.9
+  version: 2.1.3
 servers:
   - url: http://localhost:37200
   - url: /
@@ -318,7 +318,7 @@ paths:
     post:
       tags:
         - Validation
-      summary: Get signature validation report for a signed document. Returns 422 if no signatures are present.
+      summary: Get signature validation report for a signed document. Returns 422 if no signatures are present. Does not validate the inner structure of XML Datacontainer files.
       operationId: validateDocument
       requestBody:
         content:
