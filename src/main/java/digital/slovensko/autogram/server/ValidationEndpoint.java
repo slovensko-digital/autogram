@@ -3,7 +3,6 @@ package digital.slovensko.autogram.server;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.errors.DocumentNotSignedYetException;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
@@ -17,12 +16,6 @@ import java.io.IOException;
 import java.util.Base64;
 
 public class ValidationEndpoint implements HttpHandler {
-    private final Autogram autogram;
-
-    public ValidationEndpoint(Autogram autogram) {
-        this.autogram = autogram;
-    }
-
     @Override
     public void handle(HttpExchange exchange) {
         DSSDocument document = null;
