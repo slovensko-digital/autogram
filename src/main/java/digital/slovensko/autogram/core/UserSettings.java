@@ -77,7 +77,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private void setSignatureType(String signatureType) {
         var signatureLevelStringConverter = new SignatureLevelStringConverter();
         var signatureLevel = Arrays
-                .asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B)
+                .asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B, SignatureLevel.CAdES_BASELINE_B)
                 .stream()
                 .map(signatureLevelStringConverter::toString)
                 .filter(sl -> sl.equals(signatureType))
