@@ -59,7 +59,7 @@
                                 <fitWidth>550</fitWidth>
                                 <preserveRatio>true</preserveRatio>
                                 <image>
-                                    <Image url="@logo OPII_ESIF.png" />
+                                    <Image url="@logo_OPII_ESIF.png" />
                                 </image>
                             </ImageView>
                         </children>
