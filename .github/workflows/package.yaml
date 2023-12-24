@@ -1,23 +1,84 @@
 name: Package
 
 on:
+  workflow_dispatch: # manual test
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
+  linux-deb:
+    runs-on: ubuntu-latest
+    container: "debian:latest"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Setup dependencies
+        run: |
+          apt-get -q update && apt-get -q upgrade -y
+          apt-get -q install -y openjdk-17-jdk maven binutils fakeroot wget git
+          
+      - uses: actions/checkout@v4
+
+      - name: Build artifact
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+          
+          ./mvnw -B -C -V package
+          ls -lah ./target
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb
+          path: target/*.deb
+
+  linux-rpm:
+    runs-on: ubuntu-latest
+    container: "fedora:latest"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Setup dependencies
+        run: |
+          dnf -q install -y java-17-openjdk maven rpm-build git
+
+      - uses: actions/checkout@v4
+
+      - name: Build artifact
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+
+          ./mvnw -B -C -V package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rpm
+          path: target/*.rpm
+
   build:
-    runs-on: ${{ matrix.config.os }}
-    environment: packaging
+    runs-on: ${{ matrix.os }}
+    needs: 
+      - linux-deb
+      - linux-rpm
     strategy:
       matrix:
-        config:
-          - os: ubuntu-latest
-          - os: macos-latest
-          - os: windows-latest
+        os:
+          - macos-latest
+          - windows-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: target
+
+      - name: Check artifacts
+        run: |
+          ls target
 
       - name: Update version in pom if tag pushed
         if: startsWith(github.ref, 'refs/tags/')
