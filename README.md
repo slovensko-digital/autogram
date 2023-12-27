@@ -62,7 +62,7 @@ Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe
 #### Debian/Ubuntu
 
 ```sh
-sudo apt install openjdk-17-jdk git maven binutils rpm fakeroot
+sudo apt install openjdk-17-jdk maven binutils rpm fakeroot
 ```
 
 #### Fedora
