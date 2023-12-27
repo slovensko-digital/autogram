@@ -8,6 +8,7 @@ on:
 
 jobs:
   linux-deb:
+    environment: packaging
     runs-on: ubuntu-latest
     container: "debian:latest"
     env:
@@ -34,6 +35,7 @@ jobs:
           path: target/*.deb
 
   linux-rpm:
+    environment: packaging
     runs-on: ubuntu-latest
     container: "fedora:latest"
     env:
@@ -51,6 +53,8 @@ jobs:
           ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
 
           ./mvnw -B -C -V package
+          ls -lah ./target
+
 
       - uses: actions/upload-artifact@v4
         with:
@@ -58,6 +62,7 @@ jobs:
           path: target/*.rpm
 
   build:
+    environment: packaging
     runs-on: ${{ matrix.os }}
     needs: 
       - linux-deb
@@ -76,21 +81,10 @@ jobs:
           merge-multiple: true
           path: target
 
-      - name: Check artifacts
-        run: |
-          ls target
-
       - name: Update version in pom if tag pushed
         if: startsWith(github.ref, 'refs/tags/')
         run: ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
         shell: bash
-
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: "17.0.7+7"
-          distribution: "liberica"
-          java-package: "jdk+fx"
 
       - name: Cache local Maven repository and JDK cache
         uses: actions/cache@v3
