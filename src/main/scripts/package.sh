@@ -27,7 +27,7 @@ while read -r key value; do
     safekey=$(echo "${key}" | tr . _)
     trimmedvalue=$(echo "${value}" | sed 's/[[:space:]]*$//g' | sed 's/^[[:space:]]*//g')
     declare "properties_${safekey}=${trimmedvalue}"
-done <"$resourcesDir/build.properties"
+done < "${resourcesDir}/build.properties"
 unset IFS
 
 jvmOptions="-Dfile.encoding=UTF-8 \
@@ -65,7 +65,7 @@ if [[ "${platform}" == "win" ]]; then
         "--add-launcher" "autogram-cli=$resourcesDir/windows-cli-build.properties"
     )
 
-    if [[ ! -z "${properties_win_upgradeUUID}" ]]; then
+    if [[ -n "${properties_win_upgradeUUID}" ]]; then
         arguments+=(
             "--win-upgrade-uuid" "${properties_win_upgradeUUID}"
         )
@@ -98,19 +98,19 @@ if [[ "$platform" == "linux" ]]; then
     cp "./autogram.template.desktop" "./autogram.desktop"
     sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./autogram.desktop"
 
-    if [[ ! -z "${properties_linux_appCategory}" ]]; then
+    if [[ -n "${properties_linux_appCategory}" ]]; then
         arguments+=(
             "--linux-app-category" "${properties_linux_appCategory}"
         )
     fi
 
-    if [[ ! -z "${properties_linux_packageDeps}" ]]; then
+    if [[ -n "${properties_linux_packageDeps}" ]]; then
         arguments+=(
             "--linux-package-deps" "${properties_linux_packageDeps}"
         )
     fi
 
-    lowercase_name=$(echo "$properties_name" | tr '[:upper:]' '[:lower:]')
+    lowercase_name=$(echo "${properties_name}" | tr '[:upper:]' '[:lower:]')
 
     arguments+=(
         "--name" "${lowercase_name}"
@@ -131,7 +131,6 @@ if [[ "$platform" == "linux" ]]; then
     if [ "${ID}" == "fedora" ]; then
         arguments+=(
             "--type" "rpm"
-            "--linux-rpm-license-type" "${properties_linux_rpmLicenseType:-MIT}"
         )
     fi
 
@@ -139,7 +138,7 @@ if [[ "$platform" == "linux" ]]; then
         arguments+=(
             "--type" "deb"
         )
-        if [[ ! -z "${properties_linux_debMaintainer}" ]]; then
+        if [[ -n "${properties_linux_debMaintainer}" ]]; then
             arguments+=(
                 "--linux-deb-maintainer" "${properties_linux_debMaintainer}"
             )
@@ -152,7 +151,7 @@ fi
 
 if [[ "${platform}" == "mac" ]]; then
     cp "./Info.plist.template" "./Info.plist"
-    sed -i.bak "s/PROTOCOL_NAME/$properties_protocol/g" "./Info.plist" && rm "./Info.plist.bak"
+    sed -i.bak "s/PROTOCOL_NAME/${properties_protocol}/g" "./Info.plist" && rm "./Info.plist.bak"
 
     arguments+=(
         "--name" "${properties_name}"
@@ -166,19 +165,19 @@ if [[ "${platform}" == "mac" ]]; then
         "--temp" "./DTempFiles"
     )
 
-    if [[ ! -z "${properties_mac_identifier}" ]]; then
+    if [[ -n "${properties_mac_identifier}" ]]; then
         arguments+=(
             "--mac-package-identifier" "${properties_mac_identifier}"
         )
     fi
 
-    if [[ ! -z "${properties_mac_name}" ]]; then
+    if [[ -n "${properties_mac_name}" ]]; then
         arguments+=(
             "--mac-package-name" "${properties_mac_name}"
         )
     fi
 
-    if [[ "$properties_mac_sign" == "1" ]]; then
+    if [[ "${properties_mac_sign}" == "1" ]]; then
         export JPACKAGE_MAC_SIGN="1"
         if [[ -z "${APPLE_DEVELOPER_IDENTITY}" ]] || [[ -z "${APPLE_KEYCHAIN_PATH}" ]]; then
             echo "Missing APPLE_DEVELOPER_IDENTITY or APPLE_KEYCHAIN_PATH env variable"
