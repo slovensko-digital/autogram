@@ -18,7 +18,7 @@ public class XDCValidatorTests {
         var content = "";
         var document =  new InMemoryDocument(content.getBytes(), null);
 
-        Assertions.assertThrows(XMLValidationException.class, () -> XDCValidator.validateXml(null, null, document, CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256));
+        Assertions.assertThrows(XMLValidationException.class, () -> XDCValidator.validateXml(null, null, document, CanonicalizationMethod.INCLUSIVE, DigestAlgorithm.SHA256, false));
     }
 
     @Test

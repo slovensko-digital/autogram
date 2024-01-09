@@ -43,7 +43,7 @@ public abstract class XDCValidator {
         }
     }
 
-    public static void validateXml(String xsd, String xslt, DSSDocument xmlDocument, String cannonicalizationMethod, DigestAlgorithm digestAlgorithm)
+    public static void validateXml(String xsd, String xslt, DSSDocument xmlDocument, String cannonicalizationMethod, DigestAlgorithm digestAlgorithm, boolean embedUsedSchemas)
             throws OriginalDocumentNotFoundException, XMLValidationException, XMLValidationException {
         if (xmlDocument == null)
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument");
@@ -57,16 +57,18 @@ public abstract class XDCValidator {
                 throw new XMLValidationException("Zlyhala validácia XML Datacontainera",
                         "Poskytnutý XML dokument nie je validný XML Datacontainer podľa XSD schémy");
 
-            if (xsd != null && !validateXsdDigest(xsd, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
+            if (!embedUsedSchemas && xsd != null && !validateXsdDigest(xsd, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
                 throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XSD schéma sa nezhoduje s odtlačkom v XML Datacontaineri");
 
-            if (xslt != null && !validateXsltDigest(xslt, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
+            if (!embedUsedSchemas && xslt != null && !validateXsltDigest(xslt, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
                 throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XSLT transformácia sa nezhoduje s odtlačkom v XML Datacontaineri");
         }
 
-        var eformContent = transformElementToString(AutogramMimeType.isXDC(xmlDocument.getMimeType())
-                ? EFormUtils.getEformXmlFromXdcDocument(xmlDocument).getDocumentElement()
-                : xml.getDocumentElement());
+        var eformContent = transformElementToString(
+                AutogramMimeType.isXDC(xmlDocument.getMimeType())
+                    ? EFormUtils.getEformXmlFromXdcDocument(xmlDocument).getDocumentElement()
+                    : xml.getDocumentElement()
+        );
 
         if (xsd != null && !validateXmlContentAgainstXsd(eformContent, xsd))
             throw new XMLValidationException("Zlyhala validícia XML dokumentu", "XML dokument sa nezhoduje s XSD schémou");
@@ -106,28 +108,5 @@ public abstract class XDCValidator {
         var digestValue = getDigestValueFromElement(document, fieldWithDigest);
 
         return contentHash.equals(digestValue);
-    }
-
-    private static String transformElementToString(Element element) {
-            try {
-                var document = XMLUtils.getSecureDocumentBuilder().newDocument();
-                Node node;
-            try {
-                node = document.importNode(element, true);
-            } catch (DOMException e) {
-                node = document.importNode(element.getFirstChild(), true);
-            }
-
-            document.appendChild(node);
-
-            var transformer = XMLUtils.getSecureTransformerFactory().newTransformer();
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            var writer = new StringWriter();
-            transformer.transform(new DOMSource(document), new StreamResult(writer));
-
-            return writer.toString();
-        } catch (Exception e) {
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
-        }
     }
 }

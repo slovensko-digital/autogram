@@ -19,6 +19,7 @@ import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -38,6 +39,7 @@ public class EFormResources {
     private String xsltDestinationType;
     private String xsltTarget;
     private String schema;
+    private boolean embedUsedSchemas;
 
     public static EFormAttributes tryToLoadEFormAttributes(DSSDocument document, String propertiesCanonicalization,
             String xsdIdentifier, XsltParams xsltParams)
@@ -69,9 +71,14 @@ public class EFormResources {
         var packaging = SignaturePackaging.ENVELOPING;
         xsdIdentifier = eformResources.getXsdIdentifier();
         xsltParams = eformResources.getXsltParams();
+        var embedUsedSchemas = eformResources.shouldEmbedUsedSchemas();
 
         return new EFormAttributes(identifier, transformation, schema, containerXmlns, container, packaging,
-                xsdIdentifier, xsltParams);
+                xsdIdentifier, xsltParams, embedUsedSchemas);
+    }
+
+    private boolean shouldEmbedUsedSchemas() {
+        return embedUsedSchemas;
     }
 
     private ArrayList<ManifestXsltEntry> getManifestXsltEntries(NodeList nodes) {
@@ -189,6 +196,9 @@ public class EFormResources {
     }
 
     private boolean findResources() throws XMLValidationException {
+        if (embedUsedSchemas)
+            return findResourcesEmbedded();
+
         var manifest_xml = getResource(SOURCE_URL + url + "/META-INF/manifest.xml");
         if (manifest_xml == null)
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť manifest elektronického formulára");
@@ -197,7 +207,7 @@ public class EFormResources {
         var nodes = parsed_manifest_xml.getElementsByTagName("manifest:file-entry");
 
         var entries = getManifestXsltEntries(nodes);
-        if (entries.size() == 0)
+        if (entries.isEmpty())
             return false;
 
         var entry = selectXslt(entries);
@@ -233,6 +243,30 @@ public class EFormResources {
         return true;
     }
 
+    private boolean findResourcesEmbedded() throws XMLValidationException {
+        if (schema == null) {
+            var schema_raw = getResource(url);
+            if (schema_raw == null)
+                throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť XSD schému elektronického formulára");
+
+            schema = new String(schema_raw, ENCODING);
+        }
+
+        if (transformation == null) {
+            var transformationUrl = url.replace(".xsd", ".xslt");
+            var transformation_raw = getResource(transformationUrl);
+            if (transformation_raw == null)
+                throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť XSLT transformáciu elektronického formulára");
+
+            transformation = new String(transformation_raw, ENCODING);
+            if (!transformation.isEmpty() && transformation.charAt(0) == '\uFEFF')
+                transformation = transformation.substring(1);
+
+        }
+
+        return true;
+    }
+
     private XsltParams getXsltParams() {
         return new XsltParams(xsltIdentifier, xsltLanguage, xsltDestinationType, xsltTarget, xsltMediaType);
     }
@@ -241,10 +275,24 @@ public class EFormResources {
         return xsdIdentifier != null ? xsdIdentifier : "http://schemas.gov.sk/form/" + url + "/form.xsd";
     }
 
+    private static boolean isOrsrUri(String uri) {
+        return uri != null && uri.contains("://eformulare.justice.sk");
+    }
+
     private static EFormResources buildEFormResourcesFromXDC(DSSDocument document, String canonicalizationMethod)
             throws XMLValidationException {
         var xdc = getXmlFromDocument(document).getDocumentElement();
         var formUri = getFormUri(xdc);
+
+        if (isOrsrUri(formUri)) {
+            var schemaNode = (Element) getElementFromXdc(xdc, "UsedXSDEmbedded").getFirstChild();
+            var schema = transformElementToString(schemaNode);
+            var transformationNode = (Element) getElementFromXdc(xdc, "UsedPresentationSchemaEmbedded").getFirstChild();
+            var transformation = transformElementToString(transformationNode);
+
+            return new EFormResources(formUri, schema, transformation);
+        }
+
         var xml = getEformXmlFromXdcDocument(document);
 
         var xsdDigest = getDigestValueFromElement(xdc, "UsedXSDReference");
@@ -263,15 +311,19 @@ public class EFormResources {
         var xml = getXmlFromDocument(document).getDocumentElement();
         var formUri = getNamespaceFromEformXml(xml);
 
+        if (isOrsrUri(formUri))
+            return new EFormResources(formUri, null, null);
+
         return buildEFormResourcesFromEformXml(xml, canonicalizationMethod, formUri, null, null, xsdIdentifier,
                 xsltParams);
     }
 
     private static EFormResources buildEFormResourcesFromEformXml(Node xml, String canonicalizationMethod,
             String formUri, String xsdDigest, String xsltDigest, String xsdIdentifier, XsltParams xsltParams) {
-        if (formUri == null || !(formUri.startsWith("http://schemas.gov.sk/form/")
-                || formUri.startsWith("http://data.gov.sk/doc/eform/")
-                || formUri.startsWith("https://data.gov.sk/id/egov/eform/")))
+        if (formUri == null)
+            return null;
+
+        if (!formUri.startsWith("http://schemas.gov.sk/form/") && !formUri.startsWith("http://data.gov.sk/doc/eform/") && !formUri.startsWith("https://data.gov.sk/id/egov/eform/"))
             return null;
 
         var parts = formUri.split("/");
@@ -294,6 +346,19 @@ public class EFormResources {
         this.xsltDestinationType = xsltParams != null ? xsltParams.destinationType() : null;
         this.xsltTarget = xsltParams != null ? xsltParams.target() : null;
         this.canonicalizationMethod = canonicalizationMethod;
+        this.embedUsedSchemas = false;
+    }
+
+    private EFormResources(String url, String schema, String transformation) {
+        this.embedUsedSchemas = true;
+
+        // Real url follows the space at the end of this string in orsr eforms
+        this.url = url.replace("http://www.justice.gov.sk/Forms ", "");
+        this.schema = schema;
+        this.transformation = transformation;
+        this.xsdDigest = null;
+        this.xsltDigest = null;
+        this.canonicalizationMethod = null;
     }
 
     private String getIdentifier() {

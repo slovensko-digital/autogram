@@ -113,12 +113,39 @@ public abstract class EFormUtils {
         return digestValue.getNodeValue();
     }
 
-    public static String getValueFromElement(Element xdc, String elementLocalName) {
+    public static Element getElementFromXdc(Element xdc, String elementLocalName) {
         var element = xdc.getElementsByTagNameNS(XDC_XMLNS, elementLocalName).item(0);
         if (element == null)
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element " + elementLocalName + " nebol nájdený");
 
-        return element.getTextContent();
+        return (Element) element;
+    }
+
+    public static String getValueFromElement(Element xdc, String elementLocalName) {
+        return getElementFromXdc(xdc, elementLocalName).getTextContent();
+    }
+
+    public static String transformElementToString(Element element) {
+        try {
+            var document = XMLUtils.getSecureDocumentBuilder().newDocument();
+            Node node;
+            try {
+                node = document.importNode(element, true);
+            } catch (DOMException e) {
+                node = document.importNode(element.getFirstChild(), true);
+            }
+
+            document.appendChild(node);
+
+            var transformer = XMLUtils.getSecureTransformerFactory().newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            var writer = new StringWriter();
+            transformer.transform(new DOMSource(document), new StreamResult(writer));
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
+        }
     }
 
     public static XsltParams getXsltParamsFromXsltReference(Element xdc) {
@@ -154,15 +181,32 @@ public abstract class EFormUtils {
         if (xmlData == null)
             return null;
 
-        return xmlData.getAttributes().getNamedItem("Identifier").getNodeValue();
+        var identifierNode = xmlData.getAttributes().getNamedItem("Identifier");
+
+        if (identifierNode != null)
+            return identifierNode.getNodeValue();
+
+        var firstChild = xmlData.getFirstChild();
+        if (firstChild == null)
+            return null;
+
+        var xsiSchemaLocationNode = firstChild.getAttributes().getNamedItem("xsi:schemaLocation");
+        if (xsiSchemaLocationNode == null)
+            return null;
+
+        return xsiSchemaLocationNode.getNodeValue();
     }
 
     public static String getNamespaceFromEformXml(Node xml) {
         var xmlns = xml.getAttributes().getNamedItem("xmlns");
-        if (xmlns == null)
-            return null;
+        if (xmlns != null)
+            return xmlns.getNodeValue();
 
-        return xmlns.getNodeValue();
+        xmlns = xml.getAttributes().getNamedItem("xsi:schemaLocation");
+        if (xmlns != null)
+            return xmlns.getNodeValue();
+
+        return null;
     }
 
     public static byte[] getResource(String url) {
