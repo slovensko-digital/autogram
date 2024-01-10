@@ -35,6 +35,7 @@ class AutogramTests {
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
+            "digital.slovensko.autogram.TestMethodSources#orsrDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider"})
     void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
