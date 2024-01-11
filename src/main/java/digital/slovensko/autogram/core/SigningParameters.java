@@ -232,7 +232,7 @@ public class SigningParameters {
         if (isXDC(extractedDocumentMimeType))
             eformAttributes = EFormResources.tryToLoadEFormAttributesFromEmbeddedXdc(extractedDocument);
 
-        if (autoLoadEform && (isXML(extractedDocumentMimeType) || isXDC(extractedDocumentMimeType)) && (eformAttributes != null))
+        if (autoLoadEform && (isXML(extractedDocumentMimeType) || isXDC(extractedDocumentMimeType)) && (eformAttributes == null))
             eformAttributes = EFormResources.tryToLoadEFormAttributes(extractedDocument, propertiesCanonicalization, xsdIdentifier, xsltParams);
 
         if (eformAttributes != null) {

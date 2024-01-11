@@ -68,9 +68,9 @@ public class EFormResources {
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť identifiktor elektronického formulára");
 
         try {
-            var schemaNode = (Element) getElementFromXdc(xdc, "UsedXSDEmbedded").getFirstChild();
+            var schemaNode = (Element) getNoTextFirstChild(getElementFromXdc(xdc, "UsedXSDEmbedded"));
             var schema = transformElementToString(schemaNode);
-            var transformationNode = (Element) getElementFromXdc(xdc, "UsedPresentationSchemaEmbedded").getFirstChild();
+            var transformationNode = (Element) getNoTextFirstChild(getElementFromXdc(xdc, "UsedPresentationSchemaEmbedded"));
             var transformation = transformElementToString(transformationNode);
             var eformResources = new EFormResources(formUri, schema, transformation);
             return buildEformAttributes(eformResources);
@@ -214,6 +214,9 @@ public class EFormResources {
     }
 
     private boolean findResources() throws XMLValidationException {
+        if (embedUsedSchemas)
+            return findResourcesEmbedded();
+
         var manifest_xml = getResource(SOURCE_URL + url + "/META-INF/manifest.xml");
         if (manifest_xml == null)
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť manifest elektronického formulára");
