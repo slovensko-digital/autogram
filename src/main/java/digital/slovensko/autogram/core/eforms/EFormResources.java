@@ -39,16 +39,14 @@ public class EFormResources {
     private String xsltDestinationType;
     private String xsltTarget;
     private String schema;
-    private boolean embedUsedSchemas;
+    private final boolean embedUsedSchemas;
 
     public static EFormAttributes tryToLoadEFormAttributes(DSSDocument document, String propertiesCanonicalization,
             String xsdIdentifier, XsltParams xsltParams)
             throws AutogramException {
-        if (!isXDC(document.getMimeType()) && !isXML(document.getMimeType()))
-            return null;
 
         EFormResources eformResources;
-        if (isXDC(document.getMimeType()) || XDCValidator.isXDCContent(document))
+        if (isXDC(document.getMimeType()))
             eformResources = EFormResources.buildEFormResourcesFromXDC(document, propertiesCanonicalization);
         else
             eformResources = EFormResources.buildEFormResourcesFromEformXml(document, propertiesCanonicalization,
@@ -60,21 +58,41 @@ public class EFormResources {
         if (!eformResources.findResources())
             return null;
 
+        return buildEformAttributes(eformResources);
+    }
+
+    public static EFormAttributes tryToLoadEFormAttributesFromEmbeddedXdc(DSSDocument document) {
+        var xdc = getXmlFromDocument(document).getDocumentElement();
+        var formUri = getFormUri(xdc);
+        if (formUri == null)
+            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť identifiktor elektronického formulára");
+
+        try {
+            var schemaNode = (Element) getElementFromXdc(xdc, "UsedXSDEmbedded").getFirstChild();
+            var schema = transformElementToString(schemaNode);
+            var transformationNode = (Element) getElementFromXdc(xdc, "UsedPresentationSchemaEmbedded").getFirstChild();
+            var transformation = transformElementToString(transformationNode);
+            var eformResources = new EFormResources(formUri, schema, transformation);
+            return buildEformAttributes(eformResources);
+
+        } catch (XMLValidationException e) {
+            return null;
+        }
+    }
+
+    private static EFormAttributes buildEformAttributes(EFormResources eformResources) {
         var transformation = eformResources.getTransformation();
         var schema = eformResources.getSchema();
         if (transformation == null || schema == null)
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť XSLT transformáciu alebo XSD schému");
 
         var identifier = eformResources.getIdentifier();
-        var containerXmlns = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
-        var container = ASiCContainerType.ASiC_E;
-        var packaging = SignaturePackaging.ENVELOPING;
-        xsdIdentifier = eformResources.getXsdIdentifier();
-        xsltParams = eformResources.getXsltParams();
+        var xsdIdentifier = eformResources.getXsdIdentifier();
+        var xsltParams = eformResources.getXsltParams();
         var embedUsedSchemas = eformResources.shouldEmbedUsedSchemas();
 
-        return new EFormAttributes(identifier, transformation, schema, containerXmlns, container, packaging,
-                xsdIdentifier, xsltParams, embedUsedSchemas);
+        return new EFormAttributes(identifier, transformation, schema, EFormUtils.XDC_XMLNS, ASiCContainerType.ASiC_E,
+                SignaturePackaging.ENVELOPING, xsdIdentifier, xsltParams, embedUsedSchemas);
     }
 
     private boolean shouldEmbedUsedSchemas() {
@@ -196,9 +214,6 @@ public class EFormResources {
     }
 
     private boolean findResources() throws XMLValidationException {
-        if (embedUsedSchemas)
-            return findResourcesEmbedded();
-
         var manifest_xml = getResource(SOURCE_URL + url + "/META-INF/manifest.xml");
         if (manifest_xml == null)
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť manifest elektronického formulára");
@@ -283,16 +298,6 @@ public class EFormResources {
             throws XMLValidationException {
         var xdc = getXmlFromDocument(document).getDocumentElement();
         var formUri = getFormUri(xdc);
-
-        if (isOrsrUri(formUri)) {
-            var schemaNode = (Element) getElementFromXdc(xdc, "UsedXSDEmbedded").getFirstChild();
-            var schema = transformElementToString(schemaNode);
-            var transformationNode = (Element) getElementFromXdc(xdc, "UsedPresentationSchemaEmbedded").getFirstChild();
-            var transformation = transformElementToString(transformationNode);
-
-            return new EFormResources(formUri, schema, transformation);
-        }
-
         var xml = getEformXmlFromXdcDocument(document);
 
         var xsdDigest = getDigestValueFromElement(xdc, "UsedXSDReference");

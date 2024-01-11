@@ -40,7 +40,7 @@ import eu.europa.esig.dss.xades.DSSXMLUtils;
 
 public abstract class EFormUtils {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
-    private static final String XDC_XMLNS = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
+    public static final String XDC_XMLNS = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
 
     public static String extractTransformationOutputMimeTypeString(String transformation)
             throws TransformationParsingErrorException {

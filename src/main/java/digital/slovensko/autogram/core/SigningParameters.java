@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
+import digital.slovensko.autogram.core.eforms.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
@@ -219,25 +220,31 @@ public class SigningParameters {
             throw new SigningParametersException("Dokument nemá definovaný MIME type", "Dokument poskytnutý na podpis nemá definovaný MIME type");
 
         var extractedDocument = document;
-        var mimeType = document.getMimeType();
-        if (isAsice(mimeType))
+        if (isAsice(document.getMimeType()))
             extractedDocument = AsicContainerUtils.getOriginalDocument(document);
 
-        if (autoLoadEform && (isAsice(mimeType) || isXML(mimeType) || isXDC(mimeType))) {
-            var eformAttributes = EFormResources.tryToLoadEFormAttributes(
-                    extractedDocument, propertiesCanonicalization, xsdIdentifier, xsltParams);
+        if (isXML(extractedDocument.getMimeType()) && XDCValidator.isXDCContent(extractedDocument))
+            extractedDocument.setMimeType(XML_DATACONTAINER);
 
-            if (eformAttributes != null) {
-                schema = eformAttributes.schema();
-                transformation = eformAttributes.transformation();
-                identifier = eformAttributes.identifier();
-                containerXmlns = eformAttributes.containerXmlns();
-                container = eformAttributes.container();
-                packaging = eformAttributes.packaging();
-                xsdIdentifier = eformAttributes.xsdIdentifier();
-                xsltParams = eformAttributes.xsltParams();
-                embedUsedSchemas |= eformAttributes.embedUsedSchemas();
-            }
+        var extractedDocumentMimeType = extractedDocument.getMimeType();
+
+        EFormAttributes eformAttributes = null;
+        if (isXDC(extractedDocumentMimeType))
+            eformAttributes = EFormResources.tryToLoadEFormAttributesFromEmbeddedXdc(extractedDocument);
+
+        if (autoLoadEform && (isXML(extractedDocumentMimeType) || isXDC(extractedDocumentMimeType)) && (eformAttributes != null))
+            eformAttributes = EFormResources.tryToLoadEFormAttributes(extractedDocument, propertiesCanonicalization, xsdIdentifier, xsltParams);
+
+        if (eformAttributes != null) {
+            schema = eformAttributes.schema();
+            transformation = eformAttributes.transformation();
+            identifier = eformAttributes.identifier();
+            containerXmlns = eformAttributes.containerXmlns();
+            container = eformAttributes.container();
+            packaging = eformAttributes.packaging();
+            xsdIdentifier = eformAttributes.xsdIdentifier();
+            xsltParams = eformAttributes.xsltParams();
+            embedUsedSchemas |= eformAttributes.embedUsedSchemas();
         }
 
         if (transformation != null)
@@ -260,7 +267,7 @@ public class SigningParameters {
             if (digestAlgorithm == null)
                 digestAlgorithm = DigestAlgorithm.SHA256;
 
-            if (isXML(extractedDocument.getMimeType()) || isXDC(extractedDocument.getMimeType()))
+            if (isXML(extractedDocumentMimeType) || isXDC(extractedDocumentMimeType))
                 XDCValidator.validateXml(schema, transformation, extractedDocument, propertiesCanonicalization, digestAlgorithm, embedUsedSchemas);
 
             else

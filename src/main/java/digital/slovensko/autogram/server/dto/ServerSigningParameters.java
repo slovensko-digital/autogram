@@ -116,7 +116,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, getVisualizationWidth(), shouldAutoLoadEform(), embedUsedSchemas,
+                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform, embedUsedSchemas,
                 schemaIdentifier, transformationIdentifier, transformationLanguage,
                 getTransformationMediaDestinationTypeDescription(), transformationTargetEnvironment,
                 document,
@@ -196,11 +196,6 @@ public class ServerSigningParameters {
 
     private ASiCContainerType getContainer() {
         return container;
-    }
-
-    private boolean shouldAutoLoadEform() {
-        // justice.gov.sk Forms need to be auto-loaded to get the embedded xsd and xslt
-        return autoLoadEform || (identifier != null && identifier.contains("justice.gov.sk/Forms"));
     }
 
     public void validate(MimeType mimeType) throws RequestValidationException {
