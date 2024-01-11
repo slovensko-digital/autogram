@@ -62,12 +62,12 @@ public class EFormResources {
     }
 
     public static EFormAttributes tryToLoadEFormAttributesFromEmbeddedXdc(DSSDocument document) {
-        var xdc = getXmlFromDocument(document).getDocumentElement();
-        var formUri = getFormUri(xdc);
-        if (formUri == null)
-            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť identifiktor elektronického formulára");
-
         try {
+            var xdc = getXmlFromDocument(document).getDocumentElement();
+            var formUri = getFormUri(xdc);
+            if (formUri == null)
+                return null;
+
             var schemaNode = (Element) getNoTextFirstChild(getElementFromXdc(xdc, "UsedXSDEmbedded"));
             var schema = transformElementToString(schemaNode);
             var transformationNode = (Element) getNoTextFirstChild(getElementFromXdc(xdc, "UsedPresentationSchemaEmbedded"));
