@@ -44,6 +44,11 @@ Doplniť ďalšie je pomerne ľahké pokiaľ používajú PKCS#11.
 
 Odporúčame používať Liberica JDK, ktoré má v sebe JavaFX, všetko je potom jednoduchšie. Po zavolaní `./mvnw initialize` by sa malo stiahnuť do `target/jdkCache`.
 
+#### Fedora
+
+```sh
+sudo dnf install rpm-build
+```
 
 ### Build
 

@@ -123,9 +123,15 @@ public class GUIValidationUtils {
                 isRevocationValidated = false;
 
         var isTimestampInvalid = false;
-        for (var timestamp : timestamps)
-            if (timestamp.getIndication().equals(Indication.FAILED))
+        var isTimestampIndeterminate = false;
+        for (var timestamp : timestamps) {
+            var indication = timestamp.getIndication();
+            if (indication.equals(Indication.FAILED) || indication.equals(Indication.TOTAL_FAILED))
                 isTimestampInvalid = true;
+
+            if (indication.equals(Indication.INDETERMINATE))
+                isTimestampIndeterminate = true;
+        }
 
         Node badge = null;
         if (!isValidated)
@@ -144,8 +150,7 @@ public class GUIValidationUtils {
                 createTableRow("Výsledok overenia",
                         isValidated
                                 ? validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated,
-                                        signatureQualification,
-                                        isTimestampInvalid)
+                                        signatureQualification, isTimestampInvalid, isTimestampIndeterminate)
                                 : "Prebieha overovanie"),
                 createTableRow("Certifikát", subject),
                 createTableRow("Vydavateľ", issuer),
@@ -168,7 +173,9 @@ public class GUIValidationUtils {
     }
 
     private static String validityToString(boolean isValid, boolean isFailed, boolean areTLsLoaded,
-                                           boolean isRevocationValidated, SignatureQualification signatureQualification, boolean isTimestampInvalid) {
+            boolean isRevocationValidated, SignatureQualification signatureQualification, boolean isTimestampInvalid,
+            boolean isTimestampIndeterminate) {
+
         if (isFailed || isTimestampInvalid)
             return "Neplatný";
 
@@ -178,12 +185,11 @@ public class GUIValidationUtils {
         if (!isRevocationValidated)
             return "Nepodarilo sa overiť platnosť certifikátu";
 
+        if (signatureQualification.getReadable().contains("Indeterminate") || isTimestampIndeterminate)
+            return "Predbežne platný";
+
         if (isValid)
             return "Platný";
-
-        if (signatureQualification.getReadable().contains("INDETERMINATE")
-                || signatureQualification.getReadable().contains("ndeterminate"))
-            return "Predbežne platný";
 
         return "Neznámy podpis";
     }
