@@ -146,15 +146,22 @@ public abstract class SignatureBadgeFactory {
             var isQualified = timestamp.getQualificationDetails() != null;
             var isFailed = timestamp.getIndication() == Indication.TOTAL_FAILED
                     || timestamp.getIndication() == Indication.FAILED;
+            var isIndeterminate = timestamp.getIndication() == Indication.INDETERMINATE;
 
             if (isFailed)
                 flowPane.getChildren().add(createInvalidBadge("Neplatná ČP"));
+
+            else if (isIndeterminate)
+                flowPane.getChildren().add(
+                        createUnknownBadge("Neznáma ČP"));
+
             else if (isQualified)
                 flowPane.getChildren().add(
                         createValidQualifiedBadge(simple.getTimestampQualification(timestamp.getId()).getReadable()));
+
             else
-                flowPane.getChildren()
-                        .add(createUnknownBadge(simple.getTimestampQualification(timestamp.getId()).getReadable()));
+                flowPane.getChildren().add(
+                        createUnknownBadge("Neznáma ČP"));
         }
 
         return new HBox(flowPane);
