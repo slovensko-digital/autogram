@@ -288,7 +288,7 @@ public class SigningParameters {
 
     public static SigningParameters buildForASiCWithCAdES(DSSDocument document, boolean signAsEn319132, TSPSource tspSource) throws AutogramException {
         return buildParameters(
-                SignatureLevel.CAdES_BASELINE_B,
+                (tspSource == null) ? SignatureLevel.CAdES_BASELINE_B : SignatureLevel.CAdES_BASELINE_T,
                 ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null,
                 null, null, null, null, "",
                 false, 640, true, null, null, document, tspSource);
