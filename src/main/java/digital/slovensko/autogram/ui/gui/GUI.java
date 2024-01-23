@@ -192,6 +192,23 @@ public class GUI implements UI {
         stage.show();
     }
 
+    public void showPkcsEidWindowsDllError(AutogramException e) {
+        var controller = new PkcsEidWindowsDllErrorController(hostServices);
+        var root = GUIUtils.loadFXML(controller, "pkcs-eid-windows-dll-error-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(e.getSubheading());
+        stage.setScene(new Scene(root));
+
+        stage.sizeToScene();
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        GUIUtils.suppressDefaultFocus(stage, controller);
+
+        stage.show();
+    }
+
     public char[] getKeystorePassword() {
         var futurePassword = new FutureTask<>(() -> {
             var controller = new PasswordController("Aký je kód k úložisku klúčov?", "Zadajte kód k úložisku klúčov.", false, true);
@@ -353,7 +370,11 @@ public class GUI implements UI {
 
     @Override
     public void onPickSigningKeyFailed(AutogramException e) {
-        showError(e);
+        if (e instanceof PkcsEidWindowsDllException)
+            showPkcsEidWindowsDllError(e);
+        else
+            showError(e);
+
         resetSigningKey();
         enableSigningOnAllJobs();
     }

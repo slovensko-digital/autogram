@@ -3,6 +3,8 @@ package digital.slovensko.autogram.core.errors;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 
+import java.io.IOException;
+
 public class AutogramException extends RuntimeException {
     private final String heading;
     private final String subheading;
@@ -59,6 +61,8 @@ public class AutogramException extends RuntimeException {
                     return new TsaServerMisconfiguredException("Nastavený TSA server odmietol pridať časovú pečiatku. Skontrolujte nastavenia TSA servera.", cause);
                 } else if (cause instanceof NullPointerException && cause.getMessage().contains("Host name")) {
                     return new TsaServerMisconfiguredException("Nie je nastavená žiadna adresa TSA servera. Skontrolujte nastavenia TSA servera.", cause);
+                } else if (cause instanceof IOException && cause.getMessage().contains("The specified module could not be found")) {
+                    return new PkcsEidWindowsDllException(e);
                 }
             }
         }
