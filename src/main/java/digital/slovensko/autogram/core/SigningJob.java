@@ -126,6 +126,9 @@ public class SigningJob {
         signatureParameters.setCertificateChain(key.getCertificateChain());
         signatureParameters.setSignWithExpiredCertificate(true);
 
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.CAdES_BASELINE_T))
+            service.setTspSource(getParameters().getTspSource());
+
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
