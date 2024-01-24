@@ -18,7 +18,7 @@ public class PkcsEidWindowsDllErrorController implements SuppressedFocusControll
     }
 
     public void downloadAction(ActionEvent ignored) {
-        hostServices.showDocument("https://aka.ms/vs/16/release/vc_redist.x64.exe");
+        hostServices.showDocument("https://sluzby.slovensko.digital/autogram/vc-redist-redirect");
     }
 
     public void onMainButtonAction() {

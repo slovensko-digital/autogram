@@ -13,13 +13,13 @@
 
     <VBox styleClass="autogram-error-summary">
         <TextFlow styleClass="autogram-error-summary__title">
-            <Text>Nastala chyba</Text>
+            <Text>Chyba komunikácie s kartou</Text>
         </TextFlow>
         <TextFlow styleClass="autogram-error-summary__error">
-            <Text>eID ovládač nie je možné použiť</Text>
+            <Text>Ovládač nie je možné použiť</Text>
         </TextFlow>
         <TextFlow styleClass="autogram-error-summary__description,autogram-body-s">
-            <Text text="Nie je možné použiť eID ovládač pre podpisovanie občianskym preukazom. Pravdepodobne je potrebné do systému nainštalovať balík "/>
+            <Text text="Nie je možné použiť ovládač pre podpisovanie vybranou kartou. Pravdepodobne je potrebné do systému nainštalovať balík "/>
             <Hyperlink styleClass="autogram-body-s,autogram-link" text="Microsoft Visual C++ 2015 Redistributable" onAction="#downloadAction"/>
         </TextFlow>
         <TextFlow styleClass="autogram-error-summary__description,autogram-body-s">

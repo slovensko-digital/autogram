@@ -255,7 +255,7 @@ public class CliUI implements UI {
         } else if (e instanceof SlotIndexOutOfRangeException) {
             return "Provided slot index is out of range for chosen driver.";
         } else if (e instanceof PkcsEidWindowsDllException) {
-            return "eID PKCS library problem. Microsoft Visual C++ 2015 Redistributable probably needs to be installed.";
+            return "PKCS library problem. Microsoft Visual C++ 2015 Redistributable probably needs to be installed.";
         } else {
             e.printStackTrace();
             return "Unknown error occurred";
