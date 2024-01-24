@@ -254,6 +254,8 @@ public class CliUI implements UI {
             return "TSA server refused to add timestamp. Check TSA server configuration.";
         } else if (e instanceof SlotIndexOutOfRangeException) {
             return "Provided slot index is out of range for chosen driver.";
+        } else if (e instanceof PkcsEidWindowsDllException) {
+            return "PKCS library problem. Microsoft Visual C++ 2015 Redistributable probably needs to be installed.";
         } else {
             e.printStackTrace();
             return "Unknown error occurred";
