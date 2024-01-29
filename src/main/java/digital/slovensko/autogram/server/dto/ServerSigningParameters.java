@@ -103,7 +103,7 @@ public class ServerSigningParameters {
         this.transformationTargetEnvironment = transformationTargetEnvironment;
     }
 
-    public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource) {
+    public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
         return SigningParameters.buildFromRequest(
                 getSignatureLevel(),
                 getContainer(),
@@ -120,7 +120,8 @@ public class ServerSigningParameters {
                 schemaIdentifier, transformationIdentifier, transformationLanguage,
                 getTransformationMediaDestinationTypeDescription(), transformationTargetEnvironment,
                 document,
-                tspSource);
+                tspSource,
+                plainXmlEnabled);
     }
 
     private String getTransformation(boolean isBase64) throws MalformedBodyException {

@@ -15,6 +15,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private String driver;
     private int slotIndex;
     private boolean en319132;
+    private boolean plainXmlEnabled;
     private boolean signIndividually;
     private boolean correctDocumentDisplay;
     private boolean signaturesValidity;
@@ -38,6 +39,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setSlotIndex(prefs.getInt("SLOT_INDEX", -1));
         settings.setEn319132(prefs.getBoolean("EN319132", false));
         settings.setBulkEnabled(prefs.getBoolean("BULK_ENABLED", false));
+        settings.setPlainXmlEnabled(prefs.getBoolean("PLAIN_XML_ENABLED", false));
         settings.setSignIndividually(prefs.getBoolean("SIGN_INDIVIDUALLY", true));
         settings.setCorrectDocumentDisplay(prefs.getBoolean("CORRECT_DOCUMENT_DISPLAY", true));
         settings.setSignaturesValidity(prefs.getBoolean("SIGNATURES_VALIDITY", true));
@@ -61,6 +63,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putInt("SLOT_INDEX", slotIndex);
         prefs.putBoolean("EN319132", en319132);
         prefs.putBoolean("BULK_ENABLED", bulkEnabled);
+        prefs.putBoolean("PLAIN_XML_ENABLED", plainXmlEnabled);
         prefs.putBoolean("SIGN_INDIVIDUALLY", signIndividually);
         prefs.putBoolean("CORRECT_DOCUMENT_DISPLAY", correctDocumentDisplay);
         prefs.putBoolean("SIGNATURES_VALIDITY", signaturesValidity);
@@ -108,6 +111,14 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public void setDriver(String driver) {
         this.driver = driver;
+    }
+
+    public boolean isPlainXmlEnabled() {
+        return plainXmlEnabled;
+    }
+
+    public void setPlainXmlEnabled(boolean value) {
+        this.plainXmlEnabled = value;
     }
 
     public boolean isEn319132() {

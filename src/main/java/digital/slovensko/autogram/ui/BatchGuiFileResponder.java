@@ -28,8 +28,9 @@ public class BatchGuiFileResponder extends BatchResponder {
     private final SignatureLevel pDFSignatureLevel;
     private final boolean isEn319132;
     private final TSPSource tspSource;
+    private final boolean plainXmlEnabled;
 
-    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, boolean checkPDFACompliance, SignatureLevel pDFSignatureLevel, boolean signPDFAsPades, boolean isEn319132, TSPSource tspSource) {
+    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, boolean checkPDFACompliance, SignatureLevel pDFSignatureLevel, boolean signPDFAsPades, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         this.autogram = autogram;
         this.list = list;
         this.checkPDFACompliance = checkPDFACompliance;
@@ -37,6 +38,7 @@ public class BatchGuiFileResponder extends BatchResponder {
         this.isEn319132 = isEn319132;
         this.targetPath = TargetPath.fromTargetDirectory(targetDirectory, signPDFAsPades);
         this.tspSource = tspSource;
+        this.plainXmlEnabled = plainXmlEnabled;
     }
 
     @Override
@@ -62,7 +64,7 @@ public class BatchGuiFileResponder extends BatchResponder {
                     onAllFilesSigned(batch);
                 }), batch);
 
-                var job = SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource);
+                var job = SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled);
                 autogram.batchSign(job, batch.getBatchId());
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);

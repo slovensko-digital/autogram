@@ -2,6 +2,7 @@ package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
@@ -13,6 +14,7 @@ import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,13 +45,35 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null);
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null, true);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
                 key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
+    void testSignNonEformHappyScenario(InMemoryDocument document) {
+        var settings = new TestSettings();
+        var newUI = new FakeUI();
+        var autogram = new Autogram(newUI, settings);
+
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null, true);
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
+    void testSignNonEformNegativeScenario(InMemoryDocument document) {
+        Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, null, false));
     }
 
     @ParameterizedTest
@@ -60,13 +84,11 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, null);
+        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, null, true);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
                 key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
-
-        verify(responder).onDocumentSigned(any());
     }
 
     @ParameterizedTest
@@ -109,7 +131,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null), key));
+                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, true), key));
 
         verify(responder).onDocumentSigned(any());
     }

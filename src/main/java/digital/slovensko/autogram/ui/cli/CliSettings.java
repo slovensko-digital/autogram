@@ -33,6 +33,7 @@ public class CliSettings extends UserSettings {
         settings.setTsaServer(cmd.getOptionValue("tsa-server", null));
         settings.setTsaEnabled(settings.getTsaServer() != null);
         settings.setBulkEnabled(true);
+        settings.setPlainXmlEnabled(cmd.hasOption("plain-xml"));
 
         return settings;
     }

@@ -53,7 +53,7 @@ public class TransformationTests {
                                 ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
                                 DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
                                 CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
-                                null, transformation, "id1/asa", false, 800, false, false, null, null, null, null, null, document, null);
+                                null, transformation, "id1/asa", false, 800, false, false, null, null, null, null, null, document, null, true);
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
@@ -112,7 +112,7 @@ public class TransformationTests {
                                 ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
                                 DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
                                 CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
-                                null, transformation, "id1/asa", false, 800, false, false,null, null, null, null, null, document, null);
+                                null, transformation, "id1/asa", false, 800, false, false,null, null, null, null, null, document, null, true);
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
