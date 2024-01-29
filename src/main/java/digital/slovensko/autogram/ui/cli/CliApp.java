@@ -32,7 +32,7 @@ public class CliApp {
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
                     .map(f -> SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, targetPathBuilder),
                             settings.isPdfaCompliance(), settings.getSignatureLevel(), settings.isEn319132(),
-                            settings.getTspSource()))
+                            settings.getTspSource(), settings.isPlainXmlEnabled()))
                     .toList();
             if (settings.isPdfaCompliance()) {
                 jobs.forEach(job -> {

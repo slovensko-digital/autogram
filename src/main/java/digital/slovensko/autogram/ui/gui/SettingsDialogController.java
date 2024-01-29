@@ -31,6 +31,8 @@ public class SettingsDialogController {
     @FXML
     private HBox en319132Radios;
     @FXML
+    private HBox plainXmlEnabledRadios;
+    @FXML
     private ChoiceBox<TokenDriver> driverChoiceBox;
     @FXML
     private VBox trustedCountriesList;
@@ -71,6 +73,7 @@ public class SettingsDialogController {
         initializeTsaServer();
         initializeBulkEnabledCheckbox();
         initializeEn319132CheckBox();
+        initializePlainXmlEnabledCheckBox();
         initializeCorrectDocumentDisplayCheckBox();
         initializeSignatureValidationCheckBox();
         initializeCheckPDFAComplianceCheckBox();
@@ -176,6 +179,10 @@ public class SettingsDialogController {
 
     private void initializeEn319132CheckBox() {
         initializeBooleanRadios(en319132Radios, t -> userSettings.setEn319132(t), userSettings.isEn319132());
+    }
+
+    private void initializePlainXmlEnabledCheckBox() {
+        initializeBooleanRadios(plainXmlEnabledRadios, t -> userSettings.setPlainXmlEnabled(t), userSettings.isPlainXmlEnabled());
     }
 
     private void initializeCorrectDocumentDisplayCheckBox() {

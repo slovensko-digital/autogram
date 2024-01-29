@@ -123,6 +123,14 @@ public abstract class TestMethodSources {
         );
     }
 
+    public static Stream<InMemoryDocument> nonEformXmlProvider() throws IOException {
+        var nonEformXml = cls.getResourceAsStream("non_eform.xml").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(nonEformXml, "nonEformXml.xml", MimeTypeEnum.XML)
+        );
+    }
+
     public static Stream<InMemoryDocument> pdfForPadesProvider() throws IOException {
         var samplePdf = cls.getResourceAsStream("sample.pdf").readAllBytes();
         var samplePdfSigned = cls.getResourceAsStream("sample_signed.pdf").readAllBytes();

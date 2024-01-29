@@ -262,4 +262,8 @@ public class Autogram {
     public TSPSource getTspSource() {
         return settings.getTspSource();
     }
+
+    public boolean isPlainXmlEnabled() {
+        return settings.isPlainXmlEnabled();
+    }
 }

@@ -165,6 +165,24 @@
                                             styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
+                                                Podpisovanie neznámych XML
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Podpisovanie XML súborov, ktoré nie je možné podpísať ako štátny elektronický formulár.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="plainXmlEnabledRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
+                                    </VBox>
+                                </HBox>
                             </VBox>
                         </ScrollPane>
                     </content>
