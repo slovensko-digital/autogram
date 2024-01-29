@@ -44,12 +44,6 @@ Doplniť ďalšie je pomerne ľahké pokiaľ používajú PKCS#11.
 
 Odporúčame používať Liberica JDK, ktoré má v sebe JavaFX, všetko je potom jednoduchšie. Po zavolaní `./mvnw initialize` by sa malo stiahnuť do `target/jdkCache`.
 
-#### Fedora
-
-```sh
-sudo dnf install rpm-build
-```
-
 ### Build
 
 Spustenie `./mvnw package` pripraví všetko do `./target`:
@@ -59,6 +53,23 @@ Spustenie `./mvnw package` pripraví všetko do `./target`:
 - `autogram-*.jar` - JAR s aplikáciou
 
 Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, a .rpm/.deb).
+
+```sh
+./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+./mvnw package
+```
+
+#### Debian/Ubuntu
+
+```sh
+sudo apt install openjdk-17-jdk maven binutils rpm fakeroot
+```
+
+#### Fedora
+
+```sh
+sudo dnf install java-17-openjdk maven rpm-build
+```
 
 ## Autori a sponzori
 
