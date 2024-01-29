@@ -1,7 +1,6 @@
 name: Package
 
 on:
-  workflow_dispatch: # manual test
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
