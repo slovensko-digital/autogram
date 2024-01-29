@@ -465,6 +465,11 @@ components:
           example: http://data.gov.sk/def/container/xmldatacontainer+xml/1.1
           description: XML namespace for the XML Datacontainer. Specifies if xmldatacontainer should be created from XML. Doesn't create xmldatacontainer if payloadMimeType is application/vnd.gov.sk.xmldatacontainer+xml already. Accepts http://data.gov.sk/def/container/xmldatacontainer+xml/1.1 only. Defaults to null. Is ignored with autoLoadEform true.
 
+        embedUsedSchemas:
+          type: boolean
+          example: false
+          description: When creating XML Datacontainer, parameter indicates whether to embed XSD and XML or reference them. Practically this should be only used for ORSR EForms in which case (when identifier contains "justice.gov.sk/Forms") this parameter is overridden to true.
+
         identifier:
           type: string
           example: https://data.gov.sk/id/egov/eform/App.GeneralAgenda/1.9

@@ -207,6 +207,7 @@ public class SignHttpSmokeTest {
         var checkPDFACompliance = (boolean) map.getOrDefault("checkPDFACompliance", false);
         var visualizationWidth = fromMapToEnum(VisualizationWidthEnum.class, map.get("visualizationWidth"));
         var autoLoadEform = (boolean) map.getOrDefault("autoLoadEform", false);
+        var embedUsedSchemas = (boolean) map.getOrDefault("embedUsedSchemas", false);
         var schemaIdentifier = (String) map.get("schemaIdentifier");
         var transformationIdentifier = (String) map.get("transformationIdentifier");
         var transformationLanguage = (String) map.get("transformationLanguage");
@@ -230,6 +231,7 @@ public class SignHttpSmokeTest {
                 checkPDFACompliance,
                 visualizationWidth,
                 autoLoadEform,
+                embedUsedSchemas,
                 schemaIdentifier,
                 transformationIdentifier,
                 transformationLanguage,

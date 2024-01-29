@@ -39,7 +39,7 @@ class XDCBuilderTests {
             xsdSchema,
             transformation,
             "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
-            false, 800, false, null, null, null, null, null, document, null);
+            false, 800, false, false, null, null, null, null, null, document, null);
 
         var out = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);

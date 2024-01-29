@@ -40,7 +40,7 @@ import eu.europa.esig.dss.xades.DSSXMLUtils;
 
 public abstract class EFormUtils {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
-    private static final String XDC_XMLNS = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
+    public static final String XDC_XMLNS = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
 
     public static String extractTransformationOutputMimeTypeString(String transformation)
             throws TransformationParsingErrorException {
@@ -113,12 +113,39 @@ public abstract class EFormUtils {
         return digestValue.getNodeValue();
     }
 
-    public static String getValueFromElement(Element xdc, String elementLocalName) {
+    public static Element getElementFromXdc(Element xdc, String elementLocalName) {
         var element = xdc.getElementsByTagNameNS(XDC_XMLNS, elementLocalName).item(0);
         if (element == null)
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element " + elementLocalName + " nebol nájdený");
 
-        return element.getTextContent();
+        return (Element) element;
+    }
+
+    public static String getValueFromElement(Element xdc, String elementLocalName) {
+        return getElementFromXdc(xdc, elementLocalName).getTextContent();
+    }
+
+    public static String transformElementToString(Element element) {
+        try {
+            var document = XMLUtils.getSecureDocumentBuilder().newDocument();
+            Node node;
+            try {
+                node = document.importNode(element, true);
+            } catch (DOMException e) {
+                node = document.importNode(getNoTextFirstChild(element), true);
+            }
+
+            document.appendChild(node);
+
+            var transformer = XMLUtils.getSecureTransformerFactory().newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            var writer = new StringWriter();
+            transformer.transform(new DOMSource(document), new StreamResult(writer));
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
+        }
     }
 
     public static XsltParams getXsltParamsFromXsltReference(Element xdc) {
@@ -148,21 +175,37 @@ public abstract class EFormUtils {
     }
 
     public static String getFormUri(Element xdc) {
-        var xmlData = xdc.getElementsByTagNameNS(
-                XDC_XMLNS, "XMLData").item(0);
+        var xmlData = xdc.getElementsByTagNameNS(XDC_XMLNS, "XMLData").item(0);
 
         if (xmlData == null)
             return null;
 
-        return xmlData.getAttributes().getNamedItem("Identifier").getNodeValue();
+        var identifierNode = xmlData.getAttributes().getNamedItem("Identifier");
+
+        if (identifierNode != null)
+            return identifierNode.getNodeValue();
+
+        var firstChild = getNoTextFirstChild(xmlData);
+        if (firstChild == null)
+            return null;
+
+        var xsiSchemaLocationNode = firstChild.getAttributes().getNamedItemNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
+        if (xsiSchemaLocationNode == null)
+            return null;
+
+        return xsiSchemaLocationNode.getNodeValue();
     }
 
     public static String getNamespaceFromEformXml(Node xml) {
         var xmlns = xml.getAttributes().getNamedItem("xmlns");
-        if (xmlns == null)
-            return null;
+        if (xmlns != null)
+            return xmlns.getNodeValue();
 
-        return xmlns.getNodeValue();
+        xmlns = xml.getAttributes().getNamedItemNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
+        if (xmlns != null)
+            return xmlns.getNodeValue();
+
+        return null;
     }
 
     public static byte[] getResource(String url) {
@@ -218,27 +261,32 @@ public abstract class EFormUtils {
         if (xmlData.getFirstChild() == null)
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData je prázdny");
 
-        var idk = xmlData.getFirstChild();
-        // In an indented XML, whitespaces between XMLData and its content are considered as text nodes.
-        // If there is a text node, validate it against all-whitespace regex and skip it.
-        if (idk.getNodeType() == Node.TEXT_NODE) {
-            if (!idk.getNodeValue().matches("\\s*"))
-                throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XMLData obsahuje neplatný text");
-
-            idk = idk.getNextSibling();
-        }
-
-        if (idk == null)
+        var firstChild = getNoTextFirstChild(xmlData);
+        if (firstChild == null)
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData je prázdny");
 
         try {
-            var node = responseDocument.importNode(idk, true);
+            var node = responseDocument.importNode(firstChild, true);
             responseDocument.appendChild(node);
         } catch (DOMException e) {
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
         }
 
         return responseDocument;
+    }
+
+    static Node getNoTextFirstChild(Node xmlData) {
+        var node = xmlData.getFirstChild();
+        // In an indented XML, whitespaces between XMLData and its content are considered as text nodes.
+        // If there is a text node, validate it against all-whitespace regex and skip it.
+        if (node.getNodeType() == Node.TEXT_NODE) {
+            if (!node.getNodeValue().matches("\\s*"))
+                throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XMLData obsahuje neplatný text");
+
+            return node.getNextSibling();
+        }
+
+        return node;
     }
 
     public static String transform(DSSDocument documentToDisplay, String transformation) throws TransformationException {

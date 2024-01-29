@@ -214,4 +214,18 @@ public abstract class TestMethodSources {
             new InMemoryDocument(samplePdfCadesAsice, "samplePdfCadesAsice.asice", MimeTypeEnum.ASICE)
         );
     }
+
+    public static Stream<InMemoryDocument> orsrDocumentsProvider() throws  IOException {
+        var fupaXml = cls.getResourceAsStream("FUPA.xml").readAllBytes();
+        var fupsXml = cls.getResourceAsStream("FUPS.xml").readAllBytes();
+        var fupsXdcXml = cls.getResourceAsStream("FUPS.xdc.xml").readAllBytes();
+        var fupsXdcNoNamespaceXml = cls.getResourceAsStream("FUPS_wo_namespace.xdc.xml").readAllBytes();
+
+        return Stream.of(
+                new InMemoryDocument(fupaXml, "FUPA.xml", MimeTypeEnum.XML),
+                new InMemoryDocument(fupsXml, "FUPS.xml", MimeTypeEnum.XML),
+                new InMemoryDocument(fupsXdcXml, "FUPS.xdc.xml", MimeTypeEnum.XML),
+                new InMemoryDocument(fupsXdcNoNamespaceXml, "FUPS_wo_namespace.xdc.xml", MimeTypeEnum.XML)
+        );
+    }
 }

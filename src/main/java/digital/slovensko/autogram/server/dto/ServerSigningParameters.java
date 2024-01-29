@@ -63,6 +63,7 @@ public class ServerSigningParameters {
     private final boolean checkPDFACompliance;
     private final VisualizationWidthEnum visualizationWidth;
     private final boolean autoLoadEform;
+    private final boolean embedUsedSchemas;
     private final String schemaIdentifier;
     private final String transformationIdentifier;
     private final String transformationLanguage;
@@ -76,7 +77,7 @@ public class ServerSigningParameters {
             LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
             String schema, String transformation,
             String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth,
-            boolean autoLoadEform, String schemaIdentifier, String transformationIdentifier,
+            boolean autoLoadEform, boolean embedUsedSchemas, String schemaIdentifier, String transformationIdentifier,
             String transformationLanguage, TransformationOutputMimeType transformationMediaDestinationTypeDescription,
             String transformationTargetEnvironment) {
         this.level = level;
@@ -94,6 +95,7 @@ public class ServerSigningParameters {
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
         this.autoLoadEform = autoLoadEform;
+        this.embedUsedSchemas = embedUsedSchemas;
         this.schemaIdentifier = schemaIdentifier;
         this.transformationIdentifier = transformationIdentifier;
         this.transformationLanguage = transformationLanguage;
@@ -114,7 +116,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform,
+                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform, embedUsedSchemas,
                 schemaIdentifier, transformationIdentifier, transformationLanguage,
                 getTransformationMediaDestinationTypeDescription(), transformationTargetEnvironment,
                 document,
