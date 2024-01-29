@@ -92,6 +92,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: "17.0.7+7"
+          distribution: "liberica"
+          java-package: "jdk+fx"
 
       - name: Cache local Maven repository and JDK cache
         uses: actions/cache@v3
@@ -179,6 +181,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: "17.0.7+7"
+          distribution: "liberica"
+          java-package: "jdk+fx"
 
       - name: Cache local Maven repository and JDK cache
         uses: actions/cache@v3
