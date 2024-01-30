@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>digital.slovensko.autogram.Main</main.class>
         <java.version>17</java.version>
-        <dss.version>5.12.1</dss.version>
+        <dss.version>6.0</dss.version>
         <gson.version>2.10.1</gson.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <pdfjs.version>2.10.377</pdfjs.version>
