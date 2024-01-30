@@ -187,12 +187,12 @@ public class SigningJob {
 
     private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var level = SignatureValidator.getSignedDocumentSignatureLevel(document);
-        if (level != null) switch (level) {
-            case PAdES_BASELINE_B:
+        if (level != null) switch (level.getSignatureForm()) {
+            case PAdES:
                 return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
-            case XAdES_BASELINE_B:
+            case XAdES:
                 return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
-            case CAdES_BASELINE_B:
+            case CAdES:
                 return SigningParameters.buildForASiCWithCAdES(document, isEn319132, tspSource, plainXmlEnabled);
             default:
                 ;
