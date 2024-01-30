@@ -46,7 +46,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setPdfaCompliance(prefs.getBoolean("PDFA_COMPLIANCE", true));
         settings.setServerEnabled(prefs.getBoolean("SERVER_ENABLED", true));
         settings.setExpiredCertsEnabled(prefs.getBoolean("EXPIRED_CERTS_ENABLED", false));
-        settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU"));
+        settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU,ES,BE"));
         settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", ""));
         settings.setTsaServer(prefs.get("TSA_SERVER", "http://tsa.izenpe.com"));
         settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", ""));
