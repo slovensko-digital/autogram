@@ -63,6 +63,7 @@ if [[ "${platform}" == "win" ]]; then
         "--win-shortcut-prompt"
         "--win-menu"
         "--add-launcher" "autogram-cli=$resourcesDir/windows-cli-build.properties"
+        "--win-shortcut-prompt"
     )
 
     if [[ -n "${properties_win_upgradeUUID}" ]]; then
@@ -81,12 +82,6 @@ if [[ "${platform}" == "win" ]]; then
     if [[ "${properties_win_perUserInstall}" == "1" ]]; then
         arguments+=(
             "--win-per-user-install"
-        )
-    fi
-
-    if [[ "${properties_win_shortcut}" == "1" ]]; then
-        arguments+=(
-            "--win-shortcut"
         )
     fi
 
