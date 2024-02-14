@@ -248,10 +248,10 @@
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
-                                            <Text styleClass="autogram-heading-s" text="Kontrola súladu s&#160;PDF/A-1a formátom"/>
+                                            <Text styleClass="autogram-heading-s" text="Kontrola súladu s&#160;PDF/A formátom"/>
                                         </TextFlow>
                                         <TextFlow>
-                                            <Text styleClass="autogram-description" text="Kontrola súladu podpisovaného dokumentu s&#160;PDF/A-1a formátom. Niektoré úrady tento formát vyžadujú na komunikáciu."/>
+                                            <Text styleClass="autogram-description" text="Kontrola súladu podpisovaného dokumentu s&#160;PDF/A formátom. Niektoré úrady tento formát vyžadujú na komunikáciu."/>
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">

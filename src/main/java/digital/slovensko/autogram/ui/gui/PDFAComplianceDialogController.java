@@ -11,8 +11,6 @@ public class PDFAComplianceDialogController implements SuppressedFocusController
     private final GUI gui;
 
     @FXML
-    Button cancelButton;
-    @FXML
     Button continueButton;
     @FXML
     Node mainBox;
@@ -20,11 +18,6 @@ public class PDFAComplianceDialogController implements SuppressedFocusController
     public PDFAComplianceDialogController(SigningJob job, GUI gui) {
         this.job = job;
         this.gui = gui;
-    }
-
-    public void onCancelAction(ActionEvent ignored) {
-        GUIUtils.closeWindow(mainBox);
-        gui.cancelJob(job);
     }
 
     public void onContinueAction(ActionEvent ignored) {
