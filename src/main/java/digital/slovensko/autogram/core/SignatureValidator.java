@@ -63,11 +63,19 @@ public class SignatureValidator {
         return instance;
     }
 
-    public synchronized Reports validate(SignedDocumentValidator docValidator) {
+    private synchronized Reports validate(SignedDocumentValidator docValidator) {
         docValidator.setCertificateVerifier(verifier);
 
         // TODO: do not print stack trace inside DSS
         return docValidator.validateDocument();
+    }
+
+    public synchronized Reports validate(DSSDocument document) {
+        var documentValidator = createDocumentValidator(document);
+        if (documentValidator == null)
+            return null;
+
+        return validate(documentValidator);
     }
 
     public synchronized void refresh() {
@@ -126,11 +134,7 @@ public class SignatureValidator {
     }
 
     public synchronized ValidationReports getSignatureValidationReport(SigningJob job) {
-        var documentValidator = createDocumentValidator(job.getDocument());
-        if (documentValidator == null)
-            return new ValidationReports(null, job);
-
-        return new ValidationReports(validate(documentValidator), job);
+        return new ValidationReports(validate(job.getDocument()), job);
     }
 
     public static String getSignatureValidationReportHTML(Reports signatureValidationReport) {

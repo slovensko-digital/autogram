@@ -48,6 +48,7 @@ public class ErrorResponse {
             case "BatchNotStartedException" -> new ErrorResponse(400, "BATCH_NOT_STARTED", (AutogramException) e);
             case "BatchInvalidIdException" -> new ErrorResponse(404, "BATCH_NOT_FOUND", (AutogramException) e);
             case "BatchConflictException" -> new ErrorResponse(400, "BATCH_CONFLICT", (AutogramException) e);
+            case "DocumentNotSignedYetException" -> new ErrorResponse(422, "DOCUMENT_NOT_SIGNED", (AutogramException) e);
             default -> new ErrorResponse(500, "INTERNAL_ERROR", "Unexpected exception signing document", e.getMessage());
         };
     }
