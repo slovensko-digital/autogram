@@ -440,7 +440,7 @@
 
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.7.1</version>
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/scripts/bin.xml</descriptor>
