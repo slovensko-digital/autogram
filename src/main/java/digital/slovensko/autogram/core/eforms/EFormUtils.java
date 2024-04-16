@@ -210,7 +210,7 @@ public abstract class EFormUtils {
 
     public static byte[] getResource(String url) {
         var offlineFileLoader = new FileCacheDataLoader();
-        offlineFileLoader.setCacheExpirationTime(21600000);  // 6 hours
+        offlineFileLoader.setCacheExpirationTime(1);  // 6 hours
         offlineFileLoader.setDataLoader(new CommonsDataLoader());
 
         DSSDocument xsltDoc;
@@ -346,5 +346,9 @@ public abstract class EFormUtils {
         var url = t[t.length - 2] + "/" + t[t.length - 1];
 
         return "http://schemas.gov.sk/form/" + url + "/form.xsd";
+    }
+
+    public static boolean isOrsrUri(String uri) {
+        return uri != null && uri.contains("://eformulare.justice.sk");
     }
 }

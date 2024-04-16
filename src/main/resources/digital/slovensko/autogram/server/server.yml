@@ -583,6 +583,12 @@ components:
           default: sm
           description: "Optional width of the signing document visualization. Values are sm (640px), md (768px), lg (1024px), xl (1280px), xxl (1536px). The minimum visualization width is set to 640px. If the preferred visualization width is exceeds width of client's screen, the visualization width is set to the width of the client's screen."
 
+        fsFormId:
+          type: integer
+          default: null
+          example: 572
+          description: Specific identifier for financnasprava.sk EForms. For example, 572 is en identifier of "Daňové priznanie k dani z príjmov fyzickej osoby (typ B) za zdaňovacie obdobie 2023".
+
       required:
         - level
 

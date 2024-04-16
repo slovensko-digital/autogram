@@ -36,20 +36,26 @@ public abstract class TestMethodSources {
         var notAnXml = "not an xml".getBytes();
         var invalidXml = "<invalidXml><foo><bar></foo></bar></invalidXml>".getBytes();
         var invalidXmlHeader = "<?xml versionWrong=\"1.0\" encoding=\"UTF-8\"?><invalidXml><foo></foo><bar></bar></invalidXml>".getBytes();
+        var invalidXdc = "<invalidXml xmlns=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><foo></foo><bar></bar></invalidXml>".getBytes();
         var twoRootElements = "<invalidXml><foo></foo></invalidXml><bar></bar>".getBytes();
         var twoRootElementsHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><invalidXml><foo></foo></invalidXml><bar></bar>".getBytes();
-        var invalidXdc = "<invalidXml xmlns=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><foo></foo><bar></bar></invalidXml>".getBytes();
 
-        var wrongXdcSchemaXml = cls.getResourceAsStream("wrong_schema_xdc.xml").readAllBytes();
 
         return Stream.of(
             new InMemoryDocument(notAnXml, "notAnXml.xml", MimeTypeEnum.XML),
             new InMemoryDocument(invalidXml, "invalidXml.xml", MimeTypeEnum.XML),
             new InMemoryDocument(invalidXmlHeader, "invalidXmlHeader.xml", MimeTypeEnum.XML),
-            new InMemoryDocument(twoRootElements, "twoRootElements.xml", MimeTypeEnum.XML),
-            new InMemoryDocument(twoRootElementsHeader, "twoRootElementsHeader.xml", MimeTypeEnum.XML),
             new InMemoryDocument(invalidXdc, "invalidXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new InMemoryDocument(wrongXdcSchemaXml, "wrongXdcSchemaXml.xml", AutogramMimeType.XML_DATACONTAINER)
+            new InMemoryDocument(twoRootElements, "twoRootElements.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(twoRootElementsHeader, "twoRootElementsHeader.xml", MimeTypeEnum.XML)
+        );
+    }
+
+    public static Stream<DSSDocument> nonEFormXmlProvider() throws IOException {
+        var wrongXdcSchemaXml = cls.getResourceAsStream("wrong_schema_xdc.xml").readAllBytes();
+
+        return Stream.of(
+                new InMemoryDocument(wrongXdcSchemaXml, "wrongXdcSchemaXml.xml", AutogramMimeType.XML_DATACONTAINER)
         );
     }
 

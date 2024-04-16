@@ -1,6 +1,5 @@
-package digital.slovensko.autogram.core.eforms;
+package digital.slovensko.autogram.core.eforms.dto;
 
-import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 

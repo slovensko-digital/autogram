@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.core.eforms;
+package digital.slovensko.autogram.core.eforms.xdc;
 
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;

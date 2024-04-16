@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.core.eforms;
+package digital.slovensko.autogram.core.eforms.xdc;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import digital.slovensko.autogram.core.eforms.EFormUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.eforms.XDCValidator;
+import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;

@@ -1,24 +1,19 @@
 package digital.slovensko.autogram.core;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 
 import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.eforms.XDCBuilder;
-import digital.slovensko.autogram.core.eforms.XDCValidator;
+import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
+import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
-import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
-import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
-import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
@@ -198,7 +193,6 @@ public class SigningJob {
                 ;
         }
 
-        var filename = document.getName();
         if (isPDF(document.getMimeType())) switch (signatureType) {
             case PAdES_BASELINE_B:
                 return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);

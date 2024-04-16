@@ -69,6 +69,7 @@ public class ServerSigningParameters {
     private final String transformationLanguage;
     private final TransformationOutputMimeType transformationMediaDestinationTypeDescription;
     private final String transformationTargetEnvironment;
+    private final String fsFormId;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -79,7 +80,7 @@ public class ServerSigningParameters {
             String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth,
             boolean autoLoadEform, boolean embedUsedSchemas, String schemaIdentifier, String transformationIdentifier,
             String transformationLanguage, TransformationOutputMimeType transformationMediaDestinationTypeDescription,
-            String transformationTargetEnvironment) {
+            String transformationTargetEnvironment, String fsFormId) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -101,6 +102,7 @@ public class ServerSigningParameters {
         this.transformationLanguage = transformationLanguage;
         this.transformationMediaDestinationTypeDescription = transformationMediaDestinationTypeDescription;
         this.transformationTargetEnvironment = transformationTargetEnvironment;
+        this.fsFormId = fsFormId;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
@@ -121,7 +123,8 @@ public class ServerSigningParameters {
                 getTransformationMediaDestinationTypeDescription(), transformationTargetEnvironment,
                 document,
                 tspSource,
-                plainXmlEnabled);
+                plainXmlEnabled,
+                fsFormId);
     }
 
     private String getTransformation(boolean isBase64) throws MalformedBodyException {
