@@ -211,7 +211,7 @@ public abstract class EFormUtils {
 
     public static byte[] getResource(String url) {
         var offlineFileLoader = new FileCacheDataLoader();
-        offlineFileLoader.setCacheExpirationTime(1);  // 6 hours
+        offlineFileLoader.setCacheExpirationTime(21600000);  // 6 hours
         offlineFileLoader.setDataLoader(new CommonsDataLoader());
 
         DSSDocument xsltDoc;
