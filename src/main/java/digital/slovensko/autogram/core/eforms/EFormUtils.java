@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -350,5 +351,14 @@ public abstract class EFormUtils {
 
     public static boolean isOrsrUri(String uri) {
         return uri != null && uri.contains("://eformulare.justice.sk");
+    }
+
+    public static String getFsFormIdFromFilename(String filename) {
+        var matcher = Pattern.compile("^.+_fs(\\d{2,4}_\\d{2,4}).*\\.(xml|xdcf|asice|sce|)$").matcher(filename);
+
+        if (!matcher.find())
+            return null;
+
+        return matcher.group(1);
     }
 }

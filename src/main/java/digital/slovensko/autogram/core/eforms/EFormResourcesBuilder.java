@@ -1,9 +1,6 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
-import digital.slovensko.autogram.core.eforms.orsr.OrsrEFormResources;
-import digital.slovensko.autogram.core.eforms.fs.FsEFormResources;
-import digital.slovensko.autogram.core.eforms.upvs.UpvsEFormResources;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 

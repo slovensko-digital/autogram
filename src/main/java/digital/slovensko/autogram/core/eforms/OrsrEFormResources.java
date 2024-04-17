@@ -1,6 +1,5 @@
-package digital.slovensko.autogram.core.eforms.orsr;
+package digital.slovensko.autogram.core.eforms;
 
-import digital.slovensko.autogram.core.eforms.EFormResources;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.getResource;

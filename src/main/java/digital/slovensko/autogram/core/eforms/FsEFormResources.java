@@ -1,8 +1,6 @@
-package digital.slovensko.autogram.core.eforms.fs;
+package digital.slovensko.autogram.core.eforms;
 
 import com.google.gson.Gson;
-import digital.slovensko.autogram.core.eforms.EFormResources;
-import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 

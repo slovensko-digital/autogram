@@ -1,7 +1,5 @@
-package digital.slovensko.autogram.core.eforms.upvs;
+package digital.slovensko.autogram.core.eforms;
 
-import digital.slovensko.autogram.core.eforms.EFormResources;
-import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;

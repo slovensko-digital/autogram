@@ -2,7 +2,6 @@ package digital.slovensko.autogram.core;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
-import digital.slovensko.autogram.core.eforms.fs.FsUtils;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
@@ -297,7 +296,7 @@ public class SigningParameters {
                 (tspSource == null) ? SignatureLevel.XAdES_BASELINE_B : SignatureLevel.XAdES_BASELINE_T,
                 ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null,
                 null, null, null, null, "",
-                false, 640, true, false, null, null, document, tspSource, plainXmlEnabled, FsUtils.getFsFormIdFromFilename(document.getName()));
+                false, 640, true, false, null, null, document, tspSource, plainXmlEnabled, EFormUtils.getFsFormIdFromFilename(document.getName()));
     }
 
     public static SigningParameters buildForASiCWithCAdES(DSSDocument document, boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
@@ -305,7 +304,7 @@ public class SigningParameters {
                 (tspSource == null) ? SignatureLevel.CAdES_BASELINE_B : SignatureLevel.CAdES_BASELINE_T,
                 ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING, DigestAlgorithm.SHA256, signAsEn319132, null,
                 null, null, null, null, "",
-                false, 640, true, false, null, null, document, tspSource, plainXmlEnabled, FsUtils.getFsFormIdFromFilename(document.getName()));
+                false, 640, true, false, null, null, document, tspSource, plainXmlEnabled, EFormUtils.getFsFormIdFromFilename(document.getName()));
     }
 
     public String getIdentifier() {
