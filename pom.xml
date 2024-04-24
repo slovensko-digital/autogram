@@ -23,7 +23,7 @@
         <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.12</slf4j.version>
         <junit.version>5.10.2</junit.version>
-        <mockito.version>5.10.0</mockito.version>
+        <mockito.version>5.11.0</mockito.version>
         <commons-cli.version>1.6.0</commons-cli.version>
         <xmlunit.version>2.9.1</xmlunit.version>
         <snakeyml.version>2.2</snakeyml.version>
@@ -440,7 +440,7 @@
 
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
+                <version>3.6.0</version>
                 <configuration>
                     <descriptors>
                         <descriptor>src/main/scripts/bin.xml</descriptor>
@@ -462,7 +462,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.1.1</version>
                 <configuration>
                     <executable>bash</executable>
                     <workingDirectory>
