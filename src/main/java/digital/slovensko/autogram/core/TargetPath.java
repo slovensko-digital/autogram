@@ -198,7 +198,7 @@ public class TargetPath {
     }
 
     private String generateTargetName(Path singleSourceFile) {
-        var isSourceFileExtensionPdf = singleSourceFile.getFileName().toString().endsWith(".pdf");
+        var isSourceFileExtensionPdf = singleSourceFile.getFileName().toString().toLowerCase().endsWith(".pdf");
 
         var extension = isSourceFileExtensionPdf && isSignatureLevelPades ? ".pdf" : ".asice";
         if (useUniqueFileName || isForMultipleFiles)
