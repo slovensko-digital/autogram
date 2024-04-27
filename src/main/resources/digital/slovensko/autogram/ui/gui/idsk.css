@@ -92,7 +92,7 @@
 
 .radio-button .radio .dot {
   -fx-background-color: -autogram-background-colour;
-  -fx-background-insets: 8;
+  -fx-background-insets: 7;
   -fx-background-radius: 25px;
 }
 
@@ -227,7 +227,7 @@
   -fx-text-fill: -autogram-text-colour;
   -fx-fill: -autogram-text-colour;
 
-  -fx-font-size: 1em;
+  -fx-font-size: 1.25em;
   -fx-font-weight: bold;
 }
 
@@ -250,7 +250,7 @@
   -fx-text-fill: -autogram-text-colour;
   -fx-fill: -autogram-text-colour;
 
-  -fx-font-size: 1em;
+  -fx-font-size: 1.2em;
 }
 
 .autogram-body-s {
@@ -631,8 +631,8 @@ TextFlow.autogram-body-s {
 
 .autogram-settings-tab-pane ScrollPane .container {
   -fx-padding: 2em 0 2em 2em;
-  -fx-max-width: 70em;
-  -fx-min-width: 70em;
+  -fx-max-width: 49em;
+  -fx-min-width: 49em;
 }
 
 .autogram-settings-row {
@@ -705,7 +705,7 @@ TextFlow.autogram-body-s {
   -fx-background-color: -autogram-background-colour;
   -fx-border-color: -autogram-input-border-colour;
   -fx-border-width: 2px;
-  -fx-padding: 4px;
+  -fx-padding: 2px;
   -fx-font-size: 16px;
 }
 
@@ -758,8 +758,8 @@ TextFlow.autogram-body-s {
 }
 
 .check-box .box {
-  -fx-pref-height: 35px;
-  -fx-pref-width: 35px;
+  -fx-pref-height: 40px;
+  -fx-pref-width: 40px;
   -fx-border-color: -autogram-input-border-colour;
   -fx-border-width: 2px;
   -fx-border-insets: 10px;
@@ -813,7 +813,6 @@ TextFlow.autogram-body-s {
     -fx-border-style: hidden hidden solid hidden;
     -fx-border-width: 1px;
     -fx-border-color: -autogram-border-colour;
-    -fx-padding: 0em 0;
 }
 
 .autogram-table-cell > HBox {
@@ -1115,7 +1114,7 @@ TextFlow.autogram-body-s {
   -fx-text-fill: -autogram-background-colour;
   -fx-fill:  -autogram-background-colour;
 
-  -fx-font-size: 1em;
+  -fx-font-size: 1.1em;
   -fx-text-alignment: center;
 }
 
