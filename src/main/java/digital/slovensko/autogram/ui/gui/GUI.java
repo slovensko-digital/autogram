@@ -1,12 +1,23 @@
 package digital.slovensko.autogram.ui.gui;
 
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.function.Consumer;
+
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
-import eu.europa.esig.dss.enumerations.KeyUsageBit;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -17,15 +28,6 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
@@ -132,17 +134,8 @@ public class GUI implements UI {
             return;
         }
 
-        //získame stream kľúčov, prefiltrujeme iba na kluce urcene na digitalny podpis
-        Stream<DSSPrivateKeyEntry> keysStream = keys.stream()
-                .filter(k -> k.getCertificate().checkKeyUsage(KeyUsageBit.DIGITAL_SIGNATURE));
-
-        //ak nie sú povolené exspirované certifikáty, tak kľúče prefiltrujeme iba na platné
-        if (!userSettings.isExpiredCertsEnabled()) {
-            var now = new Date();
-            keysStream = keysStream.filter(k -> k.getCertificate().isValidOn(now));
-        }
-
-        keys = keysStream.toList();
+        if (!userSettings.isExpiredCertsEnabled())
+            keys = keys.stream().filter(k -> k.getCertificate().isValidOn(new java.util.Date())).toList();
 
         if (keys.isEmpty()) {
             showError(new NoValidKeysDetectedException());
