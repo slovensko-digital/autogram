@@ -631,8 +631,8 @@ TextFlow.autogram-body-s {
 
 .autogram-settings-tab-pane ScrollPane .container {
   -fx-padding: 2em 0 2em 2em;
-  -fx-max-width: 50em;
-  -fx-min-width: 50em;
+  -fx-max-width: 70em;
+  -fx-min-width: 70em;
 }
 
 .autogram-settings-row {
@@ -662,7 +662,7 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-trusted-countries-list > HBox > .left {
-  -fx-pref-width: 19em;
+  -fx-pref-width: 24em;
   -fx-padding: 0 2em 0 0;
 }
 
@@ -687,7 +687,7 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-textfield-container > TextField {
-  -fx-pref-width: 16em;
+  -fx-pref-width: 24em;
 }
 
 
@@ -697,7 +697,7 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-dropdown > ChoiceBox {
-  -fx-pref-width: 16em;
+  -fx-pref-width: 19.5em;
 }
 
 /* Choice boxes */
@@ -711,7 +711,7 @@ TextFlow.autogram-body-s {
 
 .choice-box .context-menu {
   -fx-background-color: -autogram-background-colour;
-  -fx-pref-width: 15em;
+  -fx-pref-width: 19em;
   -fx-padding: 0em 0 0 0;
   -fx-background-insets: 1em 0 0 0;
   -fx-border-insets: 1em 0 0 0;
@@ -825,11 +825,11 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-table-cell--left {
-  -fx-pref-width: 246px;
+  -fx-pref-width: 308px;
 }
 
 .autogram-table-cell--right {
-  -fx-pref-width: 275px;
+  -fx-pref-width: 344px;
 }
 
 .autogram-table-header {
@@ -1137,7 +1137,7 @@ TextFlow.autogram-body-s {
 
 .autogram-summary-header__title {
   -fx-padding: 1.11em 1em;
-  -fx-pref-width: 240px;
+  -fx-pref-width: 300px;
 }
 
 .autogram-summary-header__title > Text {
