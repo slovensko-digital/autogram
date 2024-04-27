@@ -90,7 +90,6 @@ public class AutogramServer {
 
         } catch (BindException e) {
             throw new RuntimeException("error.launchFailed.header port is already in use", e); // TODO
-
         } catch (Exception e) {
             throw new RuntimeException("error.serverNotCreated", e); // TODO
         }
