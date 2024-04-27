@@ -80,13 +80,13 @@
   -fx-pref-height: 32px;
   -fx-pref-width: 32px;
   -fx-min-height: 32px;
-  -fx-min-width: 40px;
+  -fx-min-width: 32px;
 }
 
 .radio-button:focused .radio {
   -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour,
   -autogram-background-colour;
-  -fx-background-insets: -4, 0, 4;
+  -fx-background-insets: -4, 0, -4;
   -fx-background-radius: 25px;
 }
 
@@ -119,13 +119,13 @@
 
  .autogram-smaller-radio-buttons .radio-button:focused .radio {
   -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour, -autogram-background-colour;
-  -fx-background-insets: -4, 0, 4;
+  -fx-background-insets: -2, 0, 2;
   -fx-background-radius: 25px;
 }
 
 .autogram-smaller-radio-buttons .radio-button:focused:hover .radio {
   -fx-background-color: -autogram-secondary-hover-colour, -autogram-focus-colour, -autogram-input-border-colour, -autogram-background-colour;
-  -fx-background-insets: -10, -4, 0, 4;
+  -fx-background-insets: -5, -2, 0, 2;
   -fx-background-radius: 25px;
 }
 
@@ -136,7 +136,7 @@
 .autogram-smaller-radio-buttons .radio-button:hover .radio {
   -fx-background-color: -autogram-secondary-hover-colour, -autogram-input-border-colour,
   -autogram-background-colour;
-  -fx-background-insets: -10, 0, 2;
+  -fx-background-insets: -5, 0, 2;
   -fx-background-radius: 25px;
 }
 
@@ -788,13 +788,13 @@ TextFlow.autogram-body-s {
 
 .check-box:focused .box {
   -fx-background-color: transparent, -autogram-focus-colour, -autogram-background-colour;
-  -fx-border-width: 4px;
+  -fx-border-width: 2px;
   -fx-background-insets: 0, 7px, 10px;
 }
 
 .check-box:focused:hover .box {
   -fx-background-color: -autogram-secondary-hover-colour, -autogram-focus-colour, -autogram-background-colour;
-  -fx-border-width: 4px;
+  -fx-border-width: 2px;
   -fx-background-insets: 0, 7px, 10px;
 }
 
