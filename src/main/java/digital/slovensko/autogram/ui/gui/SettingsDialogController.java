@@ -221,7 +221,7 @@ public class SettingsDialogController {
                 new Country("Estónsko", "EE"),
                 new Country("Fínsko", "FI"),
                 new Country("Francúzsko", "FR"),
-                new Country("Grécko", "GR"),
+                new Country("Grécko", "EL"),
                 new Country("Holandsko", "NL"),
                 new Country("Írsko", "IE"),
                 new Country("Litva", "LT"),
