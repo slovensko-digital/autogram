@@ -1,19 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.WeakHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.function.Consumer;
-
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
@@ -28,6 +16,17 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.function.Consumer;
 
 public class GUI implements UI {
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
