@@ -60,11 +60,11 @@ public class GUIApp extends Application {
             windowStage.show();
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
-            final var severFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
+            final var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
             Platform.runLater(() -> {
                 GUIUtils.showError(new UnrecognizedException(e), "Ukončiť",true);
-                if (severFinal != null) {
-                    new Thread(severFinal::stop).start();
+                if (serverFinal != null) {
+                    new Thread(serverFinal::stop).start();
                 }
                 Platform.exit();
             });
