@@ -3,8 +3,6 @@ package digital.slovensko.autogram.core.eforms;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -44,8 +42,8 @@ public abstract class EFormResources {
         if (transformation == null || schema == null)
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť XSLT transformáciu alebo XSD schému");
 
-        return new EFormAttributes(getIdentifier(), transformation, schema, EFormUtils.XDC_XMLNS, ASiCContainerType.ASiC_E,
-                SignaturePackaging.ENVELOPING, getXsdIdentifier(), getXsltParams(), shouldEmbedUsedSchemas());
+        return new EFormAttributes(getIdentifier(), transformation, schema, EFormUtils.XDC_XMLNS, getXsdIdentifier(),
+                getXsltParams(), shouldEmbedUsedSchemas());
     }
 
     public String getIdentifier() {

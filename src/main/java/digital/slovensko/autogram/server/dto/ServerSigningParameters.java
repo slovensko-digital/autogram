@@ -112,19 +112,26 @@ public class ServerSigningParameters {
                 containerXmlns,
                 packaging,
                 digestAlgorithm,
-                en319132,
+                getBoolean(en319132),
                 getCanonicalizationMethodString(infoCanonicalization),
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getSchema(isBase64),
                 getTransformation(isBase64),
-                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform, embedUsedSchemas,
+                identifier, getBoolean(checkPDFACompliance), getVisualizationWidth(), getBoolean(autoLoadEform), getBoolean(embedUsedSchemas),
                 schemaIdentifier, transformationIdentifier, transformationLanguage,
                 getTransformationMediaDestinationTypeDescription(), transformationTargetEnvironment,
                 document,
                 tspSource,
                 plainXmlEnabled,
                 fsFormId);
+    }
+
+    private static boolean getBoolean(Boolean variable) {
+        if (variable == null)
+            return false;
+
+        return variable;
     }
 
     private String getTransformation(boolean isBase64) throws MalformedBodyException {

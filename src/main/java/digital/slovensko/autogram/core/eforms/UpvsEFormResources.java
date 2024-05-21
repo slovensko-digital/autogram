@@ -2,11 +2,9 @@ package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
-import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
 
@@ -31,86 +29,6 @@ public class UpvsEFormResources extends EFormResources {
 
     public String getXsdIdentifier() {
         return xsdIdentifier != null ? xsdIdentifier : "http://schemas.gov.sk/form/" + url + "/form.xsd";
-    }
-
-    private ArrayList<ManifestXsltEntry> getManifestXsltEntries(NodeList nodes) {
-        var entries = new ArrayList<ManifestXsltEntry>();
-
-        for (int i = 0; i < nodes.getLength(); i++) {
-            var node = nodes.item(i);
-
-            var fullPathNode = node.getAttributes().getNamedItem("full-path");
-            if (fullPathNode == null)
-                continue;
-            var fullPath = fullPathNode.getNodeValue().replace("\\", "/");
-
-            var mediaTypeNode = node.getAttributes().getNamedItem("media-type");
-            var mediaType = mediaTypeNode != null ? mediaTypeNode.getNodeValue() : null;
-
-            var mediaDestination = "";
-            var mediaDestinationNode = node.getAttributes().getNamedItem("media-destination");
-            if (mediaDestinationNode != null) {
-                mediaDestination = mediaDestinationNode.getNodeValue();
-                if(!mediaDestination.equals("sign") && !mediaDestination.equals("view"))
-                    continue;
-
-                if (mediaType == null)
-                    continue;
-
-                if (!mediaType.equals("application/xslt+xml") && !mediaType.equals("text/xsl"))
-                    if (!(
-                            (mediaType.equals("text/xml") || mediaDestination.equals("application/xml"))
-                                    && (fullPath.contains(".xsl") || fullPath.contains(".xslt"))
-                    ))
-                        continue;
-
-            } else {
-                if (!fullPath.contains(".sb.xslt") && !fullPath.contains(".html.xslt"))
-                    continue;
-
-                mediaDestination = fullPath.contains(".sb.xslt") ? "sign" : "view";
-            }
-
-            var languageNode = node.getAttributes().getNamedItem("media-language");
-            var language = languageNode != null ? languageNode.getNodeValue() : null;
-
-            var mediaDestinationTypeDescriptionNode = node.getAttributes().getNamedItem("media-destination-type-description");
-            var mediaDestinationTypeDescription = mediaDestinationTypeDescriptionNode != null ? mediaDestinationTypeDescriptionNode.getNodeValue() : null;
-
-            if (mediaDestinationTypeDescription == null) {
-                var mediaDestinationTypeNode = node.getAttributes().getNamedItem("media-destination-type");
-                var mediaDestinationType = mediaDestinationTypeNode != null ? mediaDestinationTypeNode.getNodeValue() : null;
-
-                if (mediaDestinationType != null)
-                    mediaDestinationTypeDescription = switch (mediaDestinationType) {
-                        case "text/plain" -> "TXT";
-                        case "text/html" -> "HTML";
-                        case "application/xhtml+xml" -> "XHTML";
-                        default -> null;
-                    };
-            }
-
-            if (mediaDestinationTypeDescription == null) {
-                // need to get output method from xslt
-                var xsltString = getResource(SOURCE_URL + url + "/" + fullPath);
-                if (xsltString == null)
-                    continue;
-
-                try {
-                    mediaDestinationTypeDescription = EFormUtils.extractTransformationOutputMimeTypeString(new String(xsltString, ENCODING));
-                } catch (TransformationParsingErrorException e) {
-                    continue;
-                }
-            }
-
-            var targetEnvironmentNode = node.getAttributes().getNamedItem("target-environment");
-            var targetEnvironment = targetEnvironmentNode != null ? targetEnvironmentNode.getNodeValue() : null;
-
-            entries.add(new ManifestXsltEntry(mediaType, language, mediaDestinationTypeDescription, targetEnvironment,
-                    fullPath, mediaDestination));
-        }
-
-        return entries;
     }
 
     private ManifestXsltEntry selectXslt(ArrayList<ManifestXsltEntry> entries) {
@@ -156,7 +74,7 @@ public class UpvsEFormResources extends EFormResources {
         var parsed_manifest_xml = getXmlFromDocument(new InMemoryDocument(manifest_xml, "manifest.xml"));
         var nodes = parsed_manifest_xml.getElementsByTagName("manifest:file-entry");
 
-        var entries = getManifestXsltEntries(nodes);
+        var entries = getManifestXsltEntries(nodes, SOURCE_URL, url);
         if (entries.isEmpty())
             return false;
 

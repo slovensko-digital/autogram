@@ -8,6 +8,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -18,10 +19,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -317,6 +320,9 @@ public abstract class EFormUtils {
     }
 
     public static XsltParams fillXsltParams(String transformation, String formIdentifier, XsltParams xsltParams) {
+        if (xsltParams == null)
+            xsltParams = new XsltParams(null, null, null, null, null);
+
         var identifier = xsltParams.identifier();
         if (identifier == null && formIdentifier != null) {
             var t = formIdentifier.split("/");
@@ -354,11 +360,95 @@ public abstract class EFormUtils {
     }
 
     public static String getFsFormIdFromFilename(String filename) {
-        var matcher = Pattern.compile("^.+_fs(\\d{2,4}_\\d{2,4}).*\\.(xml|xdcf|asice|sce|)$").matcher(filename);
+        var matcher = Pattern.compile("^.+_fs([a-zA-Z0-9_-]+__\\d+__\\d+).*\\.(xml|xdcf|asice|sce|)$").matcher(filename);
 
         if (!matcher.find())
             return null;
 
         return matcher.group(1);
+    }
+
+    public static boolean validateFsFormIdFormat(String fsFormId) {
+        return Pattern.compile("^([a-zA-Z0-9_-]+__\\d+__\\d+)$").matcher(fsFormId).matches();
+    }
+
+    public static ArrayList<ManifestXsltEntry> getManifestXsltEntries(NodeList nodes, String source_url, String form_url) {
+        var entries = new ArrayList<ManifestXsltEntry>();
+
+        for (int i = 0; i < nodes.getLength(); i++) {
+            var node = nodes.item(i);
+
+            var fullPathNode = node.getAttributes().getNamedItem("full-path");
+            if (fullPathNode == null)
+                continue;
+            var fullPath = fullPathNode.getNodeValue().replace("\\", "/");
+
+            var mediaTypeNode = node.getAttributes().getNamedItem("media-type");
+            var mediaType = mediaTypeNode != null ? mediaTypeNode.getNodeValue() : null;
+
+            var mediaDestination = "";
+            var mediaDestinationNode = node.getAttributes().getNamedItem("media-destination");
+            if (mediaDestinationNode != null) {
+                mediaDestination = mediaDestinationNode.getNodeValue();
+                if(!mediaDestination.equals("sign") && !mediaDestination.equals("x-xslt-ro"))
+                    continue;
+
+                if (mediaType == null)
+                    continue;
+
+                if (!mediaType.equals("application/xslt+xml") && !mediaType.equals("text/xsl"))
+                    if (!(
+                            (mediaType.equals("text/xml") || mediaDestination.equals("application/xml"))
+                                    && (fullPath.contains(".xsl") || fullPath.contains(".xslt"))
+                    ))
+                        continue;
+
+            } else {
+                if (!fullPath.contains(".sb.xslt") && !fullPath.contains(".html.xslt"))
+                    continue;
+
+                mediaDestination = fullPath.contains(".sb.xslt") ? "sign" : "view";
+            }
+
+            var languageNode = node.getAttributes().getNamedItem("media-language");
+            var language = languageNode != null ? languageNode.getNodeValue() : null;
+
+            var mediaDestinationTypeDescriptionNode = node.getAttributes().getNamedItem("media-destination-type-description");
+            var mediaDestinationTypeDescription = mediaDestinationTypeDescriptionNode != null ? mediaDestinationTypeDescriptionNode.getNodeValue() : null;
+
+            if (mediaDestinationTypeDescription == null) {
+                var mediaDestinationTypeNode = node.getAttributes().getNamedItem("media-destination-type");
+                var mediaDestinationType = mediaDestinationTypeNode != null ? mediaDestinationTypeNode.getNodeValue() : null;
+
+                if (mediaDestinationType != null)
+                    mediaDestinationTypeDescription = switch (mediaDestinationType) {
+                        case "text/plain" -> "TXT";
+                        case "text/html" -> "HTML";
+                        case "application/xhtml+xml" -> "XHTML";
+                        default -> null;
+                    };
+            }
+
+            if (mediaDestinationTypeDescription == null) {
+                // need to get output method from xslt
+                var xsltString = getResource(source_url + form_url + "/" + fullPath);
+                if (xsltString == null)
+                    continue;
+
+                try {
+                    mediaDestinationTypeDescription = EFormUtils.extractTransformationOutputMimeTypeString(new String(xsltString, ENCODING));
+                } catch (TransformationParsingErrorException e) {
+                    continue;
+                }
+            }
+
+            var targetEnvironmentNode = node.getAttributes().getNamedItem("target-environment");
+            var targetEnvironment = targetEnvironmentNode != null ? targetEnvironmentNode.getNodeValue() : null;
+
+            entries.add(new ManifestXsltEntry(mediaType, language, mediaDestinationTypeDescription, targetEnvironment,
+                    fullPath, mediaDestination));
+        }
+
+        return entries;
     }
 }
