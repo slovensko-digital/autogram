@@ -240,6 +240,9 @@ public class SigningParameters {
     }
 
     private static String translateFsFormId(String fsFormId) {
+        if (fsFormId == null)
+            return null;
+
         if (fsFormId.contains("/"))
             return fsFormId;
 
