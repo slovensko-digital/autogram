@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.errors.EFormException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -44,10 +45,10 @@ public class FsEFormResources extends EFormResources {
     }
 
     @Override
-    public boolean findResources() throws XMLValidationException {
+    public boolean findResources() throws XMLValidationException, EFormException {
         var meta_xml = getResource(SOURCE_URL + url + "/meta.xml");
         if (meta_xml == null)
-            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť meta.xml elektronického formulára");
+            throw new EFormException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť meta.xml elektronického formulára");
 
         var parsed_meta_xml = getXmlFromDocument(new InMemoryDocument(meta_xml, "meta.xml"));
         var nodes_meta = parsed_meta_xml.getElementsByTagName("dc:identifier");
@@ -71,7 +72,7 @@ public class FsEFormResources extends EFormResources {
 
         var manifest_xml = getResource(SOURCE_URL + url + "/META-INF/manifest.xml");
         if (manifest_xml == null) {
-            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť manifest elektronického formulára");
+            throw new EFormException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť manifest elektronického formulára");
         }
 
         var parsed_manifest_xml = getXmlFromDocument(new InMemoryDocument(manifest_xml, "manifest.xml"));

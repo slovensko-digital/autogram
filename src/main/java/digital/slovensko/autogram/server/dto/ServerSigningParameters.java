@@ -7,6 +7,7 @@ import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.regex.Pattern;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
@@ -135,7 +136,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 eFormAttributes,
                 autoLoadEform,
-                fsFormId,
+                getFsFormId(),
                 getBoolean(checkPDFACompliance),
                 getVisualizationWidth(),
                 document,
@@ -223,6 +224,16 @@ public class ServerSigningParameters {
 
     private ASiCContainerType getContainer() {
         return container;
+    }
+
+    private String getFsFormId() {
+        if (fsFormId == null || fsFormId.isEmpty())
+            return null;
+
+        if (Pattern.compile(".+/\\d+\\.\\d+$").matcher(fsFormId).matches())
+            return fsFormId;
+
+        return fsFormId + "/1.0";
     }
 
     public void validate(MimeType mimeType) throws RequestValidationException {
