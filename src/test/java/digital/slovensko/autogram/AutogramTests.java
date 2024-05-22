@@ -40,7 +40,8 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#orsrDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
-            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider"})
+            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider",
+            "digital.slovensko.autogram.TestMethodSources#fsUnmarkedXdcProvider"})
     void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();

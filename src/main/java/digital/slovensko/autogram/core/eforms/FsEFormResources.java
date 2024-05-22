@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -14,6 +15,32 @@ public class FsEFormResources extends EFormResources {
     public FsEFormResources(String fsFormId, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
         super(fsFormId, xsdDigest, xsltDigest, canonicalizationMethod);
         this.embedUsedSchemas = false;
+    }
+
+    public static FsEFormResources buildFromXdcIdentifier(String xdcIdentifier, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
+            return new FsEFormResources(getFormIdFromXdcIdenitfier(xdcIdentifier), canonicalizationMethod, xsdDigest, xsltDigest);
+    }
+
+    private static String getFormIdFromXdcIdenitfier(String xdcIdentifier) {
+        xdcIdentifier = xdcIdentifier.replaceAll("[:./ ]", "_");
+        var forms_xml = getResource(SOURCE_URL + "forms.xml");
+        if (forms_xml == null)
+            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť zoznam FS formulárov");
+
+        var parsed_meta_xml = getXmlFromDocument(new InMemoryDocument(forms_xml, "forms.xml"));
+        var nodes = parsed_meta_xml.getElementsByTagName("sd:" + xdcIdentifier);
+        if (nodes.getLength() > 0)
+            return nodes.item(0).getFirstChild().getNodeValue();
+
+        nodes = parsed_meta_xml.getElementsByTagName("sd:" + xdcIdentifier.replace("_1_0", ""));
+        if (nodes.getLength() > 0)
+            return nodes.item(0).getFirstChild().getNodeValue();
+
+        nodes = parsed_meta_xml.getElementsByTagName("sd:" + xdcIdentifier + "_1_0");
+        if (nodes.getLength() > 0)
+            return nodes.item(0).getFirstChild().getNodeValue();
+
+        throw new UnknownEformException();
     }
 
     @Override

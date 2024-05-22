@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
@@ -65,7 +66,7 @@ public abstract class EFormResourcesBuilder {
     }
 
     private static EFormResources buildFromXDC(Element xdc, String canonicalizationMethod, String fsFormId)
-            throws XMLValidationException {
+            throws XMLValidationException, UnknownEformException {
         var xsdDigest = getDigestValueFromElement(xdc, "UsedXSDReference");
         var xsltDigest = getDigestValueFromElement(xdc, "UsedPresentationSchemaReference");
 
@@ -80,7 +81,7 @@ public abstract class EFormResourcesBuilder {
     }
 
     private static EFormResources buildFromEFormXml(Element xml, String canonicalizationMethod, String xsdIdentifier, XsltParams xsltParams, String fsFormId)
-            throws XMLValidationException {
+            throws XMLValidationException, UnknownEformException {
         if (fsFormId != null)
             return new FsEFormResources(fsFormId, canonicalizationMethod, null, null);
 
@@ -91,17 +92,20 @@ public abstract class EFormResourcesBuilder {
         return buildFromEFormXml(canonicalizationMethod, formUri, null, null, xsdIdentifier, xsltParams);
     }
 
-    private static EFormResources buildFromEFormXml(String canonicalizationMethod, String formUri, String xsdDigest, String xsltDigest, String xsdIdentifier, XsltParams xsltParams) {
+    private static EFormResources buildFromEFormXml(String canonicalizationMethod, String formUri, String xsdDigest, String xsltDigest, String xsdIdentifier, XsltParams xsltParams)
+            throws XMLValidationException, UnknownEformException {
         if (formUri == null)
             return null;
+
+        if (formUri.startsWith("http://www.drsr.sk/") || formUri.startsWith("https://ekr.financnasprava.sk/"))
+            return FsEFormResources.buildFromXdcIdentifier(formUri, canonicalizationMethod, xsdDigest, xsltDigest);
 
         if (formUri.startsWith("http://schemas.gov.sk/form/") || formUri.startsWith("http://data.gov.sk/doc/eform/") || formUri.startsWith("https://data.gov.sk/id/egov/eform/")) {
             var parts = formUri.split("/");
             var formVersion = parts[parts.length - 1];
             var formIdentifier = parts[parts.length - 2];
-            var formDirectory = formIdentifier + "/" + formVersion;
 
-            return new UpvsEFormResources(formDirectory, xsdDigest, xsltDigest, xsdIdentifier, xsltParams, canonicalizationMethod);
+            return new UpvsEFormResources(formIdentifier + "/" + formVersion, xsdDigest, xsltDigest, xsdIdentifier, xsltParams, canonicalizationMethod);
         }
 
         return null;

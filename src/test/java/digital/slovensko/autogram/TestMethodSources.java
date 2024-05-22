@@ -56,6 +56,16 @@ public abstract class TestMethodSources {
         );
     }
 
+    public static Stream<DSSDocument> fsUnmarkedXdcProvider() throws IOException {
+        var dpfoAsice = cls.getResourceAsStream("fs_forms/DPFOBv23.asice").readAllBytes();
+        var dpfoXdc = cls.getResourceAsStream("fs_forms/unmarked_DPFOBv23_xdc_indented.xml").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(dpfoAsice, "DPFOBv23.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(dpfoXdc, "unmarked_DPFOBv23_xdc_indented.xml", AutogramMimeType.XML_DATACONTAINER)
+        );
+    }
+
     public static Stream<DSSDocument> invalidXmlProvider() throws IOException {
         var notAnXml = "not an xml".getBytes();
         var invalidXml = "<invalidXml><foo><bar></foo></bar></invalidXml>".getBytes();
