@@ -451,4 +451,38 @@ public abstract class EFormUtils {
 
         return entries;
     }
+
+    public static ManifestXsltEntry selectXslt(ArrayList<ManifestXsltEntry> entries, String xsltDestinationType, String xsltLanguage, String xsltTarget) {
+        if (xsltDestinationType != null)
+            entries.removeIf(entry -> !xsltDestinationType.equals(entry.destinationType()));
+
+        if (xsltLanguage != null)
+            entries.removeIf(entry -> !xsltLanguage.equals(entry.language()));
+
+        if (xsltTarget != null)
+            entries.removeIf(entry -> !xsltTarget.equals(entry.target()));
+
+        if (entries.size() == 1)
+            return entries.get(0);
+
+        if (entries.stream().filter(entry -> entry.mediaDesination().equals("sign")).count() > 0)
+            entries.removeIf(entry -> !entry.mediaDesination().equals("sign"));
+
+        if (entries.stream().filter(entry -> entry.destinationType().equals("XHTML")).count() > 0)
+            entries.removeIf(entry -> !entry.destinationType().equals("XHTML"));
+
+        else if (entries.stream().filter(entry -> entry.destinationType().equals("HTML")).count() > 0)
+            entries.removeIf(entry -> !entry.destinationType().equals("HTML"));
+
+        else if (entries.stream().filter(entry -> entry.destinationType().equals("TXT")).count() > 0)
+            entries.removeIf(entry -> !entry.destinationType().equals("TXT"));
+
+        if (entries.stream().filter(entry -> entry.language().equals("sk")).count() > 0)
+            entries.removeIf(entry -> !entry.language().equals("sk"));
+
+        else if (entries.stream().filter(entry -> entry.language().equals("en")).count() > 0)
+            entries.removeIf(entry -> !entry.language().equals("en"));
+
+        return entries.get(0);
+    }
 }

@@ -1,12 +1,9 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
-import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;
-
-import java.util.ArrayList;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 
@@ -17,40 +14,6 @@ public class FsEFormResources extends EFormResources {
     public FsEFormResources(String fsFormId, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
         super(fsFormId, xsdDigest, xsltDigest, canonicalizationMethod);
         this.embedUsedSchemas = false;
-    }
-
-    private ManifestXsltEntry selectXslt(ArrayList<ManifestXsltEntry> entries) {
-        if (xsltDestinationType != null)
-            entries.removeIf(entry -> !xsltDestinationType.equals(entry.destinationType()));
-
-        if (xsltLanguage != null)
-            entries.removeIf(entry -> !xsltLanguage.equals(entry.language()));
-
-        if (xsltTarget != null)
-            entries.removeIf(entry -> !xsltTarget.equals(entry.target()));
-
-        if (entries.size() == 1)
-            return entries.get(0);
-
-        if (entries.stream().filter(entry -> entry.mediaDesination().equals("sign")).count() > 0)
-            entries.removeIf(entry -> !entry.mediaDesination().equals("sign"));
-
-        if (entries.stream().filter(entry -> entry.destinationType().equals("XHTML")).count() > 0)
-            entries.removeIf(entry -> !entry.destinationType().equals("XHTML"));
-
-        else if (entries.stream().filter(entry -> entry.destinationType().equals("HTML")).count() > 0)
-            entries.removeIf(entry -> !entry.destinationType().equals("HTML"));
-
-        else if (entries.stream().filter(entry -> entry.destinationType().equals("TXT")).count() > 0)
-            entries.removeIf(entry -> !entry.destinationType().equals("TXT"));
-
-        if (entries.stream().filter(entry -> entry.language().equals("sk")).count() > 0)
-            entries.removeIf(entry -> !entry.language().equals("sk"));
-
-        else if (entries.stream().filter(entry -> entry.language().equals("en")).count() > 0)
-            entries.removeIf(entry -> !entry.language().equals("en"));
-
-        return entries.get(0);
     }
 
     @Override
@@ -91,7 +54,7 @@ public class FsEFormResources extends EFormResources {
         if (entries.isEmpty())
             return false;
 
-        var entry = selectXslt(entries);
+        var entry = selectXslt(entries, xsltDestinationType, xsltLanguage, xsltTarget);
         if (entry == null)
             return false;
 
