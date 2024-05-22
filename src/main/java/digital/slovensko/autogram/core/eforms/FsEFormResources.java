@@ -66,7 +66,10 @@ public class FsEFormResources extends EFormResources {
         if (this.xsltDigest != null && !xsltDigest.equals(this.xsltDigest))
             throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Automaticky nájdená XSLT transformácia sa nezhoduje s odtlačkom v XML Datacontaineri");
 
-        this.transformation = new String(xsltString, ENCODING);
+        transformation = new String(xsltString, ENCODING);
+        if (!transformation.isEmpty() && transformation.charAt(0) == '\uFEFF')
+            transformation = transformation.substring(1);
+
         this.xsltDestinationType = entry.destinationType();
         this.xsltLanguage = entry.language();
         this.xsltMediaType = entry.mediaType();

@@ -51,10 +51,16 @@ public abstract class EFormResources {
     }
 
     public String getTransformation() {
+        if (!transformation.isEmpty() && transformation.charAt(0) == '\uFEFF')
+            return transformation.substring(1);
+
         return transformation;
     }
 
     public String getSchema() {
+        if (!schema.isEmpty() && schema.charAt(0) == '\uFEFF')
+            return schema.substring(1);
+
         return schema;
     }
 
