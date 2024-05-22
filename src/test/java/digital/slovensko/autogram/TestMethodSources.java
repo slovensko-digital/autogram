@@ -32,6 +32,30 @@ public abstract class TestMethodSources {
         );
     }
 
+    public static Stream<DSSDocument> fsDPFOProvider() throws IOException {
+        var inlineXml = cls.getResourceAsStream("fs_forms/dic2120515056_fsDPFOBv23__1__0.xml").readAllBytes();
+        var inlineXmlHeader = cls.getResourceAsStream("fs_forms/dic2120515056_fsDPFOBv23__1__0_header.xml").readAllBytes();
+        var indentedXml = cls.getResourceAsStream("fs_forms/dic2120515056_fsDPFOBv23__1__0_indented.xml").readAllBytes();
+        var indentedXmlHeader = cls.getResourceAsStream("fs_forms/dic2120515056_fsDPFOBv23__1__0_header_indented.xml").readAllBytes();
+        var inlineXdc = cls.getResourceAsStream("fs_forms/dic2120515056_fsDPFOBv23__1__0_xdc.xml").readAllBytes();
+        var indentedXdc = cls.getResourceAsStream("fs_forms/dic2120515056_fsDPFOBv23__1__0_xdc_indented.xml").readAllBytes();
+        var inlineAsice = cls.getResourceAsStream("fs_forms/dic2120515056_fsDPFOBv23__1__0.asice").readAllBytes();
+        var indentedAsice = cls.getResourceAsStream("fs_forms/dic2120515056_fsDPFOBv23__1__0_indented.asice").readAllBytes();
+        var timestampedAsice = cls.getResourceAsStream("fs_forms/dic2120515056_fsDPFOBv23__1__0_indented_ts.asice").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(inlineXml, "dic2120515056_fsDPFOBv23__1__0.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(inlineXmlHeader, "dic2120515056_fsDPFOBv23__1__0_header.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(indentedXml, "dic2120515056_fsDPFOBv23__1__0_indented.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(indentedXmlHeader, "dic2120515056_fsDPFOBv23__1__0_header_indented.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(inlineXdc, "dic2120515056_fsDPFOBv23__1__0_xdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(indentedXdc, "dic2120515056_fsDPFOBv23__1__0_xdc_indented.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(inlineAsice, "dic2120515056_fsDPFOBv23__1__0.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(indentedAsice, "dic2120515056_fsDPFOBv23__1__0_indented.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(timestampedAsice, "dic2120515056_fsDPFOBv23__1__0_indented_ts.asice", MimeTypeEnum.ASICE)
+        );
+    }
+
     public static Stream<DSSDocument> invalidXmlProvider() throws IOException {
         var notAnXml = "not an xml".getBytes();
         var invalidXml = "<invalidXml><foo><bar></foo></bar></invalidXml>".getBytes();
@@ -80,6 +104,20 @@ public abstract class TestMethodSources {
             new InMemoryDocument(mismatchedXsltGAXdcXml, "mismatchedXsltGAXdcXml.xml", AutogramMimeType.XML_DATACONTAINER),
             new InMemoryDocument(mismatchedXsdGAXdcAsice, "mismatchedXsdGAXdcAsice.asice", MimeTypeEnum.ASICE),
             new InMemoryDocument(mismatchedXsltGAXdcAsice, "mismatchedXsltGAXdcAsice.asice", MimeTypeEnum.ASICE)
+        );
+    }
+
+    public static Stream<DSSDocument> mismatchedDigestsFSXmlProvider() throws IOException {
+        var mismatchedXsltFSXdcXml = cls.getResourceAsStream("fs_forms/d_fsDPFOBv23__1__0_xdc_xsd_digest.xml").readAllBytes();
+        var mismatchedXsltFSXsltXdcXml = cls.getResourceAsStream("fs_forms/d_fsDPFOBv23__1__0_xdc_xslt_digest.xml").readAllBytes();
+        var mismatchedXsltFSXdcAsice = cls.getResourceAsStream("fs_forms/d_fsDPFOBv23__1__0_xdc_xsd_digest.asice").readAllBytes();
+        var mismatchedXsltFSXsltXdcAsice = cls.getResourceAsStream("fs_forms/d_fsDPFOBv23__1__0_xdc_xslt_digest.asice").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(mismatchedXsltFSXdcXml, "d_fsDPFOBv23__1__0_xdc_xsd_digest.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsltFSXsltXdcXml, "d_fsDPFOBv23__1__0_xdc_xslt_digest.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsltFSXdcAsice, "d_fsDPFOBv23__1__0_xdc_xsd_digest.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(mismatchedXsltFSXsltXdcAsice, "d_fsDPFOBv23__1__0_xdc_xslt_digest.asice", MimeTypeEnum.ASICE)
         );
     }
 

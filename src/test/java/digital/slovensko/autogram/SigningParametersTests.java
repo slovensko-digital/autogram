@@ -204,12 +204,13 @@ public class SigningParametersTests {
     }
 
     @ParameterizedTest
-    @MethodSource("digital.slovensko.autogram.TestMethodSources#mismatchedDigestsXmlProvider")
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#mismatchedDigestsXmlProvider",
+            "digital.slovensko.autogram.TestMethodSources#mismatchedDigestsFSXmlProvider"})
     void testThrowsAutogramExceptionWithMismatchedDigestsXmlWithAutoLoadEform(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
-                        null, false, 800, document, tspSource, true));
+                        "DPFOBv23/1.0", false, 800, document, tspSource, true));
     }
 
     @ParameterizedTest

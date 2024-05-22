@@ -39,7 +39,8 @@ class AutogramTests {
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
             "digital.slovensko.autogram.TestMethodSources#orsrDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
-            "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider"})
+            "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider"})
     void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
@@ -117,7 +118,8 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider",
-            "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
+            "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider",
+            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider"})
     void testSignBuildFromFileHappyScenario(InMemoryDocument document) throws IOException {
         var newUI = new FakeUI();
         var settings = new TestSettings();
