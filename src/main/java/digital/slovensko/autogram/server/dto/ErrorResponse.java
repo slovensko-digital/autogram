@@ -36,6 +36,7 @@ public class ErrorResponse {
             case "RequestValidationException",
                 "XMLValidationException",
                 "SigningParametersException",
+                "EFormException",
                 "TransformationException",
                 "TransformationParsingErrorException" -> new ErrorResponse(422, "UNPROCESSABLE_INPUT", (AutogramException) e);
             case "MultipleOriginalDocumentsFoundException" -> new ErrorResponse(422, "MULTIPLE_ORIGINAL_DOCUMENTS", (AutogramException) e);

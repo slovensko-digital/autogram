@@ -186,9 +186,9 @@ public class SigningJob {
             case PAdES:
                 return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
             case XAdES:
-                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
+                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, checkPDFACompliance, tspSource, plainXmlEnabled);
             case CAdES:
-                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, tspSource, plainXmlEnabled);
+                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, checkPDFACompliance, tspSource, plainXmlEnabled);
             default:
                 ;
         }
@@ -197,14 +197,14 @@ public class SigningJob {
             case PAdES_BASELINE_B:
                 return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
             case XAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
+                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, checkPDFACompliance, tspSource, plainXmlEnabled);
             case CAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, tspSource, plainXmlEnabled);
+                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, checkPDFACompliance, tspSource, plainXmlEnabled);
             default:
                 ;
         }
 
-        return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
+        return SigningParameters.buildForASiCWithXAdES(document, isEn319132, checkPDFACompliance, tspSource, plainXmlEnabled);
     }
 
     public boolean shouldCheckPDFCompliance() {

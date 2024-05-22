@@ -45,7 +45,7 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null, true);
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, true);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -61,7 +61,7 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null, true);
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, true);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -73,7 +73,7 @@ class AutogramTests {
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
     void testSignNonEformNegativeScenario(InMemoryDocument document) {
-        Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, null, false));
+        Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, false, null, false));
     }
 
     @ParameterizedTest
@@ -84,7 +84,7 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, null, true);
+        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, false, null, true);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(

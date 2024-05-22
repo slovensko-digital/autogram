@@ -206,7 +206,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#invalidAsiceProvider")
     void testThrowsOriginalDocumentNotFoundWithAsiceWithoutSignature(DSSDocument document) throws IOException {
         Assertions.assertThrows(OriginalDocumentNotFoundException.class,
-                () -> SigningParameters.buildForASiCWithXAdES(document, false, tspSource, true));
+                () -> SigningParameters.buildForASiCWithXAdES(document, false, false, tspSource, true));
     }
 
     @Test
@@ -216,7 +216,7 @@ public class SigningParametersTests {
                 "empty_xml.asice");
 
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.buildForASiCWithXAdES(document, false, tspSource, true));
+                () -> SigningParameters.buildForASiCWithXAdES(document, false, false, tspSource, true));
     }
 
     @Test

@@ -20,6 +20,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
+import digital.slovensko.autogram.core.errors.*;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -29,10 +30,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
-import digital.slovensko.autogram.core.errors.TransformationException;
-import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -366,6 +363,17 @@ public abstract class EFormUtils {
             return null;
 
         return matcher.group(1);
+    }
+
+    public static String translateFsFormId(String fsFormId) {
+        if (fsFormId == null) return null;
+
+        if (fsFormId.contains("/")) return fsFormId;
+
+        if (!validateFsFormIdFormat(fsFormId))
+            throw new EFormException("Nesprávny Identifikátor FS formulára", "Identifikátor: \"" + fsFormId + "\" nezodpovedá predpísanému formátu.");
+
+        return fsFormId.replaceFirst("__", "/").replaceFirst("__", ".");
     }
 
     public static boolean validateFsFormIdFormat(String fsFormId) {

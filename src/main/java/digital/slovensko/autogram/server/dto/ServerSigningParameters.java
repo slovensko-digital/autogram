@@ -11,6 +11,8 @@ import java.util.Base64;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
@@ -106,25 +108,39 @@ public class ServerSigningParameters {
     }
 
     public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
-        return SigningParameters.buildFromRequest(
-                getSignatureLevel(),
-                getContainer(),
+        var xsltParams = new XsltParams(
+                transformationIdentifier,
+                transformationLanguage,
+                getTransformationMediaDestinationTypeDescription(),
+                transformationTargetEnvironment,
+                null);
+
+        var eFormAttributes = new EFormAttributes(
+                identifier,
+                getTransformation(isBase64),
+                getSchema(isBase64),
                 containerXmlns,
-                packaging,
+                schemaIdentifier,
+                xsltParams,
+                getBoolean(embedUsedSchemas));
+
+        return SigningParameters.buildParameters(
+                getSignatureLevel(),
                 digestAlgorithm,
+                getContainer(),
+                packaging,
                 getBoolean(en319132),
                 getCanonicalizationMethodString(infoCanonicalization),
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
-                getSchema(isBase64),
-                getTransformation(isBase64),
-                identifier, getBoolean(checkPDFACompliance), getVisualizationWidth(), getBoolean(autoLoadEform), getBoolean(embedUsedSchemas),
-                schemaIdentifier, transformationIdentifier, transformationLanguage,
-                getTransformationMediaDestinationTypeDescription(), transformationTargetEnvironment,
+                eFormAttributes,
+                autoLoadEform,
+                fsFormId,
+                getBoolean(checkPDFACompliance),
+                getVisualizationWidth(),
                 document,
                 tspSource,
-                plainXmlEnabled,
-                fsFormId);
+                plainXmlEnabled);
     }
 
     private static boolean getBoolean(Boolean variable) {
