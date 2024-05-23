@@ -590,7 +590,7 @@ components:
           type: string
           default: null
           example: DPFOBv23/1.0
-          description: Specific identifier for financnasprava.sk EForms. For example, DPFOBv23/1.0 is an identifier of Danove priznanie. The version suffix is optional since no form with version differnet than 1.0 exists at the moment.
+          description: Specific identifier for financnasprava.sk EForms. For example, DPFOBv23/1.0 is an identifier of Danove priznanie. The version suffix is optional since no form with version different than 1.0 exists at the moment.
 
       required:
         - level
