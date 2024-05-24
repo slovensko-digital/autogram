@@ -12,6 +12,35 @@ Swagger dokumentácia pre HTTP API je [dostupná na githube](https://generator3.
 
 Vyvolať spustenie programu je možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez `autogram://go`.
 
+## Štátne elektronické formuláre
+
+### slovensko.sk
+
+Autogram dokáže v stand-alone režime otvárať a podpisovať všetky formuláre zverejnenené v [statickom úložisku](https://www.slovensko.sk/static/eForm/dataset/) na slovensko.sk. Pri integrácii cez API je možné nastaviť v body `parameters.autoLoadEform: true`. Vtedy sa potrebné XSD, XSLT a ďalšie metadáta stiahnu automaticky podľa typu podpisovaného formulára.
+
+### Obchodný register SR
+
+Navonok rovnako ako formuláre zo slovensko.sk fungujú aj ORSR formuláre. Autogram deteguje typ formulára automaticky a pri API je potrebné nastaviť spomínaný parameter. Technicky sa potom ORSR formuláre odlišujú v tom, že používajú embedované schémy v datacontainer-i oproti referencovaným schémam v iných formulároch.
+
+Ak je pri podpise cez API zapnutý parameter `autoLoadEform` a formulár je z ORSR, automaticky sa nastaví vytváranie podpisu s embedovanou schémou. Pri poskytnutí XSD a XSLT v parametroch bez `autoLoadEform` je potrebné ešte nastaviť v body `parameters.embedUsedSchemas: true`, aby boli schémy embedované.
+
+### Finančná správa SR
+
+Podpísané formuláre v `.asice` kontajneroch dokáže Autogram rovanko automaticky detegovať v stand-alone režime a cez API pri použití `autoLoadEform`.
+
+Avšak, pri podpisovaní je potrebné Autogramu explicitne určiť typ formuláru. V stand-alone režime je potrebné, aby názov súbor obsahoval: `_fs<identifikator>_` alebo `_fs<identifikator>__<verzia>` a mal príponu: `.xml`. Napríklad:
+```
+moj-dokument_fsDPFOBv23_.xml
+dalsi-dokument_fsDPFOBv23__1_0.xml
+nazov-firmy_fsV2Pv21_-nieco-dalsie.xml
+```
+
+Momentálne majú všetky fomuláre FS verziu `1.0`, preto je táto časť v názve nepovinná, ale v budúcnosti sa to môže zmeniť.
+
+Pri podpisovaní cez API je potrebné nastaviť v body `parameters.fsFormId: "<identifikator>/<verzia>"` alebo iba `<identifikator>`.
+
+Identifikátory formulárov finančnej správy je možné získať z [nášho zonamu](https://forms-slovensko-digital.s3.eu-central-1.amazonaws.com/fs/forms.xml). 
+
 ## Konzolový mód
 
 Autogram je možné spúšťať aj z príkazového riadku (CLI mód). Detailné informácie o prepínačoch sú popísané v nápovede po spustení `autogram --help`, resp. `autogram-cli --help` na Windows.
