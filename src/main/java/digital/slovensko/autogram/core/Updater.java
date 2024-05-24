@@ -16,7 +16,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 public class Updater {
-    public static final String LATEST_RELEASE_URL = "https://sluzby.slovensko.digital/autogram/#download?utm_source=AutogramApp";
+    public static final String LATEST_RELEASE_URL = "https://sluzby.slovensko.digital/autogram/?utm_source=autogram&utm_medium=application&utm_campaign=autogramupdate#download";
     public static final String LATEST_RELEASE_API_URL = "https://api.github.com/repos/slovensko-digital/autogram/releases/latest";
 
     public static boolean newVersionAvailable() {
