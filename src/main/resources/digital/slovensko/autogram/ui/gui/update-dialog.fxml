@@ -3,7 +3,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.*?>
-<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.Button?>
 <VBox xmlns="http://javafx.com/javafx"
@@ -19,9 +18,7 @@
 
         <VBox styleClass="autogram-prose">
             <TextFlow styleClass="autogram-body">
-                <Text styleClass="autogram-body" text="Je dostupná nová verzia a odporúčame stiahnuť aktualizáciu. Najnovšiu verziu si možete vždy stiahnuť na "/>
-                <Hyperlink styleClass="autogram-body,autogram-link" text="GitHub-e" onAction="#downloadAction"/>
-                <Text styleClass="autogram-body" text="."/>
+                <Text styleClass="autogram-body" text="Je dostupná nová verzia a odporúčame stiahnuť aktualizáciu."/>
             </TextFlow>
         </VBox>
         <HBox styleClass="autogram-actions">
