@@ -357,27 +357,32 @@ public abstract class EFormUtils {
     }
 
     public static String getFsFormIdFromFilename(String filename) {
-        var matcher = Pattern.compile("^.+_fs([a-zA-Z0-9_-]+__\\d+__\\d+).*\\.(xml|xdcf|asice|sce|)$").matcher(filename);
+        var matcher = Pattern.compile("^.+_fs([a-zA-Z0-9_-]+?__(\\d+__\\d+)?).*\\.(xml|xdcf|asice|sce|asics|scs)$").matcher(filename);
 
         if (!matcher.find())
             return null;
 
-        return matcher.group(1);
+        var r = matcher.group(1);
+        if (r.endsWith("__"))
+            r = r.substring(0, r.length() - 2);
+
+        return r;
     }
 
     public static String translateFsFormId(String fsFormId) {
         if (fsFormId == null) return null;
 
-        if (fsFormId.contains("/")) return fsFormId;
-
+        fsFormId = fsFormId.replaceFirst("__", "/").replaceFirst("__", ".");
         if (!validateFsFormIdFormat(fsFormId))
             throw new EFormException("Nesprávny Identifikátor FS formulára", "Identifikátor: \"" + fsFormId + "\" nezodpovedá predpísanému formátu.");
 
-        return fsFormId.replaceFirst("__", "/").replaceFirst("__", ".");
+        if (fsFormId.contains("/")) return fsFormId;
+
+        return fsFormId + "/1.0";
     }
 
     public static boolean validateFsFormIdFormat(String fsFormId) {
-        return Pattern.compile("^([a-zA-Z0-9_-]+__\\d+__\\d+)$").matcher(fsFormId).matches();
+        return Pattern.compile("^([a-zA-Z0-9_-]+?(/\\d+\\.\\d+)?)$").matcher(fsFormId).matches();
     }
 
     public static ArrayList<ManifestXsltEntry> getManifestXsltEntries(NodeList nodes, String source_url, String form_url) {
