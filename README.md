@@ -12,6 +12,28 @@ Swagger dokumentácia pre HTTP API je [dostupná na githube](https://generator3.
 
 Vyvolať spustenie programu je možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez `autogram://go`.
 
+## Konzolový mód
+
+Autogram je možné spúšťať aj z príkazového riadku (CLI mód). Detailné informácie o prepínačoch sú popísané v nápovede po spustení `autogram --help`, resp. `autogram-cli --help` na Windows.
+
+### Štýlovanie
+
+Aplikácia momentálne podporuje len jeden štýl - štátny IDSK dizajn. Ďalšie štýly sú plánované. Štýlovanie sa však už teraz deje výhradne cez kaskádové štýly, viď [idsk.css](https://github.com/slovensko-digital/autogram/blob/main/src/main/resources/digital/slovensko/autogram/ui/gui/idsk.css)
+
+### Texty a preklady
+
+Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez properties súbory. Toto bude slúžiť aj ako zdroj pre preklady.
+
+## Podporované karty
+
+Momentálne podporujeme na Slovensku bežne používané karty a ich ovládače:
+- občiansky preukaz (eID klient)
+- I.CA SecureStore
+- MONET+ ProID+Q
+- Gemalto IDPrime 940
+
+Doplniť ďalšie je pomerne ľahké pokiaľ používajú PKCS#11.
+
 ## Štátne elektronické formuláre
 
 ### slovensko.sk
@@ -39,29 +61,7 @@ Momentálne majú všetky fomuláre FS verziu `1.0`, preto je táto časť v ná
 
 Pri podpisovaní cez API je potrebné nastaviť v body `parameters.fsFormId: "<identifikator>/<verzia>"` alebo iba `<identifikator>`.
 
-Identifikátory formulárov finančnej správy je možné získať z [nášho zonamu](https://forms-slovensko-digital.s3.eu-central-1.amazonaws.com/fs/forms.xml). 
-
-## Konzolový mód
-
-Autogram je možné spúšťať aj z príkazového riadku (CLI mód). Detailné informácie o prepínačoch sú popísané v nápovede po spustení `autogram --help`, resp. `autogram-cli --help` na Windows.
-
-### Štýlovanie
-
-Aplikácia momentálne podporuje len jeden štýl - štátny IDSK dizajn. Ďalšie štýly sú plánované. Štýlovanie sa však už teraz deje výhradne cez kaskádové štýly, viď [idsk.css](https://github.com/slovensko-digital/autogram/blob/main/src/main/resources/digital/slovensko/autogram/ui/gui/idsk.css)
-
-### Texty a preklady
-
-Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez properties súbory. Toto bude slúžiť aj ako zdroj pre preklady.
-
-## Podporované karty
-
-Momentálne podporujeme na Slovensku bežne používané karty a ich ovládače:
-- občiansky preukaz (eID klient)
-- I.CA SecureStore
-- MONET+ ProID+Q
-- Gemalto IDPrime 940
-
-Doplniť ďalšie je pomerne ľahké pokiaľ používajú PKCS#11.
+Identifikátory formulárov finančnej správy je možné získať z [nášho zonamu](https://forms-slovensko-digital.s3.eu-central-1.amazonaws.com/fs/forms.xml).
 
 ## Vývoj
 
