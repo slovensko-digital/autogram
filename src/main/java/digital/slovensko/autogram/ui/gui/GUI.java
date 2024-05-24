@@ -1,10 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
@@ -18,6 +15,7 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
+import eu.europa.esig.dss.enumerations.KeyUsageBit;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -134,9 +132,13 @@ public class GUI implements UI {
             return;
         }
 
-        if (!userSettings.isExpiredCertsEnabled())
-            keys = keys.stream().filter(k -> k.getCertificate().isValidOn(new java.util.Date())).toList();
+        var keysStream = keys.stream().filter(k -> k.getCertificate().checkKeyUsage(KeyUsageBit.DIGITAL_SIGNATURE));
+        if (!userSettings.isExpiredCertsEnabled()) {
+            var now = new Date();
+            keysStream = keysStream.filter(k -> k.getCertificate().isValidOn(now));
+        }
 
+        keys = keysStream.toList();
         if (keys.isEmpty()) {
             showError(new NoValidKeysDetectedException());
             refreshKeyOnAllJobs();
