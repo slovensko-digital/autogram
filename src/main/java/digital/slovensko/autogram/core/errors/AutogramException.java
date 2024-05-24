@@ -61,7 +61,7 @@ public class AutogramException extends RuntimeException {
                     return new TsaServerMisconfiguredException("Nastavený TSA server odmietol pridať časovú pečiatku. Skontrolujte nastavenia TSA servera.", cause);
                 } else if (cause instanceof NullPointerException && cause.getMessage().contains("Host name")) {
                     return new TsaServerMisconfiguredException("Nie je nastavená žiadna adresa TSA servera. Skontrolujte nastavenia TSA servera.", cause);
-                } else if (cause instanceof IOException && cause.getMessage().contains("The specified module could not be found")) {
+                } else if (cause instanceof IOException && (cause.getMessage().contains("The specified module could not be found") || cause.getMessage().contains("Zadaný modul sa nepodarilo"))) {
                     return new PkcsEidWindowsDllException(e);
                 }
             }
