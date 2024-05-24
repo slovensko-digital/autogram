@@ -1,6 +1,9 @@
 package digital.slovensko.autogram.core.errors;
 
 import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
+
+import java.io.IOException;
 
 public class AutogramException extends RuntimeException {
     private final String heading;
@@ -37,8 +40,13 @@ public class AutogramException extends RuntimeException {
     public static AutogramException createFromDSSException(DSSException e) {
         for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
             if (cause.getMessage() != null) {
-                if (cause instanceof java.security.ProviderException && cause.getMessage().contains("slotListIndex is 0 but token only has 0 slots")) {
-                    return new InitializationFailedException();
+                if (cause instanceof java.security.ProviderException) {
+                    if (cause.getMessage().contains("slotListIndex is 0 but token only has 0 slots"))
+                        return new InitializationFailedException();
+
+                    if (cause.getMessage().matches("slotListIndex is \\d+ but token only has \\d+ slots"))
+                        return new SlotIndexOutOfRangeException(e);
+
                 } else if (cause.getMessage().equals("CKR_FUNCTION_CANCELED")) {
                     return new FunctionCanceledException();
                 } else if (cause.getMessage().equals("CKR_TOKEN_NOT_RECOGNIZED") || cause.getMessage().contains("no such algorithm: PKCS11 for provider")) {
@@ -49,6 +57,12 @@ public class AutogramException extends RuntimeException {
                     return new PINLockedException();
                 } else if (cause.getMessage().equals("Token has been removed")) {
                     return new TokenRemovedException();
+                } else if (cause instanceof DSSExternalResourceException) {
+                    return new TsaServerMisconfiguredException("Nastavený TSA server odmietol pridať časovú pečiatku. Skontrolujte nastavenia TSA servera.", cause);
+                } else if (cause instanceof NullPointerException && cause.getMessage().contains("Host name")) {
+                    return new TsaServerMisconfiguredException("Nie je nastavená žiadna adresa TSA servera. Skontrolujte nastavenia TSA servera.", cause);
+                } else if (cause instanceof IOException && cause.getMessage().contains("The specified module could not be found")) {
+                    return new PkcsEidWindowsDllException(e);
                 }
             }
         }
@@ -66,5 +80,9 @@ public class AutogramException extends RuntimeException {
         }
 
         return new UnrecognizedException(e);
+    }
+
+    public boolean batchCanContinue() {
+        return true;
     }
 }

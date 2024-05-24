@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.dto.SignResponse;
 
@@ -18,7 +19,7 @@ public class ServerResponder extends Responder {
     }
 
     @Override
-    public void onDocumentSigned(SignedDocument signedDocument) {
+    public void onDocumentSigned(SignedDocument signedDocument) throws AutogramException {
         var signer = signedDocument.getCertificate().getSubject().getPrincipal().toString();
         var issuer = signedDocument.getCertificate().getIssuer().getPrincipal().toString();
 
@@ -26,7 +27,7 @@ public class ServerResponder extends Responder {
             var b64document = Base64.getEncoder().encodeToString(signedDocument.getDocument().openStream().readAllBytes());
             EndpointUtils.respondWith(new SignResponse(b64document, signer, issuer), exchange);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ResponseNetworkErrorException("Externá aplikácia nečakala na odpoveď", e);
         }
     }
 

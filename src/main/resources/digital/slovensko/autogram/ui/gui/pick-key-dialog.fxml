@@ -6,7 +6,7 @@
 <?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      prefHeight="200" prefWidth="450" minWidth="450"
+      prefHeight="200" prefWidth="600"
       fx:id="mainBox">
 
     <VBox fx:id="formGroup" styleClass="autogram-form-group">

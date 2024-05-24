@@ -16,14 +16,10 @@ public class InfoEndpoint implements HttpHandler {
         var response = new InfoResponse(Main.getVersionString(), getStatus());
         var gson = new Gson();
 
-        try {
+        try (exchange) {
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, 0);
             exchange.getResponseBody().write(gson.toJson(response).getBytes());
-            exchange.getResponseBody().close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return; // TODO: handle error
         }
     }
 }

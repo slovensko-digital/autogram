@@ -5,18 +5,24 @@ import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundExce
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilderFactory;
+import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 
 public class AsicContainerUtils {
-    public static DSSDocument getOriginalDocument(DSSDocument asice) {
-        var documentValidator = SignedDocumentValidator.fromDocument(asice);
+    public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,
+            MultipleOriginalDocumentsFoundException {
+        SignedDocumentValidator documentValidator;
+        try {
+            documentValidator = SignedDocumentValidator.fromDocument(asice);
+        } catch (UnsupportedOperationException e) {
+            throw new OriginalDocumentNotFoundException("Súbor sa nepodarilo načítať");
+        }
+
         documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
         var signatures = documentValidator.getSignatures();
         if (signatures.isEmpty())
@@ -35,7 +41,7 @@ public class AsicContainerUtils {
             throw new MultipleOriginalDocumentsFoundException("V kontajneri bolo nájdených viacero dokumentov na podpis");
 
         var originalDocument = aSiCContent.getSignedDocuments().get(0);
-        if (originalDocument.getMimeType().equals(MimeTypeEnum.XML))
+        if (isXML(originalDocument.getMimeType()))
             setMimeTypeFromManifest(asice, originalDocument);
 
         return originalDocument;
@@ -90,9 +96,7 @@ public class AsicContainerUtils {
 
     private static NodeList getFileEntriesFromManifest(DSSDocument manifest) {
         try {
-            var builderFactory = DocumentBuilderFactory.newInstance();
-            builderFactory.setNamespaceAware(true);
-            var document = builderFactory.newDocumentBuilder().parse(new InputSource(manifest.openStream()));
+            var document = XMLUtils.getSecureDocumentBuilder().parse(new InputSource(manifest.openStream()));
             return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
         } catch (Exception e) {
             return null;

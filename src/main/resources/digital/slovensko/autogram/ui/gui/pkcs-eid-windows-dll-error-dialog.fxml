@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.text.Text?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      prefWidth="450" minWidth="450"
+      fx:id="mainBox">
+
+    <VBox styleClass="autogram-error-summary">
+        <TextFlow styleClass="autogram-error-summary__title">
+            <Text>Chyba komunikácie s kartou</Text>
+        </TextFlow>
+        <TextFlow styleClass="autogram-error-summary__error">
+            <Text>Ovládač nie je možné použiť</Text>
+        </TextFlow>
+        <TextFlow styleClass="autogram-error-summary__description,autogram-body-s">
+            <Text text="Nie je možné použiť ovládač pre podpisovanie vybranou kartou. Pravdepodobne je potrebné do systému nainštalovať balík "/>
+            <Hyperlink styleClass="autogram-body-s,autogram-link" text="Microsoft Visual C++ 2015 Redistributable" onAction="#downloadAction"/>
+        </TextFlow>
+        <TextFlow styleClass="autogram-error-summary__description,autogram-body-s">
+            <Text>Ak to nepomôže, kontaktujte nás na podpora@slovensko.digital</Text>
+        </TextFlow>
+    </VBox>
+
+
+    <HBox styleClass="autogram-actions">
+        <Button fx:id="mainButton" styleClass="autogram-button,autogram-button--secondary"
+            text="Pokračovať" onAction="#onMainButtonAction" />
+    </HBox>
+
+    <TextArea fx:id="errorDetails" styleClass="autogram-details__text" editable="false"
+        visible="false" managed="false">Error details</TextArea>
+</VBox>

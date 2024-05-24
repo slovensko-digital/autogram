@@ -5,17 +5,18 @@ import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.Objects;
 
+import digital.slovensko.autogram.core.PasswordManager;
+import digital.slovensko.autogram.core.SignatureTokenSettings;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 public class FakeTokenDriver extends TokenDriver {
-    public FakeTokenDriver(String name, Path path, boolean needsPassword, String shortname) {
-        super(name, path, needsPassword, shortname);
+    public FakeTokenDriver(String name, Path path, String shortname, String noKeysHelperText) {
+        super(name, path, shortname, noKeysHelperText);
     }
 
-
     @Override
-    public AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password) {
+    public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
         try {
             var keystore = Objects.requireNonNull(this.getClass().getResource("FakeTokenDriver.keystore")).getFile();
             return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));

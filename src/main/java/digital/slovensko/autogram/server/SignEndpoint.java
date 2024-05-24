@@ -4,20 +4,14 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.ResponderInBatch;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
-import digital.slovensko.autogram.server.errors.RequestValidationException;
-import digital.slovensko.autogram.server.errors.TransformationException;
-import eu.europa.esig.dss.enumerations.MimeType;
 
 import java.io.IOException;
-
-import org.xml.sax.SAXException;
 
 public class SignEndpoint implements HttpHandler {
     private final Autogram autogram;
@@ -30,35 +24,25 @@ public class SignEndpoint implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
+            body.validateDocument();
+            body.validateSigningParameters();
 
-            MimeType transformationOutputMimeTypeForXdc = null;
-            if (body.getParameters().getContainer() != null) {
-                transformationOutputMimeTypeForXdc = DocumentVisualizationBuilder.getTransformationOutputMimeType(body.getParameters().getTransformation());
-            }
+            var responder = body.getBatchId() == null ? new ServerResponder(exchange)
+                    : new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
+            var job = SigningJob.buildFromRequest(body.getDocument(), body.getParameters(autogram.getTspSource(), autogram.isPlainXmlEnabled()), responder);
 
-            Responder responder;
-            if (body.getBatchId() != null) {
-                responder = new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
-            } else {
-                responder = new ServerResponder(exchange);
-            }
-            var job = new SigningJob(body.getDocument(), body.getParameters(), responder, transformationOutputMimeTypeForXdc);
-
-            if (body.getBatchId() != null) {
+            if (body.getBatchId() != null)
                 autogram.batchSign(job, body.getBatchId());
-            } else {
+            else
                 autogram.sign(job);
-            }
 
-        } catch (JsonSyntaxException e) {
+        } catch (JsonSyntaxException | IOException e) {
             var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
             EndpointUtils.respondWithError(response, exchange);
-        } catch (SAXException e) {
-            System.out.println("SAXException: " + e.getMessage());
-            var response = ErrorResponse.buildFromException(new TransformationException(e.getMessage(), e));
-            EndpointUtils.respondWithError(response, exchange);
-        } catch (RequestValidationException | MalformedBodyException e) {
+
+        } catch (AutogramException e) {
             EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
+
         } catch (Exception e) {
             EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
         }

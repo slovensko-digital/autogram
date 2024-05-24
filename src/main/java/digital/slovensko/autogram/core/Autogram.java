@@ -1,46 +1,34 @@
 package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.BatchConflictException;
-import digital.slovensko.autogram.core.errors.BatchNotStartedException;
-import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.Logging;
 import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
 public class Autogram {
     private final UI ui;
+    private final UserSettings settings;
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
-    private final DriverDetector driverDetector;
-    private final Integer slotId;
+    private final PasswordManager passwordManager;
 
-    public Autogram(UI ui) {
-        this(ui, new DefaultDriverDetector(), -1);
-    }
-
-    public Autogram(UI ui, DriverDetector driverDetector) {
-        this(ui, driverDetector, -1);
-    }
-
-    public Autogram(UI ui, Integer slotId) {
-        this(ui, new DefaultDriverDetector(), slotId);
-    }
-
-    public Autogram(UI ui, DriverDetector driverDetector, Integer slotId) {
+    public Autogram(UI ui, UserSettings settings) {
         this.ui = ui;
-        this.driverDetector = driverDetector;
-        this.slotId = slotId;
+        this.settings = settings;
+        this.passwordManager = new PasswordManager(ui, this.settings);
     }
 
     public void sign(SigningJob job) {
@@ -87,24 +75,52 @@ public class Autogram {
             try {
                 var visualization = DocumentVisualizationBuilder.fromJob(job);
                 ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
+            } catch (AutogramException e) {
+                ui.onUIThreadDo(() -> ui.showError(e));
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
 
-                ui.onUIThreadDo(
-                        () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+                if (settings.isCorrectDocumentDisplay()) {
+                    ui.onUIThreadDo(
+                            () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+                } else {
+                    ui.onUIThreadDo(onContinue);
+                }
             }
         });
+    }
+
+    private void signCommonAndThen(SigningJob job, SigningKey signingKey, Consumer<SigningJob> callback) {
+        try {
+            job.signWithKeyAndRespond(signingKey);
+            if (batch == null || batch.isEnded() || batch.isAllProcessed())
+                passwordManager.reset();
+
+            callback.accept(job);
+        } catch (PINIncorrectException e) {
+            passwordManager.reset();
+            throw e;
+        } catch (AutogramException e) {
+            throw e;
+        } catch (DSSException e) {
+            throw AutogramException.createFromDSSException(e);
+        } catch (IllegalArgumentException e) {
+            throw AutogramException.createFromIllegalArgumentException(e);
+        } catch (Exception e) {
+            throw new UnrecognizedException(e);
+        }
     }
 
     public void sign(SigningJob job, SigningKey signingKey) {
         ui.onWorkThreadDo(() -> {
             try {
-                job.signWithKeyAndRespond(signingKey);
-                ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
-            } catch (DSSException e) {
-                onSigningFailed(AutogramException.createFromDSSException(e));
-            } catch (IllegalArgumentException e) {
-                onSigningFailed(AutogramException.createFromIllegalArgumentException(e));
+                signCommonAndThen(job, signingKey, (jobNew) -> {
+                    ui.onUIThreadDo(() -> ui.onSigningSuccess(jobNew));
+                });
+            } catch (ResponseNetworkErrorException e) {
+                onSigningFailed(e, job);
+            } catch (AutogramException e) {
+                onSigningFailed(e);
             } catch (Exception e) {
                 onSigningFailed(new UnrecognizedException(e));
             }
@@ -141,7 +157,25 @@ public class Autogram {
         batch.addJob(batchId);
 
         ui.onWorkThreadDo(() -> {
-            ui.signBatch(job, batch.getSigningKey());
+            try {
+                signCommonAndThen(job, batch.getSigningKey(), (jobNew) -> {
+                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
+                });
+            } catch (AutogramException e) {
+                job.onDocumentSignFailed(e);
+                if (!e.batchCanContinue()) {
+                    ui.onUIThreadDo(() -> {
+                        ui.cancelBatch(batch);
+                    });
+                    throw e;
+                }
+            } catch (Exception e) {
+                AutogramException autogramException = new AutogramException("Document signing has failed", "", "", e);
+                job.onDocumentSignFailed(autogramException);
+            }
+            ui.onUIThreadDo(() -> {
+                ui.updateBatch();
+            });
         });
     }
 
@@ -166,19 +200,23 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
-        var drivers = driverDetector.getAvailableDrivers();
+        var drivers = settings.getDriverDetector().getAvailableDrivers();
         ui.pickTokenDriverAndThen(drivers,
-                (driver) -> ui.requestPasswordAndThen(driver, (password) -> ui.onWorkThreadDo(
-                        () -> fetchKeysAndThen(driver, password, callback))));
+                (driver) -> {
+                    ui.onWorkThreadDo(() -> {
+                        fetchKeysAndThen(driver, callback);
+                    });
+                }
+        );
     }
 
-    private void fetchKeysAndThen(TokenDriver driver, char[] password, Consumer<SigningKey> callback) {
+    private void fetchKeysAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
         try {
-            var token = driver.createTokenWithPassword(slotId, password);
+            var token = driver.createToken(passwordManager, settings);
             var keys = token.getKeys();
 
             ui.onUIThreadDo(
-                    () -> ui.pickKeyAndThen(keys, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
+                    () -> ui.pickKeyAndThen(keys, driver, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
         } catch (DSSException e) {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         }
@@ -204,16 +242,28 @@ public class Autogram {
         ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(result));
     }
 
+    public void onSigningFailed(AutogramException e, SigningJob job) {
+        ui.onUIThreadDo(() -> ui.onSigningFailed(e, job));
+    }
+
     public void onSigningFailed(AutogramException e) {
         ui.onUIThreadDo(() -> ui.onSigningFailed(e));
     }
 
-    public void initializeSignatureValidator(ScheduledExecutorService scheduledExecutorService, ExecutorService cachedExecutorService) {
+    public void initializeSignatureValidator(ScheduledExecutorService scheduledExecutorService, ExecutorService cachedExecutorService, List<String> tlCountries) {
         ui.onWorkThreadDo(() -> {
-            SignatureValidator.getInstance().initialize(cachedExecutorService);
+            SignatureValidator.getInstance().initialize(cachedExecutorService, tlCountries);
         });
 
         scheduledExecutorService.scheduleAtFixedRate(() -> SignatureValidator.getInstance().refresh(),
-            480, 480, java.util.concurrent.TimeUnit.MINUTES);
+                480, 480, java.util.concurrent.TimeUnit.MINUTES);
+    }
+
+    public TSPSource getTspSource() {
+        return settings.getTspSource();
+    }
+
+    public boolean isPlainXmlEnabled() {
+        return settings.isPlainXmlEnabled();
     }
 }

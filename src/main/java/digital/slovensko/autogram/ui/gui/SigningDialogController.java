@@ -39,6 +39,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     private final Visualization visualization;
     private Reports signatureValidationReports;
     private Reports signatureCheckReports;
+    private final boolean shouldCheckValidityBeforeSigning;
 
     @FXML
     VBox mainBox;
@@ -63,11 +64,13 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     @FXML
     Text headerText;
 
-    public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui, String title) {
+    public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui, String title,
+            boolean shouldCheckValidityBeforeSigning) {
         this.visualization = visualization;
         this.gui = gui;
         this.autogram = autogram;
         this.title = title;
+        this.shouldCheckValidityBeforeSigning = shouldCheckValidityBeforeSigning;
     }
 
     public void initialize() {
@@ -121,6 +124,11 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     private void checkExistingSignatureValidityAndSign() {
+        if (!shouldCheckValidityBeforeSigning) {
+            sign();
+            return;
+        }
+
         if ((!signatureCheckCompleted) || ((signatureCheckReports != null) && !signatureValidationCompleted)) {
             showSignaturesNotValidatedDialog();
             return;
@@ -213,11 +221,11 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
         if (!areTLsLoaded)
             signaturesTable.getChildren().add(
-                createWarningText("Nastala chyba pri sťahovaní dôveryhodných zoznamov a podpisy nie je možné úplne overiť. Skontrolujte si internetové pripojenie."));
+                    createWarningText(
+                            "Nastala chyba pri sťahovaní dôveryhodných zoznamov a podpisy nie je možné úplne overiť. Skontrolujte si internetové pripojenie."));
 
         signaturesTable.getChildren().add(
-                createSignatureTableRows(reports, isValidated, e -> onShowSignaturesButtonPressed(null), 3)
-        );
+                createSignatureTableRows(reports, isValidated, e -> onShowSignaturesButtonPressed(null), 3));
 
         var stage = (Stage) mainButton.getScene().getWindow();
         stage.sizeToScene();

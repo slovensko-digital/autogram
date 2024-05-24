@@ -18,7 +18,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -30,9 +29,11 @@ import org.junit.platform.commons.util.ReflectionUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import digital.slovensko.autogram.server.dto.Document;
+import digital.slovensko.autogram.server.dto.ErrorResponseBody;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters.VisualizationWidthEnum;
+import digital.slovensko.autogram.server.dto.ServerSigningParameters.TransformationOutputMimeType;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -117,13 +118,33 @@ public class SignHttpSmokeTest {
     @ValueSource(strings = {
             "XAdES-XML-Base64-HTML_md", "XAdES-XML-Base64-TXT", "XAdES-XML-TXT-HTML", "XAdES-XML-TXT-TXT_md",
             "XAdES-ASiC_E-Base64-HTML", "XAdES-ASiC_E-Base64-TXT", "XAdES-ASiC_E-TXT-HTML_md", "XAdES-ASiC_E-TXT-TXT",
-            "XAdES-ASiC_E-SKXDC-Base64-TXT", "XAdES-ASiC_E-SKXDC-TXT-TXT", "Signed-XAdES-ASiC_E-SKXDC-Base64-TXT",
-            "PAdES-PDF_lg", "XAdES-PDF", "XAdES-ASiC_E-PDF", "CAdES-ASiC_E-PDF", "XAdES-ASiC_E-TXT",
-            "XAdES-ASiC_E-DOCX", "CAdES-ASiC_E-DOCX", "CAdES-PNG_lg", "CAdES-ASiC_E-PNG_md", "Signed-XAdES-ASiC_E-PDF",
-            "Double-Signed-XAdES-ASiC_E-PDF", "Signed-CAdES-ASiC_E-PDF", "Double-Signed-CAdES-ASiC_E-PDF",
+            "XAdES-ASiC_E-Auto", "XAdES-ASiC_E-SKXDC-Base64-TXT", "XAdES-ASiC_E-SKXDC-TXT-TXT",
+            "Signed-XAdES-ASiC_E-SKXDC-Base64-TXT", "Signed-XAdES-ASiC_E-SKXDC-Base64-HTML",
+            "Signed-XAdES-ASiC_E-SKXDC-Auto", "PAdES-PDF_lg", "XAdES-PDF", "XAdES-ASiC_E-PDF", "CAdES-ASiC_E-PDF",
+            "XAdES-ASiC_E-TXT", "XAdES-ASiC_E-DOCX", "CAdES-ASiC_E-DOCX", "CAdES-PNG_lg", "CAdES-ASiC_E-PNG_md",
+            "Signed-XAdES-ASiC_E-PDF", "Double-Signed-XAdES-ASiC_E-PDF", "Signed-CAdES-ASiC_E-PDF",
+            "Double-Signed-CAdES-ASiC_E-PDF",
     })
-    public void testFromYaml(String exampleName) throws ClientProtocolException, IOException, IllegalAccessException,
+    public void testPositiveFromYaml(String exampleName)
+            throws ClientProtocolException, IOException, IllegalAccessException,
             NoSuchFieldException, SecurityException {
+        testFromYaml(exampleName, HttpStatus.SC_OK, SignResponse.class);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "Signed-XAdES-ASiC_E-SKXDC-Auto-WrongXSLT",
+    })
+    public void testNegativeFromYaml(String exampleName)
+            throws ClientProtocolException, IOException, IllegalAccessException,
+            NoSuchFieldException, SecurityException {
+        testFromYaml(exampleName, HttpStatus.SC_UNPROCESSABLE_ENTITY, ErrorResponseBody.class);
+    }
+
+    public void testFromYaml(String exampleName, int expectedStatus, Class responseClass)
+            throws ClientProtocolException, IOException, IllegalAccessException,
+            NoSuchFieldException, SecurityException {
+        System.out.println("Testing example: " + exampleName);
         var example = getNested("components", "examples", exampleName, "value");
         var document = (Map<String, String>) getNested(example, "document");
         var parameters = getNested(example, "parameters");
@@ -144,25 +165,22 @@ public class SignHttpSmokeTest {
         var entity = new StringEntity(gson.toJson(body), "UTF-8");
         signRequest.setEntity(entity);
 
-        System.out.println("Sign request body: " + EntityUtils.toString(entity));
         var signResponse = clientBuilder.build().execute(signRequest);
         System.out.println("Sign Response: " + signResponse.getStatusLine());
 
         var responseStr = new String(
                 signResponse.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
-        System.out.println("Sign Response: " + responseStr);
-        assertEquals(HttpStatus.SC_OK, signResponse.getStatusLine().getStatusCode());
-        var response = gson.fromJson(responseStr, SignResponse.class);
+        assertEquals(expectedStatus, signResponse.getStatusLine().getStatusCode());
+        var response = gson.fromJson(responseStr, responseClass);
 
         ReflectionUtils
-                .findFields(SignResponse.class, (e) -> true,
+                .findFields(responseClass, (e) -> true,
                         ReflectionUtils.HierarchyTraversalMode.TOP_DOWN)
                 .forEach(f -> {
                     f.setAccessible(true);
                     try {
                         var o = f.get(response);
                         assertNotNull(o);
-                        System.out.println(f.getName() + ": " + o);
                     } catch (IllegalArgumentException | IllegalAccessException e1) {
                         // TODO Auto-generated catch block
                         e1.printStackTrace();
@@ -177,7 +195,7 @@ public class SignHttpSmokeTest {
         var containerXmlns = (String) map.get("containerXmlns");
         var packaging = fromMapToEnum(SignaturePackaging.class, map.get("packaging"));
         var digestAlgorithm = fromMapToEnum(DigestAlgorithm.class, map.get("digestAlgorithm"));
-        var en319132 = (Boolean) map.get("en319132");
+        var en319132 = (boolean) map.getOrDefault("en319132", false);
         var infoCanonicalization = fromMapToEnum(LocalCanonicalizationMethod.class, map.get("infoCanonicalization"));
         var propertiesCanonicalization = fromMapToEnum(LocalCanonicalizationMethod.class,
                 map.get("propertiesCanonicalization"));
@@ -186,8 +204,15 @@ public class SignHttpSmokeTest {
         var schema = (String) map.get("schema");
         var transformation = (String) map.get("transformation");
         var identifier = (String) map.get("identifier");
-        var checkPDFACompliance = map.getOrDefault("checkPDFACompliance", "false") == "true";
+        var checkPDFACompliance = (boolean) map.getOrDefault("checkPDFACompliance", false);
         var visualizationWidth = fromMapToEnum(VisualizationWidthEnum.class, map.get("visualizationWidth"));
+        var autoLoadEform = (boolean) map.getOrDefault("autoLoadEform", false);
+        var embedUsedSchemas = (boolean) map.getOrDefault("embedUsedSchemas", false);
+        var schemaIdentifier = (String) map.get("schemaIdentifier");
+        var transformationIdentifier = (String) map.get("transformationIdentifier");
+        var transformationLanguage = (String) map.get("transformationLanguage");
+        var transformationMediaDestinationTypeDescription = fromMapToEnum(TransformationOutputMimeType.class, map.get("transformationMediaDestinationTypeDescription"));
+        var transformationTargetEnvironment = (String) map.get("transformationTargetEnvironment");
 
         return new ServerSigningParameters(
                 level,
@@ -202,7 +227,16 @@ public class SignHttpSmokeTest {
                 keyInfoCanonicalization,
                 schema,
                 transformation,
-                identifier, checkPDFACompliance, visualizationWidth);
+                identifier,
+                checkPDFACompliance,
+                visualizationWidth,
+                autoLoadEform,
+                embedUsedSchemas,
+                schemaIdentifier,
+                transformationIdentifier,
+                transformationLanguage,
+                transformationMediaDestinationTypeDescription,
+                transformationTargetEnvironment);
     }
 
     private static <T extends Enum<T>> T fromMapToEnum(Class<T> clazz, Object obj) {

@@ -9,6 +9,7 @@ import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -39,10 +40,17 @@ public class SigningJobTests {
                 transformation,
                 null,
                 false,
-                ServerSigningParameters.VisualizationWidthEnum.sm);
+                null,
+                false,
+                false,
+                null,
+                null,
+                null,
+                null,
+                null);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-        var job = new SigningJob(signRequestBody.getDocument(), signRequestBody.getParameters(), null);
+        var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(null, true), null);
         Visualization visualization = null;
         try {
             visualization = DocumentVisualizationBuilder.fromJob(job);

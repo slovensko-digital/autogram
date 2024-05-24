@@ -42,18 +42,34 @@ Doplniť ďalšie je pomerne ľahké pokiaľ používajú PKCS#11.
 - Maven
 - Voliteľné: Visual Studio Code ako IDE alebo Intellij IDEA (stačí komunitná verzia).
 
-Odporúčame používať Liberica JDK, ktoré má v sebe JavaFX, všetko je potom jednoduchšie. Po zavolaní `mnvw initialize` by sa malo stiahnuť do `target/jdkCache`.
+Odporúčame používať Liberica JDK, ktoré má v sebe JavaFX, všetko je potom jednoduchšie. Po zavolaní `./mvnw initialize` by sa malo stiahnuť do `target/jdkCache`.
 
+### Build
 
-### Build cez `mvn package`
-
-Pripraví všetko do `./target`:
+Spustenie `./mvnw package` pripraví všetko do `./target`:
 
 - `dependency-jars/`
 - `preparedJDK/` - JLink JDK (JRE) pripravené pre bundling s aplikáciou.
 - `autogram-*.jar` - JAR s aplikáciou
 
-Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, and .rpm/.deb).
+Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, a .rpm/.deb).
+
+```sh
+./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+./mvnw package
+```
+
+#### Debian/Ubuntu
+
+```sh
+sudo apt install openjdk-17-jdk maven binutils rpm fakeroot
+```
+
+#### Fedora
+
+```sh
+sudo dnf install java-17-openjdk maven rpm-build
+```
 
 ## Autori a sponzori
 

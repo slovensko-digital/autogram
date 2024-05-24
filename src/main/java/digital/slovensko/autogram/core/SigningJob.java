@@ -1,43 +1,42 @@
 package digital.slovensko.autogram.core;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 
+import digital.slovensko.autogram.core.eforms.EFormUtils;
+import digital.slovensko.autogram.core.eforms.XDCBuilder;
+import digital.slovensko.autogram.core.eforms.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.MimeType;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.model.CommonDocument;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
+import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
+import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.DSSUtils;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
+import static digital.slovensko.autogram.core.AutogramMimeType.*;
+
 public class SigningJob {
     private final Responder responder;
-    private final CommonDocument document;
+    private final DSSDocument document;
     private final SigningParameters parameters;
-    private final MimeType transformationOutputMimeTypeForXdc;
 
-    public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder,
-            MimeType transformationOutputMimeTypeForXdc) {
+    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
-        this.transformationOutputMimeTypeForXdc = transformationOutputMimeTypeForXdc;
     }
 
-    public SigningJob(CommonDocument document, SigningParameters parameters, Responder responder) {
-        this.document = document;
-        this.parameters = parameters;
-        this.responder = responder;
-        this.transformationOutputMimeTypeForXdc = null;
-    }
-
-    public CommonDocument getDocument() {
+    public DSSDocument getDocument() {
         return this.document;
     }
 
@@ -49,11 +48,7 @@ public class SigningJob {
         return parameters.getVisualizationWidth();
     }
 
-    private boolean isDocumentXDC() {
-        return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER);
-    }
-
-    public void signWithKeyAndRespond(SigningKey key) throws InterruptedException {
+    public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
 
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
@@ -79,6 +74,7 @@ public class SigningJob {
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
 
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
@@ -87,25 +83,21 @@ public class SigningJob {
     }
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
-        DSSDocument doc = getDocument();
-        if (getParameters().shouldCreateDatacontainer() && !isDocumentXDC()) {
-            var transformer = XDCTransformer.buildFromSigningParameters(getParameters(),
-                    transformationOutputMimeTypeForXdc);
-            doc = transformer.transform(doc);
-            doc.setMimeType(AutogramMimeType.XML_DATACONTAINER);
-        }
-
         var commonCertificateVerifier = new CommonCertificateVerifier();
         var service = new ASiCWithXAdESService(commonCertificateVerifier);
         var signatureParameters = getParameters().getASiCWithXAdESSignatureParameters();
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
 
-        var dataToSign = service.getDataToSign(doc, signatureParameters);
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
+            service.setTspSource(getParameters().getTspSource());
+
+        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
 
-        return service.signDocument(doc, signatureParameters, signatureValue);
+        return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsXAdeS(SigningKey key) {
@@ -116,6 +108,7 @@ public class SigningJob {
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
 
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
@@ -131,6 +124,10 @@ public class SigningJob {
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
+
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.CAdES_BASELINE_T))
+            service.setTspSource(getParameters().getTspSource());
 
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
@@ -146,6 +143,12 @@ public class SigningJob {
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
+        signatureParameters.setSignWithExpiredCertificate(true);
+
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.PAdES_BASELINE_T)) {
+            service.setTspSource(getParameters().getTspSource());
+            signatureParameters.setContentSize(9472*2);
+        }
 
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
@@ -153,30 +156,66 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance) {
-        var document = new FileDocument(file);
-        SigningParameters parameters = getParametersForFile(file, checkPDFACompliance);
-        return new SigningJob(document, parameters, responder);
+    public static FileDocument createDSSFileDocumentFromFile(File file) {
+        var fileDocument = new FileDocument(file);
+
+        if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
+            fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER);
+
+        return fileDocument;
     }
 
-    public static SigningJob buildFromFileBatch(File file, Autogram autogram, Responder responder) {
-        var document = new FileDocument(file);
-        SigningParameters parameters = getParametersForFile(file, false);
-        return new SigningJob(document, parameters, responder);
-    }
-
-    private static SigningParameters getParametersForFile(File file, boolean checkPDFACompliance) {
-        var filename = file.getName();
-
-        if (filename.endsWith(".pdf")) {
-            return SigningParameters.buildForPDF(filename, checkPDFACompliance);
-        } else {
-            return SigningParameters.buildForASiCWithXAdES(filename);
+    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
+        if (params.shouldCreateXdc()) {
+            var mimeType = document.getMimeType();
+            if (!isXDC(mimeType) && !isAsice(mimeType)) {
+                document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
+                document.setMimeType(AutogramMimeType.XML_DATACONTAINER);
+            }
         }
 
+        return new SigningJob(document, params, responder);
+    }
+
+    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
+        return build(document, params, responder);
+    }
+
+    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+        var document = createDSSFileDocumentFromFile(file);
+        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
+        return build(document, parameters, responder);
+    }
+
+    private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+        var level = SignatureValidator.getSignedDocumentSignatureLevel(document);
+        if (level != null) switch (level.getSignatureForm()) {
+            case PAdES:
+                return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
+            case XAdES:
+                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
+            case CAdES:
+                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, tspSource, plainXmlEnabled);
+            default:
+                ;
+        }
+
+        var filename = document.getName();
+        if (isPDF(document.getMimeType())) switch (signatureType) {
+            case PAdES_BASELINE_B:
+                return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
+            case XAdES_BASELINE_B:
+                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
+            case CAdES_BASELINE_B:
+                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, tspSource, plainXmlEnabled);
+            default:
+                ;
+        }
+
+        return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
     }
 
     public boolean shouldCheckPDFCompliance() {
-        return parameters.getCheckPDFACompliance() && document.getMimeType().equals(MimeTypeEnum.PDF);
+        return parameters.getCheckPDFACompliance() && isPDF(document.getMimeType());
     }
 }

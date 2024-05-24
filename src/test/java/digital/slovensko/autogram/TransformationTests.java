@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
@@ -40,7 +39,7 @@ public class TransformationTests {
 
         @Test
         void testSigningJobTransformToHtml() throws IOException, ParserConfigurationException,
-                        SAXException, TransformerException {
+                        SAXException {
                 var transformation = new String(this.getClass().getResourceAsStream(
                                 "crystal_test_data/PovolenieZdravotnictvo.html.xslt")
                                 .readAllBytes());
@@ -50,13 +49,13 @@ public class TransformationTests {
                                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                                 "rozhodnutie_X4564-2.xml");
 
-                var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
+                var params = SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B,
                                 ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
                                 DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
                                 CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
-                                null, transformation, "id1/asa", false, 800);
+                                null, transformation, "id1/asa", false, 800, false, false, null, null, null, null, null, document, null, true);
 
-                SigningJob job = new SigningJob(document, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job);
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -98,7 +97,7 @@ public class TransformationTests {
 
         @Test
         void testSigningJobTransformSb() throws IOException, ParserConfigurationException,
-                        SAXException, TransformerException {
+                        SAXException {
                 var transformation = new String(this.getClass()
                                 .getResourceAsStream(
                                                 "crystal_test_data/PovolenieZdravotnictvo.sb.xslt")
@@ -109,13 +108,13 @@ public class TransformationTests {
                                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                                 "rozhodnutie_X4564-2.xml");
 
-                var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
+                var params = SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B,
                                 ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
                                 DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
                                 CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
-                                null, transformation, "id1/asa", false, 800);
+                                null, transformation, "id1/asa", false, 800, false, false,null, null, null, null, null, document, null, true);
 
-                SigningJob job = new SigningJob(document, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job);
                 if (visualizedDocument instanceof HTMLVisualization d) {

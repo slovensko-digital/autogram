@@ -6,18 +6,82 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  build:
-    runs-on: ${{ matrix.config.os }}
+  linux-deb:
     environment: packaging
-    strategy:
-      matrix:
-        config:
-          - os: ubuntu-latest
-          - os: macos-latest
-          - os: windows-latest
+    runs-on: ubuntu-latest
+    container: "debian:latest"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Setup dependencies
+        run: |
+          apt-get -q update && apt-get -q upgrade -y
+          apt-get -q install -y openjdk-17-jdk maven binutils fakeroot wget git
+          
+      - uses: actions/checkout@v4
+
+      - name: Build artifact
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+          
+          ./mvnw -B -C -V package
+          ls -lah ./target
+
+      - name: Create release if tag pushed
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          prerelease: true
+          files: |
+            target/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  linux-rpm:
+    environment: packaging
+    runs-on: ubuntu-latest
+    container: "fedora:latest"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Setup dependencies
+        run: |
+          dnf -q install -y java-17-openjdk maven rpm-build git
+
+      - uses: actions/checkout@v4
+
+      - name: Build artifact
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+
+          ./mvnw -B -C -V package
+          ls -lah ./target
+
+      - name: Create release if tag pushed
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          prerelease: true
+          files: |
+            target/*.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  macos:
+    environment: packaging
+    runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: target
 
       - name: Update version in pom if tag pushed
         if: startsWith(github.ref, 'refs/tags/')
@@ -37,12 +101,11 @@ jobs:
           path: |
             ~/.m2/repository
             target/jdkCache
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: macos-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            ${{ runner.os }}-maven-
+            macos-maven-
 
       - name: Install an Apple keychain (MacOS)
-        if: runner.os == 'macOS'
         # based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development#add-a-step-to-your-workflow
         env:
           APPLE_KEYCHAIN_BASE64: ${{ secrets.APPLE_KEYCHAIN_BASE64 }}
@@ -73,7 +136,6 @@ jobs:
           APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
 
       - name: Notarize release with Apple (MacOS)
-        if: runner.os == 'macOS'
         env:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
         shell: bash
@@ -86,8 +148,58 @@ jobs:
           # lock all keychains
           security lock-keychain -a
 
+      - name: Create release if tag pushed
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          prerelease: true
+          files: |
+            target/*.pkg
+            target/*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows:
+    environment: packaging
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: target
+
+      - name: Update version in pom if tag pushed
+        if: startsWith(github.ref, 'refs/tags/')
+        run: ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+        shell: bash
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17.0.7+7"
+          distribution: "liberica"
+          java-package: "jdk+fx"
+
+      - name: Cache local Maven repository and JDK cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            target/jdkCache
+          key: windows-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            windows-maven-
+
+      - name: Package with Maven
+        run: ./mvnw -B -C -V package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Sign on Azure
-        if: runner.os == 'Windows'
         shell: bash
         run: |
           dotnet tool install --global AzureSignTool
@@ -102,9 +214,5 @@ jobs:
           files: |
             target/*.exe
             target/*.msi
-            target/*.rpm
-            target/*.deb
-            target/*.pkg
-            target/*.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

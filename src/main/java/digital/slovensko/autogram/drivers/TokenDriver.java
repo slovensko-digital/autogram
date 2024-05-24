@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.drivers;
 
+import digital.slovensko.autogram.core.PasswordManager;
+import digital.slovensko.autogram.core.SignatureTokenSettings;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 
 import java.nio.file.Path;
@@ -7,14 +9,14 @@ import java.nio.file.Path;
 public abstract class TokenDriver {
     protected final String name;
     private final Path path;
-    private final boolean needsPassword;
     private final String shortname;
+    private final String noKeysHelperText;
 
-    public TokenDriver(String name, Path path, boolean needsPassword, String shortname) {
+    public TokenDriver(String name, Path path, String shortname, String noKeysHelperText) {
         this.name = name;
         this.path = path;
-        this.needsPassword = needsPassword;
         this.shortname = shortname;
+        this.noKeysHelperText = noKeysHelperText;
     }
 
     public String getName() {
@@ -30,14 +32,14 @@ public abstract class TokenDriver {
     }
 
 
+    public abstract AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings);
 
-    public abstract AbstractKeyStoreTokenConnection createTokenWithPassword(Integer slotId, char[] password);
-
-    public boolean needsPassword() {
-        return needsPassword;
-    }
 
     public String getShortname() {
         return shortname;
+    }
+
+    public String getNoKeysHelperText() {
+        return noKeysHelperText;
     }
 }
