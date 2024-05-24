@@ -45,6 +45,11 @@ public class ErrorSummaryComponentController {
         }
     }
 
+    public void disableErrorDetails() {
+        showErrorDetailsButton.setVisible(false);
+        showErrorDetailsButton.setManaged(false);
+    }
+
     public void initialize() {
     }
 

@@ -88,8 +88,12 @@ public class GUIUtils {
     }
 
     public static void showError(AutogramException e, String buttonText, boolean wait) {
+        showError(e, buttonText, wait, false);
+    }
+
+    public static void showError(AutogramException e, String buttonText, boolean wait, boolean errorDetailsDisabled) {
         logger.debug("GUI showing error", e);
-        var controller = new ErrorController(e);
+        var controller = new ErrorController(e, errorDetailsDisabled);
         var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
         controller.setMainButtonText(buttonText);
 
