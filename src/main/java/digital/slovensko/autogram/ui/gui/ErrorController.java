@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -11,6 +12,9 @@ public class ErrorController implements SuppressedFocusController {
 
     @FXML
     VBox mainBox;
+
+    @FXML
+    private Button mainButton;
 
     @FXML
     ErrorSummaryComponentController errorSummaryComponentController; // this is {include fx:id} + "Controller"
@@ -31,4 +35,9 @@ public class ErrorController implements SuppressedFocusController {
     public Node getNodeForLoosingFocus() {
         return mainBox;
     }
+
+    public void setMainButtonText(String text) {
+        mainButton.setText(text);
+    }
+
 }

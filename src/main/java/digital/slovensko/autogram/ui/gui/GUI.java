@@ -175,21 +175,7 @@ public class GUI implements UI {
 
     @Override
     public void showError(AutogramException e) {
-        logger.debug("GUI showing error", e);
-        var controller = new ErrorController(e);
-        var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
-
-        var stage = new Stage();
-        stage.setTitle(e.getHeading());
-        stage.setScene(new Scene(root));
-
-        stage.sizeToScene();
-        stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
-
-        GUIUtils.suppressDefaultFocus(stage, controller);
-
-        stage.show();
+        GUIUtils.showError(e, "Pokračovať", false);
     }
 
     public void showPkcsEidWindowsDllError(AutogramException e) {

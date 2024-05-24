@@ -1,17 +1,24 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class GUIUtils {
+
+    private static Logger logger = LoggerFactory.getLogger(GUIUtils.class);
     static Parent loadFXML(Object controller, String fxml) {
         try {
             var loader = new FXMLLoader();
@@ -63,7 +70,6 @@ public class GUIUtils {
         }
     }
 
-
     public static String exceptionToString(Exception exception) {
         var writer = new StringWriter();
         var printWriter = new PrintWriter(writer);
@@ -79,5 +85,28 @@ public class GUIUtils {
         var w = stage.getScene().getWindow();
         // This forces layout recalculation and fixes issue https://github.com/slovensko-digital/autogram/issues/172
         w.setHeight(w.getHeight() - 1);
+    }
+
+    public static void showError(AutogramException e, String buttonText, boolean wait) {
+        logger.debug("GUI showing error", e);
+        var controller = new ErrorController(e);
+        var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
+        controller.setMainButtonText(buttonText);
+
+        var stage = new Stage();
+        stage.setTitle(e.getHeading());
+        stage.setScene(new Scene(root));
+
+        stage.sizeToScene();
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        GUIUtils.suppressDefaultFocus(stage, controller);
+
+        if (wait) {
+            stage.showAndWait();
+        } else {
+            stage.show();
+        }
     }
 }
