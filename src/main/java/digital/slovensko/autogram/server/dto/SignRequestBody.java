@@ -15,7 +15,7 @@ import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 public class SignRequestBody {
     private final Document document;
-    private final ServerSigningParameters parameters;
+    private ServerSigningParameters parameters;
     private final String payloadMimeType;
     private final String batchId;
 
@@ -40,6 +40,13 @@ public class SignRequestBody {
 
         if (document.getContent() == null)
             throw new RequestValidationException("Document.Content is required", "");
+    }
+
+    public void resolveSigningLevel() throws RequestValidationException {
+        if (parameters == null)
+            parameters = new ServerSigningParameters();
+
+        parameters.resolveSigningLevel(getDocument());
     }
 
     public InMemoryDocument getDocument() {

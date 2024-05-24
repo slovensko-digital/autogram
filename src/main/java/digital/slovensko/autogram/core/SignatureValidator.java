@@ -15,6 +15,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.simplereport.SimpleReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
@@ -165,7 +167,7 @@ public class SignatureValidator {
         return new ValidationReports(validator.validateDocument(), job);
     }
 
-    public static SignatureLevel getSignedDocumentSignatureLevel(DSSDocument document) {
+    public static SimpleReport getSignedDocumentSimpleReport(DSSDocument document) {
         var validator = createDocumentValidator(document);
         if (validator == null)
             return null;
@@ -173,6 +175,13 @@ public class SignatureValidator {
         validator.setCertificateVerifier(new CommonCertificateVerifier());
         var report = validator.validateDocument().getSimpleReport();
         if (report.getSignatureIdList().size() == 0)
+            return null;
+
+        return report;
+    }
+
+    public static SignatureLevel getSignedDocumentSignatureLevel(SimpleReport report) {
+        if (report == null)
             return null;
 
         return report.getSignatureFormat(report.getSignatureIdList().get(0));

@@ -10,6 +10,7 @@ import java.util.Base64;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
+import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
@@ -22,6 +23,7 @@ import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 public class ServerSigningParameters {
@@ -48,8 +50,8 @@ public class ServerSigningParameters {
         xxl
     }
 
-    private final ASiCContainerType container;
-    private final SignatureLevel level;
+    private ASiCContainerType container;
+    private SignatureLevel level;
     private final String containerXmlns;
     private final String schema;
     private final String transformation;
@@ -101,6 +103,28 @@ public class ServerSigningParameters {
         this.transformationLanguage = transformationLanguage;
         this.transformationMediaDestinationTypeDescription = transformationMediaDestinationTypeDescription;
         this.transformationTargetEnvironment = transformationTargetEnvironment;
+    }
+
+    public ServerSigningParameters() {
+        this.containerXmlns = null;
+        this.packaging = null;
+        this.digestAlgorithm = null;
+        this.en319132 = null;
+        this.infoCanonicalization = null;
+        this.propertiesCanonicalization = null;
+        this.keyInfoCanonicalization = null;
+        this.schema = null;
+        this.transformation = null;
+        this.identifier = null;
+        this.checkPDFACompliance = false;
+        this.visualizationWidth = null;
+        this.autoLoadEform = false;
+        this.embedUsedSchemas = false;
+        this.schemaIdentifier = null;
+        this.transformationIdentifier = null;
+        this.transformationLanguage = null;
+        this.transformationMediaDestinationTypeDescription = null;
+        this.transformationTargetEnvironment = null;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
@@ -197,6 +221,27 @@ public class ServerSigningParameters {
 
     private ASiCContainerType getContainer() {
         return container;
+    }
+
+    public void resolveSigningLevel(InMemoryDocument document) throws RequestValidationException {
+        if (level != null)
+            return;
+
+        var report = SignatureValidator.getSignedDocumentSimpleReport(document);
+        var signedLevel = SignatureValidator.getSignedDocumentSignatureLevel(report);
+        if (signedLevel == null)
+            throw new RequestValidationException("Parameters.Level can't be empty if document is not signed yet", "");
+
+        container = report.getContainerType();
+        level = switch (signedLevel.getSignatureForm()) {
+            case PAdES -> SignatureLevel.PAdES_BASELINE_B;
+            case XAdES -> SignatureLevel.XAdES_BASELINE_B;
+            case CAdES -> SignatureLevel.CAdES_BASELINE_B;
+            default -> null;
+        };
+
+        if (level == null)
+            throw new RequestValidationException("Signed document has unsupported SignatureLevel" , "");
     }
 
     public void validate(MimeType mimeType) throws RequestValidationException {
