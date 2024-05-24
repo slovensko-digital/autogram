@@ -35,7 +35,7 @@ public class UpvsEFormResources extends EFormResources {
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť manifest elektronického formulára");
 
         var parsed_manifest_xml = getXmlFromDocument(new InMemoryDocument(manifest_xml, "manifest.xml"));
-        var nodes = parsed_manifest_xml.getElementsByTagName("manifest:file-entry");
+        var nodes = parsed_manifest_xml.getElementsByTagNameNS("urn:manifest:1.0", "file-entry");
 
         var entries = getManifestXsltEntries(nodes, SOURCE_URL, url);
         if (entries.isEmpty())

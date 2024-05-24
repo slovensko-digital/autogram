@@ -29,15 +29,15 @@ public class FsEFormResources extends EFormResources {
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť zoznam FS formulárov");
 
         var parsed_meta_xml = getXmlFromDocument(new InMemoryDocument(forms_xml, "forms.xml"));
-        var nodes = parsed_meta_xml.getElementsByTagName("sd:" + xdcIdentifier);
+        var nodes = parsed_meta_xml.getElementsByTagNameNS("urn:meta.slovensko.digital:1.0", xdcIdentifier);
         if (nodes.getLength() > 0)
             return nodes.item(0).getFirstChild().getNodeValue();
 
-        nodes = parsed_meta_xml.getElementsByTagName("sd:" + xdcIdentifier.replace("_1_0", ""));
+        nodes = parsed_meta_xml.getElementsByTagNameNS("urn:meta.slovensko.digital:1.0", xdcIdentifier.replace("_1_0", ""));
         if (nodes.getLength() > 0)
             return nodes.item(0).getFirstChild().getNodeValue();
 
-        nodes = parsed_meta_xml.getElementsByTagName("sd:" + xdcIdentifier + "_1_0");
+        nodes = parsed_meta_xml.getElementsByTagNameNS("urn:meta.slovensko.digital:1.0", xdcIdentifier + "_1_0");
         if (nodes.getLength() > 0)
             return nodes.item(0).getFirstChild().getNodeValue();
 
@@ -51,19 +51,19 @@ public class FsEFormResources extends EFormResources {
             throw new EFormException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť meta.xml elektronického formulára");
 
         var parsed_meta_xml = getXmlFromDocument(new InMemoryDocument(meta_xml, "meta.xml"));
-        var nodes_meta = parsed_meta_xml.getElementsByTagName("dc:identifier");
+        var nodes_meta = parsed_meta_xml.getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "identifier");
         if (nodes_meta.getLength() < 1)
             return false;
 
         xdcIdentifier = nodes_meta.item(0).getFirstChild().getNodeValue();
 
-        nodes_meta = parsed_meta_xml.getElementsByTagName("sd:xsdIdentifier");
+        nodes_meta = parsed_meta_xml.getElementsByTagNameNS("urn:meta.slovensko.digital:1.0","xsdIdentifier");
         if (nodes_meta.getLength() < 1)
             return false;
 
         xsdIdentifier = nodes_meta.item(0).getFirstChild().getNodeValue();
 
-        nodes_meta = parsed_meta_xml.getElementsByTagName("sd:xsltIdentifier");
+        nodes_meta = parsed_meta_xml.getElementsByTagNameNS("urn:meta.slovensko.digital:1.0","xsltIdentifier");
         if (nodes_meta.getLength() < 1)
             return false;
 
@@ -77,7 +77,7 @@ public class FsEFormResources extends EFormResources {
 
         var parsed_manifest_xml = getXmlFromDocument(new InMemoryDocument(manifest_xml, "manifest.xml"));
 
-        var nodes = parsed_manifest_xml.getElementsByTagName("manifest:file-entry");
+        var nodes = parsed_manifest_xml.getElementsByTagNameNS("urn:manifest:1.0", "file-entry");
         var entries = getManifestXsltEntries(nodes, SOURCE_URL, url);
         if (entries.isEmpty())
             return false;

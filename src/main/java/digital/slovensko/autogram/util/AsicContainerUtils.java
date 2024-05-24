@@ -98,7 +98,7 @@ public class AsicContainerUtils {
     private static NodeList getFileEntriesFromManifest(DSSDocument manifest) {
         try {
             var document = XMLUtils.getSecureDocumentBuilder().parse(new InputSource(manifest.openStream()));
-            return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
+            return document.getDocumentElement().getElementsByTagNameNS("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0", "file-entry");
         } catch (Exception e) {
             return null;
         }
