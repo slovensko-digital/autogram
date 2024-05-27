@@ -39,13 +39,15 @@ class AutogramTests {
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
             "digital.slovensko.autogram.TestMethodSources#orsrDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
-            "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider"})
+            "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider",
+            "digital.slovensko.autogram.TestMethodSources#fsUnmarkedXdcProvider"})
     void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null, true);
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, true);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -61,7 +63,7 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, null, true);
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, true);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -73,7 +75,7 @@ class AutogramTests {
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
     void testSignNonEformNegativeScenario(InMemoryDocument document) {
-        Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, null, false));
+        Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, false, null, false));
     }
 
     @ParameterizedTest
@@ -84,7 +86,7 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, null, true);
+        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, false, null, true);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -117,7 +119,8 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider",
-            "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
+            "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider",
+            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider"})
     void testSignBuildFromFileHappyScenario(InMemoryDocument document) throws IOException {
         var newUI = new FakeUI();
         var settings = new TestSettings();

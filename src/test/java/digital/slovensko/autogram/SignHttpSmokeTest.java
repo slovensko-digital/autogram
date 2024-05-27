@@ -236,7 +236,8 @@ public class SignHttpSmokeTest {
                 transformationIdentifier,
                 transformationLanguage,
                 transformationMediaDestinationTypeDescription,
-                transformationTargetEnvironment);
+                transformationTargetEnvironment,
+                null);
     }
 
     private static <T extends Enum<T>> T fromMapToEnum(Class<T> clazz, Object obj) {

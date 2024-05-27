@@ -36,11 +36,13 @@ public class ErrorResponse {
             case "RequestValidationException",
                 "XMLValidationException",
                 "SigningParametersException",
+                "EFormException",
                 "TransformationException",
                 "TransformationParsingErrorException" -> new ErrorResponse(422, "UNPROCESSABLE_INPUT", (AutogramException) e);
             case "MultipleOriginalDocumentsFoundException" -> new ErrorResponse(422, "MULTIPLE_ORIGINAL_DOCUMENTS", (AutogramException) e);
             case "OriginalDocumentNotFoundException" -> new ErrorResponse(422, "ORIGINAL_DOCUMENT_NOT_FOUND", (AutogramException) e);
             case "MalformedBodyException" -> new ErrorResponse(400, "MALFORMED_INPUT", (AutogramException) e);
+            case "UnknownEformException" -> new ErrorResponse(400, "UNKNOWN_EFORM", (AutogramException) e);
             case "AutogramException" -> new ErrorResponse(502, "SIGNING_FAILED", (AutogramException) e);
             case "EmptyBodyException" -> new ErrorResponse(400, "EMPTY_BODY", (AutogramException) e);
             case "BatchEndedException" -> new ErrorResponse(400, "BATCH_ENDED", (AutogramException) e);

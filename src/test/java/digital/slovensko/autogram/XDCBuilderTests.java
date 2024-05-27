@@ -2,7 +2,8 @@ package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.eforms.XDCBuilder;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -26,20 +27,30 @@ class XDCBuilderTests {
 
         var document = new InMemoryDocument(this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes(), "general_agenda.xml", MimeTypeEnum.XML);
 
-        var params = SigningParameters.buildFromRequest(
+        var params = SigningParameters.buildParameters(
             SignatureLevel.XAdES_BASELINE_B,
-            ASiCContainerType.ASiC_E,
-            "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
-            SignaturePackaging.ENVELOPING,
             DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E,
+            SignaturePackaging.ENVELOPING,
             false,
             CanonicalizationMethod.INCLUSIVE,
             CanonicalizationMethod.INCLUSIVE,
             CanonicalizationMethod.INCLUSIVE,
-            xsdSchema,
-            transformation,
-            "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
-            false, 800, false, false, null, null, null, null, null, document, null, true);
+            new EFormAttributes(
+                    "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
+                    transformation,
+                    xsdSchema,
+                    "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                    null,
+                    null,
+                    false),
+            false,
+            null,
+            false,
+            800,
+            document,
+            null,
+            true);
 
         var out = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);

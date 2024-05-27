@@ -32,24 +32,65 @@ public abstract class TestMethodSources {
         );
     }
 
+    public static Stream<DSSDocument> fsDPFOProvider() throws IOException {
+        var inlineXml = cls.getResourceAsStream("fs_forms/dic2120515056_fs792_772.xml").readAllBytes();
+        var inlineXmlHeader = cls.getResourceAsStream("fs_forms/d_fs792_772_header.xml").readAllBytes();
+        var indentedXml = cls.getResourceAsStream("fs_forms/d_fs792_772_indented.xml").readAllBytes();
+        var indentedXmlHeader = cls.getResourceAsStream("fs_forms/d_fs792_772_header_indented.xml").readAllBytes();
+        var inlineXdc = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc.xml").readAllBytes();
+        var indentedXdc = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc_indented.xml").readAllBytes();
+        var inlineAsice = cls.getResourceAsStream("fs_forms/signed.asice").readAllBytes();
+        var indentedAsice = cls.getResourceAsStream("fs_forms/signed_indented.asice").readAllBytes();
+        var timestampedAsice = cls.getResourceAsStream("fs_forms/signed_indented_ts.asice").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(inlineXml, "dic2120515056_fs792_772.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(inlineXmlHeader, "d_fs792_772_header.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(indentedXml, "d_fs792_772_indented.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(indentedXmlHeader, "d_fs792_772_header_indented.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(inlineXdc, "d_fs792_772_xdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(indentedXdc, "d_fs792_772_xdc_indented.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(inlineAsice, "signed.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(inlineAsice, "d_fs792_772_signed.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(indentedAsice, "signed_indented.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(timestampedAsice, "signed_indented_ts.asice", MimeTypeEnum.ASICE)
+        );
+    }
+
+    public static Stream<DSSDocument> fsUnmarkedXdcProvider() throws IOException {
+        var dpfoAsice = cls.getResourceAsStream("fs_forms/DPFOBv23.asice").readAllBytes();
+        var dpfoXdc = cls.getResourceAsStream("fs_forms/unmarked_xdc_indented.xml").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(dpfoAsice, "DPFOBv23.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(dpfoXdc, "unmarked_xdc_indented.xml", AutogramMimeType.XML_DATACONTAINER)
+        );
+    }
+
     public static Stream<DSSDocument> invalidXmlProvider() throws IOException {
         var notAnXml = "not an xml".getBytes();
         var invalidXml = "<invalidXml><foo><bar></foo></bar></invalidXml>".getBytes();
         var invalidXmlHeader = "<?xml versionWrong=\"1.0\" encoding=\"UTF-8\"?><invalidXml><foo></foo><bar></bar></invalidXml>".getBytes();
+        var invalidXdc = "<invalidXml xmlns=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><foo></foo><bar></bar></invalidXml>".getBytes();
         var twoRootElements = "<invalidXml><foo></foo></invalidXml><bar></bar>".getBytes();
         var twoRootElementsHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><invalidXml><foo></foo></invalidXml><bar></bar>".getBytes();
-        var invalidXdc = "<invalidXml xmlns=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><foo></foo><bar></bar></invalidXml>".getBytes();
 
-        var wrongXdcSchemaXml = cls.getResourceAsStream("wrong_schema_xdc.xml").readAllBytes();
 
         return Stream.of(
             new InMemoryDocument(notAnXml, "notAnXml.xml", MimeTypeEnum.XML),
             new InMemoryDocument(invalidXml, "invalidXml.xml", MimeTypeEnum.XML),
             new InMemoryDocument(invalidXmlHeader, "invalidXmlHeader.xml", MimeTypeEnum.XML),
-            new InMemoryDocument(twoRootElements, "twoRootElements.xml", MimeTypeEnum.XML),
-            new InMemoryDocument(twoRootElementsHeader, "twoRootElementsHeader.xml", MimeTypeEnum.XML),
             new InMemoryDocument(invalidXdc, "invalidXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new InMemoryDocument(wrongXdcSchemaXml, "wrongXdcSchemaXml.xml", AutogramMimeType.XML_DATACONTAINER)
+            new InMemoryDocument(twoRootElements, "twoRootElements.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(twoRootElementsHeader, "twoRootElementsHeader.xml", MimeTypeEnum.XML)
+        );
+    }
+
+    public static Stream<DSSDocument> nonEFormXmlProvider() throws IOException {
+        var wrongXdcSchemaXml = cls.getResourceAsStream("wrong_schema_xdc.xml").readAllBytes();
+
+        return Stream.of(
+                new InMemoryDocument(wrongXdcSchemaXml, "wrongXdcSchemaXml.xml", AutogramMimeType.XML_DATACONTAINER)
         );
     }
 
@@ -74,6 +115,20 @@ public abstract class TestMethodSources {
             new InMemoryDocument(mismatchedXsltGAXdcXml, "mismatchedXsltGAXdcXml.xml", AutogramMimeType.XML_DATACONTAINER),
             new InMemoryDocument(mismatchedXsdGAXdcAsice, "mismatchedXsdGAXdcAsice.asice", MimeTypeEnum.ASICE),
             new InMemoryDocument(mismatchedXsltGAXdcAsice, "mismatchedXsltGAXdcAsice.asice", MimeTypeEnum.ASICE)
+        );
+    }
+
+    public static Stream<DSSDocument> mismatchedDigestsFSXmlProvider() throws IOException {
+        var mismatchedXsltFSXdcXml = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc_xsd_digest.xml").readAllBytes();
+        var mismatchedXsltFSXsltXdcXml = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc_xslt_digest.xml").readAllBytes();
+        var mismatchedXsltFSXdcAsice = cls.getResourceAsStream("fs_forms/signed_xdc_xsd_digest.asice").readAllBytes();
+        var mismatchedXsltFSXsltXdcAsice = cls.getResourceAsStream("fs_forms/signed_xdc_xslt_digest.asice").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(mismatchedXsltFSXdcXml, "d_fs792_772_xdc_xsd_digest.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsltFSXsltXdcXml, "d_fs792_772_xdc_xslt_digest.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsltFSXdcAsice, "signed_xdc_xsd_digest.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(mismatchedXsltFSXsltXdcAsice, "signed_xdc_xslt_digest.asice", MimeTypeEnum.ASICE)
         );
     }
 
