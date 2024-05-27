@@ -130,6 +130,7 @@ public class ServerSigningParameters {
         this.transformationLanguage = null;
         this.transformationMediaDestinationTypeDescription = null;
         this.transformationTargetEnvironment = null;
+        this.fsFormId = null;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
@@ -268,7 +269,9 @@ public class ServerSigningParameters {
         };
 
         if (level == null)
-            throw new RequestValidationException("Signed document has unsupported SignatureLevel" , "");
+            throw new RequestValidationException("Signed document has unsupported SignatureLevel", "");
+    }
+
     private String getFsFormId() {
         if (fsFormId == null || fsFormId.isEmpty())
             return null;
