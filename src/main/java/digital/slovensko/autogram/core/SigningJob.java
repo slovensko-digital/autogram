@@ -183,7 +183,7 @@ public class SigningJob {
     }
 
     private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var level = SignatureValidator.getSignedDocumentSignatureLevel(document);
+        var level = SignatureValidator.getSignedDocumentSignatureLevel(SignatureValidator.getSignedDocumentSimpleReport(document));
         if (level != null) switch (level.getSignatureForm()) {
             case PAdES:
                 return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
