@@ -230,10 +230,7 @@ public class ServerSigningParameters {
         if (fsFormId == null || fsFormId.isEmpty())
             return null;
 
-        if (Pattern.compile(".+/\\d+\\.\\d+$").matcher(fsFormId).matches())
-            return fsFormId;
-
-        return fsFormId + "/1.0";
+        return fsFormId;
     }
 
     public void validate(MimeType mimeType) throws RequestValidationException {
