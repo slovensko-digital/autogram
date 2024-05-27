@@ -25,7 +25,6 @@ public class SignEndpoint implements HttpHandler {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
             body.validateDocument();
-            body.resolveSigningLevel();
             body.validateSigningParameters();
 
             var responder = body.getBatchId() == null ? new ServerResponder(exchange)

@@ -40,9 +40,12 @@ public class SignRequestBody {
 
         if (document.getContent() == null)
             throw new RequestValidationException("Document.Content is required", "");
+
+//      TODO: resolve values at class instantiation
+        resolveSigningLevel();
     }
 
-    public void resolveSigningLevel() throws RequestValidationException {
+    private void resolveSigningLevel() throws RequestValidationException {
         if (parameters == null)
             parameters = new ServerSigningParameters();
 
