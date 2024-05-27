@@ -210,7 +210,7 @@ public class SigningParametersTests {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
-                        "DPFOBv23/1.0", false, 800, document, tspSource, true));
+                        "792_772", false, 800, document, tspSource, true));
     }
 
     @ParameterizedTest

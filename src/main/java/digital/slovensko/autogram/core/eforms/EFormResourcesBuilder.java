@@ -71,7 +71,7 @@ public abstract class EFormResourcesBuilder {
         var xsltDigest = getDigestValueFromElement(xdc, "UsedPresentationSchemaReference");
 
         if (fsFormId != null)
-            return new FsEFormResources(fsFormId, canonicalizationMethod, xsdDigest, xsltDigest);
+            return FsEFormResources.buildFromFsFormId(fsFormId, canonicalizationMethod, xsdDigest, xsltDigest);
 
         var formUri = getFormUri(xdc);
         var xsdIdentifier = getValueFromElement(xdc, "UsedXSDReference");
@@ -83,7 +83,7 @@ public abstract class EFormResourcesBuilder {
     private static EFormResources buildFromEFormXml(Element xml, String canonicalizationMethod, String xsdIdentifier, XsltParams xsltParams, String fsFormId)
             throws XMLValidationException, UnknownEformException {
         if (fsFormId != null)
-            return new FsEFormResources(fsFormId, canonicalizationMethod, null, null);
+            return FsEFormResources.buildFromFsFormId(fsFormId, canonicalizationMethod, null, null);
 
         var formUri = getNamespaceFromEformXml(xml);
         if (isOrsrUri(formUri))

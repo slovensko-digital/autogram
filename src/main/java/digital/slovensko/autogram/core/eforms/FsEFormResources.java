@@ -1,11 +1,15 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
-import digital.slovensko.autogram.core.errors.EFormException;
-import digital.slovensko.autogram.core.errors.UnknownEformException;
-import digital.slovensko.autogram.core.errors.XMLValidationException;
+import digital.slovensko.autogram.core.errors.*;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;
+import org.apache.xml.security.utils.DOMNamespaceContext;
+import org.w3c.dom.Document;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 
@@ -13,35 +17,80 @@ public class FsEFormResources extends EFormResources {
     private static final String SOURCE_URL = "https://forms-slovensko-digital.s3.eu-central-1.amazonaws.com/fs/";
     private String xdcIdentifier;
 
-    public FsEFormResources(String fsFormId, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
-        super(fsFormId, xsdDigest, xsltDigest, canonicalizationMethod);
+    private FsEFormResources(String formUrl, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
+        super(formUrl, xsdDigest, xsltDigest, canonicalizationMethod);
         this.embedUsedSchemas = false;
     }
 
-    public static FsEFormResources buildFromXdcIdentifier(String xdcIdentifier, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
-            return new FsEFormResources(getFormIdFromXdcIdenitfier(xdcIdentifier), canonicalizationMethod, xsdDigest, xsltDigest);
+    public static FsEFormResources buildFromFsFormId(String fsFormId, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
+        return new FsEFormResources(getFormUrlFromFsFormId(fsFormId), canonicalizationMethod, xsdDigest, xsltDigest);
     }
 
-    private static String getFormIdFromXdcIdenitfier(String xdcIdentifier) {
-        xdcIdentifier = xdcIdentifier.replaceAll("[:./ ]", "_");
+    public static FsEFormResources buildFromXdcIdentifier(String xdcIdentifier, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
+        return new FsEFormResources(getFormUrlFromXdcIdentifier(xdcIdentifier), canonicalizationMethod, xsdDigest, xsltDigest);
+    }
+
+    private static String getFormUrlFromFsFormId(String fsFormId) {
         var forms_xml = getResource(SOURCE_URL + "forms.xml");
         if (forms_xml == null)
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť zoznam FS formulárov");
 
         var parsed_meta_xml = getXmlFromDocument(new InMemoryDocument(forms_xml, "forms.xml"));
-        var nodes = parsed_meta_xml.getElementsByTagNameNS("urn:meta.slovensko.digital:1.0", xdcIdentifier);
-        if (nodes.getLength() > 0)
-            return nodes.item(0).getFirstChild().getNodeValue();
+        try {
+            var xpath = XPathFactory.newInstance().newXPath();
+            var nsContext = new DOMNamespaceContext(parsed_meta_xml);
+            xpath.setNamespaceContext(nsContext);
+            var ns = nsContext.getPrefix("urn:meta.slovensko.digital:1.0");
 
-        nodes = parsed_meta_xml.getElementsByTagNameNS("urn:meta.slovensko.digital:1.0", xdcIdentifier.replace("_1_0", ""));
-        if (nodes.getLength() > 0)
-            return nodes.item(0).getFirstChild().getNodeValue();
+            var r = getSlugAndVersion(xpath, parsed_meta_xml, "//" + ns + ":form[@sdIdentifier=\"" + fsFormId + "\"]");
+            if (r != null)
+                return r;
 
-        nodes = parsed_meta_xml.getElementsByTagNameNS("urn:meta.slovensko.digital:1.0", xdcIdentifier + "_1_0");
-        if (nodes.getLength() > 0)
-            return nodes.item(0).getFirstChild().getNodeValue();
+        } catch (XPathExpressionException e) {
+            throw new UnrecognizedException(e);
+        }
 
         throw new UnknownEformException();
+
+    }
+
+    private static String getFormUrlFromXdcIdentifier(String xdcIdentifier) {
+        var forms_xml = getResource(SOURCE_URL + "forms.xml");
+        if (forms_xml == null)
+            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť zoznam FS formulárov");
+
+        var parsed_meta_xml = getXmlFromDocument(new InMemoryDocument(forms_xml, "forms.xml"));
+        try {
+            var xpath = XPathFactory.newInstance().newXPath();
+            var nsContext = new DOMNamespaceContext(parsed_meta_xml);
+            xpath.setNamespaceContext(nsContext);
+            var ns = nsContext.getPrefix("urn:meta.slovensko.digital:1.0");
+
+            var r = getSlugAndVersion(xpath, parsed_meta_xml, "//" + ns + ":form[@xdcIdentifier=\"" + xdcIdentifier + "\"]");
+            if (r != null)
+                return r;
+
+            r = getSlugAndVersion(xpath, parsed_meta_xml, "//" + ns + ":form[@xdcIdentifier=\"" + xdcIdentifier + "/1.0\"]");
+            if (r != null)
+                return r;
+
+            r = getSlugAndVersion(xpath, parsed_meta_xml, "//" + ns + ":form[@xdcIdentifier=\"" + xdcIdentifier.replace("/1.0", "") + "\"]");
+            if (r != null)
+                return r;
+
+        } catch (XPathExpressionException e) {
+            throw new UnrecognizedException(e);
+        }
+
+        throw new UnknownEformException();
+    }
+
+    private static String getSlugAndVersion(XPath xpath, Document parsed_xml, String query) throws XPathExpressionException {
+        var n = xpath.compile(query + "/@slug").evaluate(parsed_xml);
+        if (!n.isEmpty() && !n.equals("NaN"))
+            return n + "/" + xpath.compile(query + "/@version").evaluate(parsed_xml);
+
+        return null;
     }
 
     @Override

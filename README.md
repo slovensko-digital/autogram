@@ -50,18 +50,14 @@ Ak je pri podpise cez API zapnutý parameter `autoLoadEform` a formulár je z OR
 
 Podpísané formuláre v `.asice` kontajneroch dokáže Autogram rovanko automaticky detegovať v stand-alone režime a cez API pri použití `autoLoadEform`.
 
-Avšak, pri podpisovaní je potrebné Autogramu explicitne určiť typ formuláru. V stand-alone režime je potrebné, aby názov súbor obsahoval: `_fs<identifikator>__` alebo `_fs<identifikator>__<verzia>` a mal príponu: `.xml`. Napríklad:
+Avšak, pri podpisovaní je potrebné Autogramu explicitne určiť typ formuláru. V stand-alone režime je potrebné, aby názov súbor obsahoval: `_fs<identifikator>` a mal príponu: `.xml`. Napríklad:
 ```
-moj-dokument_fsDPFOBv23__.xml
-dalsi-dokument_fsDPFOBv23__1_0.xml
-nazov-firmy_fsV2Pv21__nieco-dalsie.xml
+moj-dokument_fs792_772.xml
+dalsi-dokument_fs792_772_test.xml
+nazov-firmy_fs2682_712_nieco-dalsie.xml
 ```
 
-Momentálne majú všetky fomuláre FS verziu `1.0`, preto je táto časť v názve nepovinná, ale v budúcnosti sa to môže zmeniť.
-
-Pri podpisovaní cez API je potrebné nastaviť v body `parameters.fsFormId: "<identifikator>/<verzia>"` alebo iba `<identifikator>`.
-
-Identifikátory formulárov finančnej správy je možné získať z [nášho zonamu](https://forms-slovensko-digital.s3.eu-central-1.amazonaws.com/fs/forms.xml).
+Pri podpisovaní cez API je potrebné nastaviť v body `parameters.fsFormId: "<identifikator>"`.  Identifikátory formulárov finančnej správy je možné získať z [nášho zoznamu](https://forms-slovensko-digital.s3.eu-central-1.amazonaws.com/fs/forms.xml) ako atribút `sdIdentifier`.
 
 ## Vývoj
 
