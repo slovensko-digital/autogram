@@ -7,10 +7,13 @@ import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.regex.Pattern;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
@@ -69,6 +72,7 @@ public class ServerSigningParameters {
     private final String transformationLanguage;
     private final TransformationOutputMimeType transformationMediaDestinationTypeDescription;
     private final String transformationTargetEnvironment;
+    private final String fsFormId;
 
     public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
             String containerFilename, String containerXmlns, SignaturePackaging packaging,
@@ -79,7 +83,7 @@ public class ServerSigningParameters {
             String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth,
             boolean autoLoadEform, boolean embedUsedSchemas, String schemaIdentifier, String transformationIdentifier,
             String transformationLanguage, TransformationOutputMimeType transformationMediaDestinationTypeDescription,
-            String transformationTargetEnvironment) {
+            String transformationTargetEnvironment, String fsFormId) {
         this.level = level;
         this.container = container;
         this.containerXmlns = containerXmlns;
@@ -101,27 +105,50 @@ public class ServerSigningParameters {
         this.transformationLanguage = transformationLanguage;
         this.transformationMediaDestinationTypeDescription = transformationMediaDestinationTypeDescription;
         this.transformationTargetEnvironment = transformationTargetEnvironment;
+        this.fsFormId = fsFormId;
     }
 
     public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
-        return SigningParameters.buildFromRequest(
-                getSignatureLevel(),
-                getContainer(),
+        var xsltParams = new XsltParams(
+                transformationIdentifier,
+                transformationLanguage,
+                getTransformationMediaDestinationTypeDescription(),
+                transformationTargetEnvironment,
+                null);
+
+        var eFormAttributes = new EFormAttributes(
+                identifier,
+                getTransformation(isBase64),
+                getSchema(isBase64),
                 containerXmlns,
-                packaging,
+                schemaIdentifier,
+                xsltParams,
+                getBoolean(embedUsedSchemas));
+
+        return SigningParameters.buildParameters(
+                getSignatureLevel(),
                 digestAlgorithm,
-                en319132,
+                getContainer(),
+                packaging,
+                getBoolean(en319132),
                 getCanonicalizationMethodString(infoCanonicalization),
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
-                getSchema(isBase64),
-                getTransformation(isBase64),
-                identifier, checkPDFACompliance, getVisualizationWidth(), autoLoadEform, embedUsedSchemas,
-                schemaIdentifier, transformationIdentifier, transformationLanguage,
-                getTransformationMediaDestinationTypeDescription(), transformationTargetEnvironment,
+                eFormAttributes,
+                autoLoadEform,
+                getFsFormId(),
+                getBoolean(checkPDFACompliance),
+                getVisualizationWidth(),
                 document,
                 tspSource,
                 plainXmlEnabled);
+    }
+
+    private static boolean getBoolean(Boolean variable) {
+        if (variable == null)
+            return false;
+
+        return variable;
     }
 
     private String getTransformation(boolean isBase64) throws MalformedBodyException {
@@ -197,6 +224,16 @@ public class ServerSigningParameters {
 
     private ASiCContainerType getContainer() {
         return container;
+    }
+
+    private String getFsFormId() {
+        if (fsFormId == null || fsFormId.isEmpty())
+            return null;
+
+        if (Pattern.compile(".+/\\d+\\.\\d+$").matcher(fsFormId).matches())
+            return fsFormId;
+
+        return fsFormId + "/1.0";
     }
 
     public void validate(MimeType mimeType) throws RequestValidationException {

@@ -47,6 +47,7 @@ public class SigningJobTests {
                 null,
                 null,
                 null,
+                null,
                 null);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");

@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core.eforms;
 
+import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
