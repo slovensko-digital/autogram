@@ -26,6 +26,9 @@ import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
 
 public class SigningDialogController implements SuppressedFocusController, Visualizer {
@@ -73,7 +76,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         this.shouldCheckValidityBeforeSigning = shouldCheckValidityBeforeSigning;
     }
 
-    public void initialize() {
+    public void initialize() throws IOException {
         headerText.setText(title);
         signaturesTable.setManaged(false);
         signaturesTable.setVisible(false);
@@ -298,13 +301,12 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         webViewContainer.setManaged(true);
     }
 
-    public void showPDFVisualization(String base64EncodedPdf) {
+    public void showPDFVisualization(ArrayList<String> data) {
         var engine = webView.getEngine();
         engine.setJavaScriptEnabled(true);
         engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
             if (newState == Worker.State.SUCCEEDED) {
-                engine.executeScript(
-                        "displayPdf('" + base64EncodedPdf + "')");
+                engine.executeScript("displayPdf(['" + String.join("', '", data) + "'])");
             }
         });
         engine.load(getClass().getResource("visualization-pdf.html").toExternalForm());

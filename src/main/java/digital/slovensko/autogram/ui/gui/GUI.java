@@ -319,7 +319,16 @@ public class GUI implements UI {
         var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);
 
-        var root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
+        Parent root;
+        try {
+            root = GUIUtils.loadFXML(controller, "signing-dialog.fxml");
+        } catch (AutogramException e) {
+            showError(e);
+            return;
+        } catch (Exception e) {
+            showError(new UnrecognizedException(e));
+            return;
+        }
         var stage = new Stage();
         stage.setTitle(title);
         stage.setScene(new Scene(root));
