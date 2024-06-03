@@ -40,7 +40,7 @@ public class PDFVisualization extends Visualization {
         var divs = new ArrayList<String>();
         for (int page = 0; page < pdfDocument.getNumberOfPages(); ++page) {
             var os = new ByteArrayOutputStream();
-            var bim = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
+            var bim = pdfRenderer.renderImageWithDPI(page, 100, ImageType.RGB);
             ImageIO.write(bim, "png", os);
             divs.add("<div><img src=\"data:image/png;base64, " + new String(Base64.getEncoder().encode(os.toByteArray())) + "\" /></div>");
         }
