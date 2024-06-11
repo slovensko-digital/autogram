@@ -34,9 +34,12 @@ public abstract class XDCBuilder {
         var identifier = params.getIdentifier();
         var lastSlashIndex = identifier.lastIndexOf("/");
         if (lastSlashIndex == -1)
-            throw new RuntimeException("Identifier contains no slash: " + identifier);
+            throw new TransformationException("Nastala chyba počas transformácie dokumentu", "XDC identifikátor formulára neobsahuje žiadnu lomku: " + identifier);
 
         var identifierVersion = identifier.substring(lastSlashIndex + 1);
+        if (!identifierVersion.matches("[v0-9.]+"))
+            identifierVersion = "1.0";
+
         try {
             var parsedDocument = getSecureDocumentBuilder().newDocument();
             var importedNode = parsedDocument.importNode(document.getDocumentElement(), true);
@@ -55,8 +58,6 @@ public abstract class XDCBuilder {
 
             return new InMemoryDocument(content, filename);
 
-        } catch (TransformationException e) {
-            throw e;
         } catch (Exception e) {
             throw new TransformationException("Nastala chyba počas transformácie dokumentu",
                     "Nastala chyba počas transformácie dokumentu", e);

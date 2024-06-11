@@ -31,7 +31,7 @@ public abstract class EFormResourcesBuilder {
         var xml = getXmlFromDocument(document).getDocumentElement();
         EFormResources eformResources;
         if (isXDC(document.getMimeType()))
-            eformResources = buildFromXDC(xml, propertiesCanonicalization, fsFormId);
+            eformResources = buildFromXDC(xml, propertiesCanonicalization);
         else
             eformResources = buildFromEFormXml(xml, propertiesCanonicalization, xsdIdentifier, xsltParams, fsFormId);
 
@@ -65,14 +65,10 @@ public abstract class EFormResourcesBuilder {
         }
     }
 
-    private static EFormResources buildFromXDC(Element xdc, String canonicalizationMethod, String fsFormId)
+    private static EFormResources buildFromXDC(Element xdc, String canonicalizationMethod)
             throws XMLValidationException, UnknownEformException {
         var xsdDigest = getDigestValueFromElement(xdc, "UsedXSDReference");
         var xsltDigest = getDigestValueFromElement(xdc, "UsedPresentationSchemaReference");
-
-        if (fsFormId != null)
-            return FsEFormResources.buildFromFsFormId(fsFormId, canonicalizationMethod, xsdDigest, xsltDigest);
-
         var formUri = getFormUri(xdc);
         var xsdIdentifier = getValueFromElement(xdc, "UsedXSDReference");
         var params = getXsltParamsFromXsltReference(xdc);
