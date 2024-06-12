@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public interface Visualizer {
     void showUnsupportedVisualization();
 
-    void showPDFVisualization(ArrayList<String> base64EncodedDocument);
+    void showPDFVisualization(ArrayList<byte[]> base64EncodedDocument);
 
     void showHTMLVisualization(String document);
 

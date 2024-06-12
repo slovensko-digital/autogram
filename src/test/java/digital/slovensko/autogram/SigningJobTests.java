@@ -54,7 +54,7 @@ public class SigningJobTests {
         var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(null, true), null);
         Visualization visualization = null;
         try {
-            visualization = DocumentVisualizationBuilder.fromJob(job);
+            visualization = DocumentVisualizationBuilder.fromJob(job, 100);
             assertInstanceOf(HTMLVisualization.class, visualization);
             var v = (HTMLVisualization) visualization;
 

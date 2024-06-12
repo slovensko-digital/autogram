@@ -77,7 +77,7 @@ public class TransformationTests {
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job);
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job,100);
                 if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());
@@ -155,7 +155,7 @@ public class TransformationTests {
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job);
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, 100);
                 if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());

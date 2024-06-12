@@ -340,6 +340,23 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
+                                                Rozlíšenie náhľadu PDF
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Vyššie DPI môže pri veľkých PDF dokumentoch spôsobovať výrazne pomalé zobrazenie. Naopak pri nízkom DPI je zobrazenie rýchlejšie, no dokument je viac rozmazaný.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-dropdown">
+                                        <ChoiceBox fx:id="pdfDpiChoiceBox" styleClass="autogram-choicebox" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
                                                 Vlastný slot index
                                             </Text>
                                         </TextFlow>

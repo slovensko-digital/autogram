@@ -21,10 +21,15 @@
             <Text fx:id="headerText" styleClass="autogram-heading-m" />
         </TextFlow>
 
-        <!-- HTML/PDF visualization -->
+        <!-- HTML visualization -->
         <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
             <WebView fx:id="webView" focusTraversable="false" VBox.vgrow="ALWAYS" />
         </VBox>
+
+        <!-- PDF visualization -->
+        <ScrollPane styleClass="autogram-visualizer-pdf" fx:id="pdfVisualizationContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
+            <VBox fx:id="pdfVisualizationBox" VBox.vgrow="ALWAYS" />
+        </ScrollPane>
 
         <!-- Plaintext visualization -->
         <TextArea fx:id="plainTextArea" styleClass="autogram-visualizer-plaintext" managed="false"

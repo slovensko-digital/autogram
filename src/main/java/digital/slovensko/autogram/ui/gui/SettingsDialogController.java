@@ -47,6 +47,8 @@ public class SettingsDialogController {
     @FXML
     private HBox localServerEnabledRadios;
     @FXML
+    private ChoiceBox<String> pdfDpiChoiceBox;
+    @FXML
     private ChoiceBox<String> slotIndexChoiceBox;
     @FXML
     private TextField customKeystorePathTextField;
@@ -81,6 +83,7 @@ public class SettingsDialogController {
         initializeLocalServerEnabledCheckBox();
         initializeTrustedCountriesList();
         initializeSlotIndexSettings();
+        initializePdfDpiSettings();
         initializeCustomKeystoreSettings();
     }
 
@@ -275,6 +278,14 @@ public class SettingsDialogController {
 
                     userSettings.setSlotIndex(Integer.parseInt(newValue));
                 });
+    }
+
+        private void initializePdfDpiSettings() {
+        pdfDpiChoiceBox.getItems().addAll("50 dpi", "70 dpi", "100 dpi", "150 dpi", "200 dpi", "300 dpi");
+        pdfDpiChoiceBox.setValue(String.valueOf(userSettings.getPdfDpi()) + " dpi");
+        pdfDpiChoiceBox.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) ->
+                    userSettings.setPdfDpi(Integer.parseInt(newValue.replace(" dpi", ""))));
     }
 
     private void initializeCustomKeystoreSettings() {

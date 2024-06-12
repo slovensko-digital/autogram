@@ -29,6 +29,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private boolean tsaEnabled;
     private String customTsaServer;
     private boolean bulkEnabled;
+    private int pdfDpi;
 
     public static UserSettings load() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
@@ -51,6 +52,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setTsaServer(prefs.get("TSA_SERVER", "http://tsa.izenpe.com"));
         settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", ""));
         settings.setTsaEnabled(prefs.getBoolean("TSA_ENABLE", false));
+        settings.setPdfDpi(prefs.getInt("PDF_DPI", 100));
 
         return settings;
     }
@@ -75,6 +77,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.put("TSA_SERVER", tsaServer);
         prefs.put("CUSTOM_TSA_SERVER", customTsaServer);
         prefs.putBoolean("TSA_ENABLE", tsaEnabled);
+        prefs.putInt("PDF_DPI", pdfDpi);
     }
 
     private void setSignatureType(String signatureType) {
@@ -259,5 +262,13 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public boolean isBulkEnabled() {
         return bulkEnabled;
+    }
+
+    public int getPdfDpi() {
+        return pdfDpi;
+    }
+
+    public void setPdfDpi(int value) {
+        pdfDpi = value;
     }
 }
