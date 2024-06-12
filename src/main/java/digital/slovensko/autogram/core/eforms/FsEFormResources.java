@@ -72,11 +72,11 @@ public class FsEFormResources extends EFormResources {
 
             r = getSlugAndVersion(xpath, parsed_meta_xml, "//" + ns + ":form[@xdcIdentifier=\"" + xdcIdentifier + "/1.0\"]");
             if (r != null)
-                throw new EFormException("Nesprávny XDC identifikátor v podpísanom formulári", "XDC identifikátor v tomto konkrétnom podpísanom formulári by mal obsahovať ešte označenie verzie /1.0. Takto podpísaný formulár bude pravdepodobne odmietnutý informačným systémom Finančnej správy.");
+                return r;
 
             r = getSlugAndVersion(xpath, parsed_meta_xml, "//" + ns + ":form[@xdcIdentifier=\"" + xdcIdentifier.replace("/1.0", "") + "\"]");
             if (r != null)
-                throw new EFormException("Nesprávny XDC identifikátor v podpísanom formulári", "XDC identifikátor v tomto konkrétnom podpísanom formulári by nemal obsahovať označenie verzie /1.0. Takto podpísaný formulár bude pravdepodobne odmietnutý informačným systémom Finančnej správy.");
+                return r;
 
         } catch (XPathExpressionException e) {
             throw new UnrecognizedException(e);
@@ -175,6 +175,9 @@ public class FsEFormResources extends EFormResources {
     }
 
     public String getIdentifier() {
-        return xdcIdentifier;
+        if (xdcIdentifier.matches(".*/[v0-9.]+$"))
+            return xdcIdentifier;
+
+        return xdcIdentifier + "/1.0";
     }
 }

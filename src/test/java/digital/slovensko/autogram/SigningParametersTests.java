@@ -220,13 +220,6 @@ public class SigningParametersTests {
                 () -> SigningParameters.buildForASiCWithXAdES(document, false, false, tspSource, true));
     }
 
-    @ParameterizedTest
-    @MethodSource("digital.slovensko.autogram.TestMethodSources#fsWrongXdcIdentifierProvider")
-    void testThrowsEFormExceptionWithWrongFsXdcIdentifier(DSSDocument document) throws IOException {
-        Assertions.assertThrows(EFormException.class,
-                () -> SigningParameters.buildForASiCWithXAdES(document, false, false, tspSource, true));
-    }
-
     @Test
     void testThrowsExceptionWithAsiceWithEmptyXml() throws IOException {
         var document = new InMemoryDocument(

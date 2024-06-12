@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xdc:XMLDataContainer xmlns:xdc="http://data.gov.sk/def/container/xmldatacontainer+xml/1.1">
     <xdc:XMLData ContentType="application/xml; charset=UTF-8"
-                 Identifier="https://ekr.financnasprava.sk/Formulare/xsd/dpfo_b2023.xsd" Version="1.0">
+                 Identifier="https://ekr.financnasprava.sk/Formulare/xsd/dpfo_b2023.xsd/1.0" Version="1.0">
         <dokument>
             <hlavicka>
                 <dic>2120515056</dic>
