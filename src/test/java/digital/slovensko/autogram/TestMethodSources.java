@@ -67,18 +67,6 @@ public abstract class TestMethodSources {
         );
     }
 
-    public static Stream<DSSDocument> fsWrongXdcIdentifierProvider() throws IOException {
-        var xdc = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc_wrong_identifier.xml").readAllBytes();
-        var asice = cls.getResourceAsStream("fs_forms/signed_wrong_identifier.asice").readAllBytes();
-        var asiceMarked = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc_wrong_identifier.asice").readAllBytes();
-
-        return Stream.of(
-            new InMemoryDocument(xdc, "d_fs792_772_xdc_wrong_identifier.xml", AutogramMimeType.XML_DATACONTAINER),
-            new InMemoryDocument(asice, "signed_wrong_identifier.asice", MimeTypeEnum.ASICE),
-            new InMemoryDocument(asiceMarked, "d_fs792_772_xdc_wrong_identifier.asice", MimeTypeEnum.ASICE)
-        );
-    }
-
     public static Stream<DSSDocument> invalidXmlProvider() throws IOException {
         var notAnXml = "not an xml".getBytes();
         var invalidXml = "<invalidXml><foo><bar></foo></bar></invalidXml>".getBytes();
