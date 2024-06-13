@@ -73,7 +73,7 @@ public class Autogram {
             }
 
             try {
-                var visualization = DocumentVisualizationBuilder.fromJob(job);
+                var visualization = DocumentVisualizationBuilder.fromJob(job, settings);
                 ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
             } catch (AutogramException e) {
                 ui.onUIThreadDo(() -> ui.showError(e));

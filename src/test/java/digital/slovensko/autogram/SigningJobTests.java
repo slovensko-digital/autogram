@@ -1,6 +1,7 @@
 package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
 import digital.slovensko.autogram.core.visualization.Visualization;
@@ -54,7 +55,7 @@ public class SigningJobTests {
         var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(null, true), null);
         Visualization visualization = null;
         try {
-            visualization = DocumentVisualizationBuilder.fromJob(job);
+            visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
             assertInstanceOf(HTMLVisualization.class, visualization);
             var v = (HTMLVisualization) visualization;
 

@@ -447,11 +447,17 @@
 
 .autogram-visualizer-plaintext,
 .autogram-visualizer-html,
+.autogram-visualizer-pdf VBox > HBox,
 .autogram-visualizer-image {
   -fx-border-color: -autogram-input-border-colour;
   -fx-border-width: 2px;
   -fx-border-style: solid;
   -fx-wrap-text: true;
+}
+
+.autogram-visualizer-pdf VBox {
+  -fx-spacing: 10px;
+  -fx-padding: 5px;
 }
 
 .autogram-visualizer-plaintext {

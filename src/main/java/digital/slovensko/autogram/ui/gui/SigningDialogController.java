@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.visualization.ImageVisualization;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
@@ -20,11 +21,17 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.verapdf.xmp.impl.Base64;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 
 import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
 
@@ -50,6 +57,10 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     @FXML
     VBox webViewContainer;
     @FXML
+    ScrollPane pdfVisualizationContainer;
+    @FXML
+    VBox pdfVisualizationBox;
+    @FXML
     ImageView imageVisualization;
     @FXML
     ScrollPane imageVisualizationContainer;
@@ -73,7 +84,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         this.shouldCheckValidityBeforeSigning = shouldCheckValidityBeforeSigning;
     }
 
-    public void initialize() {
+    public void initialize() throws IOException {
         headerText.setText(title);
         signaturesTable.setManaged(false);
         signaturesTable.setVisible(false);
@@ -298,19 +309,20 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         webViewContainer.setManaged(true);
     }
 
-    public void showPDFVisualization(String base64EncodedPdf) {
-        var engine = webView.getEngine();
-        engine.setJavaScriptEnabled(true);
-        engine.getLoadWorker().stateProperty().addListener((observable, oldState, newState) -> {
-            if (newState == Worker.State.SUCCEEDED) {
-                engine.executeScript(
-                        "displayPdf('" + base64EncodedPdf + "')");
-            }
+    public void showPDFVisualization(ArrayList<byte[]> data) {
+        data.forEach(page -> {
+            var imgView = new ImageView();
+            imgView.fitWidthProperty().bind(pdfVisualizationContainer.widthProperty().subtract(30));
+            imgView.setImage(new Image(new ByteArrayInputStream(page)));
+            imgView.setPreserveRatio(true);
+            imgView.setSmooth(true);
+
+            pdfVisualizationBox.getChildren().add(new HBox(imgView));
         });
-        engine.load(getClass().getResource("visualization-pdf.html").toExternalForm());
-        webViewContainer.getStyleClass().add("autogram-visualizer-pdf");
-        webViewContainer.setVisible(true);
-        webViewContainer.setManaged(true);
+
+        pdfVisualizationContainer.setFitToWidth(true);
+        pdfVisualizationContainer.setVisible(true);
+        pdfVisualizationContainer.setManaged(true);
     }
 
     public void showImageVisualization(DSSDocument doc) {

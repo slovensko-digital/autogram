@@ -1,32 +1,49 @@
 package digital.slovensko.autogram.core.visualization;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.util.ArrayList;
 
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.ui.Visualizer;
 import eu.europa.esig.dss.model.DSSDocument;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+
+import javax.imageio.ImageIO;
 
 public class PDFVisualization extends Visualization {
     private final DSSDocument document;
+    private final UserSettings settings;
 
-    public PDFVisualization(DSSDocument document, SigningJob job) {
+
+    public PDFVisualization(DSSDocument document, SigningJob job, UserSettings settings) {
         super(job);
         this.document = document;
+        this.settings = settings;
     }
 
-    private String getBase64EncodedDocument() {
-        try (var is = document.openStream()) {
-            return new String(Base64.getEncoder().encode(is.readAllBytes()), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private ArrayList<byte []> getPdfImages() throws IOException {
+        var pdfDocument = PDDocument.load(this.document.openStream());
+        var pdfRenderer = new PDFRenderer(pdfDocument);
+        var divs = new ArrayList<byte[]>();
+        for (int page = 0; page < pdfDocument.getNumberOfPages(); ++page) {
+            var os = new ByteArrayOutputStream();
+            var bim = pdfRenderer.renderImageWithDPI(page, settings.getPdfDpi(), ImageType.RGB);
+            ImageIO.write(bim, "png", os);
+            divs.add(os.toByteArray());
         }
+
+        pdfDocument.close();
+
+        return divs;
     }
 
     @Override
-    public void initialize(Visualizer visualizer) {
+    public void initialize(Visualizer visualizer) throws IOException {
         visualizer.setPrefWidth(getVisualizationWidth());
-        visualizer.showPDFVisualization(getBase64EncodedDocument());
+        visualizer.showPDFVisualization(getPdfImages());
     }
 }

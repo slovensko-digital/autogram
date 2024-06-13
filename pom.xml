@@ -18,7 +18,7 @@
         <dss.version>6.0</dss.version>
         <gson.version>2.10.1</gson.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
-        <pdfjs.version>2.10.377</pdfjs.version>
+        <pdfbox.version>2.0.30</pdfbox.version>
         <saxon.version>12.4</saxon.version>
         <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.13</slf4j.version>
@@ -96,6 +96,11 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>${apache.httpcomponents.version}</version>
+        </dependency>
+        <dependency>
+              <groupId>org.apache.pdfbox</groupId>
+              <artifactId>pdfbox</artifactId>
+              <version>${pdfbox.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sf.saxon</groupId>
@@ -292,55 +297,6 @@
                             <!-- exclude e.g. junit as we need runtime dependencies only -->
                             <includeScope>runtime</includeScope>
                             <outputDirectory>${project.build.directory}/dependency-jars/</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>wagon-maven-plugin</artifactId>
-                <version>2.0.2</version>
-                <executions>
-                    <execution>
-                        <id>download-pdfjs-main</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>
-                                https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.min.js</url>
-                            <toDir>
-                                ${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs</toDir>
-                            <skipIfExists>true</skipIfExists>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-pdfjs-worker</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>download-single</goal>
-                        </goals>
-                        <configuration>
-                            <url>
-                                https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js</url>
-                            <toDir>
-                                ${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs</toDir>
-                            <skipIfExists>true</skipIfExists>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>download-pdfjs-cmaps</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>download</goal>
-                        </goals>
-                        <configuration>
-                            <url>https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}</url>
-                            <fromDir>cmaps</fromDir>
-                            <toDir>
-                                ${project.resources[0].directory}/digital/slovensko/autogram/ui/gui/vendor/pdfjs/cmaps</toDir>
                         </configuration>
                     </execution>
                 </executions>
