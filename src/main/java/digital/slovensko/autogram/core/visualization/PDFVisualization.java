@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.ui.Visualizer;
 import eu.europa.esig.dss.model.DSSDocument;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -15,13 +16,13 @@ import javax.imageio.ImageIO;
 
 public class PDFVisualization extends Visualization {
     private final DSSDocument document;
-    private final int pdfDpi;
+    private final UserSettings settings;
 
 
-    public PDFVisualization(DSSDocument document, SigningJob job, int pdfDpi) {
+    public PDFVisualization(DSSDocument document, SigningJob job, UserSettings settings) {
         super(job);
         this.document = document;
-        this.pdfDpi = pdfDpi;
+        this.settings = settings;
     }
 
     private ArrayList<byte []> getPdfImages() throws IOException {
@@ -30,7 +31,7 @@ public class PDFVisualization extends Visualization {
         var divs = new ArrayList<byte[]>();
         for (int page = 0; page < pdfDocument.getNumberOfPages(); ++page) {
             var os = new ByteArrayOutputStream();
-            var bim = pdfRenderer.renderImageWithDPI(page, pdfDpi, ImageType.RGB);
+            var bim = pdfRenderer.renderImageWithDPI(page, settings.getPdfDpi(), ImageType.RGB);
             ImageIO.write(bim, "png", os);
             divs.add(os.toByteArray());
         }

@@ -8,14 +8,11 @@ import java.io.IOException;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.ParserConfigurationException;
 
+import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.Responder;
-import digital.slovensko.autogram.core.SignedDocument;
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
@@ -77,7 +74,7 @@ public class TransformationTests {
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job,100);
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());
@@ -155,7 +152,7 @@ public class TransformationTests {
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, 100);
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());
