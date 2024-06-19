@@ -22,7 +22,7 @@ public abstract class EFormResourcesBuilder {
         if ((isXML(documentMimeType) || isXDC(documentMimeType)) && (eformResources == null))
             return buildFromDocument(document, fsFormId, propertiesCanonicalization, xsdIdentifier, xsltParams);
 
-        return null;
+        return eformResources;
     }
 
     public static EFormResources buildFromDocument(DSSDocument document, String fsFormId, String propertiesCanonicalization, String xsdIdentifier, XsltParams xsltParams)

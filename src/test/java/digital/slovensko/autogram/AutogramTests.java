@@ -37,6 +37,7 @@ class AutogramTests {
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
+            "digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider",
             "digital.slovensko.autogram.TestMethodSources#orsrDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
@@ -46,7 +47,7 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, true);
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, false);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -85,7 +86,7 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, false, null, true);
+        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, false, null, false);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -115,6 +116,7 @@ class AutogramTests {
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
+            "digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider",
@@ -133,7 +135,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, true), key));
+                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, false), key));
 
         verify(responder).onDocumentSigned(any());
     }

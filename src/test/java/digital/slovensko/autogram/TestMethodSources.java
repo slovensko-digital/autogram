@@ -16,6 +16,7 @@ public abstract class TestMethodSources {
         var indentedXml = cls.getResourceAsStream("general_agenda_indented.xml").readAllBytes();
         var indentedXmlHeader = cls.getResourceAsStream("general_agenda_header_indented.xml").readAllBytes();
         var inlineXdc = cls.getResourceAsStream("general_agenda_xdc.xml").readAllBytes();
+        var inlineXdcf = cls.getResourceAsStream("general_agenda.xdcf").readAllBytes();
         var indentedXdc = cls.getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
         var inlineAsice = cls.getResourceAsStream("general_agenda.asice").readAllBytes();
         var indentedAsice = cls.getResourceAsStream("general_agenda_indented.asice").readAllBytes();
@@ -26,9 +27,20 @@ public abstract class TestMethodSources {
             new InMemoryDocument(indentedXml, "generalAgendaIndentedXml.xml", MimeTypeEnum.XML),
             new InMemoryDocument(indentedXmlHeader, "generalAgendaIndentedXmlHeader.xml", MimeTypeEnum.XML),
             new InMemoryDocument(inlineXdc, "generalAgendaInlineXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(inlineXdcf, "generalAgendaInlineXdcf.xdcf", AutogramMimeType.XML_DATACONTAINER),
             new InMemoryDocument(indentedXdc, "generalAgendaIndentedXdc.xml", AutogramMimeType.XML_DATACONTAINER),
             new InMemoryDocument(inlineAsice, "generalAgendaInlineAsice.asice", MimeTypeEnum.ASICE),
             new InMemoryDocument(indentedAsice, "generalAgendaIndentedAsice.asice", MimeTypeEnum.ASICE)
+        );
+    }
+
+    public static Stream<DSSDocument> unsetXdcfMimetypeProvider() throws IOException {
+        var inlineXdcf = cls.getResourceAsStream("general_agenda.xdcf").readAllBytes();
+
+        return Stream.of(
+            new InMemoryDocument(inlineXdcf, "generalAgendaInlineXdcf.xdcf", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(inlineXdcf, "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY),
+            new InMemoryDocument(inlineXdcf, "generalAgendaInlineXdcfXml.xdcf", MimeTypeEnum.XML)
         );
     }
 
@@ -166,15 +178,13 @@ public abstract class TestMethodSources {
         var samplePng = cls.getResourceAsStream("sample.png").readAllBytes();
         var sampleIco = cls.getResourceAsStream("sample.ico").readAllBytes();
         var sampleDocx = cls.getResourceAsStream("sample.docx").readAllBytes();
-        var nonEformXml = cls.getResourceAsStream("non_eform.xml").readAllBytes();
 
         return Stream.of(
             new InMemoryDocument(sampleTxt, "sample.txt", MimeTypeEnum.TEXT),
             new InMemoryDocument(samplePdf, "sample.pdf", MimeTypeEnum.PDF),
             new InMemoryDocument(samplePng, "sample.png", MimeTypeEnum.PNG),
             new InMemoryDocument(sampleIco, "sample.ico", new AutogramMimeType("image/x-icon", "ico")),
-            new InMemoryDocument(sampleDocx, "sample.docx", new AutogramMimeType("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx")),
-            new InMemoryDocument(nonEformXml, "nonEformXml.xml", MimeTypeEnum.XML)
+            new InMemoryDocument(sampleDocx, "sample.docx", new AutogramMimeType("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"))
         );
     }
 
@@ -198,7 +208,6 @@ public abstract class TestMethodSources {
 
     public static Stream<InMemoryDocument> validXadesDocumentsProvider() throws IOException {
         var generalAgendaAsice = cls.getResourceAsStream("general_agenda.asice").readAllBytes();
-        var nonEformXadesAsice = cls.getResourceAsStream("non_eform_xades.asice").readAllBytes();
         var sampleTxtXadesAsice = cls.getResourceAsStream("sample_txt_xades.asice").readAllBytes();
         var samplePdfXadesAsice = cls.getResourceAsStream("sample_pdf_xades.asice").readAllBytes();
         var samplePngXadesAsice = cls.getResourceAsStream("sample_png_xades.asice").readAllBytes();
@@ -207,7 +216,6 @@ public abstract class TestMethodSources {
 
         return Stream.of(
             new InMemoryDocument(generalAgendaAsice, "generalAgendaAsice.asice", MimeTypeEnum.ASICE),
-            new InMemoryDocument(nonEformXadesAsice, "nonEformXadesAsice.asice", MimeTypeEnum.ASICE),
             new InMemoryDocument(sampleTxtXadesAsice, "sampleTxtXadesAsice.asice", MimeTypeEnum.ASICE),
             new InMemoryDocument(samplePdfXadesAsice, "samplePdfXadesAsice.asice", MimeTypeEnum.ASICE),
             new InMemoryDocument(samplePngXadesAsice, "samplePngXadesAsice.asice", MimeTypeEnum.ASICE),

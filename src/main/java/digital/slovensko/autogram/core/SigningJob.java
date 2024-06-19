@@ -155,6 +155,9 @@ public class SigningJob {
     public static FileDocument createDSSFileDocumentFromFile(File file) {
         var fileDocument = new FileDocument(file);
 
+        if (fileDocument.getName().endsWith("." + AutogramMimeType.XML_DATACONTAINER))
+            fileDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
+
         if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
             fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
 
