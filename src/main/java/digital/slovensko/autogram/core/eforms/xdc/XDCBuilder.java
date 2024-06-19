@@ -7,6 +7,7 @@ import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.util.XMLUtils;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
+import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 import static digital.slovensko.autogram.util.XMLUtils.getSecureDocumentBuilder;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -57,16 +58,7 @@ public abstract class XDCBuilder {
 
             var content = getDocumentContent(transformedDocument).getBytes(ENCODING);
 
-            if (!filename.contains("."))
-                filename += "." + AutogramMimeType.XML_DATACONTAINER.extension();
-
-            else if (filename.endsWith(".xml"))
-                filename = filename.replace(".xml", "." + AutogramMimeType.XML_DATACONTAINER.extension());
-
-            else if (!filename.contains("." + AutogramMimeType.XML_DATACONTAINER.extension()))
-                filename += "." + AutogramMimeType.XML_DATACONTAINER.extension();
-
-            return new InMemoryDocument(content, filename, AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
+            return new InMemoryDocument(content, getXdcfFilename(filename), AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
 
         } catch (Exception e) {
             throw new TransformationException("Nastala chyba počas transformácie dokumentu",

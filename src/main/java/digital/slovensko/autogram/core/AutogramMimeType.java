@@ -9,8 +9,8 @@ public record AutogramMimeType(
     String string,
     String extension
 ) implements MimeType {
-    public static final AutogramMimeType XML_DATACONTAINER = new AutogramMimeType("application/vnd.gov.sk.xmldatacontainer+xml", "xdcf");
-    public static final AutogramMimeType XML_DATACONTAINER_WITH_CHARSET = new AutogramMimeType("application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8", "xdcf");
+    public static final AutogramMimeType XML_DATACONTAINER = new AutogramMimeType("application/vnd.gov.sk.xmldatacontainer+xml", null);
+    public static final AutogramMimeType XML_DATACONTAINER_WITH_CHARSET = new AutogramMimeType("application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8", null);
     public static final AutogramMimeType TEXT_WITH_CHARSET = new AutogramMimeType("text/plain; charset=UTF-8", null);
     public static final AutogramMimeType APPLICATION_XML = new AutogramMimeType("application/xml", null);
 
