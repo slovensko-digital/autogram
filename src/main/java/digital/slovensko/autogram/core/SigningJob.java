@@ -167,10 +167,8 @@ public class SigningJob {
     private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
         if (params.shouldCreateXdc()) {
             var mimeType = document.getMimeType();
-            if (!isXDC(mimeType) && !isAsice(mimeType)) {
+            if (!isXDC(mimeType) && !isAsice(mimeType))
                 document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
-                document.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
-            }
         }
 
         if (isTxt(document.getMimeType()))
