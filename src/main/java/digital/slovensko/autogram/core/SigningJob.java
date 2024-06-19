@@ -10,6 +10,7 @@ import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -155,7 +156,10 @@ public class SigningJob {
         var fileDocument = new FileDocument(file);
 
         if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
-            fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER);
+            fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
+
+        if (isTxt(fileDocument.getMimeType()))
+            fileDocument.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
 
         return fileDocument;
     }
@@ -165,9 +169,12 @@ public class SigningJob {
             var mimeType = document.getMimeType();
             if (!isXDC(mimeType) && !isAsice(mimeType)) {
                 document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
-                document.setMimeType(AutogramMimeType.XML_DATACONTAINER);
+                document.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
             }
         }
+
+        if (isTxt(document.getMimeType()))
+            document.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
 
         return new SigningJob(document, params, responder);
     }
