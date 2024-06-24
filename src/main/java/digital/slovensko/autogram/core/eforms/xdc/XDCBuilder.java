@@ -1,11 +1,13 @@
 package digital.slovensko.autogram.core.eforms.xdc;
 
+import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.util.XMLUtils;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
+import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 import static digital.slovensko.autogram.util.XMLUtils.getSecureDocumentBuilder;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -56,7 +58,7 @@ public abstract class XDCBuilder {
 
             var content = getDocumentContent(transformedDocument).getBytes(ENCODING);
 
-            return new InMemoryDocument(content, filename);
+            return new InMemoryDocument(content, getXdcfFilename(filename), AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
 
         } catch (Exception e) {
             throw new TransformationException("Nastala chyba počas transformácie dokumentu",

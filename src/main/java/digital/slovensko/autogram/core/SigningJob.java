@@ -10,6 +10,7 @@ import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -19,6 +20,7 @@ import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
+import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 
 public class SigningJob {
     private final Responder responder;
@@ -154,19 +156,28 @@ public class SigningJob {
     public static FileDocument createDSSFileDocumentFromFile(File file) {
         var fileDocument = new FileDocument(file);
 
-        if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
-            fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER);
+        if (fileDocument.getName().endsWith(".xdcf"))
+            fileDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
+
+        else if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
+            fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
+
+        else if (isTxt(fileDocument.getMimeType()))
+            fileDocument.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
 
         return fileDocument;
     }
 
     private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
-        if (params.shouldCreateXdc()) {
-            var mimeType = document.getMimeType();
-            if (!isXDC(mimeType) && !isAsice(mimeType)) {
-                document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
-                document.setMimeType(AutogramMimeType.XML_DATACONTAINER);
-            }
+        if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
+            document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
+
+        if (isTxt(document.getMimeType()))
+            document.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
+
+        if (isXDC(document.getMimeType())) {
+            document.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
+            document.setName(getXdcfFilename(document.getName()));
         }
 
         return new SigningJob(document, params, responder);

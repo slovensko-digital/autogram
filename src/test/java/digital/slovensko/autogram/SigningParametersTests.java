@@ -191,7 +191,7 @@ public class SigningParametersTests {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
-                        null, false, 800, document, tspSource, true));
+                        null, false, 800, document, tspSource, false));
     }
 
     @ParameterizedTest
@@ -227,7 +227,7 @@ public class SigningParametersTests {
                 "empty_xml.asice");
 
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.buildForASiCWithXAdES(document, false, false, tspSource, true));
+                () -> SigningParameters.buildForASiCWithXAdES(document, false, false, tspSource, false));
     }
 
     @Test

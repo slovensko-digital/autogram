@@ -363,7 +363,7 @@ components:
         filename:
           type: string
           example: "document.xml"
-          description: Filename of the original file to be signed. Is used to name the file inside ASiC container. If not provided with ASiC container, the file is named `detached-file` inside the container.
+          description: Filename of the original file to be signed. Is used to name the file inside ASiC container. If not provided with ASiC container, the file is named `detached-file` inside the container. If XML Document container is created, filename extension is set to `.xdcf` or filename is set to `document.xdcf` if empty.
         content:
           type: string
           example: '<?xml version="1.0"?><Document><Title>Lorem Ipsum</Title></Document>'
@@ -711,7 +711,7 @@ components:
       value:
         document:
           content: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48eGRjOlhNTERhdGFDb250YWluZXIgeG1sbnM6eGRjPSJodHRwOi8vZGF0YS5nb3Yuc2svZGVmL2NvbnRhaW5lci94bWxkYXRhY29udGFpbmVyK3htbC8xLjEiPjx4ZGM6WE1MRGF0YSBDb250ZW50VHlwZT0iYXBwbGljYXRpb24veG1sOyBjaGFyc2V0PVVURi04IiBJZGVudGlmaWVyPSJodHRwOi8vZGF0YS5nb3Yuc2svZG9jL2Vmb3JtL0FwcC5HZW5lcmFsQWdlbmRhLzEuOSIgVmVyc2lvbj0iMS45Ij48R2VuZXJhbEFnZW5kYSB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45IiB4bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hLWluc3RhbmNlIj48c3ViamVjdD5Ob3bDqSBwb2RhbmllPC9zdWJqZWN0Pjx0ZXh0PlBvZMOhdmFtIHRvdG8gbm92w6kgcG9kYW5pZS48L3RleHQ+PC9HZW5lcmFsQWdlbmRhPjwveGRjOlhNTERhdGE+PHhkYzpVc2VkU2NoZW1hc1JlZmVyZW5jZWQ+PHhkYzpVc2VkWFNEUmVmZXJlbmNlIERpZ2VzdE1ldGhvZD0idXJuOm9pZDoyLjE2Ljg0MC4xLjEwMS4zLjQuMi4xIiBEaWdlc3RWYWx1ZT0iL0N0bjBCOUQ3SEtuNlVSRlI4aVBVS2Z5R2U0bUJZcEsrMjVkYzFpWVd1RT0iIFRyYW5zZm9ybUFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvVFIvMjAwMS9SRUMteG1sLWMxNG4tMjAwMTAzMTUiPmh0dHA6Ly9zY2hlbWFzLmdvdi5zay9mb3JtL0FwcC5HZW5lcmFsQWdlbmRhLzEuOS9mb3JtLnhzZDwveGRjOlVzZWRYU0RSZWZlcmVuY2U+PHhkYzpVc2VkUHJlc2VudGF0aW9uU2NoZW1hUmVmZXJlbmNlIENvbnRlbnRUeXBlPSJhcHBsaWNhdGlvbi94c2x0K3htbCIgRGlnZXN0TWV0aG9kPSJ1cm46b2lkOjIuMTYuODQwLjEuMTAxLjMuNC4yLjEiIERpZ2VzdFZhbHVlPSJRbzFqWVgxSld5ZHZNL09ML3JuaXJwaGsxck0xejQxZlBSWEJFZ3AvcWJnPSIgTGFuZ3VhZ2U9InNrIiBNZWRpYURlc3RpbmF0aW9uVHlwZURlc2NyaXB0aW9uPSJUWFQiIFRyYW5zZm9ybUFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvVFIvMjAwMS9SRUMteG1sLWMxNG4tMjAwMTAzMTUiPmh0dHA6Ly9zY2hlbWFzLmdvdi5zay9mb3JtL0FwcC5HZW5lcmFsQWdlbmRhLzEuOS9mb3JtLnhzbHQ8L3hkYzpVc2VkUHJlc2VudGF0aW9uU2NoZW1hUmVmZXJlbmNlPjwveGRjOlVzZWRTY2hlbWFzUmVmZXJlbmNlZD48L3hkYzpYTUxEYXRhQ29udGFpbmVyPg=="
-          filename: document.xml
+          filename: document.xdcf
         parameters:
           level: XAdES_BASELINE_B
           container: ASiC_E
@@ -723,7 +723,7 @@ components:
       value:
         document:
           content: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xdc:XMLDataContainer xmlns:xdc=\"http://data.gov.sk/def/container/xmldatacontainer+xml/1.1\"><xdc:XMLData ContentType=\"application/xml; charset=UTF-8\" Identifier=\"http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9\" Version=\"1.9\"><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"><subject>Nov\u00E9 podanie</subject><text>Pod\u00E1vam toto nov\u00E9 podanie.</text></GeneralAgenda></xdc:XMLData><xdc:UsedSchemasReferenced><xdc:UsedXSDReference DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"/Ctn0B9D7HKn6URFR8iPUKfyGe4mBYpK+25dc1iYWuE=\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd</xdc:UsedXSDReference><xdc:UsedPresentationSchemaReference ContentType=\"application/xslt+xml\" DigestMethod=\"urn:oid:2.16.840.1.101.3.4.2.1\" DigestValue=\"Qo1jYX1JWydvM/OL/rnirphk1rM1z41fPRXBEgp/qbg=\" Language=\"sk\" MediaDestinationTypeDescription=\"TXT\" TransformAlgorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\">http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt</xdc:UsedPresentationSchemaReference></xdc:UsedSchemasReferenced></xdc:XMLDataContainer>"
-          filename: document.xml
+          filename: document.xdcf
         parameters:
           level: XAdES_BASELINE_B
           container: ASiC_E
