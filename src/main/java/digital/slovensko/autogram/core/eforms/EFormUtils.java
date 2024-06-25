@@ -364,7 +364,7 @@ public abstract class EFormUtils {
     }
 
     public static boolean isOrsrUri(String uri) {
-        return uri != null && uri.contains("://eformulare.justice.sk") || uri.contains("justice.gov.sk/");
+        return uri != null && (uri.contains("://eformulare.justice.sk") || uri.contains("justice.gov.sk/"));
     }
 
     public static String getFsFormIdFromFilename(String filename) {

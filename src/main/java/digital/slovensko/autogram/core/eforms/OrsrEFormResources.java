@@ -38,4 +38,9 @@ public class OrsrEFormResources extends EFormResources {
 
         return true;
     }
+
+    @Override
+    public String getIdentifier() {
+        return "http://www.justice.gov.sk/Forms";
+    }
 }

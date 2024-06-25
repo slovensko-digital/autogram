@@ -103,11 +103,10 @@ public abstract class XDCBuilder {
             boolean shouldEmbedSchemas) {
         var element = document.createElement("xdc:XMLData");
         element.setAttribute("ContentType", "application/xml; charset=UTF-8");
+        element.setAttribute("Identifier", identifierUri);
 
-        if (!shouldEmbedSchemas) {
-            element.setAttribute("Identifier", identifierUri);
+        if (!shouldEmbedSchemas)
             element.setAttribute("Version", identifierVersion);
-        }
 
         return element;
     }
