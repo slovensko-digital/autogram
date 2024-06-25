@@ -59,9 +59,9 @@ public class SettingsDialogController {
 
     private final UserSettings userSettings;
     private final List<String> preDefinedTsaServers = List.of(
-            "http://tsa.izenpe.com",
-            "http://tsa.belgium.be/connect",
-            "http://kstamp.keynectis.com/KSign/"
+            "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg",
+            "http://ts.quovadisglobal.com/eu",
+            "http://tsa.sep.bg"
     );
 
     public SettingsDialogController(UserSettings userSettings) {
@@ -143,6 +143,8 @@ public class SettingsDialogController {
 
         if (!preDefinedTsaServers.contains(userSettings.getTsaServer())) {
             tsaChoiceBox.setValue(USE_CUSTOM_TSA_LABEL);
+            customTsaServerTextField.setText(userSettings.getTsaServer());
+            userSettings.setCustomTsaServer(userSettings.getTsaServer());
             return;
         }
 

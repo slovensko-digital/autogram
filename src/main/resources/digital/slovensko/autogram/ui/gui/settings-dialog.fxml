@@ -91,17 +91,17 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Zdroj časových pečiatok
+                                                Zdroje časových pečiatok
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Je možné použiť niektorý z preddefinovaných voľne dostupných poskytovateľov alebo nastaviť vlastnú adresu.
+                                                Je možné použiť preddefinovaných voľne dostupných poskytovateľov alebo nastaviť vlastné adresy.
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Pre správne overenie platnosti časovej pečiatky je potrebné, aby bola TSA v zozname dôveryhodných poskytovateľov a aby krajina jej pôvodu bola nastavená v záložke "Overovanie podpisov".
+                                                Pre správne overenie platnosti časovej pečiatky je potrebné, aby bola TSA kvalifikovaná a aby krajina jej pôvodu bola nastavená v záložke "Overovanie podpisov".
                                             </Text>
                                         </TextFlow>
                                     </VBox>
@@ -113,12 +113,12 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Vlastná adresa TSA servera
+                                                Vlastné adresy TSP serverov
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                URL adresa iného servera autority časových pečiatok.
+                                                URL adresy serverov poskytovateľov časových pečiatok. Viaceré adresy je možné oddeliť čiarkou bez medzier.
                                             </Text>
                                         </TextFlow>
                                     </VBox>
