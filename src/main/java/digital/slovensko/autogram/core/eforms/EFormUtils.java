@@ -197,14 +197,25 @@ public abstract class EFormUtils {
         return xsiSchemaLocationNode.getNodeValue();
     }
 
-    public static String getNamespaceFromEformXml(Node xml) {
-        var xmlns = xml.getAttributes().getNamedItem("xmlns");
+    public static String getNamespaceFromEformXml(Document xml) {
+        var xmlns = xml.getDocumentElement().getAttributes().getNamedItem("xmlns");
+        // Never use justice.gov.sk as identifier
+        if (xmlns != null && !xmlns.getNodeValue().contains("justice.gov.sk"))
+            return xmlns.getNodeValue();
+
+        xmlns = xml.getDocumentElement().getAttributes().getNamedItemNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
         if (xmlns != null)
             return xmlns.getNodeValue();
 
-        xmlns = xml.getAttributes().getNamedItemNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
-        if (xmlns != null)
-            return xmlns.getNodeValue();
+        // extract "href" attribute from <?xml-stylesheet> element
+        var nodes = xml.getChildNodes();
+        for (var i = 0; i < nodes.getLength(); i++)
+            if (nodes.item(i).getNodeType() == Node.PROCESSING_INSTRUCTION_NODE && nodes.item(i).getNodeName().equals("xml-stylesheet"))
+                for (var attribute : nodes.item(i).getNodeValue().split("\\s+")) {
+                    var keyValue = attribute.split("=");
+                    if (keyValue.length == 2 && "href".equals(keyValue[0]))
+                        return keyValue[1].replace("\"", "").replace(".xslt", ".xsd");
+                }
 
         return null;
     }
