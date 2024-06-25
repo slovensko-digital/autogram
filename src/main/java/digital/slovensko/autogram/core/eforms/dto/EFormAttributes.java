@@ -34,8 +34,11 @@ public record EFormAttributes(String identifier, String transformation, String s
             }
         }
 
-        if (transformation != null)
+        if (transformation != null) {
             xsltParams = EFormUtils.fillXsltParams(transformation, identifier, xsltParams);
+            if (!transformation.isEmpty() && transformation.charAt(0) == '\uFEFF')
+                transformation = transformation.substring(1);
+        }
 
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")) {
 
@@ -51,6 +54,9 @@ public record EFormAttributes(String identifier, String transformation, String s
             if (!embedUsedSchemas && identifier == null)
                 throw new EFormException("Chýba identifikátor", "Identifikátor je povinný atribút pre XML Datacontainer");
         }
+
+        if (EFormUtils.isOrsrUri(identifier))
+            embedUsedSchemas = true;
 
         return new EFormAttributes(identifier, transformation, schema, containerXmlns, xsdIdentifier, xsltParams, embedUsedSchemas);
     }
