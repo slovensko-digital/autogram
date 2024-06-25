@@ -28,7 +28,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private List<String> trustedList;
     private String customKeystorePath;
     private String tsaServer;
-    private TSPSource tspSource;
+    private CompositeTSPSource tspSource;
     private boolean tsaEnabled;
     private String customTsaServer;
     private boolean bulkEnabled;
@@ -50,7 +50,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setPdfaCompliance(prefs.getBoolean("PDFA_COMPLIANCE", true));
         settings.setServerEnabled(prefs.getBoolean("SERVER_ENABLED", true));
         settings.setExpiredCertsEnabled(prefs.getBoolean("EXPIRED_CERTS_ENABLED", false));
-        settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU,BE,BG"));
+        settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU,BE,NL,BG"));
         settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", ""));
         settings.setTsaServer(prefs.get("TSA_SERVER", "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg"));
         settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", ""));
@@ -214,8 +214,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
             return;
         }
 
+        tspSource = new CompositeTSPSource();
         var timestampDataLoader = new TimestampDataLoader();
-        var tspSource = new CompositeTSPSource();
         var tspSources = new HashMap<String, TSPSource>();
         for (var tsaServer : tsaServer.split(","))
             tspSources.put(tsaServer, new OnlineTSPSource(tsaServer, timestampDataLoader));
