@@ -143,7 +143,7 @@ public abstract class SignatureBadgeFactory {
 
         var simple = reports.getSimpleReport();
         for (var timestamp : simple.getSignatureTimestamps(signatureId)) {
-            var isQualified = timestamp.getQualificationDetails() != null;
+            var isQualified = simple.getTimestampQualification(timestamp.getId()) == TimestampQualification.QTSA;
             var isFailed = timestamp.getIndication() == Indication.TOTAL_FAILED
                     || timestamp.getIndication() == Indication.FAILED;
             var isIndeterminate = timestamp.getIndication() == Indication.INDETERMINATE;
@@ -152,16 +152,13 @@ public abstract class SignatureBadgeFactory {
                 flowPane.getChildren().add(createInvalidBadge("Neplatná ČP"));
 
             else if (isIndeterminate)
-                flowPane.getChildren().add(
-                        createUnknownBadge("Neznáma ČP"));
+                flowPane.getChildren().add(createUnknownBadge("Neznáma ČP"));
 
             else if (isQualified)
-                flowPane.getChildren().add(
-                        createValidQualifiedBadge(simple.getTimestampQualification(timestamp.getId()).getReadable()));
+                flowPane.getChildren().add(createValidQualifiedBadge(simple.getTimestampQualification(timestamp.getId()).getReadable()));
 
             else
-                flowPane.getChildren().add(
-                        createUnknownBadge("Neznáma ČP"));
+                flowPane.getChildren().add(createUnknownBadge("Neznáma ČP"));
         }
 
         return new HBox(flowPane);
