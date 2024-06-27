@@ -10,6 +10,7 @@ import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 import eu.europa.esig.dss.model.DSSDocument;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class EFormResourcesBuilder {
@@ -28,10 +29,10 @@ public abstract class EFormResourcesBuilder {
     public static EFormResources buildFromDocument(DSSDocument document, String fsFormId, String propertiesCanonicalization, String xsdIdentifier, XsltParams xsltParams)
             throws AutogramException {
 
-        var xml = getXmlFromDocument(document).getDocumentElement();
+        var xml = getXmlFromDocument(document);
         EFormResources eformResources;
         if (isXDC(document.getMimeType()))
-            eformResources = buildFromXDC(xml, propertiesCanonicalization);
+            eformResources = buildFromXDC(xml.getDocumentElement(), propertiesCanonicalization);
         else
             eformResources = buildFromEFormXml(xml, propertiesCanonicalization, xsdIdentifier, xsltParams, fsFormId);
 
@@ -76,7 +77,7 @@ public abstract class EFormResourcesBuilder {
         return buildFromEFormXml(canonicalizationMethod, formUri, xsdDigest, xsltDigest, xsdIdentifier, params);
     }
 
-    private static EFormResources buildFromEFormXml(Element xml, String canonicalizationMethod, String xsdIdentifier, XsltParams xsltParams, String fsFormId)
+    private static EFormResources buildFromEFormXml(Document xml, String canonicalizationMethod, String xsdIdentifier, XsltParams xsltParams, String fsFormId)
             throws XMLValidationException, UnknownEformException {
         if (fsFormId != null)
             return FsEFormResources.buildFromFsFormId(fsFormId, canonicalizationMethod, null, null);
