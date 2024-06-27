@@ -6,7 +6,7 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.*?>
 <BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml" minWidth="600">
+            xmlns:fx="http://javafx.com/fxml" minWidth="450">
     <top>
     <VBox fx:id="mainBox">
         <VBox>

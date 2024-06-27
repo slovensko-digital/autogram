@@ -11,7 +11,7 @@
 <VBox xmlns="http://javafx.com/javafx"
     xmlns:fx="http://javafx.com/fxml"
     minHeight="400"
-    maxHeight="800"
+    maxHeight="640"
     minWidth="768"
     prefWidth="768"
     fx:id="mainBox">
