@@ -44,7 +44,7 @@ DNS.1=loopback.autogram.slovensko.digital
 
     /usr/bin/openssl pkcs12 -export -in "$TLS_DIR/autogram-cert.pem" -inkey "$TLS_DIR/autogram-key.pem" -out "$TLS_DIR/autogram-pkcs12-cert.p12" -name "autogram-pkcs12-cert" -passout pass:
 
-    security -v add-trusted-cert -r trustRoot -p basic -p ssl -k $HOME/Library/Keychains/login.keychain-db "$TLS_DIR/autogram-cert.pem"
+    security -v add-trusted-cert -r trustRoot -p basic -p ssl -k "$HOME/Library/Keychains/login.keychain-db" "$TLS_DIR/autogram-cert.pem"
 
     # Cleanup openssl config
     rm $SSL_CONFIG_TMP
