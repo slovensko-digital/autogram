@@ -208,16 +208,16 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setTsaServer(String value) {
-        // set default TSA if older problematic default is set
-        if (List.of("http://tsa.izenpe.com", "http://kstamp.keynectis.com/KSign/").contains(value))
-            value = "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg";
-
-        tsaServer = value;
         if (value == null) {
             tspSource = null;
             return;
         }
 
+        // set default TSA if older problematic default is set
+        if (List.of("http://tsa.izenpe.com", "http://kstamp.keynectis.com/KSign/").contains(value))
+            value = "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg";
+
+        tsaServer = value;
         tspSource = new CompositeTSPSource();
         var timestampDataLoader = new TimestampDataLoader();
         var tspSources = new HashMap<String, TSPSource>();
