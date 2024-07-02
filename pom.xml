@@ -19,7 +19,7 @@
         <gson.version>2.11.0</gson.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <pdfbox.version>2.0.30</pdfbox.version>
-        <saxon.version>12.4</saxon.version>
+        <saxon.version>12.5</saxon.version>
         <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.13</slf4j.version>
         <junit.version>5.10.2</junit.version>
