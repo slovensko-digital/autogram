@@ -50,6 +50,7 @@ public class ErrorResponse {
             case "BatchNotStartedException" -> new ErrorResponse(400, "BATCH_NOT_STARTED", (AutogramException) e);
             case "BatchInvalidIdException" -> new ErrorResponse(404, "BATCH_NOT_FOUND", (AutogramException) e);
             case "BatchConflictException" -> new ErrorResponse(400, "BATCH_CONFLICT", (AutogramException) e);
+            case "InvalidUrlParamException" -> new ErrorResponse(400, "INVALID_URL_PARAM", (AutogramException) e);
             default -> new ErrorResponse(500, "INTERNAL_ERROR", "Unexpected exception signing document", e.getMessage());
         };
     }
