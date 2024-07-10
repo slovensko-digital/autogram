@@ -47,7 +47,8 @@ public class AutogramServer {
                 .add(new AutogramCorsFilter(List.of("POST", "DELETE")));
 
         // Assets
-        server.createContext("/assets", new AssetsEndpoint());
+        server.createContext("/assets", new AssetsEndpoint()).getFilters()
+                .add(new AutogramCorsFilter("GET"));
 
         // Start server
         server.start();
