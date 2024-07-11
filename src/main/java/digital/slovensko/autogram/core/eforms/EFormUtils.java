@@ -3,6 +3,7 @@ package digital.slovensko.autogram.core.eforms;
 import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -235,8 +236,8 @@ public abstract class EFormUtils {
         if (xsltDoc == null)
             return null;
 
-        try {
-            byte[] bytes = xsltDoc.openStream().readAllBytes();
+        try (InputStream inputStream = xsltDoc.openStream()) {
+            byte[] bytes = inputStream.readAllBytes();
 
             String s = new String(bytes, ENCODING);
             if (s.contains("<html>") && s.contains("<title>Nedostupnosť portálu</title>"))
