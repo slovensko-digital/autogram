@@ -236,7 +236,13 @@ public abstract class EFormUtils {
             return null;
 
         try {
-            return xsltDoc.openStream().readAllBytes();
+            byte[] bytes = xsltDoc.openStream().readAllBytes();
+
+            String s = new String(bytes, ENCODING);
+            if (s.contains("<html>") && s.contains("<title>Nedostupnosť portálu</title>"))
+                return null;
+
+            return bytes;
         } catch (IOException e) {
             return null;
         }
