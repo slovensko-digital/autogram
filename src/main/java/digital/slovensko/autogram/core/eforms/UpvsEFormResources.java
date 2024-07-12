@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
+import digital.slovensko.autogram.core.errors.ServiceUnavailableException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -30,7 +31,7 @@ public class UpvsEFormResources extends EFormResources {
 
     @Override
     public boolean findResources() throws XMLValidationException {
-        var manifest_xml = getResource(SOURCE_URL + url + "/META-INF/manifest.xml");
+        var manifest_xml = getRemoteResource(SOURCE_URL + url + "/META-INF/manifest.xml");
         if (manifest_xml == null)
             throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť manifest elektronického formulára");
 
@@ -45,7 +46,7 @@ public class UpvsEFormResources extends EFormResources {
         if (entry == null)
             return false;
 
-        var xsltString = getResource(SOURCE_URL + url + "/" + entry.fullPath());
+        var xsltString = getRemoteResource(SOURCE_URL + url + "/" + entry.fullPath());
         if (xsltString == null)
             return false;
 
@@ -61,7 +62,7 @@ public class UpvsEFormResources extends EFormResources {
         if (this.xsltIdentifier == null)
             this.xsltIdentifier = "http://schemas.gov.sk/form/" + url + "/form.xslt";
 
-        var xsdString = getResource(SOURCE_URL + url + "/schema.xsd");
+        var xsdString = getRemoteResource(SOURCE_URL + url + "/schema.xsd");
         if (xsdString == null)
             return false;
 
@@ -72,5 +73,17 @@ public class UpvsEFormResources extends EFormResources {
         this.schema = new String(xsdString, ENCODING);
 
         return true;
+    }
+
+    private byte[] getRemoteResource(String url) {
+        byte[] bytes = getResource(url);
+        if (bytes == null)
+            return null;
+
+        String s = new String(bytes, ENCODING);
+        if (s.contains("<html>") && s.contains("<title>Nedostupnosť portálu</title>"))
+            throw new ServiceUnavailableException(url);
+
+        return bytes;
     }
 }
