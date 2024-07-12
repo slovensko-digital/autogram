@@ -231,8 +231,11 @@ public abstract class EFormUtils {
         try {
             xsltDoc = offlineFileLoader.getDocument(url);
         } catch (DSSExternalResourceException e) {
-            String statusCode = e.getCause().getMessage().replaceAll("[^0-9]", "");
+            var matcher = Pattern.compile("HTTP status code : (\\d{3})").matcher(e.getCause().getMessage());
+            if (!matcher.find())
+                return null;
 
+            var statusCode = matcher.group(1);
             if (statusCode.startsWith("5"))
                 throw new ServiceUnavailableException(url, e);
 
