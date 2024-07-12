@@ -16,13 +16,16 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 public class AssetsEndpoint implements HttpHandler {
-    private static final List<File> assets = new ArrayList<>();
+    private static final List<String> assets = new ArrayList<>();
+    private static final Path path;
 
     static  {
-        var location = AssetsEndpoint.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        var path = Path.of(location,"digital", "slovensko", "autogram", "server", "assets");
+        var parentPath = Path.of(requireNonNull(AssetsEndpoint.class.getResource("index.html")).getPath()).getParent().toString();
+        path = Path.of(parentPath, "assets");
 
-        Collections.addAll(assets, requireNonNull(path.toFile().listFiles()));
+        for (var file : requireNonNull(path.toFile().listFiles())) {
+            assets.add(file.getName());
+        }
     }
 
     @Override
@@ -30,29 +33,20 @@ public class AssetsEndpoint implements HttpHandler {
         var uriPath = exchange.getRequestURI().getPath().substring(7); // remove /assets
 
         try {
-            if (uriPath.isBlank()) {
+            if (uriPath.isBlank())
                 throw new InvalidUrlParamException("Missing asset name");
-            }
 
             uriPath = uriPath.substring(1); // remove slash
 
-            final String uriPathFinal = uriPath;
-            final File file = assets.stream()
-                    .filter(f -> f.getName().equals(uriPathFinal))
-                    .findFirst()
-                    .orElse(null);
-
-            if (file == null) {
+            if (!assets.contains(uriPath))
                 throw new InvalidUrlParamException("Asset with this name does not exist");
-            }
 
-            var stream = getClass().getResourceAsStream("assets/" + file.getName());
-            if (stream == null) {
+            var stream = getClass().getResourceAsStream("assets/" + uriPath);
+            if (stream == null)
                 throw new InvalidUrlParamException("Asset with this name does not exist");
-            }
 
             try (exchange) {
-                exchange.getResponseHeaders().set("Content-Type", Files.probeContentType(file.toPath()));
+                exchange.getResponseHeaders().set("Content-Type", Files.probeContentType(path.resolve(uriPath)));
                 exchange.sendResponseHeaders(200, 0);
                 requireNonNull(stream).transferTo(exchange.getResponseBody());
             }
