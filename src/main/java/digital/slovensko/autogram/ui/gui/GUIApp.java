@@ -16,7 +16,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
 public class GUIApp extends Application {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-    private final ExecutorService cachedExecutorService = Executors.newFixedThreadPool(8);
+    private final ExecutorService cachedExecutorService = Executors.newFixedThreadPool(4);
+    private final ExecutorService serverExecutorService = Executors.newFixedThreadPool(1);
 
     @Override
     public void start(Stage windowStage) throws Exception {
@@ -35,7 +36,7 @@ public class GUIApp extends Application {
             final var params = LaunchParameters.fromParameters(getParameters());
             final var controller = new MainMenuController(autogram, userSettings);
 
-            server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), cachedExecutorService);
+            server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), serverExecutorService);
             if (userSettings.isServerEnabled()) {
                 server.start();
             }
