@@ -22,6 +22,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import digital.slovensko.autogram.core.errors.*;
+import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -221,7 +222,7 @@ public abstract class EFormUtils {
         return null;
     }
 
-    public static byte[] getResource(String url) {
+    public static byte[] getResource(String url) throws ServiceUnavailableException {
         var offlineFileLoader = new FileCacheDataLoader();
         offlineFileLoader.setCacheExpirationTime(21600000);  // 6 hours
         offlineFileLoader.setDataLoader(new CommonsDataLoader());
@@ -229,6 +230,8 @@ public abstract class EFormUtils {
         DSSDocument xsltDoc;
         try {
             xsltDoc = offlineFileLoader.getDocument(url);
+        } catch (DSSExternalResourceException e) {
+            throw new ServiceUnavailableException(url, e);
         } catch (DSSException e) {
             return null;
         }
@@ -237,13 +240,7 @@ public abstract class EFormUtils {
             return null;
 
         try (InputStream inputStream = xsltDoc.openStream()) {
-            byte[] bytes = inputStream.readAllBytes();
-
-            String s = new String(bytes, ENCODING);
-            if (s.contains("<html>") && s.contains("<title>Nedostupnosť portálu</title>"))
-                return null;
-
-            return bytes;
+            return inputStream.readAllBytes();
         } catch (IOException e) {
             return null;
         }
