@@ -17,13 +17,11 @@ import static java.util.Objects.requireNonNull;
 
 public class AssetsEndpoint implements HttpHandler {
     private static final List<String> assets = new ArrayList<>();
-    private static final Path path;
+    private static final Path assetsPath;
 
     static  {
-        var parentPath = Path.of(requireNonNull(AssetsEndpoint.class.getResource("index.html")).getPath()).getParent().toString();
-        path = Path.of(parentPath, "assets");
-
-        for (var file : requireNonNull(path.toFile().listFiles()))
+        assetsPath = Path.of(requireNonNull(AssetsEndpoint.class.getResource("index.html")).getPath()).getParent().resolve("assets");
+        for (var file : requireNonNull(assetsPath.toFile().listFiles()))
             assets.add(file.getName());
     }
 
