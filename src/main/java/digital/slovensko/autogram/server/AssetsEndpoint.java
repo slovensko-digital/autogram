@@ -41,7 +41,7 @@ public class AssetsEndpoint implements HttpHandler {
                 throw new InvalidUrlParamException("Asset with this name does not exist");
 
             try (exchange) {
-                exchange.getResponseHeaders().set("Content-Type", Files.probeContentType(path.resolve(fileName)));
+                exchange.getResponseHeaders().set("Content-Type", Files.probeContentType(assetsPath.resolve(fileName)));
                 exchange.sendResponseHeaders(200, 0);
                 requireNonNull(stream).transferTo(exchange.getResponseBody());
             }
