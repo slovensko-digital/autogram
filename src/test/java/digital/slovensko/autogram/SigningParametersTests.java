@@ -188,7 +188,7 @@ public class SigningParametersTests {
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#unknownEfomXmlProvider")
     void testThrowsAutogramExceptionWithUnknownEformXmlWithAutoLoadEform(DSSDocument document) {
-        Assertions.assertThrows(ServiceUnavailableException.class,
+        Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
                         null, false, 800, document, tspSource, false));
