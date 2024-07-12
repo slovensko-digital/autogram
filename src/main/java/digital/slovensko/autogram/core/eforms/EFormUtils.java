@@ -231,7 +231,12 @@ public abstract class EFormUtils {
         try {
             xsltDoc = offlineFileLoader.getDocument(url);
         } catch (DSSExternalResourceException e) {
-            throw new ServiceUnavailableException(url, e);
+            String statusCode = e.getCause().getMessage().replaceAll("[^0-9]", "");
+
+            if (statusCode.startsWith("5"))
+                throw new ServiceUnavailableException(url, e);
+
+            return null;
         } catch (DSSException e) {
             return null;
         }
