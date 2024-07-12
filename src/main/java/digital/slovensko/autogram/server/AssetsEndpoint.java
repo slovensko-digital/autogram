@@ -30,23 +30,21 @@ public class AssetsEndpoint implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        var uriPath = exchange.getRequestURI().getPath().substring(7); // remove /assets
+        var fileName = exchange.getRequestURI().getPath().replaceFirst("/assets/?", "");
 
         try {
-            if (uriPath.isBlank())
+            if (fileName.isBlank())
                 throw new InvalidUrlParamException("Missing asset name");
 
-            uriPath = uriPath.substring(1); // remove slash
-
-            if (!assets.contains(uriPath))
+            if (!assets.contains(fileName))
                 throw new InvalidUrlParamException("Asset with this name does not exist");
 
-            var stream = getClass().getResourceAsStream("assets/" + uriPath);
+            var stream = getClass().getResourceAsStream("assets/" + fileName);
             if (stream == null)
                 throw new InvalidUrlParamException("Asset with this name does not exist");
 
             try (exchange) {
-                exchange.getResponseHeaders().set("Content-Type", Files.probeContentType(path.resolve(uriPath)));
+                exchange.getResponseHeaders().set("Content-Type", Files.probeContentType(path.resolve(fileName)));
                 exchange.sendResponseHeaders(200, 0);
                 requireNonNull(stream).transferTo(exchange.getResponseBody());
             }
