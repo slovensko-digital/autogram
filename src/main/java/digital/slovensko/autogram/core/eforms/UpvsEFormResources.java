@@ -76,11 +76,11 @@ public class UpvsEFormResources extends EFormResources {
     }
 
     private byte[] getRemoteResource(String url) {
-        byte[] bytes = getResource(url);
+        var bytes = getResource(url);
         if (bytes == null)
             return null;
 
-        String s = new String(bytes, ENCODING);
+        var s = new String(bytes, ENCODING);
         if (s.contains("<html>") && s.contains("<title>Nedostupnosť portálu</title>"))
             throw new ServiceUnavailableException(url);
 
