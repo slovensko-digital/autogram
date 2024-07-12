@@ -23,9 +23,8 @@ public class AssetsEndpoint implements HttpHandler {
         var parentPath = Path.of(requireNonNull(AssetsEndpoint.class.getResource("index.html")).getPath()).getParent().toString();
         path = Path.of(parentPath, "assets");
 
-        for (var file : requireNonNull(path.toFile().listFiles())) {
+        for (var file : requireNonNull(path.toFile().listFiles()))
             assets.add(file.getName());
-        }
     }
 
     @Override
