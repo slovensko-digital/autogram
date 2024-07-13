@@ -81,7 +81,7 @@ public class UpvsEFormResources extends EFormResources {
             return null;
 
         var s = new String(bytes, ENCODING);
-        if (s.contains("<html>") && s.contains("<title>Nedostupnosť portálu</title>"))
+        if (s.contains("<!DOCTYPE html>") || (s.contains("<html>") && s.contains("<title>Nedostupnosť portálu</title>")))
             throw new ServiceUnavailableException(url);
 
         return bytes;

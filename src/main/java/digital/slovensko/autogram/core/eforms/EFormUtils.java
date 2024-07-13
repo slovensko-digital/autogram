@@ -3,7 +3,6 @@ package digital.slovensko.autogram.core.eforms;
 import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -227,16 +226,15 @@ public abstract class EFormUtils {
         offlineFileLoader.setCacheExpirationTime(21600000);  // 6 hours
         offlineFileLoader.setDataLoader(new CommonsDataLoader());
 
-        DSSDocument xsltDoc;
+        DSSDocument document;
         try {
-            xsltDoc = offlineFileLoader.getDocument(url);
+            document = offlineFileLoader.getDocument(url);
         } catch (DSSExternalResourceException e) {
             var matcher = Pattern.compile("HTTP status code : (\\d{3})").matcher(e.getCause().getMessage());
             if (!matcher.find())
                 return null;
 
-            var statusCode = matcher.group(1);
-            if (statusCode.startsWith("5"))
+            if (matcher.group(1).startsWith("5"))
                 throw new ServiceUnavailableException(url, e);
 
             return null;
@@ -244,10 +242,10 @@ public abstract class EFormUtils {
             return null;
         }
 
-        if (xsltDoc == null)
+        if (document == null)
             return null;
 
-        try (InputStream inputStream = xsltDoc.openStream()) {
+        try (var inputStream = document.openStream()) {
             return inputStream.readAllBytes();
         } catch (IOException e) {
             return null;
