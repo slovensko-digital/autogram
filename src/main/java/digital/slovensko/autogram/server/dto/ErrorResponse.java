@@ -31,6 +31,7 @@ public class ErrorResponse {
         // TODO maybe replace with pattern matching someday
         return switch (e.getClass().getSimpleName()) {
             case "SigningCanceledByUserException" -> new ErrorResponse(204, "USER_CANCELLED", (AutogramException) e);
+            case "ServiceUnavailableException" -> new ErrorResponse(503, "SERVICE_UNAVAILABLE", (AutogramException) e);
             case "UnrecognizedException" -> new ErrorResponse(502, "UNRECOGNIZED_DSS_ERROR", (AutogramException) e);
             case "UnsupportedSignatureLevelException" -> new ErrorResponse(422, "UNSUPPORTED_SIGNATURE_LEVEL", (AutogramException) e);
             case "RequestValidationException",
