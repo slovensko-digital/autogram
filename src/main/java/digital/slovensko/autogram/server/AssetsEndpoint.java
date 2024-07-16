@@ -5,24 +5,22 @@ import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.InvalidUrlParamException;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
 public class AssetsEndpoint implements HttpHandler {
-    private static final List<String> assets = new ArrayList<>();
+    private static final List<String> assets;
     private static final Path assetsPath;
-
     static  {
         assetsPath = Path.of(requireNonNull(AssetsEndpoint.class.getResource("index.html")).getPath()).getParent().resolve("assets");
-        for (var file : requireNonNull(assetsPath.toFile().listFiles()))
-            assets.add(file.getName());
+        assets = List.of(
+                "swagger-ui-bundle-v5.11.0.js",
+                "swagger-ui-v5.11.0.css"
+        );
     }
 
     @Override
