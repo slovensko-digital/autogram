@@ -21,6 +21,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import digital.slovensko.autogram.core.errors.*;
+import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -220,23 +221,32 @@ public abstract class EFormUtils {
         return null;
     }
 
-    public static byte[] getResource(String url) {
+    public static byte[] getResource(String url) throws ServiceUnavailableException {
         var offlineFileLoader = new FileCacheDataLoader();
         offlineFileLoader.setCacheExpirationTime(21600000);  // 6 hours
         offlineFileLoader.setDataLoader(new CommonsDataLoader());
 
-        DSSDocument xsltDoc;
+        DSSDocument document;
         try {
-            xsltDoc = offlineFileLoader.getDocument(url);
+            document = offlineFileLoader.getDocument(url);
+        } catch (DSSExternalResourceException e) {
+            var matcher = Pattern.compile("HTTP status code : (\\d{3})").matcher(e.getCause().getMessage());
+            if (!matcher.find())
+                return null;
+
+            if (matcher.group(1).startsWith("5"))
+                throw new ServiceUnavailableException(url, e);
+
+            return null;
         } catch (DSSException e) {
             return null;
         }
 
-        if (xsltDoc == null)
+        if (document == null)
             return null;
 
-        try {
-            return xsltDoc.openStream().readAllBytes();
+        try (var inputStream = document.openStream()) {
+            return inputStream.readAllBytes();
         } catch (IOException e) {
             return null;
         }
