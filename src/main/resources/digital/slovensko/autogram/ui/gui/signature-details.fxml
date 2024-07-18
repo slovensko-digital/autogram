@@ -9,8 +9,8 @@
 <?import javafx.scene.shape.SVGPath?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      prefHeight="800"
-      maxHeight="800"
+      prefHeight="640"
+      maxHeight="640"
       minWidth="768"
       fx:id="mainBox">
 
