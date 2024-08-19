@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
+import digital.slovensko.autogram.model.ProtectedInMemoryDocument;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -25,7 +26,7 @@ class XDCBuilderTests {
         var transformation = new String(this.getClass().getResourceAsStream("general_agenda.xslt").readAllBytes(), StandardCharsets.UTF_8);
         var xsdSchema = new String(this.getClass().getResourceAsStream("general_agenda.xsd").readAllBytes(), StandardCharsets.UTF_8);
 
-        var document = new InMemoryDocument(this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes(), "general_agenda.xml", MimeTypeEnum.XML);
+        var document = new ProtectedInMemoryDocument(this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes(), "general_agenda.xml", MimeTypeEnum.XML);
 
         var params = SigningParameters.buildParameters(
             SignatureLevel.XAdES_BASELINE_B,

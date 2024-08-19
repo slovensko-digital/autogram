@@ -75,7 +75,7 @@ class AutogramTests {
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
-    void testSignNonEformNegativeScenario(InMemoryDocument document) {
+    void testSignNonEformNegativeScenario(ProtectedInMemoryDocument document) {
         Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, false, null, false));
     }
 
