@@ -3,6 +3,7 @@ package digital.slovensko.autogram.util;
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
+import digital.slovensko.autogram.model.ProtectedDSSDocument;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -15,7 +16,7 @@ import org.xml.sax.InputSource;
 import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 
 public class AsicContainerUtils {
-    public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,
+    public static ProtectedDSSDocument getOriginalDocument(ProtectedDSSDocument asice) throws OriginalDocumentNotFoundException,
             MultipleOriginalDocumentsFoundException {
         SignedDocumentValidator documentValidator;
         try {
@@ -41,7 +42,7 @@ public class AsicContainerUtils {
         if (aSiCContent.getSignedDocuments().size() > 1)
             throw new MultipleOriginalDocumentsFoundException("V kontajneri bolo nájdených viacero dokumentov na podpis");
 
-        var originalDocument = aSiCContent.getSignedDocuments().get(0);
+        var originalDocument = (ProtectedDSSDocument) aSiCContent.getSignedDocuments().get(0);
         if (isXML(originalDocument.getMimeType()) || MimeTypeEnum.BINARY.equals(originalDocument.getMimeType()))
             setMimeTypeFromManifest(asice, originalDocument);
 

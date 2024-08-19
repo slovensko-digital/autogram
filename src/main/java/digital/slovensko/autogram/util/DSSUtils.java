@@ -1,9 +1,10 @@
 package digital.slovensko.autogram.util;
 
+import digital.slovensko.autogram.model.ProtectedDSSDocument;
 import eu.europa.esig.dss.asic.cades.validation.ASiCContainerWithCAdESValidatorFactory;
 import eu.europa.esig.dss.asic.xades.validation.ASiCContainerWithXAdESValidatorFactory;
 import eu.europa.esig.dss.cades.validation.CMSDocumentValidatorFactory;
-import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.pades.validation.PDFDocumentValidator;
 import eu.europa.esig.dss.pades.validation.PDFDocumentValidatorFactory;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
@@ -37,9 +38,13 @@ public class DSSUtils {
         return out;
     }
 
-    public static SignedDocumentValidator createDocumentValidator(DSSDocument document) {
-        if (new PDFDocumentValidatorFactory().isSupported(document))
-            return new PDFDocumentValidatorFactory().create(document);
+    public static SignedDocumentValidator createDocumentValidator(ProtectedDSSDocument document) {
+        System.out.println(document.getPassword());
+        if (new PDFDocumentValidatorFactory().isSupported(document)) {
+            var d = new PDFDocumentValidator(document);
+            d.setPasswordProtection(document.getPassword());
+            return d;
+        }
 
         if (new XMLDocumentValidatorFactory().isSupported(document))
             return new XMLDocumentValidatorFactory().create(document);

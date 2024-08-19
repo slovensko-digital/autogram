@@ -268,6 +268,11 @@ public class CliUI implements UI {
     }
 
     @Override
+    public char[] getDocumentPassword() {
+        return new char[0];
+    }
+
+    @Override
     public char[] getKeystorePassword() {
         return System.console().readPassword("Enter keystore password (hidden): ");
     }

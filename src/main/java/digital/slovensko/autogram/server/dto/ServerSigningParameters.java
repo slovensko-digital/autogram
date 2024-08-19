@@ -15,6 +15,8 @@ import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
+import digital.slovensko.autogram.model.ProtectedDSSDocument;
+import digital.slovensko.autogram.model.ProtectedInMemoryDocument;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
@@ -133,7 +135,7 @@ public class ServerSigningParameters {
         this.fsFormId = null;
     }
 
-    public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
+    public SigningParameters getSigningParameters(boolean isBase64, ProtectedDSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
         var xsltParams = new XsltParams(
                 transformationIdentifier,
                 transformationLanguage,
@@ -251,7 +253,7 @@ public class ServerSigningParameters {
         return container;
     }
 
-    public void resolveSigningLevel(InMemoryDocument document) throws RequestValidationException {
+    public void resolveSigningLevel(ProtectedInMemoryDocument document) throws RequestValidationException {
         if (level != null)
             return;
 

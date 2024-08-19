@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.model.ProtectedInMemoryDocument;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
@@ -42,7 +43,7 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider" })
-    void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
+    void testSignAsiceXadesHappyScenario(ProtectedInMemoryDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
@@ -58,7 +59,7 @@ class AutogramTests {
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
-    void testSignNonEformHappyScenario(InMemoryDocument document) {
+    void testSignNonEformHappyScenario(ProtectedInMemoryDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
@@ -81,7 +82,7 @@ class AutogramTests {
     @ParameterizedTest
     @MethodSource({"digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider"})
-    void testSignAsiceCadesHappyScenario(InMemoryDocument document) {
+    void testSignAsiceCadesHappyScenario(ProtectedInMemoryDocument document) {
         var newUI = new FakeUI();
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
@@ -95,7 +96,7 @@ class AutogramTests {
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
-    void testSignPadesHappyScenario(InMemoryDocument document) {
+    void testSignPadesHappyScenario(ProtectedInMemoryDocument document) {
         var newUI = new FakeUI();
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
@@ -253,6 +254,11 @@ class AutogramTests {
         @Override
         public void showError(AutogramException exception) {
 
+        }
+
+        @Override
+        public char[] getDocumentPassword() {
+            return null;
         }
 
         @Override

@@ -4,6 +4,8 @@ import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.TransformationException;
+import digital.slovensko.autogram.model.ProtectedDSSDocument;
+import digital.slovensko.autogram.model.ProtectedInMemoryDocument;
 import digital.slovensko.autogram.util.XMLUtils;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
@@ -11,8 +13,6 @@ import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 import static digital.slovensko.autogram.util.XMLUtils.getSecureDocumentBuilder;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,7 +32,7 @@ import java.nio.charset.StandardCharsets;
 public abstract class XDCBuilder {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
 
-    public static DSSDocument transform(SigningParameters params, String filename, Document document) {
+    public static ProtectedDSSDocument transform(SigningParameters params, String filename, Document document) {
         var identifier = params.getIdentifier();
         var lastSlashIndex = identifier.lastIndexOf("/");
         if (lastSlashIndex == -1)
@@ -58,7 +58,7 @@ public abstract class XDCBuilder {
 
             var content = getDocumentContent(transformedDocument).getBytes(ENCODING);
 
-            return new InMemoryDocument(content, getXdcfFilename(filename), AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
+            return new ProtectedInMemoryDocument(content, getXdcfFilename(filename), AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
 
         } catch (Exception e) {
             throw new TransformationException("Nastala chyba počas transformácie dokumentu",

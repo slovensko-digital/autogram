@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.model.ProtectedDSSDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 
 import org.xml.sax.SAXException;
@@ -22,10 +23,10 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 
 public class DocumentVisualizationBuilder {
 
-    private final DSSDocument document;
+    private final ProtectedDSSDocument document;
     private final SigningParameters parameters;
 
-    private DocumentVisualizationBuilder(DSSDocument document, SigningParameters parameters) {
+    private DocumentVisualizationBuilder(ProtectedDSSDocument document, SigningParameters parameters) {
         this.document = document;
         this.parameters = parameters;
     }

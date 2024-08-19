@@ -6,6 +6,8 @@ import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.model.ProtectedDSSDocument;
+import digital.slovensko.autogram.model.ProtectedFileDocument;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
@@ -24,16 +26,16 @@ import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 
 public class SigningJob {
     private final Responder responder;
-    private final DSSDocument document;
+    private final ProtectedDSSDocument document;
     private final SigningParameters parameters;
 
-    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder) {
+    private SigningJob(ProtectedDSSDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
     }
 
-    public DSSDocument getDocument() {
+    public ProtectedDSSDocument getDocument() {
         return this.document;
     }
 
@@ -46,7 +48,6 @@ public class SigningJob {
     }
 
     public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
-
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
@@ -153,8 +154,8 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static FileDocument createDSSFileDocumentFromFile(File file) {
-        var fileDocument = new FileDocument(file);
+    public static ProtectedFileDocument createDSSFileDocumentFromFile(File file) {
+        var fileDocument = new ProtectedFileDocument(file);
 
         if (fileDocument.getName().endsWith(".xdcf"))
             fileDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
@@ -168,7 +169,7 @@ public class SigningJob {
         return fileDocument;
     }
 
-    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
+    private static SigningJob build(ProtectedDSSDocument document, SigningParameters params, Responder responder) {
         if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
             document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
 
@@ -183,17 +184,23 @@ public class SigningJob {
         return new SigningJob(document, params, responder);
     }
 
-    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
+    public static SigningJob buildFromRequest(ProtectedDSSDocument document, SigningParameters params, Responder responder) {
         return build(document, params, responder);
     }
 
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+        return buildFromFile(file, "".toCharArray(), responder, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
+    }
+
+    public static SigningJob buildFromFile(File file, char[] password, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var document = createDSSFileDocumentFromFile(file);
+        document.setPassword(password);
+
         var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
         return build(document, parameters, responder);
     }
 
-    private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+    private static SigningParameters getParametersForFile(ProtectedFileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var level = SignatureValidator.getSignedDocumentSignatureLevel(SignatureValidator.getSignedDocumentSimpleReport(document));
         if (level != null) switch (level.getSignatureForm()) {
             case PAdES:

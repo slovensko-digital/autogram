@@ -55,6 +55,8 @@ public interface UI {
 
     void showError(AutogramException exception);
 
+    char[] getDocumentPassword();
+
     char[] getKeystorePassword();
 
     char[] getContextSpecificPassword();
