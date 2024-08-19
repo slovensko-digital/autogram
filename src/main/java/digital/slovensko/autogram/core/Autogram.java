@@ -4,9 +4,11 @@ import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.model.ProtectedDSSDocument;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
+import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
@@ -18,7 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
 public class Autogram {
-    public final UI ui;
+    private final UI ui;
     private final UserSettings settings;
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
@@ -59,6 +61,25 @@ public class Autogram {
             if (!result.isCompliant()) {
                 ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
             }
+        });
+    }
+
+    public void handleProtectedPdfDocument(ProtectedDSSDocument document) {
+        if (!PDFUtils.isPdfAndPasswordProtected(document))
+            return;
+
+        var password = ui.getDocumentPassword();
+        document.setPassword(password);
+    }
+
+    public void handleProtectedPdfDocument(ProtectedDSSDocument document, Runnable callback) {
+        if (!PDFUtils.isPdfAndPasswordProtected(document))
+            return;
+
+        ui.onWorkThreadDo(() -> {
+            var password = ui.getDocumentPassword();
+            document.setPassword(password);
+            callback.run();
         });
     }
 

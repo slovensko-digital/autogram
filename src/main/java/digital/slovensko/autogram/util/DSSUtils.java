@@ -39,11 +39,10 @@ public class DSSUtils {
     }
 
     public static SignedDocumentValidator createDocumentValidator(ProtectedDSSDocument document) {
-        System.out.println(document.getPassword());
         if (new PDFDocumentValidatorFactory().isSupported(document)) {
-            var d = new PDFDocumentValidator(document);
-            d.setPasswordProtection(document.getPassword());
-            return d;
+            var validator = new PDFDocumentValidator(document);
+            validator.setPasswordProtection(document.getPassword());
+            return validator;
         }
 
         if (new XMLDocumentValidatorFactory().isSupported(document))

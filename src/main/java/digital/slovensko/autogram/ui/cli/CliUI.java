@@ -269,7 +269,7 @@ public class CliUI implements UI {
 
     @Override
     public char[] getDocumentPassword() {
-        return new char[0];
+        return System.console().readPassword("Enter document password (hidden): ");
     }
 
     @Override

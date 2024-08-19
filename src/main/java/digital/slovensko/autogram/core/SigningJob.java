@@ -12,10 +12,8 @@ import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
@@ -142,6 +140,7 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
         signatureParameters.setSignWithExpiredCertificate(true);
+        signatureParameters.setPasswordProtection(document.getPassword());
 
         if (signatureParameters.getSignatureLevel().equals(SignatureLevel.PAdES_BASELINE_T)) {
             service.setTspSource(getParameters().getTspSource());
@@ -189,13 +188,12 @@ public class SigningJob {
     }
 
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        return buildFromFile(file, "".toCharArray(), responder, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
+        var document = createDSSFileDocumentFromFile(file);
+        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
+        return build(document, parameters, responder);
     }
 
-    public static SigningJob buildFromFile(File file, char[] password, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var document = createDSSFileDocumentFromFile(file);
-        document.setPassword(password);
-
+    public static SigningJob buildFromFileDocument(ProtectedFileDocument document, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
         return build(document, parameters, responder);
     }
@@ -228,6 +226,6 @@ public class SigningJob {
     }
 
     public boolean shouldCheckPDFCompliance() {
-        return parameters.getCheckPDFACompliance() && isPDF(document.getMimeType());
+        return parameters.getCheckPDFACompliance() && isPDF(document.getMimeType()) && !document.isProtected();
     }
 }
