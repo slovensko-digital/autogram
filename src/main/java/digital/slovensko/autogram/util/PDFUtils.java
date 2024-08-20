@@ -9,15 +9,23 @@ import eu.europa.esig.dss.pdf.pdfbox.PdfBoxDocumentReader;
 
 public class PDFUtils {
     public static boolean isPdfAndPasswordProtected(DSSDocument document) {
-        if (document.getMimeType().equals(MimeTypeEnum.PDF)) {
-            try {
-                PdfBoxDocumentReader reader = new PdfBoxDocumentReader(document);
+        if (!document.getMimeType().equals(MimeTypeEnum.PDF))
+            return false;
+
+        try {
+            PdfBoxDocumentReader reader = new PdfBoxDocumentReader(document);
+
+            // document is protected against modification without password
+            if (!reader.canCreateSignatureField()) {
                 reader.close();
-            } catch (InvalidPasswordException e) {
                 return true;
-            } catch (IOException e) {
             }
-        }
+
+            reader.close();
+        } catch (InvalidPasswordException e) {
+            return true;
+        } catch (IOException e) {}
+
         return false;
     }
 
