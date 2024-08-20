@@ -6,7 +6,7 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import java.io.InputStream;
 
 public class ProtectedInMemoryDocument extends InMemoryDocument implements ProtectedDSSDocument {
-    private char[] password;
+    private char[] password = new char[0];
 
     public ProtectedInMemoryDocument(byte[] bytes) {
         super(bytes);

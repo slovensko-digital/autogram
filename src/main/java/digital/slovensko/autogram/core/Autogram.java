@@ -73,8 +73,10 @@ public class Autogram {
     }
 
     public void handleProtectedPdfDocument(ProtectedDSSDocument document, Runnable callback) {
-        if (!PDFUtils.isPdfAndPasswordProtected(document))
+        if (!PDFUtils.isPdfAndPasswordProtected(document)) {
+            callback.run();
             return;
+        }
 
         ui.onWorkThreadDo(() -> {
             var password = ui.getDocumentPassword();
