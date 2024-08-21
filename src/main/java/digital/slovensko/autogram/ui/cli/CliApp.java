@@ -30,14 +30,9 @@ public class CliApp {
             var source = settings.getSource();
             var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
-                    .map(f -> {
-                        var document = SigningJob.createDSSFileDocumentFromFile(f);
-                        autogram.handleProtectedPdfDocument(document);
-
-                        return SigningJob.buildFromFileDocument(document, new SaveFileResponder(f, autogram, targetPathBuilder),
-                                settings.isPdfaCompliance(), settings.getSignatureLevel(), settings.isEn319132(),
-                                settings.getTspSource(), settings.isPlainXmlEnabled());
-                    })
+                    .map(f -> SigningJob.buildFromFile(f, autogram, new SaveFileResponder(f, autogram, targetPathBuilder),
+                            settings.isPdfaCompliance(), settings.getSignatureLevel(), settings.isEn319132(),
+                            settings.getTspSource(), settings.isPlainXmlEnabled()))
                     .toList();
             if (settings.isPdfaCompliance()) {
                 jobs.forEach(job -> {

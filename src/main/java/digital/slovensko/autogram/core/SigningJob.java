@@ -183,17 +183,16 @@ public class SigningJob {
         return new SigningJob(document, params, responder);
     }
 
-    public static SigningJob buildFromRequest(ProtectedDSSDocument document, SigningParameters params, Responder responder) {
+    public static SigningJob buildFromRequest(ProtectedDSSDocument document, Autogram autogram, SigningParameters params, Responder responder) {
+        autogram.handleProtectedPdfDocument(document);
+
         return build(document, params, responder);
     }
 
-    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+    public static SigningJob buildFromFile(File file, Autogram autogram, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var document = createDSSFileDocumentFromFile(file);
-        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return build(document, parameters, responder);
-    }
+        autogram.handleProtectedPdfDocument(document);
 
-    public static SigningJob buildFromFileDocument(ProtectedFileDocument document, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
         return build(document, parameters, responder);
     }

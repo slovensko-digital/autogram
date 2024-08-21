@@ -72,17 +72,8 @@ public class Autogram {
         document.setPassword(password);
     }
 
-    public void handleProtectedPdfDocument(ProtectedDSSDocument document, Runnable callback) {
-        if (!PDFUtils.isPdfAndPasswordProtected(document)) {
-            callback.run();
-            return;
-        }
-
-        ui.onWorkThreadDo(() -> {
-            var password = ui.getDocumentPassword();
-            document.setPassword(password);
-            callback.run();
-        });
+    public void wrapInWorkThread(Runnable callback) {
+        ui.onWorkThreadDo(callback);
     }
 
     public void startVisualization(SigningJob job) {

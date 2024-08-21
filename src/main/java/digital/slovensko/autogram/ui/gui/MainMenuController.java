@@ -110,10 +110,9 @@ public class MainMenuController implements SuppressedFocusController {
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-            var document = SigningJob.createDSSFileDocumentFromFile(file);
 
-            autogram.handleProtectedPdfDocument(document, () -> {
-                var job = SigningJob.buildFromFileDocument(document,
+            autogram.wrapInWorkThread(() -> {
+                var job = SigningJob.buildFromFile(file, autogram,
                         new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
                         userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
 
