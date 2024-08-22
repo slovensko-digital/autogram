@@ -1,5 +1,6 @@
 package digital.slovensko.autogram;
 
+import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
@@ -50,9 +51,12 @@ public class SigningJobTests {
                 null,
                 null,
                 null);
+        var newUI = new AutogramTests.FakeUI();
+        var settings = new AutogramTests.TestSettings();
+        var autogram = new Autogram(newUI, settings);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-        var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(null, true), null);
+        var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), autogram, signRequestBody.getParameters(null, true), null);
         Visualization visualization = null;
         try {
             visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());

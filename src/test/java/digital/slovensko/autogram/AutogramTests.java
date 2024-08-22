@@ -52,7 +52,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(document,  autogram, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -68,7 +68,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(document, autogram, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -91,7 +91,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(document, autogram, parameters, responder), key));
     }
 
     @ParameterizedTest
@@ -105,7 +105,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(document, autogram, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -136,7 +136,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, false), key));
+                key -> autogram.sign(SigningJob.buildFromFile(file, autogram, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, false), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -192,7 +192,7 @@ class AutogramTests {
         }
     }
 
-    private static class FakeUI implements UI {
+    public static class FakeUI implements UI {
         @Override
         public void startSigning(SigningJob signingJob, Autogram autogram) {
 
@@ -317,7 +317,7 @@ class AutogramTests {
         }
     }
 
-    private class TestSettings extends UserSettings {
+    public static class TestSettings extends UserSettings {
         @Override
         public DriverDetector getDriverDetector() {
             List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
