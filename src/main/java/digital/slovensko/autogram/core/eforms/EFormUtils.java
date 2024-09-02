@@ -493,19 +493,20 @@ public abstract class EFormUtils {
         if (xsltTarget != null)
             entries.removeIf(entry -> !xsltTarget.equals(entry.target()));
 
-        filterIfExist(entries, e -> e.mediaDestination().equals("sign"));
-        filterIfExist(entries, e -> List.of("HTML", "XHTML").contains(e.destinationType()));
-        filterIfExist(entries, e -> e.mediaDestination().equals("view"));
-        filterIfExist(entries, e -> e.destinationType().equals("XHTML"));
-
-        filterIfExist(entries, e -> e.language().equals("sk"));
-        filterIfExist(entries, e -> e.language().equals("en"));
+        entries = filterIfExist(entries, e -> e.mediaDestination().equals("sign"));
+        entries = filterIfExist(entries, e -> List.of("HTML", "XHTML").contains(e.destinationType()));
+        entries = filterIfExist(entries, e -> e.mediaDestination().equals("view"));
+        entries = filterIfExist(entries, e -> e.destinationType().equals("XHTML"));
+        entries = filterIfExist(entries, e -> e.language().equals("sk"));
+        entries = filterIfExist(entries, e -> e.language().equals("en"));
 
         return entries.stream().findFirst().orElse(null);
     }
 
-    private static void filterIfExist(ArrayList<ManifestXsltEntry> entries, Predicate<ManifestXsltEntry> l) {
+    private static ArrayList<ManifestXsltEntry> filterIfExist(ArrayList<ManifestXsltEntry> entries, Predicate<ManifestXsltEntry> l) {
         if (entries.stream().anyMatch(l))
-            entries.removeIf(l.negate());
+            return new ArrayList<>(entries.stream().filter(l).toList());
+
+        return entries;
     }
 }
