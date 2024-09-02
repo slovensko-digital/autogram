@@ -10,7 +10,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
-import digital.slovensko.autogram.model.ProtectedInMemoryDocument;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -21,7 +20,6 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.model.InMemoryDocument;
 
 public class TransformationTests {
 

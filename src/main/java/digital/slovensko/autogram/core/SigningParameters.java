@@ -6,7 +6,7 @@ import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
-import digital.slovensko.autogram.model.ProtectedDSSDocument;
+import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
@@ -61,7 +61,7 @@ public class SigningParameters {
             SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
             EFormAttributes eFormAttributes, boolean autoLoadEform, String fsFormId, boolean checkPDFACompliance,
-            int preferredPreviewWidth, ProtectedDSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
+            int preferredPreviewWidth, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
 
         if (level == null)
             throw new SigningParametersException("Nebol zadaný typ podpisu", "Typ/level podpisu je povinný atribút");
@@ -108,21 +108,21 @@ public class SigningParameters {
                 keyInfoCanonicalization, eFormAttributes, checkPDFACompliance, preferredPreviewWidth, tspSource);
     }
 
-    public static SigningParameters buildForPDF(ProtectedDSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource) throws AutogramException {
+    public static SigningParameters buildForPDF(DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource) throws AutogramException {
         return buildParameters(
                 (tspSource == null) ? SignatureLevel.PAdES_BASELINE_B : SignatureLevel.PAdES_BASELINE_T, DigestAlgorithm.SHA256,
                 null, null, signAsEn319132, null, null, null, null, false,
                 null, checkPDFACompliance, 640, document, tspSource, true);
     }
 
-    public static SigningParameters buildForASiCWithXAdES(ProtectedDSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
+    public static SigningParameters buildForASiCWithXAdES(DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
         return buildParameters(
                 (tspSource == null) ? SignatureLevel.XAdES_BASELINE_B : SignatureLevel.XAdES_BASELINE_T, DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, signAsEn319132, null, null, null,  null, true,
                 EFormUtils.getFsFormIdFromFilename(document.getName()), checkPDFACompliance, 640, document, tspSource, plainXmlEnabled);
     }
 
-    public static SigningParameters buildForASiCWithCAdES(ProtectedDSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
+    public static SigningParameters buildForASiCWithCAdES(DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
         return buildParameters(
                 (tspSource == null) ? SignatureLevel.CAdES_BASELINE_B : SignatureLevel.CAdES_BASELINE_T, DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, signAsEn319132, null, null, null, null, true,

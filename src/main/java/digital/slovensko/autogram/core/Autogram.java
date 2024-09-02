@@ -4,7 +4,7 @@ import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
-import digital.slovensko.autogram.model.ProtectedDSSDocument;
+import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
@@ -57,19 +57,25 @@ public class Autogram {
             return;
 
         ui.onWorkThreadDo(() -> {
-            var result = new PDFAStructureValidator().validate(job.getDocument());
+            var result = new PDFAStructureValidator().validate(job.getDocument().getDocument());
             if (!result.isCompliant()) {
                 ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
             }
         });
     }
 
-    public void handleProtectedPdfDocument(ProtectedDSSDocument document) {
-        if (!PDFUtils.isPdfAndPasswordProtected(document))
+    public void handleProtectedPdfDocument(AutogramDocument document) {
+        var protection = PDFUtils.determinePDFProtection(document.getDocument());
+        if (protection == PDFUtils.PDFProtection.NONE)
             return;
 
+        System.out.println("PDF is protected with: " + protection);
+
         var password = ui.getDocumentPassword();
-        document.setPassword(password);
+        switch (protection) {
+            case OPEN_DOCUMENT_PASSWORD -> document.setOpenDocumentPassword(password);
+            case MASTER_PASSWORD -> document.setMasterPassword(password);
+        }
     }
 
     public void wrapInWorkThread(Runnable callback) {
@@ -165,7 +171,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 signCommonAndThen(job, batch.getSigningKey(), (jobNew) -> {
-                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
+                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getDocument().getName());
                 });
             } catch (AutogramException e) {
                 job.onDocumentSignFailed(e);

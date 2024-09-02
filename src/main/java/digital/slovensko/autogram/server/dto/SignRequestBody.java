@@ -5,10 +5,11 @@ import java.util.Base64;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.model.ProtectedInMemoryDocument;
+import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.MimeType;
+import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
@@ -52,11 +53,11 @@ public class SignRequestBody {
         parameters.resolveSigningLevel(getDocument());
     }
 
-    public ProtectedInMemoryDocument getDocument() {
+    public AutogramDocument getDocument() {
         var content = decodeDocumentContent(document.getContent(), isBase64());
         var filename = document.getFilename();
 
-        return new ProtectedInMemoryDocument(content, filename, getMimetype());
+        return new AutogramDocument(new InMemoryDocument(content, filename, getMimetype()));
     }
 
     public void validateSigningParameters() throws RequestValidationException, MalformedBodyException,
@@ -64,11 +65,11 @@ public class SignRequestBody {
         if (parameters == null)
             throw new RequestValidationException("Parameters are required", "");
 
-        parameters.validate(getDocument().getMimeType());
+        parameters.validate(getDocument().getDocument().getMimeType());
     }
 
     public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getSigningParameters(isBase64(), getDocument(), tspSource, plainXmlEnabled);
+        return parameters.getSigningParameters(isBase64(), getDocument().getDocument(), tspSource, plainXmlEnabled);
     }
 
     public String getBatchId() {

@@ -341,8 +341,8 @@ public class GUI implements UI {
 
     public void showVisualization(Visualization visualization, Autogram autogram) {
         var title = "Dokument";
-        if (visualization.getJob().getDocument().getName() != null)
-            title = "Dokument " + visualization.getJob().getDocument().getName();
+        if (visualization.getJob().getDocument().getDocument().getName() != null)
+            title = "Dokument " + visualization.getJob().getDocument().getDocument().getName();
 
         var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);

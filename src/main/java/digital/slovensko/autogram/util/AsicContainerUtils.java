@@ -3,7 +3,7 @@ package digital.slovensko.autogram.util;
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
-import digital.slovensko.autogram.model.ProtectedDSSDocument;
+import digital.slovensko.autogram.model.AutogramDocument;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeType;
@@ -21,7 +21,7 @@ import java.io.OutputStream;
 import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 
 public class AsicContainerUtils {
-    public static ProtectedDSSDocument getOriginalDocument(ProtectedDSSDocument asice) throws OriginalDocumentNotFoundException,
+    public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,
             MultipleOriginalDocumentsFoundException {
         SignedDocumentValidator documentValidator;
         try {
@@ -51,55 +51,7 @@ public class AsicContainerUtils {
         if (isXML(originalDocument.getMimeType()) || MimeTypeEnum.BINARY.equals(originalDocument.getMimeType()))
             setMimeTypeFromManifest(asice, originalDocument);
 
-        return new ProtectedDSSDocument() {
-            @Override
-            public char[] getPassword() {
-                return new char[0];
-            }
-
-            @Override
-            public void setPassword(char[] password) {}
-
-            @Override
-            public InputStream openStream() {
-                return originalDocument.openStream();
-            }
-
-            @Override
-            public void writeTo(OutputStream outputStream) throws IOException {
-                originalDocument.writeTo(outputStream);
-            }
-
-            @Override
-            public String getName() {
-                return originalDocument.getName();
-            }
-
-            @Override
-            public void setName(String s) {
-                originalDocument.setName(s);
-            }
-
-            @Override
-            public MimeType getMimeType() {
-                return originalDocument.getMimeType();
-            }
-
-            @Override
-            public void setMimeType(MimeType mimeType) {
-                originalDocument.setMimeType(mimeType);
-            }
-
-            @Override
-            public void save(String s) throws IOException {
-                originalDocument.save(s);
-            }
-
-            @Override
-            public String getDigest(DigestAlgorithm digestAlgorithm) {
-                return originalDocument.getDigest(digestAlgorithm);
-            }
-        };
+        return originalDocument;
     }
 
     private static void setMimeTypeFromManifest(DSSDocument asiceContainer, DSSDocument documentToDisplay) {

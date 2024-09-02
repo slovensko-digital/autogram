@@ -6,12 +6,11 @@ import java.nio.charset.StandardCharsets;
 import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.UserSettings;
-import digital.slovensko.autogram.model.ProtectedDSSDocument;
+import digital.slovensko.autogram.model.AutogramDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 
 import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
@@ -23,10 +22,10 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 
 public class DocumentVisualizationBuilder {
 
-    private final ProtectedDSSDocument document;
+    private final AutogramDocument document;
     private final SigningParameters parameters;
 
-    private DocumentVisualizationBuilder(ProtectedDSSDocument document, SigningParameters parameters) {
+    private DocumentVisualizationBuilder(AutogramDocument document, SigningParameters parameters) {
         this.document = document;
         this.parameters = parameters;
     }
@@ -43,9 +42,9 @@ public class DocumentVisualizationBuilder {
         throws IOException, ParserConfigurationException, SAXException {
 
         var documentToDisplay = document;
-        if (isAsice(documentToDisplay.getMimeType())) {
+        if (isAsice(documentToDisplay.getDocument().getMimeType())) {
             try {
-                documentToDisplay = AsicContainerUtils.getOriginalDocument(document);
+                documentToDisplay = new AutogramDocument(AsicContainerUtils.getOriginalDocument(document.getDocument()));
             } catch (AutogramException e) {
                 return new UnsupportedVisualization(job);
             }
@@ -53,29 +52,29 @@ public class DocumentVisualizationBuilder {
 
         var transformation = parameters.getTransformation();
 
-        if (isDocumentSupportingTransformation(documentToDisplay) && isTranformationAvailable(transformation)) {
+        if (isDocumentSupportingTransformation(documentToDisplay.getDocument()) && isTranformationAvailable(transformation)) {
             var transformationOutputMimeType = parameters.getXsltDestinationType();
 
             if (transformationOutputMimeType.equals("HTML"))
-                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+                return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDocument(), transformation), job);
 
             if (transformationOutputMimeType.equals("TXT"))
-                return new PlainTextVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+                return new PlainTextVisualization(EFormUtils.transform(documentToDisplay.getDocument(), transformation), job);
 
             return new UnsupportedVisualization(job);
         }
 
-        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.HTML))
-            return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+        if (documentToDisplay.getDocument().getMimeType().equals(MimeTypeEnum.HTML))
+            return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDocument(), transformation), job);
 
-        if (isTxt(documentToDisplay.getMimeType()))
-            return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), job);
+        if (isTxt(documentToDisplay.getDocument().getMimeType()))
+            return new PlainTextVisualization(new String(documentToDisplay.getDocument().openStream().readAllBytes(), StandardCharsets.UTF_8), job);
 
-        if (isPDF(documentToDisplay.getMimeType()))
+        if (isPDF(documentToDisplay.getDocument().getMimeType()))
             return new PDFVisualization(documentToDisplay, job, userSettings);
 
-        if (isImage(documentToDisplay.getMimeType()))
-            return new ImageVisualization(documentToDisplay, job);
+        if (isImage(documentToDisplay.getDocument().getMimeType()))
+            return new ImageVisualization(documentToDisplay.getDocument(), job);
 
         return new UnsupportedVisualization(job);
     }

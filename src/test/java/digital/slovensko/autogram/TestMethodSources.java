@@ -1,7 +1,6 @@
 package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
-import digital.slovensko.autogram.model.ProtectedInMemoryDocument;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;

@@ -15,7 +15,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import digital.slovensko.autogram.model.ProtectedDSSDocument;
+import digital.slovensko.autogram.model.AutogramDocument;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,7 +166,7 @@ public class SignatureValidator {
         return new ValidationReports(validator.validateDocument(), job);
     }
 
-    public static SimpleReport getSignedDocumentSimpleReport(ProtectedDSSDocument document) {
+    public static SimpleReport getSignedDocumentSimpleReport(AutogramDocument document) {
         var validator = createDocumentValidator(document);
         if (validator == null)
             return null;

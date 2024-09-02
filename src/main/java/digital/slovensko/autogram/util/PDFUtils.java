@@ -8,9 +8,9 @@ import eu.europa.esig.dss.pades.exception.InvalidPasswordException;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxDocumentReader;
 
 public class PDFUtils {
-    public static boolean isPdfAndPasswordProtected(DSSDocument document) {
+    public static PDFProtection determinePDFProtection(DSSDocument document) {
         if (!document.getMimeType().equals(MimeTypeEnum.PDF))
-            return false;
+            return PDFProtection.NONE;
 
         try {
             PdfBoxDocumentReader reader = new PdfBoxDocumentReader(document);
@@ -18,15 +18,20 @@ public class PDFUtils {
             // document is protected against modification without password
             if (!reader.canCreateSignatureField()) {
                 reader.close();
-                return true;
+                return PDFProtection.MASTER_PASSWORD;
             }
 
             reader.close();
         } catch (InvalidPasswordException e) {
-            return true;
+            return PDFProtection.OPEN_DOCUMENT_PASSWORD;
         } catch (IOException e) {}
 
-        return false;
+        return PDFProtection.NONE;
     }
 
+    public enum PDFProtection {
+        NONE,
+        OPEN_DOCUMENT_PASSWORD,
+        MASTER_PASSWORD,
+    }
 }
