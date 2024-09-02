@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.*;
+import eu.europa.esig.dss.model.DSSDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,9 +200,9 @@ public class GUI implements UI {
         stage.show();
     }
 
-    public char[] getDocumentPassword() {
+    public char[] getDocumentPassword(DSSDocument document) {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("Aké je heslo k dokumentu?", "Zadajte kód k dokumentu.", false, false);
+            var controller = new PasswordController("Aké je heslo k dokumentu?", "Odomikáte " + document.getName(), "Zadajte heslo k dokumentu.", false, false);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();

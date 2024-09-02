@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 
 public class PasswordController {
     private final String questionText;
+    private final String descriptionText;
     private final String errorText;
     private final boolean isSigningStep;
     private final boolean allowEmpty;
@@ -20,6 +21,8 @@ public class PasswordController {
     PasswordField passwordField;
     @FXML
     Text question;
+    @FXML
+    Text description;
     @FXML
     Text error;
     @FXML
@@ -32,7 +35,12 @@ public class PasswordController {
     VBox mainBox;
 
     public PasswordController(String questionText, String blankPasswordErrorText, boolean isSigningStep, boolean allowEmpty) {
+        this(questionText, null, blankPasswordErrorText, false, false);
+    }
+
+    public PasswordController(String questionText, String description, String blankPasswordErrorText, boolean isSigningStep, boolean allowEmpty) {
         this.questionText = questionText;
+        this.descriptionText = description;
         this.errorText = blankPasswordErrorText;
         this.isSigningStep = isSigningStep;
         this.allowEmpty = allowEmpty;
@@ -40,6 +48,7 @@ public class PasswordController {
 
     public void initialize() {
         question.setText(questionText);
+        description.setText(descriptionText);
         error.setText(errorText);
         if(isSigningStep) {
             mainButton.setText("Podpísať");

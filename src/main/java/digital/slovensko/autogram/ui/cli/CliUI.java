@@ -20,6 +20,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 public class CliUI implements UI {
@@ -268,8 +269,8 @@ public class CliUI implements UI {
     }
 
     @Override
-    public char[] getDocumentPassword() {
-        return System.console().readPassword("Enter document password (hidden): ");
+    public char[] getDocumentPassword(DSSDocument document) {
+        return System.console().readPassword("Enter document (" + document.getName() + ") password (hidden): ");
     }
 
     @Override

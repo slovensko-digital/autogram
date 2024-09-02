@@ -9,6 +9,7 @@ import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -256,7 +257,7 @@ class AutogramTests {
         }
 
         @Override
-        public char[] getDocumentPassword() {
+        public char[] getDocumentPassword(DSSDocument document) {
             return null;
         }
 

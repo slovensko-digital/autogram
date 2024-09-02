@@ -69,9 +69,7 @@ public class Autogram {
         if (protection == PDFUtils.PDFProtection.NONE)
             return;
 
-        System.out.println("PDF is protected with: " + protection);
-
-        var password = ui.getDocumentPassword();
+        var password = ui.getDocumentPassword(document.getDocument());
         switch (protection) {
             case OPEN_DOCUMENT_PASSWORD -> document.setOpenDocumentPassword(password);
             case MASTER_PASSWORD -> document.setMasterPassword(password);
