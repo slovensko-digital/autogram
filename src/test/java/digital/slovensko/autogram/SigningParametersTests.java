@@ -7,6 +7,7 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class SigningParametersTests {
 
     @Test
     void testThrowsAutogramExceptionWhenNoMimeType() throws IOException {
-        var document = new ProtectedInMemoryDocument(generalAgendaXml);
+        var document = new InMemoryDocument(generalAgendaXml);
 
         Assertions.assertThrows(SigningParametersException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
@@ -71,7 +72,7 @@ public class SigningParametersTests {
 
     @Test
     void testThrowsXMLValidationFailedWhenNoXML() {
-        var document = new ProtectedInMemoryDocument("not xml".getBytes(), "doc.xml", MimeTypeEnum.XML);
+        var document = new InMemoryDocument("not xml".getBytes(), "doc.xml", MimeTypeEnum.XML);
 
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
@@ -90,7 +91,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
-    void testDoesNotThrowWithMinimalParametersForXadesNoConatiner(ProtectedDSSDocument document) {
+    void testDoesNotThrowWithMinimalParametersForXadesNoConatiner(DSSDocument document) {
         Assertions.assertDoesNotThrow(
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null,
@@ -99,7 +100,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
-    void testDoesNotThrowWithMinimalParametersForXadesInAsice(ProtectedDSSDocument document) {
+    void testDoesNotThrowWithMinimalParametersForXadesInAsice(DSSDocument document) {
         Assertions.assertDoesNotThrow(
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, null, null, null, null,
@@ -108,7 +109,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
-    void testDoesNotThrowWithMinimalParametersForXadesXdcInAsiceWith(ProtectedDSSDocument document) {
+    void testDoesNotThrowWithMinimalParametersForXadesXdcInAsiceWith(DSSDocument document) {
         Assertions.assertDoesNotThrow(
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, xsltTransformation, xsdSchema,
@@ -117,7 +118,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
-    void testDoesNotThrowWithMinimalParametersForXadesXdcInAsiceAutoLoadEform(ProtectedDSSDocument document) {
+    void testDoesNotThrowWithMinimalParametersForXadesXdcInAsiceAutoLoadEform(DSSDocument document) {
         // TODO: mock eform S3 resource
         Assertions.assertDoesNotThrow(
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
@@ -127,7 +128,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#invalidXmlProvider")
-    void testThrowsAutogramExceptionWithInvalidXml(ProtectedDSSDocument document) {
+    void testThrowsAutogramExceptionWithInvalidXml(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, xsltTransformation, xsdSchema,
@@ -136,7 +137,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#invalidXmlProvider")
-    void testThrowsAutogramExceptionWithInvalidXmlWithAutoLoadEform(ProtectedDSSDocument document) {
+    void testThrowsAutogramExceptionWithInvalidXmlWithAutoLoadEform(DSSDocument document) {
         // TODO: mock eform S3 resource
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
@@ -146,7 +147,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#nonEFormXmlProvider")
-    void testThrowsUnknownEformExceptionWithInvalidXmlEform(ProtectedDSSDocument document) {
+    void testThrowsUnknownEformExceptionWithInvalidXmlEform(DSSDocument document) {
         // TODO: mock eform S3 resource
         Assertions.assertThrows(UnknownEformException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
@@ -157,7 +158,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#xsdSchemaFailedValidationXmlProvider")
-    void testThrowsAutogramExceptionWithInvalidXmlSchema(ProtectedDSSDocument document) {
+    void testThrowsAutogramExceptionWithInvalidXmlSchema(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, xsltTransformation, xsdSchema,
@@ -166,7 +167,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#xsdSchemaFailedValidationXmlProvider")
-    void testThrowsAutogramExceptionWithInvalidXmlSchemaWithAutoLoadEform(ProtectedDSSDocument document) {
+    void testThrowsAutogramExceptionWithInvalidXmlSchemaWithAutoLoadEform(DSSDocument document) {
         // TODO: mock eform S3 resource
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
@@ -176,7 +177,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
-    void testThrowsAutogramExceptionWithUnknownEformXml(ProtectedDSSDocument document) {
+    void testThrowsAutogramExceptionWithUnknownEformXml(DSSDocument document) {
         Assertions.assertThrows(EFormException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, null, null, null, new EFormAttributes(null, null, null,
@@ -186,7 +187,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#unknownEfomXmlProvider")
-    void testThrowsAutogramExceptionWithUnknownEformXmlWithAutoLoadEform(ProtectedDSSDocument document) {
+    void testThrowsAutogramExceptionWithUnknownEformXmlWithAutoLoadEform(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
@@ -195,7 +196,7 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#mismatchedDigestsXmlProvider")
-    void testThrowsAutogramExceptionWithMismatchedDigestsXml(ProtectedDSSDocument document) {
+    void testThrowsAutogramExceptionWithMismatchedDigestsXml(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, xsltTransformation, xsdSchema,
@@ -205,7 +206,7 @@ public class SigningParametersTests {
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#mismatchedDigestsXmlProvider",
             "digital.slovensko.autogram.TestMethodSources#mismatchedDigestsFSXmlProvider"})
-    void testThrowsAutogramExceptionWithMismatchedDigestsXmlWithAutoLoadEform(ProtectedDSSDocument document) {
+    void testThrowsAutogramExceptionWithMismatchedDigestsXmlWithAutoLoadEform(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
@@ -214,14 +215,14 @@ public class SigningParametersTests {
 
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#invalidAsiceProvider")
-    void testThrowsOriginalDocumentNotFoundWithAsiceWithoutSignature(ProtectedDSSDocument document) throws IOException {
+    void testThrowsOriginalDocumentNotFoundWithAsiceWithoutSignature(DSSDocument document) throws IOException {
         Assertions.assertThrows(OriginalDocumentNotFoundException.class,
                 () -> SigningParameters.buildForASiCWithXAdES(document, false, false, tspSource, true));
     }
 
     @Test
     void testThrowsExceptionWithAsiceWithEmptyXml() throws IOException {
-        var document = new ProtectedInMemoryDocument(
+        var document = new InMemoryDocument(
                 this.getClass().getResourceAsStream("empty_xml.asice").readAllBytes(),
                 "empty_xml.asice");
 
@@ -232,7 +233,7 @@ public class SigningParametersTests {
     @Test
     void testInvalidTransformation() throws IOException {
         var generalAgendaXml = this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes();
-        var document = new ProtectedInMemoryDocument(generalAgendaXml, "doc.xml", MimeTypeEnum.XML);
+        var document = new InMemoryDocument(generalAgendaXml, "doc.xml", MimeTypeEnum.XML);
 
         var transformation = "invalid transformation";
         Assertions.assertThrows(TransformationParsingErrorException.class,

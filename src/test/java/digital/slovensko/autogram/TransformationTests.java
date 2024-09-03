@@ -10,6 +10,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.model.AutogramDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -41,7 +43,7 @@ public class TransformationTests {
                                 "crystal_test_data/PovolenieZdravotnictvo.html.xslt")
                         .readAllBytes());
 
-                var document = new ProtectedInMemoryDocument(
+                var document = new InMemoryDocument(
                         this.getClass().getResourceAsStream(
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                         "rozhodnutie_X4564-2.xml");
@@ -74,7 +76,7 @@ public class TransformationTests {
                 var settings = new AutogramTests.TestSettings();
                 var autogram = new Autogram(newUI, settings);
 
-                SigningJob job = SigningJob.buildFromRequest(document, autogram, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(new AutogramDocument(document), autogram, params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -122,7 +124,7 @@ public class TransformationTests {
                                 "crystal_test_data/PovolenieZdravotnictvo.sb.xslt")
                         .readAllBytes());
 
-                var document = new ProtectedInMemoryDocument(
+                var document = new InMemoryDocument(
                         this.getClass().getResourceAsStream(
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                         "rozhodnutie_X4564-2.xml");
@@ -155,7 +157,7 @@ public class TransformationTests {
                 var settings = new AutogramTests.TestSettings();
                 var autogram = new Autogram(newUI, settings);
 
-                SigningJob job = SigningJob.buildFromRequest(document, autogram, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(new AutogramDocument(document), autogram, params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {

@@ -22,15 +22,15 @@ public abstract class TestMethodSources {
         var indentedAsice = cls.getResourceAsStream("general_agenda_indented.asice").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(inlineXml, "generalAgendaInlineXml.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(inlineXmlHeader, "generalAgendaInlineXmlHeader.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(indentedXml, "generalAgendaIndentedXml.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(indentedXmlHeader, "generalAgendaIndentedXmlHeader.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(inlineXdc, "generalAgendaInlineXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(inlineXdcf, "generalAgendaInlineXdcf.xdcf", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(indentedXdc, "generalAgendaIndentedXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(inlineAsice, "generalAgendaInlineAsice.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(indentedAsice, "generalAgendaIndentedAsice.asice", MimeTypeEnum.ASICE)
+            new InMemoryDocument(inlineXml, "generalAgendaInlineXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(inlineXmlHeader, "generalAgendaInlineXmlHeader.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(indentedXml, "generalAgendaIndentedXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(indentedXmlHeader, "generalAgendaIndentedXmlHeader.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(inlineXdc, "generalAgendaInlineXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(inlineXdcf, "generalAgendaInlineXdcf.xdcf", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(indentedXdc, "generalAgendaIndentedXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(inlineAsice, "generalAgendaInlineAsice.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(indentedAsice, "generalAgendaIndentedAsice.asice", MimeTypeEnum.ASICE)
         );
     }
 
@@ -38,9 +38,9 @@ public abstract class TestMethodSources {
         var inlineXdcf = cls.getResourceAsStream("general_agenda.xdcf").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(inlineXdcf, "generalAgendaInlineXdcf.xdcf", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(inlineXdcf, "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY),
-            new ProtectedInMemoryDocument(inlineXdcf, "generalAgendaInlineXdcfXml.xdcf", MimeTypeEnum.XML)
+            new InMemoryDocument(inlineXdcf, "generalAgendaInlineXdcf.xdcf", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(inlineXdcf, "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY),
+            new InMemoryDocument(inlineXdcf, "generalAgendaInlineXdcfXml.xdcf", MimeTypeEnum.XML)
         );
     }
 
@@ -56,16 +56,16 @@ public abstract class TestMethodSources {
         var timestampedAsice = cls.getResourceAsStream("fs_forms/signed_indented_ts.asice").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(inlineXml, "dic2120515056_fs792_772.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(inlineXmlHeader, "d_fs792_772_header.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(indentedXml, "d_fs792_772_indented.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(indentedXmlHeader, "d_fs792_772_header_indented.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(inlineXdc, "d_fs792_772_xdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(indentedXdc, "d_fs792_772_xdc_indented.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(inlineAsice, "signed.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(inlineAsice, "d_fs792_772_signed.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(indentedAsice, "signed_indented.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(timestampedAsice, "signed_indented_ts.asice", MimeTypeEnum.ASICE)
+            new InMemoryDocument(inlineXml, "dic2120515056_fs792_772.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(inlineXmlHeader, "d_fs792_772_header.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(indentedXml, "d_fs792_772_indented.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(indentedXmlHeader, "d_fs792_772_header_indented.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(inlineXdc, "d_fs792_772_xdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(indentedXdc, "d_fs792_772_xdc_indented.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(inlineAsice, "signed.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(inlineAsice, "d_fs792_772_signed.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(indentedAsice, "signed_indented.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(timestampedAsice, "signed_indented_ts.asice", MimeTypeEnum.ASICE)
         );
     }
 
@@ -89,12 +89,12 @@ public abstract class TestMethodSources {
 
 
         return Stream.of(
-            new ProtectedInMemoryDocument(notAnXml, "notAnXml.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(invalidXml, "invalidXml.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(invalidXmlHeader, "invalidXmlHeader.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(invalidXdc, "invalidXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(twoRootElements, "twoRootElements.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(twoRootElementsHeader, "twoRootElementsHeader.xml", MimeTypeEnum.XML)
+            new InMemoryDocument(notAnXml, "notAnXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(invalidXml, "invalidXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(invalidXmlHeader, "invalidXmlHeader.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(invalidXdc, "invalidXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(twoRootElements, "twoRootElements.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(twoRootElementsHeader, "twoRootElementsHeader.xml", MimeTypeEnum.XML)
         );
     }
 
@@ -102,7 +102,7 @@ public abstract class TestMethodSources {
         var wrongXdcSchemaXml = cls.getResourceAsStream("wrong_schema_xdc.xml").readAllBytes();
 
         return Stream.of(
-                new ProtectedInMemoryDocument(wrongXdcSchemaXml, "wrongXdcSchemaXml.xml", AutogramMimeType.XML_DATACONTAINER)
+                new InMemoryDocument(wrongXdcSchemaXml, "wrongXdcSchemaXml.xml", AutogramMimeType.XML_DATACONTAINER)
         );
     }
 
@@ -111,8 +111,8 @@ public abstract class TestMethodSources {
         var wrongSchemaGAXdc = cls.getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(wrongSchemaGAXml, "wrongSchemaGAXml.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(wrongSchemaGAXdc, "wrongSchemaGAXdc.xml", AutogramMimeType.XML_DATACONTAINER)
+            new InMemoryDocument(wrongSchemaGAXml, "wrongSchemaGAXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(wrongSchemaGAXdc, "wrongSchemaGAXdc.xml", AutogramMimeType.XML_DATACONTAINER)
         );
     }
 
@@ -123,10 +123,10 @@ public abstract class TestMethodSources {
         var mismatchedXsltGAXdcAsice = cls.getResourceAsStream("mismatched_xslt_ga_xdc.asice").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(mismatchedXsdGAXdcXml, "mismatchedXsdGAXdcXml.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(mismatchedXsltGAXdcXml, "mismatchedXsltGAXdcXml.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(mismatchedXsdGAXdcAsice, "mismatchedXsdGAXdcAsice.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(mismatchedXsltGAXdcAsice, "mismatchedXsltGAXdcAsice.asice", MimeTypeEnum.ASICE)
+            new InMemoryDocument(mismatchedXsdGAXdcXml, "mismatchedXsdGAXdcXml.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsltGAXdcXml, "mismatchedXsltGAXdcXml.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsdGAXdcAsice, "mismatchedXsdGAXdcAsice.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(mismatchedXsltGAXdcAsice, "mismatchedXsltGAXdcAsice.asice", MimeTypeEnum.ASICE)
         );
     }
 
@@ -137,10 +137,10 @@ public abstract class TestMethodSources {
         var mismatchedXsltFSXsltXdcAsice = cls.getResourceAsStream("fs_forms/signed_xdc_xslt_digest.asice").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(mismatchedXsltFSXdcXml, "d_fs792_772_xdc_xsd_digest.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(mismatchedXsltFSXsltXdcXml, "d_fs792_772_xdc_xslt_digest.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(mismatchedXsltFSXdcAsice, "signed_xdc_xsd_digest.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(mismatchedXsltFSXsltXdcAsice, "signed_xdc_xslt_digest.asice", MimeTypeEnum.ASICE)
+            new InMemoryDocument(mismatchedXsltFSXdcXml, "d_fs792_772_xdc_xsd_digest.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsltFSXsltXdcXml, "d_fs792_772_xdc_xslt_digest.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsltFSXdcAsice, "signed_xdc_xsd_digest.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(mismatchedXsltFSXsltXdcAsice, "signed_xdc_xslt_digest.asice", MimeTypeEnum.ASICE)
         );
     }
 
@@ -150,9 +150,9 @@ public abstract class TestMethodSources {
         var unknownEfomAsice = cls.getResourceAsStream("unknown_eform.asice").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(unknownEfomXml, "unknownEfomXml.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(unknownEfomXdc, "unknownEfomXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(unknownEfomAsice, "unknownEfomAsice.asice", MimeTypeEnum.ASICE)
+            new InMemoryDocument(unknownEfomXml, "unknownEfomXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(unknownEfomXdc, "unknownEfomXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(unknownEfomAsice, "unknownEfomAsice.asice", MimeTypeEnum.ASICE)
         );
     }
 
@@ -166,9 +166,9 @@ public abstract class TestMethodSources {
         // var noMimetypeAsice = cls.getResourceAsStream("no_mimetype.asice").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(noSignaturesAsice, "noSignaturesAsice.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(invalidAsice, "invalidAsice.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(noMetaInfAsice, "noMetaInfAsice.asice", MimeTypeEnum.ASICE)
+            new InMemoryDocument(noSignaturesAsice, "noSignaturesAsice.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(invalidAsice, "invalidAsice.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(noMetaInfAsice, "noMetaInfAsice.asice", MimeTypeEnum.ASICE)
         );
     }
 
@@ -180,11 +180,11 @@ public abstract class TestMethodSources {
         var sampleDocx = cls.getResourceAsStream("sample.docx").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(sampleTxt, "sample.txt", MimeTypeEnum.TEXT),
-            new ProtectedInMemoryDocument(samplePdf, "sample.pdf", MimeTypeEnum.PDF),
-            new ProtectedInMemoryDocument(samplePng, "sample.png", MimeTypeEnum.PNG),
-            new ProtectedInMemoryDocument(sampleIco, "sample.ico", new AutogramMimeType("image/x-icon", "ico")),
-            new ProtectedInMemoryDocument(sampleDocx, "sample.docx", new AutogramMimeType("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"))
+            new InMemoryDocument(sampleTxt, "sample.txt", MimeTypeEnum.TEXT),
+            new InMemoryDocument(samplePdf, "sample.pdf", MimeTypeEnum.PDF),
+            new InMemoryDocument(samplePng, "sample.png", MimeTypeEnum.PNG),
+            new InMemoryDocument(sampleIco, "sample.ico", new AutogramMimeType("image/x-icon", "ico")),
+            new InMemoryDocument(sampleDocx, "sample.docx", new AutogramMimeType("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx"))
         );
     }
 
@@ -192,7 +192,7 @@ public abstract class TestMethodSources {
         var nonEformXml = cls.getResourceAsStream("non_eform.xml").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(nonEformXml, "nonEformXml.xml", MimeTypeEnum.XML)
+            new InMemoryDocument(nonEformXml, "nonEformXml.xml", MimeTypeEnum.XML)
         );
     }
 
@@ -201,8 +201,8 @@ public abstract class TestMethodSources {
         var samplePdfSigned = cls.getResourceAsStream("sample_signed.pdf").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(samplePdf, "sample.pdf", MimeTypeEnum.PDF),
-            new ProtectedInMemoryDocument(samplePdfSigned, "sample_signed.pdf", MimeTypeEnum.PDF)
+            new InMemoryDocument(samplePdf, "sample.pdf", MimeTypeEnum.PDF),
+            new InMemoryDocument(samplePdfSigned, "sample_signed.pdf", MimeTypeEnum.PDF)
         );
     }
 
@@ -215,12 +215,12 @@ public abstract class TestMethodSources {
         var sampleDocxXadesAsice = cls.getResourceAsStream("sample_docx_xades.asice").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(generalAgendaAsice, "generalAgendaAsice.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(sampleTxtXadesAsice, "sampleTxtXadesAsice.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(samplePdfXadesAsice, "samplePdfXadesAsice.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(samplePngXadesAsice, "samplePngXadesAsice.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(sampleIcoXadesAsice, "sampleIcoXadesAsice.asice", MimeTypeEnum.ASICE),
-            new ProtectedInMemoryDocument(sampleDocxXadesAsice, "sampleDocxXadesAsice.asice", MimeTypeEnum.ASICE)
+            new InMemoryDocument(generalAgendaAsice, "generalAgendaAsice.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(sampleTxtXadesAsice, "sampleTxtXadesAsice.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(samplePdfXadesAsice, "samplePdfXadesAsice.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(samplePngXadesAsice, "samplePngXadesAsice.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(sampleIcoXadesAsice, "sampleIcoXadesAsice.asice", MimeTypeEnum.ASICE),
+            new InMemoryDocument(sampleDocxXadesAsice, "sampleDocxXadesAsice.asice", MimeTypeEnum.ASICE)
         );
     }
 
@@ -233,12 +233,12 @@ public abstract class TestMethodSources {
         var wrongSchemaGAXdc = cls.getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(generalAgendaXdcIndented, "generalAgendaXdcIndented.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(generalAgendaXdc, "generalAgendaXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(mismatchedXsdGAXdc, "mismatchedXsdGAXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(mismatchedXsltGAXdc, "mismatchedXsltGAXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(unknownEfomXdc, "unknownEfomXdc.xml", AutogramMimeType.XML_DATACONTAINER),
-            new ProtectedInMemoryDocument(wrongSchemaGAXdc, "wrongSchemaGAXdc.xml", AutogramMimeType.XML_DATACONTAINER)
+            new InMemoryDocument(generalAgendaXdcIndented, "generalAgendaXdcIndented.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(generalAgendaXdc, "generalAgendaXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsdGAXdc, "mismatchedXsdGAXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(mismatchedXsltGAXdc, "mismatchedXsltGAXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(unknownEfomXdc, "unknownEfomXdc.xml", AutogramMimeType.XML_DATACONTAINER),
+            new InMemoryDocument(wrongSchemaGAXdc, "wrongSchemaGAXdc.xml", AutogramMimeType.XML_DATACONTAINER)
         );
     }
 
@@ -251,12 +251,12 @@ public abstract class TestMethodSources {
         var wrongSchemaGAXdc = cls.getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(generalAgendaXdcIndented, "generalAgendaXdcIndented.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(generalAgendaXdc, "generalAgendaXdc.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(mismatchedXsdGAXdc, "mismatchedXsdGAXdc.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(mismatchedXsltGAXdc, "mismatchedXsltGAXdc.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(unknownEfomXdc, "unknownEfomXdc.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(wrongSchemaGAXdc, "wrongSchemaGAXdc.xml", MimeTypeEnum.XML)
+            new InMemoryDocument(generalAgendaXdcIndented, "generalAgendaXdcIndented.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(generalAgendaXdc, "generalAgendaXdc.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(mismatchedXsdGAXdc, "mismatchedXsdGAXdc.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(mismatchedXsltGAXdc, "mismatchedXsltGAXdc.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(unknownEfomXdc, "unknownEfomXdc.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(wrongSchemaGAXdc, "wrongSchemaGAXdc.xml", MimeTypeEnum.XML)
         );
     }
 
@@ -269,12 +269,12 @@ public abstract class TestMethodSources {
         var wrongSchemaXdcXml = cls.getResourceAsStream("wrong_schema_xdc.xml").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(documentContentNoUsedXSDReference, "documentContentNoUsedXSDReference.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(documentContentUsedXSDReferenceNoAttributes, "documentContentUsedXSDReferenceNoAttributes.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(documentContentUsedXSDReferenceNoDigestValue, "documentContentUsedXSDReferenceNoDigestValue.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(emptyXml, "emptyXml.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(nonEformXml, "nonEformXml.xml", MimeTypeEnum.XML),
-            new ProtectedInMemoryDocument(wrongSchemaXdcXml, "wrongSchemaXdcXml.xml", MimeTypeEnum.XML)
+            new InMemoryDocument(documentContentNoUsedXSDReference, "documentContentNoUsedXSDReference.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(documentContentUsedXSDReferenceNoAttributes, "documentContentUsedXSDReferenceNoAttributes.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(documentContentUsedXSDReferenceNoDigestValue, "documentContentUsedXSDReferenceNoDigestValue.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(emptyXml, "emptyXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(nonEformXml, "nonEformXml.xml", MimeTypeEnum.XML),
+            new InMemoryDocument(wrongSchemaXdcXml, "wrongSchemaXdcXml.xml", MimeTypeEnum.XML)
         );
     }
 
@@ -282,7 +282,7 @@ public abstract class TestMethodSources {
         var samplePdfCadesAsice = cls.getResourceAsStream("sample_pdf_cades.asice").readAllBytes();
 
         return Stream.of(
-            new ProtectedInMemoryDocument(samplePdfCadesAsice, "samplePdfCadesAsice.asice", MimeTypeEnum.ASICE)
+            new InMemoryDocument(samplePdfCadesAsice, "samplePdfCadesAsice.asice", MimeTypeEnum.ASICE)
         );
     }
 
@@ -294,11 +294,11 @@ public abstract class TestMethodSources {
         var fupsXdcNoNamespaceXml = cls.getResourceAsStream("FUPS_wo_namespace.xdc.xml").readAllBytes();
 
         return Stream.of(
-                new ProtectedInMemoryDocument(fupaXml, "FUPA.xml", MimeTypeEnum.XML),
-                new ProtectedInMemoryDocument(fupsXml, "FUPS.xml", MimeTypeEnum.XML),
-                new ProtectedInMemoryDocument(fuzsNewXml, "fuzs_new.xml", MimeTypeEnum.XML),
-                new ProtectedInMemoryDocument(fupsXdcXml, "FUPS.xdc.xml", MimeTypeEnum.XML),
-                new ProtectedInMemoryDocument(fupsXdcNoNamespaceXml, "FUPS_wo_namespace.xdc.xml", MimeTypeEnum.XML)
+                new InMemoryDocument(fupaXml, "FUPA.xml", MimeTypeEnum.XML),
+                new InMemoryDocument(fupsXml, "FUPS.xml", MimeTypeEnum.XML),
+                new InMemoryDocument(fuzsNewXml, "fuzs_new.xml", MimeTypeEnum.XML),
+                new InMemoryDocument(fupsXdcXml, "FUPS.xdc.xml", MimeTypeEnum.XML),
+                new InMemoryDocument(fupsXdcNoNamespaceXml, "FUPS_wo_namespace.xdc.xml", MimeTypeEnum.XML)
         );
     }
 }

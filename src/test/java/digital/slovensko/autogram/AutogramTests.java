@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
@@ -43,7 +44,7 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider" })
-    void testSignAsiceXadesHappyScenario(ProtectedInMemoryDocument document) {
+    void testSignAsiceXadesHappyScenario(DSSDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
@@ -52,14 +53,14 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document,  autogram, parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(new AutogramDocument(document),  autogram, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
-    void testSignNonEformHappyScenario(ProtectedInMemoryDocument document) {
+    void testSignNonEformHappyScenario(DSSDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
@@ -68,21 +69,21 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, autogram, parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(new AutogramDocument(document), autogram, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
-    void testSignNonEformNegativeScenario(ProtectedInMemoryDocument document) {
+    void testSignNonEformNegativeScenario(DSSDocument document) {
         Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, false, null, false));
     }
 
     @ParameterizedTest
     @MethodSource({"digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider"})
-    void testSignAsiceCadesHappyScenario(ProtectedInMemoryDocument document) {
+    void testSignAsiceCadesHappyScenario(DSSDocument document) {
         var newUI = new FakeUI();
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
@@ -91,12 +92,12 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, autogram, parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(new AutogramDocument(document), autogram, parameters, responder), key));
     }
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
-    void testSignPadesHappyScenario(ProtectedInMemoryDocument document) {
+    void testSignPadesHappyScenario(DSSDocument document) {
         var newUI = new FakeUI();
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
@@ -105,7 +106,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, autogram, parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(new AutogramDocument(document), autogram, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
