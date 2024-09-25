@@ -35,7 +35,7 @@ public class PasswordController {
     VBox mainBox;
 
     public PasswordController(String questionText, String blankPasswordErrorText, boolean isSigningStep, boolean allowEmpty) {
-        this(questionText, null, blankPasswordErrorText, false, false);
+        this(questionText, null, blankPasswordErrorText, isSigningStep, allowEmpty);
     }
 
     public PasswordController(String questionText, String description, String blankPasswordErrorText, boolean isSigningStep, boolean allowEmpty) {
