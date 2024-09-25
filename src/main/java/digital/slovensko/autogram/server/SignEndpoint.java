@@ -24,6 +24,8 @@ public class SignEndpoint implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
+            autogram.handleProtectedPdfDocument(body.getDocument());
+
             body.validateDocument();
             body.validateSigningParameters();
 

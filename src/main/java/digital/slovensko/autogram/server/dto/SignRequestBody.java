@@ -16,6 +16,7 @@ import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 public class SignRequestBody {
     private final Document document;
+    private AutogramDocument autogramDocument;
     private ServerSigningParameters parameters;
     private final String payloadMimeType;
     private final String batchId;
@@ -54,10 +55,14 @@ public class SignRequestBody {
     }
 
     public AutogramDocument getDocument() {
+        if (autogramDocument != null)
+            return autogramDocument;
+
         var content = decodeDocumentContent(document.getContent(), isBase64());
         var filename = document.getFilename();
 
-        return new AutogramDocument(new InMemoryDocument(content, filename, getMimetype()));
+        this.autogramDocument = new AutogramDocument(new InMemoryDocument(content, filename, getMimetype()));
+        return autogramDocument;
     }
 
     public void validateSigningParameters() throws RequestValidationException, MalformedBodyException,

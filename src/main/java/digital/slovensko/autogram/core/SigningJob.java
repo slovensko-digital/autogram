@@ -185,8 +185,6 @@ public class SigningJob {
     }
 
     public static SigningJob buildFromRequest(AutogramDocument document, Autogram autogram, SigningParameters params, Responder responder) {
-        autogram.handleProtectedPdfDocument(document);
-
         return build(document, params, responder);
     }
 
