@@ -9,6 +9,7 @@ import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import eu.europa.esig.dss.model.DSSException;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -112,11 +113,17 @@ public class MainMenuController implements SuppressedFocusController {
             var file = filesList.get(0);
 
             autogram.wrapInWorkThread(() -> {
-                var job = SigningJob.buildFromFile(file, autogram,
-                        new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
-                        userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
+                try {
+                    var job = SigningJob.buildFromFile(file, autogram,
+                            new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
+                            userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
 
-                autogram.sign(job);
+                    autogram.sign(job);
+                } catch (DSSException e) {
+                    autogram.onSigningFailed(AutogramException.createFromDSSException(e));
+                } catch (AutogramException e) {
+                    autogram.onSigningFailed(e);
+                }
             });
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,

@@ -9,6 +9,7 @@ import digital.slovensko.autogram.ui.SaveFileResponder;
 import java.io.File;
 import java.util.Arrays;
 
+import eu.europa.esig.dss.model.DSSException;
 import org.apache.commons.cli.CommandLine;
 
 public class CliApp {
@@ -45,6 +46,8 @@ public class CliApp {
 
             jobs.forEach(autogram::sign);
 
+        } catch (DSSException e) {
+            System.err.println(CliUI.parseError(AutogramException.createFromDSSException(e)));
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));
         }

@@ -15,6 +15,7 @@ import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 public class BatchGuiFileResponder extends BatchResponder {
@@ -66,6 +67,10 @@ public class BatchGuiFileResponder extends BatchResponder {
 
                 var job = SigningJob.buildFromFile(file, autogram, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled);
                 autogram.batchSign(job, batch.getBatchId());
+            } catch (DSSException e) {
+                autogram.onSigningFailed(AutogramException.createFromDSSException(e));
+
+                break;
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);
 
