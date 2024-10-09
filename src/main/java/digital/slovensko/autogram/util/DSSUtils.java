@@ -39,23 +39,23 @@ public class DSSUtils {
     }
 
     public static SignedDocumentValidator createDocumentValidator(AutogramDocument document) {
-        if (new PDFDocumentValidatorFactory().isSupported(document.getDocument())) {
-            var validator = new PDFDocumentValidator(document.getDocument());
+        if (new PDFDocumentValidatorFactory().isSupported(document.getDSSDocument())) {
+            var validator = new PDFDocumentValidator(document.getDSSDocument());
             validator.setPasswordProtection(document.getOpenDocumentPassword());
             return validator;
         }
 
-        if (new XMLDocumentValidatorFactory().isSupported(document.getDocument()))
-            return new XMLDocumentValidatorFactory().create(document.getDocument());
+        if (new XMLDocumentValidatorFactory().isSupported(document.getDSSDocument()))
+            return new XMLDocumentValidatorFactory().create(document.getDSSDocument());
 
-        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document.getDocument()))
-            return new ASiCContainerWithXAdESValidatorFactory().create(document.getDocument());
+        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document.getDSSDocument()))
+            return new ASiCContainerWithXAdESValidatorFactory().create(document.getDSSDocument());
 
-        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document.getDocument()))
-            return new ASiCContainerWithCAdESValidatorFactory().create(document.getDocument());
+        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document.getDSSDocument()))
+            return new ASiCContainerWithCAdESValidatorFactory().create(document.getDSSDocument());
 
-        if (new CMSDocumentValidatorFactory().isSupported(document.getDocument()))
-            return new CMSDocumentValidatorFactory().create(document.getDocument());
+        if (new CMSDocumentValidatorFactory().isSupported(document.getDSSDocument()))
+            return new CMSDocumentValidatorFactory().create(document.getDSSDocument());
 
         return null;
     }

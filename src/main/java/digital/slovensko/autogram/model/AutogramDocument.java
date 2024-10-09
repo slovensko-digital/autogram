@@ -32,7 +32,7 @@ public class AutogramDocument {
         return openDocumentPassword.length > 0 ? openDocumentPassword : masterPassword;
     }
 
-    public DSSDocument getDocument() {
+    public DSSDocument getDSSDocument() {
         return document;
     }
 }

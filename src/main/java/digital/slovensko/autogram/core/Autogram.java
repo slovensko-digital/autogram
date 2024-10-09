@@ -57,7 +57,7 @@ public class Autogram {
             return;
 
         ui.onWorkThreadDo(() -> {
-            var result = new PDFAStructureValidator().validate(job.getDocument().getDocument());
+            var result = new PDFAStructureValidator().validate(job.getDocument().getDSSDocument());
             if (!result.isCompliant()) {
                 ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
             }
@@ -65,11 +65,11 @@ public class Autogram {
     }
 
     public void handleProtectedPdfDocument(AutogramDocument document) {
-        var protection = PDFUtils.determinePDFProtection(document.getDocument());
+        var protection = PDFUtils.determinePDFProtection(document.getDSSDocument());
         if (protection == PDFUtils.PDFProtection.NONE)
             return;
 
-        var password = ui.getDocumentPassword(document.getDocument());
+        var password = ui.getDocumentPassword(document.getDSSDocument());
         switch (protection) {
             case OPEN_DOCUMENT_PASSWORD -> document.setOpenDocumentPassword(password);
             case MASTER_PASSWORD -> document.setMasterPassword(password);
@@ -169,7 +169,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 signCommonAndThen(job, batch.getSigningKey(), (jobNew) -> {
-                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getDocument().getName());
+                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getDSSDocument().getName());
                 });
             } catch (AutogramException e) {
                 job.onDocumentSignFailed(e);

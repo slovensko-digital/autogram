@@ -42,9 +42,9 @@ public class DocumentVisualizationBuilder {
         throws IOException, ParserConfigurationException, SAXException {
 
         var documentToDisplay = document;
-        if (isAsice(documentToDisplay.getDocument().getMimeType())) {
+        if (isAsice(documentToDisplay.getDSSDocument().getMimeType())) {
             try {
-                documentToDisplay = new AutogramDocument(AsicContainerUtils.getOriginalDocument(document.getDocument()));
+                documentToDisplay = new AutogramDocument(AsicContainerUtils.getOriginalDocument(document.getDSSDocument()));
             } catch (AutogramException e) {
                 return new UnsupportedVisualization(job);
             }
@@ -52,29 +52,29 @@ public class DocumentVisualizationBuilder {
 
         var transformation = parameters.getTransformation();
 
-        if (isDocumentSupportingTransformation(documentToDisplay.getDocument()) && isTranformationAvailable(transformation)) {
+        if (isDocumentSupportingTransformation(documentToDisplay.getDSSDocument()) && isTranformationAvailable(transformation)) {
             var transformationOutputMimeType = parameters.getXsltDestinationType();
 
             if (transformationOutputMimeType.equals("HTML"))
-                return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDocument(), transformation), job);
+                return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
 
             if (transformationOutputMimeType.equals("TXT"))
-                return new PlainTextVisualization(EFormUtils.transform(documentToDisplay.getDocument(), transformation), job);
+                return new PlainTextVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
 
             return new UnsupportedVisualization(job);
         }
 
-        if (documentToDisplay.getDocument().getMimeType().equals(MimeTypeEnum.HTML))
-            return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDocument(), transformation), job);
+        if (documentToDisplay.getDSSDocument().getMimeType().equals(MimeTypeEnum.HTML))
+            return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
 
-        if (isTxt(documentToDisplay.getDocument().getMimeType()))
-            return new PlainTextVisualization(new String(documentToDisplay.getDocument().openStream().readAllBytes(), StandardCharsets.UTF_8), job);
+        if (isTxt(documentToDisplay.getDSSDocument().getMimeType()))
+            return new PlainTextVisualization(new String(documentToDisplay.getDSSDocument().openStream().readAllBytes(), StandardCharsets.UTF_8), job);
 
-        if (isPDF(documentToDisplay.getDocument().getMimeType()))
+        if (isPDF(documentToDisplay.getDSSDocument().getMimeType()))
             return new PDFVisualization(documentToDisplay, job, userSettings);
 
-        if (isImage(documentToDisplay.getDocument().getMimeType()))
-            return new ImageVisualization(documentToDisplay.getDocument(), job);
+        if (isImage(documentToDisplay.getDSSDocument().getMimeType()))
+            return new ImageVisualization(documentToDisplay.getDSSDocument(), job);
 
         return new UnsupportedVisualization(job);
     }

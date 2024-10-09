@@ -70,11 +70,11 @@ public class SignRequestBody {
         if (parameters == null)
             throw new RequestValidationException("Parameters are required", "");
 
-        parameters.validate(getDocument().getDocument().getMimeType());
+        parameters.validate(getDocument().getDSSDocument().getMimeType());
     }
 
     public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getSigningParameters(isBase64(), getDocument().getDocument(), tspSource, plainXmlEnabled);
+        return parameters.getSigningParameters(isBase64(), getDocument().getDSSDocument(), tspSource, plainXmlEnabled);
     }
 
     public String getBatchId() {

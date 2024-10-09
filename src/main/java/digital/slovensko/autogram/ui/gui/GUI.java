@@ -16,7 +16,6 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
-import eu.europa.esig.dss.enumerations.KeyUsageBit;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -342,8 +341,8 @@ public class GUI implements UI {
 
     public void showVisualization(Visualization visualization, Autogram autogram) {
         var title = "Dokument";
-        if (visualization.getJob().getDocument().getDocument().getName() != null)
-            title = "Dokument " + visualization.getJob().getDocument().getDocument().getName();
+        if (visualization.getJob().getDocument().getDSSDocument().getName() != null)
+            title = "Dokument " + visualization.getJob().getDocument().getDSSDocument().getName();
 
         var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);
