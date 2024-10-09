@@ -184,7 +184,7 @@ public class SigningJob {
         return new SigningJob(autogramDocument, params, responder);
     }
 
-    public static SigningJob buildFromRequest(AutogramDocument document, Autogram autogram, SigningParameters params, Responder responder) {
+    public static SigningJob buildFromRequest(AutogramDocument document, SigningParameters params, Responder responder) {
         return build(document, params, responder);
     }
 

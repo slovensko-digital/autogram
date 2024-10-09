@@ -72,11 +72,7 @@ public class TransformationTests {
                     document,
                     null,
                     true);
-                var newUI = new AutogramTests.FakeUI();
-                var settings = new AutogramTests.TestSettings();
-                var autogram = new Autogram(newUI, settings);
-
-                SigningJob job = SigningJob.buildFromRequest(new AutogramDocument(document), autogram, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(new AutogramDocument(document), params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -153,11 +149,7 @@ public class TransformationTests {
                     document,
                     null,
                     true);
-                var newUI = new AutogramTests.FakeUI();
-                var settings = new AutogramTests.TestSettings();
-                var autogram = new Autogram(newUI, settings);
-
-                SigningJob job = SigningJob.buildFromRequest(new AutogramDocument(document), autogram, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(new AutogramDocument(document), params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
