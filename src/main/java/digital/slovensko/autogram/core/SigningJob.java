@@ -224,7 +224,6 @@ public class SigningJob {
     }
 
     public boolean shouldCheckPDFCompliance() {
-        // PDF/A doesn't support encryption
-        return parameters.getCheckPDFACompliance() && isPDF(document.getDSSDocument().getMimeType()) && document.getOpenDocumentPassword().length == 0;
+        return parameters.getCheckPDFACompliance() && isPDF(document.getDSSDocument().getMimeType());
     }
 }

@@ -57,6 +57,12 @@ public class Autogram {
             return;
 
         ui.onWorkThreadDo(() -> {
+            // PDF/A doesn't support encryption
+            if (job.getDocument().getOpenDocumentPassword().length > 0) {
+                ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
+                return;
+            }
+
             var result = new PDFAStructureValidator().validate(job.getDocument().getDSSDocument());
             if (!result.isCompliant()) {
                 ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
