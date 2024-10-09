@@ -48,8 +48,15 @@ public class PasswordController {
 
     public void initialize() {
         question.setText(questionText);
-        description.setText(descriptionText);
+
+        if (descriptionText != null) {
+            description.setText(descriptionText);
+            description.setManaged(true);
+            description.setVisible(true);
+        }
+
         error.setText(errorText);
+
         if(isSigningStep) {
             mainButton.setText("Podpísať");
             cancelButton.setManaged(true);
