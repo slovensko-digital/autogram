@@ -12,6 +12,10 @@ public class AutogramDocument {
         this.document = document;
     }
 
+    public boolean hasOpenDocumentPassword() {
+        return openDocumentPassword.length > 0;
+    }
+
     public char[] getOpenDocumentPassword() {
         return openDocumentPassword;
     }
@@ -29,7 +33,7 @@ public class AutogramDocument {
     }
 
     public char[] getSigningPassword() {
-        return openDocumentPassword.length > 0 ? openDocumentPassword : masterPassword;
+        return this.hasOpenDocumentPassword() ? openDocumentPassword : masterPassword;
     }
 
     public DSSDocument getDSSDocument() {
