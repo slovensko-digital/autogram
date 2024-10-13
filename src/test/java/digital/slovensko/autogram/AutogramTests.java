@@ -193,7 +193,7 @@ class AutogramTests {
         }
     }
 
-    public static class FakeUI implements UI {
+    private static class FakeUI implements UI {
         @Override
         public void startSigning(SigningJob signingJob, Autogram autogram) {
 
@@ -318,7 +318,7 @@ class AutogramTests {
         }
     }
 
-    public static class TestSettings extends UserSettings {
+    private static class TestSettings extends UserSettings {
         @Override
         public DriverDetector getDriverDetector() {
             List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
