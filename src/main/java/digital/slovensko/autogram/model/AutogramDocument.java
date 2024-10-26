@@ -33,7 +33,7 @@ public class AutogramDocument {
     }
 
     public char[] getSigningPassword() {
-        return this.hasOpenDocumentPassword() ? openDocumentPassword : masterPassword;
+        return hasOpenDocumentPassword() ? openDocumentPassword : masterPassword;
     }
 
     public DSSDocument getDSSDocument() {
