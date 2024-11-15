@@ -208,7 +208,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setTsaServer(String value) {
-        if (value == null) {
+        if (value == null || value.isEmpty()) {
             tspSource = null;
             return;
         }
