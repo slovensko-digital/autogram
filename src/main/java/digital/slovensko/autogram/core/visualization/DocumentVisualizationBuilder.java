@@ -58,6 +58,9 @@ public class DocumentVisualizationBuilder {
             if (transformationOutputMimeType.equals("HTML"))
                 return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
+            if (transformationOutputMimeType.equals("XHTML"))
+                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+
             if (transformationOutputMimeType.equals("TXT"))
                 return new PlainTextVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
