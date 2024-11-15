@@ -24,7 +24,7 @@
         <slf4j.version>2.0.13</slf4j.version>
         <junit.version>5.10.2</junit.version>
         <mockito.version>5.12.0</mockito.version>
-        <commons-cli.version>1.6.0</commons-cli.version>
+        <commons-cli.version>1.9.0</commons-cli.version>
         <xmlunit.version>2.10.0</xmlunit.version>
         <snakeyml.version>2.2</snakeyml.version>
         <jimfs.version>1.3.0</jimfs.version>
