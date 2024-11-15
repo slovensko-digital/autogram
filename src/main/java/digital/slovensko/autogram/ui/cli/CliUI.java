@@ -20,6 +20,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 public class CliUI implements UI {
@@ -46,7 +47,7 @@ public class CliUI implements UI {
     }
 
     private void sign(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++,
+        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getDSSDocument().getName(), nJobsSigned++,
                 nJobsTotal));
         autogram.sign(job, activeKey);
     }
@@ -265,6 +266,11 @@ public class CliUI implements UI {
     @Override
     public void showError(AutogramException e) {
         System.err.println(parseError(e));
+    }
+
+    @Override
+    public char[] getDocumentPassword(DSSDocument document) {
+        return System.console().readPassword("Enter document (" + document.getName() + ") password (hidden): ");
     }
 
     @Override

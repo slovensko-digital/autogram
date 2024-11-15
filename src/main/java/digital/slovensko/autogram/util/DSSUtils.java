@@ -1,9 +1,10 @@
 package digital.slovensko.autogram.util;
 
+import digital.slovensko.autogram.model.AutogramDocument;
 import eu.europa.esig.dss.asic.cades.validation.ASiCContainerWithCAdESValidatorFactory;
 import eu.europa.esig.dss.asic.xades.validation.ASiCContainerWithXAdESValidatorFactory;
 import eu.europa.esig.dss.cades.validation.CMSDocumentValidatorFactory;
-import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.pades.validation.PDFDocumentValidator;
 import eu.europa.esig.dss.pades.validation.PDFDocumentValidatorFactory;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
@@ -37,21 +38,24 @@ public class DSSUtils {
         return out;
     }
 
-    public static SignedDocumentValidator createDocumentValidator(DSSDocument document) {
-        if (new PDFDocumentValidatorFactory().isSupported(document))
-            return new PDFDocumentValidatorFactory().create(document);
+    public static SignedDocumentValidator createDocumentValidator(AutogramDocument document) {
+        if (new PDFDocumentValidatorFactory().isSupported(document.getDSSDocument())) {
+            var validator = new PDFDocumentValidator(document.getDSSDocument());
+            validator.setPasswordProtection(document.getOpenDocumentPassword());
+            return validator;
+        }
 
-        if (new XMLDocumentValidatorFactory().isSupported(document))
-            return new XMLDocumentValidatorFactory().create(document);
+        if (new XMLDocumentValidatorFactory().isSupported(document.getDSSDocument()))
+            return new XMLDocumentValidatorFactory().create(document.getDSSDocument());
 
-        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document))
-            return new ASiCContainerWithXAdESValidatorFactory().create(document);
+        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document.getDSSDocument()))
+            return new ASiCContainerWithXAdESValidatorFactory().create(document.getDSSDocument());
 
-        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document))
-            return new ASiCContainerWithCAdESValidatorFactory().create(document);
+        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document.getDSSDocument()))
+            return new ASiCContainerWithCAdESValidatorFactory().create(document.getDSSDocument());
 
-        if (new CMSDocumentValidatorFactory().isSupported(document))
-            return new CMSDocumentValidatorFactory().create(document);
+        if (new CMSDocumentValidatorFactory().isSupported(document.getDSSDocument()))
+            return new CMSDocumentValidatorFactory().create(document.getDSSDocument());
 
         return null;
     }

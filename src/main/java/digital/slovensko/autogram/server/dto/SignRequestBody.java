@@ -5,6 +5,7 @@ import java.util.Base64;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.MimeType;
@@ -15,6 +16,7 @@ import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
 public class SignRequestBody {
     private final Document document;
+    private AutogramDocument autogramDocument;
     private ServerSigningParameters parameters;
     private final String payloadMimeType;
     private final String batchId;
@@ -52,11 +54,15 @@ public class SignRequestBody {
         parameters.resolveSigningLevel(getDocument());
     }
 
-    public InMemoryDocument getDocument() {
+    public AutogramDocument getDocument() {
+        if (autogramDocument != null)
+            return autogramDocument;
+
         var content = decodeDocumentContent(document.getContent(), isBase64());
         var filename = document.getFilename();
 
-        return new InMemoryDocument(content, filename, getMimetype());
+        this.autogramDocument = new AutogramDocument(new InMemoryDocument(content, filename, getMimetype()));
+        return autogramDocument;
     }
 
     public void validateSigningParameters() throws RequestValidationException, MalformedBodyException,
@@ -64,11 +70,11 @@ public class SignRequestBody {
         if (parameters == null)
             throw new RequestValidationException("Parameters are required", "");
 
-        parameters.validate(getDocument().getMimeType());
+        parameters.validate(getDocument().getDSSDocument().getMimeType());
     }
 
     public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getSigningParameters(isBase64(), getDocument(), tspSource, plainXmlEnabled);
+        return parameters.getSigningParameters(isBase64(), getDocument().getDSSDocument(), tspSource, plainXmlEnabled);
     }
 
     public String getBatchId() {
