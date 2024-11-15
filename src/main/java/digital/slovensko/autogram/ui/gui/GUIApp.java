@@ -27,6 +27,7 @@ public class GUIApp extends Application {
 
             Platform.setImplicitExit(false);
             setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
+            var titleString = "Autogram";
 
             final Autogram autogram;
             autogram = new Autogram(new GUI(getHostServices(), userSettings), userSettings);
@@ -38,8 +39,6 @@ public class GUIApp extends Application {
 
             if (!params.isStandaloneMode())
                 GUIUtils.startIconified(windowStage);
-
-            windowStage.setTitle("Autogram");
 
             if (userSettings.isServerEnabled()) {
                 try {
@@ -58,7 +57,7 @@ public class GUIApp extends Application {
                     });
 
                     server = null;
-                    windowStage.setTitle("Autogram (obmedzený režim)");
+                    titleString = "Autogram (obmedzený režim)";
                 }
             }
 
@@ -68,6 +67,7 @@ public class GUIApp extends Application {
                 });
 
             GUIUtils.suppressDefaultFocus(windowStage, controller);
+            windowStage.setTitle(titleString);
             windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml")));
             windowStage.setResizable(false);
             windowStage.show();
