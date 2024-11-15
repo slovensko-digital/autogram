@@ -9,7 +9,6 @@ import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
 import digital.slovensko.autogram.util.PDFUtils;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
@@ -81,14 +80,6 @@ public class Autogram {
             case OPEN_DOCUMENT_PASSWORD -> document.setOpenDocumentPassword(password);
             case MASTER_PASSWORD -> document.setMasterPassword(password);
         }
-    }
-
-    public SigningJob buildSigningJobFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var document = SigningJob.createDSSFileDocumentFromFile(file);
-        handleProtectedPdfDocument(document);
-
-        var parameters = SigningJob.getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return SigningJob.build(document, parameters, responder);
     }
 
     public void wrapInWorkThread(Runnable callback) {

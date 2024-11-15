@@ -53,7 +53,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.build(new AutogramDocument(document), parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(new AutogramDocument(document), parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -69,7 +69,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.build(new AutogramDocument(document), parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(new AutogramDocument(document), parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -92,7 +92,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.build(new AutogramDocument(document), parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(new AutogramDocument(document), parameters, responder), key));
     }
 
     @ParameterizedTest
@@ -106,7 +106,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.build(new AutogramDocument(document), parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(new AutogramDocument(document), parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -137,7 +137,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(autogram.buildSigningJobFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, false), key));
+                key -> autogram.sign(SigningJob.buildFromFile(file, autogram, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, false), key));
 
         verify(responder).onDocumentSigned(any());
     }

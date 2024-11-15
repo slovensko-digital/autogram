@@ -114,7 +114,7 @@ public class MainMenuController implements SuppressedFocusController {
 
             autogram.wrapInWorkThread(() -> {
                 try {
-                    var job = autogram.buildSigningJobFromFile(file,
+                    var job = SigningJob.buildFromFile(file, autogram,
                             new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
                             userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
 

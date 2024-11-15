@@ -31,7 +31,7 @@ public class CliApp {
             var source = settings.getSource();
             var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
-                    .map(f -> autogram.buildSigningJobFromFile(f, new SaveFileResponder(f, autogram, targetPathBuilder),
+                    .map(f -> SigningJob.buildFromFile(f, autogram, new SaveFileResponder(f, autogram, targetPathBuilder),
                             settings.isPdfaCompliance(), settings.getSignatureLevel(), settings.isEn319132(),
                             settings.getTspSource(), settings.isPlainXmlEnabled()))
                     .toList();
