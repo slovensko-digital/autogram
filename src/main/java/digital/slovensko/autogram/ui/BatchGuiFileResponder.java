@@ -65,7 +65,7 @@ public class BatchGuiFileResponder extends BatchResponder {
                     onAllFilesSigned(batch);
                 }), batch);
 
-                var job = SigningJob.buildFromFile(file, autogram, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled);
+                var job = autogram.buildSigningJobFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled);
                 autogram.batchSign(job, batch.getBatchId());
             } catch (DSSException e) {
                 autogram.onSigningFailed(AutogramException.createFromDSSException(e));

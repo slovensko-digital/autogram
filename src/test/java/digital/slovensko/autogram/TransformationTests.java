@@ -72,7 +72,7 @@ public class TransformationTests {
                     document,
                     null,
                     true);
-                SigningJob job = SigningJob.buildFromRequest(new AutogramDocument(document), params, dummyResponder);
+                SigningJob job = SigningJob.build(new AutogramDocument(document), params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -149,7 +149,7 @@ public class TransformationTests {
                     document,
                     null,
                     true);
-                SigningJob job = SigningJob.buildFromRequest(new AutogramDocument(document), params, dummyResponder);
+                SigningJob job = SigningJob.build(new AutogramDocument(document), params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
