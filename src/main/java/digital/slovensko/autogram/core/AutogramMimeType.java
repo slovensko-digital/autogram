@@ -10,6 +10,8 @@ public record AutogramMimeType(
     String extension
 ) implements MimeType {
     public static final AutogramMimeType XML_DATACONTAINER = new AutogramMimeType("application/vnd.gov.sk.xmldatacontainer+xml", null);
+    public static final AutogramMimeType XML_DATACONTAINER_WITH_CHARSET = new AutogramMimeType("application/vnd.gov.sk.xmldatacontainer+xml; charset=UTF-8", null);
+    public static final AutogramMimeType TEXT_WITH_CHARSET = new AutogramMimeType("text/plain; charset=UTF-8", null);
     public static final AutogramMimeType APPLICATION_XML = new AutogramMimeType("application/xml", null);
 
     @Override
@@ -41,10 +43,18 @@ public record AutogramMimeType(
     }
 
     public static boolean isXDC(MimeType mimeType) {
-        return mimeType.equals(XML_DATACONTAINER);
+        return mimeType.equals(XML_DATACONTAINER) || mimeType.equals(XML_DATACONTAINER_WITH_CHARSET);
     }
 
     public static boolean isPDF(MimeType mimeType) {
         return mimeType.equals(MimeTypeEnum.PDF);
+    }
+
+    public static boolean isTxt(MimeType mimeType) {
+        return mimeType.equals(MimeTypeEnum.TEXT) || mimeType.equals(TEXT_WITH_CHARSET);
+    }
+
+    public static boolean isImage(MimeType mimeType) {
+        return mimeType.equals(MimeTypeEnum.PNG) || mimeType.equals(MimeTypeEnum.JPEG);
     }
 }

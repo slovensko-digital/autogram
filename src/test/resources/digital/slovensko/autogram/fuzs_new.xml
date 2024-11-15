@@ -1,0 +1,1687 @@
+<?mso-infoPathSolution name="urn:schemas-microsoft-com:office:infopath:FUZS:http---www-justice-gov-sk-Forms20230821" solutionVersion="1.0.0.1137" productVersion="14.0.0.0" PIVersion="1.0.0.0" href="http://www.justice.gov.sk/FormServerTemplates/FUZS.xsn" language="sk-SK"?>
+<?mso-application progid="InfoPath.Document" versionProgid="InfoPath.Document.2"?>
+<?mso-infoPath-file-attachment-present?>
+<?xml-stylesheet type="text/xsl" href="http://eformulare.justice.sk/schemasAndTransformations/FUZS.2023.08.21.xslt" ?>
+<FUZS xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.justice.gov.sk/Forms20230821">
+  <IdentifikacneUdajeFormulara>
+    <Nazov />
+    <IdentifikatorMFSR />
+    <Verzia>1.0.0.1137</Verzia>
+    <Popis>ZSRO</Popis>
+    <NazovGaranta />
+    <PlatnostOd xsi:nil="true" />
+    <PlatnostDo xsi:nil="true" />
+  </IdentifikacneUdajeFormulara>
+  <InfoPathData>
+    <ID>0bd016e3-7bd1-4b62-bc05-4335625b55a3</ID>
+    <Message />
+    <BinaryIn xsi:nil="true" />
+    <BinaryOut xsi:nil="true" />
+    <ValidationResult>0</ValidationResult>
+    <ShowWarnings>true</ShowWarnings>
+  </InfoPathData>
+  <ObchodnyRegister>
+    <OkresnySud>Mestský súd Bratislava III</OkresnySud>
+    <Ulica>Námestie Biely Kríž</Ulica>
+    <Cislo>7</Cislo>
+    <Obec>Bratislava III</Obec>
+    <Psc>83607</Psc>
+    <Id>2</Id>
+    <Kod>B</Kod>
+  </ObchodnyRegister>
+  <ZapisatK xsi:nil="true" />
+  <PrilohyKNavrhu>
+    <poradoveCislo xsi:nil="true" />
+    <Nazov />
+  </PrilohyKNavrhu>
+  <Spolocnost>Place holder, s.r.o.</Spolocnost>
+  <V>Bratislava</V>
+  <Dna>2024-06-24</Dna>
+  <Postou>true</Postou>
+  <Osobne>false</Osobne>
+  <SpisovaZnacka>
+    <Oddiel>
+      <Id>3</Id>
+      <Value>Sro</Value>
+    </Oddiel>
+    <VlozkaCislo>12345</VlozkaCislo>
+    <Sud>B</Sud>
+  </SpisovaZnacka>
+  <NavrhovatelFO>
+    <Osoba>
+      <TitulPred />
+      <Meno />
+      <Priezvisko />
+      <TitulZa />
+      <DatumNarodenia xsi:nil="true" />
+      <RodneCislo />
+      <TypInyIdentifikator>
+        <Id />
+        <Value />
+        <Znacka />
+      </TypInyIdentifikator>
+      <InyIdentifikacnyUdaj />
+    </Osoba>
+    <Adresa>
+      <Ulica />
+      <Cislo />
+      <Obec>
+        <Id />
+        <StatId />
+        <Value />
+        <Obce />
+      </Obec>
+      <Psc />
+      <Stat>
+        <Id />
+        <Value />
+      </Stat>
+    </Adresa>
+  </NavrhovatelFO>
+  <NavrhovatelPO>
+    <ObchodneMeno>Place Holder, s.r.o.</ObchodneMeno>
+    <Ico>12345678</Ico>
+    <InyIdentifikacnyUdaj />
+    <Adresa>
+      <Ulica>Test</Ulica>
+      <Cislo>123</Cislo>
+      <Obec>
+        <Id>529397</Id>
+        <StatId />
+        <Value>Bratislava - mestská časť Karlova Ves</Value>
+        <Obce />
+      </Obec>
+      <Psc>84104</Psc>
+      <Stat>
+        <Id>703</Id>
+        <Value>Slovenská republika</Value>
+      </Stat>
+    </Adresa>
+  </NavrhovatelPO>
+  <ObchodneMeno p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis />
+    <p4:Vymaz />
+  </ObchodneMeno>
+  <Sidlo p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:Ulica />
+      <p4:Cislo />
+      <p4:Obec>
+        <p4:Id />
+        <p4:StatId />
+        <p4:Value />
+        <p4:Obce />
+      </p4:Obec>
+      <p4:Psc />
+      <p4:Stat>
+        <p4:Id />
+        <p4:Value />
+      </p4:Stat>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:Ulica />
+      <p4:Cislo />
+      <p4:Obec>
+        <p4:Id />
+        <p4:StatId />
+        <p4:Value />
+        <p4:Obce />
+      </p4:Obec>
+      <p4:Psc />
+      <p4:Stat>
+        <p4:Id />
+        <p4:Value />
+      </p4:Stat>
+    </p4:Vymaz>
+  </Sidlo>
+  <Ico p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis />
+    <p4:Vymaz />
+  </Ico>
+  <PravnaForma p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:Id />
+      <p4:Value />
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:Id />
+      <p4:Value />
+    </p4:Vymaz>
+  </PravnaForma>
+  <PredmetPodnikania p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:PoradoveCislo />
+      <p4:Cinnost />
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:PoradoveCislo />
+      <p4:Cinnost />
+    </p4:Vymaz>
+  </PredmetPodnikania>
+  <StatutarnyOrganFO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Id />
+        <p4:Value />
+      </p4:FunkciaClenaStatutarnehoOrganu>
+      <p4:Funkcia />
+      <p4:Osoba>
+        <p4:TitulPred />
+        <p4:Meno />
+        <p4:Priezvisko />
+        <p4:TitulZa />
+        <p4:DatumNarodenia xsi:nil="true" />
+        <p4:RodneCislo />
+        <p4:TypInyIdentifikator>
+          <p4:Id />
+          <p4:Value />
+          <p4:Znacka />
+        </p4:TypInyIdentifikator>
+        <p4:InyIdentifikacnyUdaj />
+      </p4:Osoba>
+      <p4:Bydlisko>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Bydlisko>
+      <p4:DenVznikuFunkcie xsi:nil="true" />
+      <p4:DenSkonceniaFunkcie xsi:nil="true" />
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Id />
+        <p4:Value />
+      </p4:FunkciaClenaStatutarnehoOrganu>
+      <p4:Funkcia />
+      <p4:Osoba>
+        <p4:TitulPred />
+        <p4:Meno />
+        <p4:Priezvisko />
+        <p4:TitulZa />
+        <p4:DatumNarodenia xsi:nil="true" />
+        <p4:RodneCislo />
+        <p4:TypInyIdentifikator>
+          <p4:Id />
+          <p4:Value />
+          <p4:Znacka />
+        </p4:TypInyIdentifikator>
+        <p4:InyIdentifikacnyUdaj />
+      </p4:Osoba>
+      <p4:Bydlisko>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Bydlisko>
+      <p4:DenVznikuFunkcie xsi:nil="true" />
+      <p4:DenSkonceniaFunkcie xsi:nil="true" />
+    </p4:Vymaz>
+  </StatutarnyOrganFO>
+  <StatutarnyOrganSposobKonania p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis />
+    <p4:Vymaz />
+  </StatutarnyOrganSposobKonania>
+  <OrganizacnaZlozka p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:OrganizacnaZlozka>
+      <p4:Zapis>
+        <p4:Oznacenie />
+        <p4:AdresaUmiestnenia>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:AdresaUmiestnenia>
+      </p4:Zapis>
+      <p4:Vymaz>
+        <p4:Oznacenie />
+        <p4:AdresaUmiestnenia>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:AdresaUmiestnenia>
+      </p4:Vymaz>
+      <p4:Veduci>
+        <p4:Zapis>
+          <p4:FunkciaClenaStatutarnehoOrganu>
+            <p4:Id />
+            <p4:Value />
+          </p4:FunkciaClenaStatutarnehoOrganu>
+          <p4:Funkcia />
+          <p4:Osoba>
+            <p4:TitulPred />
+            <p4:Meno />
+            <p4:Priezvisko />
+            <p4:TitulZa />
+            <p4:DatumNarodenia xsi:nil="true" />
+            <p4:RodneCislo />
+            <p4:TypInyIdentifikator>
+              <p4:Id />
+              <p4:Value />
+              <p4:Znacka />
+            </p4:TypInyIdentifikator>
+            <p4:InyIdentifikacnyUdaj />
+          </p4:Osoba>
+          <p4:Bydlisko>
+            <p4:Ulica />
+            <p4:Cislo />
+            <p4:Obec>
+              <p4:Id />
+              <p4:StatId />
+              <p4:Value />
+              <p4:Obce />
+            </p4:Obec>
+            <p4:Psc />
+            <p4:Stat>
+              <p4:Id />
+              <p4:Value />
+            </p4:Stat>
+          </p4:Bydlisko>
+          <p4:DenVznikuFunkcie xsi:nil="true" />
+          <p4:DenSkonceniaFunkcie xsi:nil="true" />
+        </p4:Zapis>
+        <p4:Vymaz>
+          <p4:FunkciaClenaStatutarnehoOrganu>
+            <p4:Id />
+            <p4:Value />
+          </p4:FunkciaClenaStatutarnehoOrganu>
+          <p4:Funkcia />
+          <p4:Osoba>
+            <p4:TitulPred />
+            <p4:Meno />
+            <p4:Priezvisko />
+            <p4:TitulZa />
+            <p4:DatumNarodenia xsi:nil="true" />
+            <p4:RodneCislo />
+            <p4:TypInyIdentifikator>
+              <p4:Id />
+              <p4:Value />
+              <p4:Znacka />
+            </p4:TypInyIdentifikator>
+            <p4:InyIdentifikacnyUdaj />
+          </p4:Osoba>
+          <p4:Bydlisko>
+            <p4:Ulica />
+            <p4:Cislo />
+            <p4:Obec>
+              <p4:Id />
+              <p4:StatId />
+              <p4:Value />
+              <p4:Obce />
+            </p4:Obec>
+            <p4:Psc />
+            <p4:Stat>
+              <p4:Id />
+              <p4:Value />
+            </p4:Stat>
+          </p4:Bydlisko>
+          <p4:DenVznikuFunkcie xsi:nil="true" />
+          <p4:DenSkonceniaFunkcie xsi:nil="true" />
+        </p4:Vymaz>
+      </p4:Veduci>
+      <p4:PredmetPodnikania>
+        <p4:Zapis>
+          <p4:PoradoveCislo />
+          <p4:Cinnost />
+        </p4:Zapis>
+        <p4:Vymaz>
+          <p4:PoradoveCislo />
+          <p4:Cinnost />
+        </p4:Vymaz>
+      </p4:PredmetPodnikania>
+    </p4:OrganizacnaZlozka>
+  </OrganizacnaZlozka>
+  <Prokurista p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Id />
+        <p4:Value />
+      </p4:FunkciaClenaStatutarnehoOrganu>
+      <p4:Funkcia />
+      <p4:Osoba>
+        <p4:TitulPred />
+        <p4:Meno />
+        <p4:Priezvisko />
+        <p4:TitulZa />
+        <p4:DatumNarodenia xsi:nil="true" />
+        <p4:RodneCislo />
+        <p4:TypInyIdentifikator>
+          <p4:Id />
+          <p4:Value />
+          <p4:Znacka />
+        </p4:TypInyIdentifikator>
+        <p4:InyIdentifikacnyUdaj />
+      </p4:Osoba>
+      <p4:Bydlisko>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Bydlisko>
+      <p4:DenVznikuFunkcie xsi:nil="true" />
+      <p4:DenSkonceniaFunkcie xsi:nil="true" />
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Id />
+        <p4:Value />
+      </p4:FunkciaClenaStatutarnehoOrganu>
+      <p4:Funkcia />
+      <p4:Osoba>
+        <p4:TitulPred />
+        <p4:Meno />
+        <p4:Priezvisko />
+        <p4:TitulZa />
+        <p4:DatumNarodenia xsi:nil="true" />
+        <p4:RodneCislo />
+        <p4:TypInyIdentifikator>
+          <p4:Id />
+          <p4:Value />
+          <p4:Znacka />
+        </p4:TypInyIdentifikator>
+        <p4:InyIdentifikacnyUdaj />
+      </p4:Osoba>
+      <p4:Bydlisko>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Bydlisko>
+      <p4:DenVznikuFunkcie xsi:nil="true" />
+      <p4:DenSkonceniaFunkcie xsi:nil="true" />
+    </p4:Vymaz>
+  </Prokurista>
+  <ProkuraSposobKonania p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis />
+    <p4:Vymaz />
+  </ProkuraSposobKonania>
+  <SpolocnikFO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:Spolocnik>
+        <p4:Osoba>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Osoba>
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Spolocnik>
+      <p4:Vklad>
+        <p4:VyskaVkladu>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+          <p4:TypVkladu>
+            <p4:Id />
+            <p4:Value />
+          </p4:TypVkladu>
+        </p4:VyskaVkladu>
+        <p4:RozsahSplatenia>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+        </p4:RozsahSplatenia>
+      </p4:Vklad>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:Spolocnik>
+        <p4:Osoba>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Osoba>
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Spolocnik>
+      <p4:Vklad>
+        <p4:VyskaVkladu>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+          <p4:TypVkladu>
+            <p4:Id />
+            <p4:Value />
+          </p4:TypVkladu>
+        </p4:VyskaVkladu>
+        <p4:RozsahSplatenia>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+        </p4:RozsahSplatenia>
+      </p4:Vklad>
+    </p4:Vymaz>
+    <p4:ZaloznePravo>
+      <p4:Zapis>
+        <p4:CisloZaloznejZmluvy />
+        <p4:DatumUzavretiaZaloznejZmluvy xsi:nil="true" />
+      </p4:Zapis>
+      <p4:Vymaz>
+        <p4:CisloZaloznejZmluvy />
+        <p4:DatumUzavretiaZaloznejZmluvy xsi:nil="true" />
+      </p4:Vymaz>
+      <p4:ZaloznyVeritelFO>
+        <p4:Zapis>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Zapis>
+        <p4:Vymaz>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Vymaz>
+      </p4:ZaloznyVeritelFO>
+      <p4:ZaloznyVeritelPO>
+        <p4:Zapis>
+          <p4:ObchodneMeno />
+          <p4:Ico />
+          <p4:InyIdentifikacnyUdaj />
+          <p4:Adresa>
+            <p4:Ulica />
+            <p4:Cislo />
+            <p4:Obec>
+              <p4:Id />
+              <p4:StatId />
+              <p4:Value />
+              <p4:Obce />
+            </p4:Obec>
+            <p4:Psc />
+            <p4:Stat>
+              <p4:Id />
+              <p4:Value />
+            </p4:Stat>
+          </p4:Adresa>
+        </p4:Zapis>
+        <p4:Vymaz>
+          <p4:ObchodneMeno />
+          <p4:Ico />
+          <p4:InyIdentifikacnyUdaj />
+          <p4:Adresa>
+            <p4:Ulica />
+            <p4:Cislo />
+            <p4:Obec>
+              <p4:Id />
+              <p4:StatId />
+              <p4:Value />
+              <p4:Obce />
+            </p4:Obec>
+            <p4:Psc />
+            <p4:Stat>
+              <p4:Id />
+              <p4:Value />
+            </p4:Stat>
+          </p4:Adresa>
+        </p4:Vymaz>
+      </p4:ZaloznyVeritelPO>
+    </p4:ZaloznePravo>
+  </SpolocnikFO>
+  <SpolocnikPO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:Spolocnik>
+        <p4:ObchodneMeno />
+        <p4:Ico />
+        <p4:InyIdentifikacnyUdaj />
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Spolocnik>
+      <p4:Vklad>
+        <p4:VyskaVkladu>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+          <p4:TypVkladu>
+            <p4:Id />
+            <p4:Value />
+          </p4:TypVkladu>
+        </p4:VyskaVkladu>
+        <p4:RozsahSplatenia>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+        </p4:RozsahSplatenia>
+      </p4:Vklad>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:Spolocnik>
+        <p4:ObchodneMeno />
+        <p4:Ico />
+        <p4:InyIdentifikacnyUdaj />
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Spolocnik>
+      <p4:Vklad>
+        <p4:VyskaVkladu>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+          <p4:TypVkladu>
+            <p4:Id />
+            <p4:Value />
+          </p4:TypVkladu>
+        </p4:VyskaVkladu>
+        <p4:RozsahSplatenia>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+        </p4:RozsahSplatenia>
+      </p4:Vklad>
+    </p4:Vymaz>
+    <p4:ZaloznePravo>
+      <p4:Zapis>
+        <p4:CisloZaloznejZmluvy />
+        <p4:DatumUzavretiaZaloznejZmluvy xsi:nil="true" />
+      </p4:Zapis>
+      <p4:Vymaz>
+        <p4:CisloZaloznejZmluvy />
+        <p4:DatumUzavretiaZaloznejZmluvy xsi:nil="true" />
+      </p4:Vymaz>
+      <p4:ZaloznyVeritelFO>
+        <p4:Zapis>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Zapis>
+        <p4:Vymaz>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Vymaz>
+      </p4:ZaloznyVeritelFO>
+      <p4:ZaloznyVeritelPO>
+        <p4:Zapis>
+          <p4:ObchodneMeno />
+          <p4:Ico />
+          <p4:InyIdentifikacnyUdaj />
+          <p4:Adresa>
+            <p4:Ulica />
+            <p4:Cislo />
+            <p4:Obec>
+              <p4:Id />
+              <p4:StatId />
+              <p4:Value />
+              <p4:Obce />
+            </p4:Obec>
+            <p4:Psc />
+            <p4:Stat>
+              <p4:Id />
+              <p4:Value />
+            </p4:Stat>
+          </p4:Adresa>
+        </p4:Zapis>
+        <p4:Vymaz>
+          <p4:ObchodneMeno />
+          <p4:Ico />
+          <p4:InyIdentifikacnyUdaj />
+          <p4:Adresa>
+            <p4:Ulica />
+            <p4:Cislo />
+            <p4:Obec>
+              <p4:Id />
+              <p4:StatId />
+              <p4:Value />
+              <p4:Obce />
+            </p4:Obec>
+            <p4:Psc />
+            <p4:Stat>
+              <p4:Id />
+              <p4:Value />
+            </p4:Stat>
+          </p4:Adresa>
+        </p4:Vymaz>
+      </p4:ZaloznyVeritelPO>
+    </p4:ZaloznePravo>
+  </SpolocnikPO>
+  <Spoluvlastnictvo p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:SpolocnyObchodnyPodiel>
+      <p4:Zapis>
+        <p4:VyskaVkladu>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+          <p4:TypVkladu>
+            <p4:Id />
+            <p4:Value />
+          </p4:TypVkladu>
+        </p4:VyskaVkladu>
+        <p4:RozsahSplatenia>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+        </p4:RozsahSplatenia>
+      </p4:Zapis>
+      <p4:Vymaz>
+        <p4:VyskaVkladu>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+          <p4:TypVkladu>
+            <p4:Id />
+            <p4:Value />
+          </p4:TypVkladu>
+        </p4:VyskaVkladu>
+        <p4:RozsahSplatenia>
+          <p4:Suma xsi:nil="true" />
+          <p4:Mena>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:Mena>
+        </p4:RozsahSplatenia>
+      </p4:Vymaz>
+    </p4:SpolocnyObchodnyPodiel>
+    <p4:SpolocnyZastupcaFO>
+      <p4:Zapis>
+        <p4:Osoba>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Osoba>
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Zapis>
+      <p4:Vymaz>
+        <p4:Osoba>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Osoba>
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Vymaz>
+    </p4:SpolocnyZastupcaFO>
+    <p4:SpolocnyZastupcaPO>
+      <p4:Zapis>
+        <p4:ObchodneMeno />
+        <p4:Ico />
+        <p4:InyIdentifikacnyUdaj />
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Zapis>
+      <p4:Vymaz>
+        <p4:ObchodneMeno />
+        <p4:Ico />
+        <p4:InyIdentifikacnyUdaj />
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Vymaz>
+    </p4:SpolocnyZastupcaPO>
+    <p4:SpoluvlastnikFO>
+      <p4:Zapis>
+        <p4:Osoba>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Osoba>
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Zapis>
+      <p4:Vymaz>
+        <p4:Osoba>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Osoba>
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Vymaz>
+    </p4:SpoluvlastnikFO>
+    <p4:SpoluvlastnikPO>
+      <p4:Zapis>
+        <p4:ObchodneMeno />
+        <p4:Ico />
+        <p4:InyIdentifikacnyUdaj />
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Zapis>
+      <p4:Vymaz>
+        <p4:ObchodneMeno />
+        <p4:Ico />
+        <p4:InyIdentifikacnyUdaj />
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Vymaz>
+    </p4:SpoluvlastnikPO>
+  </Spoluvlastnictvo>
+  <DozornaRada p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Id />
+        <p4:Value />
+      </p4:FunkciaClenaStatutarnehoOrganu>
+      <p4:Funkcia />
+      <p4:Osoba>
+        <p4:TitulPred />
+        <p4:Meno />
+        <p4:Priezvisko />
+        <p4:TitulZa />
+        <p4:DatumNarodenia xsi:nil="true" />
+        <p4:RodneCislo />
+        <p4:TypInyIdentifikator>
+          <p4:Id />
+          <p4:Value />
+          <p4:Znacka />
+        </p4:TypInyIdentifikator>
+        <p4:InyIdentifikacnyUdaj />
+      </p4:Osoba>
+      <p4:Bydlisko>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Bydlisko>
+      <p4:DenVznikuFunkcie xsi:nil="true" />
+      <p4:DenSkonceniaFunkcie xsi:nil="true" />
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Id />
+        <p4:Value />
+      </p4:FunkciaClenaStatutarnehoOrganu>
+      <p4:Funkcia />
+      <p4:Osoba>
+        <p4:TitulPred />
+        <p4:Meno />
+        <p4:Priezvisko />
+        <p4:TitulZa />
+        <p4:DatumNarodenia xsi:nil="true" />
+        <p4:RodneCislo />
+        <p4:TypInyIdentifikator>
+          <p4:Id />
+          <p4:Value />
+          <p4:Znacka />
+        </p4:TypInyIdentifikator>
+        <p4:InyIdentifikacnyUdaj />
+      </p4:Osoba>
+      <p4:Bydlisko>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Bydlisko>
+      <p4:DenVznikuFunkcie xsi:nil="true" />
+      <p4:DenSkonceniaFunkcie xsi:nil="true" />
+    </p4:Vymaz>
+  </DozornaRada>
+  <ZakladneImanie p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:Suma xsi:nil="true" />
+      <p4:Mena>
+        <p4:Id />
+        <p4:Value />
+        <p4:Znacka />
+      </p4:Mena>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:Suma xsi:nil="true" />
+      <p4:Mena>
+        <p4:Id />
+        <p4:Value />
+        <p4:Znacka />
+      </p4:Mena>
+    </p4:Vymaz>
+  </ZakladneImanie>
+  <RozsahSplatenia p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:Suma xsi:nil="true" />
+      <p4:Mena>
+        <p4:Id />
+        <p4:Value />
+        <p4:Znacka />
+      </p4:Mena>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:Suma xsi:nil="true" />
+      <p4:Mena>
+        <p4:Id />
+        <p4:Value />
+        <p4:Znacka />
+      </p4:Mena>
+    </p4:Vymaz>
+  </RozsahSplatenia>
+  <Likvidacia p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:VstupDatum xsi:nil="true" />
+      <p4:VstupPopis />
+      <p4:SkoncenieDatum xsi:nil="true" />
+      <p4:SkonceniePopis />
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:VstupDatum xsi:nil="true" />
+      <p4:VstupPopis />
+      <p4:SkoncenieDatum xsi:nil="true" />
+      <p4:SkonceniePopis />
+    </p4:Vymaz>
+  </Likvidacia>
+  <LikvidatorFO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Id />
+        <p4:Value />
+      </p4:FunkciaClenaStatutarnehoOrganu>
+      <p4:Funkcia />
+      <p4:Osoba>
+        <p4:TitulPred />
+        <p4:Meno />
+        <p4:Priezvisko />
+        <p4:TitulZa />
+        <p4:DatumNarodenia xsi:nil="true" />
+        <p4:RodneCislo />
+        <p4:TypInyIdentifikator>
+          <p4:Id />
+          <p4:Value />
+          <p4:Znacka />
+        </p4:TypInyIdentifikator>
+        <p4:InyIdentifikacnyUdaj />
+      </p4:Osoba>
+      <p4:Bydlisko>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Bydlisko>
+      <p4:DenVznikuFunkcie xsi:nil="true" />
+      <p4:DenSkonceniaFunkcie xsi:nil="true" />
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Id />
+        <p4:Value />
+      </p4:FunkciaClenaStatutarnehoOrganu>
+      <p4:Funkcia />
+      <p4:Osoba>
+        <p4:TitulPred />
+        <p4:Meno />
+        <p4:Priezvisko />
+        <p4:TitulZa />
+        <p4:DatumNarodenia xsi:nil="true" />
+        <p4:RodneCislo />
+        <p4:TypInyIdentifikator>
+          <p4:Id />
+          <p4:Value />
+          <p4:Znacka />
+        </p4:TypInyIdentifikator>
+        <p4:InyIdentifikacnyUdaj />
+      </p4:Osoba>
+      <p4:Bydlisko>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Bydlisko>
+      <p4:DenVznikuFunkcie xsi:nil="true" />
+      <p4:DenSkonceniaFunkcie xsi:nil="true" />
+    </p4:Vymaz>
+  </LikvidatorFO>
+  <LikvidatorPO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:Likvidator>
+        <p4:ObchodneMeno />
+        <p4:Ico />
+        <p4:InyIdentifikacnyUdaj />
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Likvidator>
+      <p4:FyzickaOsoba>
+        <p4:FunkciaClenaStatutarnehoOrganu>
+          <p4:Id />
+          <p4:Value />
+        </p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Funkcia />
+        <p4:Osoba>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Osoba>
+        <p4:Bydlisko>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Bydlisko>
+        <p4:DenVznikuFunkcie xsi:nil="true" />
+        <p4:DenSkonceniaFunkcie xsi:nil="true" />
+      </p4:FyzickaOsoba>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:Likvidator>
+        <p4:ObchodneMeno />
+        <p4:Ico />
+        <p4:InyIdentifikacnyUdaj />
+        <p4:Adresa>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Adresa>
+      </p4:Likvidator>
+      <p4:FyzickaOsoba>
+        <p4:FunkciaClenaStatutarnehoOrganu>
+          <p4:Id />
+          <p4:Value />
+        </p4:FunkciaClenaStatutarnehoOrganu>
+        <p4:Funkcia />
+        <p4:Osoba>
+          <p4:TitulPred />
+          <p4:Meno />
+          <p4:Priezvisko />
+          <p4:TitulZa />
+          <p4:DatumNarodenia xsi:nil="true" />
+          <p4:RodneCislo />
+          <p4:TypInyIdentifikator>
+            <p4:Id />
+            <p4:Value />
+            <p4:Znacka />
+          </p4:TypInyIdentifikator>
+          <p4:InyIdentifikacnyUdaj />
+        </p4:Osoba>
+        <p4:Bydlisko>
+          <p4:Ulica />
+          <p4:Cislo />
+          <p4:Obec>
+            <p4:Id />
+            <p4:StatId />
+            <p4:Value />
+            <p4:Obce />
+          </p4:Obec>
+          <p4:Psc />
+          <p4:Stat>
+            <p4:Id />
+            <p4:Value />
+          </p4:Stat>
+        </p4:Bydlisko>
+        <p4:DenVznikuFunkcie xsi:nil="true" />
+        <p4:DenSkonceniaFunkcie xsi:nil="true" />
+      </p4:FyzickaOsoba>
+    </p4:Vymaz>
+  </LikvidatorPO>
+  <LikvidaciaSposobKonania p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis />
+    <p4:Vymaz />
+  </LikvidaciaSposobKonania>
+  <SplynutieEnum>None</SplynutieEnum>
+  <ZluceniePO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+      <p4:PravnaFormaBris>
+        <p4:Id />
+        <p4:Value />
+      </p4:PravnaFormaBris>
+      <p4:slovZahrEnum>None</p4:slovZahrEnum>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+      <p4:PravnaFormaBris>
+        <p4:Id />
+        <p4:Value />
+      </p4:PravnaFormaBris>
+      <p4:slovZahrEnum>None</p4:slovZahrEnum>
+    </p4:Vymaz>
+  </ZluceniePO>
+  <RozdelovanaPO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+      <p4:PravnaFormaBris>
+        <p4:Id />
+        <p4:Value />
+      </p4:PravnaFormaBris>
+      <p4:slovZahrEnum>None</p4:slovZahrEnum>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+      <p4:PravnaFormaBris>
+        <p4:Id />
+        <p4:Value />
+      </p4:PravnaFormaBris>
+      <p4:slovZahrEnum>None</p4:slovZahrEnum>
+    </p4:Vymaz>
+  </RozdelovanaPO>
+  <OstatneNastupnickePO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+      <p4:PravnaFormaBris>
+        <p4:Id />
+        <p4:Value />
+      </p4:PravnaFormaBris>
+      <p4:slovZahrEnum>None</p4:slovZahrEnum>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+      <p4:PravnaFormaBris>
+        <p4:Id />
+        <p4:Value />
+      </p4:PravnaFormaBris>
+      <p4:slovZahrEnum>None</p4:slovZahrEnum>
+    </p4:Vymaz>
+  </OstatneNastupnickePO>
+  <NastupnickePO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+      <p4:PravnaFormaBris>
+        <p4:Id />
+        <p4:Value />
+      </p4:PravnaFormaBris>
+      <p4:slovZahrEnum>None</p4:slovZahrEnum>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+      <p4:PravnaFormaBris>
+        <p4:Id />
+        <p4:Value />
+      </p4:PravnaFormaBris>
+      <p4:slovZahrEnum>None</p4:slovZahrEnum>
+    </p4:Vymaz>
+  </NastupnickePO>
+  <OdovzdavtelImaniaPO p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:ObchodneMeno />
+      <p4:Ico />
+      <p4:InyIdentifikacnyUdaj />
+      <p4:Adresa>
+        <p4:Ulica />
+        <p4:Cislo />
+        <p4:Obec>
+          <p4:Id />
+          <p4:StatId />
+          <p4:Value />
+          <p4:Obce />
+        </p4:Obec>
+        <p4:Psc />
+        <p4:Stat>
+          <p4:Id />
+          <p4:Value />
+        </p4:Stat>
+      </p4:Adresa>
+    </p4:Vymaz>
+  </OdovzdavtelImaniaPO>
+  <Predaj p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis />
+    <p4:Vymaz />
+    <p4:CastiPodniku xsi:nil="true" />
+  </Predaj>
+  <InePravneSkutocnosti p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis />
+    <p4:Vymaz />
+  </InePravneSkutocnosti>
+  <Podpis>
+    <TitulPred />
+    <Meno />
+    <Priezvisko />
+    <TitulZa />
+  </Podpis>
+  <DobaUrcita p4:menit="false" xmlns:p4="http://www.justice.gov.sk/Forms20230821">
+    <p4:Zapis>
+      <p4:Datum xsi:nil="true" />
+      <p4:JeDobaUrcita xsi:nil="true" />
+    </p4:Zapis>
+    <p4:Vymaz>
+      <p4:Datum xsi:nil="true" />
+      <p4:JeDobaUrcita xsi:nil="true" />
+    </p4:Vymaz>
+  </DobaUrcita>
+</FUZS>

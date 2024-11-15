@@ -30,7 +30,7 @@ public class CliSettings extends UserSettings {
         settings.setMakeParentDirectories(cmd.hasOption("parents"));
         settings.setSignatureLevel(getValidSignatureLevel(cmd.getOptionValue("pdf-level", SignatureLevel.PAdES_BASELINE_B.name())));
         settings.setEn319132(cmd.hasOption("en319132"));
-        settings.setTsaServer(cmd.getOptionValue("tsa-server", null));
+        settings.setTsaServer(cmd.getOptionValue("tsa-server"));
         settings.setTsaEnabled(settings.getTsaServer() != null);
         settings.setBulkEnabled(true);
         settings.setPlainXmlEnabled(cmd.hasOption("plain-xml"));

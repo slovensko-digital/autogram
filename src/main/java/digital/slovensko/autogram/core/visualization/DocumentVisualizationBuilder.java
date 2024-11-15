@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import digital.slovensko.autogram.core.UserSettings;
 import eu.europa.esig.dss.model.DSSDocument;
 
 import org.xml.sax.SAXException;
@@ -29,15 +30,15 @@ public class DocumentVisualizationBuilder {
         this.parameters = parameters;
     }
 
-    public static Visualization fromJob(SigningJob job) throws IOException, ParserConfigurationException, SAXException {
-        return new DocumentVisualizationBuilder(job.getDocument(), job.getParameters()).build(job);
+    public static Visualization fromJob(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
+        return new DocumentVisualizationBuilder(job.getDocument(), job.getParameters()).build(job, userSettings);
     }
 
-    private Visualization build(SigningJob job) throws IOException, ParserConfigurationException, SAXException {
-        return createVisualization(job);
+    private Visualization build(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
+        return createVisualization(job, userSettings);
     }
 
-    private Visualization createVisualization(SigningJob job)
+    private Visualization createVisualization(SigningJob job, UserSettings userSettings)
         throws IOException, ParserConfigurationException, SAXException {
 
         var documentToDisplay = document;
@@ -57,6 +58,9 @@ public class DocumentVisualizationBuilder {
             if (transformationOutputMimeType.equals("HTML"))
                 return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
+            if (transformationOutputMimeType.equals("XHTML"))
+                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+
             if (transformationOutputMimeType.equals("TXT"))
                 return new PlainTextVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
@@ -66,13 +70,13 @@ public class DocumentVisualizationBuilder {
         if (documentToDisplay.getMimeType().equals(MimeTypeEnum.HTML))
             return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
-        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.TEXT))
+        if (isTxt(documentToDisplay.getMimeType()))
             return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), job);
 
-        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.PDF))
-            return new PDFVisualization(documentToDisplay, job);
+        if (isPDF(documentToDisplay.getMimeType()))
+            return new PDFVisualization(documentToDisplay, job, userSettings);
 
-        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.JPEG) || documentToDisplay.getMimeType().equals(MimeTypeEnum.PNG))
+        if (isImage(documentToDisplay.getMimeType()))
             return new ImageVisualization(documentToDisplay, job);
 
         return new UnsupportedVisualization(job);
@@ -83,8 +87,6 @@ public class DocumentVisualizationBuilder {
     }
 
     private boolean isDocumentSupportingTransformation(DSSDocument document) {
-        return document.getMimeType().equals(AutogramMimeType.XML_DATACONTAINER)
-            || document.getMimeType().equals(AutogramMimeType.APPLICATION_XML)
-            || document.getMimeType().equals(MimeTypeEnum.XML);
+        return isXDC(document.getMimeType()) || isXML(document.getMimeType());
     }
 }

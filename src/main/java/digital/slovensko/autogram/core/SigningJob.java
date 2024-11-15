@@ -1,29 +1,26 @@
 package digital.slovensko.autogram.core;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 
 import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.eforms.XDCBuilder;
-import digital.slovensko.autogram.core.eforms.XDCValidator;
+import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
+import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
-import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
-import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
-import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
+import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 
 public class SigningJob {
     private final Responder responder;
@@ -159,19 +156,28 @@ public class SigningJob {
     public static FileDocument createDSSFileDocumentFromFile(File file) {
         var fileDocument = new FileDocument(file);
 
-        if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
-            fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER);
+        if (fileDocument.getName().endsWith(".xdcf"))
+            fileDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
+
+        else if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
+            fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
+
+        else if (isTxt(fileDocument.getMimeType()))
+            fileDocument.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
 
         return fileDocument;
     }
 
     private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
-        if (params.shouldCreateXdc()) {
-            var mimeType = document.getMimeType();
-            if (!isXDC(mimeType) && !isAsice(mimeType)) {
-                document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
-                document.setMimeType(AutogramMimeType.XML_DATACONTAINER);
-            }
+        if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
+            document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
+
+        if (isTxt(document.getMimeType()))
+            document.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
+
+        if (isXDC(document.getMimeType())) {
+            document.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
+            document.setName(getXdcfFilename(document.getName()));
         }
 
         return new SigningJob(document, params, responder);
@@ -188,31 +194,30 @@ public class SigningJob {
     }
 
     private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var level = SignatureValidator.getSignedDocumentSignatureLevel(document);
+        var level = SignatureValidator.getSignedDocumentSignatureLevel(SignatureValidator.getSignedDocumentSimpleReport(document));
         if (level != null) switch (level.getSignatureForm()) {
             case PAdES:
                 return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
             case XAdES:
-                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
+                return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
             case CAdES:
-                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, tspSource, plainXmlEnabled);
+                return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
             default:
                 ;
         }
 
-        var filename = document.getName();
         if (isPDF(document.getMimeType())) switch (signatureType) {
             case PAdES_BASELINE_B:
                 return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
             case XAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
+                return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
             case CAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithCAdES(document, isEn319132, tspSource, plainXmlEnabled);
+                return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
             default:
                 ;
         }
 
-        return SigningParameters.buildForASiCWithXAdES(document, isEn319132, tspSource, plainXmlEnabled);
+        return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
     }
 
     public boolean shouldCheckPDFCompliance() {

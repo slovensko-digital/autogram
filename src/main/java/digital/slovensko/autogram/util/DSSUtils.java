@@ -55,4 +55,17 @@ public class DSSUtils {
 
         return null;
     }
+
+    public static String getXdcfFilename(String filename) {
+        if (filename == null)
+            return "document.xdcf";
+
+        if (filename.endsWith(".xml"))
+            return filename.replace(".xml", ".xdcf");
+
+        if (!filename.contains(".xdcf"))
+            return filename + ".xdcf";
+
+        return filename;
+    }
 }

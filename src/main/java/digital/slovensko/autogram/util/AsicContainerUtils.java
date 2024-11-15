@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundExce
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
@@ -41,7 +42,7 @@ public class AsicContainerUtils {
             throw new MultipleOriginalDocumentsFoundException("V kontajneri bolo nájdených viacero dokumentov na podpis");
 
         var originalDocument = aSiCContent.getSignedDocuments().get(0);
-        if (isXML(originalDocument.getMimeType()))
+        if (isXML(originalDocument.getMimeType()) || MimeTypeEnum.BINARY.equals(originalDocument.getMimeType()))
             setMimeTypeFromManifest(asice, originalDocument);
 
         return originalDocument;
@@ -97,7 +98,7 @@ public class AsicContainerUtils {
     private static NodeList getFileEntriesFromManifest(DSSDocument manifest) {
         try {
             var document = XMLUtils.getSecureDocumentBuilder().parse(new InputSource(manifest.openStream()));
-            return document.getDocumentElement().getElementsByTagName("manifest:file-entry");
+            return document.getDocumentElement().getElementsByTagNameNS("urn:oasis:names:tc:opendocument:xmlns:manifest:1.0", "file-entry");
         } catch (Exception e) {
             return null;
         }

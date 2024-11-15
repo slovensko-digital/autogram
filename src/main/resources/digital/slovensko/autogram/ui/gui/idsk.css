@@ -447,11 +447,17 @@
 
 .autogram-visualizer-plaintext,
 .autogram-visualizer-html,
+.autogram-visualizer-pdf VBox > HBox,
 .autogram-visualizer-image {
   -fx-border-color: -autogram-input-border-colour;
   -fx-border-width: 2px;
   -fx-border-style: solid;
   -fx-wrap-text: true;
+}
+
+.autogram-visualizer-pdf VBox {
+  -fx-spacing: 10px;
+  -fx-padding: 5px;
 }
 
 .autogram-visualizer-plaintext {
@@ -700,16 +706,8 @@ TextFlow.autogram-body-s {
   -fx-pref-width: 19.5em;
 }
 
-/* Choice boxes */
-.choice-box {
-  -fx-background-color: -autogram-background-colour;
-  -fx-border-color: -autogram-input-border-colour;
-  -fx-border-width: 2px;
-  -fx-padding: 5px;
-  -fx-font-size: 20px;
-}
-
-.choice-box .context-menu {
+/* Context menu */
+.context-menu {
   -fx-background-color: -autogram-background-colour;
   -fx-pref-width: 19em;
   -fx-padding: 0em 0 0 0;
@@ -720,17 +718,26 @@ TextFlow.autogram-body-s {
   -fx-border-width: 1px;
 }
 
-.choice-box .menu-item:focused {
+.menu-item:focused {
   -fx-background-color: -autogram-secondary-hover-colour;
 }
 
-.choice-box .menu-item > .label {
+.menu-item > .label {
   -fx-text-fill: -autogram-input-border-colour;
   -fx-padding: 3px;
 }
 
-.choice-box .menu-item:focused > .label {
+.menu-item:focused > .label {
   -fx-text-fill: -autogram-input-border-colour;
+}
+
+/* Choice boxes */
+.choice-box {
+  -fx-background-color: -autogram-background-colour;
+  -fx-border-color: -autogram-input-border-colour;
+  -fx-border-width: 2px;
+  -fx-padding: 5px;
+  -fx-font-size: 20px;
 }
 
 .choice-box > .label {

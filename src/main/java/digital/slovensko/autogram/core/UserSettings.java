@@ -2,11 +2,14 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.ui.gui.SignatureLevelStringConverter;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -25,10 +28,11 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private List<String> trustedList;
     private String customKeystorePath;
     private String tsaServer;
-    private TSPSource tspSource;
+    private CompositeTSPSource tspSource;
     private boolean tsaEnabled;
     private String customTsaServer;
     private boolean bulkEnabled;
+    private int pdfDpi;
 
     public static UserSettings load() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
@@ -46,11 +50,12 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setPdfaCompliance(prefs.getBoolean("PDFA_COMPLIANCE", true));
         settings.setServerEnabled(prefs.getBoolean("SERVER_ENABLED", true));
         settings.setExpiredCertsEnabled(prefs.getBoolean("EXPIRED_CERTS_ENABLED", false));
-        settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU,ES,BE"));
+        settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU,BE,NL,BG"));
         settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", ""));
-        settings.setTsaServer(prefs.get("TSA_SERVER", "http://tsa.izenpe.com"));
+        settings.setTsaServer(prefs.get("TSA_SERVER", "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg"));
         settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", ""));
         settings.setTsaEnabled(prefs.getBoolean("TSA_ENABLE", false));
+        settings.setPdfDpi(prefs.getInt("PDF_DPI", 100));
 
         return settings;
     }
@@ -75,6 +80,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.put("TSA_SERVER", tsaServer);
         prefs.put("CUSTOM_TSA_SERVER", customTsaServer);
         prefs.putBoolean("TSA_ENABLE", tsaEnabled);
+        prefs.putInt("PDF_DPI", pdfDpi);
     }
 
     private void setSignatureType(String signatureType) {
@@ -202,12 +208,23 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setTsaServer(String value) {
-        tsaServer = value;
-        if (value == null)
+        if (value == null || value.isEmpty()) {
             tspSource = null;
+            return;
+        }
 
-        else
-            tspSource = new OnlineTSPSource(tsaServer);
+        // set default TSA if older problematic default is set
+        if (List.of("http://tsa.izenpe.com", "http://kstamp.keynectis.com/KSign/").contains(value))
+            value = "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg";
+
+        tsaServer = value;
+        tspSource = new CompositeTSPSource();
+        var timestampDataLoader = new TimestampDataLoader();
+        var tspSources = new HashMap<String, TSPSource>();
+        for (var tsaServer : tsaServer.split(","))
+            tspSources.put(tsaServer, new OnlineTSPSource(tsaServer, timestampDataLoader));
+
+        tspSource.setTspSources(tspSources);
     }
 
     public String getCustomTsaServer() {
@@ -259,5 +276,13 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public boolean isBulkEnabled() {
         return bulkEnabled;
+    }
+
+    public int getPdfDpi() {
+        return pdfDpi;
+    }
+
+    public void setPdfDpi(int value) {
+        pdfDpi = value;
     }
 }

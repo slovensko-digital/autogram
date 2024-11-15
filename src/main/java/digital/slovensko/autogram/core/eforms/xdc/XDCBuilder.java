@@ -1,11 +1,13 @@
-package digital.slovensko.autogram.core.eforms;
+package digital.slovensko.autogram.core.eforms.xdc;
 
+import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.util.XMLUtils;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
+import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 import static digital.slovensko.autogram.util.XMLUtils.getSecureDocumentBuilder;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -34,9 +36,12 @@ public abstract class XDCBuilder {
         var identifier = params.getIdentifier();
         var lastSlashIndex = identifier.lastIndexOf("/");
         if (lastSlashIndex == -1)
-            throw new RuntimeException("Identifier contains no slash: " + identifier);
+            throw new TransformationException("Nastala chyba počas transformácie dokumentu", "XDC identifikátor formulára neobsahuje žiadnu lomku: " + identifier);
 
         var identifierVersion = identifier.substring(lastSlashIndex + 1);
+        if (!identifierVersion.matches("[v0-9.]+"))
+            identifierVersion = "1.0";
+
         try {
             var parsedDocument = getSecureDocumentBuilder().newDocument();
             var importedNode = parsedDocument.importNode(document.getDocumentElement(), true);
@@ -53,10 +58,8 @@ public abstract class XDCBuilder {
 
             var content = getDocumentContent(transformedDocument).getBytes(ENCODING);
 
-            return new InMemoryDocument(content, filename);
+            return new InMemoryDocument(content, getXdcfFilename(filename), AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
 
-        } catch (TransformationException e) {
-            throw e;
         } catch (Exception e) {
             throw new TransformationException("Nastala chyba počas transformácie dokumentu",
                     "Nastala chyba počas transformácie dokumentu", e);
@@ -100,11 +103,10 @@ public abstract class XDCBuilder {
             boolean shouldEmbedSchemas) {
         var element = document.createElement("xdc:XMLData");
         element.setAttribute("ContentType", "application/xml; charset=UTF-8");
+        element.setAttribute("Identifier", identifierUri);
 
-        if (!shouldEmbedSchemas) {
-            element.setAttribute("Identifier", identifierUri);
+        if (!shouldEmbedSchemas)
             element.setAttribute("Version", identifierVersion);
-        }
 
         return element;
     }

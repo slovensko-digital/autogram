@@ -8,13 +8,11 @@ import java.io.IOException;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.ParserConfigurationException;
 
+import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.Responder;
-import digital.slovensko.autogram.core.SignedDocument;
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
@@ -39,32 +37,51 @@ public class TransformationTests {
 
         @Test
         void testSigningJobTransformToHtml() throws IOException, ParserConfigurationException,
-                        SAXException {
+                SAXException {
                 var transformation = new String(this.getClass().getResourceAsStream(
                                 "crystal_test_data/PovolenieZdravotnictvo.html.xslt")
-                                .readAllBytes());
+                        .readAllBytes());
 
                 var document = new InMemoryDocument(
-                                this.getClass().getResourceAsStream(
-                                                "crystal_test_data/rozhodnutie_X4564-2.xml"),
-                                "rozhodnutie_X4564-2.xml");
+                        this.getClass().getResourceAsStream(
+                                "crystal_test_data/rozhodnutie_X4564-2.xml"),
+                        "rozhodnutie_X4564-2.xml");
 
-                var params = SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B,
-                                ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
-                                DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
-                                CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
-                                null, transformation, "id1/asa", false, 800, false, false, null, null, null, null, null, document, null, true);
+                var params = SigningParameters.buildParameters(
+                    SignatureLevel.XAdES_BASELINE_B,
+                    DigestAlgorithm.SHA256,
+                    ASiCContainerType.ASiC_E,
+                    SignaturePackaging.ENVELOPING,
+                    false,
+                    CanonicalizationMethod.INCLUSIVE,
+                    CanonicalizationMethod.INCLUSIVE,
+                    CanonicalizationMethod.INCLUSIVE,
+                    new EFormAttributes(
+                        "id1/asa",
+                        transformation,
+                        null,
+                        null,
+                        null,
+                        null,
+                        false),
+                    false,
+                    null,
+                    false,
+                    800,
+                    document,
+                    null,
+                    true);
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job);
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());
                 } else {
                         if (visualizedDocument != null)
                                 fail("Expected HTMLVisualizedDocument but got"
-                                                + visualizedDocument.getClass().getName());
+                                        + visualizedDocument.getClass().getName());
                         fail("Expected HTMLVisualizedDocument but got null");
                 }
         }
@@ -97,26 +114,45 @@ public class TransformationTests {
 
         @Test
         void testSigningJobTransformSb() throws IOException, ParserConfigurationException,
-                        SAXException {
+                SAXException {
                 var transformation = new String(this.getClass()
-                                .getResourceAsStream(
-                                                "crystal_test_data/PovolenieZdravotnictvo.sb.xslt")
-                                .readAllBytes());
+                        .getResourceAsStream(
+                                "crystal_test_data/PovolenieZdravotnictvo.sb.xslt")
+                        .readAllBytes());
 
                 var document = new InMemoryDocument(
-                                this.getClass().getResourceAsStream(
-                                                "crystal_test_data/rozhodnutie_X4564-2.xml"),
-                                "rozhodnutie_X4564-2.xml");
+                        this.getClass().getResourceAsStream(
+                                "crystal_test_data/rozhodnutie_X4564-2.xml"),
+                        "rozhodnutie_X4564-2.xml");
 
-                var params = SigningParameters.buildFromRequest(SignatureLevel.XAdES_BASELINE_B,
-                                ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
-                                DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
-                                CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
-                                null, transformation, "id1/asa", false, 800, false, false,null, null, null, null, null, document, null, true);
+                var params = SigningParameters.buildParameters(
+                    SignatureLevel.XAdES_BASELINE_B,
+                    DigestAlgorithm.SHA256,
+                    ASiCContainerType.ASiC_E,
+                    SignaturePackaging.ENVELOPING,
+                    false,
+                    CanonicalizationMethod.INCLUSIVE,
+                    CanonicalizationMethod.INCLUSIVE,
+                    CanonicalizationMethod.INCLUSIVE,
+                    new EFormAttributes(
+                        "id1/asa",
+                        transformation,
+                        null,
+                        null,
+                        null,
+                        null,
+                        false),
+                    false,
+                    null,
+                    false,
+                    800,
+                    document,
+                    null,
+                    true);
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job);
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());

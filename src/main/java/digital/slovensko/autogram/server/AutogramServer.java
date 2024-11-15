@@ -47,6 +47,10 @@ public class AutogramServer {
         server.createContext("/batch", new BatchEndpoint(autogram)).getFilters()
                 .add(new AutogramCorsFilter(List.of("POST", "DELETE")));
 
+        // Assets
+        server.createContext("/assets", new AssetsEndpoint()).getFilters()
+                .add(new AutogramCorsFilter("GET"));
+
         // Start server
         server.start();
     }
