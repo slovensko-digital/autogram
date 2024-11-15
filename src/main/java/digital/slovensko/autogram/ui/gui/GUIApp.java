@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
@@ -26,6 +27,7 @@ public class GUIApp extends Application {
 
             Platform.setImplicitExit(false);
             setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
+            var titleString = "Autogram";
 
             final Autogram autogram;
             autogram = new Autogram(new GUI(getHostServices(), userSettings), userSettings);
@@ -35,29 +37,41 @@ public class GUIApp extends Application {
             final var params = LaunchParameters.fromParameters(getParameters());
             final var controller = new MainMenuController(autogram, userSettings);
 
-            server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), cachedExecutorService);
-            if (userSettings.isServerEnabled()) {
-                server.start();
-            }
-
-
-            Thread thread = new Thread(server::stop);
-            windowStage.setOnCloseRequest(event -> {
-                if (userSettings.isServerEnabled()) {
-                    thread.start();
-                }
-                Platform.exit();
-            });
-
-
             if (!params.isStandaloneMode())
                 GUIUtils.startIconified(windowStage);
 
+            if (userSettings.isServerEnabled()) {
+                try {
+                    server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), cachedExecutorService);
+                    server.start();
+
+                    var thread = new Thread(server::stop);
+                    windowStage.setOnCloseRequest(event -> {
+                        thread.start();
+                        Platform.exit();
+                    });
+
+                } catch (PortIsUsedException e) {
+                    Platform.runLater(() -> {
+                        GUIUtils.showError(e, "Pokračovať v obmedzenom režime", true, true);
+                    });
+
+                    server = null;
+                    titleString = "Autogram (obmedzený režim)";
+                }
+            }
+
+            if (server == null)
+                windowStage.setOnCloseRequest(event -> {
+                    Platform.exit();
+                });
+
             GUIUtils.suppressDefaultFocus(windowStage, controller);
-            windowStage.setTitle("Autogram");
+            windowStage.setTitle(titleString);
             windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml")));
             windowStage.setResizable(false);
             windowStage.show();
+
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
             final var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
