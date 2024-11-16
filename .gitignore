@@ -32,3 +32,5 @@ secret
 /fakeTokenDriver
 
 /cache
+
+.classpath
