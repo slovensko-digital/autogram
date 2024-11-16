@@ -10,8 +10,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -203,6 +206,10 @@ public abstract class EFormUtils {
         // Never use justice.gov.sk as identifier
         if (xmlns != null && !xmlns.getNodeValue().contains("justice.gov.sk"))
             return xmlns.getNodeValue();
+
+        var xmlnsUri = xml.getDocumentElement().getNamespaceURI();
+        if (xmlnsUri != null && !xmlnsUri.contains("justice.gov.sk"))
+            return xmlnsUri;
 
         xmlns = xml.getDocumentElement().getAttributes().getNamedItemNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
         if (xmlns != null)
@@ -409,56 +416,43 @@ public abstract class EFormUtils {
         for (int i = 0; i < nodes.getLength(); i++) {
             var node = nodes.item(i);
 
-            var fullPathNode = node.getAttributes().getNamedItem("full-path");
-            if (fullPathNode == null)
+            var fullPath = nullOrNodeValue(node.getAttributes().getNamedItem("full-path"));
+            if (fullPath == null)
                 continue;
-            var fullPath = fullPathNode.getNodeValue().replace("\\", "/");
 
-            var mediaTypeNode = node.getAttributes().getNamedItem("media-type");
-            var mediaType = mediaTypeNode != null ? mediaTypeNode.getNodeValue() : null;
+            fullPath = fullPath.replace("\\", "/");
 
-            var mediaDestination = "";
-            var mediaDestinationNode = node.getAttributes().getNamedItem("media-destination");
-            if (mediaDestinationNode != null) {
-                mediaDestination = mediaDestinationNode.getNodeValue();
-                if(!mediaDestination.equals("sign") && !mediaDestination.equals("x-xslt-ro"))
-                    continue;
+            var mediaType = nullOrNodeValue(node.getAttributes().getNamedItem("media-type"));
+            var mediaDestinationTypeDescription = nullOrNodeValue(node.getAttributes().getNamedItem("media-destination-type-description"));
+            var mediaDestination = nullOrNodeValue(node.getAttributes().getNamedItem("media-destination"));
+            var mediaDestinationType = nullOrNodeValue(node.getAttributes().getNamedItem("media-destination-type"));
 
-                if (mediaType == null)
-                    continue;
-
-                if (!mediaType.equals("application/xslt+xml") && !mediaType.equals("text/xsl"))
-                    if (!(
-                            (mediaType.equals("text/xml") || mediaDestination.equals("application/xml"))
-                                    && (fullPath.contains(".xsl") || fullPath.contains(".xslt"))
-                    ))
-                        continue;
-
-            } else {
-                if (!fullPath.contains(".sb.xslt") && !fullPath.contains(".html.xslt"))
+            if (mediaDestination == null) {
+                if (Stream.of(".sb..xslt", ".html.xslt").noneMatch(fullPath::endsWith))
                     continue;
 
                 mediaDestination = fullPath.contains(".sb.xslt") ? "sign" : "view";
+
+            } else {
+                if (mediaType == null)
+                    continue;
+
+                if (Stream.of("sign", "x-xslt-ro", "view").noneMatch(mediaDestination::contains))
+                    continue;
+
+                if (Stream.of("application/xslt+xml", "text/xsl").noneMatch(mediaType::equals) &&
+                        (Stream.of("text/xml", "application/xml").noneMatch(mediaType::equals) ||
+                                Stream.of(".xsl", ".xslt").noneMatch(fullPath::endsWith)))
+                    continue;
             }
 
-            var languageNode = node.getAttributes().getNamedItem("media-language");
-            var language = languageNode != null ? languageNode.getNodeValue() : null;
-
-            var mediaDestinationTypeDescriptionNode = node.getAttributes().getNamedItem("media-destination-type-description");
-            var mediaDestinationTypeDescription = mediaDestinationTypeDescriptionNode != null ? mediaDestinationTypeDescriptionNode.getNodeValue() : null;
-
-            if (mediaDestinationTypeDescription == null) {
-                var mediaDestinationTypeNode = node.getAttributes().getNamedItem("media-destination-type");
-                var mediaDestinationType = mediaDestinationTypeNode != null ? mediaDestinationTypeNode.getNodeValue() : null;
-
-                if (mediaDestinationType != null)
-                    mediaDestinationTypeDescription = switch (mediaDestinationType) {
-                        case "text/plain" -> "TXT";
-                        case "text/html" -> "HTML";
-                        case "application/xhtml+xml" -> "XHTML";
-                        default -> null;
-                    };
-            }
+            if (mediaDestinationTypeDescription == null && mediaDestinationType != null)
+                mediaDestinationTypeDescription = switch (mediaDestinationType) {
+                    case "text/plain" -> "TXT";
+                    case "text/html" -> "HTML";
+                    case "application/xhtml+xml" -> "XHTML";
+                    default -> null;
+                };
 
             if (mediaDestinationTypeDescription == null) {
                 // need to get output method from xslt
@@ -473,14 +467,20 @@ public abstract class EFormUtils {
                 }
             }
 
-            var targetEnvironmentNode = node.getAttributes().getNamedItem("target-environment");
-            var targetEnvironment = targetEnvironmentNode != null ? targetEnvironmentNode.getNodeValue() : null;
-
-            entries.add(new ManifestXsltEntry(mediaType, language, mediaDestinationTypeDescription, targetEnvironment,
-                    fullPath, mediaDestination));
+            entries.add(new ManifestXsltEntry(
+                    mediaType,
+                    nullOrNodeValue(node.getAttributes().getNamedItem("media-language")),
+                    mediaDestinationTypeDescription,
+                    nullOrNodeValue(node.getAttributes().getNamedItem("target-environment")),
+                    fullPath,
+                    mediaDestination));
         }
 
         return entries;
+    }
+
+    private static String nullOrNodeValue(Node node) {
+        return node != null ? node.getNodeValue() : null;
     }
 
     public static ManifestXsltEntry selectXslt(ArrayList<ManifestXsltEntry> entries, String xsltDestinationType, String xsltLanguage, String xsltTarget) {
@@ -493,27 +493,20 @@ public abstract class EFormUtils {
         if (xsltTarget != null)
             entries.removeIf(entry -> !xsltTarget.equals(entry.target()));
 
-        if (entries.size() == 1)
-            return entries.get(0);
+        entries = filterIfExist(entries, e -> e.mediaDestination().equals("sign"));
+        entries = filterIfExist(entries, e -> List.of("HTML", "XHTML").contains(e.destinationType()));
+        entries = filterIfExist(entries, e -> e.mediaDestination().equals("view"));
+        entries = filterIfExist(entries, e -> e.destinationType().equals("XHTML"));
+        entries = filterIfExist(entries, e -> e.language().equals("sk"));
+        entries = filterIfExist(entries, e -> e.language().equals("en"));
 
-        if (entries.stream().filter(entry -> entry.mediaDesination().equals("sign")).count() > 0)
-            entries.removeIf(entry -> !entry.mediaDesination().equals("sign"));
+        return entries.stream().findFirst().orElse(null);
+    }
 
-        if (entries.stream().filter(entry -> entry.destinationType().equals("XHTML")).count() > 0)
-            entries.removeIf(entry -> !entry.destinationType().equals("XHTML"));
+    private static ArrayList<ManifestXsltEntry> filterIfExist(ArrayList<ManifestXsltEntry> entries, Predicate<ManifestXsltEntry> l) {
+        if (entries.stream().anyMatch(l))
+            return new ArrayList<>(entries.stream().filter(l).toList());
 
-        else if (entries.stream().filter(entry -> entry.destinationType().equals("HTML")).count() > 0)
-            entries.removeIf(entry -> !entry.destinationType().equals("HTML"));
-
-        else if (entries.stream().filter(entry -> entry.destinationType().equals("TXT")).count() > 0)
-            entries.removeIf(entry -> !entry.destinationType().equals("TXT"));
-
-        if (entries.stream().filter(entry -> entry.language().equals("sk")).count() > 0)
-            entries.removeIf(entry -> !entry.language().equals("sk"));
-
-        else if (entries.stream().filter(entry -> entry.language().equals("en")).count() > 0)
-            entries.removeIf(entry -> !entry.language().equals("en"));
-
-        return entries.get(0);
+        return entries;
     }
 }
