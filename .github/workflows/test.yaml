@@ -27,7 +27,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17.0.13+12'
+          java-version: '17.0.7+7'
           distribution: 'liberica'
           java-package: 'jdk+fx'
 
