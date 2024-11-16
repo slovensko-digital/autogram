@@ -168,7 +168,7 @@ public class SigningJob {
         return new AutogramDocument(fileDocument);
     }
 
-    private static SigningJob build(AutogramDocument autogramDocument, SigningParameters params, Responder responder) {
+    public static SigningJob build(AutogramDocument autogramDocument, SigningParameters params, Responder responder) {
         DSSDocument document = autogramDocument.getDSSDocument();
         if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
             autogramDocument = new AutogramDocument(XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document)));
@@ -184,19 +184,7 @@ public class SigningJob {
         return new SigningJob(autogramDocument, params, responder);
     }
 
-    public static SigningJob buildFromRequest(AutogramDocument document, SigningParameters params, Responder responder) {
-        return build(document, params, responder);
-    }
-
-    public static SigningJob buildFromFile(File file, Autogram autogram, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var document = createDSSFileDocumentFromFile(file);
-        autogram.handleProtectedPdfDocument(document);
-
-        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return build(document, parameters, responder);
-    }
-
-    private static SigningParameters getParametersForFile(AutogramDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+    public static SigningParameters getParametersForFile(AutogramDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var level = SignatureValidator.getSignedDocumentSignatureLevel(SignatureValidator.getSignedDocumentSimpleReport(document));
         if (level != null) switch (level.getSignatureForm()) {
             case PAdES:
