@@ -91,7 +91,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: "17.0.7+7"
+          java-version: "17.0.13+12"
           distribution: "liberica"
           java-package: "jdk+fx"
 
@@ -180,7 +180,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: "17.0.7+7"
+          java-version: "17.0.13+12"
           distribution: "liberica"
           java-package: "jdk+fx"
 
