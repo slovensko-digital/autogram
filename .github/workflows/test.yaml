@@ -42,7 +42,7 @@ jobs:
 #            ${{ runner.os }}-maven-
 #
       - name: Run tests
-        run: ./mvnw test -P system-jdk
+        run: ./mvnw test -e -P system-jdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
