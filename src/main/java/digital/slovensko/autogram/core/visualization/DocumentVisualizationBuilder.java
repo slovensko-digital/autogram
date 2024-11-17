@@ -59,7 +59,7 @@ public class DocumentVisualizationBuilder {
                 return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
 
             if (transformationOutputMimeType.equals("XHTML"))
-                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+                return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
 
             if (transformationOutputMimeType.equals("TXT"))
                 return new PlainTextVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
