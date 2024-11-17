@@ -31,20 +31,18 @@ jobs:
           distribution: 'liberica'
           java-package: 'jdk+fx'
 
-#      - name: Cache local Maven repository and JDK cache
-#        uses: actions/cache@v4
-#        with:
-#          path: |
-#            ~/.m2/repository
-#            target/jdkCache
-#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-#          restore-keys: |
-#            ${{ runner.os }}-maven-
-#
+      - name: Cache local Maven repository and JDK cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            target/jdkCache
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
       - name: Run tests
-        run: ./mvnw test -e
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./mvnw test -P system-jdk
 
       - name: JaCoCo Code Coverage Report
         id: jacoco_report

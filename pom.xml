@@ -29,6 +29,7 @@
         <snakeyml.version>2.2</snakeyml.version>
         <jimfs.version>1.3.0</jimfs.version>
         <testExcludedGroups>HttpSmokeTest</testExcludedGroups>
+        <skip-jdk-cache>false</skip-jdk-cache>
     </properties>
 
     <dependencyManagement>
@@ -313,6 +314,7 @@
                             <goal>cache-jdk</goal>
                         </goals>
                         <configuration>
+                            <skip>${skip-jdk-cache}</skip>
                             <jdkPathProperty>jlink.jdk.path</jdkPathProperty>
                             <jdkCachePath>${project.build.directory}${file.separator}jdkCache</jdkCachePath>
                             <authorization>${github.auth}</authorization>
@@ -501,6 +503,14 @@
             </activation>
             <properties>
                 <github.auth>Bearer ${env.GITHUB_TOKEN}</github.auth>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>system-jdk</id>
+            <properties>
+                <jlink.jdk.path>${env.JAVA_HOME}</jlink.jdk.path>
+                <skip-jdk-cache>true</skip-jdk-cache>
             </properties>
         </profile>
 
