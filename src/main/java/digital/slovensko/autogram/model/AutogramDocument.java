@@ -42,15 +42,17 @@ public class AutogramDocument implements DSSDocument {
         return hasOpenDocumentPassword() ? openDocumentPassword : masterPassword;
     }
 
+    @Override
     public String getName() {
         return document.getName();
     }
 
     @Override
     public void setName(String s) {
-
+        document.setName(s);
     }
 
+    @Override
     public MimeType getMimeType() {
         return document.getMimeType();
     }
@@ -70,6 +72,7 @@ public class AutogramDocument implements DSSDocument {
         return document.getDigest(digestAlgorithm);
     }
 
+    @Override
     public InputStream openStream() {
         return document.openStream();
     }
