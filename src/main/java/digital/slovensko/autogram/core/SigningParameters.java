@@ -6,7 +6,6 @@ import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
-import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;

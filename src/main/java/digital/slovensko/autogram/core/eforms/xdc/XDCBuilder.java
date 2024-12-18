@@ -11,9 +11,9 @@ import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 import static digital.slovensko.autogram.util.XMLUtils.getSecureDocumentBuilder;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;

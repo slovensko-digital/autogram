@@ -3,9 +3,7 @@ package digital.slovensko.autogram.util;
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
-import digital.slovensko.autogram.model.AutogramDocument;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESContainerExtractor;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -13,10 +11,6 @@ import eu.europa.esig.dss.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 
