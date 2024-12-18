@@ -26,7 +26,7 @@ public class PDFVisualization extends Visualization {
     }
 
     private ArrayList<byte []> getPdfImages() throws IOException {
-        var pdfDocument = PDDocument.load(this.document.getDSSDocument().openStream(), new String(this.document.getOpenDocumentPassword()));
+        var pdfDocument = PDDocument.load(this.document.openStream(), new String(this.document.getOpenDocumentPassword()));
         var pdfRenderer = new PDFRenderer(pdfDocument);
         var divs = new ArrayList<byte[]>();
         for (int page = 0; page < pdfDocument.getNumberOfPages(); ++page) {

@@ -1,6 +1,9 @@
 package digital.slovensko.autogram.model;
 
+import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.DSSDocument;
+
+import java.io.InputStream;
 
 public class AutogramDocument {
     private final DSSDocument document;
@@ -34,6 +37,18 @@ public class AutogramDocument {
 
     public char[] getSigningPassword() {
         return hasOpenDocumentPassword() ? openDocumentPassword : masterPassword;
+    }
+
+    public String getName() {
+        return document.getName();
+    }
+
+    public MimeType getMimeType() {
+        return document.getMimeType();
+    }
+
+    public InputStream openStream() {
+        return document.openStream();
     }
 
     public DSSDocument getDSSDocument() {

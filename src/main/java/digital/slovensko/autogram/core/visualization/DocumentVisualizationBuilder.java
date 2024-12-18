@@ -42,7 +42,7 @@ public class DocumentVisualizationBuilder {
         throws IOException, ParserConfigurationException, SAXException {
 
         var documentToDisplay = document;
-        if (isAsice(documentToDisplay.getDSSDocument().getMimeType())) {
+        if (isAsice(documentToDisplay.getMimeType())) {
             try {
                 documentToDisplay = new AutogramDocument(AsicContainerUtils.getOriginalDocument(document.getDSSDocument()));
             } catch (AutogramException e) {
@@ -52,7 +52,7 @@ public class DocumentVisualizationBuilder {
 
         var transformation = parameters.getTransformation();
 
-        if (isDocumentSupportingTransformation(documentToDisplay.getDSSDocument()) && isTranformationAvailable(transformation)) {
+        if (isDocumentSupportingTransformation(documentToDisplay) && isTranformationAvailable(transformation)) {
             var transformationOutputMimeType = parameters.getXsltDestinationType();
 
             if (transformationOutputMimeType.equals("HTML"))
@@ -67,16 +67,16 @@ public class DocumentVisualizationBuilder {
             return new UnsupportedVisualization(job);
         }
 
-        if (documentToDisplay.getDSSDocument().getMimeType().equals(MimeTypeEnum.HTML))
+        if (documentToDisplay.getMimeType().equals(MimeTypeEnum.HTML))
             return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
 
-        if (isTxt(documentToDisplay.getDSSDocument().getMimeType()))
-            return new PlainTextVisualization(new String(documentToDisplay.getDSSDocument().openStream().readAllBytes(), StandardCharsets.UTF_8), job);
+        if (isTxt(documentToDisplay.getMimeType()))
+            return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), job);
 
-        if (isPDF(documentToDisplay.getDSSDocument().getMimeType()))
+        if (isPDF(documentToDisplay.getMimeType()))
             return new PDFVisualization(documentToDisplay, job, userSettings);
 
-        if (isImage(documentToDisplay.getDSSDocument().getMimeType()))
+        if (isImage(documentToDisplay.getMimeType()))
             return new ImageVisualization(documentToDisplay.getDSSDocument(), job);
 
         return new UnsupportedVisualization(job);
@@ -86,7 +86,7 @@ public class DocumentVisualizationBuilder {
         return transformation != null;
     }
 
-    private boolean isDocumentSupportingTransformation(DSSDocument document) {
+    private boolean isDocumentSupportingTransformation(AutogramDocument document) {
         return isXDC(document.getMimeType()) || isXML(document.getMimeType());
     }
 }

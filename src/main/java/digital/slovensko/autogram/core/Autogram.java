@@ -184,7 +184,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 signCommonAndThen(job, batch.getSigningKey(), (jobNew) -> {
-                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getDSSDocument().getName());
+                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
                 });
             } catch (AutogramException e) {
                 job.onDocumentSignFailed(e);

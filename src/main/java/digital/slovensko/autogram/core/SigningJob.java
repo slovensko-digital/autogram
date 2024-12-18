@@ -46,7 +46,7 @@ public class SigningJob {
     }
 
     public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
-        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getDSSDocument().getName());
+        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
@@ -197,7 +197,7 @@ public class SigningJob {
                 ;
         }
 
-        if (isPDF(document.getDSSDocument().getMimeType())) switch (signatureType) {
+        if (isPDF(document.getMimeType())) switch (signatureType) {
             case PAdES_BASELINE_B:
                 return SigningParameters.buildForPDF(document.getDSSDocument(), checkPDFACompliance, isEn319132, tspSource);
             case XAdES_BASELINE_B:
@@ -212,6 +212,6 @@ public class SigningJob {
     }
 
     public boolean shouldCheckPDFCompliance() {
-        return parameters.getCheckPDFACompliance() && isPDF(document.getDSSDocument().getMimeType());
+        return parameters.getCheckPDFACompliance() && isPDF(document.getMimeType());
     }
 }

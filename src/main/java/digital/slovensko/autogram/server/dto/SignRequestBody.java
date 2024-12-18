@@ -70,7 +70,7 @@ public class SignRequestBody {
         if (parameters == null)
             throw new RequestValidationException("Parameters are required", "");
 
-        parameters.validate(getDocument().getDSSDocument().getMimeType());
+        parameters.validate(getDocument().getMimeType());
     }
 
     public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {

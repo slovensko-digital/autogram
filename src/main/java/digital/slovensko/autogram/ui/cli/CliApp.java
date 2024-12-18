@@ -37,7 +37,7 @@ public class CliApp {
                     .toList();
             if (settings.isPdfaCompliance()) {
                 jobs.forEach(job -> {
-                    System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getDSSDocument().getName());
+                    System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
                     autogram.checkPDFACompliance(job);
                 });
             }
