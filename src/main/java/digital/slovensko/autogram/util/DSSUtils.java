@@ -39,23 +39,23 @@ public class DSSUtils {
     }
 
     public static SignedDocumentValidator createDocumentValidator(AutogramDocument document) {
-        if (new PDFDocumentValidatorFactory().isSupported(document.getDSSDocument())) {
-            var validator = new PDFDocumentValidator(document.getDSSDocument());
+        if (new PDFDocumentValidatorFactory().isSupported(document)) {
+            var validator = new PDFDocumentValidator(document);
             validator.setPasswordProtection(document.getOpenDocumentPassword());
             return validator;
         }
 
-        if (new XMLDocumentValidatorFactory().isSupported(document.getDSSDocument()))
-            return new XMLDocumentValidatorFactory().create(document.getDSSDocument());
+        if (new XMLDocumentValidatorFactory().isSupported(document))
+            return new XMLDocumentValidatorFactory().create(document);
 
-        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document.getDSSDocument()))
-            return new ASiCContainerWithXAdESValidatorFactory().create(document.getDSSDocument());
+        if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document))
+            return new ASiCContainerWithXAdESValidatorFactory().create(document);
 
-        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document.getDSSDocument()))
-            return new ASiCContainerWithCAdESValidatorFactory().create(document.getDSSDocument());
+        if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document))
+            return new ASiCContainerWithCAdESValidatorFactory().create(document);
 
-        if (new CMSDocumentValidatorFactory().isSupported(document.getDSSDocument()))
-            return new CMSDocumentValidatorFactory().create(document.getDSSDocument());
+        if (new CMSDocumentValidatorFactory().isSupported(document))
+            return new CMSDocumentValidatorFactory().create(document);
 
         return null;
     }

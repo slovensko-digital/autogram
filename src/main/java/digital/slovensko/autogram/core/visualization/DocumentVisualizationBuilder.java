@@ -44,7 +44,7 @@ public class DocumentVisualizationBuilder {
         var documentToDisplay = document;
         if (isAsice(documentToDisplay.getMimeType())) {
             try {
-                documentToDisplay = new AutogramDocument(AsicContainerUtils.getOriginalDocument(document.getDSSDocument()));
+                documentToDisplay = new AutogramDocument(AsicContainerUtils.getOriginalDocument(document));
             } catch (AutogramException e) {
                 return new UnsupportedVisualization(job);
             }
@@ -56,19 +56,19 @@ public class DocumentVisualizationBuilder {
             var transformationOutputMimeType = parameters.getXsltDestinationType();
 
             if (transformationOutputMimeType.equals("HTML"))
-                return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
+                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
             if (transformationOutputMimeType.equals("XHTML"))
-                return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
+                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
             if (transformationOutputMimeType.equals("TXT"))
-                return new PlainTextVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
+                return new PlainTextVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
             return new UnsupportedVisualization(job);
         }
 
         if (documentToDisplay.getMimeType().equals(MimeTypeEnum.HTML))
-            return new HTMLVisualization(EFormUtils.transform(documentToDisplay.getDSSDocument(), transformation), job);
+            return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
 
         if (isTxt(documentToDisplay.getMimeType()))
             return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), job);
@@ -77,7 +77,7 @@ public class DocumentVisualizationBuilder {
             return new PDFVisualization(documentToDisplay, job, userSettings);
 
         if (isImage(documentToDisplay.getMimeType()))
-            return new ImageVisualization(documentToDisplay.getDSSDocument(), job);
+            return new ImageVisualization(documentToDisplay, job);
 
         return new UnsupportedVisualization(job);
     }

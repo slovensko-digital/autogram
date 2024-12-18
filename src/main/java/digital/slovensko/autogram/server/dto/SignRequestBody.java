@@ -74,7 +74,7 @@ public class SignRequestBody {
     }
 
     public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getSigningParameters(isBase64(), getDocument().getDSSDocument(), tspSource, plainXmlEnabled);
+        return parameters.getSigningParameters(isBase64(), getDocument(), tspSource, plainXmlEnabled);
     }
 
     public String getBatchId() {

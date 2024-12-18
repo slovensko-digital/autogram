@@ -64,7 +64,7 @@ public class Autogram {
                 return;
             }
 
-            var result = new PDFAStructureValidator().validate(job.getDocument().getDSSDocument());
+            var result = new PDFAStructureValidator().validate(job.getDocument());
             if (!result.isCompliant()) {
                 ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
             }
@@ -72,11 +72,11 @@ public class Autogram {
     }
 
     public void handleProtectedPdfDocument(AutogramDocument document) {
-        var protection = PDFUtils.determinePDFProtection(document.getDSSDocument());
+        var protection = PDFUtils.determinePDFProtection(document);
         if (protection == PDFUtils.PDFProtection.NONE)
             return;
 
-        var password = ui.getDocumentPassword(document.getDSSDocument());
+        var password = ui.getDocumentPassword(document);
         switch (protection) {
             case OPEN_DOCUMENT_PASSWORD -> document.setOpenDocumentPassword(password);
             case MASTER_PASSWORD -> document.setMasterPassword(password);
