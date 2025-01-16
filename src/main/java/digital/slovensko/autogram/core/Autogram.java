@@ -14,6 +14,8 @@ import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.io.File;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
@@ -24,6 +26,7 @@ public class Autogram {
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
     private final PasswordManager passwordManager;
+    private Timer tokenSessionTimer = null;
 
     public Autogram(UI ui, UserSettings settings) {
         this.ui = ui;
@@ -93,6 +96,8 @@ public class Autogram {
     private void signCommonAndThen(SigningJob job, SigningKey signingKey, Consumer<SigningJob> callback) {
         try {
             job.signWithKeyAndRespond(signingKey);
+            resetTokenSessionTimer();
+
             if (batch == null || batch.isEnded() || batch.isAllProcessed())
                 passwordManager.reset();
 
@@ -214,6 +219,7 @@ public class Autogram {
         try {
             var token = driver.createToken(passwordManager, settings);
             var keys = token.getKeys();
+            resetTokenSessionTimer();
 
             ui.onUIThreadDo(
                     () -> ui.pickKeyAndThen(keys, driver, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
@@ -265,5 +271,28 @@ public class Autogram {
 
     public boolean isPlainXmlEnabled() {
         return settings.isPlainXmlEnabled();
+    }
+
+    private void stopTokenSessionTimer() {
+        if (tokenSessionTimer == null)
+            return;
+
+        tokenSessionTimer.cancel();
+    }
+
+    private void startTokenSessionTimer() {
+        var timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                ui.resetSigningKey();
+            }
+        };
+        tokenSessionTimer = new Timer();
+        tokenSessionTimer.schedule(timerTask, 5 * 60 * 1000);
+    }
+
+    private void resetTokenSessionTimer() {
+        stopTokenSessionTimer();
+        startTokenSessionTimer();
     }
 }
