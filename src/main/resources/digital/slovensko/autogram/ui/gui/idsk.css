@@ -279,6 +279,10 @@
   -fx-font-size: 1.1875em;
 }
 
+.autogram-input--width-3 {
+  -fx-max-width: 3.75em;
+}
+
 .autogram-input:hover {
   -fx-cursor: text;
 }
@@ -695,11 +699,6 @@ TextFlow.autogram-body-s {
 .autogram-textfield-container > TextField {
   -fx-pref-width: 20.25em;
 }
-
-.autogram-textfield-container--width-3 > TextField {
-  -fx-pref-width: 3.75em;
-}
-
 
 .autogram-dropdown {
   -fx-cursor: hand;

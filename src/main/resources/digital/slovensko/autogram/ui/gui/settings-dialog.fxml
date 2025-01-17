@@ -159,8 +159,8 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-textfield-container,autogram-textfield-container--width-3">
-                                        <TextField fx:id="tokenSessionTimeoutTextField" styleClass="autogram-input" />
+                                    <VBox styleClass="autogram-textfield-container">
+                                        <TextField fx:id="tokenSessionTimeoutTextField" styleClass="autogram-input,autogram-input--width-3" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
