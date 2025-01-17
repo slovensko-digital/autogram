@@ -288,7 +288,7 @@ public class Autogram {
             }
         };
         tokenSessionTimer = new Timer();
-        tokenSessionTimer.schedule(timerTask, 5 * 60 * 1000);
+        tokenSessionTimer.schedule(timerTask, settings.getTokenSessionTimeout() * 60 * 1000);
     }
 
     private void resetTokenSessionTimer() {
