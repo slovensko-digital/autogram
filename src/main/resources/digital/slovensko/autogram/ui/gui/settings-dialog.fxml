@@ -150,12 +150,12 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Čas pre odpojenie podpisového certifikátu
+                                                Automatické odpojenie pri nečinnosti
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Po koľkých minútach nečinnosti bude podpisový certifikát odpojený.
+                                                Po koľkých minútach nečinnosti bude s kartou zrušené spojenie.
                                             </Text>
                                         </TextFlow>
                                     </VBox>
