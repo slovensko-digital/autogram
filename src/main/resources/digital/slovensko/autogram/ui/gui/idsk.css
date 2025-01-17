@@ -696,6 +696,10 @@ TextFlow.autogram-body-s {
   -fx-pref-width: 20.25em;
 }
 
+.autogram-textfield-container--width-3 > TextField {
+  -fx-pref-width: 3.75em;
+}
+
 
 .autogram-dropdown {
   -fx-cursor: hand;

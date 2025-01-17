@@ -159,7 +159,7 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-textfield-container">
+                                    <VBox styleClass="autogram-textfield-container,autogram-textfield-container--width-3">
                                         <TextField fx:id="tokenSessionTimeoutTextField" styleClass="autogram-input" />
                                     </VBox>
                                 </HBox>
