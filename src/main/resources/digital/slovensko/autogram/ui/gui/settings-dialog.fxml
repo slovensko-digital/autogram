@@ -150,19 +150,17 @@
                                     <VBox styleClass="left">
                                         <TextFlow>
                                             <Text styleClass="autogram-heading-s">
-                                                Použitie nového štandardu
+                                                Automatické odpojenie pri nečinnosti
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Podpisovanie štandardom ETSI EN 319 132 a&#160;ETSI EN 319 122.
-                                                Pozor, systémy verejnej správy tento štandard väčšinou nepodporujú.
+                                                Po koľkých minútach nečinnosti bude s kartou zrušené spojenie.
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="en319132Radios"
-                                            styleClass="autogram-smaller-radio-buttons" />
+                                    <VBox styleClass="autogram-textfield-container">
+                                        <TextField fx:id="tokenSessionTimeoutTextField" styleClass="autogram-input,autogram-input--width-3" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -180,6 +178,25 @@
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
                                         <HBox fx:id="plainXmlEnabledRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
+                                                Použitie nového štandardu
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Podpisovanie štandardom ETSI EN 319 132 a&#160;ETSI EN 319 122.
+                                                Pozor, systémy verejnej správy tento štandard väčšinou nepodporujú.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="en319132Radios"
                                             styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>

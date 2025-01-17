@@ -309,6 +309,11 @@ class AutogramTests {
         public void updateBatch() {
 
         }
+
+        @Override
+        public void resetSigningKey() {
+
+        }
     }
 
     private class TestSettings extends UserSettings {

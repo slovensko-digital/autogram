@@ -33,6 +33,8 @@ public class SettingsDialogController {
     @FXML
     private HBox plainXmlEnabledRadios;
     @FXML
+    private TextField tokenSessionTimeoutTextField;
+    @FXML
     private ChoiceBox<TokenDriver> driverChoiceBox;
     @FXML
     private VBox trustedCountriesList;
@@ -76,6 +78,7 @@ public class SettingsDialogController {
         initializeBulkEnabledCheckbox();
         initializeEn319132CheckBox();
         initializePlainXmlEnabledCheckBox();
+        initializeTokenSessionTimeoutTextField();
         initializeCorrectDocumentDisplayCheckBox();
         initializeSignatureValidationCheckBox();
         initializeCheckPDFAComplianceCheckBox();
@@ -294,6 +297,15 @@ public class SettingsDialogController {
         customKeystorePathTextField.setText(userSettings.getCustomKeystorePath());
         customKeystorePathTextField.setOnKeyTyped((e) -> {
             userSettings.setCustomKeystorePath(customKeystorePathTextField.getText());
+        });
+    }
+
+    private void initializeTokenSessionTimeoutTextField() {
+        tokenSessionTimeoutTextField.setTextFormatter(new TextFormatter <> (change -> change.getControlNewText().matches("[0-9]*") ? change : null));
+        tokenSessionTimeoutTextField.setText(String.valueOf(userSettings.getTokenSessionTimeout()));
+        tokenSessionTimeoutTextField.setOnKeyTyped((e) -> {
+            if (!tokenSessionTimeoutTextField.getText().isEmpty())
+                userSettings.setTokenSessionTimeout(Long.parseLong(tokenSessionTimeoutTextField.getText()));
         });
     }
 

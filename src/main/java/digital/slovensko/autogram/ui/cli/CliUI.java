@@ -280,4 +280,9 @@ public class CliUI implements UI {
     public void updateBatch() {
         // TODO: no usage for this in CLI UI
     }
+
+    @Override
+    public void resetSigningKey() {
+        activeKey = null;
+    }
 }

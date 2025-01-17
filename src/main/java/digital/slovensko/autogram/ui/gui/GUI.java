@@ -15,7 +15,6 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
-import eu.europa.esig.dss.enumerations.KeyUsageBit;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -500,8 +499,12 @@ public class GUI implements UI {
             batchController.disableSigning();
     }
 
+    @Override
     public void resetSigningKey() {
-        setActiveSigningKeyAndThen(null, null);
+        onUIThreadDo(()->{
+            setActiveSigningKeyAndThen(null, null);
+            refreshKeyOnAllJobs();
+        });
     }
 
     public void cancelJob(SigningJob job) {

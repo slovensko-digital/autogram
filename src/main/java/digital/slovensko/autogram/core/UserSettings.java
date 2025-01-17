@@ -33,6 +33,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private String customTsaServer;
     private boolean bulkEnabled;
     private int pdfDpi;
+    private long tokenSessionTimeout;
 
     public static UserSettings load() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
@@ -56,6 +57,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", ""));
         settings.setTsaEnabled(prefs.getBoolean("TSA_ENABLE", false));
         settings.setPdfDpi(prefs.getInt("PDF_DPI", 100));
+        settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", 5));
 
         return settings;
     }
@@ -81,6 +83,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.put("CUSTOM_TSA_SERVER", customTsaServer);
         prefs.putBoolean("TSA_ENABLE", tsaEnabled);
         prefs.putInt("PDF_DPI", pdfDpi);
+        prefs.putLong("TOKEN_SESSION_TIMEOUT", tokenSessionTimeout);
     }
 
     private void setSignatureType(String signatureType) {
@@ -284,5 +287,16 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public void setPdfDpi(int value) {
         pdfDpi = value;
+    }
+
+    public long getTokenSessionTimeout() {
+        return tokenSessionTimeout;
+    }
+
+    public void setTokenSessionTimeout(long value) {
+        if (value <= 0)
+            return;
+
+        tokenSessionTimeout = value;
     }
 }

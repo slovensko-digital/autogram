@@ -60,4 +60,6 @@ public interface UI {
     char[] getContextSpecificPassword();
 
     public void updateBatch();
+
+    void resetSigningKey();
 }
