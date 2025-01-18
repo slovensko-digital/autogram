@@ -53,7 +53,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.build(new AutogramDocument(document), parameters, responder), key));
+                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
