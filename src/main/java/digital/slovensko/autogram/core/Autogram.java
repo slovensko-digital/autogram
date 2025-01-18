@@ -91,10 +91,6 @@ public class Autogram {
         return SigningJob.build(document, parameters, responder);
     }
 
-    public void wrapInWorkThread(Runnable callback) {
-        ui.onWorkThreadDo(callback);
-    }
-
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
             try {

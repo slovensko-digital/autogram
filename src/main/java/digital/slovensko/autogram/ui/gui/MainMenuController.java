@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
@@ -112,19 +111,17 @@ public class MainMenuController implements SuppressedFocusController {
         if (filesList.size() == 1) {
             var file = filesList.get(0);
 
-            autogram.wrapInWorkThread(() -> {
-                try {
-                    var job = autogram.buildSigningJobFromFile(file,
-                            new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
-                            userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
+            try {
+                var job = autogram.buildSigningJobFromFile(file,
+                        new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
+                        userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
 
-                    autogram.sign(job);
-                } catch (DSSException e) {
-                    autogram.onSigningFailed(AutogramException.createFromDSSException(e));
-                } catch (AutogramException e) {
-                    autogram.onSigningFailed(e);
-                }
-            });
+                autogram.sign(job);
+            } catch (DSSException e) {
+                autogram.onSigningFailed(AutogramException.createFromDSSException(e));
+            } catch (AutogramException e) {
+                autogram.onSigningFailed(e);
+            }
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
                     filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(),
