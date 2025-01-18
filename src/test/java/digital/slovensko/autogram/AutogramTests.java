@@ -44,7 +44,7 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider" })
-    void testSignAsiceXadesHappyScenario(DSSDocument document) {
+    void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
@@ -60,7 +60,7 @@ class AutogramTests {
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
-    void testSignNonEformHappyScenario(DSSDocument document) {
+    void testSignNonEformHappyScenario(InMemoryDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
@@ -76,14 +76,14 @@ class AutogramTests {
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
-    void testSignNonEformNegativeScenario(DSSDocument document) {
+    void testSignNonEformNegativeScenario(InMemoryDocument document) {
         Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, false, null, false));
     }
 
     @ParameterizedTest
     @MethodSource({"digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider"})
-    void testSignAsiceCadesHappyScenario(DSSDocument document) {
+    void testSignAsiceCadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
@@ -97,7 +97,7 @@ class AutogramTests {
 
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
-    void testSignPadesHappyScenario(DSSDocument document) {
+    void testSignPadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
