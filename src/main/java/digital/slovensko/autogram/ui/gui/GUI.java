@@ -201,8 +201,8 @@ public class GUI implements UI {
 
     public char[] getDocumentPassword(DSSDocument document) {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("Aké je heslo k dokumentu?", document.getName() != null ? "Odomikáte " + document.getName() : null, "Zadajte heslo k dokumentu.", false, false);
-            var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
+            var controller = new PDFPasswordController("Aké je heslo k dokumentu?", document.getName() != null ? "Odomikáte " + document.getName() : null, "Zadajte heslo k dokumentu.");
+            var root = GUIUtils.loadFXML(controller, "pdf-password-dialog.fxml");
 
             var stage = new Stage();
             stage.setTitle("Odomknutie dokumentu");
