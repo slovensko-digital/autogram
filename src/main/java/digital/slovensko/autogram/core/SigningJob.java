@@ -184,10 +184,6 @@ public class SigningJob {
         return new SigningJob(autogramDocument, params, responder);
     }
 
-    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
-        return build(new AutogramDocument(document), params, responder);
-    }
-
     public static SigningParameters getParametersForFile(AutogramDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var level = SignatureValidator.getSignedDocumentSignatureLevel(SignatureValidator.getSignedDocumentSimpleReport(document));
         if (level != null) switch (level.getSignatureForm()) {
