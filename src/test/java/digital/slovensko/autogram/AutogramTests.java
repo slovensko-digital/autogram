@@ -318,7 +318,7 @@ class AutogramTests {
         }
     }
 
-    private static class TestSettings extends UserSettings {
+    private class TestSettings extends UserSettings {
         @Override
         public DriverDetector getDriverDetector() {
             List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
