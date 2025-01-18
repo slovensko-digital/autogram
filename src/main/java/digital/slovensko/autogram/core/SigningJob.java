@@ -6,11 +6,11 @@ import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -24,16 +24,16 @@ import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 
 public class SigningJob {
     private final Responder responder;
-    private final DSSDocument document;
+    private final AutogramDocument document;
     private final SigningParameters parameters;
 
-    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder) {
+    private SigningJob(AutogramDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
     }
 
-    public DSSDocument getDocument() {
+    public AutogramDocument getDocument() {
         return this.document;
     }
 
@@ -46,7 +46,6 @@ public class SigningJob {
     }
 
     public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
-
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
@@ -141,6 +140,7 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
         signatureParameters.setSignWithExpiredCertificate(true);
+        signatureParameters.setPasswordProtection(document.getSigningPassword());
 
         if (signatureParameters.getSignatureLevel().equals(SignatureLevel.PAdES_BASELINE_T)) {
             service.setTspSource(getParameters().getTspSource());
@@ -153,7 +153,7 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static FileDocument createDSSFileDocumentFromFile(File file) {
+    public static AutogramDocument createDSSFileDocumentFromFile(File file) {
         var fileDocument = new FileDocument(file);
 
         if (fileDocument.getName().endsWith(".xdcf"))
@@ -165,12 +165,13 @@ public class SigningJob {
         else if (isTxt(fileDocument.getMimeType()))
             fileDocument.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
 
-        return fileDocument;
+        return new AutogramDocument(fileDocument);
     }
 
-    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
+    public static SigningJob build(AutogramDocument autogramDocument, SigningParameters params, Responder responder) {
+        DSSDocument document = autogramDocument;
         if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
-            document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
+            autogramDocument = new AutogramDocument(XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document)));
 
         if (isTxt(document.getMimeType()))
             document.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
@@ -180,20 +181,10 @@ public class SigningJob {
             document.setName(getXdcfFilename(document.getName()));
         }
 
-        return new SigningJob(document, params, responder);
+        return new SigningJob(autogramDocument, params, responder);
     }
 
-    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
-        return build(document, params, responder);
-    }
-
-    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var document = createDSSFileDocumentFromFile(file);
-        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return build(document, parameters, responder);
-    }
-
-    private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+    public static SigningParameters getParametersForFile(AutogramDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var level = SignatureValidator.getSignedDocumentSignatureLevel(SignatureValidator.getSignedDocumentSimpleReport(document));
         if (level != null) switch (level.getSignatureForm()) {
             case PAdES:

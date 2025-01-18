@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.model.AutogramDocument;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -72,7 +73,7 @@ public class TransformationTests {
                     null,
                     true);
 
-                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
+                SigningJob job = SigningJob.build(new AutogramDocument(document), params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -150,7 +151,7 @@ public class TransformationTests {
                     null,
                     true);
 
-                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
+                SigningJob job = SigningJob.build(new AutogramDocument(document), params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {

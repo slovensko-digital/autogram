@@ -15,7 +15,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import digital.slovensko.autogram.model.AutogramDocument;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,6 @@ import org.xml.sax.SAXException;
 
 import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
@@ -167,7 +166,7 @@ public class SignatureValidator {
         return new ValidationReports(validator.validateDocument(), job);
     }
 
-    public static SimpleReport getSignedDocumentSimpleReport(DSSDocument document) {
+    public static SimpleReport getSignedDocumentSimpleReport(AutogramDocument document) {
         var validator = createDocumentValidator(document);
         if (validator == null)
             return null;

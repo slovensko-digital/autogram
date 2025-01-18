@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
@@ -9,6 +8,7 @@ import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import eu.europa.esig.dss.model.DSSException;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -110,10 +110,20 @@ public class MainMenuController implements SuppressedFocusController {
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-            var job = SigningJob.buildFromFile(file,
-                    new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
-                    userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
-            autogram.sign(job);
+
+            autogram.wrapInWorkThread(() -> {
+                try {
+                    var job = autogram.buildSigningJobFromFile(file,
+                            new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
+                            userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
+
+                    autogram.sign(job);
+                } catch (DSSException e) {
+                    autogram.onSigningFailed(AutogramException.createFromDSSException(e));
+                } catch (AutogramException e) {
+                    autogram.onSigningFailed(e);
+                }
+            });
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
                     filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(),

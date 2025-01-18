@@ -5,10 +5,12 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -51,7 +53,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+                key -> autogram.sign(SigningJob.build(new AutogramDocument(document), parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -67,7 +69,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+                key -> autogram.sign(SigningJob.build(new AutogramDocument(document), parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -90,7 +92,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+                key -> autogram.sign(SigningJob.build(new AutogramDocument(document), parameters, responder), key));
     }
 
     @ParameterizedTest
@@ -104,7 +106,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+                key -> autogram.sign(SigningJob.build(new AutogramDocument(document), parameters, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -135,7 +137,7 @@ class AutogramTests {
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, false), key));
+                key -> autogram.sign(autogram.buildSigningJobFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, false), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -253,6 +255,11 @@ class AutogramTests {
         @Override
         public void showError(AutogramException exception) {
 
+        }
+
+        @Override
+        public char[] getDocumentPassword(DSSDocument document) {
+            return null;
         }
 
         @Override

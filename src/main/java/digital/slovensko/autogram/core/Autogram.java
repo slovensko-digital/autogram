@@ -4,10 +4,12 @@ import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
 import digital.slovensko.autogram.util.PDFUtils;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
@@ -59,6 +61,12 @@ public class Autogram {
             return;
 
         ui.onWorkThreadDo(() -> {
+            // PDF/A doesn't support encryption
+            if (job.getDocument().hasOpenDocumentPassword()) {
+                ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
+                return;
+            }
+
             var result = new PDFAStructureValidator().validate(job.getDocument());
             if (!result.isCompliant()) {
                 ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
@@ -66,15 +74,32 @@ public class Autogram {
         });
     }
 
+    public void handleProtectedPdfDocument(AutogramDocument document) {
+        var protection = PDFUtils.determinePDFProtection(document);
+        if (protection == PDFUtils.PDFProtection.NONE)
+            return;
+
+        var password = ui.getDocumentPassword(document);
+        switch (protection) {
+            case OPEN_DOCUMENT_PASSWORD -> document.setOpenDocumentPassword(password);
+            case MASTER_PASSWORD -> document.setMasterPassword(password);
+        }
+    }
+
+    public SigningJob buildSigningJobFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+        var document = SigningJob.createDSSFileDocumentFromFile(file);
+        handleProtectedPdfDocument(document);
+
+        var parameters = SigningJob.getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
+        return SigningJob.build(document, parameters, responder);
+    }
+
+    public void wrapInWorkThread(Runnable callback) {
+        ui.onWorkThreadDo(callback);
+    }
+
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
-            if (PDFUtils.isPdfAndPasswordProtected(job.getDocument())) {
-                ui.onUIThreadDo(() -> {
-                    ui.showError(new AutogramException("Nastala chyba", "Dokument je chránený heslom", "Snažíte sa podpísať dokument chránený heslom, čo je funkcionalita, ktorá nie je podporovaná.\n\nOdstráňte ochranu heslom a potom budete môcť dokument podpísať."));
-                });
-                return;
-            }
-
             try {
                 var visualization = DocumentVisualizationBuilder.fromJob(job, settings);
                 ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));

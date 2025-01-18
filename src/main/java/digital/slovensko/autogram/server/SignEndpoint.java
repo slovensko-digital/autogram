@@ -24,12 +24,14 @@ public class SignEndpoint implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
+            autogram.handleProtectedPdfDocument(body.getDocument());
+
             body.validateDocument();
             body.validateSigningParameters();
 
             var responder = body.getBatchId() == null ? new ServerResponder(exchange)
                     : new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
-            var job = SigningJob.buildFromRequest(body.getDocument(), body.getParameters(autogram.getTspSource(), autogram.isPlainXmlEnabled()), responder);
+            var job = SigningJob.build(body.getDocument(), body.getParameters(autogram.getTspSource(), autogram.isPlainXmlEnabled()), responder);
 
             if (body.getBatchId() != null)
                 autogram.batchSign(job, body.getBatchId());

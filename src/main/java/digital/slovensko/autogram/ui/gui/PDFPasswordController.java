@@ -8,11 +8,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public class PasswordController {
+public class PDFPasswordController {
     private final String questionText;
+    private final String descriptionText;
     private final String errorText;
-    private final boolean isSigningStep;
-    private final boolean allowEmpty;
 
     private char[] password;
 
@@ -20,6 +19,8 @@ public class PasswordController {
     PasswordField passwordField;
     @FXML
     Text question;
+    @FXML
+    Text description;
     @FXML
     Text error;
     @FXML
@@ -31,25 +32,26 @@ public class PasswordController {
     @FXML
     VBox mainBox;
 
-    public PasswordController(String questionText, String blankPasswordErrorText, boolean isSigningStep, boolean allowEmpty) {
+    public PDFPasswordController(String questionText, String description, String blankPasswordErrorText) {
         this.questionText = questionText;
+        this.descriptionText = description;
         this.errorText = blankPasswordErrorText;
-        this.isSigningStep = isSigningStep;
-        this.allowEmpty = allowEmpty;
     }
 
     public void initialize() {
         question.setText(questionText);
-        error.setText(errorText);
-        if(isSigningStep) {
-            mainButton.setText("Podpísať");
-            cancelButton.setManaged(true);
-            cancelButton.setVisible(true);
+
+        if (descriptionText != null) {
+            description.setText(descriptionText);
+            description.setManaged(true);
+            description.setVisible(true);
         }
+
+        error.setText(errorText);
     }
 
     public void onPasswordAction() {
-        if (passwordField.getText().isEmpty() && !allowEmpty) {
+        if (passwordField.getText().isEmpty()) {
             error.setManaged(true);
             error.setVisible(true);
             formGroup.getStyleClass().add("autogram-form-group--error");

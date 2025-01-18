@@ -7,7 +7,6 @@ import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.regex.Pattern;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
@@ -15,6 +14,7 @@ import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
+import digital.slovensko.autogram.model.AutogramDocument;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
@@ -26,7 +26,6 @@ import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 public class ServerSigningParameters {
@@ -251,7 +250,7 @@ public class ServerSigningParameters {
         return container;
     }
 
-    public void resolveSigningLevel(InMemoryDocument document) throws RequestValidationException {
+    public void resolveSigningLevel(AutogramDocument document) throws RequestValidationException {
         if (level != null)
             return;
 

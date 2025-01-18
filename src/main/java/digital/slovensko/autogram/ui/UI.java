@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
@@ -54,6 +55,8 @@ public interface UI {
     void showIgnorableExceptionDialog(IgnorableException exception);
 
     void showError(AutogramException exception);
+
+    char[] getDocumentPassword(DSSDocument document);
 
     char[] getKeystorePassword();
 

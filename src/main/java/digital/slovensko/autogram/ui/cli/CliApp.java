@@ -9,6 +9,7 @@ import digital.slovensko.autogram.ui.SaveFileResponder;
 import java.io.File;
 import java.util.Arrays;
 
+import eu.europa.esig.dss.model.DSSException;
 import org.apache.commons.cli.CommandLine;
 
 public class CliApp {
@@ -30,7 +31,7 @@ public class CliApp {
             var source = settings.getSource();
             var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
-                    .map(f -> SigningJob.buildFromFile(f, new SaveFileResponder(f, autogram, targetPathBuilder),
+                    .map(f -> autogram.buildSigningJobFromFile(f, new SaveFileResponder(f, autogram, targetPathBuilder),
                             settings.isPdfaCompliance(), settings.getSignatureLevel(), settings.isEn319132(),
                             settings.getTspSource(), settings.isPlainXmlEnabled()))
                     .toList();
@@ -45,6 +46,8 @@ public class CliApp {
 
             jobs.forEach(autogram::sign);
 
+        } catch (DSSException e) {
+            System.err.println(CliUI.parseError(AutogramException.createFromDSSException(e)));
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));
         }

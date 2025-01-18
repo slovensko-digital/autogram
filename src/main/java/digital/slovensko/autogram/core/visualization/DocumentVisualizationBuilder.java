@@ -6,11 +6,11 @@ import java.nio.charset.StandardCharsets;
 import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.model.AutogramDocument;
 import eu.europa.esig.dss.model.DSSDocument;
 
 import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
@@ -22,10 +22,10 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 
 public class DocumentVisualizationBuilder {
 
-    private final DSSDocument document;
+    private final AutogramDocument document;
     private final SigningParameters parameters;
 
-    private DocumentVisualizationBuilder(DSSDocument document, SigningParameters parameters) {
+    private DocumentVisualizationBuilder(AutogramDocument document, SigningParameters parameters) {
         this.document = document;
         this.parameters = parameters;
     }
@@ -44,7 +44,7 @@ public class DocumentVisualizationBuilder {
         var documentToDisplay = document;
         if (isAsice(documentToDisplay.getMimeType())) {
             try {
-                documentToDisplay = AsicContainerUtils.getOriginalDocument(document);
+                documentToDisplay = new AutogramDocument(AsicContainerUtils.getOriginalDocument(document));
             } catch (AutogramException e) {
                 return new UnsupportedVisualization(job);
             }
@@ -86,7 +86,7 @@ public class DocumentVisualizationBuilder {
         return transformation != null;
     }
 
-    private boolean isDocumentSupportingTransformation(DSSDocument document) {
+    private boolean isDocumentSupportingTransformation(AutogramDocument document) {
         return isXDC(document.getMimeType()) || isXML(document.getMimeType());
     }
 }
