@@ -141,6 +141,10 @@ jobs:
         shell: bash
         run: |
           set -x
+
+          echo "Listing keychain..."
+          security list-keychain -d user
+
           # run notarization
           xcrun notarytool submit --verbose --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
           # staple
