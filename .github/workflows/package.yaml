@@ -142,7 +142,7 @@ jobs:
         run: |
           set -x
           # run notarization
-          xcrun notarytool submit --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
+          xcrun notarytool submit --verbose --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
           # staple
           xcrun stapler staple target/Autogram-*.pkg
           # lock all keychains
