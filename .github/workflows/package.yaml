@@ -145,6 +145,9 @@ jobs:
           echo "Listing keychain..."
           security list-keychain -d user
 
+          # unlock keychain
+          security unlock-keychain -p "$APPLE_KEYCHAIN_PASSWORD" $APPLE_KEYCHAIN_PATH
+
           # run notarization
           xcrun notarytool submit --verbose --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
           # staple
