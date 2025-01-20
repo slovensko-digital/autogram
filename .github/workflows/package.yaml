@@ -138,6 +138,7 @@ jobs:
       - name: Notarize release with Apple (MacOS)
         env:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
+          APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
         shell: bash
         run: |
           set -x
@@ -149,7 +150,7 @@ jobs:
           security unlock-keychain -p "$APPLE_KEYCHAIN_PASSWORD" $APPLE_KEYCHAIN_PATH
 
           # run notarization
-          xcrun notarytool submit --verbose --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
+          xcrun notarytool submit --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
           # staple
           xcrun stapler staple target/Autogram-*.pkg
           # lock all keychains
