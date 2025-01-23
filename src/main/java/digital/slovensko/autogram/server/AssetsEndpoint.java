@@ -6,8 +6,10 @@ import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.InvalidUrlParamException;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -16,7 +18,11 @@ public class AssetsEndpoint implements HttpHandler {
     private static final List<String> assets;
     private static final Path assetsPath;
     static  {
-        assetsPath = Path.of(requireNonNull(AssetsEndpoint.class.getResource("index.html")).getPath()).getParent().resolve("assets");
+        try {
+            assetsPath = Paths.get(requireNonNull(AssetsEndpoint.class.getResource("index.html")).toURI()).getParent().resolve("assets");
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
         assets = List.of(
                 "swagger-ui-bundle-v5.11.0.js",
                 "swagger-ui-v5.11.0.css"
