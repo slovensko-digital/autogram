@@ -22,6 +22,7 @@ public class GUIApp extends Application {
     @Override
     public void start(Stage windowStage) throws Exception {
         AutogramServer server = null;
+        Autogram autogram = null;
         try {
             var userSettings = UserSettings.load();
 
@@ -29,8 +30,8 @@ public class GUIApp extends Application {
             setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
             var titleString = "Autogram";
 
-            final Autogram autogram;
             autogram = new Autogram(new GUI(getHostServices(), userSettings), userSettings);
+            var finalAutogram = autogram;
             autogram.checkForUpdate();
             autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService, userSettings.getTrustedList());
 
@@ -48,6 +49,7 @@ public class GUIApp extends Application {
                     var thread = new Thread(server::stop);
                     windowStage.setOnCloseRequest(event -> {
                         thread.start();
+                        finalAutogram.shutdown();
                         Platform.exit();
                     });
 
@@ -61,10 +63,12 @@ public class GUIApp extends Application {
                 }
             }
 
-            if (server == null)
+            if (server == null) {
                 windowStage.setOnCloseRequest(event -> {
+                    finalAutogram.shutdown();
                     Platform.exit();
                 });
+            }
 
             GUIUtils.suppressDefaultFocus(windowStage, controller);
             windowStage.setTitle(titleString);
@@ -74,12 +78,16 @@ public class GUIApp extends Application {
 
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
-            final var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
+            var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
+            var finalAutogram = autogram;
             Platform.runLater(() -> {
                 GUIUtils.showError(new UnrecognizedException(e), "Ukončiť",true);
-                if (serverFinal != null) {
+                if (serverFinal != null)
                     new Thread(serverFinal::stop).start();
-                }
+
+                if (finalAutogram != null)
+                    finalAutogram.shutdown();
+
                 Platform.exit();
             });
         }

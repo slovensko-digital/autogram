@@ -36,11 +36,11 @@ copy_extension=copy
 [alt_names]
 DNS.1=loopback.autogram.slovensko.digital
 
-" >$SSL_CONFIG_TMP
+" >"$SSL_CONFIG_TMP"
 
-    cat $SSL_CONFIG_TMP
+    cat "$SSL_CONFIG_TMP"
 
-    /usr/bin/openssl req -nodes -x509 -newkey rsa:4096 -keyout "$TLS_DIR/autogram-key.pem" -out "$TLS_DIR/autogram-cert.pem" -sha256 -days 365 -config $SSL_CONFIG_TMP
+    /usr/bin/openssl req -nodes -x509 -newkey rsa:4096 -keyout "$TLS_DIR/autogram-key.pem" -out "$TLS_DIR/autogram-cert.pem" -sha256 -days 365 -config "$SSL_CONFIG_TMP"
 
     /usr/bin/openssl pkcs12 -export -in "$TLS_DIR/autogram-cert.pem" -inkey "$TLS_DIR/autogram-key.pem" -out "$TLS_DIR/autogram-pkcs12-cert.p12" -name "autogram-pkcs12-cert" -passout pass:
 
@@ -52,5 +52,5 @@ DNS.1=loopback.autogram.slovensko.digital
 
 function remove_cert(){
     TLS_DIR="$HOME/Library/Application Support/Autogram/tls"
-    security delete-certificate -Z $(openssl x509 -in "$TLS_DIR/autogram-cert.pem" -outform DER | shasum -a 1 ) "$HOME/Library/Keychains/login.keychain-db"
+    security delete-certificate -Z "$(openssl x509 -in "$TLS_DIR/autogram-cert.pem" -outform DER | shasum -a 1 )" "$HOME/Library/Keychains/login.keychain-db"
 }

@@ -295,4 +295,8 @@ public class Autogram {
         stopTokenSessionTimer();
         startTokenSessionTimer();
     }
+
+    public void shutdown() {
+        stopTokenSessionTimer();
+    }
 }

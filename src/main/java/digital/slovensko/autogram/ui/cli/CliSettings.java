@@ -34,6 +34,7 @@ public class CliSettings extends UserSettings {
         settings.setTsaEnabled(settings.getTsaServer() != null);
         settings.setBulkEnabled(true);
         settings.setPlainXmlEnabled(cmd.hasOption("plain-xml"));
+        settings.setTokenSessionTimeout(5);
 
         return settings;
     }
