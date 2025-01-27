@@ -48,10 +48,10 @@ public class CliApp {
             ui.setJobsCount(jobs.size());
             jobs.forEach(autogram::sign);
 
-            autogram.shutdown();
-
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));
+
+        } finally {
             if (autogram != null)
                 autogram.shutdown();
         }
