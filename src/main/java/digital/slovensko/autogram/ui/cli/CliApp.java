@@ -48,12 +48,12 @@ public class CliApp {
             ui.setJobsCount(jobs.size());
             jobs.forEach(autogram::sign);
 
-            autogram.stopTokenSessionTimer();
+            autogram.shutdown();
 
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));
             if (autogram != null)
-                autogram.stopTokenSessionTimer();
+                autogram.shutdown();
         }
     }
 }

@@ -273,7 +273,7 @@ public class Autogram {
         return settings.isPlainXmlEnabled();
     }
 
-    public void stopTokenSessionTimer() {
+    private void stopTokenSessionTimer() {
         if (tokenSessionTimer == null)
             return;
 
@@ -294,5 +294,9 @@ public class Autogram {
     private void resetTokenSessionTimer() {
         stopTokenSessionTimer();
         startTokenSessionTimer();
+    }
+
+    public void shutdown() {
+        stopTokenSessionTimer();
     }
 }

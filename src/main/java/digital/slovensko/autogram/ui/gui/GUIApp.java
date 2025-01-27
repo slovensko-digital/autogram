@@ -11,7 +11,6 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -50,7 +49,7 @@ public class GUIApp extends Application {
                     var thread = new Thread(server::stop);
                     windowStage.setOnCloseRequest(event -> {
                         thread.start();
-                        finalAutogram.stopTokenSessionTimer();
+                        finalAutogram.shutdown();
                         Platform.exit();
                     });
 
@@ -66,7 +65,7 @@ public class GUIApp extends Application {
 
             if (server == null) {
                 windowStage.setOnCloseRequest(event -> {
-                    finalAutogram.stopTokenSessionTimer();
+                    finalAutogram.shutdown();
                     Platform.exit();
                 });
             }
@@ -86,7 +85,9 @@ public class GUIApp extends Application {
                 if (serverFinal != null)
                     new Thread(serverFinal::stop).start();
 
-                finalAutogram.stopTokenSessionTimer();
+                if (finalAutogram != null)
+                    finalAutogram.shutdown();
+
                 Platform.exit();
             });
         }
