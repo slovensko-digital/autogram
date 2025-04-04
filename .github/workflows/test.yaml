@@ -63,8 +63,8 @@ jobs:
         run: echo "${{ steps.jacoco_report.outputs.coverageSummary }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Code Coverage Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: code-coverage-report-markdown
+          name: code-coverage-report-markdown-${{ runner.os }}
           path: ./*/coverage-results.md
           retention-days: 1
