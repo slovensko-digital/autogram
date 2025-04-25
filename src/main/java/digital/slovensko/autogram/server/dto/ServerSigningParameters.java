@@ -288,7 +288,8 @@ public class ServerSigningParameters {
                 SignatureLevel.PAdES_BASELINE_B,
                 SignatureLevel.CAdES_BASELINE_B,
                 SignatureLevel.XAdES_BASELINE_T,
-                SignatureLevel.PAdES_BASELINE_T);
+                SignatureLevel.PAdES_BASELINE_T,
+                SignatureLevel.CAdES_BASELINE_T);
 
         if (!supportedLevels.contains(level))
             throw new UnsupportedSignatureLevelException(level.name());

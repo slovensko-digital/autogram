@@ -127,6 +127,12 @@ paths:
               XAdES (ASiC_E) TXT:
                 $ref: "#/components/examples/XAdES-ASiC_E-TXT"
 
+              CAdES Level_T (ASiC_E) TXT:
+                $ref: "#/components/examples/XAdES-ASiC_E_CADES_T-TXT"
+
+              XAdES Level_T(ASiC_E) TXT:
+                $ref: "#/components/examples/XAdES-ASiC_E_XADES_T-TXT"
+
               XAdES (ASiC_E) DOCX:
                 $ref: "#/components/examples/XAdES-ASiC_E-DOCX"
 
@@ -453,6 +459,9 @@ components:
             - XAdES_BASELINE_B
             - PAdES_BASELINE_B
             - CAdES_BASELINE_B
+            - XAdES_BASELINE_T
+            - PAdES_BASELINE_T
+            - CAdES_BASELINE_T
           example: XAdES_BASELINE_B
           description: |
             Signature format PAdES is usable only with documents of type `application/pdf`. Format XAdES is usable with XML or with any file type if using an ASiC container.
@@ -828,6 +837,26 @@ components:
           filename: TextDocument.txt
         parameters:
           level: XAdES_BASELINE_B
+          container: ASiC_E
+        payloadMimeType: "text/plain"
+
+    XAdES-ASiC_E_XADES_T-TXT:
+      value:
+        document:
+          content: "Testovací dokument"
+          filename: TextDocument.txt
+        parameters:
+          level: XAdES_BASELINE_T
+          container: ASiC_E
+        payloadMimeType: "text/plain"
+
+    XAdES-ASiC_E_CADES_T-TXT:
+      value:
+        document:
+          content: "Testovací dokument"
+          filename: TextDocument.txt
+        parameters:
+          level:  CAdES_BASELINE_T
           container: ASiC_E
         payloadMimeType: "text/plain"
 
