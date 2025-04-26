@@ -20,13 +20,17 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
 import static javafx.collections.FXCollections.observableArrayList;
 
 public class SettingsDialogController {
+    @FXML
+    private ResourceBundle resources;
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
     @FXML
@@ -298,8 +302,25 @@ public class SettingsDialogController {
     }
 
     private void initializeLanguageSettings() {
-        languageChoiceBox.setItems(observableArrayList(SupportedLanguage.values()));
-        languageChoiceBox.setValue(userSettings.getLanguageOrDefault());
+        var items = observableArrayList(SupportedLanguage.values());
+        items.add(0, SupportedLanguage.SYSTEM);
+        languageChoiceBox.setItems(items);
+        languageChoiceBox.setValue(userSettings.getLanguage().orElse(SupportedLanguage.SYSTEM));
+        languageChoiceBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(SupportedLanguage language) {
+                if (language == SupportedLanguage.SYSTEM) {
+                    return resources.getString("settings.label.systemLanguage");
+                }
+
+                return language.getDisplayLanguage();
+            }
+
+            @Override
+            public SupportedLanguage fromString(String string) {
+                return null; // not editable, will never be called
+            }
+        });
         languageChoiceBox.getSelectionModel().selectedItemProperty()
                 .addListener((observable, oldValue, newValue) -> {
                     userSettings.setLanguage(newValue);

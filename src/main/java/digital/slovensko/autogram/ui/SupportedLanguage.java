@@ -8,7 +8,7 @@ public enum SupportedLanguage {
     SLOVAK(new Locale("sk", "SK")),
     ENGLISH(Locale.ENGLISH);
 
-    public static final SupportedLanguage DEFAULT = SLOVAK;
+    public static final SupportedLanguage SYSTEM = null;
     private final Locale locale;
 
     SupportedLanguage(Locale locale) {
@@ -19,8 +19,7 @@ public enum SupportedLanguage {
         return locale;
     }
 
-    @Override
-    public String toString() {
+    public String getDisplayLanguage() {
         return locale.getDisplayLanguage(locale);
     }
 

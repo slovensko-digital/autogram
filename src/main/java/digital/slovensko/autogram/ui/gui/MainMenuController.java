@@ -157,7 +157,7 @@ public class MainMenuController implements SuppressedFocusController {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.showAndWait();
 
-        if (!userSettings.getLanguageOrDefault().getLocale().getLanguage().equals(resources.getLocale().getLanguage())) {
+        if (!userSettings.getLanguageLocale().getLanguage().equals(resources.getLocale().getLanguage())) {
             reloadView();
         }
     }

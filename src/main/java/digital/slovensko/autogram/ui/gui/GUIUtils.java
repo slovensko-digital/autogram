@@ -27,8 +27,8 @@ public class GUIUtils {
             var loader = new FXMLLoader();
             loader.setLocation(controller.getClass().getResource(fxml));
             loader.setController(controller);
-            var language = UserSettings.load().getLanguageOrDefault();
-            loader.setResources(ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n", language.getLocale()));
+            var language = UserSettings.load().getLanguageLocale();
+            loader.setResources(ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n", language));
             return loader.load();
         } catch (IOException e) {
             throw new RuntimeException(e);
