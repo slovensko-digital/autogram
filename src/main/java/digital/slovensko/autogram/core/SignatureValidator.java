@@ -38,8 +38,8 @@ import eu.europa.esig.dss.tsl.function.TLPredicateFactory;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.tsl.sync.ExpirationAndSignatureCheckStrategy;
-import eu.europa.esig.dss.validation.CertificateVerifier;
-import eu.europa.esig.dss.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.spi.validation.CertificateVerifier;
+import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.reports.Reports;
 
@@ -120,7 +120,7 @@ public class SignatureValidator {
     private CertificateSource getJournalCertificateSource() throws AssertionError {
         try {
             var keystore = getClass().getResourceAsStream("lotlKeyStore.p12");
-            return new KeyStoreCertificateSource(keystore, "PKCS12", "dss-password");
+            return new KeyStoreCertificateSource(keystore, "PKCS12", "dss-password".toCharArray());
 
         } catch (DSSException | NullPointerException e) {
             throw new AssertionError("Cannot load LOTL keystore", e);

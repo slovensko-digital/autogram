@@ -173,7 +173,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         final String javaSignatureAlgorithm = signatureAlgorithm.getJCEId();
         final byte[] bytes = toBeSigned.getBytes();
         AlgorithmParameterSpec param = null;
-        if (signatureAlgorithm.getMaskGenerationFunction() != null) {
+        if (signatureAlgorithm.getEncryptionAlgorithm() != null) {
             param = createPSSParam(signatureAlgorithm.getDigestAlgorithm());
         }
 
