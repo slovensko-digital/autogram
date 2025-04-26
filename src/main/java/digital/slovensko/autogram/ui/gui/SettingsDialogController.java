@@ -23,14 +23,11 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.function.Consumer;
 
 import static javafx.collections.FXCollections.observableArrayList;
 
-public class SettingsDialogController {
-    @FXML
-    private ResourceBundle resources;
+public class SettingsDialogController extends BaseController {
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
     @FXML
@@ -310,7 +307,7 @@ public class SettingsDialogController {
             @Override
             public String toString(SupportedLanguage language) {
                 if (language == SupportedLanguage.SYSTEM) {
-                    return resources.getString("settings.label.systemLanguage");
+                    return i18n("settings.label.systemLanguage");
                 }
 
                 return language.getDisplayLanguage();

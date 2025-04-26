@@ -20,14 +20,11 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.List;
-import java.util.ResourceBundle;
 
-public class MainMenuController implements SuppressedFocusController {
+public class MainMenuController extends BaseController implements SuppressedFocusController {
     private final Autogram autogram;
     private final UserSettings userSettings;
 
-    @FXML
-    ResourceBundle resources;
     @FXML
     VBox dropZone;
 
@@ -151,7 +148,7 @@ public class MainMenuController implements SuppressedFocusController {
         var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle(resources.getString("general.settings"));
+        stage.setTitle(i18n("general.settings"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
