@@ -42,7 +42,7 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#orsrDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
-            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider" })
+            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider"})
     void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
@@ -95,7 +95,7 @@ class AutogramTests {
     }
 
     @ParameterizedTest
-    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider"})
     void testSignPadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
         var settings = new TestSettings();
@@ -116,7 +116,7 @@ class AutogramTests {
     }
 
     @ParameterizedTest
-    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
+    @MethodSource({"digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
             "digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
@@ -199,7 +199,7 @@ class AutogramTests {
         }
 
         @Override
-        public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
+        public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
         }
 
         @Override

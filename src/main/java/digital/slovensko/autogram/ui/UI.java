@@ -9,13 +9,12 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
 
-    void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback);
+    void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
 
     void cancelBatch(Batch batch);
 
