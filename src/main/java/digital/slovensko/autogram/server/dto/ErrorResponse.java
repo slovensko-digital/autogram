@@ -45,6 +45,7 @@ public class ErrorResponse {
             case "MalformedBodyException" -> new ErrorResponse(400, "MALFORMED_INPUT", (AutogramException) e);
             case "UnknownEformException" -> new ErrorResponse(400, "UNKNOWN_EFORM", (AutogramException) e);
             case "AutogramException" -> new ErrorResponse(502, "SIGNING_FAILED", (AutogramException) e);
+            case "BatchCloseException" -> new ErrorResponse(502, "BATCH_CLOSED", (AutogramException) e);
             case "EmptyBodyException" -> new ErrorResponse(400, "EMPTY_BODY", (AutogramException) e);
             case "BatchEndedException" -> new ErrorResponse(400, "BATCH_ENDED", (AutogramException) e);
             case "BatchExpiredException" -> new ErrorResponse(400, "BATCH_EXPIRED", (AutogramException) e);

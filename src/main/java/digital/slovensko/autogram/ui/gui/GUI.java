@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.*;
+import javafx.event.ActionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,15 +49,19 @@ public class GUI implements UI {
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
+    public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
         batchController = new BatchDialogController(batch, callback, autogram, this);
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
         var stage = new Stage();
         stage.setTitle("Hromadné podpisovanie");
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> cancelBatch(batch));
+        stage.setOnCloseRequest(e -> {
+            cancelBatch(batch);
+            callback.cancel();
+        });
 
+        stage.setResizable(false);
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, batchController);
         GUIUtils.showOnTop(stage);
@@ -501,7 +506,7 @@ public class GUI implements UI {
 
     @Override
     public void resetSigningKey() {
-        onUIThreadDo(()->{
+        onUIThreadDo(() -> {
             setActiveSigningKeyAndThen(null, null);
             refreshKeyOnAllJobs();
         });
