@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.gui.SignatureLevelStringConverter;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
@@ -11,9 +12,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.prefs.Preferences;
 
+import static digital.slovensko.autogram.ui.SupportedLanguage.getByLocale;
+
 public class UserSettings implements PasswordManagerSettings, SignatureTokenSettings, DriverDetectorSettings {
+    private SupportedLanguage language;
     private SignatureLevel signatureLevel;
     private String driver;
     private int slotIndex;
@@ -39,6 +45,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         var settings = new UserSettings();
+        settings.setLanguage(SupportedLanguage.getByLanguage(prefs.get("LANGUAGE", null)));
         settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", SignatureLevelStringConverter.PADES));
         settings.setDriver(prefs.get("DRIVER", ""));
         settings.setSlotIndex(prefs.getInt("SLOT_INDEX", -1));
@@ -65,6 +72,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     public void save() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
+        prefs.put("LANGUAGE", (language == null) ? "" : language.getLocale().getLanguage());
         prefs.put("SIGNATURE_LEVEL", new SignatureLevelStringConverter().toString(signatureLevel));
         prefs.put("DRIVER", driver == null ? "" : driver);
         prefs.putInt("SLOT_INDEX", slotIndex);
@@ -100,6 +108,23 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     private void setTrustedList(String trustedList) {
         this.trustedList = trustedList == null ? new ArrayList<>() : new ArrayList<>(List.of(trustedList.split(",")));
+    }
+
+    public Optional<SupportedLanguage> getLanguage() {
+        return Optional.ofNullable(language);
+    }
+
+    /**
+     * @return preferred language of the user, or default (system) language, falling back to {@link SupportedLanguage#DEFAULT} if not supported
+     */
+    public SupportedLanguage getLanguageOrDefault() {
+        return getLanguage()
+                .or(() -> Optional.ofNullable(getByLocale(Locale.getDefault())))
+                .orElse(SupportedLanguage.DEFAULT);
+    }
+
+    public void setLanguage(SupportedLanguage language) {
+        this.language = language;
     }
 
     public SignatureLevel getSignatureLevel() {

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml" minWidth="600">
     <top>
@@ -30,6 +34,9 @@
         <HBox styleClass="autogram-footer">
             <Button styleClass="autogram-link" onAction="#onAboutButtonAction" text="%main.btn.about"/>
             <Button styleClass="autogram-link" onAction="#onSettingButtonAction" text="%general.settings"/>
+            <VBox styleClass="autogram-dropdown">
+                <ChoiceBox fx:id="languageChoiceBox"/>
+            </VBox>
         </HBox>
     </bottom>
 </BorderPane>

@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
@@ -26,7 +27,8 @@ public class GUIUtils {
             var loader = new FXMLLoader();
             loader.setLocation(controller.getClass().getResource(fxml));
             loader.setController(controller);
-            loader.setResources(ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n" /*TODO #541 read locale from prefs OR use default*/));
+            var language = UserSettings.load().getLanguageOrDefault();
+            loader.setResources(ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n", language.getLocale()));
             return loader.load();
         } catch (IOException e) {
             throw new RuntimeException(e);
