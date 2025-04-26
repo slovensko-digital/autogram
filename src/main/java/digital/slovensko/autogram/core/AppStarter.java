@@ -20,13 +20,15 @@ public class AppStarter {
         addOption("f", "force", false, "Overwrite existing file(s).").
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
         addOption(null, "parents", false, "Create all parent directories for target if needed.").
-        addOption("d", "driver", true, "PCKS driver name for signing. Supported values: eid, secure_store, monet, gemalto, keystore.").
+        addOption("d", "driver", true, "PCKS driver name for signing. Supported values: eid, secure_store, monet, gemalto, keystore, custom_pkcs11 (requires valid path within pkcs11-driver-path option).").
         addOption(null, "keystore", true, "Absolute path to a keystore file that can be used for signing.").
         addOption(null, "slot-id", true, "Slot ID for PKCS11 driver. If not specified, first available slot is used.").
         addOption(null, "pdf-level", true, "PDF signature level. Supported values: PAdES_BASELINE_B (default), XAdES_BASELINE_B, CAdES_BASELINE_B.").
         addOption(null, "en319132", false, "Sign according to EN 319 132 or EN 319 122.").
         addOption(null, "tsa-server", true, "Url of TimeStamp Authority server that should be used for timestamping in signature level BASELINE_T. If provided, BASELINE_T signatures are made.").
-        addOption(null, "plain-xml", false, "Enable signing plain (non-slovak-eform) XML files.");
+        addOption(null, "plain-xml", false, "Enable signing plain (non-slovak-eform) XML files.").
+        addOption(null, "pkcs11-driver-path", true, "Absolute path to a file with custom PKCS11 driver.");
+
 
     public static void start(String[] args) {
         try {

@@ -55,6 +55,8 @@ public class SettingsDialogController {
     @FXML
     private TextField customKeystorePathTextField;
     @FXML
+    private TextField customPKCS11DriverPathTextField;
+    @FXML
     private Button saveButton;
     @FXML
     private Button closeButton;
@@ -88,6 +90,7 @@ public class SettingsDialogController {
         initializeSlotIndexSettings();
         initializePdfDpiSettings();
         initializeCustomKeystoreSettings();
+        initializeCustomPKCS11DriverPathSettings();
     }
 
     private void initializeSignatureLevelChoiceBox() {
@@ -306,6 +309,13 @@ public class SettingsDialogController {
         tokenSessionTimeoutTextField.setOnKeyTyped((e) -> {
             if (!tokenSessionTimeoutTextField.getText().isEmpty())
                 userSettings.setTokenSessionTimeout(Long.parseLong(tokenSessionTimeoutTextField.getText()));
+        });
+    }
+
+    private void initializeCustomPKCS11DriverPathSettings() {
+        customPKCS11DriverPathTextField.setText(userSettings.getCustomPKCS11DriverPath());
+        customPKCS11DriverPathTextField.setOnKeyTyped((e) -> {
+            userSettings.setCustomPKCS11DriverPath(customPKCS11DriverPathTextField.getText());
         });
     }
 
