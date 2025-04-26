@@ -143,10 +143,10 @@ public class Autogram {
             throw new BatchConflictException("Iné hromadné podpisovanie už prebieha");
         batch = new Batch(totalNumberOfDocuments);
 
-        var batchStartCallback = new AutogramBatchStartCallback(batch, responder);
+        var startBatchTask  = new AutogramBatchStartCallback(batch, responder);
 
         ui.onUIThreadDo(() -> {
-            ui.startBatch(batch, this, batchStartCallback);
+            ui.startBatch(batch, this, startBatchTask );
         });
     }
 

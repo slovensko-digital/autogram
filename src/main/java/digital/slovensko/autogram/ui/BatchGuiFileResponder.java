@@ -94,4 +94,3 @@ public class BatchGuiFileResponder extends BatchResponder {
 
     }
 }
-

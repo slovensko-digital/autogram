@@ -506,7 +506,7 @@ public class GUI implements UI {
 
     @Override
     public void resetSigningKey() {
-        onUIThreadDo(() -> {
+        onUIThreadDo(()-> {
             setActiveSigningKeyAndThen(null, null);
             refreshKeyOnAllJobs();
         });

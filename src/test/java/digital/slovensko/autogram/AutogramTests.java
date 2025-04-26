@@ -37,7 +37,7 @@ class AutogramTests {
     private static final Path tempTestsPath = Path.of(System.getProperty("java.io.tmpdir"), "autogram-tests");
 
     @ParameterizedTest
-    @MethodSource({"digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
             "digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider",
             "digital.slovensko.autogram.TestMethodSources#orsrDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
@@ -58,7 +58,7 @@ class AutogramTests {
     }
 
     @ParameterizedTest
-    @MethodSource({"digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
     void testSignNonEformHappyScenario(InMemoryDocument document) {
         var settings = new TestSettings();
         var newUI = new FakeUI();
@@ -74,7 +74,7 @@ class AutogramTests {
     }
 
     @ParameterizedTest
-    @MethodSource({"digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
     void testSignNonEformNegativeScenario(InMemoryDocument document) {
         Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, false, null, false));
     }
@@ -95,7 +95,7 @@ class AutogramTests {
     }
 
     @ParameterizedTest
-    @MethodSource({"digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider"})
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider"})
     void testSignPadesHappyScenario(InMemoryDocument document) {
         var newUI = new FakeUI();
         var settings = new TestSettings();

@@ -52,20 +52,12 @@ public class CliUI implements UI {
 
     @Override
     public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
-        if (activeKey == null) {
-            autogram.pickSigningKeyAndThen(key -> {
-                activeKey = key;
-                callback.accept(key);
-            });
-        } else {
-            callback.accept(activeKey);
-        }
+        // TODO Auto-generated method stub
     }
 
     @Override
     public void cancelBatch(Batch batch) {
-        System.out.println("Batch cancelled.");
-        batch.end();
+        // TODO Auto-generated method stub
     }
 
     @Override
