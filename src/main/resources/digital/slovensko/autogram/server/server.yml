@@ -306,6 +306,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BatchStartResponseBody"
+        502:
+          description: batch cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchClosedResponseBody"
     delete:
       tags:
         - Batch
@@ -408,6 +414,14 @@ components:
 
 
     BatchStartResponseBody:
+      type: object
+      properties:
+        batchId:
+          type: string
+          example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
+          description: Identifier of the batch. Used to identify the batch for signing and ending batch.
+
+    BatchClosedResponseBody:
       type: object
       properties:
         batchId:
