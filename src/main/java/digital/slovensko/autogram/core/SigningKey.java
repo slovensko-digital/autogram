@@ -22,6 +22,9 @@ public class SigningKey {
     }
 
     public SignatureValue sign(ToBeSigned dataToSign, DigestAlgorithm algo) {
+        if (algo == null)
+            algo = DigestAlgorithm.SHA256;
+
         return token.sign(dataToSign, algo, privateKey);
     }
 
