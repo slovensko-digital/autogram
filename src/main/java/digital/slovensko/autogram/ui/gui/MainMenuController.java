@@ -9,11 +9,9 @@ import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
-import digital.slovensko.autogram.ui.SupportedLanguage;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -22,17 +20,16 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.util.List;
-
-import static javafx.collections.FXCollections.observableArrayList;
+import java.util.ResourceBundle;
 
 public class MainMenuController implements SuppressedFocusController {
     private final Autogram autogram;
     private final UserSettings userSettings;
 
     @FXML
-    VBox dropZone;
+    ResourceBundle resources;
     @FXML
-    ChoiceBox<SupportedLanguage> languageChoiceBox;
+    VBox dropZone;
 
     public MainMenuController(Autogram autogram, UserSettings userSettings) {
         this.autogram = autogram;
@@ -56,19 +53,6 @@ public class MainMenuController implements SuppressedFocusController {
         dropZone.setOnDragDropped(event -> {
             onFilesSelected(event.getDragboard().getFiles());
         });
-
-        languageChoiceBox.setItems(observableArrayList(SupportedLanguage.values()));
-        languageChoiceBox.setValue(userSettings.getLanguageOrDefault());
-        languageChoiceBox.getSelectionModel().selectedItemProperty()
-                .addListener((observable, oldValue, newValue) -> {
-                    userSettings.setLanguage(newValue);
-                    userSettings.save();
-                    reloadView();
-                });
-    }
-
-    private void reloadView() {
-        languageChoiceBox.getScene().setRoot(GUIUtils.loadFXML(this, "main-menu.fxml"));
     }
 
     public void onUploadButtonAction() {
@@ -167,11 +151,19 @@ public class MainMenuController implements SuppressedFocusController {
         var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Nastavenia");
+        stage.setTitle(resources.getString("general.settings"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
+        stage.showAndWait();
+
+        if (!userSettings.getLanguageOrDefault().getLocale().getLanguage().equals(resources.getLocale().getLanguage())) {
+            reloadView();
+        }
+    }
+
+    private void reloadView() {
+        dropZone.getScene().setRoot(GUIUtils.loadFXML(this, "main-menu.fxml"));
     }
 
     @Override
