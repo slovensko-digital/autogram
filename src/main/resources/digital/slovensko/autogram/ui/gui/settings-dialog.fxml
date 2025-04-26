@@ -409,6 +409,23 @@
                                         <TextField fx:id="customKeystorePathTextField" styleClass="autogram-input" />
                                     </VBox>
                                 </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s">
+                                                Cesta k vlastnému driveru pre PKCS11 token
+                                            </Text>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description">
+                                                Cesta na disku k súboru s vlastným driverom pre PKCS11 token.
+                                            </Text>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-textfield-container">
+                                        <TextField fx:id="customPKCS11DriverPathTextField" styleClass="autogram-input" />
+                                    </VBox>
+                                </HBox>
                             </VBox>
                         </ScrollPane>
                     </content>
