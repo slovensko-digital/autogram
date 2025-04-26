@@ -15,15 +15,18 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ResourceBundle;
 
 public class GUIUtils {
 
-    private static Logger logger = LoggerFactory.getLogger(GUIUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(GUIUtils.class);
+
     static Parent loadFXML(Object controller, String fxml) {
         try {
             var loader = new FXMLLoader();
             loader.setLocation(controller.getClass().getResource(fxml));
             loader.setController(controller);
+            loader.setResources(ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n" /*TODO #541 read locale from prefs OR use default*/));
             return loader.load();
         } catch (IOException e) {
             throw new RuntimeException(e);
