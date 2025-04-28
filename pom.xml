@@ -21,7 +21,7 @@
         <pdfbox.version>3.0.4</pdfbox.version>
         <saxon.version>12.5</saxon.version>
         <xerces.version>2.12.1</xerces.version>
-        <slf4j.version>2.0.13</slf4j.version>
+        <slf4j.version>2.0.17</slf4j.version>
         <junit.version>5.11.3</junit.version>
         <mockito.version>5.15.2</mockito.version>
         <commons-cli.version>1.9.0</commons-cli.version>
