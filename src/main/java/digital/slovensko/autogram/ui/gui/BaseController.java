@@ -12,4 +12,9 @@ public abstract class BaseController implements HasI18n {
     public ResourceBundle getResources() {
         return resources;
     }
+
+    /**
+     * This method is called after all the {@link FXML @FXML} elements have been injected.
+     */
+    public abstract void initialize();
 }

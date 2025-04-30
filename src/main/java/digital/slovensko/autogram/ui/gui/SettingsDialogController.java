@@ -82,6 +82,7 @@ public class SettingsDialogController extends BaseController {
         this.userSettings = userSettings;
     }
 
+    @Override
     public void initialize() {
         initializeSignatureLevelChoiceBox();
         initializeDriverChoiceBox();
