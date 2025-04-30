@@ -119,7 +119,7 @@ public class SettingsDialogController extends BaseController {
     private void initializeDriverChoiceBox() {
         var driverDetector = new DefaultDriverDetector(userSettings);
         driverChoiceBox.setConverter(new TokenDriverStringConverter(driverDetector));
-        driverChoiceBox.getItems().add(new FakeTokenDriver("Žiadne", null, "none", ""));
+        driverChoiceBox.getItems().add(new FakeTokenDriver(i18n("settings.signing.defaultDriver.none.label"), null, "none", ""));
         driverChoiceBox.getItems().addAll(driverDetector.getAvailableDrivers());
         var defaultDriver = driverChoiceBox.getItems().stream()
                 .filter(d -> d != null && d.getName().equals(userSettings.getDefaultDriver())).findFirst();
@@ -134,7 +134,7 @@ public class SettingsDialogController extends BaseController {
     }
 
     private void initializeTsaServer() {
-        final var USE_CUSTOM_TSA_LABEL = "Použiť vlastnú adresu TSA servera";
+        final var USE_CUSTOM_TSA_LABEL = i18n("settings.signing.tsaServer.custom.label");
 
         customTsaServerTextField.setText(userSettings.getCustomTsaServer());
         customTsaServerTextField.setOnKeyTyped((e) -> {
@@ -168,15 +168,14 @@ public class SettingsDialogController extends BaseController {
         customTsaServerTextField.setDisable(true);
     }
 
-    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue, String yesText,
-            String noText) {
+    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue) {
         var toggleGroup = new ToggleGroup();
 
-        var yes = new RadioButton(yesText);
+        var yes = new RadioButton(i18n("general.yes"));
         yes.setToggleGroup(toggleGroup);
         parent.getChildren().add(yes);
 
-        var no = new RadioButton(noText);
+        var no = new RadioButton(i18n("general.no"));
         no.setToggleGroup(toggleGroup);
         parent.getChildren().add(no);
 
@@ -188,10 +187,6 @@ public class SettingsDialogController extends BaseController {
             yes.setSelected(true);
         else
             no.setSelected(true);
-    }
-
-    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue) {
-        initializeBooleanRadios(parent, consumer, defaultValue, "Áno", "Nie");
     }
 
     private void initializeBulkEnabledCheckbox() {
@@ -233,33 +228,33 @@ public class SettingsDialogController extends BaseController {
 
     private void initializeTrustedCountriesList() {
         var europeanCountries = List.of(
-                new Country("Belgicko", "BE"),
-                new Country("Bulharsko", "BG"),
-                new Country("Česká republika", "CZ"),
-                new Country("Chorvátsko", "HR"),
-                new Country("Cyprus", "CY"),
-                new Country("Dánsko", "DK"),
-                new Country("Estónsko", "EE"),
-                new Country("Fínsko", "FI"),
-                new Country("Francúzsko", "FR"),
-                new Country("Grécko", "EL"),
-                new Country("Holandsko", "NL"),
-                new Country("Írsko", "IE"),
-                new Country("Litva", "LT"),
-                new Country("Lotyšsko", "LV"),
-                new Country("Luxembursko", "LU"),
-                new Country("Maďarsko", "HU"),
-                new Country("Malta", "MT"),
-                new Country("Nemecko", "DE"),
-                new Country("Poľsko", "PL"),
-                new Country("Portugalsko", "PT"),
-                new Country("Rakúsko", "AT"),
-                new Country("Rumunsko", "RO"),
-                new Country("Slovensko", "SK"),
-                new Country("Slovinsko", "SI"),
-                new Country("Španielsko", "ES"),
-                new Country("Švédsko", "SE"),
-                new Country("Taliansko", "IT"));
+                new Country("BE"),
+                new Country("BG"),
+                new Country("CZ"),
+                new Country("HR"),
+                new Country("CY"),
+                new Country("DK"),
+                new Country("EE"),
+                new Country("FI"),
+                new Country("FR"),
+                new Country("EL", "GR"),
+                new Country("NL"),
+                new Country("IE"),
+                new Country("LT"),
+                new Country("LV"),
+                new Country("LU"),
+                new Country("HU"),
+                new Country("MT"),
+                new Country("DE"),
+                new Country("PL"),
+                new Country("PT"),
+                new Country("AT"),
+                new Country("RO"),
+                new Country("SK"),
+                new Country("SI"),
+                new Country("ES"),
+                new Country("SE"),
+                new Country("IT"));
 
         var trustedList = userSettings.getTrustedList();
         trustedCountriesList.getChildren().addAll(europeanCountries.stream()
@@ -267,18 +262,18 @@ public class SettingsDialogController extends BaseController {
     }
 
     private HBox createCountryElement(Country country, boolean isCountryInTrustedList) {
-        var countryBox = new VBox(new TextFlow(new Text(country.getName())));
+        var countryBox = new VBox(new TextFlow(new Text(country.getName(resources.getLocale()))));
         countryBox.getStyleClass().add("left");
 
-        var checkBox = new CheckBox(isCountryInTrustedList ? "Zapnuté" : "Vypnuté");
+        var checkBox = new CheckBox(isCountryInTrustedList ? i18n("general.on.label") : i18n("general.off.label"));
         checkBox.setSelected(isCountryInTrustedList);
         checkBox.setOnAction(event -> {
             if (checkBox.isSelected()) {
                 userSettings.addToTrustedList(country.getShortname());
-                checkBox.setText("Zapnuté");
+                checkBox.setText(i18n("general.on.label"));
             } else {
                 userSettings.removeFromTrustedList(country.getShortname());
-                checkBox.setText("Vypnuté");
+                checkBox.setText(i18n("general.off.label"));
             }
         });
 
@@ -286,7 +281,7 @@ public class SettingsDialogController extends BaseController {
     }
 
     private void initializeSlotIndexSettings() {
-        final var DEFAULT_LABEL = "Predvolený slot";
+        final var DEFAULT_LABEL = i18n("settings.other.slotIndex.default.label");
         slotIndexChoiceBox.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
         slotIndexChoiceBox.setValue(userSettings.getSlotIndex() == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getSlotIndex()));
         slotIndexChoiceBox.getSelectionModel().selectedItemProperty()
@@ -307,7 +302,7 @@ public class SettingsDialogController extends BaseController {
             @Override
             public String toString(SupportedLanguage language) {
                 if (language == SupportedLanguage.SYSTEM) {
-                    return i18n("settings.label.systemLanguage");
+                    return i18n("settings.other.language.system.label");
                 }
 
                 return language.getDisplayLanguage();
