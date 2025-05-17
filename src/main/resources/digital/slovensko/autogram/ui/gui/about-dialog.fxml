@@ -16,7 +16,7 @@
         <VBox fx:id="mainBox">
             <VBox>
                 <TextFlow styleClass="autogram-heading-m">
-                    <Text styleClass="autogram-heading-m" text="%about.preAutogram.title"/>
+                    <Text styleClass="autogram-heading-m" text="%about.autogram.before.title"/>
                     <Label styleClass="autogram-claim,autogram-heading-m" text="%about.autogram.title"/>
                 </TextFlow>
 

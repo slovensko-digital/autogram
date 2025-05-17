@@ -69,7 +69,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Hromadné podpisovanie");
+        stage.setTitle(batchController.i18n("batch.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> cancelBatch(batch));
 
