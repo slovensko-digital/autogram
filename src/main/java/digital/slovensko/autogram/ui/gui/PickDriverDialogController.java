@@ -10,7 +10,7 @@ import javafx.scene.text.Text;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class PickDriverDialogController {
+public class PickDriverDialogController extends BaseController {
     private final Consumer<TokenDriver> callback;
     private final List<? extends TokenDriver> drivers;
 
@@ -29,6 +29,7 @@ public class PickDriverDialogController {
         this.callback = callback;
     }
 
+    @Override
     public void initialize() {
         toggleGroup = new ToggleGroup();
         for (TokenDriver driver : drivers) {
