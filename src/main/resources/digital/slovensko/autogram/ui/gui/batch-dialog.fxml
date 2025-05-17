@@ -52,12 +52,12 @@
             layoutX="100.0"
             layoutY="20.0" prefHeight="20.0" prefWidth="400.0" progress="0.0" />
 
-        <Text fx:id="progressBarText" styleClass="autogram-heading-m" text="" />
+        <Text fx:id="progressBarText" styleClass="autogram-heading-m"/>
     </VBox>
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button"
-            text="%batch.sign.btn" onAction="#onMainButtonPressed" />
+                text="%general.sign.btn" onAction="#onMainButtonPressed" />
         <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="%batch.sign.otherCert.btn" visible="false"
             onAction="#onChangeKeyButtonPressed" />
         <Button fx:id="cancelBatchButton" styleClass="autogram-button,autogram-button--warning"

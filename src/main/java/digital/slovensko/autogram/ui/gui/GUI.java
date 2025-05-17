@@ -124,7 +124,7 @@ public class GUI implements UI {
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Výber úložiska certifikátu");
+            stage.setTitle(controller.i18n("pickDriver.title"));
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
@@ -168,7 +168,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Výber certifikátu");
+        stage.setTitle(controller.i18n("pickKey.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
             refreshKeyOnAllJobs();
@@ -216,11 +216,11 @@ public class GUI implements UI {
 
     public char[] getKeystorePassword() {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("Aký je kód k úložisku klúčov?", "Zadajte kód k úložisku klúčov.", false, true);
+            var controller = new PasswordController("password.keystore.text", "password.keystore.error.text", false, true);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Načítanie klúčov z úložiska");
+            stage.setTitle(controller.i18n("password.keystore.title"));
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
@@ -245,11 +245,11 @@ public class GUI implements UI {
 
     public char[] getContextSpecificPassword() {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("Aký je podpisový PIN alebo heslo?", "Zadajte podpisový PIN alebo heslo ku klúču.", true, false);
+            var controller = new PasswordController("password.context.text", "password.context.error.text", true, false);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Zadanie podpisového PINu alebo hesla");
+            stage.setTitle(controller.i18n("password.context.title"));
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
