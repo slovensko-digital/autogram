@@ -1,16 +1,19 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.function.Consumer;
-
-import digital.slovensko.autogram.core.*;
-import digital.slovensko.autogram.core.errors.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
+import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
+import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.TokenRemovedException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
@@ -25,8 +28,22 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.function.Consumer;
 
 public class GUI implements UI {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GUI.class);
+
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
     private boolean driverWasAlreadySet = false;
@@ -34,7 +51,6 @@ public class GUI implements UI {
     private final UserSettings userSettings;
     private BatchDialogController batchController;
     private static final boolean DEBUG = false;
-    private static Logger logger = LoggerFactory.getLogger(GUI.class);
     private int nWindows = 0;
 
     public GUI(HostServices hostServices, UserSettings userSettings) {
@@ -275,7 +291,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "about-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("O projekte Autogram");
+        stage.setTitle(controller.i18n("about.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);

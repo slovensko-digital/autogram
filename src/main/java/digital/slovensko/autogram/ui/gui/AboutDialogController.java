@@ -8,7 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
 
-public class AboutDialogController implements SuppressedFocusController {
+public class AboutDialogController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
     @FXML
     Node mainBox;
@@ -21,6 +21,7 @@ public class AboutDialogController implements SuppressedFocusController {
         this.hostServices = hostServices;
     }
 
+    @Override
     public void initialize() {
         versionText.setText(Main.getVersionString());
     }
