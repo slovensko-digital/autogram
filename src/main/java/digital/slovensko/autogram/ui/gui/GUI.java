@@ -194,7 +194,7 @@ public class GUI implements UI {
 
     @Override
     public void showError(AutogramException e) {
-        GUIUtils.showError(e, "Pokračovať", false);
+        GUIUtils.showError(e, "general.continue.btn", false);
     }
 
     public void showPkcsEidWindowsDllError(AutogramException e) {
@@ -277,7 +277,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "update-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Dostupná aktualizácia");
+        stage.setTitle(controller.i18n("update.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);

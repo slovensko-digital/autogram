@@ -7,7 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class ErrorController implements SuppressedFocusController {
+public class ErrorController extends BaseController implements SuppressedFocusController {
     private final AutogramException exception;
     private final boolean errorDetailsDisabled;
 
@@ -30,7 +30,7 @@ public class ErrorController implements SuppressedFocusController {
         this.errorDetailsDisabled = errorDetailsDisabled;
     }
 
-
+    @Override
     public void initialize() {
         errorSummaryComponentController.setException(exception);
 
@@ -47,8 +47,8 @@ public class ErrorController implements SuppressedFocusController {
         return mainBox;
     }
 
-    public void setMainButtonText(String text) {
-        mainButton.setText(text);
+    public void setMainButtonText(String buttonI18nKey) {
+        mainButton.setText(i18n(buttonI18nKey));
     }
 
 }
