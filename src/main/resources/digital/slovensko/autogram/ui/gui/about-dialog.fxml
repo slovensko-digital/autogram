@@ -2,7 +2,6 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Hyperlink?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
@@ -15,9 +14,8 @@
     <center>
         <VBox fx:id="mainBox">
             <VBox>
-                <TextFlow styleClass="autogram-heading-m">
-                    <Text styleClass="autogram-heading-m" text="%about.autogram.before.title"/>
-                    <Label styleClass="autogram-claim,autogram-heading-m" text="%about.autogram.title"/>
+                <TextFlow fx:id="title" styleClass="autogram-heading-m">
+                    <Text styleClass="autogram-heading-m" text="%about.autogram.title"/>
                 </TextFlow>
 
                 <VBox styleClass="autogram-prose">
