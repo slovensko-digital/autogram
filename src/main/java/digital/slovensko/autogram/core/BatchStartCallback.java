@@ -3,7 +3,6 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
-import digital.slovensko.autogram.ui.gui.GUI;
 import digital.slovensko.autogram.util.Logging;
 
 public class BatchStartCallback {
