@@ -43,7 +43,7 @@ public class DefaultDriverDetector implements DriverDetector {
             new PKCS11TokenDriver("Gemalto IDPrime 940", Path.of("/usr/lib/libIDPrimePKCS11.so"), TokenDriverShortnames.GEMALTO, HELPER_TEXT_GEMALTO),
             new PKCS12KeystoreTokenDriver("Zo súboru", Path.of(settings.getCustomKeystorePath()), TokenDriverShortnames.KEYSTORE, HELPER_TEXT_KEYSTORE),
             new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), TokenDriverShortnames.FAKE, HELPER_TEXT_FAKE),
-            new PKCS11TokenDriver("Vlastný driver pre PKCS11 Token", Path.of(settings.getCustomPKCS11DriverPath()), TokenDriverShortnames.CUSTOM_PKCS11, HELPER_TEXT_CUSTOM_PKCS11_DRIVER)
+            new PKCS11TokenDriver("Vlastný ovládač pre PKCS11 Token", Path.of(settings.getCustomPKCS11DriverPath()), TokenDriverShortnames.CUSTOM_PKCS11, HELPER_TEXT_CUSTOM_PKCS11_DRIVER)
         );
     }
 
@@ -55,7 +55,7 @@ public class DefaultDriverDetector implements DriverDetector {
             new PKCS11TokenDriver("Gemalto IDPrime 940", Path.of("C:\\Windows\\System32\\eTPKCS11.dll"), TokenDriverShortnames.GEMALTO, HELPER_TEXT_GEMALTO),
             new PKCS12KeystoreTokenDriver("Zo súboru", Path.of(settings.getCustomKeystorePath()), TokenDriverShortnames.KEYSTORE, HELPER_TEXT_KEYSTORE),
             new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), TokenDriverShortnames.FAKE, HELPER_TEXT_FAKE),
-            new PKCS11TokenDriver("Custom PKCS11 Token Driver", Path.of(settings.getCustomPKCS11DriverPath()), TokenDriverShortnames.CUSTOM_PKCS11, HELPER_TEXT_CUSTOM_PKCS11_DRIVER)
+            new PKCS11TokenDriver("Vlastný ovládač pre PKCS11 Token", Path.of(settings.getCustomPKCS11DriverPath()), TokenDriverShortnames.CUSTOM_PKCS11, HELPER_TEXT_CUSTOM_PKCS11_DRIVER)
         );
     }
 
@@ -67,7 +67,7 @@ public class DefaultDriverDetector implements DriverDetector {
             new PKCS11TokenDriver("Gemalto IDPrime 940", Path.of("/usr/local/lib/libIDPrimePKCS11.dylib"), TokenDriverShortnames.GEMALTO, HELPER_TEXT_GEMALTO),
             new PKCS12KeystoreTokenDriver("Zo súboru", Path.of(settings.getCustomKeystorePath()), TokenDriverShortnames.KEYSTORE, HELPER_TEXT_KEYSTORE),
             new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), TokenDriverShortnames.FAKE, HELPER_TEXT_FAKE),
-            new PKCS11TokenDriver("Custom PKCS11 Token Driver", Path.of(settings.getCustomPKCS11DriverPath()), TokenDriverShortnames.CUSTOM_PKCS11, HELPER_TEXT_CUSTOM_PKCS11_DRIVER)
+            new PKCS11TokenDriver("Vlastný ovládač pre PKCS11 Token", Path.of(settings.getCustomPKCS11DriverPath()), TokenDriverShortnames.CUSTOM_PKCS11, HELPER_TEXT_CUSTOM_PKCS11_DRIVER)
         );
     }
 
