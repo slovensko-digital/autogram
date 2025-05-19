@@ -19,6 +19,7 @@ public class DefaultDriverDetector implements DriverDetector {
         public static final String GEMALTO = "gemalto";
         public static final String FAKE = "fake";
         public static final String KEYSTORE = "keystore";
+        public static final String CUSTOM_PKCS11 = "custom_pkcs11";
     }
 
     private final String HELPER_TEXT_EID = "\n\nV prípade nového občianskeho preukazu to môže znamenať, že si potrebujete certifikáty na podpisovanie cez občiansky preukaz vydať. Robí sa to pomocou obslužného softvéru eID klient.";
@@ -27,6 +28,7 @@ public class DefaultDriverDetector implements DriverDetector {
     private final String HELPER_TEXT_GEMALTO = "\n\nV prípade kvalifikovaných certifikátov na karte Gemalto ID Prime 940 môže byť potrebné nastaviť slot index 8. Skúste nastavenia -> Iné -> Slot index";
     private final String HELPER_TEXT_FAKE = "";
     private final String HELPER_TEXT_KEYSTORE = "";
+    private final String HELPER_TEXT_CUSTOM_PKCS11_DRIVER = "";
 
     public DefaultDriverDetector(DriverDetectorSettings settings) {
         this.settings = settings;
@@ -40,7 +42,8 @@ public class DefaultDriverDetector implements DriverDetector {
             new PKCS11TokenDriver("MONET+ ProID+Q", Path.of("/usr/lib/x86_64-linux-gnu/libproidqcm11.so"), TokenDriverShortnames.MONET, HELPER_TEXT_MONET),
             new PKCS11TokenDriver("Gemalto IDPrime 940", Path.of("/usr/lib/libIDPrimePKCS11.so"), TokenDriverShortnames.GEMALTO, HELPER_TEXT_GEMALTO),
             new PKCS12KeystoreTokenDriver("Zo súboru", Path.of(settings.getCustomKeystorePath()), TokenDriverShortnames.KEYSTORE, HELPER_TEXT_KEYSTORE),
-            new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), TokenDriverShortnames.FAKE, HELPER_TEXT_FAKE)
+            new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), TokenDriverShortnames.FAKE, HELPER_TEXT_FAKE),
+            new PKCS11TokenDriver("Vlastný ovládač pre PKCS11 Token", Path.of(settings.getCustomPKCS11DriverPath()), TokenDriverShortnames.CUSTOM_PKCS11, HELPER_TEXT_CUSTOM_PKCS11_DRIVER)
         );
     }
 
@@ -51,7 +54,8 @@ public class DefaultDriverDetector implements DriverDetector {
             new PKCS11TokenDriver("MONET+ ProID+Q", Path.of( "C:\\Windows\\system32\\proidqcm11.dll"), TokenDriverShortnames.MONET, HELPER_TEXT_MONET),
             new PKCS11TokenDriver("Gemalto IDPrime 940", Path.of("C:\\Windows\\System32\\eTPKCS11.dll"), TokenDriverShortnames.GEMALTO, HELPER_TEXT_GEMALTO),
             new PKCS12KeystoreTokenDriver("Zo súboru", Path.of(settings.getCustomKeystorePath()), TokenDriverShortnames.KEYSTORE, HELPER_TEXT_KEYSTORE),
-            new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), TokenDriverShortnames.FAKE, HELPER_TEXT_FAKE)
+            new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), TokenDriverShortnames.FAKE, HELPER_TEXT_FAKE),
+            new PKCS11TokenDriver("Vlastný ovládač pre PKCS11 Token", Path.of(settings.getCustomPKCS11DriverPath()), TokenDriverShortnames.CUSTOM_PKCS11, HELPER_TEXT_CUSTOM_PKCS11_DRIVER)
         );
     }
 
@@ -62,7 +66,8 @@ public class DefaultDriverDetector implements DriverDetector {
             new PKCS11TokenDriver("MONET+ ProID+Q", Path.of("/usr/local/lib/ProIDPlus/libproidqcm11.dylib"), TokenDriverShortnames.MONET, HELPER_TEXT_MONET),
             new PKCS11TokenDriver("Gemalto IDPrime 940", Path.of("/usr/local/lib/libIDPrimePKCS11.dylib"), TokenDriverShortnames.GEMALTO, HELPER_TEXT_GEMALTO),
             new PKCS12KeystoreTokenDriver("Zo súboru", Path.of(settings.getCustomKeystorePath()), TokenDriverShortnames.KEYSTORE, HELPER_TEXT_KEYSTORE),
-            new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), TokenDriverShortnames.FAKE, HELPER_TEXT_FAKE)
+            new FakeTokenDriver("Fake token driver",  Path.of("fakeTokenDriver"), TokenDriverShortnames.FAKE, HELPER_TEXT_FAKE),
+            new PKCS11TokenDriver("Vlastný ovládač pre PKCS11 Token", Path.of(settings.getCustomPKCS11DriverPath()), TokenDriverShortnames.CUSTOM_PKCS11, HELPER_TEXT_CUSTOM_PKCS11_DRIVER)
         );
     }
 

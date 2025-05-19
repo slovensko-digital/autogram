@@ -35,7 +35,7 @@ public class CliSettings extends UserSettings {
         settings.setBulkEnabled(true);
         settings.setPlainXmlEnabled(cmd.hasOption("plain-xml"));
         settings.setTokenSessionTimeout(5);
-
+        settings.setCustomPKCS11DriverPath(cmd.getOptionValue("pkcs11-driver-path", ""));
         return settings;
     }
 
