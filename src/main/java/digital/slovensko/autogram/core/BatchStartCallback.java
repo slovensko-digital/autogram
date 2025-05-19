@@ -1,17 +1,17 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.BatchCloseException;
+import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.ui.gui.GUI;
 import digital.slovensko.autogram.util.Logging;
 
-public class AutogramBatchStartCallback implements BatchStartCallback {
+public class BatchStartCallback {
 
     private final Batch batch;
     private final BatchResponder responder;
 
-    public AutogramBatchStartCallback(Batch batch, BatchResponder responder) {
+    public BatchStartCallback(Batch batch, BatchResponder responder) {
         this.batch = batch;
         this.responder = responder;
     }
@@ -27,13 +27,12 @@ public class AutogramBatchStartCallback implements BatchStartCallback {
         }
     }
 
-    @Override
     public void cancel() {
         GUI.assertOnWorkThread();
         try {
             Logging.log("Cancelling batch");
             batch.end();
-            responder.onBatchStartFailure(new BatchCloseException("Batch cancelled", "", "Batch cancelled"));
+            responder.onBatchStartFailure(new BatchCanceledException());
         }catch (ResponseNetworkErrorException ex){
             Logging.log("ResponseNetworkErrorException: " + ex.getMessage());
         } catch (Exception e) {
