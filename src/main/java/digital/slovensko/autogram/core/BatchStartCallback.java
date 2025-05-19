@@ -17,18 +17,16 @@ public class BatchStartCallback {
     }
 
     public void accept(SigningKey key) {
-        GUI.assertOnWorkThread();
         try {
             Logging.log("Starting batch");
             batch.start(key);
-            handleSuccess();
+            responder.onBatchStartSuccess(batch);
         } catch (Exception e) {
             handleException(e);
         }
     }
 
     public void cancel() {
-        GUI.assertOnWorkThread();
         try {
             Logging.log("Cancelling batch");
             batch.end();
@@ -50,8 +48,4 @@ public class BatchStartCallback {
                             "Batch start failed with exception: " + e, e));
         }
     }
-
-    private void handleSuccess() {
-        responder.onBatchStartSuccess(batch);
-    }
-};
+}

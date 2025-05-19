@@ -88,9 +88,4 @@ public class BatchGuiFileResponder extends BatchResponder {
     public void onBatchStartFailure(AutogramException error) {
         autogram.onSigningFailed(error);
     }
-
-    @Override
-    public void onBatchSignFailed(AutogramException error) {
-
-    }
 }

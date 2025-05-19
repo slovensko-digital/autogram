@@ -79,7 +79,7 @@ public class GUI implements UI {
     public void updateBatch() {
         if (batchController == null)
             return;
-        assertOnUIThread();
+
         batchController.update();
     }
 
@@ -461,16 +461,6 @@ public class GUI implements UI {
         } else {
             Platform.runLater(callback);
         }
-    }
-
-    public static void assertOnUIThread() {
-        if (DEBUG && !Platform.isFxApplicationThread())
-            throw new RuntimeException("Can be run only on UI thread");
-    }
-
-    public static void assertOnWorkThread() {
-        if (DEBUG && Platform.isFxApplicationThread())
-            throw new RuntimeException("Can be run only on work thread");
     }
 
     public SigningKey getActiveSigningKey() {
