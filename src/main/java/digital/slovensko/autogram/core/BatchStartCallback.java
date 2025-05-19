@@ -1,27 +1,37 @@
 package digital.slovensko.autogram.core;
 
-import java.util.function.Consumer;
-
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.ui.gui.GUI;
+import digital.slovensko.autogram.core.errors.BatchCanceledException;
+import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.util.Logging;
 
-public class AutogramBatchStartCallback implements Consumer<SigningKey> {
+public class BatchStartCallback {
 
     private final Batch batch;
     private final BatchResponder responder;
 
-    public AutogramBatchStartCallback(Batch batch, BatchResponder responder) {
+    public BatchStartCallback(Batch batch, BatchResponder responder) {
         this.batch = batch;
         this.responder = responder;
     }
 
     public void accept(SigningKey key) {
-        GUI.assertOnWorkThread();
         try {
             Logging.log("Starting batch");
             batch.start(key);
-            handleSuccess();
+            responder.onBatchStartSuccess(batch);
+        } catch (Exception e) {
+            handleException(e);
+        }
+    }
+
+    public void cancel() {
+        try {
+            Logging.log("Cancelling batch");
+            batch.end();
+            responder.onBatchStartFailure(new BatchCanceledException());
+        }catch (ResponseNetworkErrorException ex){
+            Logging.log("ResponseNetworkErrorException: " + ex.getMessage());
         } catch (Exception e) {
             handleException(e);
         }
@@ -37,8 +47,4 @@ public class AutogramBatchStartCallback implements Consumer<SigningKey> {
                             "Batch start failed with exception: " + e, e));
         }
     }
-
-    private void handleSuccess() {
-        responder.onBatchStartSuccess(batch);
-    }
-};
+}
