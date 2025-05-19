@@ -307,11 +307,26 @@ paths:
               schema:
                 $ref: "#/components/schemas/BatchStartResponseBody"
         502:
-          description: batch cancelled
+          description: Batch canceled
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BatchClosedResponseBody"
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_CANCELED
+                    example: BATCH_CANCELED
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: ""
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "Batch canceled"
+                    description: Optional details.
     delete:
       tags:
         - Batch
@@ -412,16 +427,7 @@ components:
           example: 500
           description: Total number of documents in the batch. Used to calculate the progress of the batch.
 
-
     BatchStartResponseBody:
-      type: object
-      properties:
-        batchId:
-          type: string
-          example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
-          description: Identifier of the batch. Used to identify the batch for signing and ending batch.
-
-    BatchClosedResponseBody:
       type: object
       properties:
         batchId:
