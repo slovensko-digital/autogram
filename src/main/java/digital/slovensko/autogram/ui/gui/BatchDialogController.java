@@ -41,8 +41,7 @@ public class BatchDialogController implements SuppressedFocusController {
     @FXML
     public Button cancelBatchButton;
 
-    public BatchDialogController(Batch batch, BatchStartCallback startBatchCallback,
-                                 Autogram autogram, GUI gui) {
+    public BatchDialogController(Batch batch, BatchStartCallback startBatchCallback, Autogram autogram, GUI gui) {
 
         this.gui = gui;
         this.autogram = autogram;
