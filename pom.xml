@@ -29,6 +29,7 @@
         <snakeyml.version>2.4</snakeyml.version>
         <jimfs.version>1.3.0</jimfs.version>
         <testExcludedGroups>HttpSmokeTest</testExcludedGroups>
+        <skip-jdk-cache>false</skip-jdk-cache>
     </properties>
 
     <dependencyManagement>
@@ -317,13 +318,14 @@
                             <goal>cache-jdk</goal>
                         </goals>
                         <configuration>
+                            <skip>${skip-jdk-cache}</skip>
                             <jdkPathProperty>jlink.jdk.path</jdkPathProperty>
                             <jdkCachePath>${project.build.directory}${file.separator}jdkCache</jdkCachePath>
                             <authorization>${github.auth}</authorization>
                             <provider>BELLSOFT</provider>
                             <providerConfig>
                                 <type>jdk</type>
-                                <version>17.0.7+7</version>
+                                <version>17.0.15+10</version>
                                 <arch>amd64-full</arch>
                             </providerConfig>
                         </configuration>
@@ -515,7 +517,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>3.5.2</version>
+                        <version>3.5.3</version>
                         <configuration>
                             <jvm>${jlink.jdk.path}${file.separator}bin${file.separator}java</jvm>
                             <groups>HttpSmokeTest</groups>
@@ -525,6 +527,14 @@
             </build>
             <properties>
                 <testExcludedGroups></testExcludedGroups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>system-jdk</id>
+            <properties>
+                <jlink.jdk.path>${env.JAVA_HOME}</jlink.jdk.path>
+                <skip-jdk-cache>true</skip-jdk-cache>
             </properties>
         </profile>
     </profiles>

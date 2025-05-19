@@ -91,7 +91,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: "17.0.7+7"
+          java-version: "17.0.15+10"
           distribution: "liberica"
           java-package: "jdk+fx"
 
@@ -129,7 +129,7 @@ jobs:
           security default-keychain -s $APPLE_KEYCHAIN_PATH
 
       - name: Package with Maven
-        run: ./mvnw -B -C -V package
+        run: ./mvnw -B -C -V package -P system-jdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
@@ -180,7 +180,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: "17.0.7+7"
+          java-version: "17.0.15+10"
           distribution: "liberica"
           java-package: "jdk+fx"
 
