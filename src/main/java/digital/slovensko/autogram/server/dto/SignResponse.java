@@ -3,11 +3,11 @@ package digital.slovensko.autogram.server.dto;
 public class SignResponse {
     private String content;
     private String signedBy;
-    private String issuedby;
+    private String issuedBy;
 
-    public SignResponse(String content, String signedBy, String issuedby) {
+    public SignResponse(String content, String signedBy, String issuedBy) {
         this.content = content;
         this.signedBy = signedBy;
-        this.issuedby = issuedby;
+        this.issuedBy = issuedBy;
     }
 }

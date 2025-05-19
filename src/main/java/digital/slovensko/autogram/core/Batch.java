@@ -24,14 +24,14 @@ public class Batch {
     private BatchState state = BatchState.INITIALIZED;
     private SigningKey signingKey = null;
 
-    private Date expriationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 10);
+    private Date expirationDate;
     private int addedDocumentsCount = 0;
     private int successfulDocumentsCount = 0;
     private int failedDocumentsCount = 0;
 
     public Batch(int totalNumberOfDocuments) {
         this.totalNumberOfDocuments = totalNumberOfDocuments;
-        resetExpirationDate();
+        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 5); // 5 minutes
     }
 
     public void start(SigningKey key) {
@@ -43,6 +43,7 @@ public class Batch {
 
     public void addJob(String batchId) {
         validate(batchId);
+        resetExpirationDate();
 
         if (this.totalNumberOfDocuments <= this.addedDocumentsCount)
             throw new IllegalAccessError("Sent more sign requests than declared at start");
@@ -122,11 +123,11 @@ public class Batch {
     }
 
     private boolean isExpired() {
-        return expriationDate.before(new Date());
+        return expirationDate.before(new Date());
     }
 
     public void resetExpirationDate() {
-        expriationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 10); // 1 minute
+        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60); // 1 minute
     }
 
     public void log() {

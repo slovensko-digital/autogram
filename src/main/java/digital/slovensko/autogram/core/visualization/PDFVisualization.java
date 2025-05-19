@@ -8,7 +8,7 @@ import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.ui.Visualizer;
 import eu.europa.esig.dss.model.DSSDocument;
-import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 
@@ -26,7 +26,7 @@ public class PDFVisualization extends Visualization {
     }
 
     private ArrayList<byte []> getPdfImages() throws IOException {
-        var pdfDocument = PDDocument.load(this.document.openStream());
+        var pdfDocument = Loader.loadPDF(this.document.openStream().readAllBytes());
         var pdfRenderer = new PDFRenderer(pdfDocument);
         var divs = new ArrayList<byte[]>();
         for (int page = 0; page < pdfDocument.getNumberOfPages(); ++page) {
