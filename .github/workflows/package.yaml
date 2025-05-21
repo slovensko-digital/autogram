@@ -14,8 +14,8 @@ jobs:
     steps:
       - name: Setup dependencies
         run: |
-          apt-get -q update && apt-get -q upgrade -y
-          apt-get -q install -y openjdk-17-jdk maven binutils fakeroot wget git
+          sudo apt-get -q update && apt-get -q upgrade -y
+          sudo apt-get -q install -y openjdk-17-jdk maven binutils fakeroot wget git
           
       - uses: actions/checkout@v4
 
