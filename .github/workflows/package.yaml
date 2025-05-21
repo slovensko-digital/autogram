@@ -9,7 +9,6 @@ jobs:
   linux-deb:
     environment: packaging
     runs-on: ubuntu-latest
-    container: "debian:latest"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:

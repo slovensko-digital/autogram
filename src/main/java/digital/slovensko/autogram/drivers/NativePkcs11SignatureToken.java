@@ -113,7 +113,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
     private static long getKeyID(PrivateKey pk) {
         try {
-            var keyIDHolderField = pk.getClass().getSuperclass().getDeclaredField("keyIDHolder");
+            var keyIDHolderField = pk.getClass().getSuperclass().getSuperclass().getDeclaredField("keyIDHolder");
             keyIDHolderField.setAccessible(true);
             var keyIDHolder = keyIDHolderField.get(pk);
 
