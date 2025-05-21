@@ -42,14 +42,13 @@ jobs:
   linux-rpm:
     environment: packaging
     runs-on: ubuntu-latest
-    container: "fedora:latest"
+    container: "fedora:41"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Setup dependencies
         run: |
-          dnf -q install -y java-17-openjdk rpm-build git
-          dnf -q install -y maven
+          dnf -q install -y java-17-openjdk maven-openjdk17 rpm-build git
 
       - uses: actions/checkout@v4
 
