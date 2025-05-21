@@ -42,7 +42,7 @@ jobs:
   linux-rpm:
     environment: packaging
     runs-on: ubuntu-latest
-    container: "fedora:latest"
+    container: "fedora:41"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
