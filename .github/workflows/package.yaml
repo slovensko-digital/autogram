@@ -48,7 +48,8 @@ jobs:
     steps:
       - name: Setup dependencies
         run: |
-          dnf -q install -y java-17-openjdk maven-openjdk17 rpm-build git
+          dnf -q install -y java-17-openjdk rpm-build git
+          dnf -q install -y maven
 
       - uses: actions/checkout@v4
 
