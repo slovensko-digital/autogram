@@ -10,7 +10,7 @@ import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 import static digital.slovensko.autogram.core.eforms.EFormUtils.computeDigest;
 
 public class UpvsEFormResources extends EFormResources {
-    private static final String SOURCE_URL = "https://data.gov.sk/doc/egov/eform/";
+    private static final String SOURCE_URL = "https://www.slovensko.sk/static/eform/dataset/";
 
     public UpvsEFormResources(String url, String xsdDigest, String xsltDigest, String xsdIdentifier,
                            XsltParams xsltParams, String canonicalizationMethod) {
