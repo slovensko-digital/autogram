@@ -8,7 +8,7 @@ on:
 jobs:
   linux-deb:
     environment: packaging
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container: "debian:11"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
