@@ -31,7 +31,7 @@ jobs:
       - name: Rename artifact
         run: |
           for i in $(ls target/autogram*.deb); do
-            mv $i ${i//autogram/autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_debian.deb}
+            mv $i ${i//autogram/autogram_debian}
           done
 
       - name: Create release if tag pushed
@@ -53,8 +53,8 @@ jobs:
     steps:
       - name: Setup dependencies
         run: |
-          apt-get -q update && apt-get -q upgrade -y
-          apt-get -q install -y openjdk-17-jdk maven binutils fakeroot wget git
+          sudo apt-get -q update && sudo apt-get -q upgrade -y
+          sudo apt-get -q install -y openjdk-17-jdk maven binutils fakeroot wget git
 
       - uses: actions/checkout@v4
 
@@ -69,7 +69,7 @@ jobs:
       - name: Rename artifact
         run: |
           for i in $(ls target/autogram*.deb); do
-            mv $i ${i//autogram/autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_ubuntu.deb}
+            mv $i ${i//autogram/autogram_ubuntu}
           done
 
       - name: Create release if tag pushed
@@ -107,7 +107,7 @@ jobs:
       - name: Rename artifact
         run: |
           for i in $(ls target/autogram*.rpm); do
-            mv $i ${i//autogram/autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_fedora.rpm}
+            mv $i ${i//autogram/autogram_fedora}
           done
 
       - name: Create release if tag pushed
@@ -188,7 +188,7 @@ jobs:
       - name: Rename artifact
         run: |
           for i in $(ls target/Autogram*.pkg); do
-            mv $i ${i//Autogram/Autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_macos.pkg}
+            mv $i ${i//Autogram/Autogram_macos}
           done
 
       - name: Notarize release with Apple (MacOS)
@@ -258,7 +258,7 @@ jobs:
       - name: Rename artifact
         run: |
           for i in $(ls target/Autogram*.msi); do
-            mv $i ${i//Autogram/Autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_windows.msi}
+            mv $i ${i//Autogram/Autogram_windows}
           done
 
       - name: Sign on Azure
