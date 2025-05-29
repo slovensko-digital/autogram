@@ -6,7 +6,7 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  linux-deb:
+  linux-debian:
     environment: packaging
     runs-on: ubuntu-22.04
     container: "debian:11"
@@ -28,6 +28,12 @@ jobs:
           ./mvnw -B -C -V package
           ls -lah ./target
 
+      - name: Rename artifact
+        run: |
+          for i in $(ls target/autogram*.deb); do
+            mv $i ${i//autogram/autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_debian.deb}
+          done
+
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         if: startsWith(github.ref, 'refs/tags/')
@@ -39,7 +45,45 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  linux-rpm:
+  linux-ubuntu:
+    environment: packaging
+    runs-on: ubuntu-22.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Setup dependencies
+        run: |
+          apt-get -q update && apt-get -q upgrade -y
+          apt-get -q install -y openjdk-17-jdk maven binutils fakeroot wget git
+
+      - uses: actions/checkout@v4
+
+      - name: Build artifact
+        run: |
+          git config --global --add safe.directory ${GITHUB_WORKSPACE}
+          ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+
+          ./mvnw -B -C -V package
+          ls -lah ./target
+
+      - name: Rename artifact
+        run: |
+          for i in $(ls target/autogram*.deb); do
+            mv $i ${i//autogram/autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_ubuntu.deb}
+          done
+
+      - name: Create release if tag pushed
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          prerelease: true
+          files: |
+            target/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  linux-fedora:
     environment: packaging
     runs-on: ubuntu-latest
     container: "fedora:41"
@@ -59,6 +103,12 @@ jobs:
 
           ./mvnw -B -C -V package
           ls -lah ./target
+
+      - name: Rename artifact
+        run: |
+          for i in $(ls target/autogram*.rpm); do
+            mv $i ${i//autogram/autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_fedora.rpm}
+          done
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
@@ -135,6 +185,12 @@ jobs:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
           APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
 
+      - name: Rename artifact
+        run: |
+          for i in $(ls target/Autogram*.pkg); do
+            mv $i ${i//Autogram/Autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_macos.pkg}
+          done
+
       - name: Notarize release with Apple (MacOS)
         env:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
@@ -198,6 +254,12 @@ jobs:
         run: ./mvnw -B -C -V package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rename artifact
+        run: |
+          for i in $(ls target/Autogram*.msi); do
+            mv $i ${i//Autogram/Autogram_$(git describe --tags --abbrev=0 | sed -r 's/^v//g')_windows.msi}
+          done
 
       - name: Sign on Azure
         shell: bash
