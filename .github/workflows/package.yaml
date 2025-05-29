@@ -29,10 +29,7 @@ jobs:
           ls -lah ./target
 
       - name: Rename artifact
-        run: |
-          for i in $(ls target/autogram*.deb); do
-            mv $i ${i//autogram/autogram_debian}
-          done
+        run: mv target/autogram*.deb target/autogram_debian.deb
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
@@ -67,10 +64,7 @@ jobs:
           ls -lah ./target
 
       - name: Rename artifact
-        run: |
-          for i in $(ls target/autogram*.deb); do
-            mv $i ${i//autogram/autogram_ubuntu}
-          done
+        run: mv target/autogram*.deb target/autogram_ubuntu.deb
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
@@ -103,12 +97,6 @@ jobs:
 
           ./mvnw -B -C -V package
           ls -lah ./target
-
-      - name: Rename artifact
-        run: |
-          for i in $(ls target/autogram*.rpm); do
-            mv $i ${i//autogram/autogram_fedora}
-          done
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
@@ -185,12 +173,6 @@ jobs:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
           APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
 
-      - name: Rename artifact
-        run: |
-          for i in $(ls target/Autogram*.pkg); do
-            mv $i ${i//Autogram/Autogram_macos}
-          done
-
       - name: Notarize release with Apple (MacOS)
         env:
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
@@ -254,12 +236,6 @@ jobs:
         run: ./mvnw -B -C -V package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Rename artifact
-        run: |
-          for i in $(ls target/Autogram*.msi); do
-            mv $i ${i//Autogram/Autogram_windows}
-          done
 
       - name: Sign on Azure
         shell: bash
