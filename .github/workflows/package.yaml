@@ -16,7 +16,7 @@ jobs:
       - name: Setup dependencies
         run: |
           apt-get -q update && apt-get -q upgrade -y
-          apt-get -q install -y openjdk-17-jdk maven binutils fakeroot wget git
+          apt-get -q install -y openjdk-21-jdk maven binutils fakeroot wget git
           
       - uses: actions/checkout@v4
 
@@ -51,7 +51,7 @@ jobs:
       - name: Setup dependencies
         run: |
           sudo apt-get -q update && sudo apt-get -q upgrade -y
-          sudo apt-get -q install -y openjdk-17-jdk maven binutils fakeroot wget git
+          sudo apt-get -q install -y openjdk-21-jdk maven binutils fakeroot wget git
 
       - uses: actions/checkout@v4
 
@@ -86,7 +86,7 @@ jobs:
     steps:
       - name: Setup dependencies
         run: |
-          dnf -q install -y java-17-openjdk maven-openjdk17 rpm-build git
+          dnf -q install -y java-21-openjdk maven-openjdk21 rpm-build git
 
       - uses: actions/checkout@v4
 
@@ -129,7 +129,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: "17.0.15+10"
+          java-version: "21.0.7+9"
           distribution: "liberica"
           java-package: "jdk+fx"
 
@@ -218,7 +218,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: "17.0.15+10"
+          java-version: "21.0.7+9"
           distribution: "liberica"
           java-package: "jdk+fx"
 
@@ -233,7 +233,7 @@ jobs:
             windows-maven-
 
       - name: Package with Maven
-        run: ./mvnw -B -C -V package
+        run: ./mvnw -B -C -V package -P system-jdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
