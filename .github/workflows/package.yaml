@@ -15,9 +15,12 @@ jobs:
     steps:
       - name: Setup dependencies
         run: |
-          dnf -q install -y rpm-build git wget
-          wget https://download.bell-sw.com/java/21.0.7+9/bellsoft-jdk21.0.7+9-linux-amd64-full.rpm
-          sudo yum install -y ./bellsoft-jdk21.0.7+9-linux-amd64-full.rpm
+          apt-get -q update && apt-get -q upgrade -y
+          apt-get -q install -y wget git gpg
+
+          wget https://download.bell-sw.com/java/21.0.7+9/bellsoft-jdk21.0.7+9-linux-amd64-full.deb
+          apt-get -q install -y ./bellsoft-jdk21.0.7+9-linux-amd64-full.deb
+          apt-get -q install -y binutils fakeroot
 
       - uses: actions/checkout@v4
 
@@ -55,8 +58,8 @@ jobs:
     steps:
       - name: Setup dependencies
         run: |
-          sudo apt-get -q update && sudo apt-get -q upgrade -y
-          sudo apt-get -q install -y wget git gpg
+          apt-get -q update && apt-get -q upgrade -y
+          apt-get -q install -y wget git gpg
 
           wget https://download.bell-sw.com/java/21.0.7+9/bellsoft-jdk21.0.7+9-linux-amd64-full.deb
           apt-get -q install -y ./bellsoft-jdk21.0.7+9-linux-amd64-full.deb
