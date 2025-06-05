@@ -34,7 +34,7 @@ Adding more cards is relatively easy as long as they use PKCS#11.
 
 ### Prerequisites
 
-- JDK 17 with JavaFX (see below)
+- JDK 21 with JavaFX (see below)
 - Maven
 - Optional: Visual Studio Code as IDE or Intellij IDEA (community version is sufficient).
 
@@ -58,14 +58,25 @@ Then using `jpackage`, it creates all executable packages (.msi/.exe, .dmg/.pkg,
 #### Debian/Ubuntu
 
 ```sh
-sudo apt install openjdk-17-jdk maven binutils rpm fakeroot
+sudo apt install openjdk-21-jdk maven binutils rpm fakeroot
 ```
 
 #### Fedora
 
 ```sh
-sudo dnf install java-17-openjdk maven rpm-build
+sudo dnf install java-21-openjdk maven rpm-build
 ```
+
+#### Linux Docker compose
+
+There is a `docker-compose.yml` with 3 services to package 3 Linux distributables - `Ubuntu 22.04`, `Debian 11` and `Fedora 41`. Run:
+
+```
+docker compose up --build
+```
+
+And the resulting packages will appear in `packaging/output/`.
+
 
 ## Authors and Sponsors
 

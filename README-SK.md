@@ -66,7 +66,7 @@ Pri podpisovaní cez API je potrebné nastaviť v body `parameters.fsFormId: "<i
 
 ### Predpoklady
 
-- JDK 17 s JavaFX (viď nižšie)
+- JDK 21 s JavaFX (viď nižšie)
 - Maven
 - Voliteľné: Visual Studio Code ako IDE alebo Intellij IDEA (stačí komunitná verzia).
 
@@ -90,14 +90,25 @@ Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe
 #### Debian/Ubuntu
 
 ```sh
-sudo apt install openjdk-17-jdk maven binutils rpm fakeroot
+sudo apt install openjdk-21-jdk maven binutils rpm fakeroot
 ```
 
 #### Fedora
 
 ```sh
-sudo dnf install java-17-openjdk maven rpm-build
+sudo dnf install java-21-openjdk maven rpm-build
 ```
+
+#### Linux Docker compose
+
+Súbor `docker-compose.yml` definuje 3 služby, ktoré vytvárajú inštalačné balíčky pre 3 veľké Linuxové distribúcie - `Ubuntu 22.04`, `Debian 11` a `Fedora 41`.
+
+```
+docker compose up --build
+```
+
+Výsledné balíčky sa objavia v `packaging/output/`.
+
 
 ## Autori a sponzori
 
