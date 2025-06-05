@@ -184,7 +184,7 @@ jobs:
           security default-keychain -s $APPLE_KEYCHAIN_PATH
 
       - name: Package with Maven
-        run: ./mvnw -B -C -V package
+        run: ./mvnw -B -C -V package -P system-jdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
