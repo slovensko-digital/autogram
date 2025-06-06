@@ -421,31 +421,54 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.5.0</version>
-                <configuration>
-                    <executable>bash</executable>
-                    <workingDirectory>
-                        ${project.build.scriptSourceDirectory}${file.separator}resources</workingDirectory>
-                    <arguments>
-                        <argument>${project.build.scriptSourceDirectory}${file.separator}package.sh</argument>
-                        <argument>${jlink.jdk.path}${file.separator}bin${file.separator}jpackage</argument>
-                        <argument>
-                            ${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}</argument>
-                        <argument>${project.build.directory}${file.separator}preparedJDK</argument>
-                        <argument>
-                            ${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}digital${file.separator}slovensko${file.separator}autogram</argument>
-                        <argument>${platform}</argument>
-                        <argument>${project.version}</argument>
-                        <argument>${project.build.directory}</argument>
-                    </arguments>
-                    <useMavenLogger>true</useMavenLogger>
-                </configuration>
                 <executions>
+                    <execution>
+                        <id>import-root-ca</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>keytool</executable>
+                            <arguments>
+                                <argument>-importcert</argument>
+                                <argument>-trustcacerts</argument>
+                                <argument>-keystore</argument>
+                                <argument>${project.build.directory}${file.separator}preparedJDK${file.separator}lib${file.separator}security${file.separator}cacerts</argument>
+                                <argument>-storepass</argument>
+                                <argument>changeit</argument>
+                                <argument>-alias</argument>
+                                <argument>harica-rsa-root-2021</argument>
+                                <argument>-file</argument>
+                                <argument>${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}harica-rsa-2021.pem</argument>
+                                <argument>-noprompt</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>package-distributable</id>
                         <phase>package</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <executable>bash</executable>
+                            <workingDirectory>
+                                ${project.build.scriptSourceDirectory}${file.separator}resources</workingDirectory>
+                            <arguments>
+                                <argument>${project.build.scriptSourceDirectory}${file.separator}package.sh</argument>
+                                <argument>${jlink.jdk.path}${file.separator}bin${file.separator}jpackage</argument>
+                                <argument>
+                                    ${project.build.directory}${file.separator}${project.artifactId}-${project.version}-${platform}</argument>
+                                <argument>${project.build.directory}${file.separator}preparedJDK</argument>
+                                <argument>
+                                    ${project.basedir}${file.separator}src${file.separator}main${file.separator}resources${file.separator}digital${file.separator}slovensko${file.separator}autogram</argument>
+                                <argument>${platform}</argument>
+                                <argument>${project.version}</argument>
+                                <argument>${project.build.directory}</argument>
+                            </arguments>
+                            <useMavenLogger>true</useMavenLogger>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
