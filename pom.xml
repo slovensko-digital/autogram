@@ -23,9 +23,9 @@
         <xerces.version>2.12.1</xerces.version>
         <slf4j.version>2.0.17</slf4j.version>
         <junit.version>5.12.2</junit.version>
-        <mockito.version>5.17.0</mockito.version>
+        <mockito.version>5.18.0</mockito.version>
         <commons-cli.version>1.9.0</commons-cli.version>
-        <xmlunit.version>2.10.1</xmlunit.version>
+        <xmlunit.version>2.10.2</xmlunit.version>
         <snakeyml.version>2.4</snakeyml.version>
         <jimfs.version>1.3.0</jimfs.version>
         <testExcludedGroups>HttpSmokeTest</testExcludedGroups>
@@ -196,7 +196,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.14.0</version>
 
                 <configuration>
                     <fork>true</fork>
@@ -215,7 +215,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+                <version>0.8.13</version>
                 <executions>
                     <execution>
                         <id>jacoco-initialize</id>
@@ -420,7 +420,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.5.1</version>
                 <executions>
                     <execution>
                         <id>import-root-ca</id>
