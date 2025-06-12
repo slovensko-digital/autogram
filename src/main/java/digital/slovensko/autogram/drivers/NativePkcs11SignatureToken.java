@@ -113,7 +113,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
     private static long getKeyID(PrivateKey pk) {
         try {
-            var keyIDHolderField = pk.getClass().getSuperclass().getDeclaredField("keyIDHolder");
+            var keyIDHolderField = pk.getClass().getSuperclass().getSuperclass().getDeclaredField("keyIDHolder");
             keyIDHolderField.setAccessible(true);
             var keyIDHolder = keyIDHolderField.get(pk);
 
@@ -170,24 +170,22 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     public SignatureValue sign(ToBeSigned toBeSigned, SignatureAlgorithm signatureAlgorithm, DSSPrivateKeyEntry keyEntry) throws DSSException {
         assertEncryptionAlgorithmValid(signatureAlgorithm, keyEntry);
 
-        final String javaSignatureAlgorithm = signatureAlgorithm.getJCEId();
-        final byte[] bytes = toBeSigned.getBytes();
-        AlgorithmParameterSpec param = null;
-        if (signatureAlgorithm.getMaskGenerationFunction() != null) {
-            param = createPSSParam(signatureAlgorithm.getDigestAlgorithm());
-        }
+		final String javaSignatureAlgorithm = signatureAlgorithm.getJCEId();
+		final byte[] bytes = toBeSigned.getBytes();
+		AlgorithmParameterSpec param = initParameters(signatureAlgorithm, signatureAlgorithm.getDigestAlgorithm());
 
-        try {
-            final byte[] signatureValue = sign(bytes, javaSignatureAlgorithm, param, keyEntry);
-            SignatureValue value = new SignatureValue();
-            value.setAlgorithm(signatureAlgorithm);
-            value.setValue(signatureValue);
-            return value;
+		try {
+			final byte[] signatureValue = sign(bytes, javaSignatureAlgorithm, param, keyEntry);
+			SignatureValue value = new SignatureValue();
+			value.setAlgorithm(signatureAlgorithm);
+			value.setValue(signatureValue);
+			return value;
         } catch (AutogramException e) {
             throw e;
-        } catch (Exception e) {
-            throw new DSSException(String.format("Unable to sign : %s", e.getMessage()), e);
-        }
+		} catch (Exception e) {
+			throw new DSSException(String.format("Unable to sign : %s", e.getMessage()), e);
+		}
+
     }
 
     // copy & paste

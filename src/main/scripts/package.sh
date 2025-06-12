@@ -134,7 +134,7 @@ if [[ "$platform" == "linux" ]]; then
         )
     fi
 
-    if [ "${ID}" == "debian" ]; then
+    if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
         arguments+=(
             "--type" "deb"
         )

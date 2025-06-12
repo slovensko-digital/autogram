@@ -1,10 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.util.function.Consumer;
-
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.util.DSSUtils;
 import digital.slovensko.autogram.util.Logging;
 import javafx.application.Platform;
@@ -22,7 +20,7 @@ public class BatchDialogController implements SuppressedFocusController {
     private final GUI gui;
     private final Batch batch;
     private final Autogram autogram;
-    private final Consumer<SigningKey> startBatchCallback;
+    private final BatchStartCallback startBatchCallback;
 
     @FXML
     VBox mainBox;
@@ -43,8 +41,7 @@ public class BatchDialogController implements SuppressedFocusController {
     @FXML
     public Button cancelBatchButton;
 
-    public BatchDialogController(Batch batch, Consumer<SigningKey> startBatchCallback,
-            Autogram autogram, GUI gui) {
+    public BatchDialogController(Batch batch, BatchStartCallback startBatchCallback, Autogram autogram, GUI gui) {
 
         this.gui = gui;
         this.autogram = autogram;

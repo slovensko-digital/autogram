@@ -199,7 +199,7 @@ class AutogramTests {
         }
 
         @Override
-        public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
+        public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
         }
 
         @Override

@@ -8,6 +8,9 @@ import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,6 +41,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private boolean bulkEnabled;
     private int pdfDpi;
     private long tokenSessionTimeout;
+    private String customPKCS11DriverPath;
 
     public static UserSettings load() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
@@ -63,6 +67,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setTsaEnabled(prefs.getBoolean("TSA_ENABLE", false));
         settings.setPdfDpi(prefs.getInt("PDF_DPI", 100));
         settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", 5));
+        settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", ""));
+
 
         return settings;
     }
@@ -90,6 +96,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putBoolean("TSA_ENABLE", tsaEnabled);
         prefs.putInt("PDF_DPI", pdfDpi);
         prefs.putLong("TOKEN_SESSION_TIMEOUT", tokenSessionTimeout);
+        prefs.put("CUSTOM_PKCS11_DRIVER_PATH", customPKCS11DriverPath);
     }
 
     private void setSignatureType(String signatureType) {
@@ -321,4 +328,15 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
         tokenSessionTimeout = value;
     }
+
+    public String getCustomPKCS11DriverPath() { return customPKCS11DriverPath; }
+
+    public void setCustomPKCS11DriverPath(String driverPath) {
+        Path path = Paths.get(driverPath);
+        if (! Files.exists(path)) {
+            return;
+        }
+        customPKCS11DriverPath = driverPath;
+    }
+
 }

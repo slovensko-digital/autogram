@@ -6,6 +6,4 @@ public abstract class BatchResponder {
     abstract public void onBatchStartSuccess(Batch batch);
 
     abstract public void onBatchStartFailure(AutogramException error);
-
-    abstract public void onBatchSignFailed(AutogramException error);
 }
