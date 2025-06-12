@@ -10,10 +10,10 @@
       fx:id="mainBox">
 
     <VBox fx:id="formGroup" styleClass="autogram-form-group">
-        <TextFlow><Text styleClass="autogram-heading-l">Ktorým certifikátom chcete podpisovať?</Text></TextFlow>
-        <TextFlow><Text fx:id="error" styleClass="autogram-error-message" managed="false">Vyberte certifikát, ktorým budete podpisovať</Text></TextFlow>
+        <TextFlow><Text styleClass="autogram-heading-l" text="%pickKey.select.title"/></TextFlow>
+        <TextFlow><Text fx:id="error" styleClass="autogram-error-message" managed="false" text="%pickKey.error.title"/></TextFlow>
         <VBox fx:id="radios" styleClass="autogram-radios"/>
     </VBox>
 
-    <Button styleClass="autogram-button" fx:id="mainButton" text="Podpísať" onAction="#onPickCertificateButtonAction" />
+    <Button styleClass="autogram-button" fx:id="mainButton" text="%general.sign.btn" onAction="#onPickCertificateButtonAction" />
 </VBox>
