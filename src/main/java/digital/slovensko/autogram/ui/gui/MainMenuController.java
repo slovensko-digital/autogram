@@ -21,7 +21,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.util.List;
 
-public class MainMenuController implements SuppressedFocusController {
+public class MainMenuController extends BaseController implements SuppressedFocusController {
     private final Autogram autogram;
     private final UserSettings userSettings;
 
@@ -148,11 +148,19 @@ public class MainMenuController implements SuppressedFocusController {
         var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Nastavenia");
+        stage.setTitle(i18n("general.settings"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
+        stage.showAndWait();
+
+        if (!userSettings.getLanguageLocale().getLanguage().equals(resources.getLocale().getLanguage())) {
+            reloadView();
+        }
+    }
+
+    private void reloadView() {
+        dropZone.getScene().setRoot(GUIUtils.loadFXML(this, "main-menu.fxml"));
     }
 
     @Override
