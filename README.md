@@ -1,83 +1,54 @@
 # Autogram
+[🇸🇰 Slovenská verzia](README-SK.md)
 
-Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplikácia, ktorá slúži na podpisovanie a overovanie dokumentov v súlade s európskym nariadením eIDAS. Používateľ ňou môže podpisovať súbory priamo alebo je možné aplikáciu jednoducho zaintegrovať do vlastného (webového) informačného systému pomocou HTTP API. Podpisovanie je možné spúšať aj z príkazového riadku, čo je vhodné pre hromadné podpisovanie veľkého množstva súborov naraz.
+Autogram is a multi-platform (Windows, MacOS, Linux) desktop JavaFX application for signing and verifying documents in accordance with the European eIDAS regulation. Users can sign files directly or easily integrate the application into their own (web) information system using HTTP API. Signing can also be initiated from the command line, which is suitable for batch signing large numbers of files at once.
 
-**Inštalačné balíky pre Windows, MacOS a Linux sú dostupné v časti [Releases](https://github.com/slovensko-digital/autogram/releases).** Na použitie na existujúcich štátnych weboch bude potrebné doinštalovať aj [rozšírenie do prehliadača](https://github.com/slovensko-digital/autogram-extension#readme).
+**Installation packages for Windows, MacOS, and Linux are available in the [Releases](https://github.com/slovensko-digital/autogram/releases) section.** If you want to use Autogram on existing Slovak government websites, you will need to install a [browser extension](https://github.com/slovensko-digital/autogram-extension#readme) as well.
 
-![Screenshot](assets/autogram-screenshot.png?raw=true)
+![Screenshot](assets/autogram-screenshot-en.png?raw=true)
 
-## Integrácia
 
-Swagger dokumentácia pre HTTP API je [dostupná na githube](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml) alebo po spustení aplikácie je tiež dostupná na http://localhost:37200/docs.
+## Integration
 
-Vyvolať spustenie programu je možné priamo z webového prehliadača otvorením adresy so špeciálnym protokolom `autogram://`. Napríklad cez `autogram://go`.
+Swagger documentation for the HTTP API is [available on GitHub](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml) or after starting the application at http://localhost:37200/docs.
 
-## Konzolový mód
+You can trigger the application to run directly from a web browser by opening an address with the special protocol `autogram://`. For example, via `autogram://go`.
 
-Autogram je možné spúšťať aj z príkazového riadku (CLI mód). Detailné informácie o prepínačoch sú popísané v nápovede po spustení `autogram --help`, resp. `autogram-cli --help` na Windows.
+## Console Mode
 
-### Štýlovanie
+Autogram can also be run from the command line (CLI mode). Detailed information about the switches is described in the help after running `autogram --help`, or `autogram-cli --help` on Windows.
 
-Aplikácia momentálne podporuje len jeden štýl - štátny IDSK dizajn. Ďalšie štýly sú plánované. Štýlovanie sa však už teraz deje výhradne cez kaskádové štýly, viď [idsk.css](https://github.com/slovensko-digital/autogram/blob/main/src/main/resources/digital/slovensko/autogram/ui/gui/idsk.css)
+### Styling
 
-### Texty a preklady
+The application currently supports only one style - the state IDSK design. Additional styles are planned. However, styling already happens exclusively through cascading style sheets, see [idsk.css](https://github.com/slovensko-digital/autogram/blob/main/src/main/resources/digital/slovensko/autogram/ui/gui/idsk.css)
 
-Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez properties súbory. Toto bude slúžiť aj ako zdroj pre preklady.
+## Supported Cards
 
-## Podporované karty
+Currently, we support commonly used cards and their drivers:
+- Any PKCS#11 compatible card (by setting a path to driver)
+- Native support: Slovak ID card (eID client), I.CA SecureStore, MONET+ ProID+Q, Gemalto IDPrime 940
 
-Momentálne podporujeme na Slovensku bežne používané karty a ich ovládače:
-- občiansky preukaz (eID klient)
-- I.CA SecureStore
-- MONET+ ProID+Q
-- Gemalto IDPrime 940
+Adding more cards is relatively easy as long as they use PKCS#11.
 
-Doplniť ďalšie je pomerne ľahké pokiaľ používajú PKCS#11.
+## Development
 
-## Štátne elektronické formuláre
+### Prerequisites
 
-### slovensko.sk
-
-Autogram dokáže v stand-alone režime otvárať a podpisovať všetky formuláre zverejnenené v [statickom úložisku](https://www.slovensko.sk/static/eForm/dataset/) na slovensko.sk. Pri integrácii cez API je možné nastaviť v body `parameters.autoLoadEform: true`. Vtedy sa potrebné XSD, XSLT a ďalšie metadáta stiahnu automaticky podľa typu podpisovaného formulára.
-
-### Obchodný register SR
-
-Navonok rovnako ako formuláre zo slovensko.sk fungujú aj ORSR formuláre. Autogram deteguje typ formulára automaticky a pri API je potrebné nastaviť spomínaný parameter. Technicky sa potom ORSR formuláre odlišujú v tom, že používajú embedované schémy v datacontainer-i oproti referencovaným schémam v iných formulároch.
-
-Ak je pri podpise cez API zapnutý parameter `autoLoadEform` a formulár je z ORSR, automaticky sa nastaví vytváranie podpisu s embedovanou schémou. Pri poskytnutí XSD a XSLT v parametroch bez `autoLoadEform` je potrebné ešte nastaviť v body `parameters.embedUsedSchemas: true`, aby boli schémy embedované.
-
-### Finančná správa SR
-
-Podpísané formuláre v `.asice` kontajneroch dokáže Autogram rovanko automaticky detegovať v stand-alone režime a cez API pri použití `autoLoadEform`.
-
-Avšak, pri podpisovaní je potrebné Autogramu explicitne určiť typ formuláru. V stand-alone režime je potrebné, aby názov súbor obsahoval: `_fs<identifikator>` a mal príponu: `.xml`. Napríklad:
-```
-moj-dokument_fs792_772.xml
-dalsi-dokument_fs792_772_test.xml
-nazov-firmy_fs2682_712_nieco-dalsie.xml
-```
-
-Pri podpisovaní cez API je potrebné nastaviť v body `parameters.fsFormId: "<identifikator>"`.  Identifikátory formulárov finančnej správy je možné získať z [nášho zoznamu](https://forms-slovensko-digital.s3.eu-central-1.amazonaws.com/fs/forms.xml) ako atribút `sdIdentifier`.
-
-## Vývoj
-
-### Predpoklady
-
-- JDK 17 s JavaFX (viď nižšie)
+- JDK 21 with JavaFX (see below)
 - Maven
-- Voliteľné: Visual Studio Code ako IDE alebo Intellij IDEA (stačí komunitná verzia).
+- Optional: Visual Studio Code as IDE or Intellij IDEA (community version is sufficient).
 
-Odporúčame používať Liberica JDK, ktoré má v sebe JavaFX, všetko je potom jednoduchšie. Po zavolaní `./mvnw initialize` by sa malo stiahnuť do `target/jdkCache`.
+We recommend using Liberica JDK, which includes JavaFX, making everything simpler. After calling `./mvnw initialize`, it should download to `target/jdkCache`.
 
 ### Build
 
-Spustenie `./mvnw package` pripraví všetko do `./target`:
+Running `./mvnw package` prepares everything in `./target`:
 
 - `dependency-jars/`
-- `preparedJDK/` - JLink JDK (JRE) pripravené pre bundling s aplikáciou.
-- `autogram-*.jar` - JAR s aplikáciou
+- `preparedJDK/` - JLink JDK (JRE) prepared for bundling with the application.
+- `autogram-*.jar` - JAR with the application
 
-Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, a .rpm/.deb).
+Then using `jpackage`, it creates all executable packages (.msi/.exe, .dmg/.pkg, and .rpm/.deb).
 
 ```sh
 ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
@@ -87,25 +58,36 @@ Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe
 #### Debian/Ubuntu
 
 ```sh
-sudo apt install openjdk-17-jdk maven binutils rpm fakeroot
+sudo apt install openjdk-21-jdk maven binutils rpm fakeroot
 ```
 
 #### Fedora
 
 ```sh
-sudo dnf install java-17-openjdk maven rpm-build
+sudo dnf install java-21-openjdk maven rpm-build
 ```
 
-## Autori a sponzori
+#### Linux Docker compose
 
-Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. a ďalší spoluautori.
+There is a `docker-compose.yml` with 3 services to package 3 Linux distributables - `Ubuntu 22.04`, `Debian 11` and `Fedora 41`. Run:
 
-## Licencia
+```
+docker compose up --build
+```
 
-Tento softvér je licencovaný pod licenciou EUPL v1.2, pôvodne vychádza z Octosign White Label projektu od Jakuba Ďuraša, ktorý je licencovaný pod MIT licenciou, a so súhlasom autora je táto verzia distribuovaná pod licenciou EUPL v1.2.
+And the resulting packages will appear in `packaging/output/`.
 
-V skratke to znamená, že tento softvér môžete voľne používať komerčne aj nekomerčne, môžete vytvárať vlastné verzie a to všetko za predpokladu, že prípadné vlastné zmeny a rozšírenia tiež zverejníte pod rovnakou licenciou a zachováte originálny copyright pôvodných autorov. Softvér sa poskytuje "ber ako je", bez záväzkov.
 
-Tento projekt je postavený výhradne na open-source softvéri, ktorý umožnuje jeho používanie tiež komerčne, aj nekomerčne.
+## Authors and Sponsors
 
-Konkrétne využívame najmä [GPLv2+Classpath Exception license](https://openjdk.java.net/legal/gplv2+ce.html) a EU Digital Signature Service pod licenciou [LGPL-2.1](https://github.com/esig/dss/blob/master/LICENSE).
+Jakub Ďuraš, Slovensko.Digital, CRYSTAL CONSULTING, s.r.o, Solver IT s.r.o. and other co-authors.
+
+## License
+
+This software is licensed under EUPL v1.2, originally derived from the Octosign White Label project by Jakub Ďuraš, which is licensed under MIT license, and with the author's permission, this version is distributed under EUPL v1.2 license.
+
+In short, this means that you can freely use this software commercially and non-commercially, you can create your own versions, all provided that you also publish any of your changes and extensions under the same license and preserve the original copyright of the original authors. The software is provided "as is", without warranties.
+
+This project is built exclusively on open-source software, which also allows its use both commercially and non-commercially.
+
+Specifically, we mainly use [GPLv2+Classpath Exception license](https://openjdk.java.net/legal/gplv2+ce.html) and EU Digital Signature Service under the [LGPL-2.1](https://github.com/esig/dss/blob/master/LICENSE) license.

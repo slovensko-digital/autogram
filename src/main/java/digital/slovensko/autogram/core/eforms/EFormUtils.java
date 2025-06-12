@@ -25,6 +25,7 @@ import javax.xml.transform.stream.StreamSource;
 import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import digital.slovensko.autogram.core.errors.*;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
+import eu.europa.esig.dss.xml.utils.XMLCanonicalizer;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -92,7 +93,7 @@ public abstract class EFormUtils {
 
     public static String computeDigest(byte[] data, String canonicalizationMethod, DigestAlgorithm digestAlgorithm, Charset encoding) throws XMLValidationException {
         try {
-            var canonicalizedData = DSSXMLUtils.canonicalize(canonicalizationMethod, data);
+            var canonicalizedData = XMLCanonicalizer.createInstance(canonicalizationMethod).canonicalize(data);
             var digest = DSSUtils.digest(digestAlgorithm, canonicalizedData);
             var asBase64 = Base64.getEncoder().encode(digest);
 

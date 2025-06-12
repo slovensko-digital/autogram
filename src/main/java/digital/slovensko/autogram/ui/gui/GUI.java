@@ -64,15 +64,19 @@ public class GUI implements UI {
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
+    public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
         batchController = new BatchDialogController(batch, callback, autogram, this);
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
         var stage = new Stage();
         stage.setTitle(batchController.i18n("batch.title"));
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> cancelBatch(batch));
+        stage.setOnCloseRequest(e -> {
+            cancelBatch(batch);
+            callback.cancel();
+        });
 
+        stage.setResizable(false);
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, batchController);
         GUIUtils.showOnTop(stage);
@@ -90,7 +94,7 @@ public class GUI implements UI {
     public void updateBatch() {
         if (batchController == null)
             return;
-        assertOnUIThread();
+
         batchController.update();
     }
 
@@ -472,16 +476,6 @@ public class GUI implements UI {
         } else {
             Platform.runLater(callback);
         }
-    }
-
-    public static void assertOnUIThread() {
-        if (DEBUG && !Platform.isFxApplicationThread())
-            throw new RuntimeException("Can be run only on UI thread");
-    }
-
-    public static void assertOnWorkThread() {
-        if (DEBUG && Platform.isFxApplicationThread())
-            throw new RuntimeException("Can be run only on work thread");
     }
 
     public SigningKey getActiveSigningKey() {

@@ -39,10 +39,4 @@ public class BatchServerResponder extends BatchResponder {
     public void onBatchStartFailure(AutogramException error) {
         EndpointUtils.respondWithError(ErrorResponse.buildFromException(error), exchange);
     }
-
-    @Override
-    public void onBatchSignFailed(AutogramException error) {
-        EndpointUtils.respondWithError(ErrorResponse.buildFromException(error), exchange);
-    }
-
 }

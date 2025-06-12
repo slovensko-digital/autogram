@@ -133,7 +133,7 @@ public class SignHttpSmokeTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "Signed-XAdES-ASiC_E-SKXDC-Auto-WrongXSLT",
+            "XAdES-ASiC_E-SKXDC-Auto-WrongXSLT",
     })
     public void testNegativeFromYaml(String exampleName)
             throws ClientProtocolException, IOException, IllegalAccessException,

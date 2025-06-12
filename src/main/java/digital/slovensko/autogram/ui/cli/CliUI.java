@@ -8,12 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import digital.slovensko.autogram.Main;
-import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningKey;
-import digital.slovensko.autogram.core.Updater;
-import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -56,7 +51,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> callback) {
+    public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
         // TODO Auto-generated method stub
     }
 

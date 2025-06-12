@@ -27,7 +27,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '17.0.7+7'
+          java-version: '21.0.7+9'
           distribution: 'liberica'
           java-package: 'jdk+fx'
 
@@ -42,7 +42,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Run tests
-        run: ./mvnw test
+        run: ./mvnw test -P system-jdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
