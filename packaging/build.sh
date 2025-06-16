@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd /app
-export JAVA_HOME=/usr/lib/jvm/$(ls /usr/lib/jvm/ | grep bellsoft-java21-full)
+export JAVA_HOME=/usr/lib/jvm/$(ls /usr/lib/jvm/ | grep bellsoft-java24-full)
 export PATH=$JAVA_HOME/bin:$PATH
 ./mvnw versions:set -DnewVersion=${VERSION}
 ./mvnw -B -C -V package -P system-jdk
