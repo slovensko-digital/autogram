@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="ALTERNATIVE_JRE_PATH" value="$PROJECT_DIR$/target/jdkCache/LIBERICA_jdk21.0.7+9_linux_amd64-full" />
+    <option name="ALTERNATIVE_JRE_PATH" value="$PROJECT_DIR$/target/jdkCache/LIBERICA_jdk24.0.1+11_linux_amd64-full" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="digital.slovensko.autogram.Main" />
     <module name="autogram" />
