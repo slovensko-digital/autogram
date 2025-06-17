@@ -309,7 +309,7 @@
                 <version>1.2.0</version>
                 <executions>
                     <execution>
-                        <id>cache-jdk-21</id>
+                        <id>cache-jdk-24</id>
                         <goals>
                             <goal>cache-jdk</goal>
                         </goals>
