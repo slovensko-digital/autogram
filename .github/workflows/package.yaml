@@ -18,15 +18,15 @@ jobs:
           apt-get -q update && apt-get -q upgrade -y
           apt-get -q install -y wget git gpg
 
-          wget https://download.bell-sw.com/java/21.0.7+9/bellsoft-jdk21.0.7+9-linux-amd64-full.deb
-          apt-get -q install -y ./bellsoft-jdk21.0.7+9-linux-amd64-full.deb
+          wget https://download.bell-sw.com/java/24.0.1+11/bellsoft-jdk24.0.1+11-linux-amd64-full.deb
+          apt-get -q install -y ./bellsoft-jdk24.0.1+11-linux-amd64-full.deb
           apt-get -q install -y binutils fakeroot
 
       - uses: actions/checkout@v4
 
       - name: Build artifact
         run: |
-          export JAVA_HOME=/usr/lib/jvm/$(ls /usr/lib/jvm/ | grep bellsoft-java21-full)
+          export JAVA_HOME=/usr/lib/jvm/$(ls /usr/lib/jvm/ | grep bellsoft-java24-full)
           export PATH=$JAVA_HOME/bin:$PATH
 
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -61,15 +61,15 @@ jobs:
           apt-get -q update && apt-get -q upgrade -y
           apt-get -q install -y wget git gpg
 
-          wget https://download.bell-sw.com/java/21.0.7+9/bellsoft-jdk21.0.7+9-linux-amd64-full.deb
-          apt-get -q install -y ./bellsoft-jdk21.0.7+9-linux-amd64-full.deb
+          wget https://download.bell-sw.com/java/24.0.1+11/bellsoft-jdk24.0.1+11-linux-amd64-full.deb
+          apt-get -q install -y ./bellsoft-jdk24.0.1+11-linux-amd64-full.deb
           apt-get -q install -y binutils fakeroot
 
       - uses: actions/checkout@v4
 
       - name: Build artifact
         run: |
-          export JAVA_HOME=/usr/lib/jvm/$(ls /usr/lib/jvm/ | grep bellsoft-java21-full)
+          export JAVA_HOME=/usr/lib/jvm/$(ls /usr/lib/jvm/ | grep bellsoft-java24-full)
           export PATH=$JAVA_HOME/bin:$PATH
 
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -102,14 +102,14 @@ jobs:
       - name: Setup dependencies
         run: |
           dnf -q install -y rpm-build git wget
-          wget https://download.bell-sw.com/java/21.0.7+9/bellsoft-jdk21.0.7+9-linux-amd64-full.rpm
-          sudo yum install -y ./bellsoft-jdk21.0.7+9-linux-amd64-full.rpm
+          wget https://download.bell-sw.com/java/24.0.1+11/bellsoft-jdk24.0.1+11-linux-amd64-full.rpm
+          sudo yum install -y ./bellsoft-jdk24.0.1+11-linux-amd64-full.rpm
 
       - uses: actions/checkout@v4
 
       - name: Build artifact
         run: |
-          export JAVA_HOME=/usr/lib/jvm/$(ls /usr/lib/jvm/ | grep bellsoft-java21-full)
+          export JAVA_HOME=/usr/lib/jvm/$(ls /usr/lib/jvm/ | grep bellsoft-java24-full)
           export PATH=$JAVA_HOME/bin:$PATH
 
           git config --global --add safe.directory ${GITHUB_WORKSPACE}
@@ -149,7 +149,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: "21.0.7+9"
+          java-version: "24.0.1+11"
           distribution: "liberica"
           java-package: "jdk+fx"
 
@@ -238,7 +238,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: "21.0.7+9"
+          java-version: "24.0.1+11"
           distribution: "liberica"
           java-package: "jdk+fx"
 
