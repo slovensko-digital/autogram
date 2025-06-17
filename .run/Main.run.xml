@@ -4,7 +4,7 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="digital.slovensko.autogram.Main" />
     <module name="autogram" />
-    <option name="VM_PARAMETERS" value="--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED" />
+    <option name="VM_PARAMETERS" value="--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --enable-native-access=javafx.graphics" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="digital.slovensko.autogram.ui.*" />
