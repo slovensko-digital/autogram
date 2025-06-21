@@ -103,7 +103,7 @@ public class GUIUtils {
         controller.setMainButtonText(buttonI18nKey);
 
         var stage = new Stage();
-        stage.setTitle(e.getHeading());
+        stage.setTitle(e.getHeading(controller.getResources()));
         stage.setScene(new Scene(root));
 
         stage.sizeToScene();

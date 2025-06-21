@@ -12,7 +12,7 @@ public class ErrorResponse {
     }
 
     private ErrorResponse(int statusCode, String code, AutogramException e) {
-        this(statusCode, new ErrorResponseBody(code, e.getSubheading(), e.getDescription()));
+        this(statusCode, new ErrorResponseBody(code, e.getSubheading(resources), e.getDescription()));
     }
 
     private ErrorResponse(int statusCode, String code, String message, String details) {

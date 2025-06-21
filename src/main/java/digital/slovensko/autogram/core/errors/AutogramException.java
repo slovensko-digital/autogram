@@ -4,6 +4,7 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 public class AutogramException extends RuntimeException {
     private final String heading;
@@ -25,11 +26,15 @@ public class AutogramException extends RuntimeException {
         this.description = description;
     }
 
-    public String getHeading() {
+    protected AutogramException(String errorCode) {
+
+    }
+
+    public String getHeading(ResourceBundle resources) {
         return heading;
     }
 
-    public String getSubheading() {
+    public String getSubheading(ResourceBundle resources) {
         return subheading;
     }
 

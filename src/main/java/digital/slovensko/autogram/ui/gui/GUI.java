@@ -207,7 +207,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "pkcs-eid-windows-dll-error-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle(e.getSubheading());
+        stage.setTitle(e.getSubheading(controller.resources));
         stage.setScene(new Scene(root));
 
         stage.sizeToScene();

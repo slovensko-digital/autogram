@@ -7,7 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class PkcsEidWindowsDllErrorController implements SuppressedFocusController {
+public class PkcsEidWindowsDllErrorController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
 
     @FXML
