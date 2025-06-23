@@ -63,9 +63,9 @@ public class SettingsDialogController {
 
     private final UserSettings userSettings;
     private final List<String> preDefinedTsaServers = List.of(
-            "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg",
+            "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt",
             "http://ts.quovadisglobal.com/eu",
-            "http://tsa.sep.bg"
+            "http://tsa.baltstamp.lt"
     );
 
     public SettingsDialogController(UserSettings userSettings) {

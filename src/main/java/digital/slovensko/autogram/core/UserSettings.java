@@ -55,9 +55,9 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setPdfaCompliance(prefs.getBoolean("PDFA_COMPLIANCE", true));
         settings.setServerEnabled(prefs.getBoolean("SERVER_ENABLED", true));
         settings.setExpiredCertsEnabled(prefs.getBoolean("EXPIRED_CERTS_ENABLED", false));
-        settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU,BE,NL,BG"));
+        settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU,BE,NL,LT"));
         settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", ""));
-        settings.setTsaServer(prefs.get("TSA_SERVER", "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg"));
+        settings.setTsaServer(prefs.get("TSA_SERVER", "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt"));
         settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", ""));
         settings.setTsaEnabled(prefs.getBoolean("TSA_ENABLE", false));
         settings.setPdfDpi(prefs.getInt("PDF_DPI", 100));
@@ -225,7 +225,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
         // set default TSA if older problematic default is set
         if (List.of("http://tsa.izenpe.com", "http://kstamp.keynectis.com/KSign/").contains(value))
-            value = "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg";
+            value = "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt";
 
         tsaServer = value;
         tspSource = new CompositeTSPSource();
