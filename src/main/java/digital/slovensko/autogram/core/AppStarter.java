@@ -77,8 +77,8 @@ public class AppStarter {
                 autogram --cli -s target/directory-example -t target/non-existent-dir/output-example --parents
                 autogram --cli -s target/directory-example/file-example.pdf -pdfa
                 autogram --cli -s target/directory-example/file-example.pdf -d eid
-                autogram --cli -s target/file-example.pdf -d eid --tsa-server http://tsa.belgium.be/connect
-                autogram --cli -s target/file-example.pdf -d eid --tsa-server "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg"
+                autogram --cli -s target/file-example.pdf -d eid --tsa-server http://ts.quovadisglobal.com/eu
+                autogram --cli -s target/file-example.pdf -d eid --tsa-server "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt"
                 """;
         final PrintWriter pw = new PrintWriter(System.out);
         formatter.printUsage(pw, 80, syntax);
