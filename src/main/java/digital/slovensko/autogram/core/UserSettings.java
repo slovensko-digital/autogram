@@ -63,9 +63,9 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", 5));
         settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", ""));
 
-        var tsaServerPref = prefs.get("TSA_SERVER", "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt");
-        if (tsaServerPref.equals("http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg")) // old default
-            tsaServerPref = "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt";
+        var tsaServerPref = prefs.get("TSA_SERVER", "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu");
+        if (tsaServerPref.equals("http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg") || tsaServerPref.equals("http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt")) // old default
+            tsaServerPref = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
 
         settings.setTsaServer(tsaServerPref);
 
@@ -229,7 +229,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
         // set default TSA if older problematic default is set
         if (List.of("http://tsa.izenpe.com", "http://kstamp.keynectis.com/KSign/").contains(value))
-            value = "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt";
+            value = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
 
         tsaServer = value;
         tspSource = new CompositeTSPSource();
