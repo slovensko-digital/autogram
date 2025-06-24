@@ -10,10 +10,7 @@ import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 public class UserSettings implements PasswordManagerSettings, SignatureTokenSettings, DriverDetectorSettings {
@@ -63,9 +60,9 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", 5));
         settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", ""));
 
-        var tsaServerPref = prefs.get("TSA_SERVER", "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt");
-        if (tsaServerPref.equals("http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg")) // old default
-            tsaServerPref = "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt";
+        var tsaServerPref = prefs.get("TSA_SERVER", "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu");
+        if (tsaServerPref.equals("http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg") || tsaServerPref.equals("http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt")) // old default
+            tsaServerPref = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
 
         settings.setTsaServer(tsaServerPref);
 
@@ -229,12 +226,12 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
         // set default TSA if older problematic default is set
         if (List.of("http://tsa.izenpe.com", "http://kstamp.keynectis.com/KSign/").contains(value))
-            value = "http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt";
+            value = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
 
         tsaServer = value;
         tspSource = new CompositeTSPSource();
         var timestampDataLoader = new TimestampDataLoader();
-        var tspSources = new HashMap<String, TSPSource>();
+        var tspSources = new LinkedHashMap<String, TSPSource>();
         for (var tsaServer : tsaServer.split(","))
             tspSources.put(tsaServer, new OnlineTSPSource(tsaServer, timestampDataLoader));
 
