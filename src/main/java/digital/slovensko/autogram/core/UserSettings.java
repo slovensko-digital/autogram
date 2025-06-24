@@ -10,10 +10,7 @@ import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 public class UserSettings implements PasswordManagerSettings, SignatureTokenSettings, DriverDetectorSettings {
@@ -234,7 +231,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         tsaServer = value;
         tspSource = new CompositeTSPSource();
         var timestampDataLoader = new TimestampDataLoader();
-        var tspSources = new HashMap<String, TSPSource>();
+        var tspSources = new LinkedHashMap<String, TSPSource>();
         for (var tsaServer : tsaServer.split(","))
             tspSources.put(tsaServer, new OnlineTSPSource(tsaServer, timestampDataLoader));
 
