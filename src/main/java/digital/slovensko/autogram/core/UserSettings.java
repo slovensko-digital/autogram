@@ -10,10 +10,36 @@ import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.prefs.Preferences;
 
+
 public class UserSettings implements PasswordManagerSettings, SignatureTokenSettings, DriverDetectorSettings {
+
+    private final String DEFAULT_SIGNATURE_LEVEL = SignatureLevelStringConverter.PADES;
+    private final String DEFAULT_DRIVER = "";
+    private final int DEFAULT_SLOT_INDEX = -1;
+    private final boolean DEFAULT_EN319132 = false;
+    private final boolean DEFAULT_BULK_ENABLED = false;
+    private final boolean DEFAULT_PLAIN_XML_ENABLED = false;
+    private final boolean DEFAULT_SIGN_INDIVIDUALLY = true;
+    private final boolean DEFAULT_CORRECT_DOCUMENT_DISPLAY = true;
+    private final boolean DEFAULT_SIGNATURES_VALIDITY = true;
+    private final boolean DEFAULT_PDFA_COMPLIANCE = true;
+    private final boolean DEFAULT_SERVER_ENABLED = true;
+    private final boolean DEFAULT_EXPIRED_CERTS_ENABLED = false;
+    private final String DEFAULT_TRUSTED_LIST = "SK,CZ,AT,PL,HU,BE,NL,LT";
+    private final String DEFAULT_CUSTOM_KEYSTORE_PATH = "";
+    private final String DEFAULT_CUSTOM_TSA_SERVER = "";
+    private final boolean DEFAULT_TSA_ENABLE = false;
+    private final int DEFAULT_PDF_DPI = 100;
+    private final long DEFAULT_TOKEN_SESSION_TIMEOUT = 5L;
+    private final String DEFAULT_CUSTOM_PKCS11_DRIVER_PATH = "";
+    private final String  DEFAULT_TSA_SERVER = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
+
     private SignatureLevel signatureLevel;
     private String driver;
     private int slotIndex;
@@ -36,32 +62,35 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private long tokenSessionTimeout;
     private String customPKCS11DriverPath;
 
+
     public static UserSettings load() {
+
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
-
         var settings = new UserSettings();
-        settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", SignatureLevelStringConverter.PADES));
-        settings.setDriver(prefs.get("DRIVER", ""));
-        settings.setSlotIndex(prefs.getInt("SLOT_INDEX", -1));
-        settings.setEn319132(prefs.getBoolean("EN319132", false));
-        settings.setBulkEnabled(prefs.getBoolean("BULK_ENABLED", false));
-        settings.setPlainXmlEnabled(prefs.getBoolean("PLAIN_XML_ENABLED", false));
-        settings.setSignIndividually(prefs.getBoolean("SIGN_INDIVIDUALLY", true));
-        settings.setCorrectDocumentDisplay(prefs.getBoolean("CORRECT_DOCUMENT_DISPLAY", true));
-        settings.setSignaturesValidity(prefs.getBoolean("SIGNATURES_VALIDITY", true));
-        settings.setPdfaCompliance(prefs.getBoolean("PDFA_COMPLIANCE", true));
-        settings.setServerEnabled(prefs.getBoolean("SERVER_ENABLED", true));
-        settings.setExpiredCertsEnabled(prefs.getBoolean("EXPIRED_CERTS_ENABLED", false));
-        settings.setTrustedList(prefs.get("TRUSTED_LIST", "SK,CZ,AT,PL,HU,BE,NL,LT"));
-        settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", ""));
-        settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", ""));
-        settings.setTsaEnabled(prefs.getBoolean("TSA_ENABLE", false));
-        settings.setPdfDpi(prefs.getInt("PDF_DPI", 100));
-        settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", 5));
-        settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", ""));
 
-        var tsaServerPref = prefs.get("TSA_SERVER", "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu");
-        if (tsaServerPref.equals("http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg") || tsaServerPref.equals("http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt")) // old default
+        settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", settings.DEFAULT_SIGNATURE_LEVEL));
+        settings.setDriver(prefs.get("DRIVER", settings.DEFAULT_DRIVER));
+        settings.setSlotIndex(prefs.getInt("SLOT_INDEX", settings.DEFAULT_SLOT_INDEX));
+        settings.setEn319132(prefs.getBoolean("EN319132", settings.DEFAULT_EN319132));
+        settings.setBulkEnabled(prefs.getBoolean("BULK_ENABLED", settings.DEFAULT_BULK_ENABLED));
+        settings.setPlainXmlEnabled(prefs.getBoolean("PLAIN_XML_ENABLED", settings.DEFAULT_PLAIN_XML_ENABLED));
+        settings.setSignIndividually(prefs.getBoolean("SIGN_INDIVIDUALLY", settings.DEFAULT_SIGN_INDIVIDUALLY));
+        settings.setCorrectDocumentDisplay(prefs.getBoolean("CORRECT_DOCUMENT_DISPLAY", settings.DEFAULT_CORRECT_DOCUMENT_DISPLAY));
+        settings.setSignaturesValidity(prefs.getBoolean("SIGNATURES_VALIDITY", settings.DEFAULT_SIGNATURES_VALIDITY));
+        settings.setPdfaCompliance(prefs.getBoolean("PDFA_COMPLIANCE", settings.DEFAULT_PDFA_COMPLIANCE));
+        settings.setServerEnabled(prefs.getBoolean("SERVER_ENABLED", settings.DEFAULT_SERVER_ENABLED));
+        settings.setExpiredCertsEnabled(prefs.getBoolean("EXPIRED_CERTS_ENABLED", settings.DEFAULT_EXPIRED_CERTS_ENABLED));
+        settings.setTrustedList(prefs.get("TRUSTED_LIST", settings.DEFAULT_TRUSTED_LIST));
+        settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", settings.DEFAULT_CUSTOM_KEYSTORE_PATH));
+        settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", settings.DEFAULT_CUSTOM_TSA_SERVER));
+        settings.setTsaEnabled(prefs.getBoolean("TSA_ENABLE", settings.DEFAULT_TSA_ENABLE));
+        settings.setPdfDpi(prefs.getInt("PDF_DPI", settings.DEFAULT_PDF_DPI));
+        settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", settings.DEFAULT_TOKEN_SESSION_TIMEOUT));
+        settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", settings.DEFAULT_CUSTOM_PKCS11_DRIVER_PATH));
+
+        var tsaServerPref = prefs.get("TSA_SERVER", settings.DEFAULT_TSA_SERVER);
+        if (tsaServerPref.equals("http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg") ||
+                tsaServerPref.equals("http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt")) // old default
             tsaServerPref = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
 
         settings.setTsaServer(tsaServerPref);
@@ -70,6 +99,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void save() {
+
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         prefs.put("SIGNATURE_LEVEL", new SignatureLevelStringConverter().toString(signatureLevel));
@@ -94,15 +124,44 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.put("CUSTOM_PKCS11_DRIVER_PATH", customPKCS11DriverPath);
     }
 
+    public void reset() {
+
+        // Reset values saved in memory to defaults
+        setSignatureType(DEFAULT_SIGNATURE_LEVEL);
+        setDriver(DEFAULT_DRIVER);
+        setSlotIndex(DEFAULT_SLOT_INDEX);
+        setEn319132(DEFAULT_EN319132);
+        setBulkEnabled(DEFAULT_BULK_ENABLED);
+        setPlainXmlEnabled(DEFAULT_PLAIN_XML_ENABLED);
+        setSignIndividually(DEFAULT_SIGN_INDIVIDUALLY);
+        setCorrectDocumentDisplay(DEFAULT_CORRECT_DOCUMENT_DISPLAY);
+        setSignaturesValidity(DEFAULT_SIGNATURES_VALIDITY);
+        setPdfaCompliance(DEFAULT_PDFA_COMPLIANCE);
+        setServerEnabled(DEFAULT_SERVER_ENABLED);
+        setExpiredCertsEnabled(DEFAULT_EXPIRED_CERTS_ENABLED);
+        setTrustedList(DEFAULT_TRUSTED_LIST);
+        setCustomKeystorePath(DEFAULT_CUSTOM_KEYSTORE_PATH);
+        setTsaServer(DEFAULT_TSA_SERVER);
+        setCustomTsaServer(DEFAULT_CUSTOM_TSA_SERVER);
+        setTsaEnabled(DEFAULT_TSA_ENABLE);
+        setPdfDpi(DEFAULT_PDF_DPI);
+        setTokenSessionTimeout(DEFAULT_TOKEN_SESSION_TIMEOUT);
+        setCustomPKCS11DriverPath(DEFAULT_CUSTOM_PKCS11_DRIVER_PATH);
+
+        // Save this change also into preferences
+        save();
+    }
+
+
     private void setSignatureType(String signatureType) {
+
         var signatureLevelStringConverter = new SignatureLevelStringConverter();
-        var signatureLevel = Arrays
-                .asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B, SignatureLevel.CAdES_BASELINE_B)
-                .stream()
-                .map(signatureLevelStringConverter::toString)
+        var signatureLevel = Arrays.asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B, SignatureLevel.CAdES_BASELINE_B).stream()
+            .map(signatureLevelStringConverter::toString)
                 .filter(sl -> sl.equals(signatureType))
-                .map(signatureLevelStringConverter::fromString)
-                .findFirst().get();
+                    .map(signatureLevelStringConverter::fromString)
+                        .findFirst().get();
+
         this.signatureLevel = signatureLevel;
     }
 
@@ -219,6 +278,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setTsaServer(String value) {
+
         if (value == null || value.isEmpty()) {
             tspSource = null;
             return;
@@ -302,20 +362,24 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setTokenSessionTimeout(long value) {
+
         if (value <= 0)
             return;
 
         tokenSessionTimeout = value;
     }
 
-    public String getCustomPKCS11DriverPath() { return customPKCS11DriverPath; }
+    public String getCustomPKCS11DriverPath() {
+        return customPKCS11DriverPath;
+    }
 
     public void setCustomPKCS11DriverPath(String driverPath) {
+
         Path path = Paths.get(driverPath);
         if (! Files.exists(path)) {
             return;
         }
+
         customPKCS11DriverPath = driverPath;
     }
-
 }
