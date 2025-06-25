@@ -84,7 +84,7 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
+    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onError) {
         disableKeyPicking();
 
         if (drivers.isEmpty()) {
@@ -118,6 +118,8 @@ public class GUI implements UI {
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
                 enableSigningOnAllJobs();
+                if (onError != null)
+                    onError.run();
             });
             stage.sizeToScene();
             stage.setResizable(false);
@@ -535,5 +537,28 @@ public class GUI implements UI {
         stage.setMaxHeight(bounds.getHeight());
         stage.setMaxWidth(bounds.getWidth());
         nWindows = (nWindows + 1) % maxWindows;
+    }
+
+    @Override
+    public void consentCertificateReadingAndThen(Runnable callback, Runnable onError) {
+        var controller = new ConsentCertificateReadingDialogController(hostServices, callback, onError);
+        var root = GUIUtils.loadFXML(controller, "consent-certificate-reading-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Súhlas - Zoznam podpisových certifikátov");
+        stage.setScene(new Scene(root));
+
+        stage.sizeToScene();
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+
+        stage.setOnCloseRequest(e -> {
+            if (onError != null)
+                onError.run();
+        });
+
+        GUIUtils.suppressDefaultFocus(stage, controller);
+
+        stage.show();
     }
 }

@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
@@ -211,7 +212,8 @@ public class Autogram {
                     ui.onWorkThreadDo(() -> {
                         fetchKeysAndThen(driver, callback);
                     });
-                }
+                },
+                null
         );
     }
 
@@ -298,5 +300,55 @@ public class Autogram {
 
     public void shutdown() {
         stopTokenSessionTimer();
+    }
+
+    public void consentCertificateReadingAndThen(CertificatesResponder responder, List<String> drivers) {
+        var availableDrivers = settings.getDriverDetector().getAvailableDrivers();
+        if (drivers != null && !drivers.isEmpty())
+            availableDrivers = availableDrivers.stream().filter(driver -> drivers.contains(driver.getShortname())).toList();
+
+        if (availableDrivers.isEmpty()) {
+            responder.onError(new AutogramException("No drivers available", "Žiadne ovládače nie sú dostupné", "Skontrolujte, či máte nainštalované ovládače pre vaše zariadenie."));
+            return;
+        }
+
+        final var finalAvailableDrivers = availableDrivers;
+
+        ui.onUIThreadDo(
+            () -> {
+                ui.consentCertificateReadingAndThen(
+                    () -> {
+                        ui.onWorkThreadDo(() -> {
+                                getCertificates(responder, finalAvailableDrivers);
+                            }
+                        );
+                    },
+                    () -> {
+                        responder.onError(new AutogramException("Certificate reading consent was not given", "Nebolo udelené súhlas s čítaním certifikátov", "Prosím, povoľte aplikácii prístup k certifikátom."));
+                    }
+                );
+            }
+        );
+    }
+
+    public void getCertificates(CertificatesResponder responder, List<TokenDriver> drivers) {
+        final var availableDrivers = drivers;
+        ui.onUIThreadDo(() -> {
+            ui.pickTokenDriverAndThen(availableDrivers,
+                (driver) -> {
+                    ui.onWorkThreadDo(() -> {
+                        try (var token = driver.createToken(passwordManager, settings)) {
+                            var keys = token.getKeys();
+                            resetTokenSessionTimer();
+                            responder.onSuccess(keys.stream().map(key -> key.getCertificate().getCertificate()).toList());
+                        } catch (DSSException e) {
+                            ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
+                            responder.onError(e);
+                        }
+                    });
+                },
+                () -> responder.onError(new AutogramException("No token driver selected", "Nebolo vybrané žiadne zariadenie", "Vyberte ovládač pre vaše zariadenie."))
+            );
+        });
     }
 }

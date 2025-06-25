@@ -346,6 +346,43 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BatchEndResponseBody"
+
+  /certificates:
+    get:
+      tags:
+        - Info
+      summary: Retrieve list of certificates available for signing
+      operationId: getCertificates
+      parameters:
+        - name: driver
+          in: query
+          description: |
+            Optional list of PKCSs driver names to load certificates from. Examples are `eid`, `gemalto`, `monet`, `ica`, `keystore`, `custom_pkcs11`.
+          required: false
+          schema:
+            type: string
+            example: eid,gemalto
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  certificates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                          example: "SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith"
+                          description: Distinguished name of the certificate.
+                        issuedBy:
+                          type: string
+                          example: "CN=SVK eID ACA2, O=Disig a.s., OID.2.5.4.97=NTRSK-12345678, L=Bratislava, C=SK"
+                          description: Distinguished name of the issuer of the certificate.
 components:
   schemas:
     Info:

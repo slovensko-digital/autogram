@@ -28,6 +28,7 @@ import java.security.KeyStore;
 import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -207,7 +208,7 @@ class AutogramTests {
         }
 
         @Override
-        public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
+        public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onError) {
             callback.accept(drivers.get(0));
         }
 
@@ -314,6 +315,11 @@ class AutogramTests {
         @Override
         public void resetSigningKey() {
 
+        }
+
+        @Override
+        public void consentCertificateReadingAndThen(Runnable callback, Runnable onError) {
+            callback.run();
         }
     }
 

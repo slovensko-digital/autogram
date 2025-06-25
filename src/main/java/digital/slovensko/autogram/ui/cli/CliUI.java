@@ -61,7 +61,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback) {
+    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onError) {
         TokenDriver pickedDriver;
         if (drivers.isEmpty()) {
             showError(new NoDriversDetectedException());
@@ -279,5 +279,16 @@ public class CliUI implements UI {
     @Override
     public void resetSigningKey() {
         activeKey = null;
+    }
+
+    @Override
+    public void consentCertificateReadingAndThen(Runnable callback, Runnable onError) {
+        System.out.println("Do you consent to reading certificates from the token? (y/n)");
+        String input = System.console().readLine();
+        if ("y".equalsIgnoreCase(input)) {
+            callback.run();
+        } else {
+            onError.run();
+        }
     }
 }

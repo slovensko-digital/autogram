@@ -36,6 +36,10 @@ public class AutogramServer {
         server.createContext("/info", new InfoEndpoint()).getFilters()
                 .add(new AutogramCorsFilter("GET"));
 
+        // Certificates
+        server.createContext("/certificates", new CertificatesEndpoint(autogram)).getFilters()
+                .add(new AutogramCorsFilter("GET"));
+
         // Documentation
         server.createContext("/docs", new DocumentationEndpoint());
 
