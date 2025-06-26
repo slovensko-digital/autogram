@@ -7,7 +7,7 @@ import java.security.KeyStore;
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
-import digital.slovensko.autogram.errors.PasswordNotProvidedException;
+import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
