@@ -227,6 +227,10 @@ public class Autogram {
                     () -> ui.pickKeyAndThen(keys, driver, (privateKey) -> callback.accept(new SigningKey(token, privateKey))));
         } catch (DSSException e) {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
+        } catch (AutogramException e) {
+            ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(e));
+        } catch (Exception e) {
+            ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(new UnrecognizedException(e)));
         }
     }
 
@@ -308,7 +312,7 @@ public class Autogram {
             availableDrivers = availableDrivers.stream().filter(driver -> drivers.contains(driver.getShortname())).toList();
 
         if (availableDrivers.isEmpty()) {
-            responder.onError(new AutogramException("No drivers available", "Žiadne ovládače nie sú dostupné", "Skontrolujte, či máte nainštalované ovládače pre vaše zariadenie."));
+            responder.onError(new NoDriversDetectedException());
             return;
         }
 
@@ -324,7 +328,7 @@ public class Autogram {
                         );
                     },
                     () -> {
-                        responder.onError(new AutogramException("Certificate reading consent was not given", "Nebolo udelené súhlas s čítaním certifikátov", "Prosím, povoľte aplikácii prístup k certifikátom."));
+                        responder.onError(new CertificatesReadingConsentRejectedException());
                     }
                 );
             }
@@ -342,12 +346,17 @@ public class Autogram {
                             resetTokenSessionTimer();
                             responder.onSuccess(keys.stream().map(key -> key.getCertificate().getCertificate()).toList());
                         } catch (DSSException e) {
-                            ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
+                            var autogramException = AutogramException.createFromDSSException(e);
+                            ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(autogramException));
+                            responder.onError(autogramException);
+                        } catch (AutogramException e) {
                             responder.onError(e);
+                        } catch (Exception e) {
+                            responder.onError(new UnrecognizedException(e));
                         }
                     });
                 },
-                () -> responder.onError(new AutogramException("No token driver selected", "Nebolo vybrané žiadne zariadenie", "Vyberte ovládač pre vaše zariadenie."))
+                () -> responder.onError(new SigningCanceledByUserException())
             );
         });
     }
