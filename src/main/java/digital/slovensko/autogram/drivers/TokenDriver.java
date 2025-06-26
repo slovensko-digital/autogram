@@ -32,7 +32,7 @@ public abstract class TokenDriver {
     }
 
 
-    public abstract AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings);
+    public abstract AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex);
 
 
     public String getShortname() {

@@ -2,5 +2,5 @@ package digital.slovensko.autogram.core;
 
 public interface SignatureTokenSettings {
     boolean getForceContextSpecificLoginEnabled();
-    int getSlotIndex();
+    int getDriverSlotIndex(String tokenDriverShortname);
 }

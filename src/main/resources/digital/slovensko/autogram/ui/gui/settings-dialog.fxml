@@ -4,18 +4,16 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:id="mainBox"
-    prefWidth="896">
+<VBox fx:id="mainBox" prefWidth="896" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1">
     <VBox>
-        <TabPane maxHeight="640" prefWidth="896" xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml" styleClass="autogram-settings-tab-pane">
+        <TabPane maxHeight="640" prefWidth="896" styleClass="autogram-settings-tab-pane" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
             <tabs>
                 <Tab text="Podpisovanie">
                     <content>
                         <ScrollPane>
                             <VBox styleClass="container">
                                 <TextFlow>
-                                    <Text styleClass="autogram-heading-m">
+                                    <Text styleClass="autogram-heading-m" text="Podpisovanie">
                                         Podpisovanie
                                     </Text>
                                 </TextFlow>
@@ -38,8 +36,7 @@
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-dropdown">
-                                        <ChoiceBox fx:id="driverChoiceBox"
-                                                   styleClass="autogram-choicebox" />
+                                        <ChoiceBox fx:id="driverChoiceBox" styleClass="autogram-choicebox" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -51,7 +48,7 @@
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                PAdES je všeobecne akceptovaný a&#160;najjednoduchší na používanie, no niektoré úrady môžu ešte vyžadovať XAdES alebo CAdES.
+                                                PAdES je všeobecne akceptovaný a najjednoduchší na používanie, no niektoré úrady môžu ešte vyžadovať XAdES alebo CAdES.
                                             </Text>
                                         </TextFlow>
                                         <TextFlow>
@@ -83,8 +80,7 @@
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="tsaEnabledRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
+                                        <HBox fx:id="tsaEnabledRadios" styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -142,8 +138,7 @@
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="bulkEnabledRadios"
-                                              styleClass="autogram-smaller-radio-buttons" />
+                                        <HBox fx:id="bulkEnabledRadios" styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -177,8 +172,7 @@
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="plainXmlEnabledRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
+                                        <HBox fx:id="plainXmlEnabledRadios" styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -190,14 +184,13 @@
                                         </TextFlow>
                                         <TextFlow>
                                             <Text styleClass="autogram-description">
-                                                Podpisovanie štandardom ETSI EN 319 132 a&#160;ETSI EN 319 122.
+                                                Podpisovanie štandardom ETSI EN 319 132 a ETSI EN 319 122.
                                                 Pozor, systémy verejnej správy tento štandard väčšinou nepodporujú.
                                             </Text>
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="en319132Radios"
-                                            styleClass="autogram-smaller-radio-buttons" />
+                                        <HBox fx:id="en319132Radios" styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                             </VBox>
@@ -224,8 +217,7 @@
                                     </Text>
                                 </TextFlow>
 
-                                <VBox alignment="center" fx:id="trustedCountriesList"
-                                    styleClass="autogram-trusted-countries-list" />
+                                <VBox fx:id="trustedCountriesList" alignment="center" styleClass="autogram-trusted-countries-list" />
                             </VBox>
                         </ScrollPane>
                     </content>
@@ -258,22 +250,20 @@
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="signatureValidationRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
+                                        <HBox fx:id="signatureValidationRadios" styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
-                                            <Text styleClass="autogram-heading-s" text="Kontrola súladu s&#160;PDF/A formátom"/>
+                                            <Text styleClass="autogram-heading-s" text="Kontrola súladu s PDF/A formátom" />
                                         </TextFlow>
                                         <TextFlow>
-                                            <Text styleClass="autogram-description" text="Kontrola súladu podpisovaného dokumentu s&#160;PDF/A formátom. Niektoré úrady tento formát vyžadujú na komunikáciu."/>
+                                            <Text styleClass="autogram-description" text="Kontrola súladu podpisovaného dokumentu s PDF/A formátom. Niektoré úrady tento formát vyžadujú na komunikáciu." />
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="checkPDFAComplianceRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
+                                        <HBox fx:id="checkPDFAComplianceRadios" styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -290,8 +280,7 @@
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="expiredCertsRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
+                                        <HBox fx:id="expiredCertsRadios" styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -308,8 +297,7 @@
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="correctDocumentDisplayRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
+                                        <HBox fx:id="correctDocumentDisplayRadios" styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                             </VBox>
@@ -349,8 +337,7 @@
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="localServerEnabledRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
+                                        <HBox fx:id="localServerEnabledRadios" styleClass="autogram-smaller-radio-buttons" />
                                     </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
@@ -388,9 +375,7 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-dropdown">
-                                        <ChoiceBox fx:id="slotIndexChoiceBox" styleClass="autogram-choicebox" />
-                                    </VBox>
+                                    <VBox styleClass="autogram-dropdown" fx:id="driverSlot"/>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
@@ -434,8 +419,7 @@
         </TabPane>
     </VBox>
     <HBox styleClass="autogram-actions">
-        <Button fx:id="saveButton" onAction="#onSaveButtonAction"
-            styleClass="autogram-button,autogram-button--secondary">
+        <Button fx:id="saveButton" onAction="#onSaveButtonAction" styleClass="autogram-button,autogram-button--secondary">
             Uložiť nastavenia
         </Button>
     </HBox>

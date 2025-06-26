@@ -35,6 +35,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private int pdfDpi;
     private long tokenSessionTimeout;
     private String customPKCS11DriverPath;
+    private Map<String, Integer> driverSlotIndexMap = new HashMap<>();
 
     public static UserSettings load() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
@@ -42,7 +43,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         var settings = new UserSettings();
         settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", SignatureLevelStringConverter.PADES));
         settings.setDriver(prefs.get("DRIVER", ""));
-        settings.setSlotIndex(prefs.getInt("SLOT_INDEX", -1));
         settings.setEn319132(prefs.getBoolean("EN319132", false));
         settings.setBulkEnabled(prefs.getBoolean("BULK_ENABLED", false));
         settings.setPlainXmlEnabled(prefs.getBoolean("PLAIN_XML_ENABLED", false));
@@ -60,6 +60,22 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", 5));
         settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", ""));
 
+        String mapString = prefs.get("DRIVER_SLOT_INDEX_MAP", "");
+        if (!mapString.isEmpty()) {
+            String[] entries = mapString.split(";");
+            for (String entry : entries) {
+                String[] parts = entry.split(":");
+                if (parts.length == 2) {
+                    String key = parts[0];
+                    try {
+                        int value = Integer.parseInt(parts[1]);
+                        settings.setDriverSlotIndex(key, value);
+                    } catch (NumberFormatException e) {
+                    }
+                }
+            }
+        }
+
         var tsaServerPref = prefs.get("TSA_SERVER", "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu");
         if (tsaServerPref.equals("http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg") || tsaServerPref.equals("http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt")) // old default
             tsaServerPref = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
@@ -74,7 +90,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
         prefs.put("SIGNATURE_LEVEL", new SignatureLevelStringConverter().toString(signatureLevel));
         prefs.put("DRIVER", driver == null ? "" : driver);
-        prefs.putInt("SLOT_INDEX", slotIndex);
         prefs.putBoolean("EN319132", en319132);
         prefs.putBoolean("BULK_ENABLED", bulkEnabled);
         prefs.putBoolean("PLAIN_XML_ENABLED", plainXmlEnabled);
@@ -92,6 +107,12 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putInt("PDF_DPI", pdfDpi);
         prefs.putLong("TOKEN_SESSION_TIMEOUT", tokenSessionTimeout);
         prefs.put("CUSTOM_PKCS11_DRIVER_PATH", customPKCS11DriverPath);
+
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, Integer> entry : driverSlotIndexMap.entrySet()) {
+            builder.append(entry.getKey()).append(":").append(entry.getValue()).append(";");
+        }
+        prefs.put("DRIVER_SLOT_INDEX_MAP", builder.toString());
     }
 
     private void setSignatureType(String signatureType) {
@@ -271,14 +292,13 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     public boolean getForceContextSpecificLoginEnabled() {
         return bulkEnabled; // faux settings
     }
-
     @Override
-    public int getSlotIndex() {
-        return slotIndex;
+    public int getDriverSlotIndex(String tokenDriverShortname) {
+        return driverSlotIndexMap.getOrDefault(tokenDriverShortname, driverSlotIndexMap.getOrDefault("default", -1));
     }
 
-    public void setSlotIndex(int value) {
-        slotIndex = value;
+    public void setDriverSlotIndex(String tokenDriverShortname, int index) {
+        driverSlotIndexMap.put(tokenDriverShortname, index);
     }
 
     public DriverDetector getDriverDetector() {
