@@ -440,7 +440,7 @@
         </HBox>
         <HBox styleClass="autogram-actions">
             <Button fx:id="resetButton" onAction="#onResetButtonAction" styleClass="autogram-button,autogram-button--secondary">
-                Obnovit pôvodné nastavenia
+                Resetovať nastavenia
             </Button>
         </HBox>
     </HBox>

@@ -9,11 +9,11 @@
     <center>
         <VBox fx:id="mainBox" spacing="20" styleClass="autogram-prose">
             <TextFlow styleClass="autogram-heading-m">
-                <Text styleClass="autogram-heading-m" text="Obnovenie pôvodných nastavení"/>
+                <Text styleClass="autogram-heading-l" text="Chcete zresetovať nastavenia?"/>
             </TextFlow>
 
             <TextFlow styleClass="autogram-body">
-                <Text styleClass="autogram-body" text="Naozaj chcete obnoviť pôvodné nastavenia? Táto akcia obnoví všetky nastavenia na ich predvolené hodnoty."/>
+                <Text styleClass="autogram-body" text="Táto akcia zresetuje všetky nastavenia na ich pôvodné predvolené hodnoty."/>
             </TextFlow>
         </VBox>
     </center>
@@ -26,12 +26,12 @@
             <HBox styleClass="autogram-actions" alignment="CENTER_LEFT">
                 <HBox styleClass="autogram-actions">
                     <Button fx:id="confirmResetButton" onAction="#onConfirmResetButtonAction" styleClass="autogram-button,autogram-button--primary">
-                        Potvrdiť
+                        Resetovať nastavenia
                     </Button>
                 </HBox>
                 <HBox styleClass="autogram-actions">
                     <Button fx:id="rejectResetButton" onAction="#onRejectResetButtonAction" styleClass="autogram-button,autogram-button--secondary">
-                        Zamietnuť
+                        Zrušiť
                     </Button>
                 </HBox>
             </HBox>
