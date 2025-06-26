@@ -175,7 +175,7 @@ class AutogramTests {
         var settings = new TestSettings();
         var newUI = new FakeUI() {
                     @Override
-                    public void consentCertificateReadingAndThen(Runnable callback, Runnable onError) {
+                    public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onError) {
                         onError.run();
                     }
         };
@@ -412,8 +412,8 @@ class AutogramTests {
         }
 
         @Override
-        public void consentCertificateReadingAndThen(Runnable callback, Runnable onError) {
-            callback.run();
+        public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onError) {
+            callback.accept(() -> {});
         }
     }
 

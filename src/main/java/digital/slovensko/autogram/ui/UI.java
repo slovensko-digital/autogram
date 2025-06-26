@@ -62,5 +62,5 @@ public interface UI {
 
     void resetSigningKey();
 
-    void consentCertificateReadingAndThen(Runnable callback, Runnable onError);
+    void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onError);
 }

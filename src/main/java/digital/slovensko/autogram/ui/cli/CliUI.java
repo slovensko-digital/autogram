@@ -282,11 +282,13 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void consentCertificateReadingAndThen(Runnable callback, Runnable onError) {
+    public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onError) {
         System.out.println("Do you consent to reading certificates from the token? (y/n)");
         String input = System.console().readLine();
         if ("y".equalsIgnoreCase(input)) {
-            callback.run();
+            callback.accept(() -> {
+                System.out.println("Consent granted. Reading certificates...");
+            });
         } else {
             onError.run();
         }

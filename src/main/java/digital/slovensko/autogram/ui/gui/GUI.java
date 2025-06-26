@@ -540,7 +540,7 @@ public class GUI implements UI {
     }
 
     @Override
-    public void consentCertificateReadingAndThen(Runnable callback, Runnable onError) {
+    public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onError) {
         var controller = new ConsentCertificateReadingDialogController(hostServices, callback, onError);
         var root = GUIUtils.loadFXML(controller, "consent-certificate-reading-dialog.fxml");
 

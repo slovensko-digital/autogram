@@ -8,28 +8,33 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.function.Consumer;
+
 public class ConsentCertificateReadingDialogController implements SuppressedFocusController {
     private final HostServices hostServices;
-    private final Runnable callback;
+    private final Consumer<Runnable> callback;
     private final Runnable cancelCallback;
 
     @FXML
     VBox mainBox;
 
-    public ConsentCertificateReadingDialogController(HostServices hostServices, Runnable callback, Runnable cancelCallback) {
+    public ConsentCertificateReadingDialogController(HostServices hostServices, Consumer<Runnable> callback, Runnable cancelCallback) {
         this.hostServices = hostServices;
         this.callback = callback;
         this.cancelCallback = cancelCallback;
     }
 
     public void onContinueAction(ActionEvent event) {
-        callback.run();
-        var stage = (Stage) mainBox.getScene().getWindow();
-        stage.close();
+        callback.accept(this::close);
     }
 
     public void onCancelAction(ActionEvent event) {
         cancelCallback.run();
+        var stage = (Stage) mainBox.getScene().getWindow();
+        stage.close();
+    }
+
+    public void close() {
         var stage = (Stage) mainBox.getScene().getWindow();
         stage.close();
     }

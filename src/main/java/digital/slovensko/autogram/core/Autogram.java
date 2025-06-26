@@ -321,9 +321,9 @@ public class Autogram {
         ui.onUIThreadDo(
             () -> {
                 ui.consentCertificateReadingAndThen(
-                    () -> {
+                    (consentDialogCloseCallback) -> {
                         ui.onWorkThreadDo(() -> {
-                                getCertificates(responder, finalAvailableDrivers);
+                                getCertificates(responder, finalAvailableDrivers, consentDialogCloseCallback);
                             }
                         );
                     },
@@ -335,7 +335,7 @@ public class Autogram {
         );
     }
 
-    public void getCertificates(CertificatesResponder responder, List<TokenDriver> drivers) {
+    public void getCertificates(CertificatesResponder responder, List<TokenDriver> drivers, Runnable consentDialogCloseCallback) {
         final var availableDrivers = drivers;
         ui.onUIThreadDo(() -> {
             ui.pickTokenDriverAndThen(availableDrivers,
@@ -344,19 +344,26 @@ public class Autogram {
                         try (var token = driver.createToken(passwordManager, settings)) {
                             var keys = token.getKeys();
                             resetTokenSessionTimer();
+                            ui.onUIThreadDo(consentDialogCloseCallback);
                             responder.onSuccess(keys.stream().map(key -> key.getCertificate().getCertificate()).toList());
                         } catch (DSSException e) {
                             var autogramException = AutogramException.createFromDSSException(e);
                             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(autogramException));
+                            ui.onUIThreadDo(consentDialogCloseCallback);
                             responder.onError(autogramException);
                         } catch (AutogramException e) {
+                            ui.onUIThreadDo(consentDialogCloseCallback);
                             responder.onError(e);
                         } catch (Exception e) {
+                            ui.onUIThreadDo(consentDialogCloseCallback);
                             responder.onError(new UnrecognizedException(e));
                         }
                     });
                 },
-                () -> responder.onError(new SigningCanceledByUserException())
+                () -> {
+                    consentDialogCloseCallback.run();
+                    responder.onError(new SigningCanceledByUserException());
+                }
             );
         });
     }
