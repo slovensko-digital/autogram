@@ -7,6 +7,7 @@ import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.EmptyBodyException;
 import java.io.IOException;
+import java.util.List;
 
 public class EndpointUtils {
     private final static Gson gson = new Gson();
@@ -42,5 +43,19 @@ public class EndpointUtils {
         if (ret == null)
             throw new IOException("Failed to parse JSON body");
         return ret;
+    }
+
+    public static List<String> parseQueryParam(String query, String drivers) {
+        if (query == null || query.isEmpty())
+            return List.of();
+
+        String[] params = query.split("&");
+        for (String param : params) {
+            String[] keyValue = param.split("=");
+            if (keyValue.length == 2 && keyValue[0].equals(drivers)) {
+                return List.of(keyValue[1].split(","));
+            }
+        }
+        return List.of();
     }
 }
