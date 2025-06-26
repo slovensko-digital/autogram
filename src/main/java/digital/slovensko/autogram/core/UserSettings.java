@@ -38,7 +38,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private final int DEFAULT_PDF_DPI = 100;
     private final long DEFAULT_TOKEN_SESSION_TIMEOUT = 5L;
     private final String DEFAULT_CUSTOM_PKCS11_DRIVER_PATH = "";
-    private final String  DEFAULT_TSA_SERVER = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
+    private final String DEFAULT_TSA_SERVER = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
 
     private SignatureLevel signatureLevel;
     private String driver;
@@ -157,10 +157,10 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
         var signatureLevelStringConverter = new SignatureLevelStringConverter();
         var signatureLevel = Arrays.asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B, SignatureLevel.CAdES_BASELINE_B).stream()
-            .map(signatureLevelStringConverter::toString)
+                .map(signatureLevelStringConverter::toString)
                 .filter(sl -> sl.equals(signatureType))
-                    .map(signatureLevelStringConverter::fromString)
-                        .findFirst().get();
+                .map(signatureLevelStringConverter::fromString)
+                .findFirst().get();
 
         this.signatureLevel = signatureLevel;
     }
@@ -376,7 +376,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     public void setCustomPKCS11DriverPath(String driverPath) {
 
         Path path = Paths.get(driverPath);
-        if (! Files.exists(path)) {
+        if (!Files.exists(path)) {
             return;
         }
 
