@@ -1,10 +1,16 @@
 package digital.slovensko.autogram;
 
+import com.google.gson.Gson;
+import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.server.CertificatesResponder;
+import digital.slovensko.autogram.server.dto.CertificatesResponse;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
@@ -150,6 +156,94 @@ class AutogramTests {
     @Test
     void testSignFailedAfterCertificatePick() {
 
+    }
+
+    @Test
+    void testGetCertificatesThrowsOnNonexistentDriver() {
+        var settings = new TestSettings();
+        var newUI = mock(UI.class);
+        var autogram = new Autogram(newUI, settings);
+
+        var responder = mock(CertificatesResponder.class);
+        List<String> drivers = List.of("nonexistent-driver");
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+        verify(responder).onError(any(NoDriversDetectedException.class));
+    }
+
+    @Test
+    void testGetCertificatesThrowsOnConsentRejected() {
+        var settings = new TestSettings();
+        var newUI = new FakeUI() {
+                    @Override
+                    public void consentCertificateReadingAndThen(Runnable callback, Runnable onError) {
+                        onError.run();
+                    }
+        };
+        var autogram = new Autogram(newUI, settings);
+
+        var responder = mock(CertificatesResponder.class);
+        List<String> drivers = List.of();
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+        verify(responder).onError(any(CertificatesReadingConsentRejectedException.class));
+    }
+
+    @Test
+    void testGetCertificatesHappyScenario() {
+        var settings = new TestSettings();
+        var newUI = new FakeUI();
+        var autogram = new Autogram(newUI, settings);
+
+        var responder = mock(CertificatesResponder.class);
+        List<String> drivers = List.of();
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+
+        verify(responder).onSuccess(any());
+    }
+
+    @Test
+    void testGetCertificatesHappyScenarioWithResponse() throws IOException {
+        var settings = new TestSettings();
+        var newUI = new FakeUI();
+        var autogram = new Autogram(newUI, settings);
+
+        var exchange = mock(HttpExchange.class);
+        var responseBody = mock(java.io.OutputStream.class);
+        when(exchange.getResponseHeaders()).thenReturn(mock(com.sun.net.httpserver.Headers.class));
+        when(exchange.getRequestURI()).thenReturn(mock(java.net.URI.class));
+        when(exchange.getRequestMethod()).thenReturn("GET");
+        when(exchange.getResponseBody()).thenReturn(responseBody);
+
+        var responder = new CertificatesResponder(exchange);
+        List<String> drivers = List.of();
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+
+        verify(exchange).sendResponseHeaders(200, 0);
+
+        var expected = new Gson().fromJson("{\"certificates\":[{\"subject\":\"CN\u003dJano Suchal, O\u003dSolver IT\",\"issuedBy\":\"CN\u003dJano Suchal, O\u003dSolver IT\"}]}", CertificatesResponse.class);
+        verify(responseBody).write(new Gson().toJson(expected).getBytes());
+    }
+
+    @Test
+    void testGetCertificatesHappyScenarioWithDriverSelectorAndResponse() throws IOException {
+        var settings = new TestSettings();
+        var newUI = new FakeUI();
+        var autogram = new Autogram(newUI, settings);
+
+        var exchange = mock(HttpExchange.class);
+        var responseBody = mock(java.io.OutputStream.class);
+        when(exchange.getResponseHeaders()).thenReturn(mock(com.sun.net.httpserver.Headers.class));
+        when(exchange.getRequestURI()).thenReturn(mock(java.net.URI.class));
+        when(exchange.getRequestMethod()).thenReturn("GET");
+        when(exchange.getResponseBody()).thenReturn(responseBody);
+
+        var responder = new CertificatesResponder(exchange);
+        List<String> drivers = List.of("fake", "non-existent-driver");
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+
+        verify(exchange).sendResponseHeaders(200, 0);
+
+        var expected = new Gson().fromJson("{\"certificates\":[{\"subject\":\"CN\u003dJano Suchal, O\u003dSolver IT\",\"issuedBy\":\"CN\u003dJano Suchal, O\u003dSolver IT\"}]}", CertificatesResponse.class);
+        verify(responseBody).write(new Gson().toJson(expected).getBytes());
     }
 
     private record FakeDriverDetector(List<TokenDriver> drivers) implements DriverDetector {
