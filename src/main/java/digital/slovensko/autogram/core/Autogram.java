@@ -217,7 +217,8 @@ public class Autogram {
 
     private void fetchKeysAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
         try {
-            var token = driver.createToken(passwordManager, settings);
+            int driverSlotIndex = settings.getDriverSlotIndex(driver.getShortname());
+            var token = driver.createToken(passwordManager, settings, driverSlotIndex);
             var keys = token.getKeys();
             resetTokenSessionTimer();
 

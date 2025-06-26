@@ -164,7 +164,7 @@ class AutogramTests {
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
+        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("test.keystore")).getFile();
                 return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
@@ -181,7 +181,7 @@ class AutogramTests {
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
+        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex) {
             try {
                 var keystore = Objects.requireNonNull(this.getClass().getResource("expired_certificate.keystore"))
                         .getFile();
