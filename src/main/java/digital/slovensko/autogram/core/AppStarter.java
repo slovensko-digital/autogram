@@ -20,7 +20,7 @@ public class AppStarter {
         addOption("f", "force", false, "Overwrite existing file(s).").
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
         addOption(null, "parents", false, "Create all parent directories for target if needed.").
-        addOption("d", "driver", true, "PCKS driver name for signing. Supported values: eid, secure_store, monet, gemalto, keystore, custom_pkcs11 (requires valid path within pkcs11-driver-path option).").
+        addOption("d", "driver", true, "PCKS driver name for signing. Supported values: eid, cz_eid, secure_store, monet, gemalto, keystore, custom_pkcs11 (requires valid path within pkcs11-driver-path option).").
         addOption(null, "keystore", true, "Absolute path to a keystore file that can be used for signing.").
         addOption(null, "slot-id", true, "Slot ID for PKCS11 driver. If not specified, first available slot is used.").
         addOption(null, "pdf-level", true, "PDF signature level. Supported values: PAdES_BASELINE_B (default), XAdES_BASELINE_B, CAdES_BASELINE_B.").
