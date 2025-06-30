@@ -358,6 +358,20 @@ components:
           type: string
           enum:
             - READY
+        availableDrivers:
+          type: array
+          items:
+            type: string
+            enum:
+              - eid
+              - cz_eid
+              - secure_store
+              - monet
+              - gemalto
+              - fake
+              - keystore
+              - custom_pkcs11
+          description: List of available (detected) card drivers that can be used for signing
 
     SignRequestBody:
       type: object

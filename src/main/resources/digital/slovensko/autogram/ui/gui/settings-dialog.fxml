@@ -3,9 +3,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:id="mainBox"
-    prefWidth="896">
+      prefWidth="896">
     <VBox>
         <TabPane maxHeight="640" prefWidth="896" xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml" styleClass="autogram-settings-tab-pane">
@@ -432,9 +431,15 @@
         </TabPane>
     </VBox>
     <HBox styleClass="autogram-actions">
-        <Button fx:id="saveButton" onAction="#onSaveButtonAction"
-            styleClass="autogram-button,autogram-button--secondary">
-            Uložiť nastavenia
-        </Button>
+        <HBox styleClass="autogram-actions">
+            <Button fx:id="saveButton" onAction="#onSaveButtonAction" styleClass="autogram-button,autogram-button--primary">
+                Uložiť nastavenia
+            </Button>
+        </HBox>
+        <HBox styleClass="autogram-actions">
+            <Button fx:id="resetButton" onAction="#onResetButtonAction" styleClass="autogram-button,autogram-button--secondary">
+                Resetovať nastavenia
+            </Button>
+        </HBox>
     </HBox>
 </VBox>

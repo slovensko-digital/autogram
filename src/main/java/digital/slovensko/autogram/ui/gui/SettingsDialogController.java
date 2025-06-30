@@ -7,11 +7,13 @@ import digital.slovensko.autogram.drivers.FakeTokenDriver;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.util.List;
@@ -56,6 +58,8 @@ public class SettingsDialogController {
     private TextField customPKCS11DriverPathTextField;
     @FXML
     private Button saveButton;
+    @FXML
+    private Button resetButton;
     @FXML
     private Button closeButton;
     @FXML
@@ -337,8 +341,27 @@ public class SettingsDialogController {
     }
 
     public void onSaveButtonAction() {
+
         userSettings.save();
+
         var stage = (Stage) saveButton.getScene().getWindow();
         stage.close();
+    }
+
+    public void onResetButtonAction() {
+
+        var controller = new SettingsResetDialogController();
+        controller.setUserSettings(userSettings);
+        controller.setResetButton(resetButton);
+
+        var root = GUIUtils.loadFXML(controller, "settings-reset-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Obnovenie pôvodných nastavení");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
     }
 }

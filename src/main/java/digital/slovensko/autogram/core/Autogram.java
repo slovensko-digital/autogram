@@ -270,6 +270,10 @@ public class Autogram {
         return settings.getTspSource();
     }
 
+    public List<TokenDriver> getAvailableDrivers() {
+        return settings.getDriverDetector().getAvailableDrivers();
+    }
+
     public boolean isPlainXmlEnabled() {
         return settings.isPlainXmlEnabled();
     }
