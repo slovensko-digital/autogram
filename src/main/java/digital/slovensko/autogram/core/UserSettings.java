@@ -10,18 +10,15 @@ import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.prefs.Preferences;
+import java.util.stream.Stream;
 
 
 public class UserSettings implements PasswordManagerSettings, SignatureTokenSettings, DriverDetectorSettings {
-
     private final String DEFAULT_SIGNATURE_LEVEL = SignatureLevelStringConverter.PADES;
     private final String DEFAULT_DRIVER = "";
-    private final int DEFAULT_SLOT_INDEX = -1;
+    private final String DRIVER_SLOT_INDEX_MAP = "";
     private final boolean DEFAULT_EN319132 = false;
     private final boolean DEFAULT_BULK_ENABLED = false;
     private final boolean DEFAULT_PLAIN_XML_ENABLED = false;
@@ -61,16 +58,14 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private int pdfDpi;
     private long tokenSessionTimeout;
     private String customPKCS11DriverPath;
-
+    private Map<String, Integer> driverSlotIndexMap = new HashMap<>();
 
     public static UserSettings load() {
-
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
         var settings = new UserSettings();
 
         settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", settings.DEFAULT_SIGNATURE_LEVEL));
         settings.setDriver(prefs.get("DRIVER", settings.DEFAULT_DRIVER));
-        settings.setSlotIndex(prefs.getInt("SLOT_INDEX", settings.DEFAULT_SLOT_INDEX));
         settings.setEn319132(prefs.getBoolean("EN319132", settings.DEFAULT_EN319132));
         settings.setBulkEnabled(prefs.getBoolean("BULK_ENABLED", settings.DEFAULT_BULK_ENABLED));
         settings.setPlainXmlEnabled(prefs.getBoolean("PLAIN_XML_ENABLED", settings.DEFAULT_PLAIN_XML_ENABLED));
@@ -88,6 +83,30 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", settings.DEFAULT_TOKEN_SESSION_TIMEOUT));
         settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", settings.DEFAULT_CUSTOM_PKCS11_DRIVER_PATH));
 
+        String mapString = prefs.get("DRIVER_SLOT_INDEX_MAP", "");
+        if (!mapString.isEmpty()) {
+            String[] entries = mapString.split(";");
+            for (String entry : entries) {
+                String[] parts = entry.split(":");
+                if (parts.length == 2) {
+                    String key = parts[0];
+                    try {
+                        int value = Integer.parseInt(parts[1]);
+                        settings.setDriverSlotIndex(key, value);
+                    } catch (NumberFormatException e) {
+                    }
+                }
+            }
+        } else {
+            // Legacy support for single slot index
+            var slotIndex = prefs.getInt("SLOT_INDEX", -1);
+            if (slotIndex != -1) {
+                settings.setDriverSlotIndex("gemalto", slotIndex);
+                settings.setDriverSlotIndex("monet", slotIndex);
+                settings.setDriverSlotIndex("secure_store", slotIndex);
+            }
+        }
+
         var tsaServerPref = prefs.get("TSA_SERVER", settings.DEFAULT_TSA_SERVER);
         if (tsaServerPref.equals("http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg") ||
                 tsaServerPref.equals("http://ts.quovadisglobal.com/eu,http://tsa.baltstamp.lt")) // old default
@@ -99,12 +118,10 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void save() {
-
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         prefs.put("SIGNATURE_LEVEL", new SignatureLevelStringConverter().toString(signatureLevel));
         prefs.put("DRIVER", driver == null ? "" : driver);
-        prefs.putInt("SLOT_INDEX", slotIndex);
         prefs.putBoolean("EN319132", en319132);
         prefs.putBoolean("BULK_ENABLED", bulkEnabled);
         prefs.putBoolean("PLAIN_XML_ENABLED", plainXmlEnabled);
@@ -122,14 +139,17 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putInt("PDF_DPI", pdfDpi);
         prefs.putLong("TOKEN_SESSION_TIMEOUT", tokenSessionTimeout);
         prefs.put("CUSTOM_PKCS11_DRIVER_PATH", customPKCS11DriverPath);
+
+        StringBuilder builder = new StringBuilder();
+        for (var entry : driverSlotIndexMap.entrySet()) {
+            builder.append(entry.getKey()).append(":").append(entry.getValue()).append(";");
+        }
+        prefs.put("DRIVER_SLOT_INDEX_MAP", builder.toString());
     }
 
     public void reset() {
-
-        // Reset values saved in memory to defaults
         setSignatureType(DEFAULT_SIGNATURE_LEVEL);
         setDriver(DEFAULT_DRIVER);
-        setSlotIndex(DEFAULT_SLOT_INDEX);
         setEn319132(DEFAULT_EN319132);
         setBulkEnabled(DEFAULT_BULK_ENABLED);
         setPlainXmlEnabled(DEFAULT_PLAIN_XML_ENABLED);
@@ -147,22 +167,20 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         setPdfDpi(DEFAULT_PDF_DPI);
         setTokenSessionTimeout(DEFAULT_TOKEN_SESSION_TIMEOUT);
         setCustomPKCS11DriverPath(DEFAULT_CUSTOM_PKCS11_DRIVER_PATH);
+        driverSlotIndexMap.clear();
+        driverSlotIndexMap.put("default", -1); // default slot index
 
-        // Save this change also into preferences
         save();
     }
 
-
     private void setSignatureType(String signatureType) {
-
         var signatureLevelStringConverter = new SignatureLevelStringConverter();
-        var signatureLevel = Arrays.asList(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B, SignatureLevel.CAdES_BASELINE_B).stream()
+
+        this.signatureLevel = Stream.of(SignatureLevel.XAdES_BASELINE_B, SignatureLevel.PAdES_BASELINE_B, SignatureLevel.CAdES_BASELINE_B)
                 .map(signatureLevelStringConverter::toString)
                 .filter(sl -> sl.equals(signatureType))
                 .map(signatureLevelStringConverter::fromString)
-                .findFirst().get();
-
-        this.signatureLevel = signatureLevel;
+                .findFirst().orElse(SignatureLevel.PAdES_BASELINE_B);
     }
 
     private void setTrustedList(String trustedList) {
@@ -278,7 +296,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setTsaServer(String value) {
-
         if (value == null || value.isEmpty()) {
             tspSource = null;
             return;
@@ -331,14 +348,13 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     public boolean getForceContextSpecificLoginEnabled() {
         return bulkEnabled; // faux settings
     }
-
     @Override
-    public int getSlotIndex() {
-        return slotIndex;
+    public int getDriverSlotIndex(String tokenDriverShortname) {
+        return driverSlotIndexMap.getOrDefault(tokenDriverShortname, driverSlotIndexMap.getOrDefault("default", -1));
     }
 
-    public void setSlotIndex(int value) {
-        slotIndex = value;
+    public void setDriverSlotIndex(String tokenDriverShortname, int index) {
+        driverSlotIndexMap.put(tokenDriverShortname, index);
     }
 
     public DriverDetector getDriverDetector() {
@@ -362,7 +378,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setTokenSessionTimeout(long value) {
-
         if (value <= 0)
             return;
 
@@ -374,12 +389,10 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setCustomPKCS11DriverPath(String driverPath) {
-
         Path path = Paths.get(driverPath);
-        if (!Files.exists(path)) {
+        if (! Files.exists(path)) {
             return;
         }
-
         customPKCS11DriverPath = driverPath;
     }
 }

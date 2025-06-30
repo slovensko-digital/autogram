@@ -29,8 +29,8 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private final PasswordManager passwordManager;
     private final SignatureTokenSettings settings;
 
-    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings) {
-        super(pkcsPath, pm, -1, settings.getSlotIndex(), null);
+    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex) {
+        super(pkcsPath, pm, -1, driverSlotIndex, null);
         this.passwordManager = pm;
         this.settings = settings;
     }

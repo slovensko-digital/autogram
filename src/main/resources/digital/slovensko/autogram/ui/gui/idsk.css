@@ -1237,4 +1237,8 @@ TextFlow.autogram-body-s {
   -fx-max-height: 1.75em;
 }
 
+.autogram-label {
+  -fx-font-size: 1.125em;
+}
+
 

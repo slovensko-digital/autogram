@@ -53,8 +53,6 @@ public class SettingsDialogController {
     @FXML
     private ChoiceBox<String> pdfDpiChoiceBox;
     @FXML
-    private ChoiceBox<String> slotIndexChoiceBox;
-    @FXML
     private TextField customKeystorePathTextField;
     @FXML
     private TextField customPKCS11DriverPathTextField;
@@ -64,6 +62,8 @@ public class SettingsDialogController {
     private Button resetButton;
     @FXML
     private Button closeButton;
+    @FXML
+    private VBox driverSlot;
 
     private final UserSettings userSettings;
     private final List<String> preDefinedTsaServers = List.of(
@@ -91,10 +91,10 @@ public class SettingsDialogController {
         initializeExpiredCertsEnabledCheckBox();
         initializeLocalServerEnabledCheckBox();
         initializeTrustedCountriesList();
-        initializeSlotIndexSettings();
         initializePdfDpiSettings();
         initializeCustomKeystoreSettings();
         initializeCustomPKCS11DriverPathSettings();
+        initializeDriverSlot();
     }
 
     private void initializeSignatureLevelChoiceBox() {
@@ -279,20 +279,7 @@ public class SettingsDialogController {
         return new HBox(countryBox, new VBox(checkBox));
     }
 
-    private void initializeSlotIndexSettings() {
-        final var DEFAULT_LABEL = "Predvolený slot";
-        slotIndexChoiceBox.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
-        slotIndexChoiceBox.setValue(userSettings.getSlotIndex() == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getSlotIndex()));
-        slotIndexChoiceBox.getSelectionModel().selectedItemProperty()
-                .addListener((observable, oldValue, newValue) -> {
-                    if (newValue.equals(DEFAULT_LABEL))
-                        newValue = "-1";
-
-                    userSettings.setSlotIndex(Integer.parseInt(newValue));
-                });
-    }
-
-        private void initializePdfDpiSettings() {
+    private void initializePdfDpiSettings() {
         pdfDpiChoiceBox.getItems().addAll("50 dpi", "70 dpi", "100 dpi", "150 dpi", "200 dpi", "300 dpi");
         pdfDpiChoiceBox.setValue(String.valueOf(userSettings.getPdfDpi()) + " dpi");
         pdfDpiChoiceBox.getSelectionModel().selectedItemProperty()
@@ -321,6 +308,36 @@ public class SettingsDialogController {
         customPKCS11DriverPathTextField.setOnKeyTyped((e) -> {
             userSettings.setCustomPKCS11DriverPath(customPKCS11DriverPathTextField.getText());
         });
+    }
+
+    private void initializeDriverSlot(){
+        var driverDetector = new DefaultDriverDetector(userSettings);
+        var drivers = driverDetector.getAvailableDrivers();
+        if (drivers.isEmpty()) {
+            Text info = new Text("Nebolo detekované žiadne úložisko certifikátov.");
+            info.getStyleClass().add("autogram-description");
+            driverSlot.getChildren().add(info);
+            driverSlot.getStyleClass().add("autogram-description");
+        } else {
+            for (TokenDriver tokenDriver : drivers) {
+                Text driverName = new Text(tokenDriver.getName());
+                driverName.getStyleClass().add("autogram-label");
+                driverSlot.getChildren().add(driverName);
+
+                final var DEFAULT_LABEL = "Predvolený slot";
+                ChoiceBox<String> slotIndex = new ChoiceBox<>();
+                slotIndex.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
+                slotIndex.setValue(userSettings.getDriverSlotIndex(tokenDriver.getShortname()) == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getDriverSlotIndex(tokenDriver.getShortname())));
+                slotIndex.getSelectionModel().selectedItemProperty()
+                        .addListener((observable, oldValue, newValue) -> {
+                            if (newValue.equals(DEFAULT_LABEL))
+                                newValue = "-1";
+
+                            userSettings.setDriverSlotIndex(tokenDriver.getShortname(), Integer.parseInt(newValue));
+                        });
+                driverSlot.getChildren().add(slotIndex);
+            }
+        }
     }
 
     public void onSaveButtonAction() {

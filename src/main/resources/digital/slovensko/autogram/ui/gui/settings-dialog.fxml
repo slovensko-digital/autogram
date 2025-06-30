@@ -387,9 +387,7 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-dropdown">
-                                        <ChoiceBox fx:id="slotIndexChoiceBox" styleClass="autogram-choicebox" />
-                                    </VBox>
+                                    <VBox styleClass="autogram-dropdown" fx:id="driverSlot"/>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
