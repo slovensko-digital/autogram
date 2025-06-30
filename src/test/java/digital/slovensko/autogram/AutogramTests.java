@@ -175,8 +175,8 @@ class AutogramTests {
         var settings = new TestSettings();
         var newUI = new FakeUI() {
                     @Override
-                    public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onError) {
-                        onError.run();
+                    public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onCancel) {
+                        onCancel.run();
                     }
         };
         var autogram = new Autogram(newUI, settings);
@@ -302,7 +302,7 @@ class AutogramTests {
         }
 
         @Override
-        public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onError) {
+        public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel) {
             callback.accept(drivers.get(0));
         }
 
@@ -412,7 +412,7 @@ class AutogramTests {
         }
 
         @Override
-        public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onError) {
+        public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onCancel) {
             callback.accept(() -> {});
         }
     }

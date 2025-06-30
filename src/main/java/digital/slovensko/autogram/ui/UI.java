@@ -20,7 +20,7 @@ public interface UI {
 
     void showVisualization(Visualization visualization, Autogram autogram);
 
-    void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onError);
+    void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel);
 
     void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback);
 
@@ -62,5 +62,5 @@ public interface UI {
 
     void resetSigningKey();
 
-    void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onError);
+    void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onCancel);
 }
