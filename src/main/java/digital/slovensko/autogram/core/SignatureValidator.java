@@ -102,7 +102,7 @@ public class SignatureValidator {
         var trustedListCertificateSource = new TrustedListsCertificateSource();
         validationJob.setTrustedListCertificateSource(trustedListCertificateSource);
         validationJob.setListOfTrustedListSources(lotlSource);
-        validationJob.setSynchronizationStrategy(new ExpirationAndSignatureCheckStrategy());
+        validationJob.setSynchronizationStrategy(new CustomSynchronizationStrategy());
         validationJob.setExecutorService(executorService);
         validationJob.setDebug(false);
 
