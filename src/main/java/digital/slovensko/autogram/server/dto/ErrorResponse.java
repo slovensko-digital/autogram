@@ -31,8 +31,12 @@ public class ErrorResponse {
         // TODO maybe replace with pattern matching someday
         return switch (e.getClass().getSimpleName()) {
             case "SigningCanceledByUserException" -> new ErrorResponse(204, "USER_CANCELLED", (AutogramException) e);
+            case "PasswordNotProvidedException" -> new ErrorResponse(204, "PASSWORD_NOT_PROVIDED", (AutogramException) e);
             case "ServiceUnavailableException" -> new ErrorResponse(503, "SERVICE_UNAVAILABLE", (AutogramException) e);
             case "UnrecognizedException" -> new ErrorResponse(502, "UNRECOGNIZED_DSS_ERROR", (AutogramException) e);
+            case "InitializationFailedException" -> new ErrorResponse(500, "INITIALIZATION_FAILED", (AutogramException) e);
+            case "PINIncorrectException" -> new ErrorResponse(500, "PIN_INCORRECT", (AutogramException) e);
+            case "FunctionCanceledException" -> new ErrorResponse(500, "FUNCTION_CANCELED", (AutogramException) e);
             case "UnsupportedSignatureLevelException" -> new ErrorResponse(422, "UNSUPPORTED_SIGNATURE_LEVEL", (AutogramException) e);
             case "RequestValidationException",
                 "XMLValidationException",
@@ -51,8 +55,10 @@ public class ErrorResponse {
             case "BatchExpiredException" -> new ErrorResponse(400, "BATCH_EXPIRED", (AutogramException) e);
             case "BatchNotStartedException" -> new ErrorResponse(400, "BATCH_NOT_STARTED", (AutogramException) e);
             case "BatchInvalidIdException" -> new ErrorResponse(404, "BATCH_NOT_FOUND", (AutogramException) e);
+            case "NoDriversDetectedException" -> new ErrorResponse(404, "DRIVER_NOT_FOUND", (AutogramException) e);
             case "BatchConflictException" -> new ErrorResponse(400, "BATCH_CONFLICT", (AutogramException) e);
             case "InvalidUrlParamException" -> new ErrorResponse(400, "INVALID_URL_PARAM", (AutogramException) e);
+            case "CertificatesReadingConsentRejectedException" -> new ErrorResponse(403, "CERTIFICATES_READING_CONSENT_REJECTED", (AutogramException) e);
             default -> new ErrorResponse(500, "INTERNAL_ERROR", "Unexpected exception signing document", e.getMessage());
         };
     }
