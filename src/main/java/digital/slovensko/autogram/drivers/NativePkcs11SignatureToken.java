@@ -4,7 +4,7 @@ import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
-import digital.slovensko.autogram.errors.PasswordNotProvidedException;
+import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.SignatureValue;
