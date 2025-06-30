@@ -18,7 +18,7 @@ public class PKCS12KeystoreTokenDriver extends TokenDriver {
     }
 
     @Override
-    public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex) {
+    public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
         try {
             var password = pm.getPassword();
             if (password == null)

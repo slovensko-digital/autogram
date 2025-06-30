@@ -13,7 +13,7 @@ public class PKCS11TokenDriver extends TokenDriver {
         super(name, path, shortname, noKeysHelperText);
     }
 
-    public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex) {
-        return new NativePkcs11SignatureToken(getPath().toString(), pm, settings, driverSlotIndex);
+    public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
+        return new NativePkcs11SignatureToken(getPath().toString(), pm, settings, settings.getDriverSlotIndex(getShortname()));
     }
 }
