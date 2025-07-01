@@ -26,7 +26,7 @@ The application currently supports only one style - the state IDSK design. Addit
 
 Currently, we support commonly used cards and their drivers:
 - Any PKCS#11 compatible card (by setting a path to driver)
-- Native support: Slovak ID card (eID client), I.CA SecureStore, MONET+ ProID+Q, Gemalto IDPrime 940
+- Native support: Slovak ID card (eID client), Czech ID card (eObčanka) I.CA SecureStore, MONET+ ProID+Q, Gemalto IDPrime 940
 
 Adding more cards is relatively easy as long as they use PKCS#11.
 
