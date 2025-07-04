@@ -8,6 +8,7 @@ import javax.security.auth.x500.X500Principal;
 
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.enumerations.Indication;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.simplereport.jaxb.XmlTimestamp;
@@ -21,6 +22,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+
+import static eu.europa.esig.dss.enumerations.SignatureForm.*;
 
 public class GUIValidationUtils {
     public static final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
@@ -112,6 +115,7 @@ public class GUIValidationUtils {
                 .getCertificateIssuerDN(diagnostic.getSignatureById(signatureId).getSigningCertificate().getId()));
         var signatureQualification = isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId)
                 : null;
+        var signatureForm = simple.getSignatureFormat(signatureId).getSignatureForm();
         var timestamps = simple.getSignatureTimestamps(signatureId);
 
         var nameFlow = new TextFlow(new Text(name));
@@ -150,7 +154,7 @@ public class GUIValidationUtils {
                 createTableRow("Výsledok overenia",
                         isValidated
                                 ? validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated,
-                                        signatureQualification, isTimestampInvalid, isTimestampIndeterminate)
+                                        signatureQualification, signatureForm, isTimestampInvalid, isTimestampIndeterminate)
                                 : "Prebieha overovanie"),
                 createTableRow("Certifikát", subject),
                 createTableRow("Vydavateľ", issuer),
@@ -161,11 +165,11 @@ public class GUIValidationUtils {
         });
         if (!timestampsBox.getChildren().isEmpty()) {
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
-                    SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), false));
+                    SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm), false));
             signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestampsBox, true));
         } else
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
-                    SignatureBadgeFactory.createBadgeFromQualification(signatureQualification), true));
+                    SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm), true));
 
         var signatureBox = new VBox(nameBox, signatureDetailsBox);
         signatureBox.getStyleClass().add("autogram-signature-box");
@@ -173,11 +177,14 @@ public class GUIValidationUtils {
     }
 
     private static String validityToString(boolean isValid, boolean isFailed, boolean areTLsLoaded,
-            boolean isRevocationValidated, SignatureQualification signatureQualification, boolean isTimestampInvalid,
-            boolean isTimestampIndeterminate) {
+            boolean isRevocationValidated, SignatureQualification signatureQualification, SignatureForm signatureForm,
+            boolean isTimestampInvalid, boolean isTimestampIndeterminate) {
 
         if (isFailed || isTimestampInvalid)
             return "Neplatný";
+
+        if (!List.of(XAdES, CAdES, PAdES).contains(signatureForm))
+            return "Neznámy formát podpisu: " + signatureForm.name();
 
         if (!areTLsLoaded)
             return "Nepodarilo sa overiť";
