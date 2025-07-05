@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import eu.europa.esig.dss.enumerations.Indication;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -9,6 +10,10 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+
+import java.util.List;
+
+import static eu.europa.esig.dss.enumerations.SignatureForm.*;
 
 public abstract class SignatureBadgeFactory {
     public static Node createBadge(String label, String styleClass) {
@@ -50,9 +55,12 @@ public abstract class SignatureBadgeFactory {
         return createBadge(label, "autogram-tag-info");
     }
 
-    public static Node createBadgeFromQualification(SignatureQualification qualification) {
+    public static Node createBadgeFromQualification(SignatureQualification qualification, SignatureForm signatureForm) {
         if (qualification == null)
             return createInProgressBadge();
+
+        if (!List.of(XAdES, CAdES, PAdES).contains(signatureForm))
+            return createWarningBadge("Neznámy formát: " + signatureForm.name());
 
         switch (qualification) {
             case QESIG:
@@ -104,6 +112,10 @@ public abstract class SignatureBadgeFactory {
         if (signatureQualification == null)
             return createInProgressBadge();
 
+        var signatureForm = reports.getSimpleReport().getSignatureFormat(signatureId).getSignatureForm();
+        if (!List.of(XAdES, CAdES, PAdES).contains(signatureForm))
+            return createWarningBadge("Neznámy formát: " + signatureForm.name());
+
         if (areTimestampsFailed(reports, signatureId))
             return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength);
 
@@ -130,7 +142,7 @@ public abstract class SignatureBadgeFactory {
             case ADESEAL, ADESEAL_QC, ADESIG:
                 return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength);
             default:
-                return createBadgeFromQualification(signatureQualification);
+                return createBadgeFromQualification(signatureQualification, signatureForm);
         }
     }
 
