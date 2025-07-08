@@ -44,6 +44,18 @@ jobs:
           security list-keychain -d user -s $APPLE_KEYCHAIN_PATH
           security default-keychain -s $APPLE_KEYCHAIN_PATH
 
+      - name: Verify Apple keychain
+        shell: bash
+        run: |
+          if ! ls -l "$APPLE_KEYCHAIN_PATH"; then
+            echo "Invalid keychain: cannot find file" >&2
+            exit 1
+          fi
+          if ! security show-keychain-info "$APPLE_KEYCHAIN_PATH" >/dev/null; then
+            echo "Invalid keychain: could not read info" >&2
+            exit 1
+          fi
+
       - name: Package with Maven
         run: ./mvnw -B -C -V package -P system-jdk
         env:
