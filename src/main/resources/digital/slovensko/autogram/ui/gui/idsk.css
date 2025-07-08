@@ -1,13 +1,4 @@
 /* Main styling */
-@font-face {
-  -fx-font-family: "Source Sans Pro";
-  src: url("fonts/SourceSansPro-Regular.ttf");
-}
-
-@font-face {
-  -fx-font-family: "Source Sans Pro";
-  src: url("fonts/SourceSansPro-Bold.ttf");
-}
 
 .root {
   -autogram-text-colour: #0b0c0c;
@@ -39,7 +30,7 @@
 
   -autogram-partial-success-colour: #003078;
 
-  -fx-font-family: "Source Sans Pro", "Arial", sans-serif;
+  -fx-font-family: -apple-system, system-ui;
   -fx-font-size: 16px;
 
   -fx-font-smoothing-type: gray;
