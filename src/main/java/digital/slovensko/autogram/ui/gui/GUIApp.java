@@ -9,6 +9,7 @@ import digital.slovensko.autogram.server.AutogramServer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.util.concurrent.ExecutorService;
@@ -76,6 +77,8 @@ public class GUIApp extends Application {
             windowStage.setResizable(false);
             windowStage.show();
 
+            setupMacHandlers(autogram, userSettings);
+
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
             var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
@@ -91,6 +94,47 @@ public class GUIApp extends Application {
                 Platform.exit();
             });
         }
+    }
+
+    private void setupMacHandlers(Autogram autogram, UserSettings userSettings) {
+        try {
+            Class<?> appClass = Class.forName("com.apple.eawt.Application");
+            Object app = appClass.getMethod("getApplication").invoke(null);
+            Class<?> aboutHandlerClass = Class.forName("com.apple.eawt.AboutHandler");
+            Class<?> preferencesHandlerClass = Class.forName("com.apple.eawt.PreferencesHandler");
+
+            Object aboutHandler = java.lang.reflect.Proxy.newProxyInstance(
+                    aboutHandlerClass.getClassLoader(),
+                    new Class<?>[]{aboutHandlerClass},
+                    (proxy, method, args) -> {
+                        Platform.runLater(autogram::onAboutInfo);
+                        return null;
+                    });
+            appClass.getMethod("setAboutHandler", aboutHandlerClass).invoke(app, aboutHandler);
+
+            Object prefHandler = java.lang.reflect.Proxy.newProxyInstance(
+                    preferencesHandlerClass.getClassLoader(),
+                    new Class<?>[]{preferencesHandlerClass},
+                    (proxy, method, args) -> {
+                        Platform.runLater(() -> showSettings(userSettings));
+                        return null;
+                    });
+            appClass.getMethod("setPreferencesHandler", preferencesHandlerClass).invoke(app, prefHandler);
+        } catch (Exception ignored) {
+            // com.apple.eawt not available
+        }
+    }
+
+    private void showSettings(UserSettings userSettings) {
+        var controller = new SettingsDialogController(userSettings);
+        var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Nastavenia");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
     }
 
     @Override
