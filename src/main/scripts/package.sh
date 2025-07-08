@@ -167,7 +167,6 @@ if [[ "${platform}" == "mac-universal" ]]; then
         "--icon" "./Autogram.icns"
         "--java-options" "${jvmOptions}"
         "--mac-app-category" "${properties_mac_appCategory:-business}"
-        "--mac-entitlements" "./Autogram.entitlements"
         "--temp" "./DTempFiles"
         "--type" "app-image"
     )
@@ -193,6 +192,7 @@ if [[ "${platform}" == "mac-universal" ]]; then
             "--mac-sign"
             "--mac-signing-keychain" "${APPLE_KEYCHAIN_PATH}"
             "--mac-signing-key-user-name" "${mac_signingKeyUserName}"
+            "--mac-entitlements" "./Autogram.entitlements"
         )
     fi
 
@@ -233,7 +233,6 @@ if [[ "${platform}" == "mac-universal" ]]; then
         --dest "${output}" \
         --description "${properties_description}" \
         --mac-app-category "${properties_mac_appCategory:-business}" \
-        --mac-entitlements "./Autogram.entitlements" \
         --mac-package-identifier "${properties_mac_identifier}" \
         ${signingArguments[@]}
     exitValue=$?
@@ -251,7 +250,6 @@ if [[ "${platform}" == "mac" ]]; then
         "--icon" "./Autogram.icns"
         "--java-options" "${jvmOptions}"
         "--mac-app-category" "${properties_mac_appCategory:-business}"
-        "--mac-entitlements" "./Autogram.entitlements"
         # Building on mac requires modifying of image files
         # So the temp files have to be on relative path
         "--temp" "./DTempFiles"
@@ -281,6 +279,7 @@ if [[ "${platform}" == "mac" ]]; then
             "--mac-sign"
             "--mac-signing-keychain" "${APPLE_KEYCHAIN_PATH}"
             "--mac-signing-key-user-name" "${mac_signingKeyUserName}"
+            "--mac-entitlements" "./Autogram.entitlements"
         )
     fi
 
