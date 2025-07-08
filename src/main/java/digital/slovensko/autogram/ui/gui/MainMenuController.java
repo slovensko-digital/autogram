@@ -13,6 +13,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.TransferMode;
+import javafx.scene.control.MenuBar;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -28,12 +29,18 @@ public class MainMenuController implements SuppressedFocusController {
     @FXML
     VBox dropZone;
 
+    @FXML
+    MenuBar menuBar;
+
     public MainMenuController(Autogram autogram, UserSettings userSettings) {
         this.autogram = autogram;
         this.userSettings = userSettings;
     }
 
     public void initialize() {
+        if (menuBar != null) {
+            menuBar.useSystemMenuBarProperty().set(true);
+        }
         dropZone.setOnDragOver(event -> {
             event.acceptTransferModes(TransferMode.ANY);
             event.consume();
