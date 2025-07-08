@@ -27,7 +27,19 @@ public class GUIApp extends Application {
             var userSettings = UserSettings.load();
 
             Platform.setImplicitExit(false);
-            setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
+
+            var osName = System.getProperty("os.name", "");
+            var dark = false;
+            if (osName.startsWith("Mac")) {
+                var interfaceStyle = System.getenv("AppleInterfaceStyle");
+                dark = interfaceStyle != null && interfaceStyle.equalsIgnoreCase("Dark");
+            }
+
+            if (dark) {
+                setUserAgentStylesheet(getClass().getResource("idsk-dark.css").toExternalForm());
+            } else {
+                setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
+            }
             var titleString = "Autogram";
 
             autogram = new Autogram(new GUI(getHostServices(), userSettings), userSettings);
