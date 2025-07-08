@@ -6,9 +6,6 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.server.AutogramServer;
-import com.apple.eawt.AppEvent.OpenFilesEvent;
-import com.apple.eawt.Application;
-import com.apple.eawt.OpenFilesHandler;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -19,7 +16,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class GUIApp extends Application implements OpenFilesHandler {
+public class GUIApp extends Application {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
     private final ExecutorService cachedExecutorService = Executors.newFixedThreadPool(8);
     private MainMenuController mainMenuController;
@@ -55,7 +52,9 @@ public class GUIApp extends Application implements OpenFilesHandler {
             final var params = LaunchParameters.fromParameters(getParameters());
             final var controller = new MainMenuController(autogram, userSettings);
             this.mainMenuController = controller;
-            Application.getApplication().setOpenFileHandler(this);
+            if (osName.startsWith("Mac")) {
+                setupMacOpenHandler();
+            }
 
             if (!params.isStandaloneMode())
                 GUIUtils.startIconified(windowStage);
@@ -141,6 +140,37 @@ public class GUIApp extends Application implements OpenFilesHandler {
         }
     }
 
+    private void setupMacOpenHandler() {
+        try {
+            Class<?> appClass = Class.forName("com.apple.eawt.Application");
+            Object app = appClass.getMethod("getApplication").invoke(null);
+            Class<?> handlerClass = Class.forName("com.apple.eawt.OpenFilesHandler");
+            Class<?> eventClass = Class.forName("com.apple.eawt.AppEvent$OpenFilesEvent");
+
+            Object handler = java.lang.reflect.Proxy.newProxyInstance(
+                    handlerClass.getClassLoader(),
+                    new Class<?>[]{handlerClass},
+                    (proxy, method, args) -> {
+                        if ("openFiles".equals(method.getName()) && args != null && args.length > 0) {
+                            Object event = args[0];
+                            try {
+                                @SuppressWarnings("unchecked")
+                                var files = (java.util.List<java.io.File>) eventClass.getMethod("getFiles").invoke(event);
+                                if (mainMenuController != null && files != null) {
+                                    Platform.runLater(() -> mainMenuController.onFilesSelected(files));
+                                }
+                            } catch (Exception ignored) {
+                                // ignore
+                            }
+                        }
+                        return null;
+                    });
+            appClass.getMethod("setOpenFileHandler", handlerClass).invoke(app, handler);
+        } catch (Exception ignored) {
+            // com.apple.eawt not available
+        }
+    }
+
     private void showSettings(UserSettings userSettings) {
         var controller = new SettingsDialogController(userSettings);
         var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
@@ -162,11 +192,4 @@ public class GUIApp extends Application implements OpenFilesHandler {
             cachedExecutorService.shutdownNow();
     }
 
-    @Override
-    public void openFiles(OpenFilesEvent e) {
-        var files = e.getFiles();
-        if (mainMenuController != null && files != null) {
-            Platform.runLater(() -> mainMenuController.onFilesSelected(files));
-        }
-    }
 }
