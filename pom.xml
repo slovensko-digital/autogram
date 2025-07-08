@@ -523,6 +523,20 @@
         </profile>
 
         <profile>
+            <id>macos-universal</id>
+            <activation>
+                <os>
+                    <name>Mac OS X</name>
+                    <family>unix</family>
+                </os>
+            </activation>
+            <properties>
+                <platform>mac-universal</platform>
+                <crypto.modules>jdk.crypto.cryptoki</crypto.modules>
+            </properties>
+        </profile>
+
+        <profile>
             <id>github_authenticated</id>
             <activation>
                 <property>
