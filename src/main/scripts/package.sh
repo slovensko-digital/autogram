@@ -150,6 +150,89 @@ if [[ "$platform" == "linux" ]]; then
     checkExitCode $?
 fi
 
+if [[ "${platform}" == "mac-universal" ]]; then
+    cp "./Info.plist.template" "./Info.plist"
+    sed -i.bak "s/PROTOCOL_NAME/${properties_protocol}/g" "./Info.plist" && rm "./Info.plist.bak"
+
+    baseArguments=(
+        "--input" "${appDirectory}"
+        "--runtime-image" "${jdkDirectory}"
+        "--main-jar" "autogram.jar"
+        "--app-version" "${properties_version:-$version}"
+        "--copyright" "${properties_copyright}"
+        "--vendor" "${properties_vendor}"
+        "--resource-dir" "./"
+        "--description" "${properties_description}"
+        "--name" "${properties_name}"
+        "--icon" "./Autogram.icns"
+        "--java-options" "${jvmOptions}"
+        "--mac-app-category" "${properties_mac_appCategory:-business}"
+        "--mac-entitlements" "./Autogram.entitlements"
+        "--temp" "./DTempFiles"
+        "--type" "app-image"
+    )
+
+    if [[ -n "${properties_mac_identifier}" ]]; then
+        baseArguments+=("--mac-package-identifier" "${properties_mac_identifier}")
+    fi
+
+    if [[ -n "${properties_mac_name}" ]]; then
+        baseArguments+=("--mac-package-name" "${properties_mac_name}")
+    fi
+
+    signingArguments=()
+    if [[ "${properties_mac_sign}" == "1" ]]; then
+        export JPACKAGE_MAC_SIGN="1"
+        if [[ -z "${APPLE_DEVELOPER_IDENTITY}" ]] || [[ -z "${APPLE_KEYCHAIN_PATH}" ]]; then
+            echo "Missing APPLE_DEVELOPER_IDENTITY or APPLE_KEYCHAIN_PATH env variable"
+            exit 1
+        fi
+
+        mac_signingKeyUserName=$(echo ${APPLE_DEVELOPER_IDENTITY} | sed -ne 's/Developer ID Application\:[[:space:]]\(.*\)[[:space:]]([0-9A-Z]*)/\1/p')
+        signingArguments=(
+            "--mac-sign"
+            "--mac-signing-keychain" "${APPLE_KEYCHAIN_PATH}"
+            "--mac-signing-key-user-name" "${mac_signingKeyUserName}"
+        )
+    fi
+
+    for arch in x64 aarch64; do
+        destDir="${output}/${arch}"
+        mkdir -p "${destDir}"
+        $jpackage "${baseArguments[@]}" "${signingArguments[@]}" --target-arch "${arch}" --dest "${destDir}"
+        exitValue=$?
+        rm -rf ./DTempFiles
+        checkExitCode $exitValue
+    done
+
+    appName="${properties_name}.app"
+    universalDir="${output}/universal"
+    mkdir -p "${universalDir}"
+    cp -R "${output}/x64/${appName}" "${universalDir}/${appName}"
+
+    binaries=("Autogram" "AutogramApp")
+    for bin in "${binaries[@]}"; do
+        lipo -create "${output}/x64/${appName}/Contents/MacOS/${bin}" "${output}/aarch64/${appName}/Contents/MacOS/${bin}" -output "${universalDir}/${appName}/Contents/MacOS/${bin}"
+    done
+
+    $jpackage \
+        --app-image "${universalDir}/${appName}" \
+        --name "${properties_name}" \
+        --type pkg \
+        --icon "./Autogram.icns" \
+        --app-version "${properties_version:-$version}" \
+        --resource-dir "./" \
+        --dest "${output}" \
+        --description "${properties_description}" \
+        --mac-app-category "${properties_mac_appCategory:-business}" \
+        --mac-entitlements "./Autogram.entitlements" \
+        --mac-package-identifier "${properties_mac_identifier}" \
+        ${signingArguments[@]}
+    exitValue=$?
+    rm -rf ./DTempFiles
+    checkExitCode $exitValue
+fi
+
 if [[ "${platform}" == "mac" ]]; then
     cp "./Info.plist.template" "./Info.plist"
     sed -i.bak "s/PROTOCOL_NAME/${properties_protocol}/g" "./Info.plist" && rm "./Info.plist.bak"
