@@ -6,6 +6,9 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.server.AutogramServer;
+import com.apple.eawt.AppEvent.OpenFilesEvent;
+import com.apple.eawt.Application;
+import com.apple.eawt.OpenFilesHandler;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -15,9 +18,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class GUIApp extends Application {
+public class GUIApp extends Application implements OpenFilesHandler {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
     private final ExecutorService cachedExecutorService = Executors.newFixedThreadPool(8);
+    private MainMenuController mainMenuController;
 
     @Override
     public void start(Stage windowStage) throws Exception {
@@ -37,6 +41,8 @@ public class GUIApp extends Application {
 
             final var params = LaunchParameters.fromParameters(getParameters());
             final var controller = new MainMenuController(autogram, userSettings);
+            this.mainMenuController = controller;
+            Application.getApplication().setOpenFileHandler(this);
 
             if (!params.isStandaloneMode())
                 GUIUtils.startIconified(windowStage);
@@ -72,9 +78,15 @@ public class GUIApp extends Application {
 
             GUIUtils.suppressDefaultFocus(windowStage, controller);
             windowStage.setTitle(titleString);
-            windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml")));
-            windowStage.setResizable(false);
+            windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml"))); 
+            windowStage.setResizable(false); 
             windowStage.show();
+
+            var unnamed = getParameters().getUnnamed();
+            if (!unnamed.isEmpty()) {
+                var files = unnamed.stream().map(java.io.File::new).toList();
+                controller.onFilesSelected(files);
+            }
 
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
@@ -100,5 +112,13 @@ public class GUIApp extends Application {
 
         if (!cachedExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS))
             cachedExecutorService.shutdownNow();
+    }
+
+    @Override
+    public void openFiles(OpenFilesEvent e) {
+        var files = e.getFiles();
+        if (mainMenuController != null && files != null) {
+            Platform.runLater(() -> mainMenuController.onFilesSelected(files));
+        }
     }
 }

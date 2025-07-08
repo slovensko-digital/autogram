@@ -31,4 +31,13 @@ on open location this_URL
 	#	display dialog "running from open location " & appScript
 	do shell script appScript & " > /dev/null 2>&1 &"
 end open location
+
+on open theFiles
+        set appPath to (POSIX path of (path to me)) & "/Contents/MacOS/AutogramApp"
+        set fileArgs to ""
+        repeat with f in theFiles
+                set fileArgs to fileArgs & " " & quoted form of POSIX path of f
+        end repeat
+        do shell script appPath & fileArgs & " > /dev/null 2>&1 &"
+end open
 ```
