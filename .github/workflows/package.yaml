@@ -40,48 +40,17 @@ jobs:
           restore-keys: |
             macos-maven-
 
-      - name: Install an Apple keychain (MacOS)
-        # based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development#add-a-step-to-your-workflow
-        env:
-          APPLE_KEYCHAIN_BASE64: ${{ secrets.APPLE_KEYCHAIN_BASE64 }}
-          APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
-          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+
+      - name: Disable macOS signing
         shell: bash
         run: |
-          # create variables
-          APPLE_KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          # share to rest of steps
-          echo "APPLE_KEYCHAIN_PATH=$APPLE_KEYCHAIN_PATH" >> "$GITHUB_ENV"
-
-          # import keychain from secrets
-          echo -n "$APPLE_KEYCHAIN_BASE64" | base64 --decode -o $APPLE_KEYCHAIN_PATH
-          set -x
-
-          # unlock, set timeout and set as used keychain
-          security unlock-keychain -p "$APPLE_KEYCHAIN_PASSWORD" $APPLE_KEYCHAIN_PATH
-          #security set-keychain-settings -lut 21600 $APPLE_KEYCHAIN_PATH
-          security list-keychain -d user -s $APPLE_KEYCHAIN_PATH
-          security default-keychain -s $APPLE_KEYCHAIN_PATH
+          sed -i.bak 's/^mac.sign=.*/mac.sign=0/' src/main/resources/digital/slovensko/autogram/build.properties
 
       - name: Package with Maven
         run: ./mvnw -B -C -V package -P system-jdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
-          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
 
-      - name: Notarize release with Apple (MacOS)
-        env:
-          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
-        shell: bash
-        run: |
-          set -x
-          # run notarization
-          xcrun notarytool submit --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
-          # staple
-          xcrun stapler staple target/Autogram-*.pkg
-          # lock all keychains
-          security lock-keychain -a
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
