@@ -1,0 +1,71 @@
+name: macOS Package on Main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  macos-package:
+    environment: packaging
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "24.0.1+11"
+          distribution: "liberica"
+          java-package: "jdk+fx"
+
+      - name: Cache local Maven repository and JDK cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            target/jdkCache
+          key: macos-main-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            macos-main-maven-
+
+      - name: Install an Apple keychain (MacOS)
+        env:
+          APPLE_KEYCHAIN_BASE64: ${{ secrets.APPLE_KEYCHAIN_BASE64 }}
+          APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+        shell: bash
+        run: |
+          APPLE_KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          echo "APPLE_KEYCHAIN_PATH=$APPLE_KEYCHAIN_PATH" >> "$GITHUB_ENV"
+          echo -n "$APPLE_KEYCHAIN_BASE64" | base64 --decode -o $APPLE_KEYCHAIN_PATH
+          set -x
+          security unlock-keychain -p "$APPLE_KEYCHAIN_PASSWORD" $APPLE_KEYCHAIN_PATH
+          security list-keychain -d user -s $APPLE_KEYCHAIN_PATH
+          security default-keychain -s $APPLE_KEYCHAIN_PATH
+
+      - name: Package with Maven
+        run: ./mvnw -B -C -V package -P system-jdk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
+          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+
+      - name: Notarize package with Apple
+        env:
+          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
+        shell: bash
+        run: |
+          set -x
+          xcrun notarytool submit --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
+          xcrun stapler staple target/Autogram-*.pkg
+          security lock-keychain -a
+
+      - name: Upload notarized package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Autogram-macOS
+          path: |
+            target/*.pkg
+            target/*.dmg
+

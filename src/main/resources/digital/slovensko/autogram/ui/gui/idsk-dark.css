@@ -29,7 +29,8 @@
 
   -autogram-partial-success-colour: #6792ff;
 
-  -fx-font-family: "Source Sans Pro", "Arial", sans-serif;
+  /* Match system look on macOS using native fonts */
+  -fx-font-family: -apple-system, system-ui;
   -fx-font-size: 16px;
 
   -fx-font-smoothing-type: gray;
