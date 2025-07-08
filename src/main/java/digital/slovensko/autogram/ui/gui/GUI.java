@@ -16,6 +16,7 @@ import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.macos.MacOSNotification;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -422,6 +423,7 @@ public class GUI implements UI {
         stage.setResizable(false);
         GUIUtils.suppressDefaultFocus(stage, controller);
         stage.show();
+        MacOSNotification.notify("Autogram", "Dokument " + targetFile.getName() + " bol podpísaný");
     }
 
     @Override
