@@ -1,0 +1,38 @@
+@import url("idsk.css");
+
+.root {
+  -autogram-text-colour: #ffffff;
+  -autogram-secondary-text-colour: #cccccc;
+
+  -autogram-link-colour: #5fa8ff;
+  -autogram-link-hover-colour: #79b6ff;
+
+  -autogram-border-colour: #888888;
+  -autogram-input-border-colour: #dddddd;
+  -autogram-input-background-color: #2b2b2b;
+
+  -autogram-success-colour: #4caf50;
+  -autogram-priamry-button-hover-colour: #3e8e41;
+
+  -autogram-secondary-hover-colour: #383838;
+
+  -autogram-warning-button-colour: #e06f6f;
+  -autorgam-warning-button-hover-colour: #c05050;
+
+  -autogram-background-colour: #1e1e1e;
+  -autogram-secondary-background-colour: #2c2c2c;
+
+  -autogram-focus-colour: #ffdd00;
+  -autogram-focus-text-colour: #0b0c0c;
+
+  -autogram-error-colour: #ff6f6f;
+
+  -autogram-partial-success-colour: #6792ff;
+
+  -fx-font-family: "Source Sans Pro", "Arial", sans-serif;
+  -fx-font-size: 16px;
+
+  -fx-font-smoothing-type: gray;
+
+  -autogram-warning-color: #ffdf0f;
+}
