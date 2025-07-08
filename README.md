@@ -49,6 +49,9 @@ Running `./mvnw package` prepares everything in `./target`:
 - `autogram-*.jar` - JAR with the application
 
 Then using `jpackage`, it creates all executable packages (.msi/.exe, .dmg/.pkg, and .rpm/.deb).
+On macOS, jpackage signs the installer by default. To build an unsigned macOS package, set
+`mac.sign=0` in `src/main/resources/digital/slovensko/autogram/build.properties` before running
+`./mvnw package`.
 
 ```sh
 ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
