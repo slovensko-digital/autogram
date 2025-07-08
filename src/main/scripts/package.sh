@@ -167,7 +167,6 @@ if [[ "${platform}" == "mac-universal" ]]; then
         "--icon" "./Autogram.icns"
         "--java-options" "${jvmOptions}"
         "--mac-app-category" "${properties_mac_appCategory:-business}"
-        "--mac-entitlements" "./Autogram.entitlements"
         "--temp" "./DTempFiles"
         "--type" "app-image"
     )
@@ -193,13 +192,16 @@ if [[ "${platform}" == "mac-universal" ]]; then
             "--mac-sign"
             "--mac-signing-keychain" "${APPLE_KEYCHAIN_PATH}"
             "--mac-signing-key-user-name" "${mac_signingKeyUserName}"
+            "--mac-entitlements" "./Autogram.entitlements"
         )
     fi
 
+    # jpackage 24 no longer supports the deprecated --target-arch option.
+    # Build each architecture separately using the host JDK.
     for arch in x64 aarch64; do
         destDir="${output}/${arch}"
         mkdir -p "${destDir}"
-        $jpackage "${baseArguments[@]}" "${signingArguments[@]}" --target-arch "${arch}" --dest "${destDir}"
+        $jpackage "${baseArguments[@]}" "${signingArguments[@]}" --dest "${destDir}"
         exitValue=$?
         rm -rf ./DTempFiles
         checkExitCode $exitValue
@@ -208,12 +210,18 @@ if [[ "${platform}" == "mac-universal" ]]; then
     appName="${properties_name}.app"
     universalDir="${output}/universal"
     mkdir -p "${universalDir}"
+    arch_x64=$(lipo -info "${output}/x64/${appName}/Contents/MacOS/Autogram" 2>/dev/null | rev | cut -d ':' -f1 | xargs)
+    arch_aarch64=$(lipo -info "${output}/aarch64/${appName}/Contents/MacOS/Autogram" 2>/dev/null | rev | cut -d ':' -f1 | xargs)
     cp -R "${output}/x64/${appName}" "${universalDir}/${appName}"
 
-    binaries=("Autogram" "AutogramApp")
-    for bin in "${binaries[@]}"; do
-        lipo -create "${output}/x64/${appName}/Contents/MacOS/${bin}" "${output}/aarch64/${appName}/Contents/MacOS/${bin}" -output "${universalDir}/${appName}/Contents/MacOS/${bin}"
-    done
+    if [[ "${arch_x64}" != "${arch_aarch64}" && -n "${arch_x64}" && -n "${arch_aarch64}" ]]; then
+        binaries=("Autogram" "AutogramApp")
+        for bin in "${binaries[@]}"; do
+            lipo -create "${output}/x64/${appName}/Contents/MacOS/${bin}" "${output}/aarch64/${appName}/Contents/MacOS/${bin}" -output "${universalDir}/${appName}/Contents/MacOS/${bin}"
+        done
+    else
+        echo "Built binaries have identical architecture (${arch_x64:-unknown}); skipping lipo"
+    fi
 
     $jpackage \
         --app-image "${universalDir}/${appName}" \
@@ -225,7 +233,6 @@ if [[ "${platform}" == "mac-universal" ]]; then
         --dest "${output}" \
         --description "${properties_description}" \
         --mac-app-category "${properties_mac_appCategory:-business}" \
-        --mac-entitlements "./Autogram.entitlements" \
         --mac-package-identifier "${properties_mac_identifier}" \
         ${signingArguments[@]}
     exitValue=$?
@@ -243,7 +250,6 @@ if [[ "${platform}" == "mac" ]]; then
         "--icon" "./Autogram.icns"
         "--java-options" "${jvmOptions}"
         "--mac-app-category" "${properties_mac_appCategory:-business}"
-        "--mac-entitlements" "./Autogram.entitlements"
         # Building on mac requires modifying of image files
         # So the temp files have to be on relative path
         "--temp" "./DTempFiles"
@@ -273,6 +279,7 @@ if [[ "${platform}" == "mac" ]]; then
             "--mac-sign"
             "--mac-signing-keychain" "${APPLE_KEYCHAIN_PATH}"
             "--mac-signing-key-user-name" "${mac_signingKeyUserName}"
+            "--mac-entitlements" "./Autogram.entitlements"
         )
     fi
 
