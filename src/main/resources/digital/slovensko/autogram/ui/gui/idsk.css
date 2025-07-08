@@ -768,10 +768,10 @@ TextFlow.autogram-body-s {
 }
 
 .check-box .mark {
-  /* TODO make the mark thicker */
-  -fx-shape: "M1.73,12.91 8.1,19.28 22.79,4.59 22.79,1.59 8.1,16.28 1.73,9.91";
-  -fx-pref-height: 15px;
-  -fx-pref-width: 15px;
+  /* Slightly enlarge and scale the checkmark so it is easier to see */
+  -fx-shape: "M0,16 7,23 23,7 23,4 7,20 0,13";
+  -fx-pref-height: 20px;
+  -fx-pref-width: 20px;
 }
 
 .check-box:selected .mark {
