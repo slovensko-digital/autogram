@@ -29,51 +29,17 @@ jobs:
           restore-keys: |
             macos-main-maven-
 
-      - name: Install an Apple keychain (MacOS)
-        env:
-          APPLE_KEYCHAIN_BASE64: ${{ secrets.APPLE_KEYCHAIN_BASE64 }}
-          APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
-          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+      - name: Disable macOS signing
         shell: bash
         run: |
-          APPLE_KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          echo "APPLE_KEYCHAIN_PATH=$APPLE_KEYCHAIN_PATH" >> "$GITHUB_ENV"
-          echo -n "$APPLE_KEYCHAIN_BASE64" | base64 --decode -o $APPLE_KEYCHAIN_PATH
-          set -x
-          security unlock-keychain -p "$APPLE_KEYCHAIN_PASSWORD" $APPLE_KEYCHAIN_PATH
-          security list-keychain -d user -s $APPLE_KEYCHAIN_PATH
-          security default-keychain -s $APPLE_KEYCHAIN_PATH
-
-      - name: Verify Apple keychain
-        shell: bash
-        run: |
-          if ! ls -l "$APPLE_KEYCHAIN_PATH"; then
-            echo "Invalid keychain: cannot find file" >&2
-            exit 1
-          fi
-          if ! security show-keychain-info "$APPLE_KEYCHAIN_PATH" >/dev/null; then
-            echo "Invalid keychain: could not read info" >&2
-            exit 1
-          fi
+          sed -i.bak 's/^mac.sign=.*/mac.sign=0/' src/main/resources/digital/slovensko/autogram/build.properties
 
       - name: Package with Maven
         run: ./mvnw -B -C -V package -P system-jdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
-          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
 
-      - name: Notarize package with Apple
-        env:
-          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
-        shell: bash
-        run: |
-          set -x
-          xcrun notarytool submit --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/Autogram-*.pkg
-          xcrun stapler staple target/Autogram-*.pkg
-          security lock-keychain -a
-
-      - name: Upload notarized package
+      - name: Upload package
         uses: actions/upload-artifact@v4
         with:
           name: Autogram-macOS
