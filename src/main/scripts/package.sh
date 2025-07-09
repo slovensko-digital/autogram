@@ -10,6 +10,12 @@ platform=${5}
 version=${6}
 output=${7}
 
+# Determine whether jpackage supports the new --arch parameter
+archOption="--target-arch"
+if "$jpackage" --help 2>&1 | grep -q -- '--arch'; then
+    archOption="--arch"
+fi
+
 function checkExitCode() {
     exitValue=${1}
     if [[ ${exitValue} -ne 0 ]]; then
@@ -203,7 +209,7 @@ if [[ "${platform}" == "mac-universal" ]]; then
     for arch in x64 aarch64; do
         destDir="${output}/${arch}"
         mkdir -p "${destDir}"
-        $jpackage "${baseArguments[@]}" "${signingArguments[@]}" --target-arch "${arch}" --dest "${destDir}"
+        $jpackage "${baseArguments[@]}" "${signingArguments[@]}" ${archOption} "${arch}" --dest "${destDir}"
         exitValue=$?
         rm -rf ./DTempFiles
         checkExitCode $exitValue
