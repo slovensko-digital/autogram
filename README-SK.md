@@ -83,6 +83,10 @@ Spustenie `./mvnw package` pripraví všetko do `./target`:
 
 Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, a .rpm/.deb).
 
+Na macOS `jpackage` štandardne podpisuje inštalátor. Ak chcete vytvoriť nepodpísaný macOS balík, nastavte
+`mac.sign=0` v `src/main/resources/digital/slovensko/autogram/build.properties` pred spustením
+`./mvnw package`.
+
 ```sh
 ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
 ./mvnw package
