@@ -197,11 +197,12 @@ if [[ "${platform}" == "mac-universal" ]]; then
     fi
 
     # jpackage 24 no longer supports the deprecated --target-arch option.
-    # Build each architecture separately using the host JDK.
+    # Build each architecture separately. Use --arch to explicitly set the
+    # target architecture so that both x64 and aarch64 images are produced.
     for arch in x64 aarch64; do
         destDir="${output}/${arch}"
         mkdir -p "${destDir}"
-        $jpackage "${baseArguments[@]}" "${signingArguments[@]}" --dest "${destDir}"
+        $jpackage "${baseArguments[@]}" "${signingArguments[@]}" --arch "${arch}" --dest "${destDir}"
         exitValue=$?
         rm -rf ./DTempFiles
         checkExitCode $exitValue
