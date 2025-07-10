@@ -301,4 +301,20 @@ public abstract class TestMethodSources {
                 new InMemoryDocument(fupsXdcNoNamespaceXml, "FUPS_wo_namespace.xdc.xml", MimeTypeEnum.XML)
         );
     }
+
+    public static Stream<InMemoryDocument> embeddedOrsrDocumentsProvider() throws IOException {
+        var fupsXml = cls.getResourceAsStream("FUPS.xdc.xml").readAllBytes();
+        var fupsXdcNoNamespaceXml = cls.getResourceAsStream("FUPS_wo_namespace.xdc.xml").readAllBytes();
+        var fupsSignedAsice = cls.getResourceAsStream("FUPS_signed.asice").readAllBytes();
+        var fupsXdcSignedAsice = cls.getResourceAsStream("FUPS_xdc_signed.asice").readAllBytes();
+        var fupsXdcWoNamespaceSignedAsice = cls.getResourceAsStream("FUPS_wo_namespace_signed.asice").readAllBytes();
+
+        return Stream.of(
+                new InMemoryDocument(fupsXml, "FUPS_embedded.xml", MimeTypeEnum.XML),
+                new InMemoryDocument(fupsXdcNoNamespaceXml, "FUPS_embedded_wo_namespace.xdc.xml", MimeTypeEnum.XML),
+                new InMemoryDocument(fupsSignedAsice, "FUPS_signed.asice", MimeTypeEnum.ASICE),
+                new InMemoryDocument(fupsXdcSignedAsice, "FUPS_xdc_signed.asice", MimeTypeEnum.ASICE),
+                new InMemoryDocument(fupsXdcWoNamespaceSignedAsice, "FUPS_xdc_wo_namespace_signed.asice", MimeTypeEnum.ASICE)
+        );
+    }
 }
