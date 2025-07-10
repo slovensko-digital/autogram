@@ -18,7 +18,7 @@ public record EFormAttributes(String identifier, String transformation, String s
                 autoLoadEform, fsFormId, document, propertiesCanonicalization);
     }
     private static EFormAttributes build(String identifier, String transformation, String schema, String containerXmlns, String xsdIdentifier, XsltParams xsltParams, boolean embedUsedSchemas, boolean autoLoadEform, String fsFormId, DSSDocument document, String propertiesCanonicalization) {
-        if (autoLoadEform || (fsFormId != null)) {
+        if (autoLoadEform || embedUsedSchemas || (fsFormId != null)) {
             var eFormResources = EFormResourcesBuilder.build(document, fsFormId, xsdIdentifier, xsltParams, propertiesCanonicalization);
             if (eFormResources != null) {
                 var loadedEFormAttributes = eFormResources.getEformAttributes();
