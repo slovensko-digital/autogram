@@ -73,7 +73,7 @@ Following is just overview of useful commands and
 
 ## Creating .app
 
-Using [jpackage](https://docs.oracle.com/en/java/javase/21/docs/specs/man/jpackage.html)
+Using [jpackage](https://docs.oracle.com/en/java/javase/24/docs/specs/man/jpackage.html)
 
 - `Autogram.entitlements` - entitlements default is [sanbox.plist](https://github.com/openjdk/jdk/blob/master/src/jdk.jpackage/macosx/classes/jdk/jpackage/internal/resources/sandbox.plist) and we are removing audio recording permission
 - `Autogram-post-image.sh` - this script gets run during `jpackage` execution, between when "app-image" is prepared, but before packaging to pkg

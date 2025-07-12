@@ -20,7 +20,7 @@ public class AppStarter {
         addOption("f", "force", false, "Overwrite existing file(s).").
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
         addOption(null, "parents", false, "Create all parent directories for target if needed.").
-        addOption("d", "driver", true, "PCKS driver name for signing. Supported values: eid, secure_store, monet, gemalto, keystore, custom_pkcs11 (requires valid path within pkcs11-driver-path option).").
+        addOption("d", "driver", true, "PCKS driver name for signing. Supported values: eid, cz_eid, secure_store, monet, gemalto, keystore, custom_pkcs11 (requires valid path within pkcs11-driver-path option).").
         addOption(null, "keystore", true, "Absolute path to a keystore file that can be used for signing.").
         addOption(null, "slot-id", true, "Slot ID for PKCS11 driver. If not specified, first available slot is used.").
         addOption(null, "pdf-level", true, "PDF signature level. Supported values: PAdES_BASELINE_B (default), XAdES_BASELINE_B, CAdES_BASELINE_B.").
@@ -77,8 +77,8 @@ public class AppStarter {
                 autogram --cli -s target/directory-example -t target/non-existent-dir/output-example --parents
                 autogram --cli -s target/directory-example/file-example.pdf -pdfa
                 autogram --cli -s target/directory-example/file-example.pdf -d eid
-                autogram --cli -s target/file-example.pdf -d eid --tsa-server http://tsa.belgium.be/connect
-                autogram --cli -s target/file-example.pdf -d eid --tsa-server "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg"
+                autogram --cli -s target/file-example.pdf -d eid --tsa-server http://ts.quovadisglobal.com/eu
+                autogram --cli -s target/file-example.pdf -d eid --tsa-server "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu"
                 """;
         final PrintWriter pw = new PrintWriter(System.out);
         formatter.printUsage(pw, 80, syntax);

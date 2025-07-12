@@ -26,7 +26,7 @@ The application currently supports only one style - the state IDSK design. Addit
 
 Currently, we support commonly used cards and their drivers:
 - Any PKCS#11 compatible card (by setting a path to driver)
-- Native support: Slovak ID card (eID client), I.CA SecureStore, MONET+ ProID+Q, Gemalto IDPrime 940
+- Native support: Slovak ID card (eID client), Czech ID card (eObčanka) I.CA SecureStore, MONET+ ProID+Q, Gemalto IDPrime 940
 
 Adding more cards is relatively easy as long as they use PKCS#11.
 
@@ -34,7 +34,7 @@ Adding more cards is relatively easy as long as they use PKCS#11.
 
 ### Prerequisites
 
-- JDK 21 with JavaFX (see below)
+- JDK 24 with JavaFX (see below)
 - Maven
 - Optional: Visual Studio Code as IDE or Intellij IDEA (community version is sufficient).
 
@@ -58,13 +58,13 @@ Then using `jpackage`, it creates all executable packages (.msi/.exe, .dmg/.pkg,
 #### Debian/Ubuntu
 
 ```sh
-sudo apt install openjdk-21-jdk maven binutils rpm fakeroot
+sudo apt install openjdk-24-jdk maven binutils rpm fakeroot
 ```
 
 #### Fedora
 
 ```sh
-sudo dnf install java-21-openjdk maven rpm-build
+sudo dnf install java-24-openjdk maven rpm-build
 ```
 
 #### Linux Docker compose

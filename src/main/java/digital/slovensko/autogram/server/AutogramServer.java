@@ -33,7 +33,11 @@ public class AutogramServer {
 
     public void start() {
         // Info
-        server.createContext("/info", new InfoEndpoint()).getFilters()
+        server.createContext("/info", new InfoEndpoint(autogram)).getFilters()
+                .add(new AutogramCorsFilter("GET"));
+
+        // Certificates
+        server.createContext("/certificates", new CertificatesEndpoint(autogram)).getFilters()
                 .add(new AutogramCorsFilter("GET"));
 
         // Documentation

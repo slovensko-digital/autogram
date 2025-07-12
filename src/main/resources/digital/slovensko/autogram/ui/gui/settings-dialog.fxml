@@ -316,9 +316,7 @@
                                             <Text styleClass="autogram-description" text="%settings.other.slotIndex.example.text"/>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-dropdown">
-                                        <ChoiceBox fx:id="slotIndexChoiceBox" styleClass="autogram-choicebox" />
-                                    </VBox>
+                                    <VBox styleClass="autogram-dropdown" fx:id="driverSlot"/>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
@@ -358,8 +356,15 @@
         </TabPane>
     </VBox>
     <HBox styleClass="autogram-actions">
-        <Button fx:id="saveButton" onAction="#onSaveButtonAction"
-            styleClass="autogram-button,autogram-button--secondary" text="%settings.save.btn">
-        </Button>
+        <HBox styleClass="autogram-actions">
+            <Button fx:id="saveButton" onAction="#onSaveButtonAction" text="%settings.save.btn"
+                    styleClass="autogram-button,autogram-button--primary">
+            </Button>
+        </HBox>
+        <HBox styleClass="autogram-actions">
+            <Button fx:id="resetButton" onAction="#onResetButtonAction" styleClass="autogram-button,autogram-button--secondary">
+                Resetovať nastavenia
+            </Button>
+        </HBox>
     </HBox>
 </VBox>

@@ -4,7 +4,7 @@ import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
-import digital.slovensko.autogram.errors.PasswordNotProvidedException;
+import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.SignatureValue;
@@ -29,8 +29,8 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private final PasswordManager passwordManager;
     private final SignatureTokenSettings settings;
 
-    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings) {
-        super(pkcsPath, pm, -1, settings.getSlotIndex(), null);
+    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex) {
+        super(pkcsPath, pm, -1, driverSlotIndex, null);
         this.passwordManager = pm;
         this.settings = settings;
     }
