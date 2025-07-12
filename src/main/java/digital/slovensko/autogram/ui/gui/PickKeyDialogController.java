@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 import static digital.slovensko.autogram.util.DSSUtils.buildTooltipLabel;
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
-public class PickKeyDialogController {
+public class PickKeyDialogController extends BaseController {
     private final Consumer<DSSPrivateKeyEntry> callback;
     private final List<DSSPrivateKeyEntry> keys;
     private final boolean expiredCertsEnabled;
@@ -40,6 +40,7 @@ public class PickKeyDialogController {
         this.expiredCertsEnabled = expiredCertsEnabled;
     }
 
+    @Override
     public void initialize() {
         toggleGroup = new ToggleGroup();
         for (var key : keys) {

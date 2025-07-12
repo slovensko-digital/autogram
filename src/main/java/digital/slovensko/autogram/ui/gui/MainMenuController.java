@@ -33,6 +33,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         this.userSettings = userSettings;
     }
 
+    @Override
     public void initialize() {
         dropZone.setOnDragOver(event -> {
             event.acceptTransferModes(TransferMode.ANY);
