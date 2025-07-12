@@ -8,8 +8,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.text.Text?><?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:id="mainBox"
       prefWidth="896">
     <VBox>
@@ -411,9 +410,7 @@
                                             </Text>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-dropdown">
-                                        <ChoiceBox fx:id="slotIndexChoiceBox" styleClass="autogram-choicebox" />
-                                    </VBox>
+                                    <VBox styleClass="autogram-dropdown" fx:id="driverSlot"/>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
@@ -457,9 +454,15 @@
         </TabPane>
     </VBox>
     <HBox styleClass="autogram-actions">
-        <Button fx:id="saveButton" onAction="#onSaveButtonAction"
-            styleClass="autogram-button,autogram-button--secondary">
-            Uložiť nastavenia
-        </Button>
+        <HBox styleClass="autogram-actions">
+            <Button fx:id="saveButton" onAction="#onSaveButtonAction" styleClass="autogram-button,autogram-button--primary">
+                Uložiť nastavenia
+            </Button>
+        </HBox>
+        <HBox styleClass="autogram-actions">
+            <Button fx:id="resetButton" onAction="#onResetButtonAction" styleClass="autogram-button,autogram-button--secondary">
+                Resetovať nastavenia
+            </Button>
+        </HBox>
     </HBox>
 </VBox>

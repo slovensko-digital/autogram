@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.errors;
+package digital.slovensko.autogram.core.errors;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 

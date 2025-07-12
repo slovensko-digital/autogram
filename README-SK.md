@@ -30,7 +30,8 @@ Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez
 ## Podporované karty
 
 Momentálne podporujeme na Slovensku bežne používané karty a ich ovládače:
-- občiansky preukaz (eID klient)
+- Slovenský občiansky preukaz (eID klient)
+- Český občiansky preukaz (eObčanka)
 - I.CA SecureStore
 - MONET+ ProID+Q
 - Gemalto IDPrime 940
@@ -66,7 +67,7 @@ Pri podpisovaní cez API je potrebné nastaviť v body `parameters.fsFormId: "<i
 
 ### Predpoklady
 
-- JDK 21 s JavaFX (viď nižšie)
+- JDK 24 s JavaFX (viď nižšie)
 - Maven
 - Voliteľné: Visual Studio Code ako IDE alebo Intellij IDEA (stačí komunitná verzia).
 
@@ -90,13 +91,13 @@ Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe
 #### Debian/Ubuntu
 
 ```sh
-sudo apt install openjdk-21-jdk maven binutils rpm fakeroot
+sudo apt install openjdk-24-jdk maven binutils rpm fakeroot
 ```
 
 #### Fedora
 
 ```sh
-sudo dnf install java-21-openjdk maven rpm-build
+sudo dnf install java-24-openjdk maven rpm-build
 ```
 
 #### Linux Docker compose

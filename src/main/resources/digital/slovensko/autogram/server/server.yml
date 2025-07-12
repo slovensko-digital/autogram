@@ -13,7 +13,7 @@ info:
   license:
     name: EUPL
     url: https://github.com/slovensko-digital/autogram/blob/main/LICENSE
-  version: 2.3.0
+  version: 2.5.0
 servers:
   - url: http://localhost:37200
   - url: /
@@ -346,6 +346,158 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BatchEndResponseBody"
+
+  /certificates:
+    get:
+      tags:
+        - Info
+      summary: Retrieve list of certificates available for signing
+      operationId: getCertificates
+      parameters:
+        - name: driver
+          in: query
+          description: |
+            Optional list of PKCSs driver names to load certificates from. Examples are `eid`, `gemalto`, `monet`, `ica`, `keystore`, `custom_pkcs11`.
+          required: false
+          schema:
+            type: string
+            example: eid,gemalto
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  certificates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                          example: "SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith"
+                          description: Distinguished name of the certificate.
+                        issuedBy:
+                          type: string
+                          example: "CN=SVK eID ACA2, O=Disig a.s., OID.2.5.4.97=NTRSK-12345678, L=Bratislava, C=SK"
+                          description: Distinguished name of the issuer of the certificate.
+        204:
+          description: User cancelled operation
+          noContent: true
+        403:
+          description: User cancelled the certificate selection dialog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: CERTIFICATES_READING_CONSENT_REJECTED
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Zamietnuté
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Používateľ zamietol žiadosť o prečítanie podpisových certifikátov
+                    description: Optional details.
+        404:
+          description: No certificates or driver found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
+              examples:
+                CERTIFICATES_NOT_FOUND:
+                  summary: No certificates found
+                  value:
+                    code: CERTIFICATES_NOT_FOUND
+                    message: No certificates found
+                    details: "No certificates found."
+                DRIVER_NOT_FOUND:
+                  summary: Driver not found
+                  value:
+                    code: DRIVER_NOT_FOUND
+                    message: Nenašli sa žiadne známe ovládače
+                    details: Ak používate občiansky preukaz, tak je potrebné mať nainštalováný eID klient. Inštalačné balíky nájdete na www.slovensko.sk\n\nV prípade použitia iných kariet je potrebné mať nainštalovaný obslužný ovládač od ich výrobcu.\n\nNainštalujte obslužný softvér a skúste znova.
+        500:
+          description: Request failed due to some unexpected error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_ERROR
+                      - INTERNAL_ERROR
+                    description: Code that can be used to identify the error. Possibly INTERNAL_ERROR or INITIALIZATION_FAILED (probably card not connected to the computer).
+                  message:
+                    type: string
+                    example: Unexpected exception signing document
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "java.lang.NullPointerException: null"
+                    description: Optional details.
+              examples:
+                INITIALIZATION_FAILED:
+                  summary: Initialization failed
+                  value:
+                    code: INITIALIZATION_FAILED
+                    message: Nepodarilo sa prečítať kartu
+                    details: Pravdepodobne nemáte zapojenú čítačku alebo vloženú kartu do čítačky.\n\nSkontrolujte, či máte všetko správne zapojené a skúste znova.
+                INTERNAL_ERROR:
+                  summary: Internal error
+                  value:
+                    code: INTERNAL_ERROR
+                    message: Unexpected exception signing document
+                    details: "java.lang.NullPointerException: null"
+                PIN_INCORRECT:
+                  summary: Incorrect PIN
+                  value:
+                    code: PIN_INCORRECT
+                    message: Zadali ste nesprávny bezpečnostný kód"
+                    details: Pravdepodobne ste spravili chybu pri zadávaní bezpečnostného kódu.\n\nUistite sa, že zadávate správny bezpečnostný kód a skúste znova.
+                FUNCTION_CANCELLED:
+                  summary: PIN cancelled
+                  value:
+                    code: FUNCTION_CANCELLED
+                    message: Nezadali ste bezpečnostný kód
+                    details: Pravdepodobne ste len zavreli okno na zadanie bezpečnostného kódu. Skúste znova.
+        502:
+          description: Request failed due to an error with the certificates loading process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: UNRECOGNIZED_DSS_ERROR
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Unable to sign document
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "no such algorithm: PKCS11 for provider"
+                    description: Optional details.
 components:
   schemas:
     Info:
@@ -358,6 +510,20 @@ components:
           type: string
           enum:
             - READY
+        availableDrivers:
+          type: array
+          items:
+            type: string
+            enum:
+              - eid
+              - cz_eid
+              - secure_store
+              - monet
+              - gemalto
+              - fake
+              - keystore
+              - custom_pkcs11
+          description: List of available (detected) card drivers that can be used for signing
 
     SignRequestBody:
       type: object

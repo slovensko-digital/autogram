@@ -8,6 +8,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -19,6 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
@@ -63,21 +65,23 @@ public class SettingsDialogController extends BaseController {
     @FXML
     private ChoiceBox<String> pdfDpiChoiceBox;
     @FXML
-    private ChoiceBox<String> slotIndexChoiceBox;
-    @FXML
     private TextField customKeystorePathTextField;
     @FXML
     private TextField customPKCS11DriverPathTextField;
     @FXML
     private Button saveButton;
     @FXML
+    private Button resetButton;
+    @FXML
     private Button closeButton;
+    @FXML
+    private VBox driverSlot;
 
     private final UserSettings userSettings;
     private final List<String> preDefinedTsaServers = List.of(
-            "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg",
-            "http://ts.quovadisglobal.com/eu",
-            "http://tsa.sep.bg"
+            "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu",
+            "http://tsa.baltstamp.lt",
+            "http://ts.quovadisglobal.com/eu"
     );
 
     public SettingsDialogController(UserSettings userSettings) {
@@ -99,11 +103,10 @@ public class SettingsDialogController extends BaseController {
         initializeExpiredCertsEnabledCheckBox();
         initializeLocalServerEnabledCheckBox();
         initializeTrustedCountriesList();
-        initializeSlotIndexSettings();
-        initializeLanguageSettings();
         initializePdfDpiSettings();
         initializeCustomKeystoreSettings();
         initializeCustomPKCS11DriverPathSettings();
+        initializeDriverSlot();
     }
 
     private void initializeSignatureLevelChoiceBox() {
@@ -288,18 +291,7 @@ public class SettingsDialogController extends BaseController {
         return new HBox(countryBox, new VBox(checkBox));
     }
 
-    private void initializeSlotIndexSettings() {
-        final var DEFAULT_LABEL = "Predvolený slot";
-        slotIndexChoiceBox.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
-        slotIndexChoiceBox.setValue(userSettings.getSlotIndex() == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getSlotIndex()));
-        slotIndexChoiceBox.getSelectionModel().selectedItemProperty()
-                .addListener((observable, oldValue, newValue) -> {
-                    if (newValue.equals(DEFAULT_LABEL))
-                        newValue = "-1";
 
-                    userSettings.setSlotIndex(Integer.parseInt(newValue));
-                });
-    }
 
     private void initializeLanguageSettings() {
         var items = observableArrayList(SupportedLanguage.values());
@@ -358,9 +350,58 @@ public class SettingsDialogController extends BaseController {
         });
     }
 
+    private void initializeDriverSlot(){
+        var driverDetector = new DefaultDriverDetector(userSettings);
+        var drivers = driverDetector.getAvailableDrivers();
+        if (drivers.isEmpty()) {
+            Text info = new Text("Nebolo detekované žiadne úložisko certifikátov.");
+            info.getStyleClass().add("autogram-description");
+            driverSlot.getChildren().add(info);
+            driverSlot.getStyleClass().add("autogram-description");
+        } else {
+            for (TokenDriver tokenDriver : drivers) {
+                Text driverName = new Text(tokenDriver.getName());
+                driverName.getStyleClass().add("autogram-label");
+                driverSlot.getChildren().add(driverName);
+
+                final var DEFAULT_LABEL = "Predvolený slot";
+                ChoiceBox<String> slotIndex = new ChoiceBox<>();
+                slotIndex.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
+                slotIndex.setValue(userSettings.getDriverSlotIndex(tokenDriver.getShortname()) == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getDriverSlotIndex(tokenDriver.getShortname())));
+                slotIndex.getSelectionModel().selectedItemProperty()
+                        .addListener((observable, oldValue, newValue) -> {
+                            if (newValue.equals(DEFAULT_LABEL))
+                                newValue = "-1";
+
+                            userSettings.setDriverSlotIndex(tokenDriver.getShortname(), Integer.parseInt(newValue));
+                        });
+                driverSlot.getChildren().add(slotIndex);
+            }
+        }
+    }
+
     public void onSaveButtonAction() {
+
         userSettings.save();
+
         var stage = (Stage) saveButton.getScene().getWindow();
         stage.close();
+    }
+
+    public void onResetButtonAction() {
+
+        var controller = new SettingsResetDialogController();
+        controller.setUserSettings(userSettings);
+        controller.setResetButton(resetButton);
+
+        var root = GUIUtils.loadFXML(controller, "settings-reset-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle("Obnovenie pôvodných nastavení");
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
     }
 }

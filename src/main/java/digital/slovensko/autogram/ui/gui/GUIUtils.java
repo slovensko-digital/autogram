@@ -65,8 +65,14 @@ public class GUIUtils {
     public static void startIconified(Stage stage) {
         if (OperatingSystem.current() == OperatingSystem.LINUX) {
             stage.setIconified(true);
+            stage.setOnShown((e) -> Platform.runLater(() -> {
+                // hack to force relayout because Ubuntu shows a blank scene for an unknown reason
+                // see https://github.com/openjdk/jfx/pull/1733
+                stage.setWidth(stage.getWidth());
+            }));
+
         } else {
-            // WINDOWS & MAC need to set iconified after showing primary stage, otherwise it starts blank
+            // WINDOWS & MAC need to set iconified after showing the primary stage, otherwise it starts blank
             stage.setOpacity(0); // prevents startup blink
             stage.setOnShown((e) -> Platform.runLater(() -> {
                 stage.setIconified(true);

@@ -17,15 +17,13 @@
 		<xsl:apply-templates select="dss:ValidationPolicy"/>
 		<xsl:apply-templates select="dss:Signature"/>
 		<xsl:apply-templates select="dss:Timestamp"/>
-	    
+		<xsl:apply-templates select="dss:EvidenceRecord"/>
 	    <xsl:call-template name="documentInformation"/>
     </xsl:template>
 
     <xsl:template match="dss:DocumentName"/>
-    <xsl:template match="dss:SignatureFormat"/>
     <xsl:template match="dss:SignaturesCount"/>
     <xsl:template match="dss:ValidSignaturesCount"/>
-    <xsl:template match="dss:ValidationTime"/>
     <xsl:template match="dss:ContainerType"/>
 	<xsl:template match="dss:PDFAInfo"/>
 
@@ -46,10 +44,19 @@
     	</div>
     </xsl:template>
 
-    <xsl:template match="dss:Signature|dss:Timestamp">
+    <xsl:template match="dss:Signature|dss:Timestamp|dss:EvidenceRecord">
 		<xsl:param name="cardStyle" select="'primary'" />
+		<xsl:param name="parentId" />
+
         <xsl:variable name="indicationText" select="dss:Indication/text()"/>
-        <xsl:variable name="idToken" select="@Id" />
+
+        <xsl:variable name="idToken">
+			<xsl:choose>
+				<xsl:when test="$parentId"><xsl:value-of select="$parentId" />-<xsl:value-of select="@Id" /></xsl:when>
+				<xsl:otherwise><xsl:value-of select="@Id" /></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+
         <xsl:variable name="nodeName" select="name()" />
         <xsl:variable name="indicationCssClass">
         	<xsl:choose>
@@ -66,19 +73,26 @@
 				<xsl:otherwise>dark</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
-        
+
         <div>
     		<xsl:attribute name="class">card mb-3</xsl:attribute>
     		<div>
     			<xsl:attribute name="class">card-header bg-<xsl:value-of select="$cardStyle" /></xsl:attribute>
 	    		<xsl:attribute name="data-target">#collapseSig<xsl:value-of select="$idToken" /></xsl:attribute>
 		       	<xsl:attribute name="data-toggle">collapse</xsl:attribute>
-		       	
+
 		       	<xsl:if test="@CounterSignature = 'true'">
 					<span>
 			        	<xsl:attribute name="class">badge badge-info pull-right</xsl:attribute>
 						Counter-signature
 		        	</span>
+				</xsl:if>
+
+				<xsl:if test="@Embedded = 'true'">
+					<span>
+						<xsl:attribute name="class">badge badge-info pull-right</xsl:attribute>
+						Embedded
+					</span>
 				</xsl:if>
 
 				<span>
@@ -88,11 +102,14 @@
 					<xsl:if test="$nodeName = 'Timestamp'">
 						Timestamp
 					</xsl:if>
-					<xsl:value-of select="$idToken" />
+					<xsl:if test="$nodeName = 'EvidenceRecord'">
+						Evidence Record
+					</xsl:if>
+					<xsl:value-of select="@Id" />
 				</span>
 				<i>
 					<xsl:attribute name="class">id-copy fa fa-clipboard btn btn-outline-light cursor-pointer text-<xsl:value-of select="$copyIdBtnColor"/> border-0 p-2 ml-1 mr-1</xsl:attribute>
-					<xsl:attribute name="data-id"><xsl:value-of select="$idToken"/></xsl:attribute>
+					<xsl:attribute name="data-id"><xsl:value-of select="@Id"/></xsl:attribute>
 					<xsl:attribute name="data-toggle">tooltip</xsl:attribute>
 					<xsl:attribute name="data-placement">right</xsl:attribute>
 					<xsl:attribute name="data-success-text">Id copied successfully!</xsl:attribute>
@@ -102,11 +119,11 @@
     		<div>
     			<xsl:attribute name="class">card-body collapse show</xsl:attribute>
 				<xsl:attribute name="id">collapseSig<xsl:value-of select="$idToken" /></xsl:attribute>
-				
+
 				<xsl:if test="dss:Filename">
 					<dl>
 			    		<xsl:attribute name="class">row mb-0</xsl:attribute>
-			    		
+
 						<xsl:if test="$nodeName = 'Signature'">
 			            	<dt>
 			            		<xsl:attribute name="class">col-sm-3</xsl:attribute>
@@ -119,14 +136,20 @@
 			            		Timestamp filename:
 			            	</dt>
 						</xsl:if>
+						<xsl:if test="$nodeName = 'EvidenceRecord'">
+							<dt>
+								<xsl:attribute name="class">col-sm-3</xsl:attribute>
+								Evidence record filename:
+							</dt>
+						</xsl:if>
 			            <dd>
 			            	<xsl:attribute name="class">col-sm-9</xsl:attribute>
-			            
+
 							<xsl:value-of select="dss:Filename" />
 			        	</dd>
 			        </dl>
 				</xsl:if>
-				
+
 				<xsl:if test="dss:SignatureLevel | dss:TimestampLevel">
 					<dl>
 			    		<xsl:attribute name="class">row mb-0</xsl:attribute>
@@ -136,7 +159,7 @@
 			            </dt>
 			            <dd>
 			            	<xsl:attribute name="class">col-sm-9</xsl:attribute>
-			            
+
 							<xsl:if test="dss:SignatureLevel">
 								<xsl:value-of select="dss:SignatureLevel" />
 							</xsl:if>
@@ -147,7 +170,7 @@
 				    			<xsl:attribute name="class">fa fa-info-circle text-info ml-2</xsl:attribute>
 								<xsl:attribute name="data-toggle">tooltip</xsl:attribute>
 								<xsl:attribute name="data-placement">right</xsl:attribute>
-								
+
 								<xsl:if test="dss:SignatureLevel">
 									<xsl:attribute name="title"><xsl:value-of select="dss:SignatureLevel/@description" /></xsl:attribute>
 								</xsl:if>
@@ -155,7 +178,7 @@
 									<xsl:attribute name="title"><xsl:value-of select="dss:TimestampLevel/@description" /></xsl:attribute>
 								</xsl:if>
 				    		</i>
-				    		
+
 			        	</dd>
 			        </dl>
 				</xsl:if>
@@ -171,12 +194,12 @@
 			            </dt>
 			            <dd>
 			            	<xsl:attribute name="class">col-sm-9</xsl:attribute>
-			            
+
 			            	<xsl:value-of select="@SignatureFormat"/>
 			            </dd>
 			        </dl>
 		        </xsl:if>
-			
+
 				<dl>
 					<xsl:attribute name="class">row mb-0</xsl:attribute>
 					<dt>
@@ -188,16 +211,16 @@
 
 						<xsl:variable name="dssIndication" select="dss:Indication" />
 						<xsl:variable name="semanticText" select="//dss:Semantic[contains(@Key,$dssIndication)]"/>
-			
+
 						<div>
 			           		<xsl:attribute name="class">badge mr-2 badge-<xsl:value-of select="$indicationCssClass" /></xsl:attribute>
-			           		
+
 			           		<xsl:if test="string-length($semanticText) &gt; 0">
 								<xsl:attribute name="data-toggle">tooltip</xsl:attribute>
 								<xsl:attribute name="data-placement">right</xsl:attribute>
 								<xsl:attribute name="title"><xsl:value-of select="$semanticText" /></xsl:attribute>
 			     			</xsl:if>
-			           		
+
 							<xsl:value-of select="$indicationText" />
 						</div>
 
@@ -226,32 +249,33 @@
 
 						</i>
 					</dd>
-				</dl>   
-		        
+				</dl>
+
 		        <xsl:apply-templates select="dss:SubIndication">
 		            <xsl:with-param name="indicationClass" select="$indicationCssClass"/>
 		        </xsl:apply-templates>
 
 				<xsl:apply-templates select="dss:AdESValidationDetails" />
 
-		        <dl>
-	        		<xsl:attribute name="class">row mb-0</xsl:attribute>
-		            <dt>
-			        	<xsl:attribute name="class">col-sm-3</xsl:attribute>
-			        	Certificate Chain:
-			        </dt>
-		            <xsl:choose>
-			            <xsl:when test="dss:CertificateChain/dss:Certificate">
-			        		<dd>
-		            			<xsl:attribute name="class">col-sm-9</xsl:attribute>
-		            			
-		            			<ul>
-		            				<xsl:attribute name="class">list-unstyled mb-0</xsl:attribute>
-		            			
-						            <xsl:for-each select="dss:CertificateChain/dss:Certificate">
-						            	<xsl:variable name="index" select="position()"/>
-					            			
-				        				<li>
+			<xsl:if test="dss:CertificateChain">
+				<dl>
+					<xsl:attribute name="class">row mb-0</xsl:attribute>
+					<dt>
+						<xsl:attribute name="class">col-sm-3</xsl:attribute>
+						Certificate Chain:
+					</dt>
+					<xsl:choose>
+						<xsl:when test="dss:CertificateChain/dss:Certificate">
+							<dd>
+								<xsl:attribute name="class">col-sm-9</xsl:attribute>
+
+								<ul>
+									<xsl:attribute name="class">list-unstyled mb-0</xsl:attribute>
+
+									<xsl:for-each select="dss:CertificateChain/dss:Certificate">
+										<xsl:variable name="index" select="position()"/>
+
+										<li>
 											<xsl:if test="not(@trusted = 'true' or following-sibling::dss:Certificate[@trusted = 'true'])">
 												<xsl:attribute name="class">text-black-50</xsl:attribute>
 											</xsl:if>
@@ -272,31 +296,43 @@
 													</xsl:otherwise>
 												</xsl:choose>
 											</span>
-											<xsl:if test="@trusted = 'true' and not(dss:TrustAnchors)">
-												<i>
-													<xsl:attribute name="class">fa fa-certificate ml-2</xsl:attribute>
-													<xsl:attribute name="data-toggle">tooltip</xsl:attribute>
-													<xsl:attribute name="data-placement">right</xsl:attribute>
-													<xsl:attribute name="title">Trust anchor</xsl:attribute>
-												</i>
+											<xsl:if test="@trusted = 'true'">
+												<xsl:if test="not(dss:TrustAnchors)">
+													<i>
+														<xsl:attribute name="class">fa fa-certificate ml-2</xsl:attribute>
+														<xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+														<xsl:attribute name="data-placement">right</xsl:attribute>
+														<xsl:attribute name="title">Trust anchor</xsl:attribute>
+													</i>
+												</xsl:if>
+												<xsl:apply-templates select="dss:TrustAnchors"/>
+												<xsl:if test="@sunsetDate">
+													<i>
+														<xsl:attribute name="class">fa fa-clock-o mr-2</xsl:attribute>
+														<xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+														<xsl:attribute name="data-placement">right</xsl:attribute>
+														<xsl:attribute name="title">Sunset at <xsl:call-template name="formatdate"><xsl:with-param name="DateTimeStr" select="@sunsetDate"/></xsl:call-template></xsl:attribute>
+													</i>
+												</xsl:if>
 											</xsl:if>
-											<xsl:apply-templates select="dss:TrustAnchors"/>
 
-					        			</li>
-						        	</xsl:for-each>
-					        	</ul>
-		        			</dd>
-			        	</xsl:when>
-			        	<xsl:otherwise>
-			        		<dd>
+
+										</li>
+									</xsl:for-each>
+								</ul>
+							</dd>
+						</xsl:when>
+						<xsl:otherwise>
+							<dd>
 								<xsl:attribute name="class">col-sm-9</xsl:attribute>
 
 								/
 							</dd>
-			        	</xsl:otherwise>
-		        	</xsl:choose>
-	        	</dl>
-		        
+						</xsl:otherwise>
+					</xsl:choose>
+				</dl>
+			</xsl:if>
+
 				<xsl:if test="dss:SigningTime">
 			        <dl>
 			    		<xsl:attribute name="class">row mb-0</xsl:attribute>
@@ -313,24 +349,7 @@
 			            </dd>
 			        </dl>
 		        </xsl:if>
-		        
-				<xsl:if test="dss:ProductionTime">
-			        <dl>
-			    		<xsl:attribute name="class">row mb-0</xsl:attribute>
-			            <dt>
-			        		<xsl:attribute name="class">col-sm-3</xsl:attribute>
-			        		Production time:
-			        	</dt>
-			            <dd>
-			            	<xsl:attribute name="class">col-sm-9</xsl:attribute>
-			            	
-							<xsl:call-template name="formatdate">
-								<xsl:with-param name="DateTimeStr" select="dss:ProductionTime"/>
-							</xsl:call-template>
-			            </dd>
-			        </dl>
-		        </xsl:if>
-		        
+
 				<xsl:if test="dss:BestSignatureTime">
 			        <dl>
 			    		<xsl:attribute name="class">row mb-0</xsl:attribute>
@@ -350,11 +369,84 @@
 								<xsl:attribute name="data-toggle">tooltip</xsl:attribute>
 								<xsl:attribute name="data-placement">right</xsl:attribute>
 								<xsl:attribute name="title">Lowest time at which there exists a proof of existence for the signature</xsl:attribute>
-				    		</i>		
+				    		</i>
 			            </dd>
 			        </dl>
 		        </xsl:if>
-		        
+
+				<xsl:if test="dss:ProductionTime">
+			        <dl>
+			    		<xsl:attribute name="class">row mb-0</xsl:attribute>
+			            <dt>
+			        		<xsl:attribute name="class">col-sm-3</xsl:attribute>
+			        		Production time:
+			        	</dt>
+			            <dd>
+			            	<xsl:attribute name="class">col-sm-9</xsl:attribute>
+
+							<xsl:call-template name="formatdate">
+								<xsl:with-param name="DateTimeStr" select="dss:ProductionTime"/>
+							</xsl:call-template>
+						</dd>
+					</dl>
+				</xsl:if>
+
+				<xsl:if test="dss:POETime">
+					<dl>
+						<xsl:attribute name="class">row mb-0</xsl:attribute>
+						<dt>
+							<xsl:attribute name="class">col-sm-3</xsl:attribute>
+							POE time:
+						</dt>
+						<dd>
+							<xsl:attribute name="class">col-sm-9</xsl:attribute>
+
+							<xsl:call-template name="formatdate">
+								<xsl:with-param name="DateTimeStr" select="dss:POETime"/>
+							</xsl:call-template>
+						</dd>
+					</dl>
+				</xsl:if>
+
+				<!-- Ignore embedded timestamps -->
+				<xsl:if test="not($nodeName = 'Timestamp') or (count(ancestor::*/dss:Signature) = 0 and count(ancestor::*/dss:EvidenceRecord) = 0)">
+					<dl>
+						<xsl:attribute name="class">row mb-0</xsl:attribute>
+						<dt>
+							<xsl:attribute name="class">col-sm-3</xsl:attribute>
+							Maximum validity time:
+						</dt>
+						<dd>
+							<xsl:attribute name="class">col-sm-9</xsl:attribute>
+
+							<xsl:choose>
+								<xsl:when test="dss:ExtensionPeriodMax">
+									<xsl:call-template name="formatdate">
+										<xsl:with-param name="DateTimeStr" select="dss:ExtensionPeriodMax"/>
+									</xsl:call-template>
+
+									<i>
+										<xsl:attribute name="class">fa fa-info-circle text-info ml-2</xsl:attribute>
+										<xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+										<xsl:attribute name="data-placement">right</xsl:attribute>
+										<xsl:attribute name="title">Indicates the maximum validity period before expiration, subject to external factors</xsl:attribute>
+									</i>
+								</xsl:when>
+								<xsl:otherwise>
+									N/A
+
+									<i>
+										<xsl:attribute name="class">fa fa-info-circle text-info ml-2</xsl:attribute>
+										<xsl:attribute name="data-toggle">tooltip</xsl:attribute>
+										<xsl:attribute name="data-placement">right</xsl:attribute>
+										<xsl:attribute name="title">Not applicable</xsl:attribute>
+									</i>
+								</xsl:otherwise>
+							</xsl:choose>
+						</dd>
+					</dl>
+				</xsl:if>
+
 				<xsl:if test="$nodeName = 'Signature'">
 			        <dl>
 			    		<xsl:attribute name="class">row mb-0</xsl:attribute>
@@ -364,7 +456,7 @@
 			        	</dt>
 			            <dd>
 			            	<xsl:attribute name="class">col-sm-9</xsl:attribute>
-			            	
+
 			            	<xsl:value-of select="count(preceding-sibling::dss:Signature) + 1"/> out of <xsl:value-of select="count(ancestor::*/dss:Signature)"/>
 			            </dd>
 			        </dl>
@@ -372,22 +464,46 @@
 
 				<xsl:apply-templates select="dss:SignatureScope" />
 				<xsl:apply-templates select="dss:TimestampScope" />
+				<xsl:apply-templates select="dss:EvidenceRecordScope" />
 
 				<xsl:if test="dss:Timestamps">
 					<div>
 						<xsl:attribute name="class">card mt-3</xsl:attribute>
 						<div>
-							<xsl:attribute name="class">card-header bg-primary collapsed</xsl:attribute>
-							<xsl:attribute name="data-target">#collapseSigDetails<xsl:value-of select="$idToken" /></xsl:attribute>
+							<xsl:attribute name="class">card-header bg-primary</xsl:attribute>
+							<xsl:attribute name="data-target">#collapseSigTimestamps<xsl:value-of select="$idToken" /></xsl:attribute>
 							<xsl:attribute name="data-toggle">collapse</xsl:attribute>
-							<xsl:attribute name="aria-expanded">false</xsl:attribute>
+							<xsl:attribute name="aria-expanded">true</xsl:attribute>
 
 							Timestamps <span class="badge badge-light"><xsl:value-of select="count(dss:Timestamps/dss:Timestamp)" /></span>
 						</div>
 						<div>
-							<xsl:attribute name="class">card-body pb-1</xsl:attribute>
-							<xsl:attribute name="id">collapseSigDetails<xsl:value-of select="$idToken" /></xsl:attribute>
-							<xsl:apply-templates select="dss:Timestamps" />
+							<xsl:attribute name="class">card-body collapse show pb-1</xsl:attribute>
+							<xsl:attribute name="id">collapseSigTimestamps<xsl:value-of select="$idToken" /></xsl:attribute>
+							<xsl:apply-templates select="dss:Timestamps">
+								<xsl:with-param name="parentId" select="$idToken"/>
+							</xsl:apply-templates>
+						</div>
+					</div>
+				</xsl:if>
+
+				<xsl:if test="dss:EvidenceRecords">
+					<div>
+						<xsl:attribute name="class">card mt-3</xsl:attribute>
+						<div>
+							<xsl:attribute name="class">card-header bg-primary</xsl:attribute>
+							<xsl:attribute name="data-target">#collapseSigEvidenceRecords<xsl:value-of select="$idToken" /></xsl:attribute>
+							<xsl:attribute name="data-toggle">collapse</xsl:attribute>
+							<xsl:attribute name="aria-expanded">true</xsl:attribute>
+
+							Evidence records <span class="badge badge-light"><xsl:value-of select="count(dss:EvidenceRecords/dss:EvidenceRecord)" /></span>
+						</div>
+						<div>
+							<xsl:attribute name="class">card-body collapse show pb-1</xsl:attribute>
+							<xsl:attribute name="id">collapseSigEvidenceRecords<xsl:value-of select="$idToken" /></xsl:attribute>
+							<xsl:apply-templates select="dss:EvidenceRecords">
+								<xsl:with-param name="parentId" select="$idToken"/>
+							</xsl:apply-templates>
 						</div>
 					</div>
 				</xsl:if>
@@ -396,11 +512,12 @@
     	</div>
     </xsl:template>
 
-	<xsl:template match="dss:SignatureScope|dss:TimestampScope">
+	<xsl:template match="dss:SignatureScope|dss:TimestampScope|dss:EvidenceRecordScope">
 		<xsl:variable name="header">
 			<xsl:choose>
 				<xsl:when test="name() = 'SignatureScope'">Signature scope</xsl:when>
 				<xsl:when test="name() = 'TimestampScope'">Timestamp scope</xsl:when>
+				<xsl:when test="name() = 'EvidenceRecordScope'">Evidence Record scope</xsl:when>
 			</xsl:choose>
 		</xsl:variable>
 		<dl>
@@ -513,19 +630,31 @@
 	</xsl:template>
 
 	<xsl:template match="dss:Timestamps">
+		<xsl:param name="parentId" />
 		<div>
 			<xsl:apply-templates select="dss:Timestamp">
 				<xsl:with-param name="cardStyle" select="'light'"/>
+				<xsl:with-param name="parentId" select="$parentId"/>
+			</xsl:apply-templates>
+		</div>
+	</xsl:template>
+
+	<xsl:template match="dss:EvidenceRecords">
+		<xsl:param name="parentId" />
+		<div>
+			<xsl:apply-templates select="dss:EvidenceRecord">
+				<xsl:with-param name="cardStyle" select="'light'"/>
+				<xsl:with-param name="parentId" select="$parentId"/>
 			</xsl:apply-templates>
 		</div>
 	</xsl:template>
 
 	<xsl:template match="dss:SubIndication">
 		<xsl:param name="indicationClass" />
-		
+
 		<xsl:variable name="subIndicationText" select="." />
 		<xsl:variable name="semanticText" select="//dss:Semantic[contains(@Key,$subIndicationText)]"/>
-				
+
 		<dl>
     		<xsl:attribute name="class">row mb-0</xsl:attribute>
 			<dt>
@@ -542,7 +671,7 @@
 						<xsl:attribute name="data-placement">right</xsl:attribute>
 						<xsl:attribute name="title"><xsl:value-of select="$semanticText" /></xsl:attribute>
 	     			</xsl:if>
-	     			
+
 					<xsl:value-of select="$subIndicationText" />
 				</div>
 			</dd>
@@ -561,7 +690,7 @@
     		<div>
     			<xsl:attribute name="class">card-body collapse show</xsl:attribute>
 	        	<xsl:attribute name="id">collapseInfo</xsl:attribute>
-	        	
+
 				<xsl:if test="dss:ContainerType">
 			        <dl>
 			    		<xsl:attribute name="class">row mb-0</xsl:attribute>
@@ -571,7 +700,7 @@
 			        	</dt>
 			            <dd>
 							<xsl:attribute name="class">col-sm-9</xsl:attribute>
-							
+
 							<xsl:value-of select="dss:ContainerType"/>
 						</dd>
 			        </dl>
@@ -617,7 +746,7 @@
 						</dd>
 					</dl>
 				</xsl:if>
-				
+
 	        	<dl>
 		    		<xsl:attribute name="class">row mb-0</xsl:attribute>
 		            <dt>
@@ -644,11 +773,11 @@
 			        </dt>
 		            <dd>
 						<xsl:attribute name="class">col-sm-9</xsl:attribute>
-						
+
 						<xsl:value-of select="dss:DocumentName"/>
 					</dd>
 		        </dl>
-		        
+
     		</div>
     	</div>
     </xsl:template>

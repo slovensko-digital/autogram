@@ -1,10 +1,10 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="ALTERNATIVE_JRE_PATH" value="$PROJECT_DIR$/target/jdkCache/LIBERICA_jdk21.0.7+9_linux_amd64-full" />
+    <option name="ALTERNATIVE_JRE_PATH" value="$PROJECT_DIR$/target/jdkCache/LIBERICA_jdk24.0.1+11_linux_amd64-full" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="digital.slovensko.autogram.Main" />
     <module name="autogram" />
-    <option name="VM_PARAMETERS" value="--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED" />
+    <option name="VM_PARAMETERS" value="--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --enable-native-access=javafx.graphics" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="digital.slovensko.autogram.ui.*" />
