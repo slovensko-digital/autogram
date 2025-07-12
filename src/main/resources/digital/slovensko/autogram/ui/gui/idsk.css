@@ -493,6 +493,7 @@
   -fx-background-color: -autogram-secondary-background-colour;
   -fx-padding: 1em 2em;
   -fx-spacing: 1em;
+  -fx-alignment: center-left;
 }
 
 .autogram-footer .autogram-link {
