@@ -362,8 +362,8 @@
             </Button>
         </HBox>
         <HBox styleClass="autogram-actions">
-            <Button fx:id="resetButton" onAction="#onResetButtonAction" styleClass="autogram-button,autogram-button--secondary">
-                Resetovať nastavenia
+            <Button fx:id="resetButton" onAction="#onResetButtonAction" text="%settings.reset.btn"
+                    styleClass="autogram-button,autogram-button--secondary">
             </Button>
         </HBox>
     </HBox>
