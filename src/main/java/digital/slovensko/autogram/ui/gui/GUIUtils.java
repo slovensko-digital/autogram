@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -16,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ResourceBundle;
 
 public class GUIUtils {
 
@@ -27,8 +27,7 @@ public class GUIUtils {
             var loader = new FXMLLoader();
             loader.setLocation(controller.getClass().getResource(fxml));
             loader.setController(controller);
-            var language = UserSettings.load().getLanguageLocale();
-            loader.setResources(ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n", language));
+            loader.setResources(SupportedLanguage.loadResources(UserSettings.load()));
             return loader.load();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -109,7 +108,7 @@ public class GUIUtils {
         controller.setMainButtonText(buttonI18nKey);
 
         var stage = new Stage();
-        stage.setTitle(e.getHeading());
+        stage.setTitle(e.getHeading(controller.getResources()));
         stage.setScene(new Scene(root));
 
         stage.sizeToScene();
