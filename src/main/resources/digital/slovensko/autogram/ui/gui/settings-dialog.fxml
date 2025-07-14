@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:id="mainBox"
-      prefWidth="896">
+      prefWidth="896" styleClass="autogram-dialog">
     <VBox>
         <TabPane maxHeight="640" prefWidth="896" xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml" styleClass="autogram-settings-tab-pane">

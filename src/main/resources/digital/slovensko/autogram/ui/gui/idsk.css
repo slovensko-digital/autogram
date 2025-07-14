@@ -80,6 +80,54 @@
   -fx-border-width: 3px !important;
 }
 
+/* macOS-style dialogs */
+.autogram-dialog {
+  -fx-background-color: -autogram-background-colour;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 2);
+}
+
+.autogram-dialog-content {
+  -fx-background-color: -autogram-background-colour;
+  -fx-background-radius: 8px;
+  -fx-padding: 20px;
+}
+
+/* Improved button spacing for dialogs */
+.autogram-dialog .button-bar {
+  -fx-spacing: 10px;
+  -fx-padding: 20px 0 0 0;
+  -fx-alignment: center-right;
+}
+
+/* macOS-style tab pane */
+.autogram-settings-tab-pane {
+  -fx-background-color: -autogram-background-colour;
+}
+
+.autogram-settings-tab-pane .tab-header-area {
+  -fx-padding: 0;
+}
+
+.autogram-settings-tab-pane .tab {
+  -fx-background-color: derive(-autogram-background-colour, -5%);
+  -fx-background-radius: 8px 8px 0 0;
+  -fx-border-color: -autogram-border-colour;
+  -fx-border-width: 1px 1px 0 1px;
+  -fx-padding: 8px 16px;
+}
+
+.autogram-settings-tab-pane .tab:selected {
+  -fx-background-color: -autogram-background-colour;
+  -fx-border-color: -autogram-border-colour;
+}
+
+.autogram-settings-tab-pane .tab-content-area {
+  -fx-background-color: -autogram-background-colour;
+  -fx-border-color: -autogram-border-colour;
+  -fx-border-width: 1px;
+  -fx-border-radius: 0 0 8px 8px;
+}
+
 #mainBox {
   -fx-border-width: 40px 0 0 0, 3px 0 0 0;
   -fx-border-color: #003183,

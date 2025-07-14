@@ -10,9 +10,9 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.geometry.Insets?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" prefWidth="600" minWidth="450">
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" prefWidth="600" minWidth="450" styleClass="autogram-dialog">
     <center>
-        <VBox fx:id="mainBox">
+        <VBox fx:id="mainBox" styleClass="autogram-dialog-content">
             <VBox>
                 <TextFlow styleClass="autogram-heading-m">
                     <Text styleClass="autogram-heading-m" text="O projekte "/>
