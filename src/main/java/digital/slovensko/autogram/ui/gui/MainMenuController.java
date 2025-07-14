@@ -9,6 +9,7 @@ import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -150,6 +151,7 @@ public class MainMenuController implements SuppressedFocusController {
         autogram.onAboutInfo();
     }
 
+    @FXML
     public void onSettingButtonAction() {
         var controller = new SettingsDialogController(userSettings);
         var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
@@ -160,6 +162,11 @@ public class MainMenuController implements SuppressedFocusController {
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.show();
+    }
+
+    @FXML
+    public void onQuitButtonAction() {
+        Platform.exit();
     }
 
     @Override

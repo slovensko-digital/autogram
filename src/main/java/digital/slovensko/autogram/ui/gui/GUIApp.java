@@ -91,7 +91,9 @@ public class GUIApp extends Application {
             GUIUtils.suppressDefaultFocus(windowStage, controller);
             windowStage.setTitle(titleString);
             windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml"))); 
-            windowStage.setResizable(false); 
+            windowStage.setResizable(true);
+            windowStage.setMinWidth(600);
+            windowStage.setMinHeight(400);
             windowStage.show();
 
         } catch (Exception e) {

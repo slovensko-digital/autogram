@@ -38,6 +38,48 @@
   -autogram-warning-color: #ffdf0f;
 }
 
+/* macOS-specific improvements */
+.root {
+  -fx-background-color: -autogram-background-colour;
+}
+
+/* Improved focus ring for macOS */
+.button:focused,
+.text-field:focused,
+.choice-box:focused {
+  -fx-effect: dropshadow(gaussian, derive(-autogram-focus-colour, 50%), 0, 0, 0, 2);
+  -fx-background-insets: -2;
+}
+
+/* macOS-style window controls spacing */
+.title-bar {
+  -fx-padding: 0 0 0 80;
+}
+
+/* Enhanced drag and drop zone */
+.autogram-dropzone {
+  -fx-border-color: -autogram-border-colour;
+  -fx-border-width: 2px;
+  -fx-border-style: dashed;
+  -fx-border-radius: 8px;
+  -fx-background-color: derive(-autogram-background-colour, 5%);
+  -fx-padding: 2em;
+  -fx-spacing: 1em;
+  -fx-alignment: center;
+  -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 1);
+}
+
+.autogram-dropzone:hover {
+  -fx-border-color: derive(-autogram-border-colour, -20%);
+  -fx-background-color: derive(-autogram-background-colour, 10%);
+}
+
+.autogram-dropzone--entered {
+  -fx-border-color: -autogram-link-colour !important;
+  -fx-background-color: derive(-autogram-link-colour, 90%) !important;
+  -fx-border-width: 3px !important;
+}
+
 #mainBox {
   -fx-border-width: 40px 0 0 0, 3px 0 0 0;
   -fx-border-color: #003183,

@@ -1,0 +1,63 @@
+name: macOS Package on Improvements Branch
+
+on:
+  push:
+    branches: [macOS-improvements]
+  pull_request:
+    branches: [macOS-improvements]
+
+jobs:
+  macos-package:
+    environment: packaging
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "24.0.1+11"
+          distribution: "liberica"
+          java-package: "jdk+fx"
+
+      - name: Cache local Maven repository and JDK cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            target/jdkCache
+          key: macos-improvements-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            macos-improvements-maven-
+
+      - name: Disable macOS signing
+        shell: bash
+        run: |
+          sed -i.bak 's/^mac.sign=.*/mac.sign=0/' src/main/resources/digital/slovensko/autogram/build.properties
+
+      - name: Package with Maven
+        run: ./mvnw -B -C -V package -P system-jdk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Autogram-macOS-Improvements-${{ github.sha }}
+          path: |
+            target/*.pkg
+            target/*.dmg
+          retention-days: 30
+
+      - name: Comment PR with download link
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🍎 macOS build completed! Download the artifact from the [Actions tab](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) to test the improvements.'
+            })
