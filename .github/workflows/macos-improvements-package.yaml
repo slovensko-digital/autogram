@@ -20,16 +20,33 @@ jobs:
         id: version_bump
         if: github.event_name == 'push'
         run: |
-          # Get the latest tag or default to v1.0.0 if no tags exist
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
-          echo "Latest tag: $LATEST_TAG"
+          # Get the latest semantic version tag or default to v1.0.0 if no valid tags exist
+          LATEST_TAG=$(git tag -l | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="v1.0.0"
+            echo "No semantic version tags found, starting from: $LATEST_TAG"
+          else
+            echo "Latest semantic version tag: $LATEST_TAG"
+          fi
           
           # Extract version numbers
           VERSION=$(echo $LATEST_TAG | sed 's/^v//')
           IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
           
-          # Get commit messages since last tag
-          COMMITS=$(git log ${LATEST_TAG}..HEAD --oneline || git log --oneline)
+          # Validate extracted version components
+          if [ -z "$MAJOR" ] || [ -z "$MINOR" ] || [ -z "$PATCH" ]; then
+            echo "Invalid version format, defaulting to 1.0.0"
+            MAJOR=1
+            MINOR=0
+            PATCH=0
+          fi
+          
+          # Get commit messages since last tag (or all commits if no valid tag)
+          if git rev-parse "$LATEST_TAG" >/dev/null 2>&1; then
+            COMMITS=$(git log ${LATEST_TAG}..HEAD --oneline)
+          else
+            COMMITS=$(git log --oneline)
+          fi
           echo "Commits since last tag:"
           echo "$COMMITS"
           
@@ -97,8 +114,11 @@ jobs:
         id: release_notes
         if: github.event_name == 'push'
         run: |
-          # Get the latest tag or use initial commit
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          # Get the latest semantic version tag or use initial commit
+          LATEST_TAG=$(git tag -l | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
           
           # Generate release notes
           echo "## 🍎 macOS Improvements Release ${{ steps.version_bump.outputs.tag }}" > release_notes.md
@@ -107,7 +127,11 @@ jobs:
           echo "" >> release_notes.md
           
           # Add commit messages as bullet points
-          git log ${LATEST_TAG}..HEAD --pretty=format:"- %s" >> release_notes.md || git log --pretty=format:"- %s" >> release_notes.md
+          if git rev-parse "$LATEST_TAG" >/dev/null 2>&1; then
+            git log ${LATEST_TAG}..HEAD --pretty=format:"- %s" >> release_notes.md
+          else
+            git log --pretty=format:"- %s" >> release_notes.md
+          fi
           
           echo "" >> release_notes.md
           echo "" >> release_notes.md
