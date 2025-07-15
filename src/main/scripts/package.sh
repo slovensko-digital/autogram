@@ -214,18 +214,33 @@ if [[ "${platform}" == "mac-universal" ]]; then
 
     appName="${properties_name}.app"
 
-    $jpackage \
-        --app-image "${appImageDir}/${appName}" \
-        --name "${properties_name}" \
-        --type pkg \
-        --icon "./Autogram.icns" \
-        --app-version "${properties_version:-$version}" \
-        --resource-dir "./" \
-        --dest "${output}" \
-        --description "${properties_description}" \
-        --mac-app-category "${properties_mac_appCategory:-business}" \
-        --mac-package-identifier "${properties_mac_identifier}" \
-        ${signingArguments[@]}
+    # Create PKG from the app image
+    pkgArguments=(
+        "--app-image" "${appImageDir}/${appName}"
+        "--name" "${properties_name}"
+        "--type" "pkg"
+        "--icon" "./Autogram.icns"
+        "--app-version" "${properties_version:-$version}"
+        "--resource-dir" "./"
+        "--dest" "${output}"
+        "--description" "${properties_description}"
+        "--mac-app-category" "${properties_mac_appCategory:-business}"
+    )
+    
+    if [[ -n "${properties_mac_identifier}" ]]; then
+        pkgArguments+=("--mac-package-identifier" "${properties_mac_identifier}")
+    fi
+    
+    if [[ -n "${properties_mac_name}" ]]; then
+        pkgArguments+=("--mac-package-name" "${properties_mac_name}")
+    fi
+    
+    # Add signing arguments if signing is enabled
+    if [[ "${properties_mac_sign}" == "1" ]]; then
+        pkgArguments+=("${signingArguments[@]}")
+    fi
+    
+    $jpackage "${pkgArguments[@]}"
     exitValue=$?
     rm -rf ./DTempFiles
     checkExitCode $exitValue
