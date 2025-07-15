@@ -75,6 +75,24 @@ If a release fails to create:
 3. Verify that the `GITHUB_TOKEN` has sufficient permissions
 4. Check that the version calculation logic works correctly
 
+Common issues:
+- **No releases created**: Check that your commit messages follow the expected patterns
+- **Wrong version bump**: Ensure your commit messages contain the right keywords
+- **Build failures**: Check the Actions tab for detailed error logs
+- **Version format errors**: The system now filters for semantic version tags (vX.Y.Z) and validates components to prevent zero-length errors
+
+## Recent Improvements
+
+### Version Handling Fix
+The automated release system has been improved to handle edge cases:
+
+- **Semantic Version Filtering**: Only considers tags in `vX.Y.Z` format (e.g., `v1.0.0`, `v2.1.3`)
+- **Non-semantic Tag Handling**: Ignores tags like `test`, `dev`, or other non-version tags
+- **Version Validation**: Validates extracted version components to prevent packaging errors
+- **Fallback Mechanism**: Defaults to `v1.0.0` when no valid semantic version tags exist
+
+This resolves the "Version [test.1.0] contains a zero length component" error that was occurring during Maven packaging.
+
 ---
 
 *This automated system ensures that every successful build on the macOS-improvements branch results in a properly versioned, documented, and distributed release.*
