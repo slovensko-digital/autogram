@@ -203,37 +203,19 @@ if [[ "${platform}" == "mac-universal" ]]; then
         )
     fi
 
-    # Build each architecture separately. Older jpackage versions use
-    # the --target-arch option to select the architecture.
-    # Build both x64 and aarch64 images so they can be merged into a
-    # universal binary.
-    for arch in x64 aarch64; do
-        destDir="${output}/${arch}"
-        mkdir -p "${destDir}"
-        $jpackage "${baseArguments[@]}" "${signingArguments[@]}" ${archOption} "${arch}" --dest "${destDir}"
-        exitValue=$?
-        rm -rf ./DTempFiles
-        checkExitCode $exitValue
-    done
+    # Build a single app image for the current architecture
+    # Universal binary creation requires architecture-specific options not available in this jpackage version
+    appImageDir="${output}/app-image"
+    mkdir -p "${appImageDir}"
+    $jpackage "${baseArguments[@]}" "${signingArguments[@]}" --dest "${appImageDir}"
+    exitValue=$?
+    rm -rf ./DTempFiles
+    checkExitCode $exitValue
 
     appName="${properties_name}.app"
-    universalDir="${output}/universal"
-    mkdir -p "${universalDir}"
-    arch_x64=$(lipo -info "${output}/x64/${appName}/Contents/MacOS/Autogram" 2>/dev/null | rev | cut -d ':' -f1 | xargs)
-    arch_aarch64=$(lipo -info "${output}/aarch64/${appName}/Contents/MacOS/Autogram" 2>/dev/null | rev | cut -d ':' -f1 | xargs)
-    cp -R "${output}/x64/${appName}" "${universalDir}/${appName}"
-
-    if [[ "${arch_x64}" != "${arch_aarch64}" && -n "${arch_x64}" && -n "${arch_aarch64}" ]]; then
-        binaries=("Autogram" "AutogramApp")
-        for bin in "${binaries[@]}"; do
-            lipo -create "${output}/x64/${appName}/Contents/MacOS/${bin}" "${output}/aarch64/${appName}/Contents/MacOS/${bin}" -output "${universalDir}/${appName}/Contents/MacOS/${bin}"
-        done
-    else
-        echo "Built binaries have identical architecture (${arch_x64:-unknown}); skipping lipo"
-    fi
 
     $jpackage \
-        --app-image "${universalDir}/${appName}" \
+        --app-image "${appImageDir}/${appName}" \
         --name "${properties_name}" \
         --type pkg \
         --icon "./Autogram.icns" \
