@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.prefs.Preferences;
 
 public class GUIApp extends Application {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -92,8 +93,16 @@ public class GUIApp extends Application {
             windowStage.setTitle(titleString);
             windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml"))); 
             windowStage.setResizable(true);
-            windowStage.setMinWidth(600);
-            windowStage.setMinHeight(400);
+        windowStage.setMinWidth(600);
+        windowStage.setMinHeight(400);
+        
+        // Load and apply saved window state
+        loadWindowState(windowStage);
+        
+        // Save window state on close
+        windowStage.setOnCloseRequest(event -> {
+            saveWindowState(windowStage);
+        });
             windowStage.show();
 
         } catch (Exception e) {
@@ -183,6 +192,34 @@ public class GUIApp extends Application {
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.show();
+    }
+
+    private void loadWindowState(Stage stage) {
+        Preferences prefs = Preferences.userNodeForPackage(GUIApp.class);
+        double x = prefs.getDouble("window.x", -1);
+        double y = prefs.getDouble("window.y", -1);
+        double width = prefs.getDouble("window.width", 800);
+        double height = prefs.getDouble("window.height", 600);
+        boolean maximized = prefs.getBoolean("window.maximized", false);
+        
+        if (x >= 0 && y >= 0) {
+            stage.setX(x);
+            stage.setY(y);
+        }
+        stage.setWidth(width);
+        stage.setHeight(height);
+        stage.setMaximized(maximized);
+    }
+    
+    private void saveWindowState(Stage stage) {
+        Preferences prefs = Preferences.userNodeForPackage(GUIApp.class);
+        if (!stage.isMaximized()) {
+            prefs.putDouble("window.x", stage.getX());
+            prefs.putDouble("window.y", stage.getY());
+            prefs.putDouble("window.width", stage.getWidth());
+            prefs.putDouble("window.height", stage.getHeight());
+        }
+        prefs.putBoolean("window.maximized", stage.isMaximized());
     }
 
     @Override
