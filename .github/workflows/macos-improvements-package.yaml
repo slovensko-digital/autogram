@@ -13,6 +13,58 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for version calculation
+
+      - name: Determine version bump type
+        id: version_bump
+        if: github.event_name == 'push'
+        run: |
+          # Get the latest tag or default to v1.0.0 if no tags exist
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          echo "Latest tag: $LATEST_TAG"
+          
+          # Extract version numbers
+          VERSION=$(echo $LATEST_TAG | sed 's/^v//')
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          
+          # Get commit messages since last tag
+          COMMITS=$(git log ${LATEST_TAG}..HEAD --oneline || git log --oneline)
+          echo "Commits since last tag:"
+          echo "$COMMITS"
+          
+          # Determine bump type based on commit messages
+          BUMP_TYPE="patch"
+          if echo "$COMMITS" | grep -i "breaking\|major"; then
+            BUMP_TYPE="major"
+          elif echo "$COMMITS" | grep -i "feat\|feature\|minor"; then
+            BUMP_TYPE="minor"
+          fi
+          
+          # Calculate new version
+          case $BUMP_TYPE in
+            major)
+              NEW_VERSION="$((MAJOR + 1)).0.0"
+              ;;
+            minor)
+              NEW_VERSION="$MAJOR.$((MINOR + 1)).0"
+              ;;
+            patch)
+              NEW_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+              ;;
+          esac
+          
+          NEW_TAG="v$NEW_VERSION"
+          echo "New version will be: $NEW_TAG"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+
+      - name: Update version in pom.xml
+        if: github.event_name == 'push'
+        run: |
+          ./mvnw versions:set -DnewVersion=${{ steps.version_bump.outputs.version }}
+          ./mvnw versions:commit
 
       - name: Set up JDK
         uses: actions/setup-java@v3
@@ -41,7 +93,65 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload package
+      - name: Generate release notes
+        id: release_notes
+        if: github.event_name == 'push'
+        run: |
+          # Get the latest tag or use initial commit
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          
+          # Generate release notes
+          echo "## 🍎 macOS Improvements Release ${{ steps.version_bump.outputs.tag }}" > release_notes.md
+          echo "" >> release_notes.md
+          echo "### Changes in this release:" >> release_notes.md
+          echo "" >> release_notes.md
+          
+          # Add commit messages as bullet points
+          git log ${LATEST_TAG}..HEAD --pretty=format:"- %s" >> release_notes.md || git log --pretty=format:"- %s" >> release_notes.md
+          
+          echo "" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### 📦 Installation" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "- **macOS Package (.pkg)**: Download and double-click to install" >> release_notes.md
+          echo "- **macOS Disk Image (.dmg)**: Download, mount, and drag to Applications" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### 🔧 Technical Details" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "- **Version bump type**: ${{ steps.version_bump.outputs.bump_type }}" >> release_notes.md
+          echo "- **Build date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> release_notes.md
+          echo "- **Commit SHA**: ${{ github.sha }}" >> release_notes.md
+          
+          # Set output for use in release creation
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a ${{ steps.version_bump.outputs.tag }} -m "Release ${{ steps.version_bump.outputs.tag }} - macOS improvements"
+          git push origin ${{ steps.version_bump.outputs.tag }}
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version_bump.outputs.tag }}
+          name: "Autogram ${{ steps.version_bump.outputs.tag }} - macOS Improvements"
+          body: ${{ steps.release_notes.outputs.notes }}
+          draft: false
+          prerelease: true
+          files: |
+            target/*.pkg
+            target/*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload package (for PR testing)
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: Autogram-macOS-Improvements-${{ github.sha }}
@@ -61,3 +171,10 @@ jobs:
               repo: context.repo.repo,
               body: '🍎 macOS build completed! Download the artifact from the [Actions tab](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) to test the improvements.'
             })
+
+      - name: Notify about release creation
+        if: github.event_name == 'push'
+        run: |
+          echo "✅ Successfully created release ${{ steps.version_bump.outputs.tag }}"
+          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version_bump.outputs.tag }}"
+          echo "📦 Packages are now available for download from the release page"
