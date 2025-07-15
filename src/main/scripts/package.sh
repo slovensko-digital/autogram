@@ -11,9 +11,10 @@ version=${6}
 output=${7}
 
 # Determine whether jpackage supports the new --arch parameter
-archOption="--target-arch"
-if "$jpackage" --help 2>&1 | grep -q -- '--arch'; then
-    archOption="--arch"
+# Modern jpackage versions use --arch instead of --target-arch
+archOption="--arch"
+if "$jpackage" --help 2>&1 | grep -q -- '--target-arch' && ! "$jpackage" --help 2>&1 | grep -q -- '--arch'; then
+    archOption="--target-arch"
 fi
 
 function checkExitCode() {
