@@ -334,14 +334,10 @@
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
-                                            <Text styleClass="autogram-heading-s">
-                                                Cesta k vlastnému ovládaču pre PKCS11 token
-                                            </Text>
+                                            <Text styleClass="autogram-heading-s" text="%settings.other.customDriverPath.label"/>
                                         </TextFlow>
                                         <TextFlow>
-                                            <Text styleClass="autogram-description">
-                                                Cesta na disku k súboru s vlastným ovládačom pre PKCS11 token.
-                                            </Text>
+                                            <Text styleClass="autogram-description" text="%settings.other.customDriverPath.text"/>
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-textfield-container">
