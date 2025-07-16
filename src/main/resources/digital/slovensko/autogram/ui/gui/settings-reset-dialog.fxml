@@ -11,7 +11,7 @@
     <center>
         <VBox fx:id="mainBox" spacing="20" styleClass="autogram-prose">
             <TextFlow styleClass="autogram-heading-m">
-                <Text styleClass="autogram-heading-l" text="%settings.reset.title"/>
+                <Text styleClass="autogram-heading-l" text="%settings.reset.summary.title"/>
             </TextFlow>
 
             <TextFlow styleClass="autogram-body">

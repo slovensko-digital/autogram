@@ -393,7 +393,7 @@ public class SettingsDialogController extends BaseController {
         var root = GUIUtils.loadFXML(controller, "settings-reset-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Obnovenie pôvodných nastavení");
+        stage.setTitle(controller.i18n("settings.reset.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
