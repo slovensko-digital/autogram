@@ -32,10 +32,11 @@ public class ErrorSummaryComponentController extends BaseController {
         this.exception = e;
 
         heading.setText(exception.getHeading(resources));
-        subheading.setText(exception.getSubheading(resources));
-        if (exception.getSubheading(resources) == null) {
-            subheading.setManaged(false);
-            subheading.setVisible(false);
+        var subheading = exception.getSubheading(resources);
+        this.subheading.setText(subheading);
+        if (subheading == null || subheading.isBlank()) {
+            this.subheading.setManaged(false);
+            this.subheading.setVisible(false);
         }
         description.setText(exception.getDescription(resources));
         if (exception.getCause() != null) {
