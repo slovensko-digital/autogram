@@ -68,6 +68,7 @@ public class GUIApp extends Application {
 
                     var thread = new Thread(server::stop);
                     windowStage.setOnCloseRequest(event -> {
+                        saveWindowState(windowStage);
                         thread.start();
                         finalAutogram.shutdown();
                         Platform.exit();
@@ -85,6 +86,7 @@ public class GUIApp extends Application {
 
             if (server == null) {
                 windowStage.setOnCloseRequest(event -> {
+                    saveWindowState(windowStage);
                     finalAutogram.shutdown();
                     Platform.exit();
                 });
@@ -103,30 +105,10 @@ public class GUIApp extends Application {
             if (osName.startsWith("Mac")) {
                 // Enable unified title and toolbar look
                 windowStage.getScene().getRoot().setStyle("-fx-background-color: transparent;");
-                // Remove window decorations for a more native look
-                try {
-                    // Use reflection to access macOS-specific window properties
-                    var peer = windowStage.impl_getPeer();
-                    if (peer != null) {
-                        var platformWindow = peer.getPlatformWindow();
-                        if (platformWindow != null && platformWindow.getClass().getName().contains("MacWindow")) {
-                            // Enable full-size content view
-                            var method = platformWindow.getClass().getMethod("setStyleMask", int.class);
-                            method.invoke(platformWindow, 15); // NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
-                        }
-                    }
-                } catch (Exception ignored) {
-                    // Fallback for older JavaFX versions or if reflection fails
-                }
             }
         
         // Load and apply saved window state
         loadWindowState(windowStage);
-        
-        // Save window state on close
-        windowStage.setOnCloseRequest(event -> {
-            saveWindowState(windowStage);
-        });
             windowStage.show();
 
         } catch (Exception e) {
