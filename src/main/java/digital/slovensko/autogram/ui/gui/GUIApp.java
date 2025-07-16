@@ -55,6 +55,7 @@ public class GUIApp extends Application {
             this.mainMenuController = controller;
             if (osName.startsWith("Mac")) {
                 setupMacOpenHandler();
+                setupMacHandlers(autogram, userSettings);
             }
 
             if (!params.isStandaloneMode())
@@ -91,10 +92,33 @@ public class GUIApp extends Application {
 
             GUIUtils.suppressDefaultFocus(windowStage, controller);
             windowStage.setTitle(titleString);
-            windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml"))); 
+            
+            var scene = new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml"));
+            windowStage.setScene(scene);
             windowStage.setResizable(true);
-        windowStage.setMinWidth(600);
-        windowStage.setMinHeight(400);
+            windowStage.setMinWidth(600);
+            windowStage.setMinHeight(400);
+            
+            // macOS-specific window styling
+            if (osName.startsWith("Mac")) {
+                // Enable unified title and toolbar look
+                windowStage.getScene().getRoot().setStyle("-fx-background-color: transparent;");
+                // Remove window decorations for a more native look
+                try {
+                    // Use reflection to access macOS-specific window properties
+                    var peer = windowStage.impl_getPeer();
+                    if (peer != null) {
+                        var platformWindow = peer.getPlatformWindow();
+                        if (platformWindow != null && platformWindow.getClass().getName().contains("MacWindow")) {
+                            // Enable full-size content view
+                            var method = platformWindow.getClass().getMethod("setStyleMask", int.class);
+                            method.invoke(platformWindow, 15); // NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
+                        }
+                    }
+                } catch (Exception ignored) {
+                    // Fallback for older JavaFX versions or if reflection fails
+                }
+            }
         
         // Load and apply saved window state
         loadWindowState(windowStage);
