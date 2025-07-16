@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
@@ -15,14 +16,19 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ResourceBundle;
 
 public class GUIUtils {
+
     private static final Logger logger = LoggerFactory.getLogger(GUIUtils.class);
+
     static Parent loadFXML(Object controller, String fxml) {
         try {
             var loader = new FXMLLoader();
             loader.setLocation(controller.getClass().getResource(fxml));
             loader.setController(controller);
+            var language = UserSettings.load().getLanguageLocale();
+            loader.setResources(ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n", language));
             return loader.load();
         } catch (IOException e) {
             throw new RuntimeException(e);

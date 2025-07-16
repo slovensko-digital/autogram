@@ -5,21 +5,31 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
 import digital.slovensko.autogram.drivers.FakeTokenDriver;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-public class SettingsDialogController {
+import static javafx.collections.FXCollections.observableArrayList;
+
+public class SettingsDialogController extends BaseController {
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
     @FXML
@@ -50,6 +60,8 @@ public class SettingsDialogController {
     private HBox expiredCertsRadios;
     @FXML
     private HBox localServerEnabledRadios;
+    @FXML
+    private ChoiceBox<SupportedLanguage> languageChoiceBox;
     @FXML
     private ChoiceBox<String> pdfDpiChoiceBox;
     @FXML
@@ -277,6 +289,34 @@ public class SettingsDialogController {
         });
 
         return new HBox(countryBox, new VBox(checkBox));
+    }
+
+
+
+    private void initializeLanguageSettings() {
+        var items = observableArrayList(SupportedLanguage.values());
+        items.add(0, SupportedLanguage.SYSTEM);
+        languageChoiceBox.setItems(items);
+        languageChoiceBox.setValue(userSettings.getLanguage().orElse(SupportedLanguage.SYSTEM));
+        languageChoiceBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(SupportedLanguage language) {
+                if (language == SupportedLanguage.SYSTEM) {
+                    return i18n("settings.label.systemLanguage");
+                }
+
+                return language.getDisplayLanguage();
+            }
+
+            @Override
+            public SupportedLanguage fromString(String string) {
+                return null; // not editable, will never be called
+            }
+        });
+        languageChoiceBox.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    userSettings.setLanguage(newValue);
+                });
     }
 
     private void initializePdfDpiSettings() {
