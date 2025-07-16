@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.web.WebView?>
-
-<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
-<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.web.WebView?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       prefHeight="800"
@@ -14,7 +11,7 @@
       minWidth="768"
       fx:id="mainBox">
 
-    <TextFlow><Text styleClass="autogram-heading-m" text="Podpisy"/></TextFlow>
+    <TextFlow><Text styleClass="autogram-heading-m" text="%signature.details.title"/></TextFlow>
 
     <!-- HTML visualization of validation report -->
     <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">

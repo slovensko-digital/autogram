@@ -2,12 +2,11 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SignatureValidator;
-import digital.slovensko.autogram.core.visualization.ImageVisualization;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
-import eu.europa.esig.dss.validation.reports.Reports;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -27,15 +26,15 @@ import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import org.verapdf.xmp.impl.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
+import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatureTableRows;
+import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createWarningText;
 
-public class SigningDialogController implements SuppressedFocusController, Visualizer {
+public class SigningDialogController extends BaseController implements SuppressedFocusController, Visualizer {
     private final GUI gui;
     private final Autogram autogram;
     private final String title;
@@ -84,6 +83,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         this.shouldCheckValidityBeforeSigning = shouldCheckValidityBeforeSigning;
     }
 
+    @Override
     public void initialize() throws IOException {
         headerText.setText(title);
         signaturesTable.setManaged(false);
@@ -103,7 +103,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
         var root = GUIUtils.loadFXML(signaturesNotValidatedDialogController, "signatures-not-validated-dialog.fxml");
         var stage = new Stage();
-        stage.setTitle("Upozornenie");
+        stage.setTitle(i18n("signature.notValidated.title"));
         stage.setScene(new Scene(root));
 
         stage.sizeToScene();
@@ -121,7 +121,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
         var root = GUIUtils.loadFXML(signaturesInvalidDialogController, "signatures-invalid-dialog.fxml");
         var stage = new Stage();
-        stage.setTitle("Upozornenie");
+        stage.setTitle(i18n("signature.invalid.title"));
         stage.setScene(new Scene(root));
 
         stage.sizeToScene();
@@ -189,7 +189,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
         var root = GUIUtils.loadFXML(signaturesController, "present-signatures-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Detailné informácie o podpisoch");
+        stage.setTitle(i18n("signature.present.title"));
         stage.setScene(new Scene(root));
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(mainButton.getScene().getWindow());
@@ -232,8 +232,7 @@ public class SigningDialogController implements SuppressedFocusController, Visua
 
         if (!areTLsLoaded)
             signaturesTable.getChildren().add(
-                    createWarningText(
-                            "Nastala chyba pri sťahovaní dôveryhodných zoznamov a podpisy nie je možné úplne overiť. Skontrolujte si internetové pripojenie."));
+                    createWarningText(i18n("signing.tlsLoading.error")));
 
         signaturesTable.getChildren().add(
                 createSignatureTableRows(reports, isValidated, e -> onShowSignaturesButtonPressed(null), 3));
@@ -250,10 +249,10 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     public void refreshSigningKey() {
         var key = gui.getActiveSigningKey();
         if (key == null) {
-            mainButton.setText("Podpísať");
+            mainButton.setText(i18n("general.sign.btn"));
             changeKeyButton.setVisible(false);
         } else {
-            mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+            mainButton.setText(i18n("signing.signAs.btn", DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253())));
             changeKeyButton.setVisible(true);
         }
     }
@@ -276,13 +275,13 @@ public class SigningDialogController implements SuppressedFocusController, Visua
     }
 
     public void disableKeyPicking() {
-        mainButton.setText("Načítavam certifikáty…");
+        mainButton.setText(i18n("signing.keyPicking.btn"));
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
     }
 
     public void disableSigning() {
-        mainButton.setText("Prebieha podpisovanie…");
+        mainButton.setText(i18n("signing.signing.btn"));
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
     }

@@ -16,5 +16,5 @@ public abstract class BaseController implements HasI18n {
     /**
      * This method is called after all the {@link FXML @FXML} elements have been injected.
      */
-    public abstract void initialize();
+    public abstract void initialize() throws Exception;
 }

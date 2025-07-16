@@ -12,9 +12,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
+import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatureBox;
 
-public class SignaturesController implements SuppressedFocusController {
+public class SignaturesController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
     private Reports signatureCheckReports;
     private Reports signatureValidationReports;
@@ -38,6 +38,7 @@ public class SignaturesController implements SuppressedFocusController {
         this.gui = gui;
     }
 
+    @Override
     public void initialize() {
         renderSignatures();
     }
@@ -67,7 +68,7 @@ public class SignaturesController implements SuppressedFocusController {
         var root = GUIUtils.loadFXML(controller, "signature-details.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Detaily podpisov");
+        stage.setTitle(i18n("signature.present.details.title"));
         stage.setScene(new Scene(root));
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(mainBox.getScene().getWindow());

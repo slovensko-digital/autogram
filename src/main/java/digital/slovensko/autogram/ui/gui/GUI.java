@@ -433,7 +433,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "signing-success-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Dokument bol úspešne podpísaný");
+        stage.setTitle(controller.i18n("signing.success.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         GUIUtils.suppressDefaultFocus(stage, controller);
@@ -448,11 +448,11 @@ public class GUI implements UI {
         if (result.hasErrors()) {
             controller = new BatchSigningFailureDialogController(result, hostServices);
             root = GUIUtils.loadFXML(controller, "batch-signing-failure-dialog.fxml");
-            stage.setTitle("Hromadné podpisovanie ukončené s chybami");
+            stage.setTitle(((BatchSigningFailureDialogController) controller).i18n("batchSigning.failure.title"));
         } else {
             controller = new BatchSigningSuccessDialogController(result, hostServices);
             root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
-            stage.setTitle("Hromadné podpisovanie úspešne ukončené");
+            stage.setTitle(((BatchSigningSuccessDialogController) controller).i18n("batchSigning.success.title"));
         }
         stage.setScene(new Scene(root));
         stage.setResizable(false);
