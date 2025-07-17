@@ -33,6 +33,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         this.userSettings = userSettings;
     }
 
+    @Override
     public void initialize() {
         dropZone.setOnDragOver(event -> {
             event.acceptTransferModes(TransferMode.ANY);
@@ -81,14 +82,10 @@ public class MainMenuController extends BaseController implements SuppressedFocu
                 signFiles(list);
 
             if (dirsList.size() > 1)
-                throw new AutogramException("Zvolili ste viac ako jeden priečinok",
-                        "Priečinky musíte podpísať po jednom",
-                        "Podpisovanie viacerých priečinkov ešte nepodporujeme");
+                throw new AutogramException("MULTIPLE_FOLDERS");
 
             if (dirsList.size() > 0 && filesList.size() > 0)
-                throw new AutogramException("Zvolili ste zmiešaný výber súborov a priečinkov",
-                        "Podpisovanie zmesi súborov a priečinkov nepodporujeme",
-                        "Priečinky musíte podpísať po jednom, súbory môžete po viacerých");
+                throw new AutogramException("MIXED_FILE_TYPES");
 
         } catch (AutogramException e) {
             autogram.onSigningFailed(e);

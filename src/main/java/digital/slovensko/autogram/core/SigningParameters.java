@@ -1,15 +1,13 @@
 package digital.slovensko.autogram.core;
 
-import javax.xml.crypto.dsig.CanonicalizationMethod;
-
+import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.eforms.dto.XsltParams;
+import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
-import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
-import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
@@ -22,6 +20,13 @@ import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
+
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+
+import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.EMPTY_DOCUMENT;
+import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_LEVEL;
+import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_MIME_TYPE;
+import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.WRONG_MIME_TYPE;
 
 public class SigningParameters {
     private final SignatureLevel level;
@@ -63,13 +68,13 @@ public class SigningParameters {
             int preferredPreviewWidth, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
 
         if (level == null)
-            throw new SigningParametersException("Nebol zadaný typ podpisu", "Typ/level podpisu je povinný atribút");
+            throw new SigningParametersException(NO_LEVEL);
 
         if (document == null)
-            throw new SigningParametersException("Dokument je prázdny", "Dokument poskytnutý na podpis je prázdny");
+            throw new SigningParametersException(EMPTY_DOCUMENT);
 
         if (document.getMimeType() == null)
-            throw new SigningParametersException("Dokument nemá definovaný MIME type", "Dokument poskytnutý na podpis nemá definovaný MIME type");
+            throw new SigningParametersException(NO_MIME_TYPE);
 
         var extractedDocument = document;
         if (AutogramMimeType.isAsice(document.getMimeType()))
@@ -96,7 +101,7 @@ public class SigningParameters {
                         propertiesCanonicalization, digestAlgorithm, eFormAttributes.embedUsedSchemas());
 
             else
-                throw new SigningParametersException("Nesprávny typ dokumentu", "Zadaný dokument nemožno podpísať ako elektronický formulár v XML Datacontaineri");
+                throw new SigningParametersException(WRONG_MIME_TYPE);
         }
 
         if (!plainXmlEnabled && (AutogramMimeType.isXML(extractedDocumentMimeType) || AutogramMimeType.isXDC(extractedDocumentMimeType)) && (eFormAttributes.transformation() == null))

@@ -1,11 +1,13 @@
 package digital.slovensko.autogram.core.errors;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 public class SourceDoesNotExistException extends AutogramException {
     public SourceDoesNotExistException() {
-        super("Nastala chyba", "Zdrojový súbor / adresár neexistuje", "Zadali ste zdrojový súbor / adresár, ktorý neexistuje");
+        this("");
     }
 
-    public SourceDoesNotExistException(String sourcePath) {
-        super("Nastala chyba", "Zdrojový súbor / adresár neexistuje", "Zadali ste zdrojový súbor / adresár \"" + sourcePath + "\", ktorý neexistuje");
+    public SourceDoesNotExistException(@NonNull String sourcePath) {
+        super(new Object[]{sourcePath.isBlank() ? "" : (" \"" + sourcePath + "\"")});
     }
 }

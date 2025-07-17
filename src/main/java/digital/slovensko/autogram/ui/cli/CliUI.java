@@ -1,21 +1,50 @@
 package digital.slovensko.autogram.ui.cli;
 
-import static digital.slovensko.autogram.util.DSSUtils.parseCN;
-
-import java.io.File;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-
 import digital.slovensko.autogram.Main;
-import digital.slovensko.autogram.core.*;
-import digital.slovensko.autogram.core.errors.*;
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.BatchStartCallback;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.Updater;
+import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.FunctionCanceledException;
+import digital.slovensko.autogram.core.errors.InitializationFailedException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
+import digital.slovensko.autogram.core.errors.PDFAComplianceException;
+import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
+import digital.slovensko.autogram.core.errors.PINIncorrectException;
+import digital.slovensko.autogram.core.errors.PINLockedException;
+import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.SigningWithExpiredCertificateException;
+import digital.slovensko.autogram.core.errors.SlotIndexIsNotANumberException;
+import digital.slovensko.autogram.core.errors.SlotIndexOutOfRangeException;
+import digital.slovensko.autogram.core.errors.SourceAndTargetTypeMismatchException;
+import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
+import digital.slovensko.autogram.core.errors.SourceNotDefinedException;
+import digital.slovensko.autogram.core.errors.TargetAlreadyExistsException;
+import digital.slovensko.autogram.core.errors.TargetDirectoryDoesNotExistException;
+import digital.slovensko.autogram.core.errors.TokenDriverDoesNotExistException;
+import digital.slovensko.autogram.core.errors.TokenNotRecognizedException;
+import digital.slovensko.autogram.core.errors.TokenRemovedException;
+import digital.slovensko.autogram.core.errors.TsaServerMisconfiguredException;
+import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+
+import java.io.File;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+
+import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
 public class CliUI implements UI {
     private final CliSettings settings;
@@ -233,7 +262,7 @@ public class CliUI implements UI {
             return "Source and target type mismatch (file / directory)";
         } else if (e instanceof SourceDoesNotExistException) {
             return "Source does not exist";
-        } else if (e instanceof SourceNotDefindedException) {
+        } else if (e instanceof SourceNotDefinedException) {
             return "Source not defined";
         } else if (e instanceof UnableToCreateDirectoryException) {
             return "Unable to create directory";

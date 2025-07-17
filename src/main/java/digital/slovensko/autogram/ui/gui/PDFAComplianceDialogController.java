@@ -6,7 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 
-public class PDFAComplianceDialogController implements SuppressedFocusController {
+public class PDFAComplianceDialogController extends BaseController implements SuppressedFocusController {
     private final SigningJob job;
     private final GUI gui;
 
@@ -21,6 +21,9 @@ public class PDFAComplianceDialogController implements SuppressedFocusController
         this.job = job;
         this.gui = gui;
     }
+
+    @Override
+    public void initialize() { }
 
     public void onCancelAction(ActionEvent ignored) {
         GUIUtils.closeWindow(mainBox);

@@ -7,7 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 
-public class IgnorableExceptionDialogController implements SuppressedFocusController {
+public class IgnorableExceptionDialogController extends BaseController implements SuppressedFocusController {
     private final IgnorableException exception;
 
     @FXML
@@ -26,6 +26,7 @@ public class IgnorableExceptionDialogController implements SuppressedFocusContro
         this.exception = exception;
     }
 
+    @Override
     public void initialize() {
         errorSummaryComponentController.setException(exception);
     }

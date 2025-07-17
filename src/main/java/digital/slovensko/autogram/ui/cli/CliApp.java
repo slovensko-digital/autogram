@@ -1,16 +1,16 @@
 package digital.slovensko.autogram.ui.cli;
 
-import digital.slovensko.autogram.core.*;
-import digital.slovensko.autogram.core.errors.SourceNotDefindedException;
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
+import digital.slovensko.autogram.core.errors.SourceNotDefinedException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Timer;
-
-import org.apache.commons.cli.CommandLine;
 
 public class CliApp {
     public static void start(CommandLine cmd) {
@@ -21,7 +21,7 @@ public class CliApp {
             autogram = new Autogram(ui, settings);
 
             if (settings.getSource() == null)
-                throw new SourceNotDefindedException();
+                throw new SourceNotDefinedException();
 
             if (!settings.getSource().exists())
                 throw new SourceDoesNotExistException();

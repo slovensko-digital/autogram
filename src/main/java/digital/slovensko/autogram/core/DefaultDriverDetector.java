@@ -2,8 +2,8 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.drivers.FakeTokenDriver;
 import digital.slovensko.autogram.drivers.PKCS11TokenDriver;
-import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.drivers.PKCS12KeystoreTokenDriver;
+import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.util.OperatingSystem;
 
 import java.nio.file.Path;
@@ -23,6 +23,7 @@ public class DefaultDriverDetector implements DriverDetector {
         public static final String CUSTOM_PKCS11 = "custom_pkcs11";
     }
 
+    // FIXME use i18n
     private final String HELPER_TEXT_EID = "\n\nV prípade nového občianskeho preukazu to môže znamenať, že si potrebujete certifikáty na podpisovanie cez občiansky preukaz vydať. Robí sa to pomocou obslužného softvéru eID klient.";
     private final String HELPER_TEXT_CZ_EID = "";
     private final String HELPER_TEXT_SECURE_STORE = "";
@@ -36,6 +37,7 @@ public class DefaultDriverDetector implements DriverDetector {
         this.settings = settings;
     }
 
+    // FIXME use i18n
     private List<TokenDriver> getLinuxDrivers(){
         return List.of(
             new PKCS11TokenDriver("Občiansky preukaz (eID klient)", Path.of("/usr/lib/eID_klient/libpkcs11_x64.so"), TokenDriverShortnames.EID, HELPER_TEXT_EID),

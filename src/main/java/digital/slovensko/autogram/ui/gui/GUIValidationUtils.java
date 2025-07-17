@@ -1,11 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.function.Consumer;
-
-import javax.security.auth.x500.X500Principal;
-
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureForm;
@@ -23,8 +17,18 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-import static eu.europa.esig.dss.enumerations.SignatureForm.*;
+import javax.security.auth.x500.X500Principal;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
+import static digital.slovensko.autogram.ui.gui.HasI18n.translate;
+import static eu.europa.esig.dss.enumerations.SignatureForm.CAdES;
+import static eu.europa.esig.dss.enumerations.SignatureForm.PAdES;
+import static eu.europa.esig.dss.enumerations.SignatureForm.XAdES;
+
+// TODO i18n
 public class GUIValidationUtils {
     public static final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
@@ -37,13 +41,13 @@ public class GUIValidationUtils {
         return warningTextFlow;
     }
 
-    public static GridPane createSignatureTableRows(Reports reports, boolean isValidated, Consumer<String> callback, int maxRows) {
+    public static GridPane createSignatureTableRows(ResourceBundle resources, Reports reports, boolean isValidated, Consumer<String> callback, int maxRows) {
         var table = new GridPane();
         table.getStyleClass().add("autogram-signatures-table");
 
-        var headerText = new TextFlow(new Text("Podpisy na dokumente"));
+        var headerText = new TextFlow(new Text(translate(resources, "signature.table.title")));
         headerText.getStyleClass().addAll("autogram-heading-s", "autogram-signatures-table-cell--left");
-        var headerLink = new TextFlow(createSignatureTableLink(callback));
+        var headerLink = new TextFlow(createSignatureTableLink(callback, resources));
         table.addRow(0, headerText, headerLink);
 
         ColumnConstraints half = new ColumnConstraints();
@@ -59,16 +63,16 @@ public class GUIValidationUtils {
             var subject = new HBox(new TextFlow(new Text(reports.getSimpleReport().getSignedBy(signatureId))));
             subject.getStyleClass().add("autogram-signatures-table-cell--left");
             var type = new HBox(
-                    SignatureBadgeFactory.createCombinedBadgeFromQualification(
+                    SignatureBadgeFactory.createCombinedBadgeFromQualification(resources,
                             isValidated ? reports.getDetailedReport().getSignatureQualification(signatureId) : null,
                             reports, signatureId, 0));
             table.addRow(table.getChildren().size(), subject, type);
         }
 
         if (totalSignatures > maxRows) {
-            var label = new Text("Na dokumente " + createRemainingSignaturesCountString(totalSignatures - maxRows + 1) + ". ");
+            var label = new Text(translate(resources, "signature.table.more.txt", (totalSignatures - maxRows + 1)));
 
-            var button = new Button("Zobraziť všetky podpisy");
+            var button = new Button(translate(resources, "signature.table.more.btn"));
             button.getStyleClass().addAll("autogram-link");
             button.setWrapText(true);
             button.setOnMouseClicked(event -> callback.accept(null));
@@ -81,16 +85,8 @@ public class GUIValidationUtils {
         return table;
     }
 
-    private static String createRemainingSignaturesCountString(int i) {
-        return switch (i) {
-            case 1 -> "1 podpis";
-            case 2, 3, 4 -> "sú ďalšie " + i + " podpisy";
-            default -> "je ďalších " + i + " podpisov";
-        };
-    }
-
-    public static Button createSignatureTableLink(Consumer<String> callback) {
-        var whoSignedButton = new Button("Zobraziť detail podpisov");
+    public static Button createSignatureTableLink(Consumer<String> callback, ResourceBundle resources) {
+        var whoSignedButton = new Button(translate(resources, "signature.table.show.btn"));
         whoSignedButton.getStyleClass().addAll("autogram-link");
         whoSignedButton.wrapTextProperty().setValue(true);
         whoSignedButton.setOnMouseClicked(event -> {
@@ -100,7 +96,7 @@ public class GUIValidationUtils {
         return whoSignedButton;
     }
 
-    public static VBox createSignatureBox(Reports reports, boolean isValidated, String signatureId,
+    public static VBox createSignatureBox(ResourceBundle resources, Reports reports, boolean isValidated, String signatureId,
                                           Consumer<String> callback, boolean areTLsLoaded) {
         var simple = reports.getSimpleReport();
         var diagnostic = reports.getDiagnosticData();
@@ -139,11 +135,11 @@ public class GUIValidationUtils {
 
         Node badge = null;
         if (!isValidated)
-            badge = SignatureBadgeFactory.createInProgressBadge();
+            badge = SignatureBadgeFactory.createInProgressBadge(resources);
         else if (isFailed)
-            badge = SignatureBadgeFactory.createInvalidBadge("Neplatný podpis");
+            badge = SignatureBadgeFactory.createInvalidBadge(translate(resources, "signature.invalid.label"));
         else
-            badge = SignatureBadgeFactory.createCombinedBadgeFromQualification(
+            badge = SignatureBadgeFactory.createCombinedBadgeFromQualification(resources,
                     isValidated ? signatureQualification : null, reports, signatureId, 300);
 
         var validFlow = new HBox(badge);
@@ -160,16 +156,16 @@ public class GUIValidationUtils {
                 createTableRow("Vydavateľ", issuer),
                 createTableRow("Negarantovaný čas podpisu", signingTime));
 
-        var timestampsBox = createTimestampsBox(isValidated, timestamps, simple, diagnostic, e -> {
+        var timestampsBox = createTimestampsBox(isValidated, timestamps, simple, diagnostic, resources, e -> {
             callback.accept(null);
         });
         if (!timestampsBox.getChildren().isEmpty()) {
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
-                    SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm), false));
+                    SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm, resources), false));
             signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestampsBox, true));
         } else
             signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
-                    SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm), true));
+                    SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm, resources), true));
 
         var signatureBox = new VBox(nameBox, signatureDetailsBox);
         signatureBox.getStyleClass().add("autogram-signature-box");
@@ -233,7 +229,7 @@ public class GUIValidationUtils {
     }
 
     public static VBox createTimestampsBox(boolean isValidated, List<XmlTimestamp> timestamps, SimpleReport simple,
-                                           DiagnosticData diagnostic, Consumer<String> callback) {
+                                           DiagnosticData diagnostic, ResourceBundle resources, Consumer<String> callback) {
         var vBox = new VBox();
         vBox.getStyleClass().add("autogram-timestamps-box");
 
@@ -243,7 +239,7 @@ public class GUIValidationUtils {
                     diagnostic.getCertificateDN(diagnostic.getTimestampSigningCertificateId(timestamp.getId())))));
             var timestampQualification = isValidated ? simple.getTimestampQualification(timestamp.getId()) : null;
             var qualificationBadge = new TextFlow(
-                    SignatureBadgeFactory.createBadgeFromTSQualification(isFailed, timestampQualification));
+                    SignatureBadgeFactory.createBadgeFromTSQualification(isFailed, timestampQualification, resources));
             var timestampDetailsBox = new VBox(subject, qualificationBadge);
 
             var button = new Button(

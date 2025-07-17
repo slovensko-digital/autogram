@@ -1,7 +1,15 @@
 package digital.slovensko.autogram.core.errors;
 
 public class TsaServerMisconfiguredException extends AutogramException {
-    public TsaServerMisconfiguredException(String description, Throwable e) {
-        super("Chyba TSA servera", "Nepodarilo sa pridať časovú pečiatku", description, e);
+    public TsaServerMisconfiguredException(Error error, Throwable cause) {
+        super(error.toErrorCode(), cause);
+    }
+
+    public enum Error {
+        REFUSED, MISSING_HOST_NAME;
+
+        private String toErrorCode() {
+            return "TsaServerMisconfiguredException." + this.name();
+        }
     }
 }

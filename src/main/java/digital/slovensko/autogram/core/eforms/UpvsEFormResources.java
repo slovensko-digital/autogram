@@ -6,8 +6,14 @@ import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
-import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 import static digital.slovensko.autogram.core.eforms.EFormUtils.computeDigest;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.getManifestXsltEntries;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.getResource;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.getXmlFromDocument;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.selectXslt;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.AUTO_XSD_DIGEST_MISMATCH;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.AUTO_XSLT_DIGEST_MISMATCH;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.MANIFEST_NOT_FOUND;
 
 public class UpvsEFormResources extends EFormResources {
     private static final String SOURCE_URL = "https://www.slovensko.sk/static/eform/dataset/";
@@ -33,7 +39,7 @@ public class UpvsEFormResources extends EFormResources {
     public boolean findResources() throws XMLValidationException {
         var manifest_xml = getRemoteResource(SOURCE_URL + url + "/META-INF/manifest.xml");
         if (manifest_xml == null)
-            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť manifest elektronického formulára");
+            throw new XMLValidationException(MANIFEST_NOT_FOUND);
 
         var parsed_manifest_xml = getXmlFromDocument(new InMemoryDocument(manifest_xml, "manifest.xml"));
         var nodes = parsed_manifest_xml.getElementsByTagNameNS("urn:manifest:1.0", "file-entry");
@@ -52,7 +58,7 @@ public class UpvsEFormResources extends EFormResources {
 
         var xsltDigest = computeDigest(xsltString, canonicalizationMethod, DigestAlgorithm.SHA256, ENCODING);
         if (this.xsltDigest != null && !xsltDigest.equals(this.xsltDigest))
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Automaticky nájdená XSLT transformácia sa nezhoduje s odtlačkom v XML Datacontaineri");
+            throw new XMLValidationException(AUTO_XSLT_DIGEST_MISMATCH);
 
         this.transformation = new String(xsltString, ENCODING);
         this.xsltDestinationType = entry.destinationType();
@@ -68,7 +74,7 @@ public class UpvsEFormResources extends EFormResources {
 
         var xsdDigest = computeDigest(xsdString, canonicalizationMethod, DigestAlgorithm.SHA256, ENCODING);
         if (this.xsdDigest != null && !xsdDigest.equals(this.xsdDigest))
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Automaticky nájdená XSD schéma sa nezhoduje s odtlačkom v XML Datacontaineri");
+            throw new XMLValidationException(AUTO_XSD_DIGEST_MISMATCH);
 
         this.schema = new String(xsdString, ENCODING);
 
