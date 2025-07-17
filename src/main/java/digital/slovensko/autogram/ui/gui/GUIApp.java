@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.server.AutogramServer;
+import digital.slovensko.autogram.ui.SupportedLanguage;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -59,7 +60,7 @@ public class GUIApp extends Application {
                     });
 
                     server = null;
-                    titleString = "Autogram (obmedzený režim)";
+                    titleString = SupportedLanguage.loadResources(userSettings).getString("autogram.restricted.title");
                 }
             }
 

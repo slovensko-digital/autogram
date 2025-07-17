@@ -18,6 +18,7 @@ import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
+import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
@@ -334,9 +335,9 @@ public class GUI implements UI {
     }
 
     public void showVisualization(Visualization visualization, Autogram autogram) {
-        var title = "Dokument";
+        var title = SupportedLanguage.loadResources(userSettings).getString("general.document");
         if (visualization.getJob().getDocument().getName() != null)
-            title = "Dokument " + visualization.getJob().getDocument().getName();
+            title += " " + visualization.getJob().getDocument().getName();
 
         var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);
