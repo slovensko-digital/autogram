@@ -235,7 +235,7 @@ public class SigningDialogController extends BaseController implements Suppresse
                     createWarningText(i18n("signing.tlsLoading.error")));
 
         signaturesTable.getChildren().add(
-                createSignatureTableRows(reports, isValidated, e -> onShowSignaturesButtonPressed(null), 3));
+                createSignatureTableRows(resources, reports, isValidated, e -> onShowSignaturesButtonPressed(null), 3));
 
         var stage = (Stage) mainButton.getScene().getWindow();
         stage.sizeToScene();
