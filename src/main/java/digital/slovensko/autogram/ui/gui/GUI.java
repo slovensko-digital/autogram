@@ -312,7 +312,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "pdfa-compliance-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Dokument nie je vo formáte PDF/A");
+        stage.setTitle(controller.i18n("pdfaCompliance.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.WINDOW_MODAL);
@@ -561,7 +561,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "consent-certificate-reading-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Súhlas - Zoznam podpisových certifikátov");
+        stage.setTitle(controller.i18n("certConsent.title"));
         stage.setScene(new Scene(root));
 
         stage.sizeToScene();
