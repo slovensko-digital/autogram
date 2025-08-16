@@ -205,6 +205,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     /**
      * @return preferred language of the user, or default (system) language
      */
+    @Override
     public Locale getLanguageLocale() {
         return getLanguage().map(SupportedLanguage::getLocale)
                 .orElse(Locale.getDefault());

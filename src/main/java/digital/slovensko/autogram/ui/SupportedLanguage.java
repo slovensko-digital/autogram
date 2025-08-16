@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.ui;
 
-import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.LanguageSettings;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Locale;
@@ -54,8 +54,8 @@ public enum SupportedLanguage {
         return null;
     }
 
-    public static ResourceBundle loadResources(UserSettings userSettings) {
-        Locale language = userSettings.getLanguageLocale();
+    public static ResourceBundle loadResources(LanguageSettings languageSettings) {
+        Locale language = languageSettings.getLanguageLocale();
         return ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n", language);
     }
 }
