@@ -28,7 +28,6 @@ import static eu.europa.esig.dss.enumerations.SignatureForm.CAdES;
 import static eu.europa.esig.dss.enumerations.SignatureForm.PAdES;
 import static eu.europa.esig.dss.enumerations.SignatureForm.XAdES;
 
-// TODO i18n
 public class GUIValidationUtils {
     public static final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
@@ -147,24 +146,25 @@ public class GUIValidationUtils {
         var nameBox = new HBox(nameFlow, validFlow);
 
         var signatureDetailsBox = new VBox(
-                createTableRow("Výsledok overenia",
+                createTableRow(translate(resources, "signature.details.validation.label"),
                         isValidated
                                 ? validityToString(isValid, isFailed, areTLsLoaded, isRevocationValidated,
-                                        signatureQualification, signatureForm, isTimestampInvalid, isTimestampIndeterminate)
-                                : "Prebieha overovanie"),
-                createTableRow("Certifikát", subject),
-                createTableRow("Vydavateľ", issuer),
-                createTableRow("Negarantovaný čas podpisu", signingTime));
+                                        signatureQualification, signatureForm, isTimestampInvalid, isTimestampIndeterminate,
+                                        resources)
+                                : translate(resources, "signature.details.validation.inProgress.label")),
+                createTableRow(translate(resources, "signature.details.certificate.label"), subject),
+                createTableRow(translate(resources, "signature.details.issuer.label"), issuer),
+                createTableRow(translate(resources, "signature.details.signingTime.label"), signingTime));
 
         var timestampsBox = createTimestampsBox(isValidated, timestamps, simple, diagnostic, resources, e -> {
             callback.accept(null);
         });
         if (!timestampsBox.getChildren().isEmpty()) {
-            signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
+            signatureDetailsBox.getChildren().add(createTableRow(translate(resources, "signature.details.type.label"),
                     SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm, resources), false));
-            signatureDetailsBox.getChildren().add(createTableRow("Časové pečiatky", timestampsBox, true));
+            signatureDetailsBox.getChildren().add(createTableRow(translate(resources, "signature.details.timestamps.label"), timestampsBox, true));
         } else
-            signatureDetailsBox.getChildren().add(createTableRow("Typ podpisu",
+            signatureDetailsBox.getChildren().add(createTableRow(translate(resources, "signature.details.type.label"),
                     SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm, resources), true));
 
         var signatureBox = new VBox(nameBox, signatureDetailsBox);
@@ -173,28 +173,28 @@ public class GUIValidationUtils {
     }
 
     private static String validityToString(boolean isValid, boolean isFailed, boolean areTLsLoaded,
-            boolean isRevocationValidated, SignatureQualification signatureQualification, SignatureForm signatureForm,
-            boolean isTimestampInvalid, boolean isTimestampIndeterminate) {
+                                           boolean isRevocationValidated, SignatureQualification signatureQualification, SignatureForm signatureForm,
+                                           boolean isTimestampInvalid, boolean isTimestampIndeterminate, ResourceBundle resources) {
 
         if (isFailed || isTimestampInvalid)
-            return "Neplatný";
+            return translate(resources, "signature.details.validation.failed.label");
 
         if (!List.of(XAdES, CAdES, PAdES).contains(signatureForm))
-            return "Neznámy formát podpisu: " + signatureForm.name();
+            return translate(resources, "signature.details.validation.unknownForm.label", signatureForm.name());
 
         if (!areTLsLoaded)
-            return "Nepodarilo sa overiť";
+            return translate(resources, "signature.details.validation.trustedListInvalid.label");
 
         if (!isRevocationValidated)
-            return "Nepodarilo sa overiť platnosť certifikátu";
+            return translate(resources, "signature.details.validation.revocationInvalid.label");
 
         if (signatureQualification.getReadable().contains("Indeterminate") || isTimestampIndeterminate)
-            return "Predbežne platný";
+            return translate(resources, "signature.details.validation.indeterminate.label");
 
         if (isValid)
-            return "Platný";
+            return translate(resources, "signature.details.validation.valid.label");
 
-        return "Neznámy podpis";
+        return translate(resources, "signature.unknown.label");
     }
 
     public static HBox createTableRow(String label, String value) {
