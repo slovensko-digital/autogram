@@ -559,8 +559,8 @@ components:
             If only one document is provided, it is signed as standalone document or inside ASiC container based on `parameters.container` property.
         parameters:
           $ref: "#/components/schemas/SignatureParameters"
-        application:
-          $ref: "#/components/schemas/ApplicationParameters"
+        extraParameters:
+          $ref: "#/components/schemas/VendorSpecificParameters"
       required:
         - documents
 
@@ -835,9 +835,9 @@ components:
           description: Base64-encoded digest of the content to be timestamped.
           example: dGhpcyBzaG91bGQgYmUgQ01TIFRpbWVzdGFtcFRva2VuIHJlc3BvbnNl
 
-    ApplicationParameters:
+    VendorSpecificParameters:
       type: object
-      description: Optional parameters related to the signer application.
+      description: Extra parameters for this specific vendor implementation.
       properties:
         visualizationWidth:
           type: string
@@ -1080,7 +1080,7 @@ components:
         parameters:
           level: PAdES_BASELINE_B
           checkPDFACompliance: true
-        application:
+        extraParameters:
           visualizationWidth: lg
         documents:
         - mimeType: "application/pdf; base64"
@@ -1157,7 +1157,7 @@ components:
         parameters:
           level: CAdES_BASELINE_B
           container: ASiC_E
-        application:
+        extraParameters:
           visualizationWidth: md
         documents:
         - mimeType: "image/png; base64"
