@@ -648,11 +648,15 @@ components:
             - XAdES_BASELINE_T
             - PAdES_BASELINE_T
             - CAdES_BASELINE_T
+            - BASELINE_B
+            - BASELINE_T
           example: XAdES_BASELINE_B
           description: |
             Signature format PAdES is usable only with documents of type `application/pdf`. Format XAdES is usable with XML or with any file type if using an ASiC container.
 
-            If document is already signed (PAdES PDF or ASiC), this parameter is optional and signature level is decided based on the already signed document if empty.
+            If document is already signed (PAdES PDF or ASiC), this parameter is optional and signature format is decided based on the already signed document if empty.
+
+            For already signed documents, BASELINE_B or BASELINE_T can be used to add another signature of the same format as the existing signature but different level.
 
         container:
           type: string
