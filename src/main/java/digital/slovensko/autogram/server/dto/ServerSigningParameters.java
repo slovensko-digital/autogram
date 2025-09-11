@@ -276,9 +276,9 @@ public class ServerSigningParameters {
 
         container = report.getContainerType();
         level = switch (signedLevel.getSignatureForm()) {
-            case PAdES -> LocalSignatureLevel.valueOf("PAdES" + level.name());
-            case XAdES -> LocalSignatureLevel.valueOf("XAdES" + level.name());
-            case CAdES -> LocalSignatureLevel.valueOf("CAdES" + level.name());
+            case PAdES -> LocalSignatureLevel.valueOf("PAdES_" + level.name());
+            case XAdES -> LocalSignatureLevel.valueOf("XAdES_" + level.name());
+            case CAdES -> LocalSignatureLevel.valueOf("CAdES_" + level.name());
             default -> null;
         };
 
