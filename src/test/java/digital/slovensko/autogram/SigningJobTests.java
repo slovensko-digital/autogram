@@ -27,7 +27,7 @@ public class SigningJobTests {
     @Test
     void testEnd2EndHtmlTransformationEncoding() throws IOException, RequestValidationException {
         var ssParams = new ServerSigningParameters(
-                SignatureLevel.XAdES_BASELINE_B,
+                ServerSigningParameters.LocalSignatureLevel.XAdES_BASELINE_B,
                 null,
                 null,
                 null,

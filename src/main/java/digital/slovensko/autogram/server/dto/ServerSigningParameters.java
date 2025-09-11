@@ -39,6 +39,17 @@ public class ServerSigningParameters {
         INCLUSIVE_11_WITH_COMMENTS
     }
 
+    public enum LocalSignatureLevel {
+        XAdES_BASELINE_B,
+        PAdES_BASELINE_B,
+        CAdES_BASELINE_B,
+        XAdES_BASELINE_T,
+        PAdES_BASELINE_T,
+        CAdES_BASELINE_T,
+        BASELINE_B,
+        BASELINE_T
+    }
+
     public enum TransformationOutputMimeType {
         TXT,
         HTML,
@@ -54,7 +65,7 @@ public class ServerSigningParameters {
     }
 
     private ASiCContainerType container;
-    private SignatureLevel level;
+    private LocalSignatureLevel level;
     private final String containerXmlns;
     private final String schema;
     private final String transformation;
@@ -76,7 +87,7 @@ public class ServerSigningParameters {
     private final String transformationTargetEnvironment;
     private final String fsFormId;
 
-    public ServerSigningParameters(SignatureLevel level, ASiCContainerType container,
+    public ServerSigningParameters(LocalSignatureLevel level, ASiCContainerType container,
             String containerFilename, String containerXmlns, SignaturePackaging packaging,
             DigestAlgorithm digestAlgorithm,
             Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
@@ -244,7 +255,7 @@ public class ServerSigningParameters {
     }
 
     private SignatureLevel getSignatureLevel() {
-        return level;
+        return SignatureLevel.valueByName(level.name());
     }
 
     private ASiCContainerType getContainer() {
@@ -252,8 +263,11 @@ public class ServerSigningParameters {
     }
 
     public void resolveSigningLevel(InMemoryDocument document) throws RequestValidationException {
-        if (level != null)
+        if (level != null && level != LocalSignatureLevel.BASELINE_B && level != LocalSignatureLevel.BASELINE_T)
             return;
+
+        if (level == null)
+            level = LocalSignatureLevel.BASELINE_B;
 
         var report = SignatureValidator.getSignedDocumentSimpleReport(document);
         var signedLevel = SignatureValidator.getSignedDocumentSignatureLevel(report);
@@ -262,9 +276,9 @@ public class ServerSigningParameters {
 
         container = report.getContainerType();
         level = switch (signedLevel.getSignatureForm()) {
-            case PAdES -> SignatureLevel.PAdES_BASELINE_B;
-            case XAdES -> SignatureLevel.XAdES_BASELINE_B;
-            case CAdES -> SignatureLevel.CAdES_BASELINE_B;
+            case PAdES -> LocalSignatureLevel.valueOf("PAdES" + level.name());
+            case XAdES -> LocalSignatureLevel.valueOf("XAdES" + level.name());
+            case CAdES -> LocalSignatureLevel.valueOf("CAdES" + level.name());
             default -> null;
         };
 
@@ -291,10 +305,10 @@ public class ServerSigningParameters {
                 SignatureLevel.PAdES_BASELINE_T,
                 SignatureLevel.CAdES_BASELINE_T);
 
-        if (!supportedLevels.contains(level))
+        if (!supportedLevels.contains(getSignatureLevel()))
             throw new UnsupportedSignatureLevelException(level.name());
 
-        if (level.getSignatureForm() == SignatureForm.PAdES) {
+        if (getSignatureLevel().getSignatureForm() == SignatureForm.PAdES) {
             if (!mimeType.equals(MimeTypeEnum.PDF))
                 throw new RequestValidationException("PayloadMimeType and Parameters.Level mismatch",
                         "Parameters.Level: PAdES is not supported for this payload: " + mimeType.getMimeTypeString());
@@ -304,7 +318,7 @@ public class ServerSigningParameters {
                         "PAdES signature cannot be in a container");
         }
 
-        if (level.getSignatureForm() == SignatureForm.XAdES) {
+        if (getSignatureLevel().getSignatureForm() == SignatureForm.XAdES) {
             if (!isXML(mimeType) && !isXDC(mimeType) && !isAsice(mimeType) && container == null)
                 if (!(packaging != null && packaging == SignaturePackaging.ENVELOPING))
                     throw new RequestValidationException(
