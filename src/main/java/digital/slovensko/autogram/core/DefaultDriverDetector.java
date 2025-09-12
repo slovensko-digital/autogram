@@ -37,7 +37,7 @@ public class DefaultDriverDetector implements DriverDetector {
         return List.of(
             new PKCS11TokenDriver(translate(r, "tokenDriver.eid.label"), Path.of("/usr/lib/eID_klient/libpkcs11_x64.so"), TokenDriverShortnames.EID, translate(r, "tokenDriver.eid.text")),
             new PKCS11TokenDriver(translate(r, "tokenDriver.eid.old.label"), Path.of("/usr/lib/eac_mw_klient/libpkcs11_x64.so"), TokenDriverShortnames.EID, translate(r, "tokenDriver.eid.text")),
-            new PKCS11TokenDriver("eObčanka", Path.of("/usr/lib/x86_64-linux-gnu/libeopproxy11.so"), TokenDriverShortnames.CZ_EID, EMPTY_HELPER_TEXT),
+            new PKCS11TokenDriver(translate(r, "tokenDriver.cz.eid.label"), Path.of("/usr/lib/x86_64-linux-gnu/libeopproxy11.so"), TokenDriverShortnames.CZ_EID, EMPTY_HELPER_TEXT),
             new PKCS11TokenDriver("I.CA SecureStore", Path.of("/usr/lib/pkcs11/libICASecureStorePkcs11.so"), TokenDriverShortnames.SECURE_STORE, EMPTY_HELPER_TEXT),
             new PKCS11TokenDriver("MONET+ ProID+Q", Path.of("/usr/lib/x86_64-linux-gnu/libproidqcm11.so"), TokenDriverShortnames.MONET, EMPTY_HELPER_TEXT),
             new PKCS11TokenDriver("Gemalto IDPrime 940", Path.of("/usr/lib/libIDPrimePKCS11.so"), TokenDriverShortnames.GEMALTO, translate(r, "tokenDriver.gemalto.text")),

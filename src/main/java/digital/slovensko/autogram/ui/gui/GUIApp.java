@@ -44,7 +44,8 @@ public class GUIApp extends Application {
 
             if (userSettings.isServerEnabled()) {
                 try {
-                    server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), cachedExecutorService);
+                    var languageResources = SupportedLanguage.ENGLISH.loadResources();
+                    server = new AutogramServer(autogram, params.getHost(), params.getPort(), params.isProtocolHttps(), cachedExecutorService, languageResources);
                     server.start();
 
                     var thread = new Thread(server::stop);

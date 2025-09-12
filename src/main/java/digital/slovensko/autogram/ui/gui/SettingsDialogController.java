@@ -130,15 +130,15 @@ public class SettingsDialogController extends BaseController {
         driverChoiceBox.getItems().add(new FakeTokenDriver(i18n("settings.signing.defaultDriver.none.label"), null, "none", ""));
         driverChoiceBox.getItems().addAll(driverDetector.getAvailableDrivers());
         var defaultDriver = driverChoiceBox.getItems().stream()
-                .filter(d -> d != null && d.getName().equals(userSettings.getDefaultDriver())).findFirst();
+                .filter(d -> d != null && d.getShortname().equals(userSettings.getDefaultDriver())).findFirst();
         driverChoiceBox.setValue(defaultDriver.orElse(null));
         driverChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setDriver(newValue.getName());
+            userSettings.setDriver(newValue.getShortname());
         });
     }
 
     private void initializeTsaEnabled() {
-        initializeBooleanRadios(tsaEnabledRadios, t -> userSettings.setTsaEnabled(t), userSettings.getTsaEnabled());
+        initializeBooleanRadios(tsaEnabledRadios, userSettings::setTsaEnabled, userSettings.getTsaEnabled());
     }
 
     private void initializeTsaServer() {
@@ -198,39 +198,39 @@ public class SettingsDialogController extends BaseController {
     }
 
     private void initializeBulkEnabledCheckbox() {
-        initializeBooleanRadios(bulkEnabledRadios, t -> userSettings.setBulkEnabled(t), userSettings.isBulkEnabled());
+        initializeBooleanRadios(bulkEnabledRadios, userSettings::setBulkEnabled, userSettings.isBulkEnabled());
     }
 
     private void initializeEn319132CheckBox() {
-        initializeBooleanRadios(en319132Radios, t -> userSettings.setEn319132(t), userSettings.isEn319132());
+        initializeBooleanRadios(en319132Radios, userSettings::setEn319132, userSettings.isEn319132());
     }
 
     private void initializePlainXmlEnabledCheckBox() {
-        initializeBooleanRadios(plainXmlEnabledRadios, t -> userSettings.setPlainXmlEnabled(t), userSettings.isPlainXmlEnabled());
+        initializeBooleanRadios(plainXmlEnabledRadios, userSettings::setPlainXmlEnabled, userSettings.isPlainXmlEnabled());
     }
 
     private void initializeCorrectDocumentDisplayCheckBox() {
-        initializeBooleanRadios(correctDocumentDisplayRadios, t -> userSettings.setCorrectDocumentDisplay(t),
+        initializeBooleanRadios(correctDocumentDisplayRadios, userSettings::setCorrectDocumentDisplay,
                 userSettings.isCorrectDocumentDisplay());
     }
 
     private void initializeSignatureValidationCheckBox() {
-        initializeBooleanRadios(signatureValidationRadios, t -> userSettings.setSignaturesValidity(t),
+        initializeBooleanRadios(signatureValidationRadios, userSettings::setSignaturesValidity,
                 userSettings.isSignaturesValidity());
     }
 
     private void initializeCheckPDFAComplianceCheckBox() {
-        initializeBooleanRadios(checkPDFAComplianceRadios, t -> userSettings.setPdfaCompliance(t),
+        initializeBooleanRadios(checkPDFAComplianceRadios, userSettings::setPdfaCompliance,
                 userSettings.isPdfaCompliance());
     }
 
     private void initializeExpiredCertsEnabledCheckBox() {
-        initializeBooleanRadios(expiredCertsRadios, t -> userSettings.setExpiredCertsEnabled(t),
+        initializeBooleanRadios(expiredCertsRadios, userSettings::setExpiredCertsEnabled,
                 userSettings.isExpiredCertsEnabled());
     }
 
     private void initializeLocalServerEnabledCheckBox() {
-        initializeBooleanRadios(localServerEnabledRadios, t -> userSettings.setServerEnabled(t),
+        initializeBooleanRadios(localServerEnabledRadios, userSettings::setServerEnabled,
                 userSettings.isServerEnabled());
     }
 
@@ -291,7 +291,7 @@ public class SettingsDialogController extends BaseController {
 
     private void initializeLanguageSettings() {
         var items = observableArrayList(SupportedLanguage.values());
-        items.add(0, SupportedLanguage.SYSTEM);
+        items.addFirst(SupportedLanguage.SYSTEM);
         languageChoiceBox.setItems(items);
         languageChoiceBox.setValue(userSettings.getLanguage().orElse(SupportedLanguage.SYSTEM));
         languageChoiceBox.setConverter(new StringConverter<>() {
@@ -350,7 +350,7 @@ public class SettingsDialogController extends BaseController {
         var driverDetector = new DefaultDriverDetector(userSettings);
         var drivers = driverDetector.getAvailableDrivers();
         if (drivers.isEmpty()) {
-            Text info = new Text("Nebolo detekované žiadne úložisko certifikátov.");
+            Text info = new Text(i18n("settings.other.slotIndex.noSourceDetected.text"));
             info.getStyleClass().add("autogram-description");
             driverSlot.getChildren().add(info);
             driverSlot.getStyleClass().add("autogram-description");
@@ -360,7 +360,7 @@ public class SettingsDialogController extends BaseController {
                 driverName.getStyleClass().add("autogram-label");
                 driverSlot.getChildren().add(driverName);
 
-                final var DEFAULT_LABEL = "Predvolený slot";
+                final var DEFAULT_LABEL = i18n("settings.other.slotIndex.defaultSlot.label");
                 ChoiceBox<String> slotIndex = new ChoiceBox<>();
                 slotIndex.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
                 slotIndex.setValue(userSettings.getDriverSlotIndex(tokenDriver.getShortname()) == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getDriverSlotIndex(tokenDriver.getShortname())));
