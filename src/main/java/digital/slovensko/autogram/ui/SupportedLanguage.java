@@ -58,4 +58,8 @@ public enum SupportedLanguage {
         Locale language = languageSettings.getLanguageLocale();
         return ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n", language);
     }
+
+    public ResourceBundle loadResources() {
+        return ResourceBundle.getBundle("digital.slovensko.autogram.ui.gui.language.l10n", locale);
+    }
 }

@@ -33,6 +33,6 @@ public class ServerResponder extends Responder {
 
     @Override
     public void onDocumentSignFailed(AutogramException error) {
-        EndpointUtils.respondWithError(ErrorResponse.buildFromException(error), exchange);
+        EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(error), exchange);
     }
 }

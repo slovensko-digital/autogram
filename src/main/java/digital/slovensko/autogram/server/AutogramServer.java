@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -25,9 +26,9 @@ public class AutogramServer {
     private final HttpServer server;
     private final Autogram autogram;
 
-    public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps, ExecutorService executorService) {
+    public AutogramServer(Autogram autogram, String hostname, int port, boolean isHttps, ExecutorService executorService, ResourceBundle languageResources) {
         this.autogram = autogram;
-        this.server = buildServer(hostname, port, isHttps);
+        this.server = buildServer(hostname, port, isHttps, languageResources);
         this.server.setExecutor(executorService);
     }
 
@@ -59,8 +60,10 @@ public class AutogramServer {
         server.start();
     }
 
-    private HttpServer buildServer(String hostname, int port, boolean isHttps) {
+    private HttpServer buildServer(String hostname, int port, boolean isHttps, ResourceBundle languageResources) {
         try {
+            ErrorResponseBuilder.init(languageResources);
+
             if (!isHttps)
                 return HttpServer.create(new InetSocketAddress(hostname, port), 0);
 

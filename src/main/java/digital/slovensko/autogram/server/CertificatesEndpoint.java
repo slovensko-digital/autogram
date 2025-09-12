@@ -24,7 +24,7 @@ public class CertificatesEndpoint implements HttpHandler {
             autogram.consentCertificateReadingAndThen(responder, drivers);
 
         } catch (Exception e) {
-            EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
+            EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(e), exchange);
         }
     }
 }

@@ -29,15 +29,15 @@ public class BatchServerResponder extends BatchResponder {
             exchange.getResponseBody().write(gson.toJson(response).getBytes());
             exchange.getResponseBody().close();
         } catch (JsonSyntaxException e) {
-            var errorResponse = ErrorResponse.buildFromException(new MalformedBodyException(JSON_PARSING_FAILED, e));
+            var errorResponse = ErrorResponseBuilder.buildFromException(new MalformedBodyException(JSON_PARSING_FAILED, e));
             EndpointUtils.respondWithError(errorResponse, exchange);
         } catch (Exception e) {
-            EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
+            EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(e), exchange);
         }
     }
 
     @Override
     public void onBatchStartFailure(AutogramException error) {
-        EndpointUtils.respondWithError(ErrorResponse.buildFromException(error), exchange);
+        EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(error), exchange);
     }
 }

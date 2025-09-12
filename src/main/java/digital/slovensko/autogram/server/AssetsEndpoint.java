@@ -44,7 +44,7 @@ public class AssetsEndpoint implements HttpHandler {
 
             stream.close();
         } catch (IOException | InvalidUrlParamException e) {
-            EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
+            EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(e), exchange);
         }
     }
 
