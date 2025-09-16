@@ -5,15 +5,9 @@ import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.util.XMLUtils;
-
-import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
-import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
-import static digital.slovensko.autogram.util.XMLUtils.getSecureDocumentBuilder;
-
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -29,6 +23,12 @@ import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+import static digital.slovensko.autogram.core.eforms.EFormUtils.computeDigest;
+import static digital.slovensko.autogram.core.errors.TransformationException.Error.FAILED;
+import static digital.slovensko.autogram.core.errors.TransformationException.Error.MISSING_SLASH;
+import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
+import static digital.slovensko.autogram.util.XMLUtils.getSecureDocumentBuilder;
+
 public abstract class XDCBuilder {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
 
@@ -36,7 +36,7 @@ public abstract class XDCBuilder {
         var identifier = params.getIdentifier();
         var lastSlashIndex = identifier.lastIndexOf("/");
         if (lastSlashIndex == -1)
-            throw new TransformationException("Nastala chyba počas transformácie dokumentu", "XDC identifikátor formulára neobsahuje žiadnu lomku: " + identifier);
+            throw new TransformationException(MISSING_SLASH, identifier);
 
         var identifierVersion = identifier.substring(lastSlashIndex + 1);
         if (!identifierVersion.matches("[v0-9.]+"))
@@ -61,8 +61,7 @@ public abstract class XDCBuilder {
             return new InMemoryDocument(content, getXdcfFilename(filename), AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
 
         } catch (Exception e) {
-            throw new TransformationException("Nastala chyba počas transformácie dokumentu",
-                    "Nastala chyba počas transformácie dokumentu", e);
+            throw new TransformationException(FAILED, e);
         }
     }
 

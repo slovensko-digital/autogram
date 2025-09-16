@@ -7,7 +7,7 @@ import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
 
-public class SettingsResetDialogController implements SuppressedFocusController {
+public class SettingsResetDialogController extends BaseController implements SuppressedFocusController {
 
     @FXML
     private Node mainBox;
@@ -24,6 +24,9 @@ public class SettingsResetDialogController implements SuppressedFocusController 
 
     public SettingsResetDialogController() {
     }
+
+    @Override
+    public void initialize() { }
 
 
     public void onConfirmResetButtonAction() {

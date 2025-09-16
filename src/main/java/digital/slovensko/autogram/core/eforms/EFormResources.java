@@ -7,6 +7,8 @@ import digital.slovensko.autogram.core.errors.XMLValidationException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSLT_OR_XSD_NOT_FOUND;
+
 public abstract class EFormResources {
     protected final Charset ENCODING = StandardCharsets.UTF_8;
     protected final String url;
@@ -40,7 +42,7 @@ public abstract class EFormResources {
         var transformation = getTransformation();
         var schema = getSchema();
         if (transformation == null || schema == null)
-            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť XSLT transformáciu alebo XSD schému");
+            throw new XMLValidationException(XSLT_OR_XSD_NOT_FOUND);
 
         return new EFormAttributes(getIdentifier(), transformation, schema, EFormUtils.XDC_XMLNS, getXsdIdentifier(),
                 getXsltParams(), shouldEmbedUsedSchemas());

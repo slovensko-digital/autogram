@@ -42,9 +42,7 @@ public class BatchStartCallback {
             responder.onBatchStartFailure((AutogramException) e);
         else {
             Logging.log("Batch start failed with exception: " + e);
-            responder.onBatchStartFailure(
-                    new AutogramException("Unkown error occured while starting batch", "",
-                            "Batch start failed with exception: " + e, e));
+            responder.onBatchStartFailure(new AutogramException("BATCH_START_FAILED", e, e));
         }
     }
 }

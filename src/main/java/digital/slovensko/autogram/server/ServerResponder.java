@@ -27,12 +27,12 @@ public class ServerResponder extends Responder {
             var b64document = Base64.getEncoder().encodeToString(signedDocument.getDocument().openStream().readAllBytes());
             EndpointUtils.respondWith(new SignResponse(b64document, signer, issuer), exchange);
         } catch (IOException e) {
-            throw new ResponseNetworkErrorException("Externá aplikácia nečakala na odpoveď", e);
+            throw new ResponseNetworkErrorException(e);
         }
     }
 
     @Override
     public void onDocumentSignFailed(AutogramException error) {
-        EndpointUtils.respondWithError(ErrorResponse.buildFromException(error), exchange);
+        EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(error), exchange);
     }
 }

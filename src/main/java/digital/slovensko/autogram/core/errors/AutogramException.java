@@ -1,40 +1,59 @@
 package digital.slovensko.autogram.core.errors;
 
+import digital.slovensko.autogram.ui.gui.HasI18n;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 
 import java.io.IOException;
+import java.util.ResourceBundle;
+
+import static digital.slovensko.autogram.core.errors.TsaServerMisconfiguredException.Error.MISSING_HOST_NAME;
+import static digital.slovensko.autogram.core.errors.TsaServerMisconfiguredException.Error.REFUSED;
 
 public class AutogramException extends RuntimeException {
-    private final String heading;
-    private final String subheading;
-    private final String description;
+    private final String errorCode;
+    private final Object[] i18nArgs;
 
     private static final String SIGNING_CERTIFICATE_EXPIRED_EXCEPTION_MESSAGE_REGEX = ".*The signing certificate.*is expired.*";
 
-    public AutogramException(String heading, String subheading, String description, Throwable e) {
+    public AutogramException(String errorCode, Throwable e, Object... i18nArgs) {
         super(e);
-        this.heading = heading;
-        this.subheading = subheading;
-        this.description = description;
+        this.errorCode = errorCode;
+        this.i18nArgs = i18nArgs;
     }
 
-    public AutogramException(String heading, String subheading, String description) {
-        this.heading = heading;
-        this.subheading = subheading;
-        this.description = description;
+    public AutogramException(String errorCode, Object... i18nArgs) {
+        this.errorCode = errorCode;
+        this.i18nArgs = i18nArgs;
     }
 
-    public String getHeading() {
-        return heading;
+    /**
+     * Uses the class name as the error code.
+     */
+    protected AutogramException(Throwable e, Object... i18nArgs) {
+        super(e);
+        this.i18nArgs = i18nArgs;
+        this.errorCode = this.getClass().getSimpleName();
     }
 
-    public String getSubheading() {
-        return subheading;
+    /**
+     * Uses the class name as the error code.
+     */
+    protected AutogramException(Object... i18nArgs) {
+        this.i18nArgs = i18nArgs;
+        this.errorCode = this.getClass().getSimpleName();
     }
 
-    public String getDescription() {
-        return description;
+    public String getHeading(ResourceBundle resources) {
+        return HasI18n.translate(resources, "error.%s.heading".formatted(errorCode), i18nArgs);
+    }
+
+    public String getSubheading(ResourceBundle resources) {
+        return HasI18n.translate(resources, "error.%s.subheading".formatted(errorCode), i18nArgs);
+    }
+
+    public String getDescription(ResourceBundle resources) {
+        return HasI18n.translate(resources, "error.%s.description".formatted(errorCode), i18nArgs);
     }
 
     public static AutogramException createFromDSSException(DSSException e) {
@@ -58,9 +77,9 @@ public class AutogramException extends RuntimeException {
                 } else if (cause.getMessage().equals("Token has been removed")) {
                     return new TokenRemovedException();
                 } else if (cause instanceof DSSExternalResourceException) {
-                    return new TsaServerMisconfiguredException("Nastavený TSA server odmietol pridať časovú pečiatku. Skontrolujte nastavenia TSA servera.", cause);
+                    return new TsaServerMisconfiguredException(REFUSED, cause);
                 } else if (cause instanceof NullPointerException && cause.getMessage().contains("Host name")) {
-                    return new TsaServerMisconfiguredException("Nie je nastavená žiadna adresa TSA servera. Skontrolujte nastavenia TSA servera.", cause);
+                    return new TsaServerMisconfiguredException(MISSING_HOST_NAME, cause);
                 } else if (cause instanceof IOException && (cause.getMessage().contains("The specified module could not be found") || cause.getMessage().contains("Zadaný modul sa nepodarilo"))) {
                     return new PkcsEidWindowsDllException(e);
                 }

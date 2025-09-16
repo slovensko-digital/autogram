@@ -6,7 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Text;
 
-public class ErrorSummaryComponentController {
+public class ErrorSummaryComponentController extends BaseController {
 
     @FXML
     Text heading;
@@ -31,14 +31,14 @@ public class ErrorSummaryComponentController {
     public void setException(AutogramException e) {
         this.exception = e;
 
-        // TODO actually load these from i18n
-        heading.setText(exception.getHeading());
-        subheading.setText(exception.getSubheading());
-        if (exception.getSubheading() == null) {
-            subheading.setManaged(false);
-            subheading.setVisible(false);
+        heading.setText(exception.getHeading(resources));
+        var subheading = exception.getSubheading(resources);
+        this.subheading.setText(subheading);
+        if (subheading == null || subheading.isBlank()) {
+            this.subheading.setManaged(false);
+            this.subheading.setVisible(false);
         }
-        description.setText(exception.getDescription());
+        description.setText(exception.getDescription(resources));
         if (exception.getCause() != null) {
             errorDetails.setText(GUIUtils.exceptionToString(exception));
             showErrorDetailsButton.setVisible(true);
@@ -59,12 +59,12 @@ public class ErrorSummaryComponentController {
             errorDetails.setManaged(false);
             errorDetails.setVisible(false);
             showErrorDetailsButton.getStyleClass().remove("autogram-error-summary__more-open");
-            showErrorDetailsButton.setText("Zobraziť detail chyby");
+            showErrorDetailsButton.setText(i18n("error.details.show.btn"));
         } else {
             errorDetails.setManaged(true);
             errorDetails.setVisible(true);
             showErrorDetailsButton.getStyleClass().add("autogram-error-summary__more-open");
-            showErrorDetailsButton.setText("Schovať detail chyby");
+            showErrorDetailsButton.setText(i18n("error.details.hide.btn"));
         }
         errorDetails.getScene().getWindow().sizeToScene();
     }

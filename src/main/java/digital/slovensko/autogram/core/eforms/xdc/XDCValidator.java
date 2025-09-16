@@ -1,24 +1,30 @@
 package digital.slovensko.autogram.core.eforms.xdc;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.io.StringReader;
-
+import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
+import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
+import digital.slovensko.autogram.util.XMLUtils;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.model.DSSDocument;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
-import digital.slovensko.autogram.core.errors.XMLValidationException;
-import digital.slovensko.autogram.util.XMLUtils;
-import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
-
-import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.model.DSSDocument;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.computeDigest;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.getDigestValueFromElement;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.transformElementToString;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.DATACONTAINER_XSD_VIOLATION;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.FAILED_TO_LOAD_XML;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.FAILED_TO_LOAD_XML_DATA;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSD_DIGEST_MISMATCH;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSD_VIOLATION;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSLT_DIGEST_MISMATCH;
 
 public abstract class XDCValidator {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
@@ -41,22 +47,21 @@ public abstract class XDCValidator {
     public static void validateXml(String xsd, String xslt, DSSDocument xmlDocument, String cannonicalizationMethod, DigestAlgorithm digestAlgorithm, boolean embedUsedSchemas)
             throws OriginalDocumentNotFoundException, XMLValidationException, XMLValidationException {
         if (xmlDocument == null)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument");
+            throw new XMLValidationException(FAILED_TO_LOAD_XML);
 
         var xml = EFormUtils.getXmlFromDocument(xmlDocument);
         if (xml == null)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dáta z XML Datacontainera");
+            throw new XMLValidationException(FAILED_TO_LOAD_XML_DATA);
 
         if (AutogramMimeType.isXDC(xmlDocument.getMimeType())) {
             if (!isXDCContent(xmlDocument))
-                throw new XMLValidationException("Zlyhala validácia XML Datacontainera",
-                        "Poskytnutý XML dokument nie je validný XML Datacontainer podľa XSD schémy");
+                throw new XMLValidationException(DATACONTAINER_XSD_VIOLATION);
 
             if (!embedUsedSchemas && xsd != null && !validateXsdDigest(xsd, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
-                throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XSD schéma sa nezhoduje s odtlačkom v XML Datacontaineri");
+                throw new XMLValidationException(XSD_DIGEST_MISMATCH);
 
             if (!embedUsedSchemas && xslt != null && !validateXsltDigest(xslt, xml.getDocumentElement(), cannonicalizationMethod, digestAlgorithm))
-                throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XSLT transformácia sa nezhoduje s odtlačkom v XML Datacontaineri");
+                throw new XMLValidationException(XSLT_DIGEST_MISMATCH);
         }
 
         var eformContent = transformElementToString(
@@ -66,7 +71,7 @@ public abstract class XDCValidator {
         );
 
         if (xsd != null && !validateXmlContentAgainstXsd(eformContent, xsd))
-            throw new XMLValidationException("Zlyhala validícia XML dokumentu", "XML dokument sa nezhoduje s XSD schémou");
+            throw new XMLValidationException(XSD_VIOLATION);
     }
 
     public static boolean validateXmlContentAgainstXsd(String xmlContent, String xsdSchema) {

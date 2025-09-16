@@ -5,21 +5,31 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
 import digital.slovensko.autogram.drivers.FakeTokenDriver;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-public class SettingsDialogController {
+import static javafx.collections.FXCollections.observableArrayList;
+
+public class SettingsDialogController extends BaseController {
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
     @FXML
@@ -51,6 +61,8 @@ public class SettingsDialogController {
     @FXML
     private HBox localServerEnabledRadios;
     @FXML
+    private ChoiceBox<SupportedLanguage> languageChoiceBox;
+    @FXML
     private ChoiceBox<String> pdfDpiChoiceBox;
     @FXML
     private TextField customKeystorePathTextField;
@@ -76,6 +88,7 @@ public class SettingsDialogController {
         this.userSettings = userSettings;
     }
 
+    @Override
     public void initialize() {
         initializeSignatureLevelChoiceBox();
         initializeDriverChoiceBox();
@@ -91,6 +104,7 @@ public class SettingsDialogController {
         initializeExpiredCertsEnabledCheckBox();
         initializeLocalServerEnabledCheckBox();
         initializeTrustedCountriesList();
+        initializeLanguageSettings();
         initializePdfDpiSettings();
         initializeCustomKeystoreSettings();
         initializeCustomPKCS11DriverPathSettings();
@@ -113,22 +127,22 @@ public class SettingsDialogController {
     private void initializeDriverChoiceBox() {
         var driverDetector = new DefaultDriverDetector(userSettings);
         driverChoiceBox.setConverter(new TokenDriverStringConverter(driverDetector));
-        driverChoiceBox.getItems().add(new FakeTokenDriver("Žiadne", null, "none", ""));
+        driverChoiceBox.getItems().add(new FakeTokenDriver(i18n("settings.signing.defaultDriver.none.label"), null, "none", ""));
         driverChoiceBox.getItems().addAll(driverDetector.getAvailableDrivers());
         var defaultDriver = driverChoiceBox.getItems().stream()
-                .filter(d -> d != null && d.getName().equals(userSettings.getDefaultDriver())).findFirst();
+                .filter(d -> d != null && d.getShortname().equals(userSettings.getDefaultDriver())).findFirst();
         driverChoiceBox.setValue(defaultDriver.orElse(null));
         driverChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setDriver(newValue.getName());
+            userSettings.setDriver(newValue.getShortname());
         });
     }
 
     private void initializeTsaEnabled() {
-        initializeBooleanRadios(tsaEnabledRadios, t -> userSettings.setTsaEnabled(t), userSettings.getTsaEnabled());
+        initializeBooleanRadios(tsaEnabledRadios, userSettings::setTsaEnabled, userSettings.getTsaEnabled());
     }
 
     private void initializeTsaServer() {
-        final var USE_CUSTOM_TSA_LABEL = "Použiť vlastnú adresu TSA servera";
+        final var USE_CUSTOM_TSA_LABEL = i18n("settings.signing.tsaServer.custom.label");
 
         customTsaServerTextField.setText(userSettings.getCustomTsaServer());
         customTsaServerTextField.setOnKeyTyped((e) -> {
@@ -162,15 +176,14 @@ public class SettingsDialogController {
         customTsaServerTextField.setDisable(true);
     }
 
-    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue, String yesText,
-            String noText) {
+    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue) {
         var toggleGroup = new ToggleGroup();
 
-        var yes = new RadioButton(yesText);
+        var yes = new RadioButton(i18n("general.yes"));
         yes.setToggleGroup(toggleGroup);
         parent.getChildren().add(yes);
 
-        var no = new RadioButton(noText);
+        var no = new RadioButton(i18n("general.no"));
         no.setToggleGroup(toggleGroup);
         parent.getChildren().add(no);
 
@@ -184,76 +197,72 @@ public class SettingsDialogController {
             no.setSelected(true);
     }
 
-    private void initializeBooleanRadios(HBox parent, Consumer<Boolean> consumer, boolean defaultValue) {
-        initializeBooleanRadios(parent, consumer, defaultValue, "Áno", "Nie");
-    }
-
     private void initializeBulkEnabledCheckbox() {
-        initializeBooleanRadios(bulkEnabledRadios, t -> userSettings.setBulkEnabled(t), userSettings.isBulkEnabled());
+        initializeBooleanRadios(bulkEnabledRadios, userSettings::setBulkEnabled, userSettings.isBulkEnabled());
     }
 
     private void initializeEn319132CheckBox() {
-        initializeBooleanRadios(en319132Radios, t -> userSettings.setEn319132(t), userSettings.isEn319132());
+        initializeBooleanRadios(en319132Radios, userSettings::setEn319132, userSettings.isEn319132());
     }
 
     private void initializePlainXmlEnabledCheckBox() {
-        initializeBooleanRadios(plainXmlEnabledRadios, t -> userSettings.setPlainXmlEnabled(t), userSettings.isPlainXmlEnabled());
+        initializeBooleanRadios(plainXmlEnabledRadios, userSettings::setPlainXmlEnabled, userSettings.isPlainXmlEnabled());
     }
 
     private void initializeCorrectDocumentDisplayCheckBox() {
-        initializeBooleanRadios(correctDocumentDisplayRadios, t -> userSettings.setCorrectDocumentDisplay(t),
+        initializeBooleanRadios(correctDocumentDisplayRadios, userSettings::setCorrectDocumentDisplay,
                 userSettings.isCorrectDocumentDisplay());
     }
 
     private void initializeSignatureValidationCheckBox() {
-        initializeBooleanRadios(signatureValidationRadios, t -> userSettings.setSignaturesValidity(t),
+        initializeBooleanRadios(signatureValidationRadios, userSettings::setSignaturesValidity,
                 userSettings.isSignaturesValidity());
     }
 
     private void initializeCheckPDFAComplianceCheckBox() {
-        initializeBooleanRadios(checkPDFAComplianceRadios, t -> userSettings.setPdfaCompliance(t),
+        initializeBooleanRadios(checkPDFAComplianceRadios, userSettings::setPdfaCompliance,
                 userSettings.isPdfaCompliance());
     }
 
     private void initializeExpiredCertsEnabledCheckBox() {
-        initializeBooleanRadios(expiredCertsRadios, t -> userSettings.setExpiredCertsEnabled(t),
+        initializeBooleanRadios(expiredCertsRadios, userSettings::setExpiredCertsEnabled,
                 userSettings.isExpiredCertsEnabled());
     }
 
     private void initializeLocalServerEnabledCheckBox() {
-        initializeBooleanRadios(localServerEnabledRadios, t -> userSettings.setServerEnabled(t),
+        initializeBooleanRadios(localServerEnabledRadios, userSettings::setServerEnabled,
                 userSettings.isServerEnabled());
     }
 
     private void initializeTrustedCountriesList() {
         var europeanCountries = List.of(
-                new Country("Belgicko", "BE"),
-                new Country("Bulharsko", "BG"),
-                new Country("Česká republika", "CZ"),
-                new Country("Chorvátsko", "HR"),
-                new Country("Cyprus", "CY"),
-                new Country("Dánsko", "DK"),
-                new Country("Estónsko", "EE"),
-                new Country("Fínsko", "FI"),
-                new Country("Francúzsko", "FR"),
-                new Country("Grécko", "EL"),
-                new Country("Holandsko", "NL"),
-                new Country("Írsko", "IE"),
-                new Country("Litva", "LT"),
-                new Country("Lotyšsko", "LV"),
-                new Country("Luxembursko", "LU"),
-                new Country("Maďarsko", "HU"),
-                new Country("Malta", "MT"),
-                new Country("Nemecko", "DE"),
-                new Country("Poľsko", "PL"),
-                new Country("Portugalsko", "PT"),
-                new Country("Rakúsko", "AT"),
-                new Country("Rumunsko", "RO"),
-                new Country("Slovensko", "SK"),
-                new Country("Slovinsko", "SI"),
-                new Country("Španielsko", "ES"),
-                new Country("Švédsko", "SE"),
-                new Country("Taliansko", "IT"));
+                new Country("BE"),
+                new Country("BG"),
+                new Country("CZ"),
+                new Country("HR"),
+                new Country("CY"),
+                new Country("DK"),
+                new Country("EE"),
+                new Country("FI"),
+                new Country("FR"),
+                new Country("EL", "GR"),
+                new Country("NL"),
+                new Country("IE"),
+                new Country("LT"),
+                new Country("LV"),
+                new Country("LU"),
+                new Country("HU"),
+                new Country("MT"),
+                new Country("DE"),
+                new Country("PL"),
+                new Country("PT"),
+                new Country("AT"),
+                new Country("RO"),
+                new Country("SK"),
+                new Country("SI"),
+                new Country("ES"),
+                new Country("SE"),
+                new Country("IT"));
 
         var trustedList = userSettings.getTrustedList();
         trustedCountriesList.getChildren().addAll(europeanCountries.stream()
@@ -261,22 +270,49 @@ public class SettingsDialogController {
     }
 
     private HBox createCountryElement(Country country, boolean isCountryInTrustedList) {
-        var countryBox = new VBox(new TextFlow(new Text(country.getName())));
+        var countryBox = new VBox(new TextFlow(new Text(country.getName(resources.getLocale()))));
         countryBox.getStyleClass().add("left");
 
-        var checkBox = new CheckBox(isCountryInTrustedList ? "Zapnuté" : "Vypnuté");
+        var checkBox = new CheckBox(isCountryInTrustedList ? i18n("general.on.label") : i18n("general.off.label"));
         checkBox.setSelected(isCountryInTrustedList);
         checkBox.setOnAction(event -> {
             if (checkBox.isSelected()) {
                 userSettings.addToTrustedList(country.getShortname());
-                checkBox.setText("Zapnuté");
+                checkBox.setText(i18n("general.on.label"));
             } else {
                 userSettings.removeFromTrustedList(country.getShortname());
-                checkBox.setText("Vypnuté");
+                checkBox.setText(i18n("general.off.label"));
             }
         });
 
         return new HBox(countryBox, new VBox(checkBox));
+    }
+
+
+    private void initializeLanguageSettings() {
+        var items = observableArrayList(SupportedLanguage.values());
+        items.addFirst(SupportedLanguage.SYSTEM);
+        languageChoiceBox.setItems(items);
+        languageChoiceBox.setValue(userSettings.getLanguage().orElse(SupportedLanguage.SYSTEM));
+        languageChoiceBox.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(SupportedLanguage language) {
+                if (language == SupportedLanguage.SYSTEM) {
+                    return i18n("settings.other.language.system.label");
+                }
+
+                return language.getDisplayLanguage();
+            }
+
+            @Override
+            public SupportedLanguage fromString(String string) {
+                return null; // not editable, will never be called
+            }
+        });
+        languageChoiceBox.getSelectionModel().selectedItemProperty()
+                .addListener((observable, oldValue, newValue) -> {
+                    userSettings.setLanguage(newValue);
+                });
     }
 
     private void initializePdfDpiSettings() {
@@ -314,7 +350,7 @@ public class SettingsDialogController {
         var driverDetector = new DefaultDriverDetector(userSettings);
         var drivers = driverDetector.getAvailableDrivers();
         if (drivers.isEmpty()) {
-            Text info = new Text("Nebolo detekované žiadne úložisko certifikátov.");
+            Text info = new Text(i18n("settings.other.slotIndex.noSourceDetected.text"));
             info.getStyleClass().add("autogram-description");
             driverSlot.getChildren().add(info);
             driverSlot.getStyleClass().add("autogram-description");
@@ -324,7 +360,7 @@ public class SettingsDialogController {
                 driverName.getStyleClass().add("autogram-label");
                 driverSlot.getChildren().add(driverName);
 
-                final var DEFAULT_LABEL = "Predvolený slot";
+                final var DEFAULT_LABEL = i18n("settings.other.slotIndex.defaultSlot.label");
                 ChoiceBox<String> slotIndex = new ChoiceBox<>();
                 slotIndex.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
                 slotIndex.setValue(userSettings.getDriverSlotIndex(tokenDriver.getShortname()) == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getDriverSlotIndex(tokenDriver.getShortname())));
@@ -357,7 +393,7 @@ public class SettingsDialogController {
         var root = GUIUtils.loadFXML(controller, "settings-reset-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Obnovenie pôvodných nastavení");
+        stage.setTitle(controller.i18n("settings.reset.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);

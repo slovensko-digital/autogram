@@ -1,13 +1,13 @@
 package digital.slovensko.autogram.ui.gui;
 
 import javafx.application.HostServices;
-import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class PkcsEidWindowsDllErrorController implements SuppressedFocusController {
+public class PkcsEidWindowsDllErrorController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
 
     @FXML
@@ -16,6 +16,9 @@ public class PkcsEidWindowsDllErrorController implements SuppressedFocusControll
     public PkcsEidWindowsDllErrorController(HostServices hostServices) {
         this.hostServices = hostServices;
     }
+
+    @Override
+    public void initialize() { }
 
     public void downloadAction(ActionEvent ignored) {
         hostServices.showDocument("https://sluzby.slovensko.digital/autogram/vc-redist-redirect");

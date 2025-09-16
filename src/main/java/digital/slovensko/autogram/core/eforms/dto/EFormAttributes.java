@@ -5,6 +5,10 @@ import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.errors.EFormException;
 import eu.europa.esig.dss.model.DSSDocument;
 
+import static digital.slovensko.autogram.core.errors.EFormException.Error.MISSING_ID;
+import static digital.slovensko.autogram.core.errors.EFormException.Error.XSD;
+import static digital.slovensko.autogram.core.errors.EFormException.Error.XSLT;
+
 public record EFormAttributes(String identifier, String transformation, String schema, String containerXmlns,
                               String xsdIdentifier, XsltParams xsltParams, boolean embedUsedSchemas) {
 
@@ -43,16 +47,16 @@ public record EFormAttributes(String identifier, String transformation, String s
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")) {
 
             if (schema == null)
-                throw new EFormException("Chýba XSD schéma", "XSD Schéma je povinný atribút pre XML Datacontainer");
+                throw new EFormException(XSD);
 
             if (!embedUsedSchemas && xsdIdentifier == null)
                 xsdIdentifier = EFormUtils.fillXsdIdentifier(identifier);
 
             if (transformation == null)
-                throw new EFormException("Chýba XSLT transformácia", "XSLT transformácia je povinný atribút pre XML Datacontainer");
+                throw new EFormException(XSLT);
 
             if (!embedUsedSchemas && identifier == null)
-                throw new EFormException("Chýba identifikátor", "Identifikátor je povinný atribút pre XML Datacontainer");
+                throw new EFormException(MISSING_ID);
         }
 
         if (EFormUtils.isOrsrUri(identifier))

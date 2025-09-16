@@ -1,29 +1,31 @@
 package digital.slovensko.autogram.core.settings;
 
+import java.util.Locale;
+
 public class Country {
 
-    private String name;
+    private final String shortname;
+    private final String isoCode;
 
-    private String shortname;
-
-    public Country(String name, String shrotname) {
-        this.name = name;
-        this.shortname = shrotname;
+    public Country(String shortname) {
+        this.shortname = shortname;
+        this.isoCode = shortname;
     }
 
-    public String getName() {
-        return name;
+    public Country(String shortname, String isoCode) {
+        this.shortname = shortname;
+        this.isoCode = isoCode;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getName(Locale inLocale) {
+        if (inLocale == null) return isoCode;
+
+        return new Locale(inLocale.getLanguage(), isoCode).getDisplayCountry(inLocale);
     }
+
 
     public String getShortname() {
         return shortname;
     }
 
-    public void setShortname(String shrotname) {
-        this.shortname = shrotname;
-    }
 }

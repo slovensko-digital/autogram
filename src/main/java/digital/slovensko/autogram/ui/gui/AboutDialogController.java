@@ -7,8 +7,11 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
-public class AboutDialogController implements SuppressedFocusController {
+import static digital.slovensko.autogram.ui.gui.TextHighlighter.highlight;
+
+public class AboutDialogController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
     @FXML
     Node mainBox;
@@ -16,13 +19,17 @@ public class AboutDialogController implements SuppressedFocusController {
     Hyperlink link;
     @FXML
     Text versionText;
+    @FXML
+    TextFlow title;
 
     public AboutDialogController(HostServices hostServices) {
         this.hostServices = hostServices;
     }
 
+    @Override
     public void initialize() {
         versionText.setText(Main.getVersionString());
+        highlight("Autogram").in(title);
     }
 
     public void githubLinkAction(ActionEvent ignored) {

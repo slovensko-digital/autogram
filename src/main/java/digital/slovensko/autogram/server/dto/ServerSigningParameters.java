@@ -1,16 +1,5 @@
 package digital.slovensko.autogram.server.dto;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.isAsice;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.regex.Pattern;
-
-import javax.xml.crypto.dsig.CanonicalizationMethod;
-
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
@@ -28,6 +17,27 @@ import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
+
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Base64;
+
+import static digital.slovensko.autogram.core.AutogramMimeType.isAsice;
+import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
+import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
+import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.INVALID_XSD;
+import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.INVALID_XSLT;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.CONTAINER_MISMATCH;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.CONTAINER_UNSUPPORTED;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.EMPTY_PARAMS_LEVEL;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.ID_MISSING;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.INVALID_PACKAGING;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MIME_TYPE_MISMATCH;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SCHEMA_MISSING;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.TRANSFORMATION_MISSING;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.UNSUPPORTED_SIGN_LEVEL;
 
 public class ServerSigningParameters {
     public enum LocalCanonicalizationMethod {
@@ -197,7 +207,7 @@ public class ServerSigningParameters {
         try {
             return new String(Base64.getDecoder().decode(transformation), StandardCharsets.UTF_8);
         } catch (IllegalArgumentException e) {
-            throw new MalformedBodyException("XML validation failed", "Invalid XSLT");
+            throw new MalformedBodyException(INVALID_XSLT);
         }
     }
 
@@ -211,7 +221,7 @@ public class ServerSigningParameters {
         try {
             return new String(Base64.getDecoder().decode(schema), StandardCharsets.UTF_8);
         } catch (IllegalArgumentException e) {
-            throw new MalformedBodyException("XML validation failed", "Invalid XSD");
+            throw new MalformedBodyException(INVALID_XSD);
         }
     }
 
@@ -272,7 +282,7 @@ public class ServerSigningParameters {
         var report = SignatureValidator.getSignedDocumentSimpleReport(document);
         var signedLevel = SignatureValidator.getSignedDocumentSignatureLevel(report);
         if (signedLevel == null)
-            throw new RequestValidationException("Parameters.Level can't be empty if document is not signed yet", "");
+            throw new RequestValidationException(EMPTY_PARAMS_LEVEL);
 
         container = report.getContainerType();
         level = switch (signedLevel.getSignatureForm()) {
@@ -283,7 +293,7 @@ public class ServerSigningParameters {
         };
 
         if (level == null)
-            throw new RequestValidationException("Signed document has unsupported SignatureLevel", "");
+            throw new RequestValidationException(UNSUPPORTED_SIGN_LEVEL);
     }
 
     private String getFsFormId() {
@@ -295,7 +305,7 @@ public class ServerSigningParameters {
 
     public void validate(MimeType mimeType) throws RequestValidationException {
         if (level == null)
-            throw new RequestValidationException("Parameters.Level is required", "");
+            throw new RequestValidationException(MISSING_FIELD, "Parameters.Level");
 
         var supportedLevels = Arrays.asList(
                 SignatureLevel.XAdES_BASELINE_B,
@@ -310,42 +320,32 @@ public class ServerSigningParameters {
 
         if (getSignatureLevel().getSignatureForm() == SignatureForm.PAdES) {
             if (!mimeType.equals(MimeTypeEnum.PDF))
-                throw new RequestValidationException("PayloadMimeType and Parameters.Level mismatch",
-                        "Parameters.Level: PAdES is not supported for this payload: " + mimeType.getMimeTypeString());
+                throw new RequestValidationException(MIME_TYPE_MISMATCH, mimeType.getMimeTypeString());
 
             if (container != null)
-                throw new RequestValidationException("Parameters.Container is not supported for PAdES",
-                        "PAdES signature cannot be in a container");
+                throw new RequestValidationException(CONTAINER_UNSUPPORTED);
         }
 
         if (getSignatureLevel().getSignatureForm() == SignatureForm.XAdES) {
             if (!isXML(mimeType) && !isXDC(mimeType) && !isAsice(mimeType) && container == null)
                 if (!(packaging != null && packaging == SignaturePackaging.ENVELOPING))
-                    throw new RequestValidationException(
-                            "PayloadMimeType, Parameters.Level, Parameters.Container and Parameters.Packaging mismatch",
-                            "Parameters.Level: XAdES without container and ENVELOPED packaging is not supported for this payload: "
-                                    + mimeType.getMimeTypeString());
+                    throw new RequestValidationException(INVALID_PACKAGING, mimeType.getMimeTypeString());
         }
 
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")
                 && !isXDC(mimeType)) {
 
             if (!autoLoadEform && (transformation == null || transformation.isEmpty()))
-                throw new RequestValidationException("Parameters.Transformation is null",
-                        "Parameters.Transformation or Parameters.AutoLoadEform is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
+                throw new RequestValidationException(TRANSFORMATION_MISSING);
 
             if (!autoLoadEform && (schema == null || schema.isEmpty()))
-                throw new RequestValidationException("Parameters.Schema is null",
-                        "Parameters.Schema or Parameters.AutoLoadEform is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
+                throw new RequestValidationException(SCHEMA_MISSING);
 
             if (identifier == null || identifier.isEmpty())
-                throw new RequestValidationException("Parameters.Identifier is null",
-                        "Parameters.Identifier is required when creating XML datacontainer - when Parameters.ContainerXmlns is set to xmldatacontainer");
+                throw new RequestValidationException(ID_MISSING);
 
             if (!isXML(mimeType))
-                throw new RequestValidationException("PayloadMimeType and Parameters.ContainerXmlns mismatch",
-                        "Parameters.ContainerXmlns: XML datacontainer is not supported for this payload: "
-                                + mimeType.getMimeTypeString());
+                throw new RequestValidationException(CONTAINER_MISMATCH, mimeType.getMimeTypeString());
         }
     }
 }

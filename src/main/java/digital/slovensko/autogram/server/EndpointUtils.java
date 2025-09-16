@@ -2,10 +2,10 @@ package digital.slovensko.autogram.server;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
-
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.EmptyBodyException;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class EndpointUtils {
                 exchange.getResponseBody().write(gson.toJson(error.getBody()).getBytes());
             exchange.getResponseBody().close();
         } catch (IOException e) {
-            throw new ResponseNetworkErrorException("Externá aplikácia nečakala na odpoveď", e);
+            throw new ResponseNetworkErrorException(e);
         }
     }
 
@@ -31,14 +31,14 @@ public class EndpointUtils {
             exchange.getResponseBody().write(gson.toJson(response).getBytes());
             exchange.getResponseBody().close();
         } catch (IOException e) {
-            throw new ResponseNetworkErrorException("Externá aplikácia nečakala na odpoveď", e);
+            throw new ResponseNetworkErrorException(e);
         }
     }
 
     public static <T> T loadFromJsonExchange(HttpExchange exchange, Class<T> classOfT) throws IOException {
         var content = new String(exchange.getRequestBody().readAllBytes());
         if (content == null || content.isEmpty())
-            throw new EmptyBodyException("Empty body");
+            throw new EmptyBodyException();
         var ret = gson.fromJson(content, classOfT);
         if (ret == null)
             throw new IOException("Failed to parse JSON body");

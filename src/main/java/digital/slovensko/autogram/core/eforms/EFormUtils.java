@@ -1,7 +1,35 @@
 package digital.slovensko.autogram.core.eforms;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
+import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
+import digital.slovensko.autogram.core.eforms.dto.XsltParams;
+import digital.slovensko.autogram.core.errors.EFormException;
+import digital.slovensko.autogram.core.errors.ServiceUnavailableException;
+import digital.slovensko.autogram.core.errors.TransformationException;
+import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
+import digital.slovensko.autogram.util.XMLUtils;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
+import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
+import eu.europa.esig.dss.spi.DSSUtils;
+import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
+import eu.europa.esig.dss.xml.utils.XMLCanonicalizer;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -16,33 +44,21 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
-import digital.slovensko.autogram.core.errors.*;
-import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
-import eu.europa.esig.dss.xml.utils.XMLCanonicalizer;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import digital.slovensko.autogram.core.eforms.dto.XsltParams;
-import digital.slovensko.autogram.util.XMLUtils;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.DSSException;
-import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
-import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
-import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.xades.DSSXMLUtils;
+import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
+import static digital.slovensko.autogram.core.errors.EFormException.Error.FS_FORM_ID;
+import static digital.slovensko.autogram.core.errors.TransformationException.Error.XSLT_FAILED;
+import static digital.slovensko.autogram.core.errors.TransformationParsingErrorException.Error.FAILED_PARSING;
+import static digital.slovensko.autogram.core.errors.TransformationParsingErrorException.Error.MISSING_OUTPUT_ELEMENT;
+import static digital.slovensko.autogram.core.errors.TransformationParsingErrorException.Error.MISSING_OUTPUT_METHOD_ATTRIBUTE;
+import static digital.slovensko.autogram.core.errors.TransformationParsingErrorException.Error.UNSUPPORTED_OUTPUT_METHOD;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.ATTRIBUTES_NOT_FOUND;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.DIGEST;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.DIGEST_NOT_FOUND;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.ELEMENT_NOT_FOUND;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.EMPTY_XMLDATA;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.FAILED_TO_LOAD_XML;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.FORM_ID_TO_XSD;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XMLDATA_INVALID_TEXT;
 
 public abstract class EFormUtils {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
@@ -64,11 +80,11 @@ public abstract class EFormUtils {
             var elem = document.getDocumentElement();
             var outputElements = elem.getElementsByTagNameNS("http://www.w3.org/1999/XSL/Transform", "output");
             if (outputElements.getLength() == 0)
-                throw new TransformationParsingErrorException("Failed to parse transformation. Missing output element");
+                throw new TransformationParsingErrorException(MISSING_OUTPUT_ELEMENT);
 
             var methodAttribute = outputElements.item(0).getAttributes().getNamedItem("method");
             if (methodAttribute == null)
-                throw new TransformationParsingErrorException("Failed to parse transformation. Missing output method attrbiute");
+                throw new TransformationParsingErrorException(MISSING_OUTPUT_METHOD_ATTRIBUTE);
 
             method = methodAttribute.getNodeValue();
 
@@ -84,10 +100,10 @@ public abstract class EFormUtils {
                     return "XHTML";
             }
 
-            throw new TransformationParsingErrorException("Failed to parse transformation. Unsupported output method: " + method);
+            throw new TransformationParsingErrorException(UNSUPPORTED_OUTPUT_METHOD, method);
 
         } catch (SAXException | IOException | ParserConfigurationException e) {
-            throw new TransformationParsingErrorException("Failed to parse transformation output method");
+            throw new TransformationParsingErrorException(FAILED_PARSING);
         }
     }
 
@@ -99,22 +115,22 @@ public abstract class EFormUtils {
 
             return new String(asBase64, encoding);
         } catch (DSSException e) {
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa vypočítať odtlačok", e);
+            throw new XMLValidationException(DIGEST, e);
         }
     }
 
     public static String getDigestValueFromElement(Element xdc, String elementLocalName) throws XMLValidationException {
         var element = xdc.getElementsByTagNameNS(XDC_XMLNS, elementLocalName).item(0);
         if (element == null)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element " + elementLocalName + " nebol nájdený");
+            throw new XMLValidationException(ELEMENT_NOT_FOUND, elementLocalName);
 
         var attributes = element.getAttributes();
         if (attributes == null || attributes.getLength() == 0)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Atribúty v " + elementLocalName + " neboli nájdené");
+            throw new XMLValidationException(ATTRIBUTES_NOT_FOUND, elementLocalName);
 
         var digestValue = attributes.getNamedItem("DigestValue");
         if (digestValue == null)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Hodnota odtlačku v " + elementLocalName + " nebola nájdená");
+            throw new XMLValidationException(DIGEST_NOT_FOUND, elementLocalName);
 
         return digestValue.getNodeValue();
     }
@@ -122,7 +138,7 @@ public abstract class EFormUtils {
     public static Element getElementFromXdc(Element xdc, String elementLocalName) {
         var element = xdc.getElementsByTagNameNS(XDC_XMLNS, elementLocalName).item(0);
         if (element == null)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element " + elementLocalName + " nebol nájdený");
+            throw new XMLValidationException(ELEMENT_NOT_FOUND, elementLocalName);
 
         return (Element) element;
     }
@@ -150,20 +166,20 @@ public abstract class EFormUtils {
 
             return writer.toString();
         } catch (Exception e) {
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
+            throw new XMLValidationException(FAILED_TO_LOAD_XML, e);
         }
     }
 
     public static XsltParams getXsltParamsFromXsltReference(Element xdc) {
         var element = xdc.getElementsByTagNameNS(XDC_XMLNS, "UsedPresentationSchemaReference").item(0);
         if (element == null)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element UsedPresentationSchemaReference nebol nájdený");
+            throw new XMLValidationException(ELEMENT_NOT_FOUND, "UsedPresentationSchemaReference");
 
         var identifier = element.getTextContent();
 
         var attributes = element.getAttributes();
         if (attributes == null || attributes.getLength() == 0)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Atribúty v UsedPresentationSchemaReference neboli nájdené");
+            throw new XMLValidationException(ATTRIBUTES_NOT_FOUND, "UsedPresentationSchemaReference");
 
         var languageNode = attributes.getNamedItem("Language");
         var language = languageNode == null ? null : languageNode.getNodeValue();
@@ -270,7 +286,7 @@ public abstract class EFormUtils {
             return parsedDocument;
 
         } catch (Exception e) {
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
+            throw new XMLValidationException(FAILED_TO_LOAD_XML, e);
         }
     }
 
@@ -279,7 +295,7 @@ public abstract class EFormUtils {
         var xmlData = xmlDocument.getElementsByTagNameNS(XDC_XMLNS, "XMLData").item(0);
 
         if (xmlData == null)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData sa nepodarilo nájsť v XML Dataconatineri");
+            throw new XMLValidationException(ELEMENT_NOT_FOUND, "XMLData");
 
         Document responseDocument = null;
         try {
@@ -289,17 +305,17 @@ public abstract class EFormUtils {
         }
 
         if (xmlData.getFirstChild() == null)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData je prázdny");
+            throw new XMLValidationException(EMPTY_XMLDATA);
 
         var firstChild = getNoTextFirstChild(xmlData);
         if (firstChild == null)
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Element XMLData je prázdny");
+            throw new XMLValidationException(EMPTY_XMLDATA);
 
         try {
             var node = responseDocument.importNode(firstChild, true);
             responseDocument.appendChild(node);
         } catch (DOMException e) {
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Nepodarilo sa načítať XML dokument", e);
+            throw new XMLValidationException(FAILED_TO_LOAD_XML, e);
         }
 
         return responseDocument;
@@ -311,7 +327,7 @@ public abstract class EFormUtils {
         // If there is a text node, validate it against all-whitespace regex and skip it.
         if (node.getNodeType() == Node.TEXT_NODE) {
             if (!node.getNodeValue().matches("\\s*"))
-                throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "XMLData obsahuje neplatný text");
+                throw new XMLValidationException(XMLDATA_INVALID_TEXT);
 
             return node.getNextSibling();
         }
@@ -341,7 +357,7 @@ public abstract class EFormUtils {
             return outputTarget.getWriter().toString();
 
         } catch (Exception e) {
-            throw new TransformationException("Zlyhala transformácia podľa XSLT", "Nepodarilo sa transformovať XML dokument podľa XSLT transformácie", e);
+            throw new TransformationException(XSLT_FAILED, e);
         }
     }
 
@@ -373,7 +389,7 @@ public abstract class EFormUtils {
 
     public static String fillXsdIdentifier(String formIdentifier) {
         if (formIdentifier == null)
-            throw new XMLValidationException("Zlyhala príprava XML Datacontainera", "Nepodarilo sa vyrobiť identifikátor XSD schémy z identifikátora formulára");
+            throw new XMLValidationException(FORM_ID_TO_XSD);
 
         var t = formIdentifier.split("/");
         var url = t[t.length - 2] + "/" + t[t.length - 1];
@@ -402,7 +418,7 @@ public abstract class EFormUtils {
         if (fsFormId == null || fsFormId.isEmpty()) return null;
 
         if (!validateFsFormIdFormat(fsFormId))
-            throw new EFormException("Nesprávny Identifikátor FS formulára", "Identifikátor: \"" + fsFormId + "\" nezodpovedá predpísanému formátu.");
+            throw new EFormException(FS_FORM_ID, fsFormId);
 
         return fsFormId;
     }

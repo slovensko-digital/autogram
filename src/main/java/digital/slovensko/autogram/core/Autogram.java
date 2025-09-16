@@ -1,6 +1,14 @@
 package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.core.errors.*;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchConflictException;
+import digital.slovensko.autogram.core.errors.BatchNotStartedException;
+import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.PINIncorrectException;
+import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -71,7 +79,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             if (PDFUtils.isPdfAndPasswordProtected(job.getDocument())) {
                 ui.onUIThreadDo(() -> {
-                    ui.showError(new AutogramException("Nastala chyba", "Dokument je chránený heslom", "Snažíte sa podpísať dokument chránený heslom, čo je funkcionalita, ktorá nie je podporovaná.\n\nOdstráňte ochranu heslom a potom budete môcť dokument podpísať."));
+                    ui.showError(new AutogramException("LOCKED_PDF"));
                 });
                 return;
             }
@@ -141,7 +149,7 @@ public class Autogram {
      */
     public void batchStart(int totalNumberOfDocuments, BatchResponder responder) {
         if (batch != null && !batch.isEnded())
-            throw new BatchConflictException("Iné hromadné podpisovanie už prebieha");
+            throw new BatchConflictException();
         batch = new Batch(totalNumberOfDocuments);
 
         var startBatchTask = new BatchStartCallback(batch, responder);
@@ -176,7 +184,7 @@ public class Autogram {
                     throw e;
                 }
             } catch (Exception e) {
-                AutogramException autogramException = new AutogramException("Document signing has failed", "", "", e);
+                AutogramException autogramException = new AutogramException("SIGNING_FAILED", e);
                 job.onDocumentSignFailed(autogramException);
             }
             ui.onUIThreadDo(() -> {

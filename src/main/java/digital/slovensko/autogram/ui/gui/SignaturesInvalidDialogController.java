@@ -7,9 +7,9 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.*;
+import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatureTableRows;
 
-public class SignaturesInvalidDialogController implements SuppressedFocusController {
+public class SignaturesInvalidDialogController extends BaseController implements SuppressedFocusController {
     private final SigningDialogController signingDialogController;
     private final Reports reports;
 
@@ -30,7 +30,7 @@ public class SignaturesInvalidDialogController implements SuppressedFocusControl
     public void initialize() {
         signaturesTable.getChildren().clear();
         signaturesTable.getChildren().addAll(
-                createSignatureTableRows(reports, true, e -> {
+                createSignatureTableRows(resources, reports, true, e -> {
                     signingDialogController.onShowSignaturesButtonPressed(null);
                 }, 6));
     }
