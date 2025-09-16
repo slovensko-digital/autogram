@@ -21,10 +21,10 @@ servers:
 tags:
   - name: Sign
     description: Document signing
-  - name: Batch
-    description: Signing multiple documents in batch, with same signature. Process is [start batch](#/Batch/startBatch), [sign document](#/Batch/signDocument),... , sign document, [end batch](#/Batch/endBatch).
   - name: Info
     description: Information and status of the server
+  - name: Batch
+    description: Signing multiple documents in batch, with same signature. Process is [start batch](#/Batch/startBatch), [sign document](#/Batch/signDocument),... , sign document, [end batch](#/Batch/endBatch).
     externalDocs:
       description: More info
       url: https://github.com/slovensko-digital/autogram/tree/main/docs/batch-sign-api.md
@@ -874,6 +874,35 @@ components:
               - keystore
               - custom_pkcs11
           description: List of available (detected) card drivers that can be used for signing
+        features:
+          type: array
+          items:
+            type: string
+            enum:
+              - CONTENT_TIMESTAMP
+              - EXTERNAL_CONTENT_TIMESTAMP
+              - TIMESTAMP
+              - EN319132
+              - BATCH_SIGN
+              - PDF_A_CHECK
+              - PDF_EMBEDDED_ATTACHMENTS_CHECK
+              - SIGNING_CERTIFICATE_QUALIFIED_CHECK
+              - PADES
+              - PADES_VISUAL_SIGNATURE
+              - CADES
+              - XADES
+              - ASICE
+              - ASICE_MULTIPLE_DOCUMENTS
+              - ASICS
+              - AUTOLOAD_EFORMS
+              - XDC_SIGN
+              - XDC_VISUALIZE
+              - XDC_CREATE
+              - XDC_EMBEDDED_SIGN
+              - XDC_EMBEDDED_VISUALIZE
+              - XDC_EMBEDDED_CREATE
+              - SIGNATURE_VALIDATION
+          description: List of supported features
 
     BatchStartRequestBody:
       type: object
