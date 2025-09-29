@@ -322,7 +322,7 @@
                             <providerConfig>
                                 <type>jdk</type>
                                 <version>21.0.8+12</version>
-                                <arch>amd64-full</arch>
+                                <arch>i586-full</arch>
                             </providerConfig>
                         </configuration>
                     </execution>
