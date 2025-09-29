@@ -29,7 +29,7 @@ public class GUIApp extends Application {
 
             Platform.setImplicitExit(false);
             setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
-            var titleString = "Autogram";
+            var titleString = "Autogram (32-bit)";
 
             autogram = new Autogram(new GUI(getHostServices(), userSettings), userSettings);
             var finalAutogram = autogram;

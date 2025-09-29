@@ -36,12 +36,12 @@ public class ErrorResponseBuilder {
             case PINIncorrectException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("PIN_INCORRECT", ex));
             case FunctionCanceledException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("FUNCTION_CANCELED", ex));
             case UnsupportedSignatureLevelException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNSUPPORTED_SIGNATURE_LEVEL", ex));
-            case RequestValidationException _,
-                 XMLValidationException _,
-                 SigningParametersException _,
-                 EFormException _,
-                 TransformationException _,
-                 TransformationParsingErrorException _ ->
+            case RequestValidationException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNPROCESSABLE_INPUT", (AutogramException) ex));
+            case XMLValidationException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNPROCESSABLE_INPUT", (AutogramException) ex));
+            case SigningParametersException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNPROCESSABLE_INPUT", (AutogramException) ex));
+            case EFormException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNPROCESSABLE_INPUT", (AutogramException) ex));
+            case TransformationException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNPROCESSABLE_INPUT", (AutogramException) ex));
+            case TransformationParsingErrorException ex ->
                     new ErrorResponse(422, instance.buildResponseWithTranslations("UNPROCESSABLE_INPUT", (AutogramException) e));
             case MultipleOriginalDocumentsFoundException ex ->
                     new ErrorResponse(422, instance.buildResponseWithTranslations("MULTIPLE_ORIGINAL_DOCUMENTS", ex));

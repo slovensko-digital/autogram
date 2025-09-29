@@ -42,7 +42,7 @@ jobs:
             windows-32bit-maven-
 
       - name: Package with Maven (32-bit)
-        run: ./mvnw -B -C -V package -Dplatform.architecture=x86
+        run: ./mvnw -B -C -V package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
