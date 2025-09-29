@@ -26,7 +26,7 @@ jobs:
       - name: Set up JDK 32-bit
         uses: actions/setup-java@v3
         with:
-          java-version: "24.0.1+11"
+          java-version: "21.0.8+12"
           distribution: "liberica"
           java-package: "jdk+fx"
           architecture: "x86"
