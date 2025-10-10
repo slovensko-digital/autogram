@@ -29,7 +29,7 @@ import javafx.stage.Stage;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatureTableRows;
 import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createWarningText;
@@ -308,7 +308,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         webViewContainer.setManaged(true);
     }
 
-    public void showPDFVisualization(ArrayList<byte[]> data) {
+    public void showPDFVisualization(List<byte[]> data) {
         data.forEach(page -> {
             var imgView = new ImageView();
             imgView.fitWidthProperty().bind(pdfVisualizationContainer.widthProperty().subtract(30));

@@ -2,12 +2,12 @@ package digital.slovensko.autogram.ui;
 
 import eu.europa.esig.dss.model.DSSDocument;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface Visualizer {
     void showUnsupportedVisualization();
 
-    void showPDFVisualization(ArrayList<byte[]> base64EncodedDocument);
+    void showPDFVisualization(List<byte[]> base64EncodedDocument);
 
     void showHTMLVisualization(String document);
 
