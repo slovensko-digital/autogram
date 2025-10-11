@@ -21,4 +21,7 @@ public abstract class Visualization {
     protected double getVisualizationWidth() {
         return job.getVisualizationWidth();
     }
+
+    public void cancel() {
+    }
 }

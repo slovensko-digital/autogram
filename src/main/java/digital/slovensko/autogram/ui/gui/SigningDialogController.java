@@ -272,6 +272,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     public void close() {
+        visualization.cancel();
         var window = mainButton.getScene().getRoot().getScene().getWindow();
         if (window instanceof Stage) {
             ((Stage) window).close();

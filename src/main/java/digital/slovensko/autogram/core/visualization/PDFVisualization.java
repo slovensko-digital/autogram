@@ -41,6 +41,12 @@ public class PDFVisualization extends Visualization {
         visualizer.showPDFVisualization(pages);
     }
 
+    @Override
+    public void cancel() {
+        super.cancel();
+        pages.forEach(Task::cancel);
+    }
+
     private List<? extends Task<byte[]>> getPdfImages() throws IOException {
         return IntStream.range(0, getPageCount())
                 .mapToObj(PdfPageRenderingTask::new)
