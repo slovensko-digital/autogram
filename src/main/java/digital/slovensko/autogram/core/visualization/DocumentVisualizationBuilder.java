@@ -1,37 +1,41 @@
 package digital.slovensko.autogram.core.visualization;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import digital.slovensko.autogram.core.UserSettings;
-import eu.europa.esig.dss.model.DSSDocument;
-
-import org.xml.sax.SAXException;
-
-import digital.slovensko.autogram.core.AutogramMimeType;
-import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
-
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
+import eu.europa.esig.dss.model.DSSDocument;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executor;
+
+import static digital.slovensko.autogram.core.AutogramMimeType.isAsice;
+import static digital.slovensko.autogram.core.AutogramMimeType.isImage;
+import static digital.slovensko.autogram.core.AutogramMimeType.isPDF;
+import static digital.slovensko.autogram.core.AutogramMimeType.isTxt;
+import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
+import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 
 public class DocumentVisualizationBuilder {
 
     private final DSSDocument document;
     private final SigningParameters parameters;
+    private final Executor executor;
 
-    private DocumentVisualizationBuilder(DSSDocument document, SigningParameters parameters) {
+    private DocumentVisualizationBuilder(DSSDocument document, SigningParameters parameters, Executor executor) {
         this.document = document;
         this.parameters = parameters;
+        this.executor = executor;
     }
 
-    public static Visualization fromJob(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
-        return new DocumentVisualizationBuilder(job.getDocument(), job.getParameters()).build(job, userSettings);
+    public static Visualization fromJob(SigningJob job, UserSettings userSettings, Executor executor) throws IOException, ParserConfigurationException, SAXException {
+        return new DocumentVisualizationBuilder(job.getDocument(), job.getParameters(), executor).build(job, userSettings);
     }
 
     private Visualization build(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
@@ -74,7 +78,7 @@ public class DocumentVisualizationBuilder {
             return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), job);
 
         if (isPDF(documentToDisplay.getMimeType()))
-            return new PDFVisualization(documentToDisplay, job, userSettings);
+            return new PDFVisualization(documentToDisplay, job, userSettings, executor);
 
         if (isImage(documentToDisplay.getMimeType()))
             return new ImageVisualization(documentToDisplay, job);

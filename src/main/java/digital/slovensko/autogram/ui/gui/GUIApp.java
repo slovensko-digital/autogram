@@ -31,7 +31,7 @@ public class GUIApp extends Application {
             setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());
             var titleString = "Autogram";
 
-            autogram = new Autogram(new GUI(getHostServices(), userSettings), userSettings);
+            autogram = new Autogram(new GUI(getHostServices(), userSettings), userSettings, cachedExecutorService);
             var finalAutogram = autogram;
             autogram.checkForUpdate();
             autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService, userSettings.getTrustedList());

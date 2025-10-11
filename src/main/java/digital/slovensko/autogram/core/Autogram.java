@@ -25,22 +25,33 @@ import java.io.File;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
 public class Autogram {
     private final UI ui;
+    private final Executor executor;
     private final UserSettings settings;
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
     private final PasswordManager passwordManager;
     private Timer tokenSessionTimer = null;
 
-    public Autogram(UI ui, UserSettings settings) {
+    public Autogram(UI ui, UserSettings settings, Executor executor) {
         this.ui = ui;
         this.settings = settings;
         this.passwordManager = new PasswordManager(ui, this.settings);
+        this.executor = executor;
+    }
+
+    public Autogram(UI ui, UserSettings settings) {
+        this(ui, settings, directExecutor());
+    }
+
+    private static Executor directExecutor() {
+        return Runnable::run;
     }
 
     public void sign(SigningJob job) {
@@ -85,7 +96,7 @@ public class Autogram {
             }
 
             try {
-                var visualization = DocumentVisualizationBuilder.fromJob(job, settings);
+                var visualization = DocumentVisualizationBuilder.fromJob(job, settings, executor);
                 ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
             } catch (AutogramException e) {
                 ui.onUIThreadDo(() -> ui.showError(e));

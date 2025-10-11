@@ -7,6 +7,7 @@ import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.validation.reports.Reports;
+import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -20,12 +21,13 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -35,6 +37,8 @@ import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatu
 import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createWarningText;
 
 public class SigningDialogController extends BaseController implements SuppressedFocusController, Visualizer {
+    private static final Logger log = LoggerFactory.getLogger(SigningDialogController.class);
+    static final double A4_HEIGHT = 842d;
     private final GUI gui;
     private final Autogram autogram;
     private final String title;
@@ -127,7 +131,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         stage.sizeToScene();
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(mainButton.getScene().getWindow());
-        stage.setOnCloseRequest(event -> signaturesInvalidDialogController.close());;
+        stage.setOnCloseRequest(event -> signaturesInvalidDialogController.close());
 
         GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
 
@@ -308,15 +312,31 @@ public class SigningDialogController extends BaseController implements Suppresse
         webViewContainer.setManaged(true);
     }
 
-    public void showPDFVisualization(List<byte[]> data) {
-        data.forEach(page -> {
+    public void showPDFVisualization(List<? extends Task<byte[]>> pages) {
+        pages.forEach(page -> {
             var imgView = new ImageView();
             imgView.fitWidthProperty().bind(pdfVisualizationContainer.widthProperty().subtract(30));
-            imgView.setImage(new Image(new ByteArrayInputStream(page)));
             imgView.setPreserveRatio(true);
             imgView.setSmooth(true);
 
-            pdfVisualizationBox.getChildren().add(new HBox(imgView));
+            var status = new Text(i18n("signing.pdf.page.loading"));
+            var imageContainer = new VBox(status, imgView);
+            imageContainer.setMinHeight(A4_HEIGHT);
+            pdfVisualizationBox.getChildren().add(imageContainer);
+
+            page.setOnSucceeded(_ -> {
+                var image = new Image(new ByteArrayInputStream(page.getValue()));
+                gui.onUIThreadDo(() -> {
+                    imageContainer.getChildren().remove(status);
+                    imgView.setImage(image);
+                    imageContainer.setMinHeight(0d);
+                });
+            });
+            page.setOnFailed(_ -> {
+                log.error("Failed to load page", page.getException());
+                gui.onUIThreadDo(() -> status.setText(i18n("signing.pdf.page.failed")));
+            });
+
         });
 
         pdfVisualizationContainer.setFitToWidth(true);

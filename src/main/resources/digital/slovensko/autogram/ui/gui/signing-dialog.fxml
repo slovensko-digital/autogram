@@ -29,8 +29,8 @@
         </VBox>
 
         <!-- PDF visualization -->
-        <ScrollPane styleClass="autogram-visualizer-pdf" fx:id="pdfVisualizationContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
-            <VBox fx:id="pdfVisualizationBox" VBox.vgrow="ALWAYS" />
+        <ScrollPane fx:id="pdfVisualizationContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
+            <VBox fx:id="pdfVisualizationBox" styleClass="autogram-visualizer-pdf" VBox.vgrow="ALWAYS" />
         </ScrollPane>
 
         <!-- Plaintext visualization -->
