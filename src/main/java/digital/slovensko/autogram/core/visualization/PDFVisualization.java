@@ -23,19 +23,22 @@ public class PDFVisualization extends Visualization {
     private final DSSDocument document;
     private final UserSettings settings;
     private final Executor executor;
+    private final List<? extends Task<byte[]>> pages;
 
 
-    public PDFVisualization(DSSDocument document, SigningJob job, UserSettings settings, Executor executor) {
+    public PDFVisualization(DSSDocument document, SigningJob job, UserSettings settings, Executor executor)
+            throws IOException {
         super(job);
         this.document = document;
         this.settings = settings;
         this.executor = executor;
+        pages = getPdfImages();
     }
 
     @Override
     public void initialize(Visualizer visualizer) throws IOException {
         visualizer.setPrefWidth(getVisualizationWidth());
-        visualizer.showPDFVisualization(getPdfImages());
+        visualizer.showPDFVisualization(pages);
     }
 
     private List<? extends Task<byte[]>> getPdfImages() throws IOException {
