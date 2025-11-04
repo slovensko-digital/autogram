@@ -50,6 +50,7 @@ public class DefaultDriverDetector implements DriverDetector {
     private List<TokenDriver> getWindowsDrivers(ResourceBundle r) {
         return List.of(
             new PKCS11TokenDriver(translate(r, "tokenDriver.eid.label"), Path.of("C:\\Program Files (x86)\\eID_klient\\pkcs11_x64.dll"), TokenDriverShortnames.EID, translate(r, "tokenDriver.eid.text")),
+            new PKCS11TokenDriver(translate(r, "tokenDriver.eid.label"), Path.of("C:\\Program Files\\eID_klient\\pkcs11_x64.dll"), TokenDriverShortnames.EID, translate(r, "tokenDriver.eid.text")),
             new PKCS11TokenDriver("eObčanka", Path.of("C:\\Windows\\System32\\eopproxyp11.dll"), TokenDriverShortnames.CZ_EID, EMPTY_HELPER_TEXT),
             new PKCS11TokenDriver("I.CA SecureStore", Path.of("C:\\Windows\\System32\\SecureStorePkcs11.dll"), TokenDriverShortnames.SECURE_STORE, EMPTY_HELPER_TEXT),
             new PKCS11TokenDriver("MONET+ ProID+Q", Path.of( "C:\\Windows\\system32\\proidqcm11.dll"), TokenDriverShortnames.MONET, EMPTY_HELPER_TEXT),
