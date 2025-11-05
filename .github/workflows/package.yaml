@@ -152,6 +152,7 @@ jobs:
           java-version: "24.0.1+11"
           distribution: "liberica"
           java-package: "jdk+fx"
+          architecture: "x64"
 
       - name: Cache local Maven repository and JDK cache
         uses: actions/cache@v3
