@@ -11,15 +11,15 @@ services:
       - VERSION=1.0.0
       - PREFIX=ubuntu22
 
-  builder-debian-11:
+  builder-debian-13:
     build:
       context: .
-      dockerfile: packaging/debian11.dockerfile
+      dockerfile: packaging/debian13.dockerfile
     volumes:
       - ./packaging/output:/data
     environment:
       - VERSION=1.0.0
-      - PREFIX=debian11
+      - PREFIX=debian13
 
   builder-fedora-41:
     build:
