@@ -1,18 +1,11 @@
 package digital.slovensko.autogram;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.fail;
-
-import java.io.IOException;
-
-import javax.xml.crypto.dsig.CanonicalizationMethod;
-import javax.xml.parsers.ParserConfigurationException;
-
-import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.Responder;
+import digital.slovensko.autogram.core.SignedDocument;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
-
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
@@ -21,6 +14,15 @@ import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.InMemoryDocument;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class TransformationTests {
 
@@ -74,7 +76,7 @@ public class TransformationTests {
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load(), Runnable::run);
                 if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());
@@ -152,7 +154,7 @@ public class TransformationTests {
 
                 SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
 
-                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load(), Runnable::run);
                 if (visualizedDocument instanceof HTMLVisualization d) {
                         var html = d.getDocument();
                         assertFalse(html.isEmpty());

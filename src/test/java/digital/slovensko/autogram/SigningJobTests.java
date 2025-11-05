@@ -9,14 +9,14 @@ import digital.slovensko.autogram.server.dto.Document;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
-
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SigningJobTests {
 
@@ -55,7 +55,7 @@ public class SigningJobTests {
         var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(null, true), null);
         Visualization visualization = null;
         try {
-            visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
+            visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load(), Runnable::run);
             assertInstanceOf(HTMLVisualization.class, visualization);
             var v = (HTMLVisualization) visualization;
 
