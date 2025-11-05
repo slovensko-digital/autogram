@@ -1,4 +1,4 @@
-FROM debian:11
+FROM debian:13
 
 RUN apt-get -q update && apt-get -q upgrade -y
 RUN apt-get -q install -y wget git gpg

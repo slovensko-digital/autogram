@@ -9,7 +9,7 @@ jobs:
   linux-debian:
     environment: packaging
     runs-on: ubuntu-22.04
-    container: "debian:11"
+    container: "debian:13"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
