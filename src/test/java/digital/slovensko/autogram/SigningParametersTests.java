@@ -1,18 +1,12 @@
 package digital.slovensko.autogram;
 
+import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.*;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.*;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,6 +16,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SigningParametersTests {
@@ -149,7 +147,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#nonEFormXmlProvider")
     void testThrowsUnknownEformExceptionWithInvalidXmlEform(DSSDocument document) {
         // TODO: mock eform S3 resource
-        Assertions.assertThrows(UnknownEformException.class,
+        Assertions.assertThrows(XMLValidationException.class,
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
                         null, false, 800, document, tspSource, false));
@@ -251,4 +249,223 @@ public class SigningParametersTests {
                 () -> SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
                         false, inclusive, inclusive, inclusive, eFormAttributes, false, null, false, 800, document, tspSource, false));
     }
+
+    @Test
+    public void testXDCValidationWithValidTransformationHash() throws Exception {
+        var xdcContent = getClass().getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
+
+        var params = SigningParameters.buildParameters(
+                SignatureLevel.XAdES_BASELINE_B,
+                DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E,
+                SignaturePackaging.ENVELOPING,
+                false,
+                null,
+                null,
+                null,
+                null,
+                true,
+                null,
+                false,
+                640,
+                xdcDocument,
+                null,
+                false
+        );
+
+        Assertions.assertNotNull(params);
+        Assertions.assertEquals(SignatureLevel.XAdES_BASELINE_B, params.getLevel());
+    }
+
+    @Test
+    public void testXDCValidationWithMismatchedXsltHash() throws Exception {
+        var xdcContent = getClass().getResourceAsStream("fs_forms/d_fs792_772_xdc_xslt_digest.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
+
+        Assertions.assertThrows(XMLValidationException.class, () ->
+            SigningParameters.buildParameters(
+                    SignatureLevel.XAdES_BASELINE_B,
+                    DigestAlgorithm.SHA256,
+                    ASiCContainerType.ASiC_E,
+                    SignaturePackaging.ENVELOPING,
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    true,
+                    null,
+                    false,
+                    640,
+                    xdcDocument,
+                    null,
+                    false
+            )
+        );
+    }
+
+    @Test
+    public void testXDCValidationWithMismatchedXsdHash() throws Exception {
+        var xdcContent = getClass().getResourceAsStream("fs_forms/d_fs792_772_xdc_xsd_digest.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
+
+        Assertions.assertThrows(XMLValidationException.class, () ->
+            SigningParameters.buildParameters(
+                    SignatureLevel.XAdES_BASELINE_B,
+                    DigestAlgorithm.SHA256,
+                    ASiCContainerType.ASiC_E,
+                    SignaturePackaging.ENVELOPING,
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    true,
+                    null,
+                    false,
+                    640,
+                    xdcDocument,
+                    null,
+                    false
+            )
+        );
+    }
+
+    @Test
+    public void testXDCValidationWithWrongSchema() throws Exception {
+        var xdcContent = getClass().getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
+
+        Assertions.assertThrows(XMLValidationException.class, () ->
+            SigningParameters.buildParameters(
+                    SignatureLevel.XAdES_BASELINE_B,
+                    DigestAlgorithm.SHA256,
+                    ASiCContainerType.ASiC_E,
+                    SignaturePackaging.ENVELOPING,
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    true,
+                    null,
+                    false,
+                    640,
+                    xdcDocument,
+                    null,
+                    false
+            )
+        );
+    }
+
+    @Test
+    public void testXDCValidationWithEmbedUsedSchemas() throws Exception {
+        var xdcContent = getClass().getResourceAsStream("fs_forms/d_fs792_772_xdc_xslt_digest.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
+
+        Assertions.assertThrows(XMLValidationException.class, () ->
+            SigningParameters.buildParameters(
+                    SignatureLevel.XAdES_BASELINE_B,
+                    DigestAlgorithm.SHA256,
+                    ASiCContainerType.ASiC_E,
+                    SignaturePackaging.ENVELOPING,
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    true,
+                    null,
+                    false,
+                    640,
+                    xdcDocument,
+                    null,
+                    false
+            )
+        );
+    }
+
+    @Test
+    public void testXDCValidationIsCalledForXDCContent() throws Exception {
+        var xdcContent = getClass().getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.APPLICATION_XML);
+
+        var params = SigningParameters.buildParameters(
+                SignatureLevel.XAdES_BASELINE_B,
+                DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E,
+                SignaturePackaging.ENVELOPING,
+                false,
+                null,
+                null,
+                null,
+                null,
+                true,
+                null,
+                false,
+                640,
+                xdcDocument,
+                null,
+                false
+        );
+
+        Assertions.assertNotNull(params);
+        Assertions.assertTrue(params.shouldCreateXdc());
+    }
+
+    @Test
+    public void testPlainXMLWithoutTransformationThrowsException() throws Exception {
+        var xmlContent = getClass().getResourceAsStream("general_agenda.xml").readAllBytes();
+        var xmlDocument = new InMemoryDocument(xmlContent, "test.xml", AutogramMimeType.APPLICATION_XML);
+
+        Assertions.assertThrows(Exception.class, () ->
+            SigningParameters.buildParameters(
+                    SignatureLevel.XAdES_BASELINE_B,
+                    DigestAlgorithm.SHA256,
+                    ASiCContainerType.ASiC_E,
+                    SignaturePackaging.ENVELOPING,
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    false,
+                    null,
+                    false,
+                    640,
+                    xmlDocument,
+                    null,
+                    false  // plainXmlEnabled = false
+            )
+        );
+    }
+
+    @Test
+    public void testPlainXMLWithTransformationIsAllowed() throws Exception {
+        var xmlContent = getClass().getResourceAsStream("general_agenda.xml").readAllBytes();
+        var xmlDocument = new InMemoryDocument(xmlContent, "test.xml", AutogramMimeType.APPLICATION_XML);
+
+        var params = SigningParameters.buildParameters(
+                SignatureLevel.XAdES_BASELINE_B,
+                DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E,
+                SignaturePackaging.ENVELOPING,
+                false,
+                null,
+                null,
+                null,
+                null,
+                true,
+                null,
+                false,
+                640,
+                xmlDocument,
+                null,
+                true  // plainXmlEnabled = true
+        );
+
+        Assertions.assertNotNull(params);
+    }
 }
+

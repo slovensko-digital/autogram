@@ -76,6 +76,9 @@ public class SigningParameters {
         if (document.getMimeType() == null)
             throw new SigningParametersException(NO_MIME_TYPE);
 
+        if (digestAlgorithm == null)
+            digestAlgorithm = DigestAlgorithm.SHA256;
+
         var extractedDocument = document;
         if (AutogramMimeType.isAsice(document.getMimeType()))
             extractedDocument = AsicContainerUtils.getOriginalDocument(document);
@@ -89,19 +92,22 @@ public class SigningParameters {
         var extractedDocumentMimeType = extractedDocument.getMimeType();
 
         if (eFormAttributes.containerXmlns() != null && eFormAttributes.containerXmlns().contains("xmldatacontainer")) {
-            if (digestAlgorithm == null) digestAlgorithm = DigestAlgorithm.SHA256;
-
             if (container == null) container = ASiCContainerType.ASiC_E;
 
             if (packaging == null) packaging = SignaturePackaging.ENVELOPING;
 
-            if (AutogramMimeType.isXML(extractedDocumentMimeType) || AutogramMimeType.isXDC(extractedDocumentMimeType))
-                XDCValidator.validateXml(
-                        eFormAttributes.schema(), eFormAttributes.transformation(), extractedDocument,
-                        propertiesCanonicalization, digestAlgorithm, eFormAttributes.embedUsedSchemas());
-
-            else
+            if (!AutogramMimeType.isXML(extractedDocumentMimeType) && !AutogramMimeType.isXDC(extractedDocumentMimeType))
                 throw new SigningParametersException(WRONG_MIME_TYPE);
+        }
+
+        if (AutogramMimeType.isXDC(extractedDocumentMimeType) || AutogramMimeType.isXML(extractedDocumentMimeType)) {
+            XDCValidator.validateXml(
+                    eFormAttributes.schema(), eFormAttributes.transformation(), extractedDocument,
+                    propertiesCanonicalization, digestAlgorithm, eFormAttributes.embedUsedSchemas());
+        } else {
+            // if the document is not an XML resulting in XML Datacontainer, ignore all eForm attributes (mainly transformation)
+            if (eFormAttributes.containerXmlns() == null || !eFormAttributes.containerXmlns().contains("xmldatacontainer"))
+                eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false);
         }
 
         if (!plainXmlEnabled && (AutogramMimeType.isXML(extractedDocumentMimeType) || AutogramMimeType.isXDC(extractedDocumentMimeType)) && (eFormAttributes.transformation() == null))

@@ -114,33 +114,42 @@ public class SignHttpSmokeTest {
         // StandardCharsets.UTF_8));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "XAdES-XML-Base64-HTML_md", "XAdES-XML-Base64-TXT", "XAdES-XML-TXT-HTML", "XAdES-XML-TXT-TXT_md",
-            "XAdES-ASiC_E-Base64-HTML", "XAdES-ASiC_E-Base64-TXT", "XAdES-ASiC_E-TXT-HTML_md", "XAdES-ASiC_E-TXT-TXT",
-            "XAdES-ASiC_E-Auto", "XAdES-ASiC_E-SKXDC-Base64-TXT", "XAdES-ASiC_E-SKXDC-TXT-TXT",
-            "Signed-XAdES-ASiC_E-SKXDC-Base64-TXT", "Signed-XAdES-ASiC_E-SKXDC-Base64-HTML",
-            "Signed-XAdES-ASiC_E-SKXDC-Auto", "FS-EForm-Auto", "PAdES-PDF_lg", "XAdES-PDF", "XAdES-ASiC_E-PDF", "CAdES-ASiC_E-PDF",
-            "XAdES-ASiC_E-TXT", "XAdES-ASiC_E-DOCX", "CAdES-ASiC_E-DOCX", "CAdES-PNG_lg", "CAdES-ASiC_E-PNG_md",
-            "Signed-XAdES-ASiC_E-PDF", "Double-Signed-XAdES-ASiC_E-PDF", "Signed-CAdES-ASiC_E-PDF",
-            "Double-Signed-CAdES-ASiC_E-PDF",
-    })
-    public void testPositiveFromYaml(String exampleName)
-            throws ClientProtocolException, IOException, IllegalAccessException,
-            NoSuchFieldException, SecurityException {
-        testFromYaml(exampleName, HttpStatus.SC_OK, SignResponse.class);
-    }
+   @ParameterizedTest
+   @ValueSource(strings = {
+           "XAdES-ASiC_E-Base64-HTML", "XAdES-ASiC_E-Base64-TXT", "XAdES-ASiC_E-TXT-HTML_md", "XAdES-ASiC_E-TXT-TXT",
+           "XAdES-ASiC_E-Auto", "XAdES-ASiC_E-SKXDC-Base64-TXT", "XAdES-ASiC_E-SKXDC-TXT-TXT",
+           "Signed-XAdES-ASiC_E-SKXDC-Base64-TXT", "Signed-XAdES-ASiC_E-SKXDC-Base64-HTML",
+           "Signed-XAdES-ASiC_E-SKXDC-Auto", "FS-EForm-Auto", "PAdES-PDF_lg", "XAdES-PDF", "XAdES-ASiC_E-PDF", "CAdES-ASiC_E-PDF",
+           "XAdES-ASiC_E-TXT", "XAdES-ASiC_E-DOCX", "CAdES-ASiC_E-DOCX", "CAdES-PNG_lg", "CAdES-ASiC_E-PNG_md",
+           "Signed-XAdES-ASiC_E-PDF", "Double-Signed-XAdES-ASiC_E-PDF", "Signed-CAdES-ASiC_E-PDF",
+           "Double-Signed-CAdES-ASiC_E-PDF",
+   })
+   public void testPositiveFromYaml(String exampleName)
+           throws ClientProtocolException, IOException, IllegalAccessException,
+           NoSuchFieldException, SecurityException {
+       testFromYaml(exampleName, HttpStatus.SC_OK, SignResponse.class);
+   }
 
     @ParameterizedTest
     @ValueSource(strings = {
             "XAdES-ASiC_E-SKXDC-Auto-WrongXSLT",
     })
-    public void testNegativeFromYaml(String exampleName)
+    public void testNegative422FromYaml(String exampleName)
             throws ClientProtocolException, IOException, IllegalAccessException,
             NoSuchFieldException, SecurityException {
         testFromYaml(exampleName, HttpStatus.SC_UNPROCESSABLE_ENTITY, ErrorResponseBody.class);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "negative-XAdES-XML-Base64-HTML_md", "negative-XAdES-XML-Base64-TXT", "negative-XAdES-XML-TXT-HTML",
+            "negative-XAdES-XML-TXT-TXT_md",
+    })
+    public void testNegative400FromYaml(String exampleName)
+            throws ClientProtocolException, IOException, IllegalAccessException,
+            NoSuchFieldException, SecurityException {
+        testFromYaml(exampleName, HttpStatus.SC_BAD_REQUEST, ErrorResponseBody.class);
+    }
     public void testFromYaml(String exampleName, int expectedStatus, Class responseClass)
             throws ClientProtocolException, IOException, IllegalAccessException,
             NoSuchFieldException, SecurityException {
