@@ -102,6 +102,8 @@ public class SigningParameters {
 
             else
                 throw new SigningParametersException(WRONG_MIME_TYPE);
+        } else {
+            eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false);
         }
 
         if (!plainXmlEnabled && (AutogramMimeType.isXML(extractedDocumentMimeType) || AutogramMimeType.isXDC(extractedDocumentMimeType)) && (eFormAttributes.transformation() == null))
