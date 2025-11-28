@@ -252,8 +252,8 @@ public class SigningParametersTests {
 
     @Test
     public void testXDCValidationWithValidTransformationHash() throws Exception {
-        var xdcContent = loadTestResource("digital/slovensko/autogram/general_agenda_xdc_indented.xml");
-        var xdcDocument = new InMemoryDocument(xdcContent.getBytes(StandardCharsets.UTF_8), "test.xml", AutogramMimeType.XML_DATACONTAINER);
+        var xdcContent = getClass().getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
         var params = SigningParameters.buildParameters(
                 SignatureLevel.XAdES_BASELINE_B,
@@ -280,8 +280,8 @@ public class SigningParametersTests {
 
     @Test
     public void testXDCValidationWithMismatchedXsltHash() throws Exception {
-        var xdcContent = loadTestResource("digital/slovensko/autogram/fs_forms/d_fs792_772_xdc_xslt_digest.xml");
-        var xdcDocument = new InMemoryDocument(xdcContent.getBytes(StandardCharsets.UTF_8), "test.xml", AutogramMimeType.XML_DATACONTAINER);
+        var xdcContent = getClass().getResourceAsStream("fs_forms/d_fs792_772_xdc_xslt_digest.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
         Assertions.assertThrows(XMLValidationException.class, () ->
             SigningParameters.buildParameters(
@@ -307,8 +307,8 @@ public class SigningParametersTests {
 
     @Test
     public void testXDCValidationWithMismatchedXsdHash() throws Exception {
-        var xdcContent = loadTestResource("digital/slovensko/autogram/fs_forms/d_fs792_772_xdc_xsd_digest.xml");
-        var xdcDocument = new InMemoryDocument(xdcContent.getBytes(StandardCharsets.UTF_8), "test.xml", AutogramMimeType.XML_DATACONTAINER);
+        var xdcContent = getClass().getResourceAsStream("fs_forms/d_fs792_772_xdc_xsd_digest.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
         Assertions.assertThrows(XMLValidationException.class, () ->
             SigningParameters.buildParameters(
@@ -334,8 +334,8 @@ public class SigningParametersTests {
 
     @Test
     public void testXDCValidationWithWrongSchema() throws Exception {
-        var xdcContent = loadTestResource("digital/slovensko/autogram/wrong_schema_ga_xdc.xml");
-        var xdcDocument = new InMemoryDocument(xdcContent.getBytes(StandardCharsets.UTF_8), "test.xml", AutogramMimeType.XML_DATACONTAINER);
+        var xdcContent = getClass().getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
         Assertions.assertThrows(XMLValidationException.class, () ->
             SigningParameters.buildParameters(
@@ -361,8 +361,8 @@ public class SigningParametersTests {
 
     @Test
     public void testXDCValidationWithEmbedUsedSchemas() throws Exception {
-        var xdcContent = loadTestResource("digital/slovensko/autogram/fs_forms/d_fs792_772_xdc_xslt_digest.xml");
-        var xdcDocument = new InMemoryDocument(xdcContent.getBytes(StandardCharsets.UTF_8), "test.xml", AutogramMimeType.XML_DATACONTAINER);
+        var xdcContent = getClass().getResourceAsStream("fs_forms/d_fs792_772_xdc_xslt_digest.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
         Assertions.assertThrows(XMLValidationException.class, () ->
             SigningParameters.buildParameters(
@@ -388,8 +388,8 @@ public class SigningParametersTests {
 
     @Test
     public void testXDCValidationIsCalledForXDCContent() throws Exception {
-        var xdcContent = loadTestResource("digital/slovensko/autogram/general_agenda_xdc_indented.xml");
-        var xdcDocument = new InMemoryDocument(xdcContent.getBytes(StandardCharsets.UTF_8), "test.xml", AutogramMimeType.APPLICATION_XML);
+        var xdcContent = getClass().getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
+        var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.APPLICATION_XML);
 
         var params = SigningParameters.buildParameters(
                 SignatureLevel.XAdES_BASELINE_B,
@@ -416,8 +416,8 @@ public class SigningParametersTests {
 
     @Test
     public void testPlainXMLWithoutTransformationThrowsException() throws Exception {
-        var xmlContent = loadTestResource("digital/slovensko/autogram/general_agenda.xml");
-        var xmlDocument = new InMemoryDocument(xmlContent.getBytes(StandardCharsets.UTF_8), "test.xml", AutogramMimeType.APPLICATION_XML);
+        var xmlContent = getClass().getResourceAsStream("general_agenda.xml").readAllBytes();
+        var xmlDocument = new InMemoryDocument(xmlContent, "test.xml", AutogramMimeType.APPLICATION_XML);
 
         Assertions.assertThrows(Exception.class, () ->
             SigningParameters.buildParameters(
@@ -443,8 +443,8 @@ public class SigningParametersTests {
 
     @Test
     public void testPlainXMLWithTransformationIsAllowed() throws Exception {
-        var xmlContent = loadTestResource("digital/slovensko/autogram/general_agenda.xml");
-        var xmlDocument = new InMemoryDocument(xmlContent.getBytes(StandardCharsets.UTF_8), "test.xml", AutogramMimeType.APPLICATION_XML);
+        var xmlContent = getClass().getResourceAsStream("general_agenda.xml").readAllBytes();
+        var xmlDocument = new InMemoryDocument(xmlContent, "test.xml", AutogramMimeType.APPLICATION_XML);
 
         var params = SigningParameters.buildParameters(
                 SignatureLevel.XAdES_BASELINE_B,
@@ -466,15 +466,6 @@ public class SigningParametersTests {
         );
 
         Assertions.assertNotNull(params);
-    }
-
-    private String loadTestResource(String resourcePath) throws IOException {
-        var classLoader = getClass().getClassLoader();
-        var resource = classLoader.getResource(resourcePath);
-        if (resource == null) {
-            throw new IOException("Resource not found: " + resourcePath);
-        }
-        return Files.readString(Paths.get(resource.getPath()), StandardCharsets.UTF_8);
     }
 }
 
