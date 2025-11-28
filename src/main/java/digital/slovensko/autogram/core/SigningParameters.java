@@ -105,6 +105,7 @@ public class SigningParameters {
                     eFormAttributes.schema(), eFormAttributes.transformation(), extractedDocument,
                     propertiesCanonicalization, digestAlgorithm, eFormAttributes.embedUsedSchemas());
         } else {
+            // if the document is not an XML resulting in XML Datacontainer, ignore all eForm attributes (mainly transformation)
             if (eFormAttributes.containerXmlns() == null || !eFormAttributes.containerXmlns().contains("xmldatacontainer"))
                 eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false);
         }
