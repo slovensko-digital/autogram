@@ -100,13 +100,14 @@ public class SigningParameters {
                 throw new SigningParametersException(WRONG_MIME_TYPE);
         }
 
-        if (AutogramMimeType.isXDC(extractedDocumentMimeType))
+        if (AutogramMimeType.isXDC(extractedDocumentMimeType) || AutogramMimeType.isXML(extractedDocumentMimeType)) {
             XDCValidator.validateXml(
                     eFormAttributes.schema(), eFormAttributes.transformation(), extractedDocument,
                     propertiesCanonicalization, digestAlgorithm, eFormAttributes.embedUsedSchemas());
-        else
+        } else {
             if (eFormAttributes.containerXmlns() == null || !eFormAttributes.containerXmlns().contains("xmldatacontainer"))
                 eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false);
+        }
 
         if (!plainXmlEnabled && (AutogramMimeType.isXML(extractedDocumentMimeType) || AutogramMimeType.isXDC(extractedDocumentMimeType)) && (eFormAttributes.transformation() == null))
             throw new UnknownEformException();
