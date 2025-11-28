@@ -10,6 +10,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -148,7 +150,7 @@ public class TransformationTests {
                         "id1/asa",
                         transformation,
                         schema,
-                        null,
+                        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                         null,
                         null,
                         false),
@@ -169,5 +171,54 @@ public class TransformationTests {
                 } else {
                         fail("Expected HTMLVisualizedDocument");
                 }
+        }
+
+        @Test
+        void testSigningJobTransformSbWithoutXmlnsDoesntTransform() throws IOException, ParserConfigurationException,
+                SAXException {
+                var transformation = new String(this.getClass()
+                        .getResourceAsStream(
+                                "crystal_test_data/PovolenieZdravotnictvo.sb.xslt")
+                        .readAllBytes());
+
+                var schema = new String(this.getClass()
+                        .getResourceAsStream(
+                                "crystal_test_data/rozhodnutie_X4564-2.xsd")
+                        .readAllBytes());
+
+                var document = new InMemoryDocument(
+                        this.getClass().getResourceAsStream(
+                                "crystal_test_data/rozhodnutie_X4564-2.xml"),
+                        "rozhodnutie_X4564-2.xml");
+
+                var params = SigningParameters.buildParameters(
+                    SignatureLevel.XAdES_BASELINE_B,
+                    DigestAlgorithm.SHA256,
+                    ASiCContainerType.ASiC_E,
+                    SignaturePackaging.ENVELOPING,
+                    false,
+                    CanonicalizationMethod.INCLUSIVE,
+                    CanonicalizationMethod.INCLUSIVE,
+                    CanonicalizationMethod.INCLUSIVE,
+                    new EFormAttributes(
+                        "id1/asa",
+                        transformation,
+                        schema,
+                        null,
+                        null,
+                        null,
+                        false),
+                    false,
+                    null,
+                    false,
+                    800,
+                    document,
+                    null,
+                    true);
+
+                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
+
+                var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
+                Assertions.assertTrue(visualizedDocument instanceof UnsupportedVisualization);
         }
 }
