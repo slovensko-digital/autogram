@@ -42,6 +42,11 @@ public class TransformationTests {
                                 "crystal_test_data/PovolenieZdravotnictvo.html.xslt")
                         .readAllBytes());
 
+                var schema = new String(this.getClass()
+                        .getResourceAsStream(
+                                "crystal_test_data/rozhodnutie_X4564-2.xsd")
+                        .readAllBytes());
+
                 var document = new InMemoryDocument(
                         this.getClass().getResourceAsStream(
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
@@ -59,7 +64,7 @@ public class TransformationTests {
                     new EFormAttributes(
                         "id1/asa",
                         transformation,
-                        "<xsd/>",
+                        schema,
                         "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                         null,
                         null,
@@ -120,6 +125,11 @@ public class TransformationTests {
                                 "crystal_test_data/PovolenieZdravotnictvo.sb.xslt")
                         .readAllBytes());
 
+                var schema = new String(this.getClass()
+                        .getResourceAsStream(
+                                "crystal_test_data/rozhodnutie_X4564-2.xsd")
+                        .readAllBytes());
+
                 var document = new InMemoryDocument(
                         this.getClass().getResourceAsStream(
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
@@ -137,8 +147,8 @@ public class TransformationTests {
                     new EFormAttributes(
                         "id1/asa",
                         transformation,
-                        "<xsd/>",
-                        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                        schema,
+                        null,
                         null,
                         null,
                         false),
