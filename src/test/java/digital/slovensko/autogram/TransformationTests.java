@@ -59,8 +59,8 @@ public class TransformationTests {
                     new EFormAttributes(
                         "id1/asa",
                         transformation,
-                        null,
-                        null,
+                        "<xsd/>",
+                        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                         null,
                         null,
                         false),
@@ -137,8 +137,8 @@ public class TransformationTests {
                     new EFormAttributes(
                         "id1/asa",
                         transformation,
-                        null,
-                        null,
+                        "<xsd/>",
+                        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                         null,
                         null,
                         false),

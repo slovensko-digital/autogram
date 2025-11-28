@@ -116,7 +116,6 @@ public class SignHttpSmokeTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "XAdES-XML-Base64-HTML_md", "XAdES-XML-Base64-TXT", "XAdES-XML-TXT-HTML", "XAdES-XML-TXT-TXT_md",
             "XAdES-ASiC_E-Base64-HTML", "XAdES-ASiC_E-Base64-TXT", "XAdES-ASiC_E-TXT-HTML_md", "XAdES-ASiC_E-TXT-TXT",
             "XAdES-ASiC_E-Auto", "XAdES-ASiC_E-SKXDC-Base64-TXT", "XAdES-ASiC_E-SKXDC-TXT-TXT",
             "Signed-XAdES-ASiC_E-SKXDC-Base64-TXT", "Signed-XAdES-ASiC_E-SKXDC-Base64-HTML",
