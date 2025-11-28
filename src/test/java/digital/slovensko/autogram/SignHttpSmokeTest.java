@@ -133,6 +133,8 @@ public class SignHttpSmokeTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "XAdES-ASiC_E-SKXDC-Auto-WrongXSLT",
+            "negative-XAdES-XML-Base64-HTML_md", "negative-XAdES-XML-Base64-TXT", "negative-XAdES-XML-TXT-HTML",
+            "negative-XAdES-XML-TXT-TXT_md",
     })
     public void testNegative422FromYaml(String exampleName)
             throws ClientProtocolException, IOException, IllegalAccessException,
@@ -140,16 +142,6 @@ public class SignHttpSmokeTest {
         testFromYaml(exampleName, HttpStatus.SC_UNPROCESSABLE_ENTITY, ErrorResponseBody.class);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "negative-XAdES-XML-Base64-HTML_md", "negative-XAdES-XML-Base64-TXT", "negative-XAdES-XML-TXT-HTML",
-            "negative-XAdES-XML-TXT-TXT_md",
-    })
-    public void testNegative400FromYaml(String exampleName)
-            throws ClientProtocolException, IOException, IllegalAccessException,
-            NoSuchFieldException, SecurityException {
-        testFromYaml(exampleName, HttpStatus.SC_BAD_REQUEST, ErrorResponseBody.class);
-    }
     public void testFromYaml(String exampleName, int expectedStatus, Class responseClass)
             throws ClientProtocolException, IOException, IllegalAccessException,
             NoSuchFieldException, SecurityException {

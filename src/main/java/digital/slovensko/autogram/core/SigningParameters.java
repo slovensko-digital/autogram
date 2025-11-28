@@ -27,6 +27,7 @@ import static digital.slovensko.autogram.core.errors.SigningParametersException.
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_LEVEL;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_MIME_TYPE;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.WRONG_MIME_TYPE;
+import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.XSLT_NO_XDC;
 
 public class SigningParameters {
     private final SignatureLevel level;
@@ -108,8 +109,12 @@ public class SigningParameters {
 
         if (!AutogramMimeType.isXDC(extractedDocumentMimeType)) {
             // if the document is not an XML resulting in XML Datacontainer, ignore all eForm attributes (mainly transformation)
-            if (eFormAttributes.containerXmlns() == null || !eFormAttributes.containerXmlns().contains("xmldatacontainer"))
+            if (eFormAttributes.containerXmlns() == null || !eFormAttributes.containerXmlns().contains("xmldatacontainer")) {
+                if (eFormAttributes.transformation() != null)
+                    throw new SigningParametersException(XSLT_NO_XDC);
+
                 eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false);
+            }
         }
 
         if (!plainXmlEnabled && (AutogramMimeType.isXML(extractedDocumentMimeType) || AutogramMimeType.isXDC(extractedDocumentMimeType)) && (eFormAttributes.transformation() == null))
