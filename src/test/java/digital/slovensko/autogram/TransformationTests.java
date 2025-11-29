@@ -10,6 +10,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
@@ -148,7 +150,7 @@ public class TransformationTests {
                         "id1/asa",
                         transformation,
                         schema,
-                        null,
+                        "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                         null,
                         null,
                         false),
