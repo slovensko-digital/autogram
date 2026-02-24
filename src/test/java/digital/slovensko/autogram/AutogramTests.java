@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BulkSigningDisabledException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
@@ -146,6 +147,16 @@ class AutogramTests {
                 key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, false), key));
 
         verify(responder).onDocumentSigned(any());
+    }
+
+    @Test
+    void testBatchStartThrowsWhenBulkSigningDisabled() {
+        var settings = new TestSettings();
+        var newUI = new FakeUI();
+        var autogram = new Autogram(newUI, settings);
+
+        var responder = mock(BatchResponder.class);
+        Assertions.assertThrows(BulkSigningDisabledException.class, () -> autogram.batchStart(1, responder));
     }
 
     @Test
