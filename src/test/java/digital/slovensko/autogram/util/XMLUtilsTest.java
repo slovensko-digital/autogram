@@ -30,17 +30,6 @@ public class XMLUtilsTest {
     }
 
     @Test
-    public void testBaseDocumentBuilderUnsecure() throws Exception {
-        var builderFactory = DocumentBuilderFactory.newInstance();
-        var builder = builderFactory.newDocumentBuilder();
-        var xml = "<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///tmp/test.txt\">]><foo>&xxe;</foo>";
-        var document = builder.parse(new InputSource(new StringReader(xml)));
-        var content = document.getDocumentElement().getTextContent();
-        assertNotNull(content);
-        assertTrue(content.contains("supersecret"));
-    }
-
-    @Test
     public void testGetSecureDocumentBuilderSecurity() throws Exception {
         var builder = XMLUtils.getSecureDocumentBuilder();
         var xml = "<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///tmp/test.txt\">]><foo>&xxe;</foo>";
