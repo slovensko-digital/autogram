@@ -1,31 +1,16 @@
 package digital.slovensko.autogram.util;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class XMLUtilsTest {
-    @BeforeAll
-    public static void setup() throws Exception {
-        Files.writeString(Path.of("/tmp/test.txt"), "supersecret");
-    }
-
-    @AfterAll
-    public static void cleanup() throws Exception {
-        Files.deleteIfExists(Path.of("/tmp/test.txt"));
-    }
-
     @Test
     public void testGetSecureDocumentBuilder() throws Exception {
         var builder = XMLUtils.getSecureDocumentBuilder();
@@ -59,7 +44,13 @@ public class XMLUtilsTest {
     public void testGetSecureDocumentBuilderSecurity() throws Exception {
         var builder = XMLUtils.getSecureDocumentBuilder();
         var xml = "<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///tmp/test.txt\">]><foo>&xxe;</foo>";
-        assertThrows(Exception.class, () -> builder.parse(new InputSource(new StringReader(xml))));
+        try {
+            builder.parse(new InputSource(new StringReader(xml)));
+            fail("Expected an exception due to external entity access");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("DOCTYPE is disallowed") || e.getMessage().contains("Access to external DTD"));
+        }
+
     }
 
     @Test
@@ -79,6 +70,7 @@ public class XMLUtilsTest {
         var xml = "<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"https://raw.githubusercontent.com/slovensko-digital/autogram/refs/heads/main/pom.xml\">]><foo>&xxe;</foo>";
         try {
             builder.parse(new InputSource(new StringReader(xml)));
+            fail("Expected an exception due to external entity access");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("Access to external DTD") || e.getMessage().contains("DOCTYPE is disallowed"));
         }
@@ -90,6 +82,7 @@ public class XMLUtilsTest {
         var xml = "<!DOCTYPE foo><foo>bar</foo>";
         try {
             builder.parse(new InputSource(new StringReader(xml)));
+            fail("Expected an exception due to DOCTYPE declaration");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("DOCTYPE is disallowed") || e.getMessage().contains("Access to external DTD"));
         }
@@ -101,6 +94,7 @@ public class XMLUtilsTest {
         var xml = "<!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///tmp/test.txt\">]><foo>&xxe;</foo>";
         try {
             builder.parse(new InputSource(new StringReader(xml)));
+            fail("Expected an exception due to DOCTYPE declaration with external entity");
         } catch (Exception e) {
             assertTrue(e.getMessage().contains("DOCTYPE is disallowed") || e.getMessage().contains("Access to external DTD"));
         }
@@ -114,7 +108,13 @@ public class XMLUtilsTest {
                 + "<xsl:import href=\"file:///tmp/test.txt\"/>"
                 + "<xsl:template match=\"/\"><out/></xsl:template>"
                 + "</xsl:stylesheet>";
-        assertThrows(Exception.class, () -> factory.newTransformer(new StreamSource(new StringReader(xslt))));
+
+        try {
+            factory.newTransformer(new StreamSource(new StringReader(xslt)));
+            fail("Expected an exception due to external stylesheet access");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Access to URI file:///tmp/test.txt has been prohibited"));
+        }
     }
 
     @Test
@@ -125,7 +125,13 @@ public class XMLUtilsTest {
                 + "<xsl:stylesheet version=\"1.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
                 + "<xsl:template match=\"/\"><out/></xsl:template>"
                 + "</xsl:stylesheet>";
-        assertThrows(Exception.class, () -> factory.newTransformer(new StreamSource(new StringReader(xslt))));
+
+        try {
+            factory.newTransformer(new StreamSource(new StringReader(xslt)));
+            fail("Expected an exception due to DOCTYPE declaration with external entity");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("Access to URI file:///tmp/test.txt has been prohibited"));
+        }
     }
 
     @Test
@@ -150,8 +156,13 @@ public class XMLUtilsTest {
                 + "<xs:import namespace=\"urn:test\" schemaLocation=\"file:///tmp/test.txt\"/>"
                 + "<xs:element name=\"foo\" type=\"xs:string\"/>"
                 + "</xs:schema>";
-        assertThrows(Exception.class, () ->
-                factory.newSchema(new StreamSource(new StringReader(xsd))));
+
+        try {
+            factory.newSchema(new StreamSource(new StringReader(xsd)));
+            fail("Expected an exception due to external schema access");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("because 'file' access is not allowed due to restriction"));
+        }
     }
 
     @Test
@@ -162,8 +173,13 @@ public class XMLUtilsTest {
                 + "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
                 + "<xs:element name=\"foo\" type=\"xs:string\"/>"
                 + "</xs:schema>";
-        assertThrows(Exception.class, () ->
-                factory.newSchema(new StreamSource(new StringReader(xsd))));
+
+        try {
+            factory.newSchema(new StreamSource(new StringReader(xsd)));
+            fail("Expected an exception due to DOCTYPE declaration with external entity");
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("because 'file' access is not allowed due to restriction"));
+        }
     }
 
     @Test
