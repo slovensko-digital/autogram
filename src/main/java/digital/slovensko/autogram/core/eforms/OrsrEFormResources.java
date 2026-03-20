@@ -17,7 +17,6 @@ public class OrsrEFormResources extends EFormResources {
         this.transformation = transformation;
     }
 
-    // Reject URLs outside the ORSR domain allowlist to prevent SSRF via xsi:schemaLocation.
     private static void validateResourceUrl(String resourceUrl) throws XMLValidationException {
         if (resourceUrl == null || ALLOWED_ORSR_URL_PREFIXES.stream().noneMatch(resourceUrl::startsWith))
             throw new XMLValidationException(XSD_NOT_FOUND);
