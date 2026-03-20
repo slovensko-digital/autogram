@@ -15,7 +15,9 @@ public abstract class XMLUtils {
     public static DocumentBuilder getSecureDocumentBuilder() throws ParserConfigurationException {
         var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
+        builderFactory.setXIncludeAware(false);
         builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         builderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
         builderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
@@ -37,6 +39,7 @@ public abstract class XMLUtils {
         schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         schemaFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        schemaFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 
         return schemaFactory;
     }

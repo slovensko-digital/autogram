@@ -63,6 +63,12 @@ import static digital.slovensko.autogram.core.errors.XMLValidationException.Erro
 public abstract class EFormUtils {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
     public static final String XDC_XMLNS = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
+    public static final List<String> ALLOWED_ORSR_URL_PREFIXES = List.of(
+            "http://eformulare.justice.sk/",
+            "https://eformulare.justice.sk/",
+            "http://www.justice.gov.sk/",
+            "https://www.justice.gov.sk/"
+    );
 
     public static String extractTransformationOutputMimeTypeString(String transformation)
             throws TransformationParsingErrorException {
@@ -398,7 +404,10 @@ public abstract class EFormUtils {
     }
 
     public static boolean isOrsrUri(String uri) {
-        return uri != null && (uri.contains("://eformulare.justice.sk") || uri.contains("justice.gov.sk/"));
+        if (uri == null)
+            return false;
+        var namespace = uri.split("\\s+")[0];
+        return ALLOWED_ORSR_URL_PREFIXES.stream().anyMatch(namespace::startsWith);
     }
 
     public static String getFsFormIdFromFilename(String filename) {
