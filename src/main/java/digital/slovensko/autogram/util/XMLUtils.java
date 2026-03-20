@@ -16,6 +16,7 @@ public abstract class XMLUtils {
         var builderFactory = DocumentBuilderFactory.newInstance();
         builderFactory.setNamespaceAware(true);
         builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         builderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
         builderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
