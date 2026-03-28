@@ -179,18 +179,18 @@ if [[ "${platform}" == "mac" ]]; then
     fi
 
     if [[ "${properties_mac_sign}" == "1" ]]; then
-        export JPACKAGE_MAC_SIGN="1"
         if [[ -z "${APPLE_DEVELOPER_IDENTITY}" ]] || [[ -z "${APPLE_KEYCHAIN_PATH}" ]]; then
-            echo "Missing APPLE_DEVELOPER_IDENTITY or APPLE_KEYCHAIN_PATH env variable"
-            exit 1
-        fi
+            echo "Warning: APPLE_DEVELOPER_IDENTITY or APPLE_KEYCHAIN_PATH not set, skipping code signing"
+        else
+            export JPACKAGE_MAC_SIGN="1"
 
-        mac_signingKeyUserName=$(echo ${APPLE_DEVELOPER_IDENTITY} | sed -ne 's/Developer ID Application\:[[:space:]]\(.*\)[[:space:]]([0-9A-Z]*)/\1/p')
-        arguments+=(
-            "--mac-sign"
-            "--mac-signing-keychain" "${APPLE_KEYCHAIN_PATH}"
-            "--mac-signing-key-user-name" "${mac_signingKeyUserName}"
-        )
+            mac_signingKeyUserName=$(echo ${APPLE_DEVELOPER_IDENTITY} | sed -ne 's/Developer ID Application\:[[:space:]]\(.*\)[[:space:]]([0-9A-Z]*)/\1/p')
+            arguments+=(
+                "--mac-sign"
+                "--mac-signing-keychain" "${APPLE_KEYCHAIN_PATH}"
+                "--mac-signing-key-user-name" "${mac_signingKeyUserName}"
+            )
+        fi
     fi
 
     # cwd je ./src/main/scripts/resources
