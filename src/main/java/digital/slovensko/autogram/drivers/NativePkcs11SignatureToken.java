@@ -64,7 +64,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             if (isAlwaysAuthenticate(p11, sessionId, pk) && (settings.getForceContextSpecificLoginEnabled() || !isProtectedAuthenticationPath(p11, getSlotListIndex()))) {
                 var password = passwordManager.getContextSpecificPassword();
                 if (password == null) throw new PasswordNotProvidedException();
-                invokeMethod(p11, "C_Login", new Class<?>[]{long.class, long.class, char[].class}, sessionId, CKU_CONTEXT_SPECIFIC, password);
+                invokeCLogin(p11, sessionId, CKU_CONTEXT_SPECIFIC, password);
             }
         } catch (AutogramException e) {
             throw e;
@@ -84,7 +84,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         var keyID = getKeyID(pk);
         var attrs = newAttributeArray(getPkcs11Constant("CKA_ALWAYS_AUTHENTICATE"));
 
-        invokeMethod(p11, "C_GetAttributeValue", new Class<?>[]{long.class, long.class, attrs.getClass()}, sessionId, keyID, attrs);
+        invokeCGetAttributeValue(p11, sessionId, keyID, attrs);
 
         var attr = Array.get(attrs, 0);
         var result = getPublicField(attr, "pValue");
@@ -95,7 +95,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     }
 
     private static boolean isProtectedAuthenticationPath(Object p11, int slotIndex) throws Exception {
-        var slotList = (long[]) invokeMethod(p11, "C_GetSlotList", new Class<?>[]{boolean.class}, false);
+        var slotList = invokeCGetSlotList(p11, false);
         if (slotList.length <= slotIndex || slotList.length < 1) {
             return false;
         }
@@ -105,7 +105,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         }
 
         var slotId = slotList[slotIndex];
-        var tokenInfo = invokeMethod(p11, "C_GetTokenInfo", new Class<?>[]{long.class}, slotId);
+        var tokenInfo = invokeCGetTokenInfo(p11, slotId);
         var flags = (long) getPublicField(tokenInfo, "flags");
         return (flags & getPkcs11Constant("CKF_PROTECTED_AUTHENTICATION_PATH")) != 0;
     }
@@ -183,6 +183,22 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
     private static long getPkcs11Constant(String fieldName) throws Exception {
         return Class.forName(PKCS11_CONSTANTS_CLASS_NAME).getField(fieldName).getLong(null);
+    }
+
+    private static void invokeCLogin(Object p11, long sessionId, long userType, char[] pin) throws Exception {
+        invokeMethod(p11, "C_Login", new Class<?>[]{long.class, long.class, char[].class}, sessionId, userType, pin);
+    }
+
+    private static void invokeCGetAttributeValue(Object p11, long sessionId, long objectHandle, Object attrs) throws Exception {
+        invokeMethod(p11, "C_GetAttributeValue", new Class<?>[]{long.class, long.class, attrs.getClass()}, sessionId, objectHandle, attrs);
+    }
+
+    private static long[] invokeCGetSlotList(Object p11, boolean tokenPresent) throws Exception {
+        return (long[]) invokeMethod(p11, "C_GetSlotList", new Class<?>[]{boolean.class}, tokenPresent);
+    }
+
+    private static Object invokeCGetTokenInfo(Object p11, long slotId) throws Exception {
+        return invokeMethod(p11, "C_GetTokenInfo", new Class<?>[]{long.class}, slotId);
     }
 
     private static Object invokeMethod(Object target, String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
