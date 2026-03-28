@@ -32,7 +32,6 @@ unset IFS
 
 jvmOptions="-Dfile.encoding=UTF-8 \
     -Dprism.maxvram=2G \
-    --add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED \
     --add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED \
     --add-opens java.base/java.security=ALL-UNNAMED \
     --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED \
@@ -179,18 +178,18 @@ if [[ "${platform}" == "mac" ]]; then
     fi
 
     if [[ "${properties_mac_sign}" == "1" ]]; then
-        export JPACKAGE_MAC_SIGN="1"
         if [[ -z "${APPLE_DEVELOPER_IDENTITY}" ]] || [[ -z "${APPLE_KEYCHAIN_PATH}" ]]; then
-            echo "Missing APPLE_DEVELOPER_IDENTITY or APPLE_KEYCHAIN_PATH env variable"
-            exit 1
-        fi
+            echo "Warning: APPLE_DEVELOPER_IDENTITY or APPLE_KEYCHAIN_PATH not set, skipping code signing"
+        else
+            export JPACKAGE_MAC_SIGN="1"
 
-        mac_signingKeyUserName=$(echo ${APPLE_DEVELOPER_IDENTITY} | sed -ne 's/Developer ID Application\:[[:space:]]\(.*\)[[:space:]]([0-9A-Z]*)/\1/p')
-        arguments+=(
-            "--mac-sign"
-            "--mac-signing-keychain" "${APPLE_KEYCHAIN_PATH}"
-            "--mac-signing-key-user-name" "${mac_signingKeyUserName}"
-        )
+            mac_signingKeyUserName=$(echo ${APPLE_DEVELOPER_IDENTITY} | sed -ne 's/Developer ID Application\:[[:space:]]\(.*\)[[:space:]]([0-9A-Z]*)/\1/p')
+            arguments+=(
+                "--mac-sign"
+                "--mac-signing-keychain" "${APPLE_KEYCHAIN_PATH}"
+                "--mac-signing-key-user-name" "${mac_signingKeyUserName}"
+            )
+        fi
     fi
 
     # cwd je ./src/main/scripts/resources
