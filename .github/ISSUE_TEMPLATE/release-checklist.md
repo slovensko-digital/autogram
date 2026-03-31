@@ -15,6 +15,9 @@ labels: release
 - [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
 - [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
 - [ ] funguje CLI `autogram-cli --help`
+- [ ] funguje GUI vybrať viacero súborov, zobrazí sa dialóg pre výber spôsobu podpisovania (okno "Vyberte spôsob podpisovania")
+- [ ] funguje "Podpísať všetko" - spustí sa hromadné podpisovanie, dokumenty sa podpisujú bez zobrazenia
+- [ ] funguje "Podpísať po jednom" - po vybratí sa zobrazí náhľad prvého dokumentu, PIN sa uchováva medzi dokumentmi
 
 ## Linux
 - [ ] funguje inštalácia na Linux (Debian-based) cez stiahnutý .deb
@@ -26,6 +29,9 @@ labels: release
 - [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
 - [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
 - [ ] funguje CLI `autogram --help`
+- [ ] funguje GUI vybrať viacero súborov, zobrazí sa dialóg pre výber spôsobu podpisovania (okno "Vyberte spôsob podpisovania")
+- [ ] funguje "Podpísať všetko" - spustí sa hromadné podpisovanie, dokumenty sa podpisujú bez zobrazenia
+- [ ] funguje "Podpísať po jednom" - po vybratí sa zobrazí náhľad prvého dokumentu, PIN sa uchováva medzi dokumentmi
 
 ## MacOS
 - [ ] funguje inštalácia na MacOS cez stiahnutý .pkg
@@ -36,6 +42,9 @@ labels: release
 - [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
 - [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
 - [ ] funguje CLI `/Applications/Autogram.app/Contents/MacOS/AutogramApp --help`
+- [ ] funguje GUI vybrať viacero súborov, zobrazí sa dialóg pre výber spôsobu podpisovania (okno "Vyberte spôsob podpisovania")
+- [ ] funguje "Podpísať všetko" - spustí sa hromadné podpisovanie, dokumenty sa podpisujú bez zobrazenia
+- [ ] funguje "Podpísať po jednom" - po vybratí sa zobrazí náhľad prvého dokumentu, PIN sa uchováva medzi dokumentmi
 
 
 ## Na aspoň jednom systéme

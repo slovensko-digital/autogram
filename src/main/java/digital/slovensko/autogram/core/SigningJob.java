@@ -27,6 +27,7 @@ public class SigningJob {
     private final Responder responder;
     private final DSSDocument document;
     private final SigningParameters parameters;
+    private String dialogTitleSuffix;
 
     private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder) {
         this.document = document;
@@ -40,6 +41,14 @@ public class SigningJob {
 
     public SigningParameters getParameters() {
         return parameters;
+    }
+
+    public String getDialogTitleSuffix() {
+        return dialogTitleSuffix;
+    }
+
+    public void setDialogTitleSuffix(String dialogTitleSuffix) {
+        this.dialogTitleSuffix = dialogTitleSuffix;
     }
 
     public int getVisualizationWidth() {

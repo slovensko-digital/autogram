@@ -28,7 +28,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private final String DEFAULT_DRIVER = "";
     private final String DRIVER_SLOT_INDEX_MAP = "";
     private final boolean DEFAULT_EN319132 = false;
-    private final boolean DEFAULT_BULK_ENABLED = false;
+    private final boolean DEFAULT_BULK_ENABLED = true;
     private final boolean DEFAULT_PLAIN_XML_ENABLED = false;
     private final boolean DEFAULT_SIGN_INDIVIDUALLY = true;
     private final boolean DEFAULT_CORRECT_DOCUMENT_DISPLAY = true;

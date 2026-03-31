@@ -22,6 +22,7 @@ import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -142,20 +143,18 @@ public class Autogram {
     }
 
     /**
-     * Starts a batch - ask user - get signing key - start batch - return batch ID
+     * Starts a batch - shows method selection dialog, user picks mode
      *
      * @param totalNumberOfDocuments - expected number of documents to be signed
-     * @param responder              - callback for http response
+     * @param responder              - handles batch events (mode is implementation detail)
      */
     public void batchStart(int totalNumberOfDocuments, BatchResponder responder) {
         if (batch != null && !batch.isEnded())
             throw new BatchConflictException();
         batch = new Batch(totalNumberOfDocuments);
 
-        var startBatchTask = new BatchStartCallback(batch, responder);
-
         ui.onUIThreadDo(() -> {
-            ui.startBatch(batch, this, startBatchTask);
+            ui.startBatch(batch, this, responder);
         });
     }
 

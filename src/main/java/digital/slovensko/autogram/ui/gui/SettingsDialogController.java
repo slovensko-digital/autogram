@@ -39,8 +39,6 @@ public class SettingsDialogController extends BaseController {
     @FXML
     private TextField customTsaServerTextField;
     @FXML
-    private HBox bulkEnabledRadios;
-    @FXML
     private HBox en319132Radios;
     @FXML
     private HBox plainXmlEnabledRadios;
@@ -94,7 +92,6 @@ public class SettingsDialogController extends BaseController {
         initializeDriverChoiceBox();
         initializeTsaEnabled();
         initializeTsaServer();
-        initializeBulkEnabledCheckbox();
         initializeEn319132CheckBox();
         initializePlainXmlEnabledCheckBox();
         initializeTokenSessionTimeoutTextField();
@@ -195,10 +192,6 @@ public class SettingsDialogController extends BaseController {
             yes.setSelected(true);
         else
             no.setSelected(true);
-    }
-
-    private void initializeBulkEnabledCheckbox() {
-        initializeBooleanRadios(bulkEnabledRadios, userSettings::setBulkEnabled, userSettings.isBulkEnabled());
     }
 
     private void initializeEn319132CheckBox() {

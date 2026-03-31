@@ -7,7 +7,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.ui.BatchGuiFileResponder;
+import digital.slovensko.autogram.ui.BatchModeGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -112,7 +112,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
                     userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
             autogram.sign(job);
         } else {
-            autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
+            autogram.batchStart(filesList.size(), new BatchModeGuiFileResponder(autogram, filesList,
                     filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(),
                     userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled()));
         }
@@ -131,7 +131,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         var tspSource = userSettings.getTsaEnabled() ? userSettings.getTspSource() : null;
 
         autogram.batchStart(filesList.size(),
-                new BatchGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(),
+                new BatchModeGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(),
                         userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(),
                         userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled()));
     }

@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
@@ -17,18 +18,18 @@ import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
-public class BatchGuiFileResponder extends BatchResponder {
-    private final Autogram autogram;
-    private final List<File> list;
-    private final Map<File, File> targetFiles = new HashMap<>();
-    private final Map<File, AutogramException> errors = new HashMap<>();
-    private boolean uiNotifiedOnAllFilesSigned = false;
-    private final TargetPath targetPath;
-    private final boolean checkPDFACompliance;
-    private final SignatureLevel pDFSignatureLevel;
-    private final boolean isEn319132;
-    private final TSPSource tspSource;
-    private final boolean plainXmlEnabled;
+public abstract class BatchGuiFileResponder extends BatchResponder {
+    protected final Autogram autogram;
+    protected final List<File> list;
+    protected final Map<File, File> targetFiles = new HashMap<>();
+    protected final Map<File, AutogramException> errors = new HashMap<>();
+    protected boolean uiNotifiedOnAllFilesSigned = false;
+    protected final TargetPath targetPath;
+    protected final boolean checkPDFACompliance;
+    protected final SignatureLevel pDFSignatureLevel;
+    protected final boolean isEn319132;
+    protected final TSPSource tspSource;
+    protected final boolean plainXmlEnabled;
 
     public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, boolean checkPDFACompliance, SignatureLevel pDFSignatureLevel, boolean signPDFAsPades, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         this.autogram = autogram;
@@ -50,34 +51,45 @@ public class BatchGuiFileResponder extends BatchResponder {
             throw e;
         }
 
-        for (File file : list) {
-            try {
-                targetFiles.put(file, null);
-                errors.put(file, null);
-                var responder = new ResponderInBatch(new SaveFileFromBatchResponder(file, targetPath, (File targetFile) -> {
-                    targetFiles.put(file, targetFile);
-                    Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments() + " signed " + file.toString());
-                    onAllFilesSigned(batch);
-                }, (AutogramException error) -> {
-                    Logging.log("Signing failed " + file.toString() + " all:" + batch.isAllProcessed());
-                    errors.put(file, error);
-                    onAllFilesSigned(batch);
-                }), batch);
-
-                var job = SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled);
-                autogram.batchSign(job, batch.getBatchId());
-            } catch (AutogramException e) {
-                autogram.onSigningFailed(e);
-
-                break;
-            }
-        }
+        processFiles(batch);
     }
 
-    private void onAllFilesSigned(Batch batch) { // synchronized
+    protected abstract void processFiles(Batch batch);
+
+    protected SigningJob buildBatchJob(File file, Batch batch, Runnable onSuccess, Consumer<AutogramException> onFailure) {
+        var responder = new ResponderInBatch(new SaveFileFromBatchResponder(file, targetPath, targetFile -> {
+            targetFiles.put(file, targetFile);
+            Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments() + " signed " + file);
+            onSuccess.run();
+        }, error -> {
+            Logging.log("Signing failed " + file + " all:" + batch.isAllProcessed());
+            errors.put(file, error);
+            onFailure.accept(error);
+        }), batch);
+
+        return SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled);
+    }
+
+    protected void initFileResult(File file) {
+        targetFiles.put(file, null);
+        errors.put(file, null);
+    }
+
+    protected void handleFileSubmissionFailure(File file, Batch batch, AutogramException error) {
+        // If responder callbacks already set the error, the batch counters were already updated.
+        if (errors.get(file) != null)
+            return;
+
+        errors.put(file, error);
+        batch.onJobFailure();
+        Logging.log("Signing failed before job submission " + file + " all:" + batch.isAllProcessed());
+    }
+
+    protected void onAllFilesSigned(Batch batch) {
         Logging.log("onAllFilesSigned " + batch.isAllProcessed() + " " + uiNotifiedOnAllFilesSigned);
         if (batch.isAllProcessed() && !uiNotifiedOnAllFilesSigned) {
             uiNotifiedOnAllFilesSigned = true;
+            batch.end();
             Logging.log(errors.values().stream().map(e -> e == null ? "" : e.toString()).toList());
             var result = new BatchUiResult(targetPath, targetFiles, errors);
             autogram.onDocumentBatchSaved(result);

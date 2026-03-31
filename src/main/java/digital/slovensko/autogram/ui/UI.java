@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
 
-    void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
+    void startBatch(Batch batch, Autogram autogram, BatchResponder responder);
 
     void cancelBatch(Batch batch);
 

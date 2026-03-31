@@ -5,24 +5,20 @@ import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.util.Logging;
 
-public class BatchStartCallback {
+public abstract class BatchStartCallback {
 
-    private final Batch batch;
-    private final BatchResponder responder;
+    protected final Batch batch;
+    protected final BatchResponder responder;
 
     public BatchStartCallback(Batch batch, BatchResponder responder) {
         this.batch = batch;
         this.responder = responder;
     }
 
-    public void accept(SigningKey key) {
-        try {
-            Logging.log("Starting batch");
-            batch.start(key);
-            responder.onBatchStartSuccess(batch);
-        } catch (Exception e) {
-            handleException(e);
-        }
+    public abstract void accept(SigningKey key);
+
+    public BatchResponder getResponder() {
+        return responder;
     }
 
     public void cancel() {
@@ -37,7 +33,7 @@ public class BatchStartCallback {
         }
     }
 
-    private void handleException(Exception e) {
+    protected void handleException(Exception e) {
         if (e instanceof AutogramException)
             responder.onBatchStartFailure((AutogramException) e);
         else {
