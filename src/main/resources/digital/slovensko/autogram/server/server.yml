@@ -28,11 +28,13 @@ tags:
     externalDocs:
       description: More info
       url: https://github.com/slovensko-digital/autogram/tree/main/docs/batch-sign-api.md
+  - name: Legacy
+    description: Legacy endpoints with simplified request body for signing one document. These endpoints are still supported but for new integrations prefer the more flexible `/api/v1/sign` endpoint.
 paths:
   /info:
-    get:
+    get: &getInfoOperation
       tags:
-        - Info
+        - Legacy
       summary: Retrieve info and the current server status
       operationId: getInfo
       responses:
@@ -44,95 +46,28 @@ paths:
                 $ref: "#/components/schemas/Info"
 
   /sign:
-    post:
+    post: &legacySignDocumentOperation
       tags:
-        - Sign
-        - Batch
-      summary: Sign a single document or single document in batch
+        - Legacy
+      summary: Sign one document
       description: |
-        Sign a single document or single document in batch.
+        Sign one document.
 
-        If the `batchId` is provided, the document is signed inside the batch.
+        If `batchId` is provided, the request must contain exactly one input document and the document is signed inside the batch.
 
-        If the `batchId` is not provided, the document is signed as a standalone document.
+        If `batchId` is not provided, the document is signed as a standalone document.
+
+        For shared authorization of multiple documents (`spolocna autorizacia dokumentov`) use `POST /api/v1/sign`.
       operationId: signDocument
       requestBody:
         content:
           "application/json":
             schema:
-              $ref: "#/components/schemas/SignRequestBody"
-            examples:
-              XDC - XAdES (ASiC_E) XML eForm with XSD and XSLT loaded automatically:
-                $ref: "#/components/examples/XAdES-ASiC_E-Auto"
-
-              XDC - XAdES (ASiC_E) XML with Base64-encoded XDC parameters and HTML transformation:
-                $ref: "#/components/examples/XAdES-ASiC_E-Base64-HTML"
-
-              XDC + Spolocna autorizacia - XAdES (ASiC_E) XML + PDF + TXT:
-                $ref: "#/components/examples/XAdES-ASiC_E-multi-documents"
-
-              XDC + ContentTimestamp - XAdES (ASiC_E) XML with Base64-encoded XDC parameters and HTML transformation:
-                $ref: "#/components/examples/XAdES-ASiC_E-content-timestamp"
-
-              XDC - XAdES (ASiC_E) XML with Base64-encoded XDC parameters and plaintext transformation:
-                $ref: "#/components/examples/XAdES-ASiC_E-Base64-TXT"
-
-              XDC - XAdES (ASiC_E) XML with plaintext XDC parameters and HTML transformation:
-                $ref: "#/components/examples/XAdES-ASiC_E-TXT-HTML"
-
-              XDC - XAdES (ASiC_E) XML with plaintext XDC parameters and plaintext transformation:
-                $ref: "#/components/examples/XAdES-ASiC_E-TXT-TXT"
-
-              XDC - XAdES (ASiC_E) Slovak XML Data Container with Base64-encoded XDC parameters and plaintext transformation:
-                $ref: "#/components/examples/XAdES-ASiC_E-SKXDC-Base64-TXT"
-
-              XDC - Signed XAdES (ASiC_E) XML with Base64-encoded XDC parameters and HTML transformation:
-                $ref: "#/components/examples/Signed-XAdES-ASiC_E-SKXDC-Base64-HTML"
-
-              XDC - Signed XAdES (ASiC_E) XML with XSD and XSLT loaded automatically:
-                $ref: "#/components/examples/Signed-XAdES-ASiC_E-SKXDC-Auto"
-
-              NEGATIVE - XAdES (ASiC_E) XML with XSD and XSLT loaded automatically and detected wrong signing XSLT:
-                $ref: "#/components/examples/XAdES-ASiC_E-SKXDC-Auto-WrongXSLT"
-
-              FS XDC - FS EForm XAdES (ASiC_E) resources loaded automatically:
-                $ref: "#/components/examples/FS-EForm-Auto"
-
-              PDF - PAdES with preview 1024px + PDF/A compliance check warning:
-                $ref: "#/components/examples/PAdES-PDF_lg"
-
-              PDF - Signed PAdES:
-                $ref: "#/components/examples/Signed-PAdES"
-
-              PDF - XAdES (ASiC_E):
-                $ref: "#/components/examples/XAdES-ASiC_E-PDF"
-
-              PDF - CAdES (ASiC_E):
-                $ref: "#/components/examples/CAdES-ASiC_E-PDF"
-
-              PDF - Signed CAdES (ASiC_E):
-                $ref: "#/components/examples/Signed-CAdES-ASiC_E-PDF"
-
-              PDF - Double Signed CAdES (ASiC_E):
-                $ref: "#/components/examples/Double-Signed-CAdES-ASiC_E-PDF"
-              TXT - XAdES (ASiC_E):
-                $ref: "#/components/examples/XAdES-ASiC_E-TXT"
-
-              TXT - CAdES Level_T (ASiC_E):
-                $ref: "#/components/examples/XAdES-ASiC_E_CADES_T-TXT"
-
-              TXT - XAdES Level_T (ASiC_E):
-                $ref: "#/components/examples/XAdES-ASiC_E_XADES_T-TXT"
-
-              DOCX - XAdES (ASiC_E):
-                $ref: "#/components/examples/XAdES-ASiC_E-DOCX"
-
-              PNG - CAdES (ASiC_E) with preview 768px:
-                $ref: "#/components/examples/CAdES-ASiC_E-PNG_md"
+              $ref: "#/components/schemas/SingleDocumentSignRequestBody"
         required: true
       responses:
         200:
-          description: The document was successfully signed and its content is available in the response body.
+          description: The signed output was successfully created and its content is available in the response body.
           content:
             application/json:
               schema:
@@ -252,75 +187,10 @@ paths:
                     example: "no such algorithm: PKCS11 for provider"
                     description: Optional details.
   
-  /content-digest:
-    post:
-      tags:
-        - Sign
-      summary: Calculate content digest for timestamping
-      description: |
-        Calculate content digest that shall be used to request content timestamp from a TimeStamp Authority. Then use received TimeStampToken in `parameters.contentTimestampToken` property of the [sign](#/Sign/signDocument) request to add content timestamp to the signature.
-      requestBody:
-        content:
-          "application/json":
-            schema:
-              $ref: "#/components/schemas/ContentDigestRequestBody"
-      responses:
-        200:
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ContentDigestResponseBody"
-        400:
-          description: The request body cannot be processed.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: string
-                    enum:
-                      - EMPTY_BODY
-                      - MALFORMED_INPUT
-                      - ORIGINAL_DOCUMENT_NOT_FOUND
-                    example: MALFORMED_INPUT
-                    description: Code that can be used to identify the error.
-                  message:
-                    type: string
-                    example: JsonSyntaxException parsing request body.
-                    description: Human readable error message.
-                  details:
-                    type: string
-                    example: "JsonSyntaxException: Unexpected token END OF FILE at position 0."
-                    description: Optional details.
-        422:
-          description: The request body is valid but the document cannot be signed.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  code:
-                    type: string
-                    enum:
-                      - UNPROCESSABLE_INPUT
-                      - UNSUPPORTED_SIGNATURE_LEVEL
-                    example: UNPROCESSABLE_INPUT
-                    description: Code that can be used to identify the error.
-                  message:
-                    type: string
-                    example: IllegalArgumentException parsing request body
-                    description: Human readable error message.
-                  details:
-                    type: string
-                    example: Document.MimeType must be PDF when using PAdES.
-                    description: Optional details.
-
   /batch:
-    post:
+    post: &startBatchOperation
       tags:
-        - Batch
+        - Legacy
       operationId: startBatch
       summary: Start a batch session
       description: |
@@ -364,9 +234,9 @@ paths:
                     type: string
                     example: "Batch canceled"
                     description: Optional details.
-    delete:
+    delete: &endBatchOperation
       tags:
-        - Batch
+        - Legacy
       operationId: endBatch
       summary: End a batch session
       description: |
@@ -385,9 +255,9 @@ paths:
                 $ref: "#/components/schemas/BatchEndResponseBody"
 
   /certificates:
-    get:
+    get: &getCertificatesOperation
       tags:
-        - Info
+        - Legacy
       summary: Retrieve list of certificates available for signing
       operationId: getCertificates
       parameters:
@@ -535,34 +405,271 @@ paths:
                     example: "no such algorithm: PKCS11 for provider"
                     description: Optional details.
 
+  /api/v1/info:
+    get:
+      <<: *getInfoOperation
+      operationId: getInfoV1
+      tags:
+        - Info
+
+  /api/v1/sign:
+    post:
+      <<: *legacySignDocumentOperation
+      tags:
+        - Sign
+        - Batch
+      summary: Sign one document or create a shared-authorization ASiC_E
+      description: |
+        Sign one document or sign multiple documents together into a single ASiC_E container.
+
+        For the common single-document case, use `document`.
+
+        Use `documents` when you need shared authorization of documents (`spolocna autorizacia dokumentov`) or when you prefer the array form.
+
+        If `batchId` is provided, the request must contain exactly one input document and the document is signed inside the batch.
+
+        If `batchId` is not provided, the document is signed as a standalone document or, for multiple input documents, as one shared-authorization ASiC_E container.
+      operationId: signDocumentV1
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/SignRequestBody"
+            examples:
+              XDC - XAdES (ASiC_E) XML eForm with XSD and XSLT loaded automatically:
+                $ref: "#/components/examples/XAdES-ASiC_E-Auto"
+
+              XDC - XAdES (ASiC_E) XML with Base64-encoded XDC parameters and HTML transformation:
+                $ref: "#/components/examples/XAdES-ASiC_E-Base64-HTML"
+
+              XDC + Spolocna autorizacia - XAdES (ASiC_E) XML + PDF + TXT:
+                $ref: "#/components/examples/XAdES-ASiC_E-multi-documents"
+
+              XDC + ContentTimestamp - XAdES (ASiC_E) XML with Base64-encoded XDC parameters and HTML transformation:
+                $ref: "#/components/examples/XAdES-ASiC_E-content-timestamp"
+
+              XDC - XAdES (ASiC_E) XML with Base64-encoded XDC parameters and plaintext transformation:
+                $ref: "#/components/examples/XAdES-ASiC_E-Base64-TXT"
+
+              XDC - XAdES (ASiC_E) XML with plaintext XDC parameters and HTML transformation:
+                $ref: "#/components/examples/XAdES-ASiC_E-TXT-HTML"
+
+              XDC - XAdES (ASiC_E) XML with plaintext XDC parameters and plaintext transformation:
+                $ref: "#/components/examples/XAdES-ASiC_E-TXT-TXT"
+
+              XDC - XAdES (ASiC_E) Slovak XML Data Container with Base64-encoded XDC parameters and plaintext transformation:
+                $ref: "#/components/examples/XAdES-ASiC_E-SKXDC-Base64-TXT"
+
+              XDC - Signed XAdES (ASiC_E) XML with Base64-encoded XDC parameters and HTML transformation:
+                $ref: "#/components/examples/Signed-XAdES-ASiC_E-SKXDC-Base64-HTML"
+
+              XDC - Signed XAdES (ASiC_E) XML with XSD and XSLT loaded automatically:
+                $ref: "#/components/examples/Signed-XAdES-ASiC_E-SKXDC-Auto"
+
+              NEGATIVE - XAdES (ASiC_E) XML with XSD and XSLT loaded automatically and detected wrong signing XSLT:
+                $ref: "#/components/examples/XAdES-ASiC_E-SKXDC-Auto-WrongXSLT"
+
+              FS XDC - FS EForm XAdES (ASiC_E) resources loaded automatically:
+                $ref: "#/components/examples/FS-EForm-Auto"
+
+              PDF - PAdES with preview 1024px + PDF/A compliance check warning:
+                $ref: "#/components/examples/PAdES-PDF_lg"
+
+              PDF - Signed PAdES:
+                $ref: "#/components/examples/Signed-PAdES"
+
+              PDF - XAdES (ASiC_E):
+                $ref: "#/components/examples/XAdES-ASiC_E-PDF"
+
+              PDF - CAdES (ASiC_E):
+                $ref: "#/components/examples/CAdES-ASiC_E-PDF"
+
+              PDF - Signed CAdES (ASiC_E):
+                $ref: "#/components/examples/Signed-CAdES-ASiC_E-PDF"
+
+              PDF - Double Signed CAdES (ASiC_E):
+                $ref: "#/components/examples/Double-Signed-CAdES-ASiC_E-PDF"
+              TXT - XAdES (ASiC_E):
+                $ref: "#/components/examples/XAdES-ASiC_E-TXT"
+
+              TXT - CAdES Level_T (ASiC_E):
+                $ref: "#/components/examples/XAdES-ASiC_E_CADES_T-TXT"
+
+              TXT - XAdES Level_T (ASiC_E):
+                $ref: "#/components/examples/XAdES-ASiC_E_XADES_T-TXT"
+
+              DOCX - XAdES (ASiC_E):
+                $ref: "#/components/examples/XAdES-ASiC_E-DOCX"
+
+              PNG - CAdES (ASiC_E) with preview 768px:
+                $ref: "#/components/examples/CAdES-ASiC_E-PNG_md"
+        required: true
+
+  /api/v1/content-digest:
+    post:
+      tags:
+        - Sign
+      summary: Calculate content digest for timestamping
+      description: |
+        Calculate content digest that shall be used to request content timestamp from a TimeStamp Authority. Then use received TimeStampToken in `parameters.contentTimestampToken` property of the `POST /api/v1/sign` request to add content timestamp to the signature.
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/ContentDigestRequestBody"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentDigestResponseBody"
+        400:
+          description: The request body cannot be processed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - EMPTY_BODY
+                      - MALFORMED_INPUT
+                      - ORIGINAL_DOCUMENT_NOT_FOUND
+                    example: MALFORMED_INPUT
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: JsonSyntaxException parsing request body.
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "JsonSyntaxException: Unexpected token END OF FILE at position 0."
+                    description: Optional details.
+        422:
+          description: The request body is valid but the document cannot be signed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - UNPROCESSABLE_INPUT
+                      - UNSUPPORTED_SIGNATURE_LEVEL
+                    example: UNPROCESSABLE_INPUT
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: IllegalArgumentException parsing request body
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Document.MimeType must be PDF when using PAdES.
+                    description: Optional details.
+
+  /api/v1/batch:
+    post:
+      <<: *startBatchOperation
+      tags:
+        - Batch
+      operationId: startBatchV1
+      description: |
+        Start a batch session, `batchId` is returned.
+
+        Batch session is used to sign multiple documents with the same signature.
+        The batch session is identified and authorized by the `batchId`, keep it secret.
+
+        After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /api/v1/sign` request body.
+        When you are done signing documents, you can end the batch session using `DELETE /api/v1/batch`.
+    delete:
+      <<: *endBatchOperation
+      tags:
+        - Batch
+      operationId: endBatchV1
+
+  /api/v1/certificates:
+    get:
+      <<: *getCertificatesOperation
+      tags:
+        - Info
+      operationId: getCertificatesV1
+
 
 components:
   schemas:
     SignRequestBody:
+      description: |
+        Sign request body.
+
+        Use `document` for the common single-document case.
+
+        Use `documents` when signing multiple documents into a single ASiC_E container or when providing input in array form.
+      oneOf:
+        - $ref: "#/components/schemas/SingleDocumentSignRequestBody"
+        - $ref: "#/components/schemas/DocumentsSignRequestBody"
+
+    SingleDocumentSignRequestBody:
       type: object
+      additionalProperties: false
       properties:
         batchId:
           type: string
           example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
           description: |
             Optional identifier of the batch signing session.
-            If not provided, document will be signed as single standalone document.
-            If provided, document will be signed inside batch.
+            If not provided, the document is signed as a standalone document.
+            If provided, the document is signed inside batch.
+        document:
+          $ref: "#/components/schemas/Document"
+        parameters:
+          $ref: "#/components/schemas/SignatureParameters"
+        presentation:
+          $ref: "#/components/schemas/PresentationParameters"
+      required:
+        - document
+
+    DocumentsSignRequestBody:
+      type: object
+      additionalProperties: false
+      properties:
+        batchId:
+          type: string
+          example: "0c62536c-f43f-4302-b8f0-e2ad521c8175"
+          description: |
+            Optional identifier of the batch signing session.
+            Can be used only when `documents` contains exactly one document.
         documents:
           type: array
+          minItems: 1
+          maxItems: 5
           items:
             $ref: "#/components/schemas/Document"
           description: |
-            Optional list of documents to sign.
-            If provided, `document` property is ignored.
-            If multiple documents are provided, they are signed by single signature inside ASiC container (XAdES or CAdES).
-            If only one document is provided, it is signed as standalone document or inside ASiC container based on `parameters.container` property.
+            Ordered list of input documents.
+            If exactly one document is provided, it is signed as a standalone document or inside ASiC container based on `parameters.container`.
+            If more than one document is provided, all documents are signed together into a single ASiC_E container using one signature.
+            For multi-document requests, `parameters.container`, if provided, must be `ASiC_E` and `parameters.format` must be `XAdES` or `CAdES`.
+            The order of documents is preserved for presentation and for the resulting ASiC_E container.
         parameters:
           $ref: "#/components/schemas/SignatureParameters"
-        extraParameters:
-          $ref: "#/components/schemas/VendorSpecificParameters"
+        presentation:
+          $ref: "#/components/schemas/PresentationParameters"
       required:
         - documents
+      allOf:
+        - if:
+            properties:
+              documents:
+                minItems: 2
+            required:
+              - documents
+          then:
+            not:
+              required:
+                - batchId
 
     Document:
       type: object
@@ -615,11 +722,24 @@ components:
     XDCParameters:
       type: object
       properties:
-        fsFormId:
+        fsFormIdentifier:
           type: string
           default: null
           example: "792_772"
           description: Specific identifier for financnasprava.sk EForms. For example, 792_772 is an identifier of "Danove priznanie - riadne".
+
+        autoLoadEform:
+          type: boolean
+          default: false
+          description: |
+            Try to find XSD and XSLT for this document's eForm and load them automatically. Useful for visualizing and signing eForms.
+            If true, this document's `schema`, `transformation`, `containerXmlns`, and `identifier` are ignored.
+            If resources are not found, the response is 422.
+            If the provided document is an ASiC_E container containing XML Datacontainer or it is an XML Datacontainer itself, the XSLT found is used for visualization of the signing document. Also, XSD and XSLT hashes are compared with hashes of XSD and XSLT found in the XML Datacontainer eForm. If they differ, the response is 422.
+            If the provided document is an XML document, Autogram will try to parse `xmlns` from the root element and find resources based on its value.
+            If successful, XML Datacontainer with `xmlns="http://data.gov.sk/def/container/xmldatacontainer+xml/1.1"` is created, the document is validated against the XSD and visualized using the XSLT. If XSD validation fails, the response is 422.
+            The XSLT transformation is found based on `transformationLanguage` (defaults to user preferred), `transformationMediaDestinationTypeDescription` (default XHTML, then HTML, then TXT), and `transformationTargetEnvironment`.
+            If multiple transformations meet the criteria, the first one found is used.
 
         identifier:
           type: string
@@ -694,6 +814,14 @@ components:
           type: string
           example: "TWFueSBoYW5kcyBtYWtlIGxpZ2h0IHdvQDSdd57FueSBoYW5kcyBtYWtlIGxpZ2h0IHdvsRWdaAeSBoYW5kcyBtYW=="
           description: "Signed content of the original document in Base64 format."
+        mimeType:
+          type: string
+          example: application/vnd.etsi.asic-e+zip
+          description: MIME type of the signed output.
+        filename:
+          type: string
+          example: signed-documents.asice
+          description: Suggested filename of the signed output.
         signedBy:
           type: string
           example: "SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith"
@@ -704,21 +832,48 @@ components:
           description: "Distinguished name of the issuer of the certificate used/attempting to sign the document."
       required:
         - content
+        - mimeType
         - signedBy
         - issuedBy
 
     ContentDigestRequestBody:
+      description: |
+        Content digest request body.
+
+        Use `document` for the common single-document case.
+
+        Use `documents` when calculating the digest for a shared-authorization ASiC_E container or when providing input in array form.
+      oneOf:
+        - $ref: "#/components/schemas/SingleDocumentContentDigestRequestBody"
+        - $ref: "#/components/schemas/DocumentsContentDigestRequestBody"
+
+    SingleDocumentContentDigestRequestBody:
       type: object
+      additionalProperties: false
+      properties:
+        document:
+          $ref: "#/components/schemas/Document"
+        parameters:
+          $ref: "#/components/schemas/CoreSignatureParameters"
+      required:
+        - document
+
+    DocumentsContentDigestRequestBody:
+      type: object
+      additionalProperties: false
       properties:
         documents:
           type: array
+          minItems: 1
+          maxItems: 5
           items:
             $ref: "#/components/schemas/Document"
           description: |
-            Optional list of documents to sign.
-            If provided, `document` property is ignored.
-            If multiple documents are provided, they are signed by single signature inside ASiC container (XAdES or CAdES).
-            If only one document is provided, it is signed as standalone document or inside ASiC container based on `parameters.container` property.
+            Ordered list of input documents.
+            If exactly one document is provided, the digest is calculated for signing that document as a standalone document or inside ASiC container based on `parameters.container`.
+            If more than one document is provided, the digest is calculated for signing all documents together into one ASiC_E container.
+            For multi-document requests, `parameters.container`, if provided, must be `ASiC_E` and `parameters.format` must be `XAdES` or `CAdES`.
+            The order of documents is preserved for presentation and for the resulting ASiC_E container.
         parameters:
           $ref: "#/components/schemas/CoreSignatureParameters"
       required:
@@ -752,20 +907,7 @@ components:
             - ASiC_E
             - null
           example: ASiC_E
-          description: Optional container type that should be used to place the file with signature to. Defaults to null. Is ignored with autoLoadEform true.
-
-        autoLoadEform:
-          type: boolean
-          default: false
-          description:
-            Try to find XSD and XSLT for a given eForm and load them automatically. Useful for visualizing and signing eForms.
-            If true, schema, transformation, conatinerXmlns, container, packaging, and identifier parameters are ignored.
-            If resources are not found, the response is 422.
-            If provided document is an ASiC_E container conatining XML Datacontainer or it is an XML Datacontainer itself, XSLT found is used for visualiztion of signing document. Also, XSD and XSLT hashes are compared with hashes of XSD and XSLT found in XML Data Container EForm. If they differ, the response is 422.
-            If the provided document is an XML document, Autogram will try to parse xmlns from root element and find resources based on its value.
-            If successful, XML Datacontainer with xmls="http://data.gov.sk/def/container/xmldatacontainer+xml/1.1" is created, the document is validated against the XSD and visualized using the XSLT. If XSD validation fails, the response is 422.
-            The XSLT transformation is found based on transformationLanguage (defaults to user preferred), transformationMediaDestinationTypeDescription (default XHTML, then HTML, then TXT), and transformationTargetEnvironment.
-            If multiple transformations meet the criteria, the first one found is used.
+          description: Optional container type that should be used to place the file with signature to. Defaults to null. For a document with `xdcParameters.autoLoadEform=true`, this value can be overridden by the resolved eForm requirements.
 
         packaging:
           type: string
@@ -774,7 +916,7 @@ components:
             - ENVELOPING
             - null
           default: ENVELOPED
-          description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Only applies to XAdES signatures. Must be ENVELOPING when used without ASiC container and with non XML documents. Is ignored with autoLoadEform true.
+          description: Optional form of packaging used with XML. ENVELOPED adds the signature as a child of the root element while ENVELOPING wraps the XML in a new element. Only applies to XAdES signatures. Must be ENVELOPING when used without ASiC container and with non XML documents. For a document with `xdcParameters.autoLoadEform=true`, this value can be overridden by the resolved eForm requirements.
 
         digestAlgorithm:
           type: string
@@ -847,9 +989,9 @@ components:
           description: Base64-encoded digest of the content to be timestamped.
           example: dGhpcyBzaG91bGQgYmUgQ01TIFRpbWVzdGFtcFRva2VuIHJlc3BvbnNl
 
-    VendorSpecificParameters:
+    PresentationParameters:
       type: object
-      description: Extra parameters for this specific vendor implementation.
+      description: Parameters affecting how Autogram presents the input documents to the user before signing.
       properties:
         visualizationWidth:
           type: string
@@ -1059,9 +1201,10 @@ components:
       value:
         parameters:
           format: XAdES
-          autoLoadEform: true
         documents:
         - mimeType: application/xml
+          xdcParameters:
+            autoLoadEform: true
           content: "<?xml version=\"1.0\" encoding=\"UTF-8\"?><GeneralAgenda xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n  <subject>Nové podanie</subject>\n  <text>Podávam toto nové podanie.</text>\n</GeneralAgenda>"
           filename: "document.xml"
 
@@ -1091,19 +1234,20 @@ components:
 
     Signed-XAdES-ASiC_E-SKXDC-Auto:
       value:
-        parameters:
-          autoLoadEform: true
         documents:
         - mimeType: "application/vnd.etsi.asic-e+zip; base64"
+          xdcParameters:
+            autoLoadEform: true
           content: "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"
 
     XAdES-ASiC_E-SKXDC-Auto-WrongXSLT:
       value:
         parameters:
-          autoLoadEform: true
           format: XAdES
         documents:
         - mimeType: "application/vnd.gov.sk.xmldatacontainer+xml; base64"
+          xdcParameters:
+            autoLoadEform: true
           content: "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHhkYzpYTUxEYXRhQ29udGFpbmVyIHhtbG5zOnhkYz0iaHR0cDovL2RhdGEuZ292LnNrL2RlZi9jb250YWluZXIveG1sZGF0YWNvbnRhaW5lcit4bWwvMS4xIj4KICAgIDx4ZGM6WE1MRGF0YSBDb250ZW50VHlwZT0iYXBwbGljYXRpb24veG1sOyBjaGFyc2V0PVVURi04IiBJZGVudGlmaWVyPSJodHRwOi8vZGF0YS5nb3Yuc2svZG9jL2Vmb3JtL0FwcC5HZW5lcmFsQWdlbmRhLzEuOSIgVmVyc2lvbj0iMS45Ij4KICAgICAgICA8R2VuZXJhbEFnZW5kYSB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45IgogICAgICAgICAgICB4bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hLWluc3RhbmNlIj4KICAgICAgICAgICAgPHN1YmplY3Q+VGVzdG92YWNpZSBwb2RhbmllPC9zdWJqZWN0PgogICAgICAgICAgICA8dGV4dD5Qb2TDoXZhbSB0w7p0byB0ZXN0b3ZhY2l1IHbFoWVvYmVjbsO6IMW+aWFkb3PFpS48L3RleHQ+CiAgICAgICAgPC9HZW5lcmFsQWdlbmRhPgogICAgPC94ZGM6WE1MRGF0YT4KICAgIDx4ZGM6VXNlZFNjaGVtYXNSZWZlcmVuY2VkPgogICAgICAgIDx4ZGM6VXNlZFhTRFJlZmVyZW5jZSBEaWdlc3RNZXRob2Q9InVybjpvaWQ6Mi4xNi44NDAuMS4xMDEuMy40LjIuMSIgRGlnZXN0VmFsdWU9Ii9DdG4wQjlEN0hLbjZVUkZSOGlQVUtmeUdlNG1CWXBLKzI1ZGMxaVlXdUU9IiBUcmFuc2Zvcm1BbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnL1RSLzIwMDEvUkVDLXhtbC1jMTRuLTIwMDEwMzE1Ij5odHRwOi8vc2NoZW1hcy5nb3Yuc2svZm9ybS9BcHAuR2VuZXJhbEFnZW5kYS8xLjkvZm9ybS54c2Q8L3hkYzpVc2VkWFNEUmVmZXJlbmNlPgogICAgICAgIDx4ZGM6VXNlZFByZXNlbnRhdGlvblNjaGVtYVJlZmVyZW5jZSBDb250ZW50VHlwZT0iYXBwbGljYXRpb24veHNsdCt4bWwiIERpZ2VzdE1ldGhvZD0idXJuOm9pZDoyLjE2Ljg0MC4xLjEwMS4zLjQuMi4xIiBEaWdlc3RWYWx1ZT0iL0N0bjBCOUQ3SEtuNlVSRlI4aVBVS2Z5R2U0bUJZcEsrMjVkYzFpWVd1RT0iIExhbmd1YWdlPSJzayIgTWVkaWFEZXN0aW5hdGlvblR5cGVEZXNjcmlwdGlvbj0iVFhUIiBUcmFuc2Zvcm1BbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnL1RSLzIwMDEvUkVDLXhtbC1jMTRuLTIwMDEwMzE1Ij5odHRwOi8vc2NoZW1hcy5nb3Yuc2svZm9ybS9BcHAuR2VuZXJhbEFnZW5kYS8xLjkvZm9ybS54c2x0PC94ZGM6VXNlZFByZXNlbnRhdGlvblNjaGVtYVJlZmVyZW5jZT4KICAgIDwveGRjOlVzZWRTY2hlbWFzUmVmZXJlbmNlZD4KPC94ZGM6WE1MRGF0YUNvbnRhaW5lcj4K"
 
     FS-EForm-Auto:
@@ -1113,7 +1257,8 @@ components:
         documents:
         - mimeType: "application/xml;base64"
           xdcParameters:
-            fsFormId: "792_772"
+            autoLoadEform: true
+            fsFormIdentifier: "792_772"
           content: "PGRva3VtZW50PjxobGF2aWNrYT48ZGljPjIxMjA1MTUwNTY8L2RpYz48ZGF0dW1OYXJvZGVuaWE+PC9kYXR1bU5hcm9kZW5pYT48dHlwRFA+PHJkcD4xPC9yZHA+PG9kcD4wPC9vZHA+PGRkcD4wPC9kZHA+PC90eXBEUD48emRhbm92YWNpZU9iZG9iaWU+PHJvaz4yMDIzPC9yb2s+PGRhdHVtRERQPjwvZGF0dW1ERFA+PC96ZGFub3ZhY2llT2Jkb2JpZT48c2tOYWNlPjxrMT44NTwvazE+PGsyPjU5PC9rMj48azM+MDwvazM+PGNpbm5vc3Q+T3N0YXRuw6kgdnpkZWzDoXZhbmllIGkuIG4uPC9jaW5ub3N0Pjwvc2tOYWNlPjxwcmllenZpc2tvPlN1cm5hbWU8L3ByaWV6dmlza28+PG1lbm8+TmFtZTwvbWVubz48dGl0dWw+PC90aXR1bD48dGl0dWxaYT48L3RpdHVsWmE+PGFkcmVzYVRydlBvYnl0dT48dWxpY2E+U3RhcsOpIGdydW50eTwvdWxpY2E+PGNpc2xvPjE4PC9jaXNsbz48cHNjPjg0MTA0PC9wc2M+PG9iZWM+QnJhdGlzbGF2YTwvb2JlYz48c3RhdD5TbG92ZW5za8OhIHJlcHVibGlrYTwvc3RhdD48L2FkcmVzYVRydlBvYnl0dT48bmVyZXppZGVudD4wPC9uZXJlemlkZW50PjxwcmVwb2plbmllUGFyMj4wPC9wcmVwb2plbmllUGFyMj48YWRyZXNhT2J2UG9ieXR1Pjx1bGljYT48L3VsaWNhPjxjaXNsbz48L2Npc2xvPjxwc2M+PC9wc2M+PG9iZWM+PC9vYmVjPjwvYWRyZXNhT2J2UG9ieXR1Pjx6YXN0dXBjYT48cHJpZXp2aXNrbz48L3ByaWV6dmlza28+PG1lbm8+PC9tZW5vPjx0aXR1bD48L3RpdHVsPjx0aXR1bFphPjwvdGl0dWxaYT48cm9kbmVDaXNsbz48L3JvZG5lQ2lzbG8+PHVsaWNhPjwvdWxpY2E+PGNpc2xvPjwvY2lzbG8+PHBzYz48L3BzYz48b2JlYz48L29iZWM+PHN0YXQ+PC9zdGF0Pjx0ZWw+PC90ZWw+PGVtYWlsPjwvZW1haWw+PC96YXN0dXBjYT48L2hsYXZpY2thPjx0ZWxvPjxyMjk+MDwvcjI5PjxyMzA+PC9yMzA+PHIzMT48cHJpZXp2aXNrb01lbm8+PC9wcmllenZpc2tvTWVubz48cm9kbmVDaXNsbz48L3JvZG5lQ2lzbG8+PC9yMzE+PHIzMj48dXBsYXRudWplbU5DWkROYU1hbnplbGE+MDwvdXBsYXRudWplbU5DWkROYU1hbnplbGE+PHZsYXN0bmVQcmlqbXk+PC92bGFzdG5lUHJpam15Pjxwb2NldE1lc2lhY292PjwvcG9jZXRNZXNpYWNvdj48L3IzMj48cjMzPjxkaWV0YT48cHJpZXp2aXNrb01lbm8+PC9wcmllenZpc2tvTWVubz48cm9kbmVDaXNsbz48L3JvZG5lQ2lzbG8+PG0wMD4wPC9tMDA+PG0wMT4wPC9tMDE+PG0wMj4wPC9tMDI+PG0wMz4wPC9tMDM+PG0wND4wPC9tMDQ+PG0wNT4wPC9tMDU+PG0wNj4wPC9tMDY+PG0wNz4wPC9tMDc+PG0wOD4wPC9tMDg+PG0wOT4wPC9tMDk+PG0xMD4wPC9tMTA+PG0xMT4wPC9tMTE+PG0xMj4wPC9tMTI+PC9kaWV0YT48ZGlldGE+PHByaWV6dmlza29NZW5vPjwvcHJpZXp2aXNrb01lbm8+PHJvZG5lQ2lzbG8+PC9yb2RuZUNpc2xvPjxtMDA+MDwvbTAwPjxtMDE+MDwvbTAxPjxtMDI+MDwvbTAyPjxtMDM+MDwvbTAzPjxtMDQ+MDwvbTA0PjxtMDU+MDwvbTA1PjxtMDY+MDwvbTA2PjxtMDc+MDwvbTA3PjxtMDg+MDwvbTA4PjxtMDk+MDwvbTA5PjxtMTA+MDwvbTEwPjxtMTE+MDwvbTExPjxtMTI+MDwvbTEyPjwvZGlldGE+PGRpZXRhPjxwcmllenZpc2tvTWVubz48L3ByaWV6dmlza29NZW5vPjxyb2RuZUNpc2xvPjwvcm9kbmVDaXNsbz48bTAwPjA8L20wMD48bTAxPjA8L20wMT48bTAyPjA8L20wMj48bTAzPjA8L20wMz48bTA0PjA8L20wND48bTA1PjA8L20wNT48bTA2PjA8L20wNj48bTA3PjA8L20wNz48bTA4PjA8L20wOD48bTA5PjA8L20wOT48bTEwPjA8L20xMD48bTExPjA8L20xMT48bTEyPjA8L20xMj48L2RpZXRhPjxkaWV0YT48cHJpZXp2aXNrb01lbm8+PC9wcmllenZpc2tvTWVubz48cm9kbmVDaXNsbz48L3JvZG5lQ2lzbG8+PG0wMD4wPC9tMDA+PG0wMT4wPC9tMDE+PG0wMj4wPC9tMDI+PG0wMz4wPC9tMDM+PG0wND4wPC9tMDQ+PG0wNT4wPC9tMDU+PG0wNj4wPC9tMDY+PG0wNz4wPC9tMDc+PG0wOD4wPC9tMDg+PG0wOT4wPC9tMDk+PG0xMD4wPC9tMTA+PG0xMT4wPC9tMTE+PG0xMj4wPC9tMTI+PC9kaWV0YT48L3IzMz48cjMzYT4wPC9yMzNhPjx1cGxhdG51amVtUGFyMzNPZHM4PjA8L3VwbGF0bnVqZW1QYXIzM09kczg+PHIzND48cHJpZXp2aXNrb01lbm8+PC9wcmllenZpc2tvTWVubz48cm9kbmVDaXNsbz48L3JvZG5lQ2lzbG8+PG0wMD4wPC9tMDA+PG0wMT4wPC9tMDE+PG0wMj4wPC9tMDI+PG0wMz4wPC9tMDM+PG0wND4wPC9tMDQ+PG0wNT4wPC9tMDU+PG0wNj4wPC9tMDY+PG0wNz4wPC9tMDc+PG0wOD4wPC9tMDg+PG0wOT4wPC9tMDk+PG0xMD4wPC9tMTA+PG0xMT4wPC9tMTE+PG0xMj4wPC9tMTI+PGRydWhhT3NvYmFQb2RhbGFEUHZTUj4wPC9kcnVoYU9zb2JhUG9kYWxhRFB2U1I+PGRva2xhZFJvY1p1Y3Q+MDwvZG9rbGFkUm9jWnVjdD48ZG9rbGFkVnlza2FEYW5lPjA8L2Rva2xhZFZ5c2thRGFuZT48L3IzND48cjM0YT48L3IzNGE+PHIzNT48dXBsYXREYW5Cb251c1phcGxhdFVyb2t5PjA8L3VwbGF0RGFuQm9udXNaYXBsYXRVcm9reT48emFwbGF0ZW5lVXJva3k+PC96YXBsYXRlbmVVcm9reT48cG9jZXRNZXNpYWNvdj48L3BvY2V0TWVzaWFjb3Y+PGRhdHVtWmFjYXRpYVVyb2NlbmlhVXZlcnU+PC9kYXR1bVphY2F0aWFVcm9jZW5pYVV2ZXJ1PjwvcjM1PjxyMzY+PC9yMzY+PHIzNmE+PC9yMzZhPjxyMzc+PC9yMzc+PHIzOD48L3IzOD48dGFidWxrYTE+PHQxcjE+PHMxPjwvczE+PHMyPjwvczI+PC90MXIxPjx0MXIyPjxzMT4yODgwMC4wMDwvczE+PHMyPjwvczI+PC90MXIyPjx0MXIzPjxzMT48L3MxPjxzMj48L3MyPjwvdDFyMz48dDFyND48czE+PC9zMT48czI+PC9zMj48L3QxcjQ+PHQxcjU+PHMxPjwvczE+PHMyPjwvczI+PC90MXI1Pjx0MXI2PjxzMT48L3MxPjxzMj48L3MyPjwvdDFyNj48dDFyNz48czE+PC9zMT48czI+PC9zMj48L3Qxcjc+PHQxcjg+PHMxPjwvczE+PHMyPjwvczI+PC90MXI4Pjx0MXI5PjxzMT48L3MxPjxzMj48L3MyPjwvdDFyOT48dDFyMTA+PHMxPjI4ODAwLjAwPC9zMT48czI+MTcyODAuMDA8L3MyPjwvdDFyMTA+PHQxcjExPjxzMT42MDAwLjAwPC9zMT48czI+OTIzLjA4PC9zMj48L3QxcjExPjx0MXIxMj48czE+PC9zMT48czI+PC9zMj48L3QxcjEyPjx0MXIxMz48czE+NjAwMC4wMDwvczE+PHMyPjkyMy4wODwvczI+PC90MXIxMz48L3RhYnVsa2ExPjxtaWtyb2Rhbm92bmlrUGFyMnc+MDwvbWlrcm9kYW5vdm5pa1BhcjJ3Pjx2eWRhdmt5UGFyNm9kczExX29kczFhMj4wPC92eWRhdmt5UGFyNm9kczExX29kczFhMj48dnlkYXZreVBhcjZvZHMxMV9vZHMzPjE8L3Z5ZGF2a3lQYXI2b2RzMTFfb2RzMz48dnlkYXZreVBhcjZvZHMxMV9vZHM0PjA8L3Z5ZGF2a3lQYXI2b2RzMTFfb2RzND48dnlkYXZreVBhcjZvZHMxMF9vZHMxYTI+MTwvdnlkYXZreVBhcjZvZHMxMF9vZHMxYTI+PHZ5ZGF2a3lQYXI2b2RzMTBfb2RzND4wPC92eWRhdmt5UGFyNm9kczEwX29kczQ+PHZ5ZGF2a3lQb2lzdFBhcjZvZHMxMV9vZHMxYTI+MC4wMDwvdnlkYXZreVBvaXN0UGFyNm9kczExX29kczFhMj48dXBsYXRudWplbVBhcjE3b2RzMTdfb2RzMWEyPjA8L3VwbGF0bnVqZW1QYXIxN29kczE3X29kczFhMj48dXBsYXRudWplbVBhcjE3b2RzMTdfb2RzM2E0PjA8L3VwbGF0bnVqZW1QYXIxN29kczE3X29kczNhND48dWtvbmN1amVtVXBsYXRub3ZhbmllUGFyMTdvZHMxN19vZHMxYTI+MDwvdWtvbmN1amVtVXBsYXRub3ZhbmllUGFyMTdvZHMxN19vZHMxYTI+PHVrb25jdWplbVVwbGF0bm92YW5pZVBhcjE3b2RzMTdfb2RzM2E0PjA8L3Vrb25jdWplbVVwbGF0bm92YW5pZVBhcjE3b2RzMTdfb2RzM2E0Pjx0YWJ1bGthMWE+PHQxcjE+PHMxPjwvczE+PHMyPjwvczI+PC90MXIxPjx0MXIyPjxzMT48L3MxPjxzMj48L3MyPjwvdDFyMj48dDFyMz48czE+PC9zMT48czI+PC9zMj48L3QxcjM+PHQxcjQ+PHMxPjwvczE+PHMyPjwvczI+PC90MXI0Pjx0MXI1PjxzMT48L3MxPjxzMj48L3MyPjwvdDFyNT48L3RhYnVsa2ExYT48dGFidWxrYTFiPjx0MXIxPjxzMT48L3MxPjxzMj48L3MyPjwvdDFyMT48dDFyMj48czE+PC9zMT48czI+PC9zMj48L3QxcjI+PC90YWJ1bGthMWI+PHIzOT4yODgwMC4wMDwvcjM5PjxyNDA+MTcyODAuMDA8L3I0MD48cjQxPjExNTIwLjAwPC9yNDE+PHI0Mj48L3I0Mj48cjQzPjwvcjQzPjxyNDQ+PC9yNDQ+PHI0NT4xMTUyMC4wMDwvcjQ1PjxyNDY+PC9yNDY+PHI0Nz48L3I0Nz48cjQ4PjwvcjQ4PjxyNDk+PHJvaz4yMDIwPC9yb2s+PHVkYWplPjxyMDI+PC9yMDI+PHIwMz48L3IwMz48cjA0PjwvcjA0PjwvdWRhamU+PC9yNDk+PHI1MD48cm9rPjIwMjE8L3Jvaz48dWRhamU+PHIwMj48L3IwMj48cjAzPjwvcjAzPjxyMDQ+PC9yMDQ+PC91ZGFqZT48L3I1MD48cjUxPjxyb2s+MjAyMjwvcm9rPjx1ZGFqZT48cjAyPjwvcjAyPjxyMDM+PC9yMDM+PC91ZGFqZT48L3I1MT48cjUyPjwvcjUyPjxyNTJhPjwvcjUyYT48cjUzPjwvcjUzPjxyNTQ+PC9yNTQ+PHI1NT4xMTUyMC4wMDwvcjU1PjxyNTY+PC9yNTY+PHI1Nz4xMTUyMC4wMDwvcjU3PjxyNTg+NjAwMC4wMDwvcjU4PjxyNTk+OTIzLjA4PC9yNTk+PHI2MD41MDc2LjkyPC9yNjA+PHI2MT48L3I2MT48cjYyPjwvcjYyPjxyNjM+PC9yNjM+PHI2ND48L3I2ND48cjY1PjUwNzYuOTI8L3I2NT48dGFidWxrYTI+PHQycjE+PHMxPjwvczE+PHMyPjwvczI+PC90MnIxPjx0MnIyPjxzMT48L3MxPjxzMj48L3MyPjwvdDJyMj48dDJyMz48czE+PC9zMT48czI+PC9zMj48L3QycjM+PHQycjQ+PHMxPjwvczE+PHMyPjwvczI+PC90MnI0Pjx0MnI1PjxzMT48L3MxPjxzMj48L3MyPjwvdDJyNT48dDJyNj48czE+PC9zMT48czI+PC9zMj48L3QycjY+PHQycjc+PHMxPjwvczE+PHMyPjwvczI+PC90MnI3Pjx0MnI4PjxzMT48L3MxPjxzMj48L3MyPjwvdDJyOD48dDJyOT48czE+PC9zMT48czI+PC9zMj48L3Qycjk+PHQycjEwPjxzMT48L3MxPjxzMj48L3MyPjwvdDJyMTA+PHQycjExPjxzMT48L3MxPjxzMj48L3MyPjwvdDJyMTE+PHQycjEyPjxzMT48L3MxPjwvdDJyMTI+PC90YWJ1bGthMj48cjY2PjwvcjY2PjxyNjc+PC9yNjc+PHI2OD48L3I2OD48dGFidWxrYTM+PHQzcjE+PHMxPjwvczE+PHMyPjwvczI+PC90M3IxPjx0M3IyPjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMj48dDNyMz48czE+PC9zMT48czI+PC9zMj48L3QzcjM+PHQzcjQ+PHMxPjwvczE+PHMyPjwvczI+PC90M3I0Pjx0M3I1PjxzMT48L3MxPjxzMj48L3MyPjwvdDNyNT48dDNyNj48czE+PC9zMT48czI+PC9zMj48L3QzcjY+PHQzcjc+PHMxPjwvczE+PHMyPjwvczI+PC90M3I3Pjx0M3I4PjxzMT48L3MxPjxzMj48L3MyPjwvdDNyOD48dDNyOT48czE+PC9zMT48czI+PC9zMj48L3Qzcjk+PHQzcjEwPjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMTA+PHQzcjExPjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMTE+PHQzcjEyPjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMTI+PHQzcjEzPjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMTM+PHQzcjE0PjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMTQ+PHQzcjE1PjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMTU+PHQzcjE2PjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMTY+PHQzcjE3PjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMTc+PHQzcjE4PjxzMT48L3MxPjwvdDNyMTg+PHQzcjE5PjxzMT48L3MxPjxzMj48L3MyPjwvdDNyMTk+PC90YWJ1bGthMz48cjY5PjwvcjY5PjxyNzA+PC9yNzA+PHI3MT48L3I3MT48cjcyPjExNTIwLjAwPC9yNzI+PHI3Mz40OTIyLjgyPC9yNzM+PHI3ND4wLjAwPC9yNzQ+PHI3NT4xODAuMDA8L3I3NT48cjc3PjUxMDIuODI8L3I3Nz48cjc4PjAuMDA8L3I3OD48cjc5Pjwvcjc5PjxyODA+NTA3Ni45MjwvcjgwPjxyODE+OTY0LjYxPC9yODE+PHI4Mj48L3I4Mj48cjgzPjwvcjgzPjxyODQ+PC9yODQ+PHI4NT48L3I4NT48cjg2Pjwvcjg2PjxyODc+PC9yODc+PHI4OD48L3I4OD48cjg5Pjwvcjg5PjxyOTA+OTY0LjYxPC9yOTA+PHI5MT41MTAyLjgyPC9yOTE+PHI5Mj42NDE3LjE4PC9yOTI+PHI5Mz48L3I5Mz48cjk0PjY0MTcuMTg8L3I5ND48cjk1PjI4ODAwLjAwPC9yOTU+PHI5Nj45NjIuNTg8L3I5Nj48cjk3Pjwvcjk3PjxyOTg+PC9yOTg+PHI5OT48L3I5OT48cjEwMD48L3IxMDA+PHIxMDE+PC9yMTAxPjxyMTAyPjwvcjEwMj48cjEwMz48L3IxMDM+PHIxMDQ+PC9yMTA0PjxyMTA1Pjk2Mi41ODwvcjEwNT48cjEwNj4wLjAwPC9yMTA2PjxyMTA3PjwvcjEwNz48cjEwOD48L3IxMDg+PHIxMDk+PC9yMTA5PjxyMTEwPjwvcjExMD48cjExMT48L3IxMTE+PHIxMTI+PC9yMTEyPjxyMTEzPjwvcjExMz48cjExND48L3IxMTQ+PHIxMTU+MC4wMDwvcjExNT48cjExNj4xOTI3LjE5PC9yMTE2PjxyMTE2YT48L3IxMTZhPjxyMTE3PjwvcjExNz48cjExOD4xOTI3LjE5PC9yMTE4PjxyMTE5PjwvcjExOT48cjEyMD48L3IxMjA+PHIxMjE+PC9yMTIxPjxyMTIyPjwvcjEyMj48cjEyMz48L3IxMjM+PHIxMjQ+MTkyNy4xOTwvcjEyND48cjEyNT48L3IxMjU+PHIxMjY+PC9yMTI2PjxyMTI3PjwvcjEyNz48cjEyOD48L3IxMjg+PHIxMjk+PC9yMTI5PjxyMTMwPjwvcjEzMD48cjEzMT48L3IxMzE+PHIxMzI+PC9yMTMyPjxyMTMzPjwvcjEzMz48cjEzND48L3IxMzQ+PHIxMzU+MTkyNy4xOTwvcjEzNT48cjEzNj48L3IxMzY+PHIxMzc+PC9yMTM3PjxyMTM4PjwvcjEzOD48cjEzOT48L3IxMzk+PHIxNDA+PC9yMTQwPjxyMTQxPjwvcjE0MT48cjE0Mj48L3IxNDI+PHIxNDM+PC9yMTQzPjxyMTQ0PjwvcjE0ND48cjE0NT48L3IxNDU+PHIxNDY+PC9yMTQ2PjxyMTQ3PjwvcjE0Nz48cjE0OD48L3IxNDg+PHIxNDk+MDwvcjE0OT48cjE1MD48L3IxNTA+PG5ldXBsYXRudWplbT4xPC9uZXVwbGF0bnVqZW0+PHNwbG5hbTNwZXI+MDwvc3BsbmFtM3Blcj48cjE1MT48L3IxNTE+PHIxNTI+PGljbz48L2ljbz48b2JjaE1lbm8+PHJpYWRvaz48IVtDREFUQVtdXT48L3JpYWRvaz48cmlhZG9rPjwhW0NEQVRBW11dPjwvcmlhZG9rPjwvb2JjaE1lbm8+PHN1aGxhc1phc2xVZGFqZT4wPC9zdWhsYXNaYXNsVWRhamU+PC9yMTUyPjxvc29iaXRuZVphem5hbXk+PHV2YWR6YT4wPC91dmFkemE+PHVkYWplT3ByaWptb2NoPjxrb2RTdGF0dT48L2tvZFN0YXR1PjxkcnVoUHJpbXVQYXI+PC9kcnVoUHJpbXVQYXI+PGRydWhQcmltdU9kcz48L2RydWhQcmltdU9kcz48ZHJ1aFByaW11UGlzPjwvZHJ1aFByaW11UGlzPjxwcmlqbXk+PC9wcmlqbXk+PHZ5ZGF2a3k+PC92eWRhdmt5Pjx6VG9ob1Z5ZGF2a3k+PC96VG9ob1Z5ZGF2a3k+PC91ZGFqZU9wcmlqbW9jaD48dWRhamVPcHJpam1vY2g+PGtvZFN0YXR1Pjwva29kU3RhdHU+PGRydWhQcmltdVBhcj48L2RydWhQcmltdVBhcj48ZHJ1aFByaW11T2RzPjwvZHJ1aFByaW11T2RzPjxkcnVoUHJpbXVQaXM+PC9kcnVoUHJpbXVQaXM+PHByaWpteT48L3ByaWpteT48dnlkYXZreT48L3Z5ZGF2a3k+PHpUb2hvVnlkYXZreT48L3pUb2hvVnlkYXZreT48L3VkYWplT3ByaWptb2NoPjx1ZGFqZU9wcmlqbW9jaD48a29kU3RhdHU+PC9rb2RTdGF0dT48ZHJ1aFByaW11UGFyPjwvZHJ1aFByaW11UGFyPjxkcnVoUHJpbXVPZHM+PC9kcnVoUHJpbXVPZHM+PGRydWhQcmltdVBpcz48L2RydWhQcmltdVBpcz48cHJpam15PjwvcHJpam15Pjx2eWRhdmt5PjwvdnlkYXZreT48elRvaG9WeWRhdmt5PjwvelRvaG9WeWRhdmt5PjwvdWRhamVPcHJpam1vY2g+PHVkYWplT3ByaWptb2NoPjxrb2RTdGF0dT48L2tvZFN0YXR1PjxkcnVoUHJpbXVQYXI+PC9kcnVoUHJpbXVQYXI+PGRydWhQcmltdU9kcz48L2RydWhQcmltdU9kcz48ZHJ1aFByaW11UGlzPjwvZHJ1aFByaW11UGlzPjxwcmlqbXk+PC9wcmlqbXk+PHZ5ZGF2a3k+PC92eWRhdmt5Pjx6VG9ob1Z5ZGF2a3k+PC96VG9ob1Z5ZGF2a3k+PC91ZGFqZU9wcmlqbW9jaD48dWRhamVPcHJpam1vY2g+PGtvZFN0YXR1Pjwva29kU3RhdHU+PGRydWhQcmltdVBhcj48L2RydWhQcmltdVBhcj48ZHJ1aFByaW11T2RzPjwvZHJ1aFByaW11T2RzPjxkcnVoUHJpbXVQaXM+PC9kcnVoUHJpbXVQaXM+PHByaWpteT48L3ByaWpteT48dnlkYXZreT48L3Z5ZGF2a3k+PHpUb2hvVnlkYXZreT48L3pUb2hvVnlkYXZreT48L3VkYWplT3ByaWptb2NoPjx1ZGFqZU9wcmlqbW9jaD48a29kU3RhdHU+PC9rb2RTdGF0dT48ZHJ1aFByaW11UGFyPjwvZHJ1aFByaW11UGFyPjxkcnVoUHJpbXVPZHM+PC9kcnVoUHJpbXVPZHM+PGRydWhQcmltdVBpcz48L2RydWhQcmltdVBpcz48cHJpam15PjwvcHJpam15Pjx2eWRhdmt5PjwvdnlkYXZreT48elRvaG9WeWRhdmt5PjwvelRvaG9WeWRhdmt5PjwvdWRhamVPcHJpam1vY2g+PHJla3JlYWNpYVBhcjE5b2RzMj4wPC9yZWtyZWFjaWFQYXIxOW9kczI+PHJla3JlYWNpYVN1bWE+PC9yZWtyZWFjaWFTdW1hPjx6YXpuYW15PjwhW0NEQVRBW11dPjwvemF6bmFteT48L29zb2JpdG5lWmF6bmFteT48cjE1Mz40PC9yMTUzPjxkYXR1bVZ5aGxhc2VuaWE+MDcuMDMuMjAyNDwvZGF0dW1WeWhsYXNlbmlhPjxkYW5vdnlQcmVwbGF0b2tCb251cz48dnlwbGF0aXREYW5vdnlCb251cz4wPC92eXBsYXRpdERhbm92eUJvbnVzPjx2eXBsYXRpdERhbm92eUJvbnVzVXJva3k+MDwvdnlwbGF0aXREYW5vdnlCb251c1Vyb2t5Pjx2cmF0aXREYW5QcmVwbGF0b2s+MDwvdnJhdGl0RGFuUHJlcGxhdG9rPjxzcG9zb2JQbGF0Ynk+PHBvdWthemthPjA8L3BvdWthemthPjx1Y2V0PjA8L3VjZXQ+PHVjZXRaYWhyYW5pY2llPjA8L3VjZXRaYWhyYW5pY2llPjwvc3Bvc29iUGxhdGJ5PjxiYW5rb3Z5VWNldD48SUJBTj48L0lCQU4+PC9iYW5rb3Z5VWNldD48ZGF0dW0+PC9kYXR1bT48L2Rhbm92eVByZXBsYXRva0JvbnVzPjxwcmlsMWJQYXIzMGVWeWRhdmt5SW52ZXN0aWNpZT48cjAxPjxzMDFPZD48L3MwMU9kPjxzMDFEbz48L3MwMURvPjxzMDI+PC9zMDI+PHMwMz48L3MwMz48czA0PjwvczA0PjwvcjAxPjxyMDI+PHMwMU9kPjwvczAxT2Q+PHMwMURvPjwvczAxRG8+PHMwMj48L3MwMj48czAzPjwvczAzPjxzMDQ+PC9zMDQ+PC9yMDI+PHIwMz48czAxT2Q+PC9zMDFPZD48czAxRG8+PC9zMDFEbz48czAyPjwvczAyPjxzMDM+PC9zMDM+PHMwND48L3MwND48L3IwMz48cjA0PjxzMDFPZD48L3MwMU9kPjxzMDFEbz48L3MwMURvPjxzMDI+PC9zMDI+PHMwMz48L3MwMz48czA0PjwvczA0PjwvcjA0PjxyMDU+PHMwMU9kPjwvczAxT2Q+PHMwMURvPjwvczAxRG8+PHMwMj48L3MwMj48czAzPjwvczAzPjxzMDQ+PC9zMDQ+PC9yMDU+PHIwNj48czAxT2Q+PC9zMDFPZD48czAxRG8+PC9zMDFEbz48czAyPjwvczAyPjxzMDM+PC9zMDM+PHMwND48L3MwND48L3IwNj48cjA3PjxzMDFPZD48L3MwMU9kPjxzMDFEbz48L3MwMURvPjxzMDI+PC9zMDI+PHMwMz48L3MwMz48czA0PjwvczA0PjwvcjA3PjxyMDg+PHMwMU9kPjwvczAxT2Q+PHMwMURvPjwvczAxRG8+PHMwMj48L3MwMj48czAzPjwvczAzPjxzMDQ+PC9zMDQ+PC9yMDg+PHIwOT48czAxT2Q+PC9zMDFPZD48czAxRG8+PC9zMDFEbz48czAyPjwvczAyPjxzMDM+PC9zMDM+PHMwND48L3MwND48L3IwOT48cjEwPjxzMDFPZD48L3MwMU9kPjxzMDFEbz48L3MwMURvPjxzMDI+PC9zMDI+PHMwMz48L3MwMz48czA0PjwvczA0PjwvcjEwPjxyMTE+PC9yMTE+PHIxMj48L3IxMj48L3ByaWwxYlBhcjMwZVZ5ZGF2a3lJbnZlc3RpY2llPjxwcmlsUG9kaWVseU5hWmlza3U+PHByMT48L3ByMT48cHIyPjwvcHIyPjxwcjM+PC9wcjM+PHByND48czE+PC9zMT48czI+PC9zMj48L3ByND48cHI1PjxzMT48L3MxPjxzMj48L3MyPjwvcHI1PjxwcjY+PHMxPjwvczE+PHMyPjwvczI+PC9wcjY+PHByNz48L3ByNz48cHI4Pjc8L3ByOD48cHI5PjwvcHI5PjxwcjEwPjwvcHIxMD48cHIxMT48L3ByMTE+PHByMTI+PC9wcjEyPjxwcjEzPjwvcHIxMz48cHIxND48L3ByMTQ+PHByMTU+PC9wcjE1PjxwcjE2PjwvcHIxNj48cHIxNz48L3ByMTc+PHByMTg+PC9wcjE4PjxwcjE5PjwvcHIxOT48cHIyMD48L3ByMjA+PHByMjE+PC9wcjIxPjxwcjIyPjxzMT48L3MxPjxzMj48L3MyPjwvcHIyMj48cHIyMz48czE+PC9zMT48czI+PC9zMj48L3ByMjM+PHByMjQ+PHMxPjwvczE+PHMyPjwvczI+PC9wcjI0PjxwcjI1PjwvcHIyNT48cHIyNj4zNTwvcHIyNj48cHIyNz48L3ByMjc+PHByMjg+PC9wcjI4PjwvcHJpbFBvZGllbHlOYVppc2t1Pjxzb2NaZHJhdlBvaXN0ZW5pZT48cHIxPjxzMT48L3MxPjxzMj48L3MyPjwvcHIxPjxwcjI+PC9wcjI+PHByMz48L3ByMz48cHI0PjwvcHI0PjxwcjU+PC9wcjU+PHByNj48L3ByNj48cHI3PjwvcHI3Pjxwcjg+PC9wcjg+PHByOT48L3ByOT48cHIxMD48L3ByMTA+PHByMTE+MC4wMDwvcHIxMT48cHIxMj48L3ByMTI+PHByMTM+MC4wMDwvcHIxMz48cHIxND48L3ByMTQ+PHByMTU+PC9wcjE1PjxwcmlQcmltb2NoNm9kczFhMlZlZGllbVBVPjA8L3ByaVByaW1vY2g2b2RzMWEyVmVkaWVtUFU+PGRhdHVtPjwvZGF0dW0+PC9zb2NaZHJhdlBvaXN0ZW5pZT48L3RlbG8+PC9kb2t1bWVudD4K"
           filename: danove-priznanie.xml
 
@@ -1122,7 +1267,7 @@ components:
         parameters:
           format: PAdES
           checkPDFACompliance: true
-        extraParameters:
+        presentation:
           visualizationWidth: lg
         documents:
         - mimeType: "application/pdf; base64"
@@ -1201,7 +1346,7 @@ components:
         parameters:
           format: CAdES
           container: ASiC_E
-        extraParameters:
+        presentation:
           visualizationWidth: md
         documents:
         - mimeType: "image/png; base64"
