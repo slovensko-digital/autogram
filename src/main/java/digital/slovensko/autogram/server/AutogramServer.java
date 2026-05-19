@@ -36,13 +36,18 @@ public class AutogramServer {
         // Info
         server.createContext("/info", new InfoEndpoint(autogram)).getFilters()
                 .add(new AutogramCorsFilter("GET"));
+        server.createContext("/api/v1/info", new InfoEndpoint(autogram)).getFilters()
+            .add(new AutogramCorsFilter("GET"));
 
         // Certificates
         server.createContext("/certificates", new CertificatesEndpoint(autogram)).getFilters()
                 .add(new AutogramCorsFilter("GET"));
+        server.createContext("/api/v1/certificates", new CertificatesEndpoint(autogram)).getFilters()
+            .add(new AutogramCorsFilter("GET"));
 
         // Documentation
         server.createContext("/docs", new DocumentationEndpoint());
+        server.createContext("/api/v1/docs", new DocumentationEndpoint());
 
         // Sign
         server.createContext("/sign", new SignEndpoint(autogram)).getFilters()
@@ -51,10 +56,14 @@ public class AutogramServer {
         // Batch
         server.createContext("/batch", new BatchEndpoint(autogram)).getFilters()
                 .add(new AutogramCorsFilter(List.of("POST", "DELETE")));
+        server.createContext("/api/v1/batch", new BatchEndpoint(autogram)).getFilters()
+            .add(new AutogramCorsFilter(List.of("POST", "DELETE")));
 
         // Assets
         server.createContext("/assets", new AssetsEndpoint()).getFilters()
                 .add(new AutogramCorsFilter("GET"));
+        server.createContext("/api/v1/assets", new AssetsEndpoint()).getFilters()
+            .add(new AutogramCorsFilter("GET"));
 
         // Start server
         server.start();

@@ -4,17 +4,14 @@ import java.io.File;
 
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
-import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.alert.LogOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
@@ -154,19 +151,8 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static FileDocument createDSSFileDocumentFromFile(File file) {
-        var fileDocument = new FileDocument(file);
-
-        if (fileDocument.getName().endsWith(".xdcf"))
-            fileDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
-
-        else if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
-            fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
-
-        else if (isTxt(fileDocument.getMimeType()))
-            fileDocument.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
-
-        return fileDocument;
+    public static DSSDocument createDSSFileDocumentFromFile(File file) {
+        return AutogramDocument.fromFile(file).toDssDocument();
     }
 
     private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
@@ -184,17 +170,25 @@ public class SigningJob {
         return new SigningJob(document, params, responder);
     }
 
+    public static SigningJob buildFromRequest(AutogramSigningRequest request, Responder responder) {
+        return build(request.getSingleDocument().toDssDocument(), request.getParameters(), responder);
+    }
+
+    public static SigningJob buildFromRequest(AutogramDocument document, SigningParameters params, Responder responder) {
+        return buildFromRequest(AutogramSigningRequest.forSingleDocument(document, params), responder);
+    }
+
     public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
-        return build(document, params, responder);
+        return buildFromRequest(AutogramDocument.fromDssDocument(document), params, responder);
     }
 
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var document = createDSSFileDocumentFromFile(file);
-        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return build(document, parameters, responder);
+        var document = AutogramDocument.fromFile(file);
+        var parameters = getParametersForFile(document.toDssDocument(), checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
+        return buildFromRequest(AutogramSigningRequest.forSingleDocument(document, parameters), responder);
     }
 
-    private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+    private static SigningParameters getParametersForFile(DSSDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var level = SignatureValidator.getSignedDocumentSignatureLevel(SignatureValidator.getSignedDocumentSimpleReport(document));
         if (level != null) switch (level.getSignatureForm()) {
             case PAdES:
