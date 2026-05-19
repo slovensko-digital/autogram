@@ -2,25 +2,28 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml" minWidth="600">
     <top>
     <VBox fx:id="mainBox">
         <VBox>
             <Label styleClass="autogram-claim,autogram-heading-l">Autogram</Label>
-            <TextFlow><Text styleClass="autogram-body-l" text="Nový, krajší a&#160;lepší nástroj na&#160;podpisovanie."/></TextFlow>
+            <TextFlow><Text styleClass="autogram-body-l" text="%main.about.text"/></TextFlow>
         </VBox>
 
         <VBox spacing="15">
-            <TextFlow><Text styleClass="autogram-heading-m" text="Vyberte súbor na&#160;podpísanie alebo overenie"/></TextFlow>
+            <TextFlow><Text styleClass="autogram-heading-m" text="%main.selectFile.text"/></TextFlow>
             <VBox fx:id="dropZone" styleClass="autogram-dropzone">
                 <SVGPath styleClass="autogram-icon,autogram-icon--big" content="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
                 <TextFlow textAlignment="CENTER">
-                    <Button styleClass="autogram-button,autogram-button--secondary" fx:id="uploadButton" onAction="#onUploadButtonAction">Vyberte súbor</Button>
-                    <Text styleClass="autogram-body" text=" alebo ho presuňte sem" />
+                    <Button styleClass="autogram-button,autogram-button--secondary" fx:id="uploadButton" onAction="#onUploadButtonAction" text="%main.selectFile.btn"/>
+                    <Text styleClass="autogram-body" text="%main.dragAndDropFile.text" />
                 </TextFlow>
             </VBox>
         </VBox>
@@ -28,8 +31,8 @@
     </top>
     <bottom>
         <HBox styleClass="autogram-footer">
-            <Button styleClass="autogram-link" onAction="#onAboutButtonAction">O Autograme</Button>
-            <Button styleClass="autogram-link" onAction="#onSettingButtonAction">Nastavenia</Button>
+            <Button styleClass="autogram-link" onAction="#onAboutButtonAction" text="%main.about.btn"/>
+            <Button styleClass="autogram-link" onAction="#onSettingButtonAction" text="%general.settings"/>
         </HBox>
     </bottom>
 </BorderPane>

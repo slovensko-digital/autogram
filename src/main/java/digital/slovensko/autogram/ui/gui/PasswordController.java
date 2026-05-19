@@ -8,9 +8,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public class PasswordController {
-    private final String questionText;
-    private final String errorText;
+public class PasswordController extends BaseController {
+    private final String questionKey;
+    private final String errorKey;
     private final boolean isSigningStep;
     private final boolean allowEmpty;
 
@@ -31,18 +31,19 @@ public class PasswordController {
     @FXML
     VBox mainBox;
 
-    public PasswordController(String questionText, String blankPasswordErrorText, boolean isSigningStep, boolean allowEmpty) {
-        this.questionText = questionText;
-        this.errorText = blankPasswordErrorText;
+    public PasswordController(String questionKey, String blankPasswordErrorKey, boolean isSigningStep, boolean allowEmpty) {
+        this.questionKey = questionKey;
+        this.errorKey = blankPasswordErrorKey;
         this.isSigningStep = isSigningStep;
         this.allowEmpty = allowEmpty;
     }
 
+    @Override
     public void initialize() {
-        question.setText(questionText);
-        error.setText(errorText);
+        question.setText(i18n(questionKey));
+        error.setText(i18n(errorKey));
         if(isSigningStep) {
-            mainButton.setText("Podpísať");
+            mainButton.setText(i18n("general.sign.btn"));
             cancelButton.setManaged(true);
             cancelButton.setVisible(true);
         }

@@ -77,6 +77,13 @@ docker compose up --build
 
 And the resulting packages will appear in `packaging/output/`.
 
+#### WiX Tools
+In case of the following error:
+> Can not find WiX tools (light.exe, candle.exe)
+> Download WiX 3.0 or later from https://wixtoolset.org and add it to the PATH.
+
+Download it from https://github.com/wixtoolset/wix3/releases and add it to PATH (it is installed without prompt into `C:\Program Files (x86)\WiX Toolset v3.14`)
+
 
 ## Authors and Sponsors
 

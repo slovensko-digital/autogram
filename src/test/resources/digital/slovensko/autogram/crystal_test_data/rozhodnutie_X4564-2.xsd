@@ -1,0 +1,2143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.gov.sk/form/36126624.PovolenieZdravotnictvo.sk/1.9"
+	attributeFormDefault="unqualified" elementFormDefault="qualified"
+	targetNamespace="http://schemas.gov.sk/form/36126624.PovolenieZdravotnictvo.sk/1.9"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="OutputDocument">
+		<xs:annotation>
+			<xs:documentation>Výstupný elektronický formulár pre Povolenie na
+				prevádzkovanie zdravotníckeho zariadenia alebo poskytovanie
+				lekárenskej starostlivosti (rozhodnutie, oznámenie)
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="RequestBase">
+					<xs:sequence>
+						<xs:element maxOccurs="1" minOccurs="1" name="IssuedBy"
+							type="POPersonDataCType" />
+						<xs:element maxOccurs="1" minOccurs="1" name="IssuedTo"
+							type="EHPersonDataCType" />
+						<xs:element maxOccurs="unbounded" minOccurs="0"
+							name="ZdravotnickeZariadenie" nillable="true"
+							type="ZdravotnickeZariadenieCType" />
+						<xs:element maxOccurs="unbounded" minOccurs="0"
+							name="OdbornyZastupca" nillable="true" type="OdbornyZastupcaCType" />
+						<xs:element maxOccurs="1" minOccurs="1" name="Rozhodnutie"
+							type="RozhodnutieCType" />
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="DeliveryNameAddressCType">
+		<xs:sequence>
+			<xs:element name="FormattedName" type="String1023" />
+			<xs:element name="FormattedAddress" type="String1023" />
+			<xs:element name="RecipientID" type="String1023"
+				minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="DovozMimoEUCType">
+		<xs:sequence>
+			<xs:element name="Country" type="CodelistDataElementCType" />
+			<xs:element name="CorporateBodyFullName" type="CorporateBodyFullNameSCType" />
+			<xs:element name="AddressLine" type="AddressLineType" />
+			<xs:element name="TypTkaniva" type="FormattedTextType" />
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="InternaCinnost" nillable="true" type="CodelistDataElementCType" />
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="ExternaCinnost" nillable="true" type="CodelistDataElementCType" />
+			<xs:element name="OpisPohybuTkaniva" type="FormattedTextType" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TkanivoveZariadenieCType">
+		<xs:sequence>
+			<xs:element name="EUKod" type="String100" />
+			<xs:element minOccurs="0" name="DruhCinnosti" type="CodelistDataElementCType" />
+			<xs:element name="TypTkaniva" type="FormattedTextType" />
+			<xs:element minOccurs="0" name="VyvozTypTkaniva" type="FormattedTextType" />
+			<xs:element minOccurs="0" name="DovozEUTypTkaniva" type="FormattedTextType" />
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="DovozMimoEU"
+				nillable="true" type="DovozMimoEUCType" />
+			<xs:element name="OdberTkaniv" type="CorporateBodyFullNameSCType"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:element name="TestovanieTkaniv" type="CorporateBodyFullNameSCType"
+				maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="APSCType">
+		<xs:sequence>
+			<xs:element name="PevnyBod" type="String1023" />
+			<xs:element name="SpadoveUzemie" type="String1023" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OdbornyUtvarCType">
+		<xs:sequence>
+			<xs:element name="DruhOU" type="CodelistDataElementCType" />
+			<xs:element name="DruhOddelenia" type="CodelistDataElementCType" />
+			<xs:element name="Nazov" type="String1023" />
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="OdborneZameranie" nillable="true" type="CodelistDataElementCType" />
+			<xs:element name="PocetLozok" type="xs:integer" />
+			<xs:element name="JIS" type="xs:boolean" />
+			<xs:element name="JISPocetLozok" type="xs:integer" />
+			<xs:element name="PrijmovaAmbulancia" type="xs:boolean" />
+			<xs:element name="UstavnaPohotovostnaSluzba" type="xs:boolean" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ZZariadenieCType">
+		<xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="1" name="DruhZariadenia"
+				type="CodelistDataElementCType" />
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="PhysicalAddress" type="PhysicalAddressCType">
+				<xs:annotation>
+					<xs:documentation>Adresa prevadzkarne</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="OdborneZameranie" nillable="true" type="CodelistDataElementCType" />
+   <xs:element maxOccurs="unbounded" minOccurs="0" name="Ups" nillable="true"
+               type="CodelistDataElementCType"/>
+   <xs:element maxOccurs="unbounded" minOccurs="0" name="ID"
+				type="IDCType">
+				<xs:annotation>
+					<xs:documentation>D.1.6 Zložený dátový prvok pre rôzne
+						identifikátory.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<!-- TkanivoveZariadenie nepovinny 0..1 -->
+			<xs:element maxOccurs="1" minOccurs="0" name="TkanivoveZariadenie"
+				nillable="true" type="TkanivoveZariadenieCType" />
+			<!-- OdborneUtvary nepovinny 0..N -->
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="OdbornyUtvar"
+				nillable="true" type="OdbornyUtvarCType" />
+			<xs:element minOccurs="0" name="DatumZaciatkuCinnosti"
+				nillable="true" type="xs:date" />
+			<xs:element minOccurs="0" name="DatumUkonceniaCinnosti"
+				nillable="true" type="xs:date" />
+			<xs:element minOccurs="0" name="DatumPozastaveniaOd"
+				nillable="true" type="xs:date" />
+			<xs:element minOccurs="0" name="DatumPozastaveniaDo"
+				nillable="true" type="xs:date" />
+			<xs:element maxOccurs="1" minOccurs="0" name="NazovZariadenia"
+				nillable="true" type="xs:string" />
+			<xs:element maxOccurs="1" minOccurs="0" name="APS"
+				nillable="true" type="APSCType" />
+   <xs:element minOccurs="0" name="RozsahCinnosti" type="FormattedTextType"/>
+   <xs:element name="SidloStaniceZZS" type="String1023" minOccurs="0"/>
+   <xs:element name="OpravnenieNaPrepravuLetunom" type="String1023" minOccurs="0"/>
+   <xs:element maxOccurs="1" minOccurs="0" name="IndikacneZariadenie" nillable="true" type="FormattedTextType"/>
+  </xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ZdravotnickeZariadenieCType">
+		<xs:complexContent>
+			<xs:extension base="ZZariadenieCType">
+				<xs:sequence>
+					<xs:element maxOccurs="unbounded" minOccurs="0"
+						name="PodradeneZZ" nillable="true" type="ZZariadenieCType" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="OdbornyZastupcaCType">
+		<xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="0" name="PhysicalPerson"
+				type="EHPhysicalPersonCType">
+				<xs:annotation>
+					<xs:documentation>Zlozeny datovy prvok pre popis fyzickej osoby
+						rozsireny o atributy pre zdravotnickeho pracovnika
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="PhysicalAddress" type="PhysicalAddressCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3 Zložený dátový prvok pre určenie adresy.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="IDZZ"
+				type="OdbornyZastupcaIDZZCType">
+				<xs:annotation>
+					<xs:documentation>Zložený dátový prvok pre zoznam identifikatorov
+						zdravotnickych zariadeni</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+   <xs:element maxOccurs="1" minOccurs="1" name="DruhOdbornehoZastupcu" type="CodelistDataElementCType"/>
+  </xs:sequence>
+	</xs:complexType>
+        <xs:complexType name="OdbornyZastupcaIDZZCType">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="IDZZ"
+				type="IDCType">
+				<xs:annotation>
+					<xs:documentation>Zložený dátový prvok pre zoznam identifikatorov
+						zdravotnickych zariadeni</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+             <xs:element name="FunkciaOd" type="xs:date" minOccurs="0"/>
+             <xs:element name="FunkciaDo" type="xs:date" minOccurs="0"/>
+            </xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="RozhodnutieCType">
+		<xs:annotation>
+			<xs:documentation>Zlozeny datovy prvok pre rozne informacie o
+				rozhodnuti</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="DatumVydaniaRozhodnutia" type="xs:date" />
+			<xs:element minOccurs="0" name="DatumUcinnosti" type="xs:date" />
+			<xs:element minOccurs="0" name="DatumNadobudnutiaPravoplatnosti"
+				type="xs:date" />
+			<xs:element minOccurs="0" name="PozastavenieDo" type="xs:date" />
+   <xs:element minOccurs="0" name="DatumUcinnostiDo" type="xs:date"/>
+   <xs:element name="CisloRozhodnutia" type="NonEmptyStringType" />
+			<xs:element minOccurs="0" name="PredchCisloRozhodnutia"
+				type="NonEmptyStringType" />
+			<xs:element minOccurs="0" name="PredchDatumVydaniaRozhodnutia"
+				type="xs:date" />
+			<xs:element minOccurs="0"
+				name="PredchDatumNadobudnutiaPravoplatnosti" type="xs:date" />
+			<xs:element minOccurs="0" name="Subject" nillable="true"
+				type="xs:string" />
+			<xs:element minOccurs="0" name="UvodVyroku" type="FormattedTextType" />
+			<xs:element minOccurs="0" name="ZaverVyroku" type="FormattedTextType" />
+			<xs:element minOccurs="0" name="Odovodnenie" type="FormattedTextType" />
+			<xs:element minOccurs="0" name="Poucenie" type="FormattedTextType" />
+			<xs:element minOccurs="0" name="ResponsiblePerson"
+				nillable="true" type="ResponsiblePersonType" />
+			<xs:element minOccurs="0" name="DeliverTo" nillable="true"
+				type="DeliveryNameAddressCType" />
+			<xs:element minOccurs="0" name="CarbonCopy" nillable="true"
+				type="DeliveryNameAddressCType" maxOccurs="unbounded" />
+			<xs:element minOccurs="1" name="MiestoVydania" nillable="true"
+				type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Miesto vydania rozhodnutia, napríklad "V
+						Bratislave"</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="TypPovolenia" nillable="true"
+				type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Typy povolení: 578 - zdravotnícke zariadenia, 362- lekárenská starostlivosť, 538 - kúpele, 355 - RUVZ</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+   <xs:element minOccurs="0" name="CinnostPovolenia" nillable="true" type="xs:string">
+    <xs:annotation>
+     <xs:documentation>Množina hodnôt:prípravu transfúznych liekov v zariadeníindividuálnu prípravu liekov na inovatívnu liečbu v zariadeníposkytovanie lekárenskej starostlivosti v nemocničnej lekárnivýrobu humánnych liekov v zariadenívýrobu skúšaných humánnych produktov a skúšaných humánnych liekov v zariadeníveľkodistribúciu humánnych liekov v zariadeníposkytovanie lekárenskej starostlivosti v zariadení</xs:documentation>
+    </xs:annotation>
+   </xs:element>
+   <xs:element minOccurs="0" name="DruhDokladu" nillable="true"
+				type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Hodnoty: VYTVORENIE - vydanie prvého povolenia,
+						NOVE_ROZHODNUTIE - zmena povolenia novým rozhodnutím,
+						VYZNACENIE_ZMENY - vyznačenie zmeny v povolení, ZRUSENIE -
+						zrušenie povolenia, POZASTAVENIE - dočasné pozastavenie povolenia,
+						ZANIK - zánik povolenia</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+   <xs:element minOccurs="0" name="Spravoplatnit" nillable="true" type="xs:boolean">
+    <xs:annotation>
+     <xs:documentation>Hodnoty: VYTVORENIE - vydanie prvého povolenia,
+						NOVE_ROZHODNUTIE - zmena povolenia novým rozhodnutím,
+						VYZNACENIE_ZMENY - vyznačenie zmeny v povolení, ZRUSENIE -
+						zrušenie povolenia, POZASTAVENIE - dočasné pozastavenie povolenia,
+						ZANIK - zánik povolenia</xs:documentation>
+    </xs:annotation>
+   </xs:element>
+  </xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ResponsiblePersonType">
+		<xs:sequence>
+			<xs:group ref="ProfilePhysicalPersonFormattedNameOnly" />
+			<xs:element name="Role" type="NonEmptyStringType" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:group name="ProfilePhysicalPersonFormattedNameOnly">
+		<xs:sequence>
+			<xs:element name="PersonData">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:group ref="PhysicalPerson_formattedName" />
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:group>
+	<xs:group name="PhysicalPerson_formattedName">
+		<xs:sequence>
+			<xs:element name="PhysicalPerson">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="PersonName" type="FormattedNameType" />
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:group>
+	<xs:complexType name="EHPhysicalPersonCType">
+		<xs:complexContent>
+			<xs:extension base="PhysicalPersonCType">
+				<xs:sequence>
+					<xs:element minOccurs="0"
+						name="ZdravotnickePovolanie" type="CodelistDataElementCType" maxOccurs="1"/>
+					<xs:element maxOccurs="unbounded" minOccurs="0"
+						name="StudijnyOdbor" nillable="true" type="CodelistDataElementCType" />
+					<xs:element maxOccurs="unbounded" minOccurs="0"
+						name="SpecializacnyOdbor" nillable="true" type="CodelistDataElementCType" />
+					<xs:element maxOccurs="1" minOccurs="0"
+						name="IDPovolovaciehoOrganu" type="CodelistDataElementCType" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- person data -->
+	<xs:element name="EHPersonData" type="EHPersonDataCType">
+		<xs:annotation>
+			<xs:documentation>D.1. Zlozeny datovy prvok pre rozne informacie o
+				osobe.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="POPersonDataCType">
+		<xs:annotation>
+			<xs:documentation>D.1 Zlozeny datovy prvok pre rozne informacie o
+				osobe typu povolovaci organ</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="0" name="CorporateBody"
+				type="CorporateBodyCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2 Zlozeny datovy prvok pre popis pravnickej
+						osoby alebo subjektu, ktory nie je pravnickou osobou ani fyzickou
+						osobou v zmysle pravneho poriadku Slovenskej republiky.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="1" name="PhysicalAddress" type="PhysicalAddressCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3 Zložený dátový prvok pre určenie adresy.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="ID"
+				type="IDCType">
+				<xs:annotation>
+					<xs:documentation>D.1.6 Zložený dátový prvok pre rôzne
+						identifikátory.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="1"
+				name="IDPovolovaciehoOrganu" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>Identifikator povolovacieho organu
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="EHPersonDataCType">
+		<xs:annotation>
+			<xs:documentation>D.1 Zlozeny datovy prvok pre rozne informacie o
+				osobe</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:sequence minOccurs="1">
+				<xs:element maxOccurs="1" minOccurs="0" name="PhysicalPerson"
+					type="EHPhysicalPersonCType">
+					<xs:annotation>
+						<xs:documentation>Zlozeny datovy prvok pre popis fyzickej osoby
+							rozsireny o atributy pre zdravotnickeho pracovnika
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element maxOccurs="1" minOccurs="0" name="CorporateBody"
+					type="CorporateBodyCType">
+					<xs:annotation>
+						<xs:documentation>D.1.2 Zlozeny datovy prvok pre popis pravnickej
+							osoby alebo subjektu, ktory nie je pravnickou osobou ani fyzickou
+							osobou v zmysle pravneho poriadku Slovenskej republiky.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="1"
+				name="PhysicalAddress" type="PhysicalAddressCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3 Zložený dátový prvok pre určenie adresy.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="ID"
+				type="IDCType">
+				<xs:annotation>
+					<xs:documentation>D.1.6 Zložený dátový prvok pre rôzne
+						identifikátory.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- physical address -->
+	<xs:element name="PhysicalAddress" type="PhysicalAddressCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3 Zlozeny datovy prvok pre urcenie adresy.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="PhysicalAddressCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3 Zlozeny datovy prvok pre urcenie adresy.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="AddressLine" type="AddressLineType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.1 Formatovana informacia, ktora urcuje
+						urcitu adresu (katastralne uzemie, nazov hospodarskej usadlosti a
+						podobne).</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="Country" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.2 Zlozeny datovy prvok pre zakladny
+						ciselnik obsahujuci udaje o state. Podradene prvky sa vyplnaju v
+						sulade so zakladnym ciselnikom CL000086 Krajina OSN.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="County" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.4 Zlozeny datovy prvok pre zakladny
+						ciselnik obsahujuci udaje o okrese ako uzemnospravnom cleneni. V
+						podradenych prvkoch sa uvadza textova informacia podla pouziteho
+						atributu zakladneho ciselnika CL000024 Lokalna statisticka uzemna
+						jednotka 1 – okres.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="Municipality" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.5 Zlozeny datovy prvok pre zakladny
+						ciselnik obsahujuci udaje o obci. Obcou je uzemnospravna jednotka
+						charakterizovana suvislym domovym osidlenim a vlastnym nazvom.
+						Obcou je aj mesto. V podradenych prvkoch sa uvadza textova
+						informacia podla pouziteho atributu zakladneho ciselnika CL000025
+						Lokalna statisticka uzemna jednotka 2 – obec.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="StreetName" type="StreetNameType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.7 Obsahuje nazov ulice. Ak obec nema nazov
+						ulice, udava sa tu nazov obce.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="BuildingNumber" type="BuildingNumberType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.8 Obsahuje nazov budovy alebo cislo domu.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="PropertyRegistrationNumber"
+				type="PropertyRegistrationNumberType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.9 Obsahuje supisne cislo budovy.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AddressPoint" type="AddressPointCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12 Zlozeny datovy prvok, ktory je priamym
+						priestorovym identifikatorom adresy v suradniciach zavaznych
+						suradnicovych systemov.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="BuildingIndex" type="BuildingIndexType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.13 Tento prvok je identifikatorom adresy v
+						informacnom systeme Registra adries a Registra obyvatelov.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="DeliveryAddress" type="DeliveryAddressCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.14 Zlozeny datovy prvok presnejsie urcujuci
+						adresu.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="Building" type="BuildingCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.16 Zlozeny datovy prvok pre popis roznych
+						udajov o budove.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AddressType" type="AddressTypeCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.17 Zlozeny datovy prvok klasifikujuci ucel
+						pouzitia fyzickej adresy a prislusny casovy rozsah.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+   <xs:element name="Unit" type="String1023" minOccurs="0"/>
+  </xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="AddressLineType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.1 Formatovana informacia, ktora urcuje urcitu
+				adresu (katastralne uzemie, nazov hospodarskej usadlosti a podobne).
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String2047" />
+	</xs:simpleType>
+	<xs:simpleType name="StreetNameType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.7 Obsahuje nazov ulice. Ak obec nema nazov
+				ulice, udava sa tu nazov obce.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String100" />
+	</xs:simpleType>
+	<xs:simpleType name="BuildingNumberType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.8 Obsahuje nazov budovy alebo cislo domu.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String20" />
+	</xs:simpleType>
+	<xs:simpleType name="PropertyRegistrationNumberType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.9 Obsahuje supisne cislo budovy.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="Int10" />
+	</xs:simpleType>
+	<xs:complexType name="AddressPointCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12 Zlozeny datovy prvok, ktory je priamym
+				priestorovym identifikatorom adresy v suradniciach zavaznych
+				suradnicovych systemov.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="XYH" type="XYHCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12.1 Zlozeny datovy prvok pre suradnicu v
+						tvare x,y,h.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="BLH" type="BLHCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12.2 Zlozeny datovy prvok pre suradnicu v
+						tvare B,L,H.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AddressPointID" type="AddressPointIDType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12.3 Prvok urcujuci presne umiestnenie
+						objektu, odvodzuje sa od vchodu.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="XYHCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12.1 Zlozeny datovy prvok pre suradnicu v
+				tvare x,y,h.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="AxisX" type="AxisXType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12.1.1 Obsahuje X-ovu suradnicu.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AxisY" type="AxisYType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12.1.2 Obsahuje Y-ovu suradnicu.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="HeightH" type="HeightHType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12.1.3 Obsahuje nadmorsku vysku h.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BLHCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12.2 Zlozeny datovy prvok pre suradnicu v
+				tvare B,L,H.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="AxisB" type="AxisBType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12.2.1 Obsahuje B-ovu suradnicu.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AxisL" type="AxisLType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12.2.2 Obsahuje L-ovu suradnicu.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AxisH" type="AxisHType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.12.2.3 Obsahuje H-ovu suradnicu.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="AxisXType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12.1.1 Obsahuje X-ovu suradnicu.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="Axis" />
+	</xs:simpleType>
+	<xs:simpleType name="AxisYType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12.1.2 Obsahuje Y-ovu suradnicu.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="Axis" />
+	</xs:simpleType>
+	<xs:simpleType name="HeightHType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12.1.3 Obsahuje nadmorsku vysku h.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="Axis" />
+	</xs:simpleType>
+	<xs:simpleType name="AxisBType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12.2.1 Obsahuje B-ovu suradnicu.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="Axis" />
+	</xs:simpleType>
+	<xs:simpleType name="AxisLType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12.2.2 Obsahuje L-ovu suradnicu.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="Axis" />
+	</xs:simpleType>
+	<xs:simpleType name="AxisHType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12.2.3 Obsahuje H-ovu suradnicu.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="Axis" />
+	</xs:simpleType>
+	<xs:simpleType name="AddressPointIDType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.12.3 Prvok urcujuci presne umiestnenie
+				objektu, odvodzuje sa od vchodu.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String12" />
+	</xs:simpleType>
+	<xs:simpleType name="BuildingIndexType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.13 Tento prvok je identifikatorom adresy v
+				informacnom systeme Registra adries a Registra obyvatelov.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String10" />
+	</xs:simpleType>
+	<xs:complexType name="DeliveryAddressCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.14 Zlozeny datovy prvok presnejsie urcujuci
+				adresu.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="PostalCode" type="PostalCodeType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.14.1 Obsahuje kod, ktory ustanovili postove
+						autority za ucelom dorucovania posty.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="PostOfficeBox" type="PostOfficeBoxType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.14.2 Postovy priecinok.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="Recipient" type="RecipientCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.14.3 Zlozeny datovy prvok pre identifikaciu
+						prijemcu.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="PostalCodeType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.14.1 Obsahuje kod, ktory ustanovili postove
+				autority za ucelom dorucovania posty.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String10" />
+	</xs:simpleType>
+	<xs:simpleType name="PostOfficeBoxType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.14.2 Postovy priecinok.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String50" />
+	</xs:simpleType>
+	<xs:complexType name="RecipientCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.14.3 Zlozeny datovy prvok pre identifikaciu
+				prijemcu.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="PersonName" type="PersonNameCType">
+				<xs:annotation>
+					<xs:documentation>D.1.1.1 Zlozeny datovy prvok pre meno fyzickej
+						osoby.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AdditionalText" type="AdditionalTextType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.14.3.1 Moze obsahovat dalsie smerovacie
+						informacie prijemcu. Zvycajne udava dalsiu navigaciu po doruceni
+						postovou sluzbou.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="OrganizationUnitName"
+				type="OrganizationUnitNameSCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.4.1 Oznacenie pre nizsi utvar danej
+						organizacie v pripade jej clenenia, ktory nie je samostatnou
+						pravnickou osobou. Datovy prvok s historiou.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="CorporateBodyFullName"
+				type="CorporateBodyFullNameSCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.1 Uvadza sa plny nazov pravnickej osoby.
+						Pravdidla pouzitia: Uvadza sa vratane typovych oznaceni
+						organizacie ako "a.s.". Datovy prvok s historiou.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="AdditionalTextType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.14.3.1 Moze obsahovat dalsie smerovacie
+				informacie prijemcu. Zvycajne udava dalsiu navigaciu po doruceni
+				postovou sluzbou.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String255" />
+	</xs:simpleType>
+	<xs:complexType name="BuildingCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.16 Zlozeny datovy prvok pre popis roznych
+				udajov o budove.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="BuildingName" type="BuildingNameType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.16.1 Obsahuje nazov budovy, ak ma budova
+						osobitny nazov. Pouziva sa zauzivany nazov budovy.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="BuildingNameType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.16.1 Obsahuje nazov budovy, ak ma budova
+				osobitny nazov. Pouziva sa zauzivany nazov budovy.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String255" />
+	</xs:simpleType>
+	<xs:complexType name="AddressTypeCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.17 Zlozeny datovy prvok klasifikujuci ucel
+				pouzitia fyzickej adresy a prislusny casovy rozsah.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="AddressClass" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3.17.1 Zlozeny datovy prvok pre zakladny
+						ciselnik urcujuci druh adresy.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AddressRecordDate" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>D.1.3.17.2 Datum, odkedy je prislusna konkretna
+						adresa v oficialnej evidencii.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AddressRecordDateTermination"
+				type="xs:date">
+				<xs:annotation>
+					<xs:documentation>D.1.3.17.3 Datum, kedy bola evidencia prislusnej
+						konkretnej adresy v oficialnej evidencii ukoncena.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="BuildingUnitSCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3.10 Tento prvok je urceny na blizsie urcenie
+				miesta v ramci budovy, ak je to potrebne. Moze byt pouzity viackrat.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="String255">
+				<xs:attribute name="UnitNumber" type="String10">
+					<xs:annotation>
+						<xs:documentation>Obsahuje osobitne oznacenie prislusnej casti
+							budovy. Tento atribut je povinny ak ma datovy prvok "Cast budovy"
+							hodnotu "byt".</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="Floor" type="Int10">
+					<xs:annotation>
+						<xs:documentation>Obsahuje informaciu o umiestneni casti budovy na
+							prislusnom podlazi budovy. Podlazie sa oznacuje od prveho
+							nadzemneho podlazia (prizemia) ciselnym radom od cisla 1 a od
+							prveho podzemneho podlazia s ciselnym radom od cisla -1. Cislo 0
+							sa nepouziva.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="String12">
+		<xs:annotation>
+			<xs:documentation>Text s obmedzenim na 12 znakov</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="12" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Axis">
+		<xs:annotation>
+			<xs:documentation>Desatinne cislo s obmedzenim na 20 cislic, z toho 6
+				desatinnych miest</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:decimal">
+			<xs:totalDigits value="14" />
+			<xs:fractionDigits value="6" />
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- physical person -->
+	<xs:element name="PhysicalPerson" type="PhysicalPersonCType">
+		<xs:annotation>
+			<xs:documentation>D.1.1 Zlozeny datovy prvok pre rozne informacie o
+				osobe.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="PhysicalPersonCType">
+		<xs:annotation>
+			<xs:documentation>D.1.1 Zlozeny datovy prvok pre rozne informacie o
+				osobe.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="ID"
+				nillable="true" type="IDCType">
+				<xs:annotation>
+					<xs:documentation>D.1.6 Zlozeny datovy prvok pre rozne
+						identifikatory.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="PersonName"
+				nillable="true" type="PersonNameCType">
+				<xs:annotation>
+					<xs:documentation>D.1.1.1 Zlozeny datovy prvok pre rozne sucasti
+						mena.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="Birth"
+				nillable="true" type="BirthCType">
+				<xs:annotation>
+					<xs:documentation>D.1.1.5 Zlozeny datovy prvok obsahujuci udaje o
+						narodeni.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="Citizenship"
+				nillable="true" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.1.7 Zlozeny datovy prvok pre zakladny
+						ciselnik, obsahujuci udaje o statnej prislusnosti. Hodnoty:
+						Podradene prvky sa vyplnaju v sulade so zakladnym ciselnikom
+						CL000086 Krajina OSN.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PersonNameCType">
+		<xs:annotation>
+			<xs:documentation>D.1.1.1 Zlozeny datovy prvok pre rozne sucasti
+				mena.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="0" name="FormattedName"
+				nillable="true" type="FormattedNameType">
+				<xs:annotation>
+					<xs:documentation>D.1.1.1.1 Formatovane meno vratane predpony a
+						pripony.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="GivenName"
+				nillable="true" type="GivenNameType">
+				<xs:annotation>
+					<xs:documentation>D.1.1.1.3 Obsahuje rodne meno, ktorym je nededena
+						cast mena osoby. Zname aj ako prve meno osoby alebo v uzsom
+						vyzname krstne meno osoby. Pravidla pouzitia: Moze byt pouzity
+						viackrat, v takom pripade je poradie pouzitia urcujuce.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="FamilyName"
+				nillable="true" type="FamilyNameSCType">
+				<xs:annotation>
+					<xs:documentation>D.1.1.1.6 Obsahuje priezvisko. Moze byt pouzity
+						viackrat, v takom pripade je poradie pouzitia urcujuce.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="Affix"
+				nillable="true" type="AffixCType">
+				<xs:annotation>
+					<xs:documentation>D.1.1.1.8 Zlozeny datovy prvok pre zakladny
+						ciselnik, ktory obsahuje ostatne casti mena osoby (predponu alebo
+						priponu), tak ako ju definuju jednotlive typy atributov. Hodnoty:
+						V pripade uvadzania slovenskych akademickych titulov sa v
+						podradenych prvkoch pouzivaju zakladne ciselniky CL000062 Titul
+						pred menom a CL000063 Titul za menom. Moze byt pouzity viackrat
+						(ani pouzitie rovnakeho typu nie je obmedzene), v takom pripade je
+						poradie pouzitia urcujuce.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FamilyNameSCType">
+		<xs:annotation>
+			<xs:documentation>D.1.1.1.6 Obsahuje priezvisko. Moze byt pouzity
+				viackrat, v takom pripade je poradie pouzitia urcujuce.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="FamilyNameType">
+				<xs:attribute name="primary" type="PrimaryType" use="required">
+					<xs:annotation>
+						<xs:documentation>Hodnoty: primary="true" Znamena, ze tento vyskyt
+							priezviska je primarny. Odporuca sa uvadzat ako prve v poradi
+							pouzitych priezvisk. primary="false" Znamena, ze tento vyskyt sa
+							nepovazuje za primarny. Odporuca sa uvadzat az po primarnom
+							vyskyte priezviska. Poradie priezvisk s atributom "false" je
+							urcujuce. primary="undefined" Znamena, ze sa nepouzivaju viacere
+							priezviska, pripadne v ich viacnasobnom pouziti s tymto atributom
+							je urcujuce iba ich poradie pouzitia.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="prefix" type="PrefixType" use="optional">
+					<xs:annotation>
+						<xs:documentation>Moze obsahovat slachticky alebo ekvivalentny
+							titul. Ak existuje v priezvisku, vzdy sa uvadza. Hodnoty:
+							Priklady pouzitia: de (ako v "de Witt"), la (ako v "la Salle");
+							van (ako v "van der Voss").</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="AffixCType">
+		<xs:annotation>
+			<xs:documentation>D.1.1.1.8 Zlozeny datovy prvok pre zakladny
+				ciselnik, ktory obsahuje ostatne casti mena osoby (predponu alebo
+				priponu), tak ako ju definuju jednotlive typy atributov. Hodnoty: V
+				pripade uvadzania slovenskych akademickych titulov sa v podradenych
+				prvkoch pouzivaju zakladne ciselniky CL000062 Titul pred menom a
+				CL000063 Titul za menom. Moze byt pouzity viackrat (ani pouzitie
+				rovnakeho typu nie je obmedzene), v takom pripade je poradie
+				pouzitia urcujuce.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="CodelistDataElementCType">
+				<xs:attribute name="type" type="TypeOfAffixType" use="required">
+					<xs:annotation>
+						<xs:documentation>Definuje kontext predpony alebo pripony.
+							Hodnoty: type=aristocraticTitle Uvadza sa, ak hodnota Affix
+							obsahuje slachticky titul. Priklady pouzitia: Baron, Graf, Earl,
+							Vojvoda a podobne. type=formOfAddress Uvadza sa, ak hodnota Affix
+							obsahuje oslovenie. Priklady pouzitia: Pan, Pani., Hon., Dr.,
+							Major a podobne. type=generation Uvadza sa, ak hodnota Affix
+							obsahuje generacny titul. Priklady pouzitia: Sr., Jr., III
+							(treti) a podobne. type=qualification Uvadza sa, ak hodnota Affix
+							obsahuje pismena, ktore sa pouzivaju na popis akademickeho titulu
+							alebo ineho typu kvalifikacie, ktore osobe prinalezi.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="position" type="PositionType" use="required">
+					<xs:annotation>
+						<xs:documentation>Urcuje poziciu ostatnej casti mena. Hodnoty:
+							prefix - Predpona - ak sa titul alebo oslovenie uvadza pred menom
+							osoby. postfix - Pripona - ak sa titul alebo oslovenie uvadza za
+							menom osoby.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="BirthCType">
+		<xs:annotation>
+			<xs:documentation>D.1.1.5 Zlozeny datovy prvok obsahujuci udaje o
+				narodeni.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="1" minOccurs="0" name="DateOfBirth"
+				nillable="true" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>D.1.1.5.1 Obsahuje datum narodenia fyzickej
+						osoby. Hodnoty: Podla formatu Date. Pravidla pouzitia: Datum
+						narodenia ma byt skorsi ako datum umrtia, ak su zname obidva
+						datumy.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="PlaceOfBirth"
+				nillable="true" type="PhysicalAddressCType">
+				<xs:annotation>
+					<xs:documentation>D.1.1.5.2 Uvadza sa miesto narodenia v sulade s
+						informaciou zapisanou na matrike pri narodeni. Je to zlozeny
+						datovy prvok vytvoreny podla datoveho prvku D.1.3 "Fyzicka
+						adresa", obsahujuci udaje o mieste narodenia. Hodnoty: Podradene
+						prvky sa vyplnaju v sulade s pouzitymi udajmi. Pravidla pouzitia:
+						Poradie podradenych prvkov je suladne s podradenym prvkami
+						datoveho prvku D.1.3 "Fyzicka adresa".</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="YearOfBirth"
+				nillable="true" type="xs:gYear">
+				<xs:annotation>
+					<xs:documentation>D.1.1.5.3 Obsahuje rok narodenia fyzickej osoby.
+						Hodnoty: V tvare RRRR. Priklady pouzitia: 1991, 2014. Pouziva sa
+						najma ak nie je mozne urcit uplny datum umrtia.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="1" minOccurs="0" name="YearAndMonthOfBirth"
+				nillable="true" type="xs:gYearMonth">
+				<xs:annotation>
+					<xs:documentation>D.1.1.5.4 Obsahuje mesiac narodenia fyzickej
+						osoby. Podla formatu gYearMonth. Hodnoty: V tvare RRRR-MM. Pouziva
+						sa najma ak nie je mozne urcit uplny datum narodenia
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="FormattedNameType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="1023" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="GivenNameType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="255" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PrimaryType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="20" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PrefixType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="100" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="FamilyNameType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="255" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="TypeOfAffixType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="20" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="PositionType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="20" />
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- corporate body -->
+	<xs:element name="CorporateBody" type="CorporateBodyCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2 Zlozeny datovy prvok pre popis pravnickej
+				osoby alebo subjektu, ktory nie je pravnickou osobou ani fyzickou
+				osobou v zmysle pravneho poriadku Slovenskej republiky.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:complexType name="PersonDataCType">
+		<xs:annotation>
+			<xs:documentation>D.1 Zlozeny datovy prvok pre rozne informacie o
+				osobe</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:sequence minOccurs="1">
+				<xs:element name="PhysicalPerson" maxOccurs="1"
+					minOccurs="0" type="PhysicalPersonCType">
+					<xs:annotation>
+						<xs:documentation>D.1.1 Zlozeny datovy prvok pre popis fyzickej
+							osoby.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="CorporateBody" maxOccurs="1" minOccurs="0"
+					type="CorporateBodyCType">
+					<xs:annotation>
+						<xs:documentation>D.1.2 Zlozeny datovy prvok pre popis pravnickej
+							osoby alebo subjektu, ktory nie je pravnickou osobou ani fyzickou
+							osobou v zmysle pravneho poriadku Slovenskej republiky.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+			<xs:element minOccurs="0" maxOccurs="unbounded" nillable="true"
+				name="PhysicalAddress" type="PhysicalAddressCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3 Zložený dátový prvok pre určenie adresy.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CorporateBodyCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2 Zlozeny datovy prvok pre popis pravnickej
+				osoby alebo subjektu, ktory nie je pravnickou osobou ani fyzickou
+				osobou v zmysle pravneho poriadku Slovenskej republiky.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="ID" type="IDCType">
+				<xs:annotation>
+					<xs:documentation>D.1.6 Zlozeny datovy prvok pre rozne
+						identifikatory. Datovy prvok s historiou.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CorporateBodyFullName" type="CorporateBodyFullNameSCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.1 Uvadza sa plny nazov pravnickej osoby.
+						Pravidla pouzitia: Uvadza sa vratane typovych oznaceni organizacie
+						ako "a.s.". Datovy prvok s historiou.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="LegalForm" type="LegalFormCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.3 Zlozeny datovy prvok pre zakladny
+						ciselnik s historiou, obsahujuci udaje o type pravnickej osoby
+						akou je akciova spolocnost a pod. Hodnoty: Podradene prvky sa
+						vyplnaju v sulade so zakladnym ciselnikom CL000056 Pravna forma
+						organizacie. Datovy prvok s historiou.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="OrganizationUnit" type="OrganizationUnitCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.4 Zlozeny datovy provk pre nizsi utvar
+						danej organizacie v pripade jej clenenia, ktory nie je samostatnou
+						pravnickou osobou. Pravidla pouzitia: Moze byt pouzity viackrat.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="StatutoryBody" type="StatutoryBodyCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.15 Zlozeny datovy prvok, obsahujuci udaje o
+						statutarnom organe pravnickej osoby. Pravidla pouzitia: Moze byt
+						pouzity viackrat.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="TelephoneAddress" type="TelephoneAddressCType">
+				<xs:annotation>
+					<xs:documentation>D.1.4 Zlozeny datovy prvok pre telefonicky
+						kontakt. Pravidla pouzitia: Moze byt pouzity viackrat. Prva adresa
+						v poradi je prioritna.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0"
+				name="InternetAddress" type="InternetAddressCType">
+				<xs:annotation>
+					<xs:documentation>D.1.5 Zlozeny datovy prvok pre elektronicky
+						kontakt. Pravidla pouzitia: Moze byt pouzity viackrat. Prva adresa
+						v poradi je prioritna.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CorporateBodyFullNameSCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2.1 Uvadza sa plny nazov pravnickej osoby.
+				Pravdidla pouzitia: Uvadza sa vratane typovych oznaceni organizacie
+				ako "a.s.". Datovy prvok s historiou.</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="CorporateBodyFullNameType">
+				<xs:attributeGroup ref="HistoryAttributes" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="OrganizationUnitNameSCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2.4.1 Oznacenie pre nizsi utvar danej
+				organizacie v pripade jej clenenia, ktory nie je samostatnou
+				pravnickou osobou. Datovy prvok s historiou.</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="OrganizationUnitNameType">
+				<xs:attributeGroup ref="HistoryAttributes" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="LegalFormCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2.3 Zlozeny datovy prvok pre zakladny ciselnik
+				s historiou, obsahujuci udaje o type pravnickej osoby akou je
+				akciova spolocnost a pod. Hodnoty: Podradene prvky sa vyplnaju v
+				sulade so zakladnym ciselnikom CL000056 Pravna forma organizacie.
+				Datovy prvok s historiou.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="CodelistDataElementCType">
+				<xs:attributeGroup ref="HistoryAttributes" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="PhysicalAddressWithHistoryCType">
+		<xs:annotation>
+			<xs:documentation>D.1.3 Zlozeny datovy prvok pre urcenie adresy.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:attributeGroup ref="HistoryAttributes" />
+	</xs:complexType>
+	<xs:complexType name="OrganizationUnitCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2.4 Zlozeny datovy prvok pre nizsi utvar danej
+				organizacie v pripade jej clelenia, ktory nie je samostatnou
+				pravnickou osobou. Pravidla pouzitia: Moze byt pouzity viackrat.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="OrganizationUnitName"
+				type="OrganizationUnitNameSCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.4.1 Oznacenie pre nizsi utvar danej
+						organizacie v pripade jej clenenia, ktory nie je samostatnou
+						pravnickou osobou.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OrganizationUnitType" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.4.2 Zlozeny datovy prvok pre zakladny
+						ciselnik obsahujuci typ organizacnej jednotky. Hodnoty: Podradene
+						prvky sa vyplnaju v sulade so zakladnym ciselnikom CL010110 Typ
+						organizacnej jednotky.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" name="PhysicalAddress"
+				type="PhysicalAddressWithHistoryCType">
+				<xs:annotation>
+					<xs:documentation>D.1.3 Zlozeny datovy prvok pre oznacenie adresy
+						organizacnej jednotky, spravidla sidla.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Establishment" type="EstablishmentType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.5 Uvadza sa datum vzniku organizacnej
+						jednotky.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="Termination" type="TerminationType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.6 Uvadza sa datum zaniku alebo zrusenia
+						organizacnej jednotky.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="Activities"
+				type="ActivitiesCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.7 Zlozeny datovy prvok, obsahujuci udaje o
+						predmete cinnosti organizacnej jednotky.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ID" type="IDCType">
+				<xs:annotation>
+					<xs:documentation>D.1.6 Zlozeny datovy prvok pre rozne
+						identifikatory.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="Stakeholder"
+				type="StakeholderCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.10 Zlozeny datovy prvok, obsahujuci udaje o
+						inej zainteresovanej osobe ako statutarnom organe. Pravidla
+						pouzitia: Moze byt pouzity viackrat.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ActivitiesCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2.7 Zlozeny datovy prvok obsahujuci udaje o
+				predmete cinnosti pravnickej osoby. Pravidla pouzitia: Moze byt
+				pouzite viackrat.</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element name="EconomicActivityDescription" type="EconomicActivityDescriptionType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.7.1 Obsahuje vecny popis predmetu cinnosti
+						pravnickej osoby.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="EconomicActivityClassification"
+				type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.7.2 Zlozeny datovy prvok pre zakladny
+						ciselnik obsahujuci klasifikaciu predmetu cinnosti pravnickej
+						osoby, obsahujuci udaj o odvetvi ekonomickej cinnosti. Hodnoty:
+						Podradene prvky sa vyplnaju v sulade so zakladnym ciselnikom
+						CL005205 Ekonomicka cinnost.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+		<xs:attributeGroup ref="HistoryAttributes" />
+	</xs:complexType>
+	<xs:complexType name="StatutoryBodyCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2.15 Zlozeny datovy prvok, obsahujuci udaje o
+				statutarnom organe pravnickej osoby. Pravidla pouzitia: Moze byt
+				pouzite viackrat.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="StatutoryBodyType" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.15.1 Zlozeny datovy prvok pre zakladny
+						ciselnik obsahujuci urcenie typu statutarneho organu. Hodnoty:
+						Podradene prvky sa vyplnaju v sulade so zakladnym ciselnikom
+						CL010113 Typ statutarneho organu.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PersonData" type="PersonDataCType">
+				<xs:annotation>
+					<xs:documentation>D.1. Zlozeny datovy prvok pre rozne informacie o
+						osobe.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attributeGroup ref="HistoryAttributes" />
+	</xs:complexType>
+	<xs:complexType name="StakeholderCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2.10 Zlozeny datovy prvok, obsahujuci udaje o
+				zainteresovanej osobe. Pravidla pouzitia: Moze byt pouzite viackrat.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="StakeholderType" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.10.1 Zlozeny datovy prvok pre zakladny
+						ciselnik pre urcenie typu zainteresovanej osoby. Hodnoty:
+						Podradene prvky sa vyplnaju v sulade so zakladnym ciselnikom
+						CL010109 Typ zainteresovanej osoby. Pravdial pouzitia: Povinne pri
+						pouziti prvku Zainteresovana osoba. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PersonData" type="PersonDataCType">
+				<xs:annotation>
+					<xs:documentation>D.1. Zlozeny datovy prvok pre rozne informacie o
+						osobe.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="Deposits"
+				type="DepositsCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.12 Zlozeny datovy prvok obsahujuci vklady
+						pravnickej osoby.Pravidla pouzitia: Moze byt pouzite viackrat.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="Shares"
+				type="SharesCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.11 Zlozeny datovy prvok obsahujuci udaje o
+						akciach pravnickej osoby. Pravidla pouzitia: Moze byt pouzite
+						viackrat.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attributeGroup ref="HistoryAttributes" />
+	</xs:complexType>
+	<xs:complexType name="SharesCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2.11 Zlozeny datovy prvok obsahujuci udaje o
+				akciach osoby. Pravidla pouzitia: Moze byt pouzite viackrat.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element minOccurs="0" name="ShareType" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.11.1 Zlozeny datovy prvok pre zakladny
+						ciselnik, obsahujuci klasifikaciu akcie. Hodnoty: Podradene prvky
+						sa vyplnaju v sulade so zakladnym ciselnikom CL010111 Druh akcie.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="ShareState" type="ShareStateType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.11.2 Obsahuje udaje o podobe akcie.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="ShareForm" type="ShareFormType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.11.3 Obsahuje udaje o forme akcie.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Currency" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.9.1 Zlozeny datovy prvok pre zakladny
+						ciselnik urcujuci pouzitu menu. Hodnoty: Podradene prvky sa
+						vyplnaju v sulade so zakladnym ciselnikom CL010138 Jednotka meny.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ShareNominalValue" type="ShareNominalValueType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.11.4 Uvadza sa menovita hodnota akcie.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="SharesAmount" type="SharesAmountType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.11.5 Uvadza sa mnozstvo akcii.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="SharesTransferability"
+				type="SharesTransferabilityType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.11.6 Uvadza sa popis obmedzenia
+						prevoditelnosti akcii.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+		<xs:attributeGroup ref="HistoryAttributes" />
+	</xs:complexType>
+	<xs:complexType name="DepositsCType">
+		<xs:annotation>
+			<xs:documentation>D.1.2.12 Zlozeny datovy prvok obsahujuci udaje o
+				vkladoch osoby. Pravidla pouzitia: Moze byt pouzite viackrat.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element minOccurs="0" name="DepositType" type="DepositTypeType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.12.1 Uvadza sa typ vkladu.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="DepositValue" type="DepositValueType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.12.2 Obsahuje udaje o vyske vkladu.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Currency" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.9.1 Zlozeny datovy prvok pre zakladny
+						ciselnik urcujuci pouzitu menu. Hodnoty: Podradene prvky sa
+						vyplnaju v sulade so zakladnym ciselnikom CL010138 Jednotka meny.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="DepositDueDate" type="DepositDueDateType">
+				<xs:annotation>
+					<xs:documentation>D.1.2.12.3 Uvadza sa datum splatnosti vkladu.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+		<xs:attributeGroup ref="HistoryAttributes" />
+	</xs:complexType>
+	<xs:complexType name="TelephoneAddressCType">
+		<xs:annotation>
+			<xs:documentation>D.1.4 Zlozeny datovy prvok pre rozne druhy
+				telefonnych cisel</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element minOccurs="0" name="TelephoneType" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.4.1 Zlozeny datovy prvok pre zakladny
+						ciselnik obsahujuci udaje o type alebo kategorii telekomunikacneho
+						zariadenia. Hodnoty: Podradene prvky sa vyplnaju v sulade so
+						zakladnym ciselnikom CL004005 Typ telefonneho cisla.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="Number" type="NumberCType">
+				<xs:annotation>
+					<xs:documentation>D.1.4.2 Zlozeny datovy prvok pre strukturovane
+						telefonne cislo.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="NumberCType">
+		<xs:annotation>
+			<xs:documentation>D.1.4.2 Zlozeny datovy prvok pre strukturovane
+				telefonne cislo</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="FormattedNumber" type="FormattedNumberType">
+				<xs:annotation>
+					<xs:documentation>D.1.4.2.1 Obsahuje reprezentaciu
+						telekomunikacneho ciselneho retazca. Hodnoty: Vyplna sa v sulade s
+						aktualnym cislovacim planom, ktory zverejnuje Urad pre regulaciu
+						elektronickych komunikacii a postovych sluzieb.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="InternationalCountryCode"
+				type="InternationalCountryCodeType">
+				<xs:annotation>
+					<xs:documentation>D.1.4.2.2 Kod krajiny podla ITU, ktory
+						identifikuje specificku krajinu, krajiny v integrovanom ciselnom
+						plane alebo specificku geograficku oblast. Hodnoty: Vyplna sa v
+						sulade s aktualnym cislovacim planom, ktory zverejnuje Urad pre
+						regulaciu elektronickych komunikacii a postovych sluzieb.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="NationalNumber" type="NationalNumberType">
+				<xs:annotation>
+					<xs:documentation>D.1.4.2.3 Niektore oblasti maju dve predvolby -
+						vnutrostatne a zahranicne medzimestske predvolby, tento prvok
+						obsahuje vnutrostatnu predvolbu.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="AreaCityCode" type="AreaCityCodeType">
+				<xs:annotation>
+					<xs:documentation>D.1.4.2.4 Definuje bud cislovanie v ramci jednej
+						krajiny (alebo skupiny krajin ci geografickej oblasti) alebo siet
+						- sluzbu. V SR je to ekvivalent narodneho cieloveho kodu. Hodnoty:
+						Vyplna sa v sulade s aktualnym cislovacim planom, ktory zverejnuje
+						Urad pre regulaciu elektronickych komunikacii a postovych sluzieb.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="SubscriberNumber" type="SubscriberNumberType">
+				<xs:annotation>
+					<xs:documentation>D.1.4.2.5 Cislo, ktore identifikujeuzivatela
+						siete alebo cislovacej oblsati. Pravidla pouzitia: Okrem cislic
+						moze najma v udajoch zo zahranicia obsahovat medzery, spojovacie
+						zmanienka alebo periody.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="Extension" type="ExtensionType">
+				<xs:annotation>
+					<xs:documentation>D.1.4.2.6 Moze obsahovat PBX linku, PIN pagera,
+						faxovu podadresu alebo dalsie doplnujuce adresne informacie.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="InternetAddressCType">
+		<xs:annotation>
+			<xs:documentation>D.1.5 Zlozeny datovy prvok pre elektronicky kontakt
+			</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element minOccurs="0" name="Address" type="AddressType">
+				<xs:annotation>
+					<xs:documentation>D.1.5.1 Uvadza sa kontakt pre rozne typy
+						elektronickych adries. Hodnoty: Rozoznavaju sa typy ako mailti
+						(mailova adresa), http (webova adresa), ftp, ldap a podobne. Cast
+						adresy vo vacsine pripadov dodrziava radenie textovych retazcov
+						podla podradenia domenovych mien.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+	<xs:complexType name="CodelistDataElementCType">
+		<xs:annotation>
+			<xs:documentation>D.3.4 Zlozeny datovy prvok pouzivajuci udaje podla
+				zakladnych ciselnikov.</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:sequence>
+				<xs:element name="NonCodelistData" type="NonCodelistDataType">
+					<xs:annotation>
+						<xs:documentation>D.3.4.1 Obsahuje volnu neciselnikovu polozku.
+							Pravidla pouzitia: Pouziva sa ak hodnotu nie je mozne najst v
+							ciselniku, pricom vtedy je povinny.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+			<xs:sequence>
+				<xs:element name="Codelist" type="CodelistCType">
+					<xs:annotation>
+						<xs:documentation>D.5. Zlozeny datovy prvok, ktory obsahuje
+							polozku zo zajkladneho ciselnika.Pravidla pouzitia: Pri prenose
+							nepodpisanych udajov vychadzajucich z udajov zakladneho ciselnika
+							je pouzitie povinne.</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="CodelistCType">
+		<xs:annotation>
+			<xs:documentation>D.5. Zlozeny datovy prvok, ktory obsahuje polozku
+				zo zajkladneho ciselnika.Pravidla pouzitia: Pri prenose
+				nepodpisanych udajov vychadzajucich z udajov zakladneho ciselnika je
+				pouzitie povinne.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CodelistCode" type="CodelistCodeType">
+				<xs:annotation>
+					<xs:documentation>D.5.1 Jedinecny kod zakladneho ciselnika.
+						Hodnoty: V sulade s pridelenou hodnotou.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CodelistItem" type="CodelistItemCType">
+				<xs:annotation>
+					<xs:documentation>D.5.9 Zlozeny datovy prvok pre jednotlive polozky
+						ciselnika. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="IDCType">
+		<xs:annotation>
+			<xs:documentation>D.1.6 Zlozeny datovy prvok pre rozne
+				identifikatory.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="IdentifierType" type="CodelistDataElementCType">
+				<xs:annotation>
+					<xs:documentation>D.1.6.1 Zlozeny datovy prvok pre zakladny
+						ciselnik, obsahujuci udaje o type pouziteho identifikatora.
+						Hodnoty: Podadene prvky sa vyplnaju v sulade so zakladnym
+						ciselnikom CL004001 Identifikator. Pravidla pouzitia: Uvadza sa vo
+						dvojici s Hodnotou identifikatora. Je mozne viacnasobne pouzitie,
+						pricom kazdy typ je mozne pouzit prave raz.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IdentifierValue" type="IdentifierValueType">
+				<xs:annotation>
+					<xs:documentation>D.1.6.2 Obsahuje samotnu hodnotu pouziteho
+						identifikatora. Pravidla pouzitia: Uvadza sa vo dvojici s Typom
+						identifikatora. Moze byt pouzity viackrat, pricom pre kazdy typ
+						identifikatora sa moze pouzit prave raz.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CodelistItemCType">
+		<xs:annotation>
+			<xs:documentation>D.5.9 Zlozeny datovy prvok pre jednotlive polozky
+				ciselnika</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ItemCode" type="ItemCodeType">
+				<xs:annotation>
+					<xs:documentation>D.5.9.1 Jedinecny kod polozky. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ItemName" type="ItemNameType">
+				<xs:annotation>
+					<xs:documentation>D.5.9.2 Uplny nazov polozky</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="AddressType">
+		<xs:restriction base="String255" />
+	</xs:simpleType>
+	<xs:simpleType name="EstablishmentType">
+		<xs:restriction base="xs:date" />
+	</xs:simpleType>
+	<xs:simpleType name="TerminationType">
+		<xs:restriction base="xs:date" />
+	</xs:simpleType>
+	<xs:simpleType name="CorporateBodyFullNameType">
+		<xs:restriction base="String1023" />
+	</xs:simpleType>
+	<xs:simpleType name="EconomicActivityDescriptionType">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="OrganizationUnitNameType">
+		<xs:restriction base="String1023" />
+	</xs:simpleType>
+	<xs:simpleType name="ShareStateType">
+		<xs:restriction base="String255" />
+	</xs:simpleType>
+	<xs:simpleType name="ShareFormType">
+		<xs:restriction base="String255" />
+	</xs:simpleType>
+	<xs:simpleType name="ShareNominalValueType">
+		<xs:restriction base="Decimal" />
+	</xs:simpleType>
+	<xs:simpleType name="SharesAmountType">
+		<xs:restriction base="Int20" />
+	</xs:simpleType>
+	<xs:simpleType name="SharesTransferabilityType">
+		<xs:restriction base="String4095" />
+	</xs:simpleType>
+	<xs:simpleType name="DepositTypeType">
+		<xs:restriction base="String255" />
+	</xs:simpleType>
+	<xs:simpleType name="DepositValueType">
+		<xs:restriction base="Decimal" />
+	</xs:simpleType>
+	<xs:simpleType name="DepositDueDateType">
+		<xs:restriction base="xs:date" />
+	</xs:simpleType>
+	<xs:simpleType name="FormattedNumberType">
+		<xs:restriction base="String20" />
+	</xs:simpleType>
+	<xs:simpleType name="InternationalCountryCodeType">
+		<xs:restriction base="String10" />
+	</xs:simpleType>
+	<xs:simpleType name="NationalNumberType">
+		<xs:restriction base="String20" />
+	</xs:simpleType>
+	<xs:simpleType name="AreaCityCodeType">
+		<xs:restriction base="String10" />
+	</xs:simpleType>
+	<xs:simpleType name="SubscriberNumberType">
+		<xs:restriction base="String20" />
+	</xs:simpleType>
+	<xs:simpleType name="ExtensionType">
+		<xs:restriction base="String10" />
+	</xs:simpleType>
+	<xs:simpleType name="NonCodelistDataType">
+		<xs:annotation>
+			<xs:documentation>D.3.4.1 Obsahuje volnu neciselnikovu hodnotu.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String2047" />
+	</xs:simpleType>
+	<xs:simpleType name="CodelistCodeType">
+		<xs:annotation>
+			<xs:documentation>D.5.1 Jedinecny kod zakladneho ciselnika. Hodnoty:
+				V sulade s pridelenou hodnotou.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String100" />
+	</xs:simpleType>
+	<xs:simpleType name="ItemCodeType">
+		<xs:annotation>
+			<xs:documentation>D.5.9.1 Jedinecny kod polozky</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String255" />
+	</xs:simpleType>
+	<xs:simpleType name="ItemNameType">
+		<xs:annotation>
+			<xs:documentation>D.5.9.2 Uplny nazov polozky</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String2047" />
+	</xs:simpleType>
+	<xs:simpleType name="IdentifierValueType">
+		<xs:annotation>
+			<xs:documentation>D.1.6.2 Obsahuje samotnu hodnotu pouziteho
+				identifikatora. Pravidla pouzitia: Uvadza sa vo dvojici s Typom
+				identifikatora. Moze byt pouzity viackrat, pricom pre kazdy typ
+				identifikatora sa moze pouzit prave raz.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="String50" />
+	</xs:simpleType>
+	<xs:simpleType name="String10">
+		<xs:annotation>
+			<xs:documentation>Text s obmedzenim na 10 znakov</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="10" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="String20">
+		<xs:annotation>
+			<xs:documentation>Text s obmedzenim na 20 znakov</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="20" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="String50">
+		<xs:annotation>
+			<xs:documentation>Text s obmedzenim na 50 znakov</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="50" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="String100">
+		<xs:annotation>
+			<xs:documentation>Text s obmedzenim na 100 znakov</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="100" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="String255">
+		<xs:annotation>
+			<xs:documentation>Text s obmedzenim na 255 znakov</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="255" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="String1023">
+		<xs:annotation>
+			<xs:documentation>Text s obmedzenim na 1023 znakov</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="1023" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="String2047">
+		<xs:annotation>
+			<xs:documentation>Text s obmedzenim na 2047 znakov</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="2047" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="String4095">
+		<xs:annotation>
+			<xs:documentation>Text s obmedzenim na 4095 znakov</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="4095" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Decimal">
+		<xs:annotation>
+			<xs:documentation>Desatinne cislo s obmedzenim na 20 cislic, z toho
+				dve desatinne miesta</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:decimal">
+			<xs:totalDigits value="20" />
+			<xs:fractionDigits value="2" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Int20">
+		<xs:annotation>
+			<xs:documentation>Cele cislo s obmedzenim na 20 cislic
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:totalDigits value="20" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Int10">
+		<xs:annotation>
+			<xs:documentation>Cele cislo s obmedzenim na 10 cislic
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:totalDigits value="10" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:attributeGroup name="HistoryAttributes">
+		<xs:annotation>
+			<xs:documentation>D.3.1 Osobitny datovy typ pre datove prvky so
+				sledovanim historickych zmien ich obsahu. Pravidla pouzitia: Tento
+				datovy prvok sa nepouzije bez atributu "Current" a "EffectiveFrom" a
+				ak ma datovy prvok ukoncenu platnost, tak ani bez atributu
+				"EffectiveTo". Moze byt pouzity viackrat.</xs:documentation>
+		</xs:annotation>
+	</xs:attributeGroup>
+	<!-- simple types -->
+	<xs:complexType abstract="true" name="RequestBase" />
+	<xs:simpleType name="NonEmptyStringType">
+		<xs:annotation>
+			<xs:documentation>Text s minimalnou dlzkou 1 znak</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- HTML body -->
+	<xs:group name="TemplateTextGroup">
+		<xs:sequence />
+	</xs:group>
+	<xs:group name="TemplateListGroup">
+		<xs:sequence />
+	</xs:group>
+	<xs:group name="TemplateRowGroup">
+		<xs:sequence />
+	</xs:group>
+	<xs:group name="TemplateHeaderCellGroup">
+		<xs:sequence />
+	</xs:group>
+	<xs:group name="TemplateCellGroup">
+		<xs:sequence />
+	</xs:group>
+	<xs:complexType mixed="true" name="FormattedTextType">
+		<xs:sequence maxOccurs="unbounded" minOccurs="0">
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="p"
+				type="FormattedParagraphType">
+				<xs:annotation>
+					<xs:documentation>Paragraph</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="table"
+				type="TableType">
+				<xs:annotation>
+					<xs:documentation>Simple table</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="ol"
+				type="FormattedOrderedListType">
+				<xs:annotation>
+					<xs:documentation>Ordered List</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="ul"
+				type="FormattedUnorderedListType">
+				<xs:annotation>
+					<xs:documentation>Unordered List</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="i"
+				type="FormattedTextType">
+				<xs:annotation>
+					<xs:documentation>Italic</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="b"
+				type="FormattedTextType">
+				<xs:annotation>
+					<xs:documentation>Bold</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="div"
+				type="FormattedTextType">
+				<xs:annotation>
+					<xs:documentation>Div</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="u"
+				type="FormattedTextType">
+				<xs:annotation>
+					<xs:documentation>Underline</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="s"
+				type="FormattedTextType">
+				<xs:annotation>
+					<xs:documentation>Strikethrough</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="h1"
+				type="FormattedHeadingType">
+				<xs:annotation>
+					<xs:documentation>Heading 1 (Main Heading)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="h2"
+				type="FormattedHeadingType">
+				<xs:annotation>
+					<xs:documentation>Heading 2 (Secondary Heading)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="h3"
+				type="FormattedHeadingType">
+				<xs:annotation>
+					<xs:documentation>Heading 3 (Tertiary Heading)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="big"
+				type="FormattedTextType">
+				<xs:annotation>
+					<xs:documentation>Bigger font</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="small"
+				type="FormattedTextType">
+				<xs:annotation>
+					<xs:documentation>Bigger font</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="br">
+				<xs:annotation>
+					<xs:documentation>Line break</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="a"
+				type="LinkType">
+				<xs:annotation>
+					<xs:documentation>Link</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="editable"
+				type="FormattedTextType">
+				<xs:annotation>
+					<xs:documentation>Containing text is allowed to be edited later by
+						user. Usually translates to a SPAN tag in output html with
+						"editable" class.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element maxOccurs="unbounded" minOccurs="0" name="blockquote"
+				type="BlockquoteType">
+				<xs:annotation>
+					<xs:documentation>Block quote</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:group ref="TemplateTextGroup" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TableType">
+		<xs:sequence>
+			<xs:element minOccurs="0" name="caption" type="FormattedTextType" />
+			<xs:element minOccurs="0" name="thead" type="TableHeaderType" />
+			<xs:choice maxOccurs="unbounded" minOccurs="0">
+				<xs:element name="tr" type="TableRowType" />
+				<xs:group ref="TemplateRowGroup" />
+			</xs:choice>
+		</xs:sequence>
+		<xs:attribute name="width" type="xs:positiveInteger" use="optional" />
+		<xs:attribute default="center" name="align" type="FormattedAlignType"
+			use="optional" />
+		<xs:attribute name="border" use="optional">
+			<xs:simpleType>
+				<xs:restriction base="xs:nonNegativeInteger">
+					<xs:enumeration value="0" />
+					<xs:enumeration value="1" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="TableHeaderType">
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="tr"
+				type="TableHeaderRowType" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="TableHeaderRowType">
+		<xs:choice maxOccurs="unbounded" minOccurs="0">
+			<xs:element name="th" type="TableCellType" />
+			<xs:group ref="TemplateHeaderCellGroup" />
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="TableRowType">
+		<xs:choice maxOccurs="unbounded" minOccurs="0">
+			<xs:element name="td" type="TableCellType" />
+			<xs:group ref="TemplateCellGroup" />
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="TableCellType">
+		<xs:complexContent>
+			<xs:extension base="FormattedTextType">
+				<xs:attribute name="align" type="FormattedAlignType"
+					use="optional" />
+				<xs:attribute default="1" name="colspan" type="xs:positiveInteger"
+					use="optional" />
+				<xs:attribute default="1" name="rowspan" type="xs:positiveInteger"
+					use="optional" />
+				<xs:attribute name="width" type="xs:positiveInteger"
+					use="optional" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FormattedParagraphType">
+		<xs:complexContent>
+			<xs:extension base="FormattedTextType">
+				<xs:attribute name="align" type="FormattedAlignType"
+					use="optional" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="FormattedHeadingType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="align" type="FormattedAlignType"
+					use="optional" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:simpleType name="FormattedAlignType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="left" />
+			<xs:enumeration value="center" />
+			<xs:enumeration value="right" />
+			<xs:enumeration value="justify" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType mixed="true" name="FormattedUnorderedListType">
+		<xs:choice maxOccurs="unbounded" minOccurs="0">
+			<xs:element name="li" type="FormattedTextType">
+				<xs:annotation>
+					<xs:documentation>List item of an (un)ordered list
+					</xs:documentation>
+					<xs:documentation>Note that it has to be allowed on this top level,
+						otherwise we couldn't sorround it with other element (e.g. "rs")
+						if needed</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:group ref="TemplateListGroup" />
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType mixed="true" name="FormattedOrderedListType">
+		<xs:complexContent mixed="true">
+			<xs:extension base="FormattedUnorderedListType">
+				<xs:attribute name="type" type="FormattedListTypes" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="FormattedListTypes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="1" />
+			<xs:enumeration value="A" />
+			<xs:enumeration value="a" />
+			<xs:enumeration value="I" />
+			<xs:enumeration value="i" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="LinkType">
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute name="href" type="xs:string" use="required" />
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="BlockquoteType">
+		<xs:complexContent>
+			<xs:extension base="FormattedTextType">
+				<xs:attribute name="style" type="xs:string" use="optional" />
+				<xs:attribute name="dir" type="xs:string" use="optional" />
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

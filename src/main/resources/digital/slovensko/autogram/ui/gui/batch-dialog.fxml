@@ -1,72 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<?import javafx.scene.text.TextFlow?>
-<?import javafx.scene.text.Text?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx"
-    xmlns:fx="http://javafx.com/fxml"
-    minHeight="400"
-    minWidth="640"
-    prefWidth="640"
-    fx:id="mainBox">
+      xmlns:fx="http://javafx.com/fxml"
+      minHeight="400"
+      minWidth="640"
+      prefWidth="640"
+      fx:id="mainBox">
 
     <TextFlow>
-        <Text styleClass="autogram-heading-m" text="Hromadné podpisovanie" />
+        <Text styleClass="autogram-heading-m" text="%batch.title" />
     </TextFlow>
 
 
-    <VBox fx:id="batchVisualization" styleClass="autogram-batch-visualization"
-        VBox.vgrow="ALWAYS"
-    >
+    <VBox fx:id="batchVisualization" styleClass="autogram-batch-visualization" VBox.vgrow="ALWAYS">
         <VBox alignment="CENTER">
             <SVGPath styleClass="autogram-icon,autogram-icon--big,autogram-icon--warning"
                 content="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
             <TextFlow styleClass="autogram-error-summary__error" textAlignment="CENTER">
-                <Text styleClass="autogram-error-message"
-                    text="Dokumenty pri hromadnom podpisovaní nie&#160;je možné zobraziť." />
+                <Text styleClass="autogram-error-message" text="%batch.notDisplayable.title"/>
             </TextFlow>
         </VBox>
         <VBox>
             <TextFlow>
+                <Text styleClass="autogram-body" text="%batch.count.before.text"/>
+                <Text fx:id="batchVisualizationCount" styleClass="autogram-body,autogram-font-weight-bold"/>
                 <Text styleClass="autogram-body"
-                    text="Chystáte sa podpísať " />
-                <Text fx:id="batchVisualizationCount"
-                    styleClass="autogram-body,autogram-font-weight-bold"
-                    text="" />
-                <Text styleClass="autogram-body"
-                    text=" dokumentov." />
+                    text="%batch.count.after.text" />
             </TextFlow>
             <TextFlow>
                 <Text styleClass="autogram-body"
-                    text="Uistite sa, že dôverujete zdroju dokumentov a&#160;máte dostatočne zabezpečený počítač, na&#160;ktorom dokumenty podpisujete." />
+                    text="%batch.trusted.text" />
             </TextFlow>
             <TextFlow>
                 <Text styleClass="autogram-body,autogram-font-weight-bold"
-                    text="Podpisovanie dokumentov, ktoré nevidíte, môže mať vážne právne následky. Zvážte, či chcete pokračovať." />
+                    text="%batch.legalConsequences.text" />
             </TextFlow>
         </VBox>
     </VBox>
 
     <VBox fx:id="progressBarBox" managed="false" visible="false" VBox.vgrow="ALWAYS"
         alignment="CENTER">
-        <Text styleClass="autogram-heading-s" text="Prebieha hromadné podpisovanie..." />
+        <Text styleClass="autogram-heading-s" text="%batch.signingInProgress.title" />
         <ProgressBar fx:id="progressBar" styleClass="autogram-progress-bar,progress-bar"
             layoutX="100.0"
             layoutY="20.0" prefHeight="20.0" prefWidth="400.0" progress="0.0" />
 
-        <Text fx:id="progressBarText" styleClass="autogram-heading-m" text="" />
+        <Text fx:id="progressBarText" styleClass="autogram-heading-m"/>
     </VBox>
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button"
-            text="Podpísať" onAction="#onMainButtonPressed" />
-        <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="Podpísať iným certifikátom" visible="false"
+                text="%general.sign.btn" onAction="#onMainButtonPressed" />
+        <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="%batch.sign.otherCert.btn" visible="false"
             onAction="#onChangeKeyButtonPressed" />
         <Button fx:id="cancelBatchButton" styleClass="autogram-button,autogram-button--warning"
-            text="Zrušiť hromadné podpisovanie" visible="false" managed="false"
+            text="%batch.cancel.btn" visible="false" managed="false"
             onAction="#onCancelBatchButtonPressed" />
     </HBox>
 </VBox>

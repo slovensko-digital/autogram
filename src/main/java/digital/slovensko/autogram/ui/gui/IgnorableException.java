@@ -7,8 +7,8 @@ public class IgnorableException extends AutogramException {
     private final SigningJob job;
     private final Runnable onContinueCallback;
 
-    public IgnorableException(String heading, String subheading, String description, Throwable e, SigningJob job, Runnable onContinueCallback) {
-        super(heading, subheading, description, e);
+    public IgnorableException(Throwable e, SigningJob job, Runnable onContinueCallback) {
+        super(e);
         this.job = job;
         this.onContinueCallback = onContinueCallback;
     }

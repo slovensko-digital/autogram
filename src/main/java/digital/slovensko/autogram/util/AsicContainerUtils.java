@@ -13,6 +13,10 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
+import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.FILE_NOT_FOUND;
+import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.NO_DOCUMENTS;
+import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.NO_SIGNATURE;
+import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.NO_SIGNED_DOCUMENTS;
 
 public class AsicContainerUtils {
     public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,
@@ -21,25 +25,25 @@ public class AsicContainerUtils {
         try {
             documentValidator = SignedDocumentValidator.fromDocument(asice);
         } catch (UnsupportedOperationException e) {
-            throw new OriginalDocumentNotFoundException("Súbor sa nepodarilo načítať");
+            throw new OriginalDocumentNotFoundException(FILE_NOT_FOUND);
         }
 
         documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
         var signatures = documentValidator.getSignatures();
         if (signatures.isEmpty())
-            throw new OriginalDocumentNotFoundException("V kontajneri neboli nájdené žiadne podpisy");
+            throw new OriginalDocumentNotFoundException(NO_SIGNATURE);
 
         var extractor = new ASiCWithXAdESContainerExtractor(asice);
         var aSiCContent = extractor.extract();
 
         if (aSiCContent.getAllDocuments().isEmpty())
-            throw new OriginalDocumentNotFoundException("V kontajneri neboli nájdené žiadne dokumenty");
+            throw new OriginalDocumentNotFoundException(NO_DOCUMENTS);
 
         if (aSiCContent.getSignedDocuments().isEmpty())
-            throw new OriginalDocumentNotFoundException("V kontajneri neboli nájdené žiadne dokumenty na podpis");
+            throw new OriginalDocumentNotFoundException(NO_SIGNED_DOCUMENTS);
 
         if (aSiCContent.getSignedDocuments().size() > 1)
-            throw new MultipleOriginalDocumentsFoundException("V kontajneri bolo nájdených viacero dokumentov na podpis");
+            throw new MultipleOriginalDocumentsFoundException();
 
         var originalDocument = aSiCContent.getSignedDocuments().get(0);
         if (isXML(originalDocument.getMimeType()) || MimeTypeEnum.BINARY.equals(originalDocument.getMimeType()))

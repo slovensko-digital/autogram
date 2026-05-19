@@ -4,13 +4,12 @@ import javafx.application.HostServices;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.function.Consumer;
 
-public class ConsentCertificateReadingDialogController implements SuppressedFocusController {
+public class ConsentCertificateReadingDialogController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
     private final Consumer<Runnable> callback;
     private final Runnable cancelCallback;
@@ -23,6 +22,9 @@ public class ConsentCertificateReadingDialogController implements SuppressedFocu
         this.callback = callback;
         this.cancelCallback = cancelCallback;
     }
+
+    @Override
+    public void initialize() { }
 
     public void onContinueAction(ActionEvent event) {
         callback.accept(this::close);

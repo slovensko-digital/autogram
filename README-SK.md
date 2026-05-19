@@ -110,6 +110,13 @@ docker compose up --build
 
 Výsledné balíčky sa objavia v `packaging/output/`.
 
+#### WiX Tools
+V prípade nasledujúcej chyby:
+> Can not find WiX tools (light.exe, candle.exe)
+> Download WiX 3.0 or later from https://wixtoolset.org and add it to the PATH.
+
+Stiahnite si z https://github.com/wixtoolset/wix3/releases a pridajte si do path (inštaluje bez opýtania do `C:\Program Files (x86)\WiX Toolset v3.14`)
+
 
 ## Autori a sponzori
 

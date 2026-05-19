@@ -21,7 +21,7 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.util.List;
 
-public class MainMenuController implements SuppressedFocusController {
+public class MainMenuController extends BaseController implements SuppressedFocusController {
     private final Autogram autogram;
     private final UserSettings userSettings;
 
@@ -33,6 +33,7 @@ public class MainMenuController implements SuppressedFocusController {
         this.userSettings = userSettings;
     }
 
+    @Override
     public void initialize() {
         dropZone.setOnDragOver(event -> {
             event.acceptTransferModes(TransferMode.ANY);
@@ -81,14 +82,10 @@ public class MainMenuController implements SuppressedFocusController {
                 signFiles(list);
 
             if (dirsList.size() > 1)
-                throw new AutogramException("Zvolili ste viac ako jeden priečinok",
-                        "Priečinky musíte podpísať po jednom",
-                        "Podpisovanie viacerých priečinkov ešte nepodporujeme");
+                throw new AutogramException("MULTIPLE_FOLDERS");
 
             if (dirsList.size() > 0 && filesList.size() > 0)
-                throw new AutogramException("Zvolili ste zmiešaný výber súborov a priečinkov",
-                        "Podpisovanie zmesi súborov a priečinkov nepodporujeme",
-                        "Priečinky musíte podpísať po jednom, súbory môžete po viacerých");
+                throw new AutogramException("MIXED_FILE_TYPES");
 
         } catch (AutogramException e) {
             autogram.onSigningFailed(e);
@@ -148,11 +145,19 @@ public class MainMenuController implements SuppressedFocusController {
         var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Nastavenia");
+        stage.setTitle(i18n("general.settings"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
+        stage.showAndWait();
+
+        if (!userSettings.getLanguageLocale().getLanguage().equals(resources.getLocale().getLanguage())) {
+            reloadView();
+        }
+    }
+
+    private void reloadView() {
+        dropZone.getScene().setRoot(GUIUtils.loadFXML(this, "main-menu.fxml"));
     }
 
     @Override

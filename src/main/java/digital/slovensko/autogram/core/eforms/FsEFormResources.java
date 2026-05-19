@@ -1,7 +1,10 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
-import digital.slovensko.autogram.core.errors.*;
+import digital.slovensko.autogram.core.errors.EFormException;
+import digital.slovensko.autogram.core.errors.UnknownEformException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import org.apache.xml.security.utils.DOMNamespaceContext;
@@ -11,7 +14,17 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.computeDigest;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.getManifestXsltEntries;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.getResource;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.getXmlFromDocument;
+import static digital.slovensko.autogram.core.eforms.EFormUtils.selectXslt;
+import static digital.slovensko.autogram.core.errors.EFormException.Error.MANIFEST;
+import static digital.slovensko.autogram.core.errors.EFormException.Error.META_XML;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.AUTO_XSD_DIGEST_MISMATCH;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.AUTO_XSLT_DIGEST_MISMATCH;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.FORMS_NOT_FOUND;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSLT_OR_XSD_NOT_FOUND;
 
 public class FsEFormResources extends EFormResources {
     private static final String SOURCE_URL = "https://forms-slovensko-digital.s3.eu-central-1.amazonaws.com/fs/";
@@ -33,7 +46,7 @@ public class FsEFormResources extends EFormResources {
     private static String getFormUrlFromFsFormId(String fsFormId) {
         var forms_xml = getResource(SOURCE_URL + "forms.xml");
         if (forms_xml == null)
-            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť zoznam FS formulárov");
+            throw new XMLValidationException(FORMS_NOT_FOUND);
 
         var parsed_meta_xml = getXmlFromDocument(new InMemoryDocument(forms_xml, "forms.xml"));
         try {
@@ -57,7 +70,7 @@ public class FsEFormResources extends EFormResources {
     private static String getFormUrlFromXdcIdentifier(String xdcIdentifier) {
         var forms_xml = getResource(SOURCE_URL + "forms.xml");
         if (forms_xml == null)
-            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť zoznam FS formulárov");
+            throw new XMLValidationException(FORMS_NOT_FOUND);
 
         var parsed_meta_xml = getXmlFromDocument(new InMemoryDocument(forms_xml, "forms.xml"));
         try {
@@ -97,7 +110,7 @@ public class FsEFormResources extends EFormResources {
     public boolean findResources() throws XMLValidationException, EFormException {
         var meta_xml = getResource(SOURCE_URL + url + "/meta.xml");
         if (meta_xml == null)
-            throw new EFormException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť meta.xml elektronického formulára");
+            throw new EFormException(META_XML);
 
         var parsed_meta_xml = getXmlFromDocument(new InMemoryDocument(meta_xml, "meta.xml"));
         var nodes_meta = parsed_meta_xml.getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "identifier");
@@ -121,7 +134,7 @@ public class FsEFormResources extends EFormResources {
 
         var manifest_xml = getResource(SOURCE_URL + url + "/META-INF/manifest.xml");
         if (manifest_xml == null) {
-            throw new EFormException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť manifest elektronického formulára");
+            throw new EFormException(MANIFEST);
         }
 
         var parsed_manifest_xml = getXmlFromDocument(new InMemoryDocument(manifest_xml, "manifest.xml"));
@@ -141,7 +154,7 @@ public class FsEFormResources extends EFormResources {
 
         var xsltDigest = computeDigest(xsltString, canonicalizationMethod, DigestAlgorithm.SHA256, ENCODING);
         if (this.xsltDigest != null && !xsltDigest.equals(this.xsltDigest))
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Automaticky nájdená XSLT transformácia sa nezhoduje s odtlačkom v XML Datacontaineri");
+            throw new XMLValidationException(AUTO_XSLT_DIGEST_MISMATCH);
 
         transformation = new String(xsltString, ENCODING);
         if (!transformation.isEmpty() && transformation.charAt(0) == '\uFEFF')
@@ -158,7 +171,7 @@ public class FsEFormResources extends EFormResources {
 
         var xsdDigest = computeDigest(xsdString, canonicalizationMethod, DigestAlgorithm.SHA256, ENCODING);
         if (this.xsdDigest != null && !xsdDigest.equals(this.xsdDigest))
-            throw new XMLValidationException("Zlyhala validácia XML Datacontainera", "Automaticky nájdená XSD schéma sa nezhoduje s odtlačkom v XML Datacontaineri");
+            throw new XMLValidationException(AUTO_XSD_DIGEST_MISMATCH);
 
         this.schema = new String(xsdString, ENCODING);
 
@@ -169,7 +182,7 @@ public class FsEFormResources extends EFormResources {
         var transformation = getTransformation();
         var schema = getSchema();
         if (transformation == null || schema == null)
-            throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť XSLT transformáciu alebo XSD schému");
+            throw new XMLValidationException(XSLT_OR_XSD_NOT_FOUND);
 
         return new EFormAttributes(getIdentifier(), transformation, schema, EFormUtils.XDC_XMLNS, getXsdIdentifier(), getXsltParams(), shouldEmbedUsedSchemas());
     }

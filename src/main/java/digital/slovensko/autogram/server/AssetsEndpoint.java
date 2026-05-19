@@ -8,6 +8,8 @@ import digital.slovensko.autogram.server.errors.InvalidUrlParamException;
 import java.io.IOException;
 import java.util.List;
 
+import static digital.slovensko.autogram.server.errors.InvalidUrlParamException.Error.ASSET_NOT_FOUND;
+import static digital.slovensko.autogram.server.errors.InvalidUrlParamException.Error.MISSING_ASSET_NAME;
 import static java.util.Objects.requireNonNull;
 
 public class AssetsEndpoint implements HttpHandler {
@@ -25,14 +27,14 @@ public class AssetsEndpoint implements HttpHandler {
 
         try {
             if (fileName.isBlank())
-                throw new InvalidUrlParamException("Missing asset name");
+                throw new InvalidUrlParamException(MISSING_ASSET_NAME);
 
             if (!assets.contains(fileName))
-                throw new InvalidUrlParamException("Asset with this name does not exist");
+                throw new InvalidUrlParamException(ASSET_NOT_FOUND);
 
             var stream = getClass().getResourceAsStream("assets/" + fileName);
             if (stream == null)
-                throw new InvalidUrlParamException("Asset with this name does not exist");
+                throw new InvalidUrlParamException(ASSET_NOT_FOUND);
 
             try (exchange) {
                 exchange.getResponseHeaders().set("Content-Type", getAssetMimeType(fileName));
@@ -42,7 +44,7 @@ public class AssetsEndpoint implements HttpHandler {
 
             stream.close();
         } catch (IOException | InvalidUrlParamException e) {
-            EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
+            EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(e), exchange);
         }
     }
 

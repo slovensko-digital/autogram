@@ -9,7 +9,7 @@ jobs:
   linux-debian:
     environment: packaging
     runs-on: ubuntu-22.04
-    container: "debian:11"
+    container: "debian:13"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -152,6 +152,7 @@ jobs:
           java-version: "24.0.1+11"
           distribution: "liberica"
           java-package: "jdk+fx"
+          architecture: "x64"
 
       - name: Cache local Maven repository and JDK cache
         uses: actions/cache@v3

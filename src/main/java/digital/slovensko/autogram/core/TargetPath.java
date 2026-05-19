@@ -145,7 +145,12 @@ public class TargetPath {
      */
 
     public Path getSaveFilePath(Path singleSourceFile) {
-        var file = _getSaveFilePath(singleSourceFile);
+        return getSaveFilePath(singleSourceFile, shouldUsePdfExtension(singleSourceFile));
+
+    }
+
+    public Path getSaveFilePath(Path singleSourceFile, boolean usePdfExtension) {
+        var file = _getSaveFilePath(singleSourceFile, usePdfExtension);
 
         if (Files.exists(file) && !isForce)
             throw new TargetAlreadyExistsException();
@@ -153,8 +158,8 @@ public class TargetPath {
         return file;
     }
 
-    private Path _getSaveFilePath(Path singleSourceFile) {
-        var targetName = this.targetName == null ? generateTargetName(singleSourceFile) : this.targetName;
+    private Path _getSaveFilePath(Path singleSourceFile, boolean usePdfExtension) {
+        var targetName = this.targetName == null ? generateTargetName(singleSourceFile, usePdfExtension) : this.targetName;
         var targetDirectoryPath = targetDirectory == null ? "" : targetDirectory.toString();
         Path targetSingleFile = fs.getPath(targetDirectoryPath, targetName);
 
@@ -174,6 +179,10 @@ public class TargetPath {
         }
 
         throw new TargetAlreadyExistsException();
+    }
+
+    private boolean shouldUsePdfExtension(Path singleSourceFile) {
+        return singleSourceFile.getFileName().toString().toLowerCase().endsWith(".pdf") && isSignatureLevelPades;
     }
 
     private String generateUniqueName(String parent, String baseName, String extension) {
@@ -197,10 +206,8 @@ public class TargetPath {
         return fs.getPath(parent, baseName + extension);
     }
 
-    private String generateTargetName(Path singleSourceFile) {
-        var isSourceFileExtensionPdf = singleSourceFile.getFileName().toString().toLowerCase().endsWith(".pdf");
-
-        var extension = isSourceFileExtensionPdf && isSignatureLevelPades ? ".pdf" : ".asice";
+    private String generateTargetName(Path singleSourceFile, boolean usePdfExtension) {
+        var extension = usePdfExtension ? ".pdf" : ".asice";
         if (useUniqueFileName || isForMultipleFiles)
             return com.google.common.io.Files.getNameWithoutExtension(singleSourceFile.getFileName().toString())
                     + "_signed"

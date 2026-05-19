@@ -195,6 +195,28 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-maven-jdk</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[24,)</version>
+                                    <message>This build must be run with JDK 24 or newer. The jlink step uses JDK 24 modules and fails with InvalidModuleDescriptorException if Maven runs on an older JDK.</message>
+                                </requireJavaVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
 
@@ -203,12 +225,6 @@
                     <executable>${jlink.jdk.path}${file.separator}bin${file.separator}javac</executable>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <compilerArgs>
-                        <arg>--add-exports</arg>
-                        <arg>jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED</arg>
-                        <arg>--add-modules</arg>
-                        <arg>jdk.crypto.cryptoki</arg>
-                    </compilerArgs>
                 </configuration>
             </plugin>
 

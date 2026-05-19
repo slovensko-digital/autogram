@@ -15,7 +15,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Text;
 
-public class BatchSigningFailureDialogController implements SuppressedFocusController {
+public class BatchSigningFailureDialogController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
     private final BatchUiResult result;
 
@@ -52,6 +52,7 @@ public class BatchSigningFailureDialogController implements SuppressedFocusContr
         this.hostServices = hostServices;
     }
 
+    @Override
     public void initialize() {
         folderPathText.setText(result.getTargetDirectory().toString());
 
@@ -61,14 +62,14 @@ public class BatchSigningFailureDialogController implements SuppressedFocusContr
         errorList.setItems(FXCollections
                 .observableArrayList(errorFileNamesList));
         errorList.prefHeightProperty().bind(Bindings.min(4, Bindings.size(errorList.getItems())).multiply(LIST_CELL_HEIGHT).add(2));
-        errorListHeading.setText("Nepodpísané dokumenty (" + errorFileNamesList.size() + ")");
+        errorListHeading.setText(i18n("batchSigning.failure.errorList.title", errorFileNamesList.size()));
         failureCount.setText(String.valueOf(errorFileNamesList.size()));
 
         errorDetails.visibleProperty().bind(errorDetailsVisible);
         errorDetails.managedProperty().bind(errorDetailsVisible);
         showErrorDetailsButton.textProperty()
-                .bind(Bindings.when(errorDetailsVisible).then("Skryť podrobnosti chyby")
-                        .otherwise("Zobraziť podrobnosti chyby"));
+                .bind(Bindings.when(errorDetailsVisible).then(i18n("batchSigning.failure.hideDetails.btn"))
+                        .otherwise(i18n("batchSigning.failure.showDetails.btn")));
 
     }
 

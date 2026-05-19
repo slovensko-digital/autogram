@@ -12,7 +12,7 @@
       prefWidth="768"
       fx:id="mainBox">
 
-    <TextFlow><Text styleClass="autogram-heading-m" text="Podpisy"/></TextFlow>
+    <TextFlow><Text styleClass="autogram-heading-m" text="%signature.present.summary.title"/></TextFlow>
 
     <ScrollPane>
         <VBox>
@@ -21,8 +21,8 @@
     </ScrollPane>
 
     <HBox styleClass="autogram-actions">
-        <Button fx:id="closeButton" styleClass="autogram-button, autogram-button--secondary" text="Zavrieť" onAction="#onCloseButtonAction" />
-        <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="Prebieha overovanie podpisov&#8230;"/>
-        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="Zobraziť technické detaily" visible="false" onAction="#onSignatureDetailsButtonAction" />
+        <Button fx:id="closeButton" styleClass="autogram-button, autogram-button--secondary" text="%general.close.btn" onAction="#onCloseButtonAction" />
+        <Text fx:id="signatureValidationMessage" styleClass="autogram-body" text="%signature.present.text"/>
+        <Button fx:id="signatureDetailsButton" styleClass="autogram-link" text="%signature.present.details.btn" visible="false" onAction="#onSignatureDetailsButtonAction" />
     </HBox>
 </VBox>

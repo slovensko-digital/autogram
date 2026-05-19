@@ -16,7 +16,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
-public class BatchDialogController implements SuppressedFocusController {
+import java.util.function.Consumer;
+
+public class BatchDialogController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
     private final Batch batch;
     private final Autogram autogram;
@@ -120,11 +122,11 @@ public class BatchDialogController implements SuppressedFocusController {
             var key = gui.getActiveSigningKey();
 
             if (key == null) {
-                mainButton.setText("Podpísať");
+                mainButton.setText(i18n("general.sign.btn"));
                 changeKeyButton.setVisible(false);
 
             } else {
-                mainButton.setText("Podpísať ako " + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+                mainButton.setText(i18n("batch.signAs.btn") + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
                 changeKeyButton.setVisible(true);
             }
         }
@@ -163,7 +165,7 @@ public class BatchDialogController implements SuppressedFocusController {
     }
 
     public void disableKeyPicking() {
-        mainButton.setText("Načítavam certifikáty…");
+        mainButton.setText(i18n("batch.loadingCerts.btn"));
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
         changeKeyButton.setManaged(false);
@@ -171,7 +173,7 @@ public class BatchDialogController implements SuppressedFocusController {
     }
 
     public void disableSigning() {
-        mainButton.setText("Prebieha podpisovanie…");
+        mainButton.setText(i18n("batch.signingInProgress.btn"));
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
         changeKeyButton.setManaged(false);

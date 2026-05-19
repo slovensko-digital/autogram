@@ -20,6 +20,6 @@ public class CertificatesResponder {
     }
 
     public void onError(Exception error) {
-        EndpointUtils.respondWithError(ErrorResponse.buildFromException(error), exchange);
+        EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(error), exchange);
     }
 }

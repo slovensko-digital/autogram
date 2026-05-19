@@ -10,7 +10,7 @@ import javafx.scene.text.TextFlow;
 
 import java.io.File;
 
-public class SigningSuccessDialogController implements SuppressedFocusController {
+public class SigningSuccessDialogController extends BaseController implements SuppressedFocusController {
     private final File targetFile;
     private final File targetDirectory;
     private final HostServices hostServices;
@@ -31,6 +31,7 @@ public class SigningSuccessDialogController implements SuppressedFocusController
         this.hostServices = hostServices;
     }
 
+    @Override
     public void initialize() {
         filenameText.setText(targetFile.getName());
         initHyperlink();

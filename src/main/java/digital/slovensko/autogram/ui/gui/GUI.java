@@ -1,20 +1,24 @@
 package digital.slovensko.autogram.ui.gui;
 
-import java.io.File;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.function.Consumer;
-
-import digital.slovensko.autogram.core.*;
-import digital.slovensko.autogram.core.errors.*;
-import javafx.event.ActionEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.BatchStartCallback;
+import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
+import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
+import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.TokenRemovedException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
+import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
@@ -26,8 +30,22 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.WeakHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.function.Consumer;
 
 public class GUI implements UI {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GUI.class);
+
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
     private boolean driverWasAlreadySet = false;
@@ -35,7 +53,6 @@ public class GUI implements UI {
     private final UserSettings userSettings;
     private BatchDialogController batchController;
     private static final boolean DEBUG = false;
-    private static Logger logger = LoggerFactory.getLogger(GUI.class);
     private int nWindows = 0;
 
     public GUI(HostServices hostServices, UserSettings userSettings) {
@@ -54,7 +71,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Hromadné podpisovanie");
+        stage.setTitle(batchController.i18n("batch.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
             cancelBatch(batch);
@@ -113,7 +130,7 @@ public class GUI implements UI {
             var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Výber úložiska certifikátu");
+            stage.setTitle(controller.i18n("pickDriver.title"));
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
@@ -159,7 +176,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Výber certifikátu");
+        stage.setTitle(controller.i18n("pickKey.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
             refreshKeyOnAllJobs();
@@ -185,7 +202,7 @@ public class GUI implements UI {
 
     @Override
     public void showError(AutogramException e) {
-        GUIUtils.showError(e, "Pokračovať", false);
+        GUIUtils.showError(e, "general.continue.btn", false);
     }
 
     public void showPkcsEidWindowsDllError(AutogramException e) {
@@ -193,7 +210,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "pkcs-eid-windows-dll-error-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle(e.getSubheading());
+        stage.setTitle(e.getSubheading(controller.resources));
         stage.setScene(new Scene(root));
 
         stage.sizeToScene();
@@ -207,11 +224,11 @@ public class GUI implements UI {
 
     public char[] getKeystorePassword() {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("Aký je kód k úložisku klúčov?", "Zadajte kód k úložisku klúčov.", false, true);
+            var controller = new PasswordController("password.keystore.text", "password.keystore.error.text", false, true);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Načítanie klúčov z úložiska");
+            stage.setTitle(controller.i18n("password.keystore.title"));
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
@@ -236,11 +253,11 @@ public class GUI implements UI {
 
     public char[] getContextSpecificPassword() {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("Aký je podpisový PIN alebo heslo?", "Zadajte podpisový PIN alebo heslo ku klúču.", true, false);
+            var controller = new PasswordController("password.context.text", "password.context.error.text", true, false);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle("Zadanie podpisového PINu alebo hesla");
+            stage.setTitle(controller.i18n("password.context.title"));
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
@@ -268,7 +285,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "update-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Dostupná aktualizácia");
+        stage.setTitle(controller.i18n("update.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
@@ -282,7 +299,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "about-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("O projekte Autogram");
+        stage.setTitle(controller.i18n("about.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
@@ -296,7 +313,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "pdfa-compliance-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Dokument nie je vo formáte PDF/A");
+        stage.setTitle(controller.i18n("pdfaCompliance.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.WINDOW_MODAL);
@@ -318,9 +335,9 @@ public class GUI implements UI {
     }
 
     public void showVisualization(Visualization visualization, Autogram autogram) {
-        var title = "Dokument";
+        var title = SupportedLanguage.loadResources(userSettings).getString("general.document");
         if (visualization.getJob().getDocument().getName() != null)
-            title = "Dokument " + visualization.getJob().getDocument().getName();
+            title += " " + visualization.getJob().getDocument().getName();
 
         var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);
@@ -357,7 +374,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Chyba pri zobrazovaní dokumentu");
+        stage.setTitle(controller.i18n("error.ignorable.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.WINDOW_MODAL);
@@ -417,7 +434,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "signing-success-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Dokument bol úspešne podpísaný");
+        stage.setTitle(controller.i18n("signing.success.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         GUIUtils.suppressDefaultFocus(stage, controller);
@@ -432,11 +449,11 @@ public class GUI implements UI {
         if (result.hasErrors()) {
             controller = new BatchSigningFailureDialogController(result, hostServices);
             root = GUIUtils.loadFXML(controller, "batch-signing-failure-dialog.fxml");
-            stage.setTitle("Hromadné podpisovanie ukončené s chybami");
+            stage.setTitle(((BatchSigningFailureDialogController) controller).i18n("batchSigning.failure.title"));
         } else {
             controller = new BatchSigningSuccessDialogController(result, hostServices);
             root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
-            stage.setTitle("Hromadné podpisovanie úspešne ukončené");
+            stage.setTitle(((BatchSigningSuccessDialogController) controller).i18n("batchSigning.success.title"));
         }
         stage.setScene(new Scene(root));
         stage.setResizable(false);
@@ -545,7 +562,7 @@ public class GUI implements UI {
         var root = GUIUtils.loadFXML(controller, "consent-certificate-reading-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle("Súhlas - Zoznam podpisových certifikátov");
+        stage.setTitle(controller.i18n("certConsent.title"));
         stage.setScene(new Scene(root));
 
         stage.sizeToScene();

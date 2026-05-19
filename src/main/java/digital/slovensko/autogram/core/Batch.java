@@ -1,12 +1,16 @@
 package digital.slovensko.autogram.core;
 
-import java.util.Date;
-import java.util.UUID;
-
 import digital.slovensko.autogram.core.errors.BatchEndedException;
 import digital.slovensko.autogram.core.errors.BatchExpiredException;
 import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
 import digital.slovensko.autogram.util.Logging;
+
+import java.util.Date;
+import java.util.UUID;
+
+import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.ALREADY_ENDED;
+import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.CANNOT_RESTART;
+import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.NOT_STARTED;
 
 enum BatchState {
     INITIALIZED, STARTED, ENDED
@@ -36,7 +40,7 @@ public class Batch {
 
     public void start(SigningKey key) {
         if (state != BatchState.INITIALIZED)
-            throw new BatchEndedException("Nie je možné opätovne spustiť hromadné podpisovanie");
+            throw new BatchEndedException(CANNOT_RESTART);
         state = BatchState.STARTED;
         signingKey = key;
     }
@@ -69,10 +73,10 @@ public class Batch {
 
     private void validateInternal() {
         if (state == BatchState.INITIALIZED)
-            throw new BatchEndedException("Hromadné podpisovanie nebolo začaté");
+            throw new BatchEndedException(NOT_STARTED);
 
         if (state == BatchState.ENDED)
-            throw new BatchEndedException("Hromadné podpisovanie bolo ukončené");
+            throw new BatchEndedException(ALREADY_ENDED);
 
         if (isExpired()) {
             throw new BatchExpiredException();

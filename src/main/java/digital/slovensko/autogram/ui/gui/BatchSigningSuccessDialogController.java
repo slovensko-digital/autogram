@@ -8,7 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
 
-public class BatchSigningSuccessDialogController implements SuppressedFocusController {
+public class BatchSigningSuccessDialogController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
     private final BatchUiResult result;
 
@@ -27,6 +27,7 @@ public class BatchSigningSuccessDialogController implements SuppressedFocusContr
         this.hostServices = hostServices;
     }
 
+    @Override
     public void initialize() {
         folderPathText.setText(result.getTargetDirectory().toString());
         var signedFileNamesList = result.getTargetFilesSortedList().stream().filter(e -> e != null)

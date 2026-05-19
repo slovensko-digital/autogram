@@ -2,7 +2,10 @@ package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 
+import static digital.slovensko.autogram.core.eforms.EFormUtils.ALLOWED_ORSR_URL_PREFIXES;
 import static digital.slovensko.autogram.core.eforms.EFormUtils.getResource;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSD_NOT_FOUND;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSLT_NOT_FOUND;
 
 public class OrsrEFormResources extends EFormResources {
     public OrsrEFormResources(String url, String schema, String transformation) {
@@ -14,26 +17,33 @@ public class OrsrEFormResources extends EFormResources {
         this.transformation = transformation;
     }
 
+    private static void validateResourceUrl(String resourceUrl) throws XMLValidationException {
+        if (resourceUrl == null || ALLOWED_ORSR_URL_PREFIXES.stream().noneMatch(resourceUrl::startsWith))
+            throw new XMLValidationException(XSD_NOT_FOUND);
+    }
+
     @Override
     public boolean findResources() throws XMLValidationException {
+        validateResourceUrl(url);
+
         if (schema == null) {
             var schema_raw = getResource(url);
             if (schema_raw == null)
-                throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť XSD schému elektronického formulára");
+                throw new XMLValidationException(XSD_NOT_FOUND);
 
             schema = new String(schema_raw, ENCODING);
         }
 
         if (transformation == null) {
             var transformationUrl = url.replace(".xsd", ".xslt");
+            validateResourceUrl(transformationUrl);
             var transformation_raw = getResource(transformationUrl);
             if (transformation_raw == null)
-                throw new XMLValidationException("Zlyhala príprava elektronického formulára", "Nepodarilo sa nájsť XSLT transformáciu elektronického formulára");
+                throw new XMLValidationException(XSLT_NOT_FOUND);
 
             transformation = new String(transformation_raw, ENCODING);
             if (!transformation.isEmpty() && transformation.charAt(0) == '\uFEFF')
                 transformation = transformation.substring(1);
-
         }
 
         return true;

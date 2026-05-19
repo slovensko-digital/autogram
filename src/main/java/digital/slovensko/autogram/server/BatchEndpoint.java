@@ -11,6 +11,8 @@ import digital.slovensko.autogram.server.errors.MalformedBodyException;
 
 import java.io.IOException;
 
+import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.JSON_PARSING_FAILED;
+
 public class BatchEndpoint implements HttpHandler {
     private final Autogram autogram;
 
@@ -42,10 +44,10 @@ public class BatchEndpoint implements HttpHandler {
                 exchange.sendResponseHeaders(405, -1);
             }
         } catch (JsonSyntaxException e) {
-            var response = ErrorResponse.buildFromException(new MalformedBodyException(e.getMessage(), e));
+            var response = ErrorResponseBuilder.buildFromException(new MalformedBodyException(JSON_PARSING_FAILED, e));
             EndpointUtils.respondWithError(response, exchange);
         } catch (Exception e) {
-            EndpointUtils.respondWithError(ErrorResponse.buildFromException(e), exchange);
+            EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(e), exchange);
         }
     }
 }
