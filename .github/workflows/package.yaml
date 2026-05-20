@@ -36,7 +36,9 @@ jobs:
           ls -lah ./target
 
       - name: Rename artifact
-        run: mv target/autogram*.deb target/autogram_debian.deb
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+          mv target/autogram*.deb target/autogram-${VERSION}-debian.deb
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
@@ -79,7 +81,9 @@ jobs:
           ls -lah ./target
 
       - name: Rename artifact
-        run: mv target/autogram*.deb target/autogram_ubuntu.deb
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+          mv target/autogram*.deb target/autogram-${VERSION}-ubuntu.deb
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
@@ -117,6 +121,11 @@ jobs:
 
           ./mvnw -B -C -V package -P system-jdk
           ls -lah ./target
+
+      - name: Rename artifact
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+          mv target/autogram*.rpm target/autogram-${VERSION}-fedora.rpm
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
@@ -207,6 +216,13 @@ jobs:
           # lock all keychains
           security lock-keychain -a
 
+      - name: Rename artifacts
+        shell: bash
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+          mv target/Autogram-*.pkg target/autogram-${VERSION}-macos.pkg
+          mv target/Autogram-*.dmg target/autogram-${VERSION}-macos.dmg
+
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         if: startsWith(github.ref, 'refs/tags/')
@@ -263,6 +279,13 @@ jobs:
         run: |
           dotnet tool install --global AzureSignTool
           AzureSignTool sign --description "Autogram" -kvu "${{ secrets.AZURE_KEY_VAULT_URI }}" -kvi "${{ secrets.AZURE_CLIENT_ID }}" -kvt "${{ secrets.AZURE_TENANT_ID }}" -kvs "${{ secrets.AZURE_CLIENT_SECRET }}" -kvc ${{ secrets.AZURE_CERT_NAME }} -tr http://timestamp.digicert.com -v target/*.msi
+
+      - name: Rename artifacts
+        shell: bash
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
+          mv target/Autogram-*.msi target/autogram-${VERSION}-windows.msi
+          mv target/Autogram-*.exe target/autogram-${VERSION}-windows.exe
 
       - name: Create release if tag pushed
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
