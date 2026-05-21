@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.prefs.Preferences;
 import java.util.stream.Stream;
 
+import static java.util.function.Predicate.not;
+
 
 public class UserSettings implements PasswordManagerSettings, SignatureTokenSettings, DriverDetectorSettings {
     private static final String DEFAULT_LANGUAGE = null; // system language
@@ -44,6 +46,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private final long DEFAULT_TOKEN_SESSION_TIMEOUT = 5L;
     private final String DEFAULT_CUSTOM_PKCS11_DRIVER_PATH = "";
     private final String DEFAULT_TSA_SERVER = "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu";
+    private final String DEFAULT_LAST_USED_DIRECTORY = "";
 
     private SupportedLanguage language;
     private SignatureLevel signatureLevel;
@@ -68,6 +71,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private long tokenSessionTimeout;
     private String customPKCS11DriverPath;
     private Map<String, Integer> driverSlotIndexMap = new HashMap<>();
+    private String lastUsedDirectory;
 
     public static UserSettings load() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
@@ -91,6 +95,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setPdfDpi(prefs.getInt("PDF_DPI", settings.DEFAULT_PDF_DPI));
         settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", settings.DEFAULT_TOKEN_SESSION_TIMEOUT));
         settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", settings.DEFAULT_CUSTOM_PKCS11_DRIVER_PATH));
+        settings.setLastUsedDirectory(prefs.get("LAST_USED_DIRECTORY", settings.DEFAULT_LAST_USED_DIRECTORY));
 
         String mapString = prefs.get("DRIVER_SLOT_INDEX_MAP", "");
         if (!mapString.isEmpty()) {
@@ -155,6 +160,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
             builder.append(entry.getKey()).append(":").append(entry.getValue()).append(";");
         }
         prefs.put("DRIVER_SLOT_INDEX_MAP", builder.toString());
+
+        prefs.put("LAST_USED_DIRECTORY", (lastUsedDirectory == null) ? "" : lastUsedDirectory);
     }
 
     public void reset() {
@@ -180,6 +187,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         setCustomPKCS11DriverPath(DEFAULT_CUSTOM_PKCS11_DRIVER_PATH);
         driverSlotIndexMap.clear();
         driverSlotIndexMap.put("default", -1); // default slot index
+        setLastUsedDirectory(DEFAULT_LAST_USED_DIRECTORY);
 
         save();
     }
@@ -422,5 +430,26 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
             return;
         }
         customPKCS11DriverPath = driverPath;
+    }
+
+    public Optional<String> getLastUsedDirectory() {
+        return Optional.ofNullable(lastUsedDirectory)
+                .filter(not(String::isBlank));
+    }
+
+    public void setLastUsedDirectory(Path lastUsedDirectory) {
+        if (lastUsedDirectory == null) {
+            this.lastUsedDirectory = null;
+        } else if (Files.exists(lastUsedDirectory) && Files.isDirectory(lastUsedDirectory)) {
+            this.lastUsedDirectory = lastUsedDirectory.toString();
+        }
+    }
+
+    public void setLastUsedDirectory(String lastUsedDirectory) {
+        if (lastUsedDirectory == null || lastUsedDirectory.isBlank()) {
+            this.lastUsedDirectory = null;
+        } else {
+            setLastUsedDirectory(Paths.get(lastUsedDirectory));
+        }
     }
 }
