@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
+import digital.slovensko.autogram.core.errors.BatchNotEnabledException;
 import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
@@ -148,6 +149,8 @@ public class Autogram {
      * @param responder              - callback for http response
      */
     public void batchStart(int totalNumberOfDocuments, BatchResponder responder) {
+        if (!settings.isBulkEnabled())
+            throw new BatchNotEnabledException();
         if (batch != null && !batch.isEnded())
             throw new BatchConflictException();
         batch = new Batch(totalNumberOfDocuments);
