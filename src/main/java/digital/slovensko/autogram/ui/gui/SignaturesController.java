@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.SignatureValidator;
-import eu.europa.esig.dss.validation.reports.Reports;
+import digital.slovensko.autogram.core.ValidationReports;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -16,8 +16,8 @@ import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatu
 
 public class SignaturesController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
-    private Reports signatureCheckReports;
-    private Reports signatureValidationReports;
+    private ValidationReports signatureCheckReports;
+    private ValidationReports signatureValidationReports;
     private String signatureValidationReportsHTML;
 
     @FXML
@@ -33,7 +33,7 @@ public class SignaturesController extends BaseController implements SuppressedFo
     @FXML
     Button closeButton;
 
-    public SignaturesController(Reports signatureCheckReports, GUI gui) {
+    public SignaturesController(ValidationReports signatureCheckReports, GUI gui) {
         this.signatureCheckReports = signatureCheckReports;
         this.gui = gui;
     }
@@ -48,7 +48,7 @@ public class SignaturesController extends BaseController implements SuppressedFo
         return mainBox;
     }
 
-    public void onSignatureValidationCompleted(Reports reports) {
+    public void onSignatureValidationCompleted(ValidationReports reports) {
         signatureValidationMessage.setText("");
         signatureValidationMessage.setVisible(false);
 
@@ -57,8 +57,7 @@ public class SignaturesController extends BaseController implements SuppressedFo
         renderSignatures();
 
         gui.onWorkThreadDo(() -> {
-            signatureValidationReportsHTML = SignatureValidator
-                    .getSignatureValidationReportHTML(signatureValidationReports);
+            signatureValidationReportsHTML = buildSignatureValidationReportsHTML(signatureValidationReports);
             signatureDetailsButton.setVisible(true);
         });
     }
@@ -81,19 +80,49 @@ public class SignaturesController extends BaseController implements SuppressedFo
     }
 
     public void renderSignatures() {
-        if (signatureValidationReports != null)
+        if (signatureValidationReports != null && signatureValidationReports.haveSignatures())
             renderSignatures(signatureValidationReports, true);
 
-        else
+        else if (signatureCheckReports != null && signatureCheckReports.haveSignatures())
             renderSignatures(signatureCheckReports, false);
     }
 
-    public void renderSignatures(Reports reports, boolean isValidated) {
+    public void renderSignatures(ValidationReports reports, boolean isValidated) {
         signaturesBox.getChildren().clear();
+        if (!reports.haveSignatures())
+            return;
 
-        for (var signatureId : reports.getDiagnosticData().getSignatureIdList())
-            signaturesBox.getChildren().add(createSignatureBox(resources, reports, isValidated, signatureId, e -> {
-                getNodeForLoosingFocus().requestFocus();
-            }, isValidated && SignatureValidator.getInstance().areTLsLoaded()));
+        for (var documentReport : reports.getDocumentReports()) {
+            for (var signatureId : documentReport.reports().getDiagnosticData().getSignatureIdList()) {
+                signaturesBox.getChildren().add(createSignatureBox(resources, documentReport, reports.isMultiDocumentJob(),
+                        isValidated, signatureId, e -> {
+                            getNodeForLoosingFocus().requestFocus();
+                        }, isValidated && SignatureValidator.getInstance().areTLsLoaded()));
+            }
+        }
+    }
+
+    private String buildSignatureValidationReportsHTML(ValidationReports reports) {
+        if (!reports.isMultiDocumentJob())
+            return SignatureValidator.getSignatureValidationReportHTML(reports.getReports());
+
+        var content = new StringBuilder();
+        for (var documentReport : reports.getDocumentReports()) {
+            if (content.length() > 0)
+                content.append("<hr/>");
+
+            content.append("<h2>")
+                    .append(escapeHtml(GUIValidationUtils.getDisplayDocumentName(resources, documentReport)))
+                    .append("</h2>")
+                    .append(SignatureValidator.getSignatureValidationReportBodyHTML(documentReport.reports()));
+        }
+
+        return SignatureValidator.wrapSignatureValidationReportHTML(content.toString());
+    }
+
+    private static String escapeHtml(String text) {
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
     }
 }

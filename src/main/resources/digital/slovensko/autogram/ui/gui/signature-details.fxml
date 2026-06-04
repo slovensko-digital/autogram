@@ -8,7 +8,9 @@
       xmlns:fx="http://javafx.com/fxml"
       prefHeight="800"
       maxHeight="800"
-      minWidth="768"
+      minWidth="600"
+      prefWidth="600"
+      maxWidth="600"
       fx:id="mainBox">
 
     <TextFlow><Text styleClass="autogram-heading-m" text="%signature.details.title"/></TextFlow>

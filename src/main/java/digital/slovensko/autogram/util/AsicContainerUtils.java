@@ -12,6 +12,9 @@ import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.FILE_NOT_FOUND;
 import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.NO_DOCUMENTS;
@@ -19,8 +22,7 @@ import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundExc
 import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.NO_SIGNED_DOCUMENTS;
 
 public class AsicContainerUtils {
-    public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,
-            MultipleOriginalDocumentsFoundException {
+    public static List<DSSDocument> getOriginalDocuments(DSSDocument asice) throws OriginalDocumentNotFoundException {
         SignedDocumentValidator documentValidator;
         try {
             documentValidator = SignedDocumentValidator.fromDocument(asice);
@@ -42,14 +44,22 @@ public class AsicContainerUtils {
         if (aSiCContent.getSignedDocuments().isEmpty())
             throw new OriginalDocumentNotFoundException(NO_SIGNED_DOCUMENTS);
 
-        if (aSiCContent.getSignedDocuments().size() > 1)
+        var originalDocuments = new ArrayList<>(aSiCContent.getSignedDocuments());
+        for (var originalDocument : originalDocuments) {
+            if (isXML(originalDocument.getMimeType()) || MimeTypeEnum.BINARY.equals(originalDocument.getMimeType()))
+                setMimeTypeFromManifest(asice, originalDocument);
+        }
+
+        return originalDocuments;
+    }
+
+    public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,
+            MultipleOriginalDocumentsFoundException {
+        var originalDocuments = getOriginalDocuments(asice);
+        if (originalDocuments.size() > 1)
             throw new MultipleOriginalDocumentsFoundException();
 
-        var originalDocument = aSiCContent.getSignedDocuments().get(0);
-        if (isXML(originalDocument.getMimeType()) || MimeTypeEnum.BINARY.equals(originalDocument.getMimeType()))
-            setMimeTypeFromManifest(asice, originalDocument);
-
-        return originalDocument;
+        return originalDocuments.get(0);
     }
 
     private static void setMimeTypeFromManifest(DSSDocument asiceContainer, DSSDocument documentToDisplay) {

@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,11 +20,15 @@ import org.xml.sax.SAXException;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
+import digital.slovensko.autogram.core.visualization.Visualization;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.InMemoryDocument;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class TransformationTests {
 
@@ -171,5 +177,36 @@ public class TransformationTests {
                 } else {
                         fail("Expected HTMLVisualizedDocument");
                 }
+        }
+
+        @ParameterizedTest
+        @MethodSource("digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider")
+        void testXdcfVisualizationIsNotUnsupported(InMemoryDocument document)
+                throws IOException, ParserConfigurationException, SAXException {
+                var params = SigningParameters.buildForASiCWithXAdES(document, false, false, null, false);
+                var job = SigningJob.buildFromRequest(document, params, dummyResponder);
+
+                var visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
+
+                Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
+        }
+
+        @Test
+        void testMultiDocumentVisualizationUsesSelectedDocumentMetadata()
+                throws IOException, ParserConfigurationException, SAXException {
+                var firstDocument = AutogramDocument.fromContent("first".getBytes(StandardCharsets.UTF_8), "first.txt",
+                        MimeTypeEnum.TEXT);
+                var secondDocument = AutogramDocument.fromContent(
+                        this.getClass().getResourceAsStream("general_agenda.xdcf").readAllBytes(),
+                        "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY);
+                var params = SigningParameters.buildForASiCWithXAdES(firstDocument.toDssDocument(), false, false, null,
+                        false);
+                var job = SigningJob.buildFromRequest(
+                        AutogramSigningRequest.of(List.of(firstDocument, secondDocument), params), dummyResponder);
+
+                Visualization visualization = DocumentVisualizationBuilder.fromDocument(job, job.getDocuments().get(1),
+                        UserSettings.load());
+
+                Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
         }
 }

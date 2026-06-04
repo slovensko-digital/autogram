@@ -5,7 +5,6 @@ import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
-import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.dto.SignResponse;
 
 import java.io.IOException;
@@ -22,10 +21,14 @@ public class ServerResponder extends Responder {
     public void onDocumentSigned(SignedDocument signedDocument) throws AutogramException {
         var signer = signedDocument.getCertificate().getSubject().getPrincipal().toString();
         var issuer = signedDocument.getCertificate().getIssuer().getPrincipal().toString();
+        var document = signedDocument.getDocument();
 
         try {
-            var b64document = Base64.getEncoder().encodeToString(signedDocument.getDocument().openStream().readAllBytes());
-            EndpointUtils.respondWith(new SignResponse(b64document, signer, issuer), exchange);
+            var b64document = Base64.getEncoder().encodeToString(document.openStream().readAllBytes());
+            var mimeType = document.getMimeType() != null ? document.getMimeType().getMimeTypeString() : "application/octet-stream";
+            var filename = document.getName() != null ? document.getName() : "signed-document";
+
+            EndpointUtils.respondWith(new SignResponse(b64document, mimeType, filename, signer, issuer), exchange);
         } catch (IOException e) {
             throw new ResponseNetworkErrorException(e);
         }

@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import java.io.File;
+import java.util.List;
 
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
@@ -22,30 +23,37 @@ import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 
 public class SigningJob {
     private final Responder responder;
-    private final DSSDocument document;
-    private final SigningParameters parameters;
+    private final AutogramSigningRequest request;
 
-    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder) {
-        this.document = document;
-        this.parameters = parameters;
+    private SigningJob(AutogramSigningRequest request, Responder responder) {
+        this.request = request;
         this.responder = responder;
     }
 
     public DSSDocument getDocument() {
-        return this.document;
+        return request.getFirstDocument().toDssDocument();
+    }
+
+    public List<DSSDocument> getDocuments() {
+        return request.getDocuments().stream().map(AutogramDocument::toDssDocument).toList();
+    }
+
+    public List<DSSDocument> getDocumentsForContentChecks() {
+        return getDocuments();
     }
 
     public SigningParameters getParameters() {
-        return parameters;
+        return request.getParameters();
     }
 
     public int getVisualizationWidth() {
-        return parameters.getVisualizationWidth();
+        return getParameters().getVisualizationWidth();
     }
 
     public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
 
-        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
+        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName()
+                + (request.isMultiDocument() ? " documents=" + request.getDocumentCount() : ""));
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
@@ -82,6 +90,7 @@ public class SigningJob {
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new ASiCWithXAdESService(commonCertificateVerifier);
         var signatureParameters = getParameters().getASiCWithXAdESSignatureParameters();
+        var documents = getDocuments();
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
@@ -89,10 +98,10 @@ public class SigningJob {
         if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
             service.setTspSource(getParameters().getTspSource());
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(documents, signatureParameters);
         var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
 
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(documents, signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsXAdeS(SigningKey key) {
@@ -117,6 +126,7 @@ public class SigningJob {
         var service = new ASiCWithCAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
         var signatureParameters = getParameters().getASiCWithCAdESSignatureParameters();
+        var documents = getDocuments();
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
@@ -124,10 +134,10 @@ public class SigningJob {
         if (signatureParameters.getSignatureLevel().equals(SignatureLevel.CAdES_BASELINE_T))
             service.setTspSource(getParameters().getTspSource());
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var dataToSign = service.getDataToSign(documents, signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(documents, signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsPAdeS(SigningKey key) {
@@ -155,7 +165,7 @@ public class SigningJob {
         return AutogramDocument.fromFile(file).toDssDocument();
     }
 
-    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
+    private static DSSDocument prepareDocument(DSSDocument document, SigningParameters params) {
         if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
             document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
 
@@ -167,15 +177,19 @@ public class SigningJob {
             document.setName(getXdcfFilename(document.getName()));
         }
 
-        return new SigningJob(document, params, responder);
+        return document;
+    }
+
+    public static AutogramDocument prepareDocument(AutogramDocument document, SigningParameters params) {
+        return AutogramDocument.fromDssDocument(prepareDocument(document.toDssDocument(), params));
     }
 
     public static SigningJob buildFromRequest(AutogramSigningRequest request, Responder responder) {
-        return build(request.getSingleDocument().toDssDocument(), request.getParameters(), responder);
+        return new SigningJob(request, responder);
     }
 
     public static SigningJob buildFromRequest(AutogramDocument document, SigningParameters params, Responder responder) {
-        return buildFromRequest(AutogramSigningRequest.forSingleDocument(document, params), responder);
+        return buildFromRequest(AutogramSigningRequest.forSingleDocument(prepareDocument(document, params), params), responder);
     }
 
     public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
@@ -185,7 +199,7 @@ public class SigningJob {
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
         var document = AutogramDocument.fromFile(file);
         var parameters = getParametersForFile(document.toDssDocument(), checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return buildFromRequest(AutogramSigningRequest.forSingleDocument(document, parameters), responder);
+        return buildFromRequest(AutogramSigningRequest.forSingleDocument(prepareDocument(document, parameters), parameters), responder);
     }
 
     private static SigningParameters getParametersForFile(DSSDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
@@ -216,6 +230,8 @@ public class SigningJob {
     }
 
     public boolean shouldCheckPDFCompliance() {
-        return parameters.getCheckPDFACompliance() && isPDF(document.getMimeType());
+        return getParameters().getCheckPDFACompliance()
+                && getDocumentsForContentChecks().stream()
+                        .anyMatch(document -> document.getMimeType() != null && isPDF(document.getMimeType()));
     }
 }

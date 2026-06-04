@@ -1,4 +1,4 @@
-openapi: 3.1.1
+openapi: 3.0.1
 info:
   title: Autogram API
   description: |
@@ -32,7 +32,7 @@ tags:
     description: Legacy endpoints with simplified request body for signing one document. These endpoints are still supported but for new integrations prefer the more flexible `/api/v1/sign` endpoint.
 paths:
   /info:
-    get: &getInfoOperation
+    get:
       tags:
         - Legacy
       summary: Retrieve info and the current server status
@@ -46,7 +46,7 @@ paths:
                 $ref: "#/components/schemas/Info"
 
   /sign:
-    post: &legacySignDocumentOperation
+    post:
       tags:
         - Legacy
       summary: Sign one document
@@ -188,7 +188,7 @@ paths:
                     description: Optional details.
   
   /batch:
-    post: &startBatchOperation
+    post:
       tags:
         - Legacy
       operationId: startBatch
@@ -234,7 +234,7 @@ paths:
                     type: string
                     example: "Batch canceled"
                     description: Optional details.
-    delete: &endBatchOperation
+    delete:
       tags:
         - Legacy
       operationId: endBatch
@@ -255,7 +255,7 @@ paths:
                 $ref: "#/components/schemas/BatchEndResponseBody"
 
   /certificates:
-    get: &getCertificatesOperation
+    get:
       tags:
         - Legacy
       summary: Retrieve list of certificates available for signing
@@ -407,14 +407,20 @@ paths:
 
   /api/v1/info:
     get:
-      <<: *getInfoOperation
-      operationId: getInfoV1
       tags:
         - Info
+      summary: Retrieve info and the current server status
+      operationId: getInfo
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Info"
 
   /api/v1/sign:
     post:
-      <<: *legacySignDocumentOperation
       tags:
         - Sign
         - Batch
@@ -504,6 +510,127 @@ paths:
               PNG - CAdES (ASiC_E) with preview 768px:
                 $ref: "#/components/examples/CAdES-ASiC_E-PNG_md"
         required: true
+      responses:
+        200:
+          description: The signed output was successfully created and its content is available in the response body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignResponseBody"
+        204:
+          description: The document was not signed because the user cancelled the signing process.
+        400:
+          description: The request body cannot be processed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_CONFLICT
+                      - BATCH_ENDED
+                      - BATCH_EXPIRED
+                      - BATCH_NOT_STARTED
+                      - EMPTY_BODY
+                      - MALFORMED_INPUT
+                      - ORIGINAL_DOCUMENT_NOT_FOUND
+                    example: MALFORMED_INPUT
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: JsonSyntaxException parsing request body.
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "JsonSyntaxException: Unexpected token END OF FILE at position 0."
+                    description: Optional details.
+        404:
+          description: Batch with the given `batchId` was not found or the batch session has ended.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_NOT_FOUND
+                    example: BATCH_NOT_FOUND
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Invalid BatchId provided
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Batch signing attempt failed. Batch with the given `batchId` was not found or the batch session has ended.
+                    description: More detailed human readable error message.
+        422:
+          description: The request body is valid but the document cannot be signed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - UNPROCESSABLE_INPUT
+                      - UNSUPPORTED_SIGNATURE_LEVEL
+                    example: UNPROCESSABLE_INPUT
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: IllegalArgumentException parsing request body
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Document.MimeType must be PDF when using PAdES.
+                    description: Optional details.
+        500:
+          description: Request failed due to some unexpected error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - INTERNAL_ERROR
+                    example: INTERNAL_ERROR
+                  message:
+                    type: string
+                    example: Unexpected exception signing document
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "java.lang.NullPointerException: null"
+                    description: Optional details.
+        502:
+          description: Request failed due to an error with the signing process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - UNRECOGNIZED_DSS_ERROR
+                      - SIGNING_FAILED
+                    example: UNRECOGNIZED_DSS_ERROR
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Unable to sign document
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "no such algorithm: PKCS11 for provider"
+                    description: Optional details.
 
   /api/v1/content-digest:
     post:
@@ -572,30 +699,221 @@ paths:
 
   /api/v1/batch:
     post:
-      <<: *startBatchOperation
       tags:
         - Batch
       operationId: startBatchV1
+      summary: Start a batch session
       description: |
         Start a batch session, `batchId` is returned.
 
         Batch session is used to sign multiple documents with the same signature.
         The batch session is identified and authorized by the `batchId`, keep it secret.
 
-        After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /api/v1/sign` request body.
-        When you are done signing documents, you can end the batch session using `DELETE /api/v1/batch`.
+        After getting the `batchId`, you can sign documents in batch by adding `batchId` property to `POST /sign` [sign](#/{Batch}/{signDocument}) request body.
+        When you are done signing documents, you can end the batch session using `DELETE /batch`.
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/BatchStartRequestBody"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchStartResponseBody"
+        502:
+          description: Batch canceled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_CANCELED
+                    example: BATCH_CANCELED
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: ""
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "Batch canceled"
+                    description: Optional details.
     delete:
-      <<: *endBatchOperation
       tags:
         - Batch
       operationId: endBatchV1
+      summary: End a batch session
+      description: |
+        End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/BatchEndRequestBody"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchEndResponseBody"
 
   /api/v1/certificates:
     get:
-      <<: *getCertificatesOperation
       tags:
         - Info
       operationId: getCertificatesV1
+      summary: Retrieve list of certificates available for signing
+      parameters:
+        - name: driver
+          in: query
+          description: |
+            Optional list of PKCSs driver names to load certificates from. Examples are `eid`, `gemalto`, `monet`, `ica`, `keystore`, `custom_pkcs11`.
+          required: false
+          schema:
+            type: string
+            example: eid,gemalto
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  certificates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        subject:
+                          type: string
+                          example: "SERIALNUMBER=PNOSK-1234567890, C=SK, L=Bratislava, SURNAME=Smith, GIVENNAME=John, CN=John Smith"
+                          description: Distinguished name of the certificate.
+                        issuedBy:
+                          type: string
+                          example: "CN=SVK eID ACA2, O=Disig a.s., OID.2.5.4.97=NTRSK-12345678, L=Bratislava, C=SK"
+                          description: Distinguished name of the issuer of the certificate.
+        204:
+          description: User cancelled operation
+        403:
+          description: User cancelled the certificate selection dialog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: CERTIFICATES_READING_CONSENT_REJECTED
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Zamietnuté
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Používateľ zamietol žiadosť o prečítanie podpisových certifikátov
+                    description: Optional details.
+        404:
+          description: No certificates or driver found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
+              examples:
+                CERTIFICATES_NOT_FOUND:
+                  summary: No certificates found
+                  value:
+                    code: CERTIFICATES_NOT_FOUND
+                    message: No certificates found
+                    details: "No certificates found."
+                DRIVER_NOT_FOUND:
+                  summary: Driver not found
+                  value:
+                    code: DRIVER_NOT_FOUND
+                    message: Nenašli sa žiadne známe ovládače
+                    details: Ak používate občiansky preukaz, tak je potrebné mať nainštalováný eID klient. Inštalačné balíky nájdete na www.slovensko.sk\n\nV prípade použitia iných kariet je potrebné mať nainštalovaný obslužný ovládač od ich výrobcu.\n\nNainštalujte obslužný softvér a skúste znova.
+        500:
+          description: Request failed due to some unexpected error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_ERROR
+                      - INTERNAL_ERROR
+                    description: Code that can be used to identify the error. Possibly INTERNAL_ERROR or INITIALIZATION_FAILED (probably card not connected to the computer).
+                  message:
+                    type: string
+                    example: Unexpected exception signing document
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "java.lang.NullPointerException: null"
+                    description: Optional details.
+              examples:
+                INITIALIZATION_FAILED:
+                  summary: Initialization failed
+                  value:
+                    code: INITIALIZATION_FAILED
+                    message: Nepodarilo sa prečítať kartu
+                    details: Pravdepodobne nemáte zapojenú čítačku alebo vloženú kartu do čítačky.\n\nSkontrolujte, či máte všetko správne zapojené a skúste znova.
+                INTERNAL_ERROR:
+                  summary: Internal error
+                  value:
+                    code: INTERNAL_ERROR
+                    message: Unexpected exception signing document
+                    details: "java.lang.NullPointerException: null"
+                PIN_INCORRECT:
+                  summary: Incorrect PIN
+                  value:
+                    code: PIN_INCORRECT
+                    message: Zadali ste nesprávny bezpečnostný kód"
+                    details: Pravdepodobne ste spravili chybu pri zadávaní bezpečnostného kódu.\n\nUistite sa, že zadávate správny bezpečnostný kód a skúste znova.
+                FUNCTION_CANCELLED:
+                  summary: PIN cancelled
+                  value:
+                    code: FUNCTION_CANCELLED
+                    message: Nezadali ste bezpečnostný kód
+                    details: Pravdepodobne ste len zavreli okno na zadanie bezpečnostného kódu. Skúste znova.
+        502:
+          description: Request failed due to an error with the certificates loading process.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: UNRECOGNIZED_DSS_ERROR
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Unable to sign document
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: "no such algorithm: PKCS11 for provider"
+                    description: Optional details.
 
 
 components:

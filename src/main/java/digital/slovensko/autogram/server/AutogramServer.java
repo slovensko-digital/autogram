@@ -52,6 +52,8 @@ public class AutogramServer {
         // Sign
         server.createContext("/sign", new SignEndpoint(autogram)).getFilters()
                 .add(new AutogramCorsFilter("POST"));
+        server.createContext("/api/v1/sign", new VersionedSignEndpoint(autogram)).getFilters()
+            .add(new AutogramCorsFilter("POST"));
 
         // Batch
         server.createContext("/batch", new BatchEndpoint(autogram)).getFilters()

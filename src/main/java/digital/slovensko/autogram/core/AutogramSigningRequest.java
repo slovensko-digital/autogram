@@ -27,11 +27,19 @@ public class AutogramSigningRequest {
         return documents;
     }
 
+    public AutogramDocument getFirstDocument() {
+        return documents.get(0);
+    }
+
     public AutogramDocument getSingleDocument() {
         if (documents.size() != 1)
             throw new IllegalStateException("This signing request contains multiple documents");
 
         return documents.get(0);
+    }
+
+    public int getDocumentCount() {
+        return documents.size();
     }
 
     public boolean isMultiDocument() {

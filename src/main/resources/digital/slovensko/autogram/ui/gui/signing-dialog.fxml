@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
@@ -14,8 +15,8 @@
       xmlns:fx="http://javafx.com/fxml"
       minHeight="400"
       maxHeight="800"
-      minWidth="768"
-      prefWidth="768"
+      minWidth="680"
+      prefWidth="680"
       fx:id="mainBox">
 
     <VBox>
@@ -23,46 +24,53 @@
             <Text fx:id="headerText" styleClass="autogram-heading-m" />
         </TextFlow>
 
-        <!-- HTML visualization -->
-        <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
-            <WebView fx:id="webView" focusTraversable="false" VBox.vgrow="ALWAYS" />
-        </VBox>
+        <TabPane fx:id="documentTabPane" managed="false" visible="false" tabClosingPolicy="UNAVAILABLE"
+            styleClass="autogram-visualization-tab-pane" />
 
-        <!-- PDF visualization -->
-        <ScrollPane styleClass="autogram-visualizer-pdf" fx:id="pdfVisualizationContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
-            <VBox fx:id="pdfVisualizationBox" VBox.vgrow="ALWAYS" />
-        </ScrollPane>
+        <VBox fx:id="singleDocumentVisualizationContainer" VBox.vgrow="ALWAYS">
+            <VBox fx:id="visualizationHost" VBox.vgrow="ALWAYS">
+                <!-- HTML visualization -->
+                <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
+                    <WebView fx:id="webView" focusTraversable="false" VBox.vgrow="ALWAYS" />
+                </VBox>
 
-        <!-- Plaintext visualization -->
-        <TextArea fx:id="plainTextArea" styleClass="autogram-visualizer-plaintext" managed="false"
-            visible="false"
-            editable="false" focusTraversable="false" VBox.vgrow="ALWAYS" />
+                <!-- PDF visualization -->
+                <ScrollPane styleClass="autogram-visualizer-pdf" fx:id="pdfVisualizationContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="pdfVisualizationBox" VBox.vgrow="ALWAYS" />
+                </ScrollPane>
 
-        <!-- Image visualization -->
-        <ScrollPane fx:id="imageVisualizationContainer" managed="false" visible="false"
-            VBox.vgrow="ALWAYS">
-            <VBox styleClass="autogram-visualizer-image" VBox.vgrow="ALWAYS">
-                <ImageView fx:id="imageVisualization" />
-            </VBox>
-        </ScrollPane>
+                <!-- Plaintext visualization -->
+                <TextArea fx:id="plainTextArea" styleClass="autogram-visualizer-plaintext" managed="false"
+                    visible="false"
+                    editable="false" focusTraversable="false" VBox.vgrow="ALWAYS" />
 
-        <!-- Unsupported visualization -->
-        <VBox fx:id="unsupportedVisualizationInfoBox" styleClass="autogram-unsupported-visualization"
-            managed="false" visible="false" VBox.vgrow="ALWAYS">
-            <VBox alignment="CENTER">
-                <SVGPath styleClass="autogram-icon,autogram-icon--big,autogram-icon--warning"
-                    content="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                <TextFlow styleClass="autogram-error-summary__error" textAlignment="CENTER">
-                    <Text styleClass="autogram-error-message" text="%signing.unsupportedVisualization.title" />
-                </TextFlow>
-            </VBox>
-            <VBox>
-                <TextFlow>
-                    <Text styleClass="autogram-body" text="%signing.unsupportedVisualization.text" />
-                </TextFlow>
-                <TextFlow>
-                    <Text styleClass="autogram-body,autogram-font-weight-bold" text="%signing.unsupportedVisualization.warning.text"/>
-                </TextFlow>
+                <!-- Image visualization -->
+                <ScrollPane fx:id="imageVisualizationContainer" managed="false" visible="false"
+                    VBox.vgrow="ALWAYS">
+                    <VBox styleClass="autogram-visualizer-image" VBox.vgrow="ALWAYS">
+                        <ImageView fx:id="imageVisualization" />
+                    </VBox>
+                </ScrollPane>
+
+                <!-- Unsupported visualization -->
+                <VBox fx:id="unsupportedVisualizationInfoBox" styleClass="autogram-unsupported-visualization"
+                    managed="false" visible="false" VBox.vgrow="ALWAYS">
+                    <VBox alignment="CENTER">
+                        <SVGPath styleClass="autogram-icon,autogram-icon--big,autogram-icon--warning"
+                            content="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+                        <TextFlow styleClass="autogram-error-summary__error" textAlignment="CENTER">
+                            <Text styleClass="autogram-error-message" text="%signing.unsupportedVisualization.title" />
+                        </TextFlow>
+                    </VBox>
+                    <VBox>
+                        <TextFlow>
+                            <Text styleClass="autogram-body" text="%signing.unsupportedVisualization.text" />
+                        </TextFlow>
+                        <TextFlow>
+                            <Text styleClass="autogram-body,autogram-font-weight-bold" text="%signing.unsupportedVisualization.warning.text"/>
+                        </TextFlow>
+                    </VBox>
+                </VBox>
             </VBox>
         </VBox>
     </VBox>

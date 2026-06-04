@@ -82,7 +82,7 @@ public class SigningParameters {
 
         var extractedDocument = document;
         if (AutogramMimeType.isAsice(document.getMimeType()))
-            extractedDocument = AsicContainerUtils.getOriginalDocument(document);
+            extractedDocument = AsicContainerUtils.getOriginalDocuments(document).get(0);
 
         if (AutogramMimeType.isXML(extractedDocument.getMimeType()) && XDCValidator.isXDCContent(extractedDocument))
             extractedDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER);
@@ -270,7 +270,7 @@ public class SigningParameters {
     }
 
     public String getXsltDestinationType() {
-        return eFormAttributes.xsltParams().destinationType();
+        return eFormAttributes.xsltParams() != null ? eFormAttributes.xsltParams().destinationType() : null;
     }
 
     public String getXsdIdentifier() {

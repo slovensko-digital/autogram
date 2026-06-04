@@ -16,7 +16,9 @@ public class AssetsEndpoint implements HttpHandler {
     static  {
         assets = List.of(
                 "swagger-ui-bundle-v5.11.0.js",
-                "swagger-ui-v5.11.0.css"
+                "swagger-ui-v5.11.0.css",
+                "swagger-ui-bundle-v5.32.6.js",
+                "swagger-ui-v5.32.6.css"
         );
     }
 

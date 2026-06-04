@@ -8,8 +8,8 @@
 <?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      maxHeight="800"
-      prefWidth="768"
+      maxHeight="680"
+      prefWidth="580"
       fx:id="mainBox">
 
     <TextFlow><Text styleClass="autogram-heading-m" text="%signature.present.summary.title"/></TextFlow>

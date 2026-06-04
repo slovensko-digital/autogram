@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
-import eu.europa.esig.dss.validation.reports.Reports;
+import digital.slovensko.autogram.core.ValidationReports;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -11,7 +11,7 @@ import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatu
 
 public class SignaturesInvalidDialogController extends BaseController implements SuppressedFocusController {
     private final SigningDialogController signingDialogController;
-    private final Reports reports;
+    private final ValidationReports reports;
 
     @FXML
     Button cancelButton;
@@ -22,7 +22,7 @@ public class SignaturesInvalidDialogController extends BaseController implements
     @FXML
     VBox signaturesTable;
 
-    public SignaturesInvalidDialogController(SigningDialogController controller, Reports reports) {
+    public SignaturesInvalidDialogController(SigningDialogController controller, ValidationReports reports) {
         this.signingDialogController = controller;
         this.reports = reports;
     }

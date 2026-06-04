@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.SigningJob;
@@ -20,6 +21,8 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.AsicContainerUtils;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -325,21 +328,27 @@ public class GUI implements UI {
     @Override
     public void onSignatureValidationCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureValidationCompleted(reports.getReports());
+        controller.onSignatureValidationCompleted(reports);
     }
 
     @Override
     public void onSignatureCheckCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureCheckCompleted(reports.haveSignatures() ? reports.getReports() : null);
+        controller.onSignatureCheckCompleted(reports);
     }
 
     public void showVisualization(Visualization visualization, Autogram autogram) {
-        var title = SupportedLanguage.loadResources(userSettings).getString("general.document");
-        if (visualization.getJob().getDocument().getName() != null)
+        var resources = SupportedLanguage.loadResources(userSettings);
+        var documents = getVisualizationDocuments(visualization);
+        var title = resources.getString(documents.size() > 1 ? "general.documents" : "general.document");
+        if (documents.size() > 1) {
+            title += " (" + documents.size() + ")";
+        } else if (visualization.getJob().getDocument().getName() != null) {
             title += " " + visualization.getJob().getDocument().getName();
+        }
 
-        var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
+        var controller = new SigningDialogController(visualization, autogram, this, title, userSettings,
+            userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);
 
         Parent root;
@@ -366,6 +375,25 @@ public class GUI implements UI {
 
         onWorkThreadDo(()
                 -> autogram.checkAndValidateSignatures(visualization.getJob()));
+    }
+
+    private List<DSSDocument> getVisualizationDocuments(Visualization visualization) {
+        var jobDocuments = visualization.getJob().getDocuments();
+        if (jobDocuments.size() > 1)
+            return jobDocuments;
+
+        if (!AutogramMimeType.isAsice(visualization.getJob().getDocument().getMimeType()))
+            return jobDocuments;
+
+        try {
+            var originalDocuments = AsicContainerUtils.getOriginalDocuments(visualization.getJob().getDocument());
+            if (originalDocuments.size() > 1)
+                return originalDocuments;
+        } catch (Exception e) {
+            // Fall back to the original job documents when the input is not a signed ASiC container.
+        }
+
+        return jobDocuments;
     }
 
     @Override
