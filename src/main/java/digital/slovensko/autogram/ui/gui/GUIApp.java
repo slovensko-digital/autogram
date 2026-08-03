@@ -12,6 +12,8 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,6 +21,12 @@ import java.util.concurrent.ScheduledExecutorService;
 public class GUIApp extends Application {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
     private final ExecutorService cachedExecutorService = Executors.newFixedThreadPool(8);
+
+    private static List<String> filesToOpen;
+
+    public static void setFilesToOpen(List<String> files) {
+        filesToOpen = files;
+    }
 
     @Override
     public void start(Stage windowStage) throws Exception {
@@ -77,6 +85,11 @@ public class GUIApp extends Application {
             windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml")));
             windowStage.setResizable(false);
             windowStage.show();
+
+            if (filesToOpen != null && !filesToOpen.isEmpty()) {
+                var files = filesToOpen.stream().map(File::new).toList();
+                Platform.runLater(() -> controller.onFilesSelected(files));
+            }
 
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu

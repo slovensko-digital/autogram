@@ -5,7 +5,9 @@ import digital.slovensko.autogram.ui.gui.GUIApp;
 import javafx.application.Application;
 import org.apache.commons.cli.*;
 
+import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 public class AppStarter {
     private static final Options options = new Options().
@@ -32,7 +34,8 @@ public class AppStarter {
 
     public static void start(String[] args) {
         try {
-            CommandLine cmd = new DefaultParser().parse(options, args);
+            var resolvedArgs = resolveArgs(args);
+            CommandLine cmd = new DefaultParser().parse(options, resolvedArgs);
 
             if (cmd.hasOption("h")) {
                 printHelp();
@@ -41,12 +44,35 @@ public class AppStarter {
             } else if (cmd.hasOption("c")) {
                 CliApp.start(cmd);
             } else {
-                Application.launch(GUIApp.class, args);
+                Application.launch(GUIApp.class, resolvedArgs);
             }
         } catch (ParseException e) {
             System.err.println("Unable to parse program args");
             System.err.println(e);
         }
+    }
+
+    static String[] resolveArgs(String[] args) {
+        var filesToOpen = new ArrayList<String>();
+        var resolved = new ArrayList<String>();
+
+        for (var arg : args) {
+            if (arg.startsWith("autogram://")) {
+                resolved.add("--url=" + arg);
+            } else if (arg.startsWith("file://")) {
+                filesToOpen.add(arg.substring(7));
+            } else if (new File(arg).isFile()) {
+                filesToOpen.add(arg);
+            } else {
+                resolved.add(arg);
+            }
+        }
+
+        if (!filesToOpen.isEmpty()) {
+            GUIApp.setFilesToOpen(filesToOpen);
+        }
+
+        return resolved.toArray(new String[0]);
     }
 
     public static void printHelp() {
