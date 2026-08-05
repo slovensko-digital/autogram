@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Autogram
 Comment=APPLICATION_DESCRIPTION
-Exec=APPLICATION_LAUNCHER %u
+Exec=APPLICATION_LAUNCHER %U
 Icon=APPLICATION_ICON
 StartupWMClass=digital.slovensko.autogram.ui.gui.GUIApp
 Terminal=false
