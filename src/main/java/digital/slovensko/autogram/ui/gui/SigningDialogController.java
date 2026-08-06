@@ -25,6 +25,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
@@ -41,11 +42,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatureTableRows;
-import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createWarningText;
-
 public class SigningDialogController extends BaseController implements SuppressedFocusController, Visualizer {
     private static final double DEFAULT_TAB_HEADER_HEIGHT = 36;
+    private static final int MAX_DOCUMENT_TAB_TITLE_LENGTH = 20;
 
     private final GUI gui;
     private final Autogram autogram;
@@ -92,6 +91,12 @@ public class SigningDialogController extends BaseController implements Suppresse
     @FXML
     VBox signaturesTable;
     @FXML
+    WebView signaturesSummaryWebView;
+    @FXML
+    Text signaturesSummaryTitle;
+    @FXML
+    Button showSignaturesButton;
+    @FXML
     Text headerText;
 
     public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui, String title,
@@ -117,6 +122,13 @@ public class SigningDialogController extends BaseController implements Suppresse
         plainTextArea.setMinHeight(0);
         signaturesTable.setManaged(false);
         signaturesTable.setVisible(false);
+        signaturesSummaryWebView.setContextMenuEnabled(false);
+        signaturesSummaryWebView.getEngine().setJavaScriptEnabled(true);
+        signaturesSummaryWebView.getEngine().getLoadWorker().stateProperty().addListener((observable, oldState,
+                newState) -> {
+            if (newState == Worker.State.SUCCEEDED)
+                Platform.runLater(this::resizeSignaturesSummaryWebView);
+        });
         previewDocuments = resolvePreviewDocuments();
         documentTabPane.sceneProperty().addListener((observable, oldScene, newScene) -> {
             if (newScene == null)
@@ -140,11 +152,8 @@ public class SigningDialogController extends BaseController implements Suppresse
         documentTabPane.setVisible(true);
 
         documentTabPane.getTabs().clear();
-        for (int i = 0; i < documents.size(); i++) {
-            var tab = new Tab(getDisplayDocumentName(documents.get(i), i + 1));
-            tab.setClosable(false);
-            documentTabPane.getTabs().add(tab);
-        }
+        for (int i = 0; i < documents.size(); i++)
+            documentTabPane.getTabs().add(createDocumentTab(documents.get(i), i + 1));
 
         documentTabPane.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null || newValue.intValue() < 0)
@@ -269,6 +278,31 @@ public class SigningDialogController extends BaseController implements Suppresse
             return name;
 
         return i18n("signing.multiDocument.unnamedDocument", index);
+    }
+
+    private Tab createDocumentTab(DSSDocument document, int index) {
+        var fullName = getDisplayDocumentName(document, index);
+        var tab = new Tab(abbreviateMiddle(fullName, MAX_DOCUMENT_TAB_TITLE_LENGTH));
+        tab.setClosable(false);
+        tab.setTooltip(new Tooltip(fullName));
+        return tab;
+    }
+
+    private static String abbreviateMiddle(String text, int maxLength) {
+        if (text.length() <= maxLength)
+            return text;
+
+        var extensionIndex = text.lastIndexOf('.');
+        var extension = extensionIndex > 0 && text.length() - extensionIndex <= 8 ? text.substring(extensionIndex) : "";
+        var baseName = extension.isEmpty() ? text : text.substring(0, extensionIndex);
+        var available = maxLength - extension.length() - 3;
+        if (available <= 4)
+            return text.substring(0, Math.max(0, maxLength - 3)) + "...";
+
+        var prefixLength = (available + 1) / 2;
+        var suffixLength = available / 2;
+        var suffixStart = Math.max(prefixLength, baseName.length() - suffixLength);
+        return baseName.substring(0, prefixLength) + "..." + baseName.substring(suffixStart) + extension;
     }
 
     public void onMainButtonPressed(ActionEvent event) {
@@ -405,14 +439,21 @@ public class SigningDialogController extends BaseController implements Suppresse
 
         signaturesTable.setManaged(true);
         signaturesTable.setVisible(true);
-        signaturesTable.getChildren().clear();
+        signaturesSummaryTitle.setText(i18n(
+            reports.shouldShowDocumentContext() ? "signature.table.title.documents" : "signature.table.title"));
+        signaturesSummaryTitle.setManaged(true);
+        signaturesSummaryTitle.setVisible(true);
 
-        if (!areTLsLoaded)
-            signaturesTable.getChildren().add(
-                    createWarningText(i18n("signing.tlsLoading.error")));
+        var summaryDocument = SignatureHtmlRenderer.buildSummaryDocument(resources, reports, isValidated, areTLsLoaded,
+            3);
+        signaturesSummaryWebView.getEngine().loadContent(summaryDocument.html(), "text/html");
+        signaturesSummaryWebView.setManaged(true);
+        signaturesSummaryWebView.setVisible(true);
 
-        signaturesTable.getChildren().add(
-                createSignatureTableRows(resources, reports, isValidated, e -> onShowSignaturesButtonPressed(null), 3));
+        showSignaturesButton.setText(
+            i18n(summaryDocument.truncated() ? "signature.table.more.btn" : "signature.table.show.btn"));
+        showSignaturesButton.setManaged(true);
+        showSignaturesButton.setVisible(true);
 
         var stage = (Stage) mainButton.getScene().getWindow();
         stage.sizeToScene();
@@ -421,6 +462,20 @@ public class SigningDialogController extends BaseController implements Suppresse
         signaturesTable.setManaged(true);
         signaturesTable.setVisible(true);
         stage.sizeToScene();
+    }
+
+    private void resizeSignaturesSummaryWebView() {
+        try {
+            var contentHeight = signaturesSummaryWebView.getEngine()
+                    .executeScript("Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)");
+            if (contentHeight instanceof Number number) {
+            signaturesSummaryWebView.setPrefHeight(Math.max(42, Math.min(180, number.doubleValue() + 6)));
+                if (mainButton.getScene() != null && mainButton.getScene().getWindow() instanceof Stage stage)
+                    stage.sizeToScene();
+            }
+        } catch (Exception ignored) {
+            // Keep the default WebView height if the document is not measurable yet.
+        }
     }
 
     public void refreshSigningKey() {

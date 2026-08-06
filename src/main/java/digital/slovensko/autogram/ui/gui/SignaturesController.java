@@ -9,10 +9,9 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
-import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatureBox;
 
 public class SignaturesController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
@@ -29,7 +28,7 @@ public class SignaturesController extends BaseController implements SuppressedFo
     @FXML
     VBox mainBox;
     @FXML
-    VBox signaturesBox;
+    WebView signaturesWebView;
     @FXML
     Button closeButton;
 
@@ -40,6 +39,8 @@ public class SignaturesController extends BaseController implements SuppressedFo
 
     @Override
     public void initialize() {
+        signaturesWebView.setContextMenuEnabled(false);
+        signaturesWebView.getEngine().setJavaScriptEnabled(false);
         renderSignatures();
     }
 
@@ -88,18 +89,15 @@ public class SignaturesController extends BaseController implements SuppressedFo
     }
 
     public void renderSignatures(ValidationReports reports, boolean isValidated) {
-        signaturesBox.getChildren().clear();
-        if (!reports.haveSignatures())
+        if (!reports.haveSignatures()) {
+            signaturesWebView.getEngine().loadContent(SignatureHtmlRenderer.emptyDocument(), "text/html");
             return;
-
-        for (var documentReport : reports.getDocumentReports()) {
-            for (var signatureId : documentReport.reports().getDiagnosticData().getSignatureIdList()) {
-                signaturesBox.getChildren().add(createSignatureBox(resources, documentReport, reports.isMultiDocumentJob(),
-                        isValidated, signatureId, e -> {
-                            getNodeForLoosingFocus().requestFocus();
-                        }, isValidated && SignatureValidator.getInstance().areTLsLoaded()));
-            }
         }
+
+        signaturesWebView.getEngine().loadContent(
+                SignatureHtmlRenderer.buildPresentDocument(resources, reports, isValidated,
+                        isValidated && SignatureValidator.getInstance().areTLsLoaded()),
+                "text/html");
     }
 
     private String buildSignatureValidationReportsHTML(ValidationReports reports) {

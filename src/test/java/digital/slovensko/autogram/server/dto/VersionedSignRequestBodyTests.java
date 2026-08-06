@@ -2,8 +2,12 @@ package digital.slovensko.autogram.server.dto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.util.Base64;
 
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +15,7 @@ import com.google.gson.Gson;
 
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.ui.SupportedLanguage;
+import eu.europa.esig.dss.enumerations.SignerTextPosition;
 
 public class VersionedSignRequestBodyTests {
     private final Gson gson = new Gson();
@@ -67,6 +72,72 @@ public class VersionedSignRequestBodyTests {
         assertFalse(request.isMultiDocument());
         assertEquals(1, request.getDocumentCount());
         assertEquals("only.txt", request.getSingleDocument().getName());
+    }
+
+    @Test
+    void buildsSinglePadesSigningRequestWithVisibleSignature() throws IOException {
+        var samplePdf = Base64.getEncoder().encodeToString(
+                getClass().getResourceAsStream("../../sample.pdf").readAllBytes());
+
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "filename": "sample.pdf",
+                    "content": "%s",
+                    "mimeType": "application/pdf;base64",
+                    "visibleSignature": {
+                      "fieldId": "signature-field-123",
+                      "text": "John Smith",
+                      "image": {
+                        "filename": "signature.png",
+                        "content": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wn0lKsAAAAASUVORK5CYII=",
+                        "mimeType": "image/png;base64"
+                      }
+                    }
+                  },
+                  "parameters": {
+                    "format": "PAdES"
+                  }
+                }
+                """.formatted(samplePdf), VersionedSignRequestBody.class);
+
+        var request = body.getSigningRequest(null, true);
+        var imageParameters = request.getParameters().getPAdESSignatureParameters().getImageParameters();
+
+        assertNotNull(imageParameters);
+        assertEquals("signature-field-123", imageParameters.getFieldParameters().getFieldId());
+        assertEquals("John Smith", imageParameters.getTextParameters().getText());
+        assertEquals(SignerTextPosition.BOTTOM, imageParameters.getTextParameters().getSignerTextPosition());
+        assertNotNull(imageParameters.getImage());
+    }
+
+    @Test
+    void rejectsVisibleSignatureForNonPadesRequest() throws IOException {
+        var samplePdf = Base64.getEncoder().encodeToString(
+                getClass().getResourceAsStream("../../sample.pdf").readAllBytes());
+
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "filename": "sample.pdf",
+                    "content": "%s",
+                    "mimeType": "application/pdf;base64",
+                    "visibleSignature": {
+                      "fieldId": "signature-field-123",
+                      "text": "John Smith"
+                    }
+                  },
+                  "parameters": {
+                    "format": "XAdES",
+                    "container": "ASiC_E"
+                  }
+                }
+                """.formatted(samplePdf), VersionedSignRequestBody.class);
+
+        var exception = assertThrows(RequestValidationException.class, () -> body.getSigningRequest(null, true));
+
+        assertEquals("Visible signature is supported only for single-document PAdES signing",
+                exception.getSubheading(SupportedLanguage.ENGLISH.loadResources()));
     }
 
     @Test

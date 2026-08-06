@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.util;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
+import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import eu.europa.esig.dss.asic.xades.extract.ASiCWithXAdESContainerExtractor;
@@ -48,6 +49,9 @@ public class AsicContainerUtils {
         for (var originalDocument : originalDocuments) {
             if (isXML(originalDocument.getMimeType()) || MimeTypeEnum.BINARY.equals(originalDocument.getMimeType()))
                 setMimeTypeFromManifest(asice, originalDocument);
+
+            if (MimeTypeEnum.BINARY.getMimeTypeString().equals(originalDocument.getMimeType().getMimeTypeString()) && XDCValidator.isXDCContent(originalDocument))
+                originalDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
         }
 
         return originalDocuments;

@@ -18,8 +18,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SigningParametersTests {

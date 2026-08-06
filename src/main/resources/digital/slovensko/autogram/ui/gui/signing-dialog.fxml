@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
@@ -15,11 +17,12 @@
       xmlns:fx="http://javafx.com/fxml"
       minHeight="400"
       maxHeight="800"
+            prefHeight="760"
       minWidth="680"
       prefWidth="680"
       fx:id="mainBox">
 
-    <VBox>
+        <VBox minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
         <TextFlow styleClass="autogram-visualization-header">
             <Text fx:id="headerText" styleClass="autogram-heading-m" />
         </TextFlow>
@@ -27,15 +30,15 @@
         <TabPane fx:id="documentTabPane" managed="false" visible="false" tabClosingPolicy="UNAVAILABLE"
             styleClass="autogram-visualization-tab-pane" />
 
-        <VBox fx:id="singleDocumentVisualizationContainer" VBox.vgrow="ALWAYS">
-            <VBox fx:id="visualizationHost" VBox.vgrow="ALWAYS">
+        <VBox fx:id="singleDocumentVisualizationContainer" minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
+            <VBox fx:id="visualizationHost" minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
                 <!-- HTML visualization -->
-                <VBox fx:id="webViewContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
+                <VBox fx:id="webViewContainer" minHeight="0" prefHeight="0" managed="false" visible="false" VBox.vgrow="ALWAYS">
                     <WebView fx:id="webView" focusTraversable="false" VBox.vgrow="ALWAYS" />
                 </VBox>
 
                 <!-- PDF visualization -->
-                <ScrollPane styleClass="autogram-visualizer-pdf" fx:id="pdfVisualizationContainer" managed="false" visible="false" VBox.vgrow="ALWAYS">
+                <ScrollPane styleClass="autogram-visualizer-pdf" fx:id="pdfVisualizationContainer" minHeight="0" prefHeight="0" managed="false" visible="false" VBox.vgrow="ALWAYS">
                     <VBox fx:id="pdfVisualizationBox" VBox.vgrow="ALWAYS" />
                 </ScrollPane>
 
@@ -45,7 +48,7 @@
                     editable="false" focusTraversable="false" VBox.vgrow="ALWAYS" />
 
                 <!-- Image visualization -->
-                <ScrollPane fx:id="imageVisualizationContainer" managed="false" visible="false"
+                <ScrollPane fx:id="imageVisualizationContainer" minHeight="0" prefHeight="0" managed="false" visible="false"
                     VBox.vgrow="ALWAYS">
                     <VBox styleClass="autogram-visualizer-image" VBox.vgrow="ALWAYS">
                         <ImageView fx:id="imageVisualization" />
@@ -54,7 +57,7 @@
 
                 <!-- Unsupported visualization -->
                 <VBox fx:id="unsupportedVisualizationInfoBox" styleClass="autogram-unsupported-visualization"
-                    managed="false" visible="false" VBox.vgrow="ALWAYS">
+                    minHeight="0" prefHeight="0" managed="false" visible="false" VBox.vgrow="ALWAYS">
                     <VBox alignment="CENTER">
                         <SVGPath styleClass="autogram-icon,autogram-icon--big,autogram-icon--warning"
                             content="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
@@ -76,7 +79,17 @@
     </VBox>
 
 
-    <VBox fx:id="signaturesTable" />
+    <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table" spacing="2">
+        <GridPane hgap="0">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="45" />
+                <ColumnConstraints percentWidth="55" />
+            </columnConstraints>
+            <Text fx:id="signaturesSummaryTitle" styleClass="autogram-heading-s" managed="false" visible="false" GridPane.columnIndex="0" />
+            <Button fx:id="showSignaturesButton" styleClass="autogram-link" managed="false" visible="false" text="%signature.table.show.btn" onAction="#onShowSignaturesButtonPressed" GridPane.columnIndex="1" />
+        </GridPane>
+        <WebView fx:id="signaturesSummaryWebView" focusTraversable="false" managed="false" visible="false" prefHeight="56" />
+    </VBox>
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button" text="%general.sign.btn" onAction="#onMainButtonPressed"/>

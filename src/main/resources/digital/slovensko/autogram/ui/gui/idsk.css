@@ -640,8 +640,17 @@ TextFlow.autogram-body-s {
   -fx-padding: 0;
 }
 
+.autogram-visualization-tab-pane {
+  -fx-tab-min-width: 6em;
+  -fx-tab-max-width: 30em;
+}
+
 .autogram-visualization-tab-pane > .tab-header-area {
   -fx-padding: 0 0 0 0;
+}
+
+.autogram-visualization-tab-pane .tab-label {
+  -fx-text-overrun: center-ellipsis;
 }
 
 .autogram-visualization-tab-pane .tab:selected {
@@ -849,6 +858,7 @@ TextFlow.autogram-body-s {
 
 .autogram-table-cell > HBox {
   -fx-padding: 0.25em 0;
+  -fx-fill-height: false;
 }
 
 .autogram-table-cell--last {
@@ -856,11 +866,12 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-table-cell--left {
-  -fx-pref-width: 15em;
+  -fx-min-width: 13em;
+  -fx-pref-width: 13em;
 }
 
 .autogram-table-cell--right {
-  -fx-pref-width: 15em;
+  -fx-min-width: 0;
 }
 
 .autogram-table-header {
@@ -883,7 +894,7 @@ TextFlow.autogram-body-s {
 .autogram-signatures-table {
 }
 
-.autogram-signatures-table > HBox {
+.autogram-signatures-table > GridPane > HBox {
   -fx-border-style: hidden hidden solid hidden;
   -fx-border-width: 1px;
   -fx-border-color: -autogram-border-colour;
@@ -894,7 +905,7 @@ TextFlow.autogram-body-s {
   -fx-font-size: 1em;
 }
 
-.autogram-signatures-table > TextFlow {
+.autogram-signatures-table > GridPane > TextFlow {
   -fx-border-style: hidden hidden solid hidden;
   -fx-border-width: 1px;
   -fx-border-color: -autogram-border-colour;
@@ -911,6 +922,12 @@ TextFlow.autogram-body-s {
 
 .autogram-signatures-table .column-header .autogram-link {
   -fx-font-weight: normal;
+}
+
+.autogram-signature-badges {
+  -fx-spacing: 8;
+  -fx-alignment: center-left;
+  -fx-fill-height: false;
 }
 
 
@@ -996,7 +1013,6 @@ TextFlow.autogram-body-s {
 
 .autogram-tag {
   -fx-padding: 0.25em;
-  -fx-max-height: 1.5em;
 }
 
 .autogram-tag Text {
@@ -1183,7 +1199,25 @@ TextFlow.autogram-body-s {
 .autogram-summary-header__badge {
   -fx-padding: 0.925em 1.25em;
 }
+.autogram-signature-box > HBox > TextFlow {
+  -fx-padding: 1em 0.75em;
+  -fx-pref-width: 13em;
+}
 
+.autogram-signature-box > HBox > TextFlow > Text {
+  -fx-text-fill: -autogram-text-colour;
+  -fx-fill: -autogram-text-colour;
+
+  -fx-font-size: 1em;
+  -fx-font-weight: bold;
+
+  -fx-padding: 0 0 0 15px;
+}
+
+.autogram-signature-box > HBox > VBox {
+  -fx-padding: 0.925em 1.25em;
+  -fx-spacing: 8;
+}
 .autogram-body-details {
   -fx-text-fill: -autogram-text-colour;
   -fx-fill: -autogram-text-colour;
@@ -1217,7 +1251,7 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-timestamps-box {
-  -fx-max-width: 320px;
+  -fx-max-width: 308px;
 }
 
 .autogram-timestamps-box > VBox > TextFlow > Button > TextFlow > Polygon {

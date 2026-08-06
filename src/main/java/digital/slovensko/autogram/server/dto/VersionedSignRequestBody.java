@@ -2,9 +2,11 @@ package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.AutogramDocument;
 import digital.slovensko.autogram.core.AutogramSigningRequest;
+import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -19,6 +21,7 @@ import static digital.slovensko.autogram.server.errors.MalformedBodyException.Er
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_BATCH_UNSUPPORTED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_NESTED_ASICE_UNSUPPORTED;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.VISIBLE_SIGNATURE_UNSUPPORTED;
 
 public class VersionedSignRequestBody {
     private Document document;
@@ -64,7 +67,11 @@ public class VersionedSignRequestBody {
 
         finalSigningParameters.validate(preparedDocuments.get(0).getMimeType());
 
-        return AutogramSigningRequest.of(preparedDocuments, finalSigningParameters.getSigningParameters(false, preparedDocuments.get(0).toDssDocument(), tspSource, plainXmlEnabled));
+        var coreSigningParameters = finalSigningParameters.getSigningParameters(false,
+            preparedDocuments.get(0).toDssDocument(), tspSource, plainXmlEnabled);
+        applyVisibleSignature(coreSigningParameters, submittedDocuments, isMultiDocument);
+
+        return AutogramSigningRequest.of(preparedDocuments, coreSigningParameters);
     }
 
     public String getBatchId() {
@@ -93,9 +100,30 @@ public class VersionedSignRequestBody {
         if (document.getMimeType() == null)
             throw new RequestValidationException(MISSING_FIELD, documentLabel + ".MimeType");
 
+        if (document.getVisibleSignature() != null)
+            document.getVisibleSignature().validate(documentLabel + ".VisibleSignature");
+
     if (isMultiDocument && MimeTypeEnum.ASICE.equals(getMimeType(document)))
         throw new RequestValidationException(MULTI_DOCUMENT_NESTED_ASICE_UNSUPPORTED,
             documentLabel + ".MimeType");
+    }
+
+    private void applyVisibleSignature(SigningParameters signingParameters, List<Document> submittedDocuments,
+            boolean isMultiDocument) {
+        if (isMultiDocument || submittedDocuments.isEmpty()) {
+            if (submittedDocuments.stream().anyMatch(document -> document.getVisibleSignature() != null))
+                throw new RequestValidationException(VISIBLE_SIGNATURE_UNSUPPORTED);
+            return;
+        }
+
+        var visibleSignature = submittedDocuments.get(0).getVisibleSignature();
+        if (visibleSignature == null)
+            return;
+
+        if (signingParameters.getSignatureType() != SignatureForm.PAdES)
+            throw new RequestValidationException(VISIBLE_SIGNATURE_UNSUPPORTED);
+
+        signingParameters.setPadesVisibleSignatureParameters(visibleSignature.toDssParameters());
     }
 
     private InMemoryDocument buildRequestDocument(Document document) {
