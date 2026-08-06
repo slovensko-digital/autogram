@@ -1,0 +1,124 @@
+name: MacOS ARM Packaging
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        options:
+          - "dev-build"
+      version:
+        required: true
+        type: choice
+        options:
+          - "1.0.0"
+
+jobs:
+  package:
+    environment: ${{ inputs.environment }}
+    runs-on: macos-26
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VERSION: ${{ inputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update version in pom
+        run: ./mvnw versions:set -DnewVersion=${VERSION}
+        shell: bash
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "25.0.4+9"
+          distribution: "liberica"
+          java-package: "jdk+fx"
+          architecture: "aarch64"
+
+      - name: Cache local Maven repository and JDK cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            target/jdkCache
+          key: macos-arm-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            macos-arm-maven-
+
+      - name: Install an Apple keychain (MacOS)
+        if: ${{ inputs.environment == 'packaging' && startsWith(github.ref, 'refs/tags/') }}
+        # based on https://docs.github.com/en/actions/deployment/deploying-xcode-applications/installing-an-apple-certificate-on-macos-runners-for-xcode-development#add-a-step-to-your-workflow
+        env:
+          APPLE_KEYCHAIN_BASE64: ${{ secrets.APPLE_KEYCHAIN_BASE64 }}
+          APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+        shell: bash
+        run: |
+          # create variables
+          APPLE_KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          # share to rest of steps
+          echo "APPLE_KEYCHAIN_PATH=$APPLE_KEYCHAIN_PATH" >> "$GITHUB_ENV"
+
+          # import keychain from secrets
+          echo -n "$APPLE_KEYCHAIN_BASE64" | base64 --decode -o $APPLE_KEYCHAIN_PATH
+          set -x
+
+          # unlock, set timeout and set as used keychain
+          security unlock-keychain -p "$APPLE_KEYCHAIN_PASSWORD" $APPLE_KEYCHAIN_PATH
+          #security set-keychain-settings -lut 21600 $APPLE_KEYCHAIN_PATH
+          security list-keychain -d user -s $APPLE_KEYCHAIN_PATH
+          security default-keychain -s $APPLE_KEYCHAIN_PATH
+
+      - name: Package with Maven
+        run: ./mvnw -B -C -V package -P system-jdk
+        env:
+          # These will remain empty in dev-build, but will be set in packaging
+          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
+          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+
+      - name: Rename artifacts
+        shell: bash
+        run: |
+          mv target/Autogram-*.pkg target/autogram-${VERSION}-macos.pkg
+
+      - name: Notarize release with Apple (MacOS)
+        if: ${{ inputs.environment == 'packaging' && startsWith(github.ref, 'refs/tags/') }}
+        env:
+          APPLE_KEYCHAIN_PATH: ${{ env.APPLE_KEYCHAIN_PATH }}
+        shell: bash
+        run: |
+          set -x
+          # run notarization
+          xcrun notarytool submit --keychain-profile "autogram" --keychain $APPLE_KEYCHAIN_PATH --wait target/autogram-${VERSION}-macos.pkg
+          # staple
+          xcrun stapler staple target/autogram-${VERSION}-macos.pkg
+          # lock all keychains
+          security lock-keychain -a
+
+      - name: Upload artifact
+        if: ${{ inputs.environment == 'dev-build' }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: autogram-${{ inputs.version }}-macos.pkg
+          path: target/autogram-${{ inputs.version }}-macos.pkg
+          if-no-files-found: ignore
+
+      - name: Create release if tag pushed
+        if: ${{ inputs.environment == 'packaging' && startsWith(github.ref, 'refs/tags/') }}
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
+        with:
+          draft: true
+          prerelease: true
+          files: |
+            target/autogram-${{ inputs.version }}-macos.pkg

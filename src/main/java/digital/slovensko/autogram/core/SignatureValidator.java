@@ -49,6 +49,7 @@ public class SignatureValidator {
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
     private CertificateVerifier verifier;
     private TLValidationJob validationJob;
+    private ExecutorService executorService;
     private static Logger logger = LoggerFactory.getLogger(SignatureValidator.class);
 
     // Singleton
@@ -71,11 +72,17 @@ public class SignatureValidator {
         return docValidator.validateDocument();
     }
 
+    public synchronized void updateLotl(List<String> tlCountries) {
+        initialize(executorService, tlCountries);
+    }
+
     public synchronized void refresh() {
         validationJob.offlineRefresh();
     }
 
     public synchronized void initialize(ExecutorService executorService, List<String> tlCountries) {
+        this.executorService = executorService;
+
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         logger.debug("Initializing signature validator at {}", formatter.format(new Date()));
 

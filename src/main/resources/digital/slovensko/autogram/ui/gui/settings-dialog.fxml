@@ -171,9 +171,6 @@
                                 <TextFlow styleClass="autogram-settings-tab-header-text">
                                     <Text styleClass="autogram-body" text="%settings.attestation.trustedCountries.text"/>
                                 </TextFlow>
-                                <TextFlow styleClass="autogram-settings-tab-header-text">
-                                    <Text styleClass="autogram-body" text="%settings.restartNeeded.text"/>
-                                </TextFlow>
 
                                 <VBox alignment="center" fx:id="trustedCountriesList"
                                     styleClass="autogram-trusted-countries-list" />

@@ -102,7 +102,7 @@ public class XMLUtilsTest {
             factory.newTransformer(new StreamSource(new StringReader(xslt)));
             fail("Expected an exception due to external stylesheet access");
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Access to URI file:///tmp/test.txt has been prohibited"));
+            assertTrue(e.getMessage().contains("Access to URI file:///tmp/test.txt has been prohibited") || e.getMessage().contains("Exception from catalog resolver resolverURI()"));
         }
     }
 
@@ -119,7 +119,7 @@ public class XMLUtilsTest {
             factory.newTransformer(new StreamSource(new StringReader(xslt)));
             fail("Expected an exception due to DOCTYPE declaration with external entity");
         } catch (Exception e) {
-            assertTrue(e.getMessage().contains("Access to URI file:///tmp/test.txt has been prohibited"));
+            assertTrue(e.getMessage().contains("Access to URI file:///tmp/test.txt has been prohibited") || e.getMessage().contains("Exception from catalog resolver resolveEntity()"));
         }
     }
 

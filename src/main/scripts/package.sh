@@ -150,6 +150,11 @@ if [[ "$platform" == "linux" ]]; then
 fi
 
 if [[ "${platform}" == "mac" ]]; then
+    # jpackage requires --temp to be missing or empty. Remove artifacts from an
+    # interrupted prior build and clean this build's temporary files on any exit.
+    rm -rf ./DTempFiles
+    trap 'rm -rf ./DTempFiles' EXIT
+
     cp "./Info.plist.template" "./Info.plist"
     sed -i.bak "s/PROTOCOL_NAME/${properties_protocol}/g" "./Info.plist" && rm "./Info.plist.bak"
 
@@ -195,8 +200,6 @@ if [[ "${platform}" == "mac" ]]; then
     # cwd je ./src/main/scripts/resources
     $jpackage "${arguments[@]}"
     exitValue=$?
-    # See --temp argument above
-    rm -rf ./DTempFiles
 
     checkExitCode $exitValue
 fi

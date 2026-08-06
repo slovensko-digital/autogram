@@ -7,6 +7,7 @@ import digital.slovensko.autogram.core.errors.XMLValidationException;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
+import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSLT_OR_XSD_NOT_FOUND;
 
 import eu.europa.esig.dss.model.DSSDocument;
 
@@ -40,7 +41,7 @@ public abstract class EFormResourcesBuilder {
             return null;
 
         if (!eformResources.findResources())
-            return null;
+            throw new XMLValidationException(XSLT_OR_XSD_NOT_FOUND);
 
         return eformResources;
     }

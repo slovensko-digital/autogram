@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 public class PasswordController extends BaseController {
     private final String questionKey;
     private final String errorKey;
+    private final String subtitleKey;
     private final boolean isSigningStep;
     private final boolean allowEmpty;
 
@@ -20,6 +21,8 @@ public class PasswordController extends BaseController {
     PasswordField passwordField;
     @FXML
     Text question;
+    @FXML
+    Text subtitle;
     @FXML
     Text error;
     @FXML
@@ -31,9 +34,10 @@ public class PasswordController extends BaseController {
     @FXML
     VBox mainBox;
 
-    public PasswordController(String questionKey, String blankPasswordErrorKey, boolean isSigningStep, boolean allowEmpty) {
+    public PasswordController(String questionKey, String blankPasswordErrorKey, String subtitleKey, boolean isSigningStep, boolean allowEmpty) {
         this.questionKey = questionKey;
         this.errorKey = blankPasswordErrorKey;
+        this.subtitleKey = subtitleKey;
         this.isSigningStep = isSigningStep;
         this.allowEmpty = allowEmpty;
     }
@@ -42,6 +46,12 @@ public class PasswordController extends BaseController {
     public void initialize() {
         question.setText(i18n(questionKey));
         error.setText(i18n(errorKey));
+        if(subtitleKey != null) {
+            subtitle.setText(i18n(subtitleKey));
+            subtitle.setManaged(true);
+            subtitle.setVisible(true);
+        }
+
         if(isSigningStep) {
             mainButton.setText(i18n("general.sign.btn"));
             cancelButton.setManaged(true);

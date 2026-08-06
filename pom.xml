@@ -14,20 +14,19 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>digital.slovensko.autogram.Main</main.class>
-        <java.version>24</java.version>
-        <dss.version>6.2</dss.version>
-        <gson.version>2.13.1</gson.version>
+        <java.version>25</java.version>
+        <dss.version>6.4</dss.version>
+        <gson.version>2.14.0</gson.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
-        <pdfbox.version>3.0.5</pdfbox.version>
-        <saxon.version>12.7</saxon.version>
-        <xerces.version>2.12.1</xerces.version>
-        <slf4j.version>2.0.17</slf4j.version>
-        <junit.version>5.12.2</junit.version>
-        <mockito.version>5.18.0</mockito.version>
-        <commons-cli.version>1.9.0</commons-cli.version>
-        <xmlunit.version>2.10.2</xmlunit.version>
-        <snakeyml.version>2.4</snakeyml.version>
-        <jimfs.version>1.3.0</jimfs.version>
+        <pdfbox.version>3.0.8</pdfbox.version>
+        <saxon.version>12.10</saxon.version>
+        <slf4j.version>2.0.18</slf4j.version>
+        <junit.version>6.1.1</junit.version>
+        <mockito.version>5.23.0</mockito.version>
+        <commons-cli.version>1.11.0</commons-cli.version>
+        <xmlunit.version>2.12.0</xmlunit.version>
+        <snakeyml.version>2.6</snakeyml.version>
+        <jimfs.version>1.3.1</jimfs.version>
         <testExcludedGroups>HttpSmokeTest</testExcludedGroups>
         <skip-jdk-cache>false</skip-jdk-cache>
     </properties>
@@ -93,6 +92,14 @@
             <artifactId>dss-validation</artifactId>
         </dependency>
         <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-policy-jaxb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-cms-object</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>${gson.version}</version>
@@ -130,6 +137,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -206,8 +214,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[24,)</version>
-                                    <message>This build must be run with JDK 24 or newer. The jlink step uses JDK 24 modules and fails with InvalidModuleDescriptorException if Maven runs on an older JDK.</message>
+                                    <version>[25,)</version>
+                                    <message>This build must be run with JDK 25 or newer. The jlink step uses JDK 25 modules and fails with InvalidModuleDescriptorException if Maven runs on an older JDK.</message>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
@@ -325,7 +333,7 @@
                 <version>1.2.0</version>
                 <executions>
                     <execution>
-                        <id>cache-jdk-24</id>
+                        <id>cache-jdk-25</id>
                         <goals>
                             <goal>cache-jdk</goal>
                         </goals>
@@ -337,7 +345,7 @@
                             <provider>BELLSOFT</provider>
                             <providerConfig>
                                 <type>jdk</type>
-                                <version>24.0.1+11</version>
+                                <version>25.0.4+9</version>
                                 <arch>amd64-full</arch>
                             </providerConfig>
                         </configuration>
@@ -385,6 +393,8 @@
                                 <module>java.naming</module>
                                 <module>java.datatransfer</module>
                                 <module>java.net.http</module>
+                                <!-- Apache HttpClient 5 uses jdk.net.Sockets for socket options. -->
+                                <module>jdk.net</module>
                                 <module>java.logging</module>
                                 <module>java.sql</module>
                                 <module>java.scripting</module>

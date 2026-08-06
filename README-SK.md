@@ -67,7 +67,7 @@ Pri podpisovaní cez API je potrebné nastaviť v body `parameters.fsFormId: "<i
 
 ### Predpoklady
 
-- JDK 24 s JavaFX (viď nižšie)
+- JDK 25 s JavaFX (viď nižšie)
 - Maven
 - Voliteľné: Visual Studio Code ako IDE alebo Intellij IDEA (stačí komunitná verzia).
 
@@ -91,13 +91,13 @@ Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe
 #### Debian/Ubuntu
 
 ```sh
-sudo apt install openjdk-24-jdk maven binutils rpm fakeroot
+sudo apt install openjdk-25-jdk maven binutils rpm fakeroot
 ```
 
 #### Fedora
 
 ```sh
-sudo dnf install java-24-openjdk maven rpm-build
+sudo dnf install java-25-openjdk maven rpm-build
 ```
 
 #### Linux Docker compose

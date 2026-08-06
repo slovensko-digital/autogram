@@ -141,7 +141,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
     }
 
     public void onSettingButtonAction() {
-        var controller = new SettingsDialogController(userSettings);
+        var controller = new SettingsDialogController(autogram, userSettings);
         var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
 
         var stage = new Stage();
