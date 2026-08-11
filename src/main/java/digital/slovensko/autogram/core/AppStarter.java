@@ -7,7 +7,13 @@ import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AppStarter {
     private static final Options options = new Options().
@@ -31,6 +37,11 @@ public class AppStarter {
         addOption(null, "plain-xml", false, "Enable signing plain (non-slovak-eform) XML files.").
         addOption(null, "pkcs11-driver-path", true, "Absolute path to a file with custom PKCS11 driver.");
 
+    private static final Set<String> OPTIONS_WITH_VALUES = options.getOptions().stream()
+            .filter(Option::hasArg)
+            .flatMap(option -> Stream.of(option.getOpt(), option.getLongOpt()))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toUnmodifiableSet());
 
     public static void start(String[] args) {
         try {
@@ -44,6 +55,14 @@ public class AppStarter {
             } else if (cmd.hasOption("c")) {
                 CliApp.start(cmd);
             } else {
+                // --url starts a server instance that holds no single-instance lock or
+                // socket, so a GUI instance started later becomes the primary instead.
+                // This is intentional: the server is a separate integration surface and
+                // must not be a forwarding target for the desktop single-instance flow.
+                if (!cmd.hasOption("url")) {
+                    if (!SingleInstanceManager.start(GUIApp.getFilesToOpen()))
+                        return;
+                }
                 Application.launch(GUIApp.class, resolvedArgs);
             }
         } catch (ParseException e) {
@@ -56,11 +75,14 @@ public class AppStarter {
         var filesToOpen = new ArrayList<String>();
         var resolved = new ArrayList<String>();
 
-        for (var arg : args) {
-            if (arg.startsWith("autogram://")) {
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            if (isValueOfOption(args, i)) {
+                resolved.add(arg);
+            } else if (arg.startsWith("autogram://")) {
                 resolved.add("--url=" + arg);
             } else if (arg.startsWith("file://")) {
-                filesToOpen.add(arg.substring(7));
+                filesToOpen.add(decodeFileUri(arg));
             } else if (new File(arg).isFile()) {
                 filesToOpen.add(arg);
             } else {
@@ -73,6 +95,32 @@ public class AppStarter {
         }
 
         return resolved.toArray(new String[0]);
+    }
+
+    private static String decodeFileUri(String uri) {
+        try {
+            return Path.of(URI.create(uri)).toString();
+        } catch (IllegalArgumentException e) {
+            return uri.substring(7);
+        }
+    }
+
+    private static boolean isValueOfOption(String[] args, int index) {
+        if (index == 0)
+            return false;
+
+        var previous = args[index - 1];
+        if (previous.contains("="))
+            return false;
+
+        return OPTIONS_WITH_VALUES.contains(normalizeOptionName(previous));
+    }
+
+    private static String normalizeOptionName(String arg) {
+        var name = arg;
+        while (name.startsWith("-"))
+            name = name.substring(1);
+        return name;
     }
 
     public static void printHelp() {

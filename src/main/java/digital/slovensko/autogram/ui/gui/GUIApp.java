@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
+import digital.slovensko.autogram.core.SingleInstanceManager;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
@@ -26,6 +27,10 @@ public class GUIApp extends Application {
 
     public static void setFilesToOpen(List<String> files) {
         filesToOpen = files;
+    }
+
+    public static List<String> getFilesToOpen() {
+        return filesToOpen;
     }
 
     @Override
@@ -86,7 +91,23 @@ public class GUIApp extends Application {
             windowStage.setResizable(false);
             windowStage.show();
 
-            if (filesToOpen != null && !filesToOpen.isEmpty()) {
+            var singleInstanceManager = SingleInstanceManager.getInstance();
+            if (singleInstanceManager != null) {
+                singleInstanceManager.onFilesReceived(files ->
+                        Platform.runLater(() -> {
+                            windowStage.setIconified(false);
+                            windowStage.show();
+                            windowStage.toFront();
+                            windowStage.requestFocus();
+                            controller.onFilesSelected(files.stream().map(File::new).toList());
+                        }));
+                singleInstanceManager.onActivated(() -> Platform.runLater(() -> {
+                    windowStage.setIconified(false);
+                    windowStage.show();
+                    windowStage.toFront();
+                    windowStage.requestFocus();
+                }));
+            } else if (filesToOpen != null && !filesToOpen.isEmpty()) {
                 var files = filesToOpen.stream().map(File::new).toList();
                 Platform.runLater(() -> controller.onFilesSelected(files));
             }

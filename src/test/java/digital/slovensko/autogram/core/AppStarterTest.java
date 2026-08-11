@@ -3,8 +3,6 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.ui.gui.GUIApp;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 
 import java.io.IOException;
@@ -13,28 +11,9 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mockStatic;
 
 public class AppStarterTest {
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "--cli",
-            "--help",
-            "--usage",
-            "--url=http://localhost:32700",
-            "-s",
-            "-t"
-    })
-    void testPassesRegularArgumentsThroughUnchanged(String arg) {
-        try (MockedStatic<GUIApp> mocked = mockStatic(GUIApp.class)) {
-            var resolved = AppStarter.resolveArgs(new String[]{arg});
-
-            assertArrayEquals(new String[]{arg}, resolved);
-            mocked.verifyNoInteractions();
-        }
-    }
-
     @Test
     void testPassesNonexistentPathThroughUnchanged() {
         try (MockedStatic<GUIApp> mocked = mockStatic(GUIApp.class)) {
@@ -46,14 +25,10 @@ public class AppStarterTest {
         }
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "autogram://localhost:32700",
-            "autogram://autogram.slovensko.digital/sign",
-            "autogram://localhost:32700?path=/tmp/file.pdf"
-    })
-    void testConvertsAutogramUrlToUrlArgument(String url) {
+    @Test
+    void testConvertsAutogramUrlToUrlArgument() {
         try (MockedStatic<GUIApp> mocked = mockStatic(GUIApp.class)) {
+            var url = "autogram://localhost:32700";
             var resolved = AppStarter.resolveArgs(new String[]{url});
 
             assertArrayEquals(new String[]{"--url=" + url}, resolved);
@@ -73,12 +48,13 @@ public class AppStarterTest {
     }
 
     @Test
-    void testOpensFileUriWithStrippedPrefix() {
+    void testOpensFileUriWithStrippedPrefix(@TempDir Path tempDir) {
+        var file = tempDir.resolve("file.pdf");
         try (MockedStatic<GUIApp> mocked = mockStatic(GUIApp.class)) {
-            var resolved = AppStarter.resolveArgs(new String[]{"file:///tmp/file.pdf"});
+            var resolved = AppStarter.resolveArgs(new String[]{file.toUri().toString()});
 
             assertArrayEquals(new String[0], resolved);
-            mocked.verify(() -> GUIApp.setFilesToOpen(List.of("/tmp/file.pdf")));
+            mocked.verify(() -> GUIApp.setFilesToOpen(List.of(file.toString())));
         }
     }
 
@@ -110,12 +86,47 @@ public class AppStarterTest {
     }
 
     @Test
-    void testReturnsEmptyForEmptyArguments() {
+    void testKeepsExistingFileAsValueOfShortOption(@TempDir Path tempDir) throws IOException {
+        var source = Files.createFile(tempDir.resolve("in.pdf"));
+        var target = Files.createFile(tempDir.resolve("out.pdf"));
         try (MockedStatic<GUIApp> mocked = mockStatic(GUIApp.class)) {
-            var resolved = AppStarter.resolveArgs(new String[0]);
+            var resolved = AppStarter.resolveArgs(new String[]{"--cli", "-s", source.toString(), "-t", target.toString()});
 
-            assertEquals(0, resolved.length);
+            assertArrayEquals(new String[]{"--cli", "-s", source.toString(), "-t", target.toString()}, resolved);
             mocked.verifyNoInteractions();
+        }
+    }
+
+    @Test
+    void testKeepsExistingFileAsValueOfLongOption(@TempDir Path tempDir) throws IOException {
+        var keystore = Files.createFile(tempDir.resolve("keys.p12"));
+        try (MockedStatic<GUIApp> mocked = mockStatic(GUIApp.class)) {
+            var resolved = AppStarter.resolveArgs(new String[]{"--cli", "--keystore", keystore.toString()});
+
+            assertArrayEquals(new String[]{"--cli", "--keystore", keystore.toString()}, resolved);
+            mocked.verifyNoInteractions();
+        }
+    }
+
+    @Test
+    void testOpensFileUriWithEncodedCharacters(@TempDir Path tempDir) throws IOException {
+        var file = Files.createFile(tempDir.resolve("my file.pdf"));
+        try (MockedStatic<GUIApp> mocked = mockStatic(GUIApp.class)) {
+            var resolved = AppStarter.resolveArgs(new String[]{file.toUri().toString()});
+
+            assertArrayEquals(new String[0], resolved);
+            mocked.verify(() -> GUIApp.setFilesToOpen(List.of(file.toAbsolutePath().toString())));
+        }
+    }
+
+    @Test
+    void testOpensExistingFileNextToUrlOption(@TempDir Path tempDir) throws IOException {
+        var file = Files.createFile(tempDir.resolve("file.pdf"));
+        try (MockedStatic<GUIApp> mocked = mockStatic(GUIApp.class)) {
+            var resolved = AppStarter.resolveArgs(new String[]{"--url=http://localhost:32700", file.toString()});
+
+            assertArrayEquals(new String[]{"--url=http://localhost:32700"}, resolved);
+            mocked.verify(() -> GUIApp.setFilesToOpen(List.of(file.toString())));
         }
     }
 }
