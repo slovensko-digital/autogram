@@ -243,13 +243,8 @@ public abstract class EFormUtils {
     }
 
     public static Document getXmlFromDocument(DSSDocument documentToDisplay) throws XMLValidationException {
-        try {
-            var is = documentToDisplay.openStream();
-            var inputSource = new InputSource(is);
-            inputSource.setEncoding(ENCODING.displayName());
-            var parsedDocument = XMLUtils.getSecureDocumentBuilder().parse(inputSource);
-
-            return parsedDocument;
+        try (var is = documentToDisplay.openStream()) {
+            return XMLUtils.getSecureDocumentBuilder().parse(is);
 
         } catch (Exception e) {
             throw new XMLValidationException(FAILED_TO_LOAD_XML, e);
