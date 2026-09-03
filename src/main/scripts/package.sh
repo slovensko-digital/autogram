@@ -49,6 +49,8 @@ arguments=(
     "--resource-dir" "./"
     "--dest" "${output}"
     "--description" "${properties_description}"
+    "--file-associations" "${resourcesDir}/FApdf.properties"
+    "--file-associations" "${resourcesDir}/FAasice.properties"
 )
 
 if [[ "${platform}" == "win" ]]; then

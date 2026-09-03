@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
+import digital.slovensko.autogram.core.SingleInstanceManager;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
@@ -12,6 +13,8 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,6 +22,16 @@ import java.util.concurrent.ScheduledExecutorService;
 public class GUIApp extends Application {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
     private final ExecutorService cachedExecutorService = Executors.newFixedThreadPool(8);
+
+    private static List<String> filesToOpen;
+
+    public static void setFilesToOpen(List<String> files) {
+        filesToOpen = files;
+    }
+
+    public static List<String> getFilesToOpen() {
+        return filesToOpen;
+    }
 
     @Override
     public void start(Stage windowStage) throws Exception {
@@ -77,6 +90,27 @@ public class GUIApp extends Application {
             windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml")));
             windowStage.setResizable(false);
             windowStage.show();
+
+            var singleInstanceManager = SingleInstanceManager.getInstance();
+            if (singleInstanceManager != null) {
+                singleInstanceManager.onFilesReceived(files ->
+                        Platform.runLater(() -> {
+                            windowStage.setIconified(false);
+                            windowStage.show();
+                            windowStage.toFront();
+                            windowStage.requestFocus();
+                            controller.onFilesSelected(files.stream().map(File::new).toList());
+                        }));
+                singleInstanceManager.onActivated(() -> Platform.runLater(() -> {
+                    windowStage.setIconified(false);
+                    windowStage.show();
+                    windowStage.toFront();
+                    windowStage.requestFocus();
+                }));
+            } else if (filesToOpen != null && !filesToOpen.isEmpty()) {
+                var files = filesToOpen.stream().map(File::new).toList();
+                Platform.runLater(() -> controller.onFilesSelected(files));
+            }
 
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
