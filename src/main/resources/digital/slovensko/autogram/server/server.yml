@@ -294,6 +294,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BatchStartResponseBody"
+        400:
+          description: Batch not enabled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_NOT_ENABLED
+                    example: BATCH_NOT_ENABLED
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Batch signing must be enabled in settings first
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Batch signing is currently disabled. If you want to use it, enable it in settings.
+                    description: Optional details.
         502:
           description: Batch canceled
           content:

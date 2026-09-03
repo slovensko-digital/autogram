@@ -56,6 +56,7 @@ public class ErrorResponseBuilder {
             case BatchInvalidIdException ex -> new ErrorResponse(404, instance.buildResponseWithTranslations("BATCH_NOT_FOUND", ex));
             case NoDriversDetectedException ex -> new ErrorResponse(404, instance.buildResponseWithTranslations("DRIVER_NOT_FOUND", ex));
             case BatchConflictException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("BATCH_CONFLICT", ex));
+            case BatchNotEnabledException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("BATCH_NOT_ENABLED", ex));
             case InvalidUrlParamException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("INVALID_URL_PARAM", ex));
             case CertificatesReadingConsentRejectedException ex ->
                     new ErrorResponse(403, instance.buildResponseWithTranslations("CERTIFICATES_READING_CONSENT_REJECTED", ex));

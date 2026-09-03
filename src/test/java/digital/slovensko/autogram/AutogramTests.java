@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.BatchResponder;
+import digital.slovensko.autogram.core.errors.BatchNotEnabledException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
@@ -244,6 +246,37 @@ class AutogramTests {
 
         var expected = new Gson().fromJson("{\"certificates\":[{\"subject\":\"CN\u003dJano Suchal, O\u003dSolver IT\",\"issuedBy\":\"CN\u003dJano Suchal, O\u003dSolver IT\"}]}", CertificatesResponse.class);
         verify(responseBody).write(new Gson().toJson(expected).getBytes());
+    }
+
+    @Test
+    void testBatchStartThrowsWhenBulkNotEnabled() {
+        var settings = new TestSettings() {
+            @Override
+            public boolean isBulkEnabled() {
+                return false;
+            }
+        };
+        var newUI = new FakeUI();
+        var autogram = new Autogram(newUI, settings);
+
+        var responder = mock(BatchResponder.class);
+        Assertions.assertThrows(BatchNotEnabledException.class, () -> autogram.batchStart(5, responder));
+    }
+
+    @Test
+    void testBatchStartSucceedsWhenBulkEnabled() {
+        var settings = new TestSettings() {
+            @Override
+            public boolean isBulkEnabled() {
+                return true;
+            }
+        };
+        var newUI = new FakeUI();
+        var autogram = new Autogram(newUI, settings);
+
+        var responder = mock(BatchResponder.class);
+        // Should not throw BatchNotEnabledException
+        autogram.batchStart(5, responder);
     }
 
     private record FakeDriverDetector(List<TokenDriver> drivers) implements DriverDetector {
