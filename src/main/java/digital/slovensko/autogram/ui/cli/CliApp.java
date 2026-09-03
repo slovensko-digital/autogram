@@ -7,18 +7,25 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.core.errors.SourceNotDefinedException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import eu.europa.esig.dss.model.DSSException;
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
 import java.util.Arrays;
 
 public class CliApp {
-    public static void start(CommandLine cmd) {
+    public static int start(CommandLine cmd) {
         Autogram autogram = null;
         try {
             var settings = CliSettings.fromCmd(cmd);
             var ui = new CliUI(settings);
             autogram = new Autogram(ui, settings);
+
+            if (settings.isListKeys()) {
+                var driver = ui.pickTokenDriver(autogram.getAvailableDrivers());
+                ui.printSigningKeys(autogram.getSigningKeys(driver));
+                return 0;
+            }
 
             if (settings.getSource() == null)
                 throw new SourceNotDefinedException();
@@ -47,13 +54,26 @@ public class CliApp {
 
             ui.setJobsCount(jobs.size());
             jobs.forEach(autogram::sign);
+            return 0;
 
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));
-
+            return 1;
+        } catch (DSSException e) {
+            return reportFailure(AutogramException.createFromDSSException(e));
+        } catch (Exception e) {
+            return reportFailure(e);
         } finally {
             if (autogram != null)
                 autogram.shutdown();
         }
+    }
+
+    static int reportFailure(Exception e) {
+        if (e instanceof AutogramException autogramException)
+            System.err.println(CliUI.parseError(autogramException));
+        else
+            e.printStackTrace(System.err);
+        return 1;
     }
 }

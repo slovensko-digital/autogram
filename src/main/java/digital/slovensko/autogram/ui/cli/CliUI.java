@@ -39,7 +39,10 @@ import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -51,6 +54,8 @@ public class CliUI implements UI {
     SigningKey activeKey;
     int nJobsSigned = 1;
     int nJobsTotal = 0;
+    private final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+    private char[] stdinSecret;
 
     public CliUI(CliSettings settings) {
         this.settings = settings;
@@ -91,20 +96,26 @@ public class CliUI implements UI {
 
     @Override
     public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel) {
-        TokenDriver pickedDriver;
+        callback.accept(pickTokenDriver(drivers));
+    }
+
+    public TokenDriver pickTokenDriver(List<TokenDriver> drivers) {
         if (drivers.isEmpty()) {
             showError(new NoDriversDetectedException());
-            return;
+            throw new NoDriversDetectedException();
 
         } else if (drivers.size() == 1) {
-            pickedDriver = drivers.get(0);
+            return drivers.get(0);
 
         } else if (settings.getDefaultDriver() != null) {
-            var driver = drivers.stream().filter(d -> d.getShortname().equals(settings.getDefaultDriver())).findFirst();
+            var driver = drivers.stream()
+                    .filter(d -> d.getShortname().equals(settings.getDefaultDriver())
+                            || d.getName().equals(settings.getDefaultDriver()))
+                    .findFirst();
             if (driver.isEmpty())
                 throw new NoDriversDetectedException();
 
-            pickedDriver = driver.get();
+            return driver.get();
 
         } else {
             var i = new AtomicInteger(1);
@@ -114,15 +125,26 @@ public class CliUI implements UI {
                 System.out.println(driver.getName());
                 i.addAndGet(1);
             });
-            pickedDriver = drivers.get(CliUtils.readInteger() - 1);
+            return drivers.get(CliUtils.readInteger() - 1);
         }
-        callback.accept(pickedDriver);
     }
 
     @Override
     public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
         if (keys.isEmpty()) {
             showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
+            return;
+        }
+
+        if (settings.getKeySelector() != null) {
+            var matchingKeys = keys.stream()
+                    .filter(key -> CliKeySelector.matches(key, settings.getKeySelector()))
+                    .toList();
+            if (matchingKeys.size() != 1) {
+                showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
+                return;
+            }
+            callback.accept(matchingKeys.get(0));
             return;
         }
 
@@ -143,6 +165,13 @@ public class CliUI implements UI {
 
         var pickedKey = keys.get(CliUtils.readInteger() - 1);
         callback.accept(pickedKey);
+    }
+
+    public void printSigningKeys(List<DSSPrivateKeyEntry> keys) {
+        for (var key : keys) {
+            System.out.println("AUTOGRAM_KEY\t" + CliKeySelector.serial(key) + "\t"
+                    + CliKeySelector.commonName(key));
+        }
     }
 
     @Override
@@ -293,11 +322,27 @@ public class CliUI implements UI {
 
     @Override
     public char[] getKeystorePassword() {
-        return System.console().readPassword("Enter keystore password (hidden): ");
+        return readSecret("Enter keystore password (hidden): ");
     }
 
     public char[] getContextSpecificPassword() {
-        return System.console().readPassword("Enter key password (hidden): ");
+        return readSecret("Enter key password (hidden): ");
+    }
+
+    private char[] readSecret(String prompt) {
+        if (!settings.isPinFromStdin())
+            return System.console().readPassword(prompt);
+
+        if (stdinSecret != null)
+            return stdinSecret.clone();
+
+        try {
+            var line = stdin.readLine();
+            stdinSecret = line == null ? null : line.toCharArray();
+            return stdinSecret == null ? null : stdinSecret.clone();
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     @Override

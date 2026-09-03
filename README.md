@@ -18,6 +18,16 @@ You can trigger the application to run directly from a web browser by opening an
 
 Autogram can also be run from the command line (CLI mode). Detailed information about the switches is described in the help after running `autogram --help`, or `autogram-cli --help` on Windows.
 
+For scripted certificate selection, PIN input from standard input, PAdES Baseline T, and exit status handling, see [Headless CLI signing](docs/cli-headless-signing.md).
+
+## macOS Finder Quick Action
+
+The repository also includes an Automator Quick Action for signing one or more selected PDF files from Finder through the Autogram CLI. It is a Finder integration, not a macOS Shortcuts workflow. Certificate store selection, certificate selection, and PIN entry use macOS dialogs, while the signing operation runs without opening the Autogram GUI or a Terminal window.
+
+The integration requires macOS with Finder and Automator, a compatible token or card with its PKCS#11 driver, the PIN, and network access to a qualified timestamp service for PAdES Baseline T. Apple Silicon Macs may also need Rosetta and an Intel Autogram build when the installed PKCS#11 driver is Intel-only.
+
+See [macOS CLI and Finder Quick Action](docs/macos-cli-automation.md) for installation, batch signing, configuration, and troubleshooting.
+
 ### Styling
 
 The application currently supports only one style - the state IDSK design. Additional styles are planned. However, styling already happens exclusively through cascading style sheets, see [idsk.css](https://github.com/slovensko-digital/autogram/blob/main/src/main/resources/digital/slovensko/autogram/ui/gui/idsk.css)

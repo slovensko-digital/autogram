@@ -226,7 +226,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public boolean shouldSignPDFAsPades() {
-        return signatureLevel == SignatureLevel.PAdES_BASELINE_B;
+        return signatureLevel == SignatureLevel.PAdES_BASELINE_B
+                || signatureLevel == SignatureLevel.PAdES_BASELINE_T;
     }
 
     public void setSignatureLevel(SignatureLevel signatureLevel) {
