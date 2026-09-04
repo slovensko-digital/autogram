@@ -12,8 +12,5 @@
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="autogram" options="--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-modules jdk.crypto.cryptoki" />
-    </option>
   </component>
 </project>

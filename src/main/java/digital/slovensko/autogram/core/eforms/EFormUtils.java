@@ -1,9 +1,7 @@
 package digital.slovensko.autogram.core.eforms;
 
-import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.EFormException;
-import digital.slovensko.autogram.core.errors.ServiceUnavailableException;
 import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
@@ -12,16 +10,12 @@ import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
-import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
-import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 import eu.europa.esig.dss.xml.utils.XMLCanonicalizer;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -36,13 +30,10 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Properties;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
 import static digital.slovensko.autogram.core.errors.EFormException.Error.FS_FORM_ID;
@@ -61,7 +52,7 @@ import static digital.slovensko.autogram.core.errors.XMLValidationException.Erro
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XMLDATA_INVALID_TEXT;
 
 public abstract class EFormUtils {
-    private static final Charset ENCODING = StandardCharsets.UTF_8;
+    public static final Charset ENCODING = StandardCharsets.UTF_8;
     public static final String XDC_XMLNS = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
     public static final List<String> ALLOWED_ORSR_URL_PREFIXES = List.of(
             "http://eformulare.justice.sk/",
@@ -251,37 +242,6 @@ public abstract class EFormUtils {
         return null;
     }
 
-    public static byte[] getResource(String url) throws ServiceUnavailableException {
-        var offlineFileLoader = new FileCacheDataLoader();
-        offlineFileLoader.setCacheExpirationTime(21600000);  // 6 hours
-        offlineFileLoader.setDataLoader(new CommonsDataLoader());
-
-        DSSDocument document;
-        try {
-            document = offlineFileLoader.getDocument(url);
-        } catch (DSSExternalResourceException e) {
-            var matcher = Pattern.compile("HTTP status code : (\\d{3})").matcher(e.getCause().getMessage());
-            if (!matcher.find())
-                return null;
-
-            if (matcher.group(1).startsWith("5"))
-                throw new ServiceUnavailableException(url, e);
-
-            return null;
-        } catch (DSSException e) {
-            return null;
-        }
-
-        if (document == null)
-            return null;
-
-        try (var inputStream = document.openStream()) {
-            return inputStream.readAllBytes();
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
     public static Document getXmlFromDocument(DSSDocument documentToDisplay) throws XMLValidationException {
         try {
             var is = documentToDisplay.openStream();
@@ -434,105 +394,5 @@ public abstract class EFormUtils {
 
     public static boolean validateFsFormIdFormat(String fsFormId) {
         return Pattern.compile("^([0-9]+_[0-9]+)$").matcher(fsFormId).matches();
-    }
-
-    public static ArrayList<ManifestXsltEntry> getManifestXsltEntries(NodeList nodes, String source_url, String form_url) {
-        var entries = new ArrayList<ManifestXsltEntry>();
-
-        for (int i = 0; i < nodes.getLength(); i++) {
-            var node = nodes.item(i);
-
-            var fullPath = nullOrNodeValue(node.getAttributes().getNamedItem("full-path"));
-            if (fullPath == null)
-                continue;
-
-            fullPath = fullPath.replace("\\", "/");
-
-            var mediaType = nullOrNodeValue(node.getAttributes().getNamedItem("media-type"));
-            var mediaDestinationTypeDescription = nullOrNodeValue(node.getAttributes().getNamedItem("media-destination-type-description"));
-            var mediaDestination = nullOrNodeValue(node.getAttributes().getNamedItem("media-destination"));
-            var mediaDestinationType = nullOrNodeValue(node.getAttributes().getNamedItem("media-destination-type"));
-
-            if (mediaDestination == null) {
-                if (Stream.of(".sb..xslt", ".html.xslt").noneMatch(fullPath::endsWith))
-                    continue;
-
-                mediaDestination = fullPath.contains(".sb.xslt") ? "sign" : "view";
-
-            } else {
-                if (mediaType == null)
-                    continue;
-
-                if (Stream.of("sign", "x-xslt-ro", "view").noneMatch(mediaDestination::contains))
-                    continue;
-
-                if (Stream.of("application/xslt+xml", "text/xsl").noneMatch(mediaType::equals) &&
-                        (Stream.of("text/xml", "application/xml").noneMatch(mediaType::equals) ||
-                                Stream.of(".xsl", ".xslt").noneMatch(fullPath::endsWith)))
-                    continue;
-            }
-
-            if (mediaDestinationTypeDescription == null && mediaDestinationType != null)
-                mediaDestinationTypeDescription = switch (mediaDestinationType) {
-                    case "text/plain" -> "TXT";
-                    case "text/html" -> "HTML";
-                    case "application/xhtml+xml" -> "XHTML";
-                    default -> null;
-                };
-
-            if (mediaDestinationTypeDescription == null) {
-                // need to get output method from xslt
-                var xsltString = getResource(source_url + form_url + "/" + fullPath);
-                if (xsltString == null)
-                    continue;
-
-                try {
-                    mediaDestinationTypeDescription = EFormUtils.extractTransformationOutputMimeTypeString(new String(xsltString, ENCODING));
-                } catch (TransformationParsingErrorException e) {
-                    continue;
-                }
-            }
-
-            entries.add(new ManifestXsltEntry(
-                    mediaType,
-                    nullOrNodeValue(node.getAttributes().getNamedItem("media-language")),
-                    mediaDestinationTypeDescription,
-                    nullOrNodeValue(node.getAttributes().getNamedItem("target-environment")),
-                    fullPath,
-                    mediaDestination));
-        }
-
-        return entries;
-    }
-
-    private static String nullOrNodeValue(Node node) {
-        return node != null ? node.getNodeValue() : null;
-    }
-
-    public static ManifestXsltEntry selectXslt(ArrayList<ManifestXsltEntry> entries, String xsltDestinationType, String xsltLanguage, String xsltTarget) {
-        if (xsltDestinationType != null)
-            entries.removeIf(entry -> !xsltDestinationType.equals(entry.destinationType()));
-
-        if (xsltLanguage != null)
-            entries.removeIf(entry -> !xsltLanguage.equals(entry.language()));
-
-        if (xsltTarget != null)
-            entries.removeIf(entry -> !xsltTarget.equals(entry.target()));
-
-        entries = filterIfExist(entries, e -> e.mediaDestination().equals("sign"));
-        entries = filterIfExist(entries, e -> List.of("HTML", "XHTML").contains(e.destinationType()));
-        entries = filterIfExist(entries, e -> e.mediaDestination().equals("view"));
-        entries = filterIfExist(entries, e -> e.destinationType().equals("XHTML"));
-        entries = filterIfExist(entries, e -> e.language().equals("sk"));
-        entries = filterIfExist(entries, e -> e.language().equals("en"));
-
-        return entries.stream().findFirst().orElse(null);
-    }
-
-    private static ArrayList<ManifestXsltEntry> filterIfExist(ArrayList<ManifestXsltEntry> entries, Predicate<ManifestXsltEntry> l) {
-        if (entries.stream().anyMatch(l))
-            return new ArrayList<>(entries.stream().filter(l).toList());
-
-        return entries;
     }
 }

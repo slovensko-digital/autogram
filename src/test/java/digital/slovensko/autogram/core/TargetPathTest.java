@@ -81,6 +81,19 @@ public class TargetPathTest {
         assertEqualPath("/test/virtual/source_signed (1).pdf", target);
     }
 
+    @Test
+    public void testSingleFileNoTargetUsesActualSignedFileType() throws IOException {
+        FileSystem fs = Jimfs.newFileSystem(com.google.common.jimfs.Configuration.unix());
+        var sourceFile = fs.getPath("/test/virtual/source.pdf");
+        Files.createDirectories(sourceFile.getParent());
+        Files.createFile(sourceFile);
+
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, false);
+        var target = targetPath.getSaveFilePath(sourceFile, true);
+
+        assertEqualPath("/test/virtual/source_signed.pdf", target);
+    }
+
     /**
      * Used in GUI mode with single file
      * or used in CLI mode without target eg. `--cli -s /test/virtual/source.pdf`

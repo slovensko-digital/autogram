@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest:Manifest xmlns:attachment="urn:attachment:1.0"
+    xmlns:attachmentfile="urn:attachmentfile:1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:setting="urn:setting:1.0" xmlns:meta="urn:meta:1.0" xmlns:content="urn:content:1.0"
+    xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:presentation="urn:presentation:1.0"
+    xmlns:data="urn:data:1.0" xmlns:manifest="urn:manifest:1.0">
+    <manifest:file-entry media-type="text/xml" media-language="sk" full-path="data.xml"
+        description="data" filename="data.xml" />
+    <manifest:file-entry media-type="application/xslt+xml" media-destination="print"
+        media-destination-type-description="" media-language="sk"
+        full-path="Content\form.UDZSRozhodnutie.fo.xsl" description="do PDF"
+        filename="form.UDZSRozhodnutie.fo.xsl" />
+    <manifest:file-entry media-type="application/xslt+xml" media-destination="view"
+        media-destination-type-description="" media-language="sk"
+        full-path="Content\form.UDZSRozhodnutie.html.xslt" description="do HTML"
+        filename="form.UDZSRozhodnutie.html.xslt" />
+    <manifest:file-entry media-type="application/xslt+xml" media-destination="sign"
+        media-destination-type-description="" media-language="sk"
+        full-path="Content\form.UDZSRozhodnutie.sb.xslt" description="podpisova"
+        filename="form.UDZSRozhodnutie.sb.xslt" />
+    <manifest:file-entry media-type="text/xml" media-language="sk" full-path="schema.xsd"
+        description="schema" filename="schema.xsd" />
+    <manifest:file-entry media-type="text/xml" media-language="sk" full-path="meta.xml"
+        filename="meta.xml" />
+    <manifest:file-entry media-type="text/xml" media-language="sk" full-path="attachments.xml"
+        filename="attachments.xml" />
+</manifest:Manifest>

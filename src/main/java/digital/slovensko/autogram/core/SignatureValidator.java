@@ -15,7 +15,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.simplereport.SimpleReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +36,6 @@ import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.function.TLPredicateFactory;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
-import eu.europa.esig.dss.tsl.sync.ExpirationAndSignatureCheckStrategy;
 import eu.europa.esig.dss.spi.validation.CertificateVerifier;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
@@ -50,6 +48,7 @@ public class SignatureValidator {
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
     private CertificateVerifier verifier;
     private TLValidationJob validationJob;
+    private ExecutorService executorService;
     private static Logger logger = LoggerFactory.getLogger(SignatureValidator.class);
 
     // Singleton
@@ -72,11 +71,17 @@ public class SignatureValidator {
         return docValidator.validateDocument();
     }
 
+    public synchronized void updateLotl(List<String> tlCountries) {
+        initialize(executorService, tlCountries);
+    }
+
     public synchronized void refresh() {
         validationJob.offlineRefresh();
     }
 
     public synchronized void initialize(ExecutorService executorService, List<String> tlCountries) {
+        this.executorService = executorService;
+
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         logger.debug("Initializing signature validator at {}", formatter.format(new Date()));
 

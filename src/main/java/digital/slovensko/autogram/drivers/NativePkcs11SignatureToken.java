@@ -12,12 +12,11 @@ import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
-import sun.security.pkcs11.wrapper.CK_ATTRIBUTE;
-import sun.security.pkcs11.wrapper.PKCS11;
-import sun.security.pkcs11.wrapper.PKCS11Constants;
-import sun.security.pkcs11.wrapper.PKCS11Exception;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.Signature;
@@ -26,6 +25,10 @@ import java.util.Objects;
 
 public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private static final long CKU_CONTEXT_SPECIFIC = 2L;
+    private static final String PKCS11_EXCEPTION_CLASS_NAME = "sun.security.pkcs11.wrapper.PKCS11Exception";
+    private static final String PKCS11_CONSTANTS_CLASS_NAME = "sun.security.pkcs11.wrapper.PKCS11Constants";
+    private static final String CK_ATTRIBUTE_CLASS_NAME = "sun.security.pkcs11.wrapper.CK_ATTRIBUTE";
+
     private final PasswordManager passwordManager;
     private final SignatureTokenSettings settings;
 
@@ -60,44 +63,51 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
             if (isAlwaysAuthenticate(p11, sessionId, pk) && (settings.getForceContextSpecificLoginEnabled() || !isProtectedAuthenticationPath(p11, getSlotListIndex()))) {
                 var password = passwordManager.getContextSpecificPassword();
-                if (password == null) throw new PasswordNotProvidedException(); // handle password not provided
-                p11.C_Login(sessionId, CKU_CONTEXT_SPECIFIC, password);
+                if (password == null) throw new PasswordNotProvidedException();
+                invokeCLogin(p11, sessionId, CKU_CONTEXT_SPECIFIC, password);
             }
         } catch (AutogramException e) {
-            throw e; // rethrow autogram errors
-        } catch (PKCS11Exception e) {
-            if (e.getMessage().equals("CKR_PIN_INCORRECT"))
-                throw new PINIncorrectException();
-
-            throw new GeneralSecurityException(e);
+            throw e;
+        } catch (Exception e) {
+            var cause = unwrapInvocationException(e);
+            if (isPkcs11Exception(cause)) {
+                if ("CKR_PIN_INCORRECT".equals(cause.getMessage())) {
+                    throw new PINIncorrectException();
+                }
+                throw new GeneralSecurityException(cause);
+            }
+            throw new GeneralSecurityException(cause);
         }
     }
 
-    private static boolean isAlwaysAuthenticate(PKCS11 p11, long sessionId, PrivateKey pk) throws PKCS11Exception {
+    private static boolean isAlwaysAuthenticate(Object p11, long sessionId, PrivateKey pk) throws Exception {
         var keyID = getKeyID(pk);
-        var attrs = new CK_ATTRIBUTE[]{new CK_ATTRIBUTE(PKCS11Constants.CKA_ALWAYS_AUTHENTICATE)};
+        var attrs = newAttributeArray(getPkcs11Constant("CKA_ALWAYS_AUTHENTICATE"));
 
-        p11.C_GetAttributeValue(sessionId, keyID, attrs);
+        invokeCGetAttributeValue(p11, sessionId, keyID, attrs);
 
-        var result = attrs[0].pValue;
+        var attr = Array.get(attrs, 0);
+        var result = getPublicField(attr, "pValue");
         if (result instanceof byte[]) {
             return ((byte[]) result)[0] == 1;
-        } else {
-            return false; // CKA_ALWAYS_AUTHENTICATE not found
         }
+        return false;
     }
 
-    private static boolean isProtectedAuthenticationPath(PKCS11 p11, int slotIndex) throws PKCS11Exception {
-
-        var slotList = p11.C_GetSlotList(false);
-        if (slotList.length <= slotIndex || slotList.length < 1)
+    private static boolean isProtectedAuthenticationPath(Object p11, int slotIndex) throws Exception {
+        var slotList = invokeCGetSlotList(p11, false);
+        if (slotList.length <= slotIndex || slotList.length < 1) {
             return false;
+        }
 
-        if (slotIndex < 0)
+        if (slotIndex < 0) {
             slotIndex = 0;
+        }
 
         var slotId = slotList[slotIndex];
-        return (p11.C_GetTokenInfo(slotId).flags & PKCS11Constants.CKF_PROTECTED_AUTHENTICATION_PATH) != 0;
+        var tokenInfo = invokeCGetTokenInfo(p11, slotId);
+        var flags = (long) getPublicField(tokenInfo, "flags");
+        return (flags & getPkcs11Constant("CKF_PROTECTED_AUTHENTICATION_PATH")) != 0;
     }
 
     private int getSlotListIndex() {
@@ -145,7 +155,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         }
     }
 
-    private static PKCS11 getP11(Signature signature) {
+    private static Object getP11(Signature signature) {
         try {
             Field sigSpiField = signature.getClass().getDeclaredField("sigSpi");
             sigSpiField.setAccessible(true);
@@ -157,12 +167,71 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
             var p11Field = token.getClass().getDeclaredField("p11");
             p11Field.setAccessible(true);
-            var p11 = p11Field.get(token);
-
-            return (PKCS11) p11;
+            return p11Field.get(token);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static Object newAttributeArray(long attributeType) throws Exception {
+        var attrClass = Class.forName(CK_ATTRIBUTE_CLASS_NAME);
+        var array = Array.newInstance(attrClass, 1);
+        var attribute = attrClass.getConstructor(long.class).newInstance(attributeType);
+        Array.set(array, 0, attribute);
+        return array;
+    }
+
+    private static long getPkcs11Constant(String fieldName) throws Exception {
+        return Class.forName(PKCS11_CONSTANTS_CLASS_NAME).getField(fieldName).getLong(null);
+    }
+
+    private static void invokeCLogin(Object p11, long sessionId, long userType, char[] pin) throws Exception {
+        invokeMethod(p11, "C_Login", new Class<?>[]{long.class, long.class, char[].class}, sessionId, userType, pin);
+    }
+
+    private static void invokeCGetAttributeValue(Object p11, long sessionId, long objectHandle, Object attrs) throws Exception {
+        invokeMethod(p11, "C_GetAttributeValue", new Class<?>[]{long.class, long.class, attrs.getClass()}, sessionId, objectHandle, attrs);
+    }
+
+    private static long[] invokeCGetSlotList(Object p11, boolean tokenPresent) throws Exception {
+        return (long[]) invokeMethod(p11, "C_GetSlotList", new Class<?>[]{boolean.class}, tokenPresent);
+    }
+
+    private static Object invokeCGetTokenInfo(Object p11, long slotId) throws Exception {
+        return invokeMethod(p11, "C_GetTokenInfo", new Class<?>[]{long.class}, slotId);
+    }
+
+    private static Object invokeMethod(Object target, String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
+        Method method = target.getClass().getMethod(methodName, parameterTypes);
+        try {
+            return method.invoke(target, args);
+        } catch (InvocationTargetException e) {
+            var cause = unwrapInvocationException(e);
+            if (cause instanceof Exception exception) {
+                throw exception;
+            }
+            throw new RuntimeException(cause);
+        }
+    }
+
+    private static Object getPublicField(Object target, String fieldName) {
+        try {
+            Field field = target.getClass().getField(fieldName);
+            return field.get(target);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Throwable unwrapInvocationException(Throwable throwable) {
+        if (throwable instanceof InvocationTargetException invocationTargetException && invocationTargetException.getCause() != null) {
+            return invocationTargetException.getCause();
+        }
+        return throwable;
+    }
+
+    private static boolean isPkcs11Exception(Throwable throwable) {
+        return throwable != null && PKCS11_EXCEPTION_CLASS_NAME.equals(throwable.getClass().getName());
     }
 
     // mostly copy & paste just to call overridden private sign method

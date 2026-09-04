@@ -122,7 +122,7 @@ public class LaunchParameters {
     public static class Validations {
         private static final int MAX_PORT_NUMBER = 65535;
         private static final String VALID_ORIGIN_REGEX = "^\\*|((https?:\\/\\/)([^\\s.:/\\\\]+[\\.])*([^\\s.:/\\\\]+)(:\\d+)?)$";
-        private static final String VALID_HOSTNAME_REGEX = "^([a-z]|[A-Z]|[0-9]|[\u00a0-\uffff]|-)+$";
+        private static final String VALID_HOSTNAME_REGEX = "^(([a-z]|[A-Z]|[0-9]|[\u00a0-\uffff]|-)+|loopback\\.autogram\\.slovensko\\.digital)$";
         private static final String VALID_LANGUAGE_REGEX = "^([a-z]|[A-Z]|[0-9]|_|-)+$";
 
         public static String validateProtocol(String protocol) {
