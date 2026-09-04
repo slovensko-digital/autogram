@@ -14,9 +14,6 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.stage.Window;
-
-import java.util.function.Consumer;
 
 public class BatchDialogController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
@@ -194,9 +191,5 @@ public class BatchDialogController extends BaseController implements SuppressedF
     @Override
     public Node getNodeForLoosingFocus() {
         return mainBox;
-    }
-
-    public Window getMainWindow() {
-        return mainBox.getScene().getWindow();
     }
 }

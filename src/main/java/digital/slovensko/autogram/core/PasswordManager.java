@@ -7,23 +7,17 @@ import java.util.Arrays;
 
 public class PasswordManager implements PasswordInputCallback {
     private final UI ui;
-    private final PasswordManagerSettings settings;
     private char[] cachedPassword;
 
-    public PasswordManager(UI ui, PasswordManagerSettings settings) {
+    public PasswordManager(UI ui) {
         this.ui = ui;
-        this.settings = settings;
     }
 
     public char[] getContextSpecificPassword() {
-        if (settings.getCacheContextSpecificPasswordEnabled()) {
-            if (cachedPassword == null) {
-                cachedPassword = ui.getContextSpecificPassword();
-            }
-            return cachedPassword;
-        } else {
-            return ui.getContextSpecificPassword();
+        if (cachedPassword == null) {
+            cachedPassword = ui.getContextSpecificPassword();
         }
+        return cachedPassword;
     }
 
     public void reset() {

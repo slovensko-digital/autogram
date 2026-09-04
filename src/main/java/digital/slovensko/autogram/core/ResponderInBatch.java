@@ -23,4 +23,9 @@ public class ResponderInBatch extends Responder {
 
         responder.onDocumentSignFailed(error);
     }
+
+    @Override
+    public boolean isBatch() {
+        return true;
+    }
 }

@@ -294,7 +294,12 @@ class AutogramTests {
         }
 
         @Override
-        public void startBatch(Batch batch, Autogram autogram, BatchResponder responder) {
+        public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
+        }
+
+        @Override
+        public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+                BatchResponder oneByOneResponder) {
         }
 
         @Override

@@ -32,7 +32,6 @@ public class CliSettings extends UserSettings {
         settings.setEn319132(cmd.hasOption("en319132"));
         settings.setTsaServer(cmd.getOptionValue("tsa-server"));
         settings.setTsaEnabled(settings.getTsaServer() != null);
-        settings.setBulkEnabled(true);
         settings.setPlainXmlEnabled(cmd.hasOption("plain-xml"));
         settings.setTokenSessionTimeout(5);
         settings.setCustomPKCS11DriverPath(cmd.getOptionValue("pkcs11-driver-path", ""));

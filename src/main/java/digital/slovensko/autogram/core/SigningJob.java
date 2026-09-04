@@ -11,7 +11,6 @@ import eu.europa.esig.dss.alert.LogOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -73,12 +72,19 @@ public class SigningJob {
         responder.onDocumentSignFailed(e);
     }
 
+    public boolean isBatch() {
+        return responder.isBatch();
+    }
+
     private DSSDocument signDocumentAsCAdeS(SigningKey key) {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new CAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
         var signatureParameters = getParameters().getCAdESSignatureParameters();
+
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.CAdES_BASELINE_T))
+            service.setTspSource(getParameters().getTspSource());
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
@@ -113,6 +119,9 @@ public class SigningJob {
         var service = new XAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
         var signatureParameters = getParameters().getXAdESSignatureParameters();
+
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
+            service.setTspSource(getParameters().getTspSource());
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());

@@ -22,7 +22,6 @@ import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -41,7 +40,7 @@ public class Autogram {
     public Autogram(UI ui, UserSettings settings) {
         this.ui = ui;
         this.settings = settings;
-        this.passwordManager = new PasswordManager(ui, this.settings);
+        this.passwordManager = new PasswordManager(ui);
     }
 
     public void sign(SigningJob job) {
@@ -79,8 +78,10 @@ public class Autogram {
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
             if (PDFUtils.isPdfAndPasswordProtected(job.getDocument())) {
+                var error = new AutogramException("LOCKED_PDF");
+                notifyBatchJobFailure(job, error);
                 ui.onUIThreadDo(() -> {
-                    ui.showError(new AutogramException("LOCKED_PDF"));
+                    ui.showError(error);
                 });
                 return;
             }
@@ -89,6 +90,7 @@ public class Autogram {
                 var visualization = DocumentVisualizationBuilder.fromJob(job, settings);
                 ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
             } catch (AutogramException e) {
+                notifyBatchJobFailure(job, e);
                 ui.onUIThreadDo(() -> ui.showError(e));
             } catch (Exception e) {
                 Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
@@ -132,30 +134,83 @@ public class Autogram {
                 signCommonAndThen(job, signingKey, (jobNew) -> {
                     ui.onUIThreadDo(() -> ui.onSigningSuccess(jobNew));
                 });
-            } catch (ResponseNetworkErrorException e) {
-                onSigningFailed(e, job);
             } catch (AutogramException e) {
-                onSigningFailed(e);
+                handleSigningFailure(job, e);
             } catch (Exception e) {
-                onSigningFailed(new UnrecognizedException(e));
+                handleSigningFailure(job, new UnrecognizedException(e));
             }
         });
     }
 
+    private void handleSigningFailure(SigningJob job, AutogramException error) {
+        if (job.isBatch()) {
+            onSigningFailed(error, job);
+            job.onDocumentSignFailed(error);
+        } else if (error instanceof ResponseNetworkErrorException) {
+            onSigningFailed(error, job);
+        } else {
+            onSigningFailed(error);
+        }
+    }
+
+    private void notifyBatchJobFailure(SigningJob job, AutogramException error) {
+        if (job.isBatch())
+            job.onDocumentSignFailed(error);
+    }
+
     /**
-     * Starts a batch - shows method selection dialog, user picks mode
+     * Starts a batch using the standard key-selection flow.
      *
      * @param totalNumberOfDocuments - expected number of documents to be signed
-     * @param responder              - handles batch events (mode is implementation detail)
+     * @param responder              - callback for handling batch responses
      */
     public void batchStart(int totalNumberOfDocuments, BatchResponder responder) {
+        var newBatch = createBatch(totalNumberOfDocuments);
+        startBatch(newBatch, responder);
+    }
+
+    public void batchStartWithModeSelection(int totalNumberOfDocuments, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder) {
+        var newBatch = createBatch(totalNumberOfDocuments);
+        ui.onUIThreadDo(() -> ui.selectBatchMode(newBatch, this, allAtOnceResponder, oneByOneResponder));
+    }
+
+    public void startBatch(Batch batch, BatchResponder responder) {
+        ensureCurrentBatch(batch);
+        var callback = new BatchStartCallback(batch, responder);
+        ui.onUIThreadDo(() -> ui.startBatch(batch, this, callback));
+    }
+
+    public void startOneByOneBatch(Batch batch, BatchResponder responder) {
+        ensureCurrentBatch(batch);
+        try {
+            batch.startOneByOne();
+            responder.onBatchStartSuccess(batch);
+        } catch (Exception e) {
+            batch.end();
+            passwordManager.reset();
+            responder.onBatchStartFailure(toAutogramException(e));
+        }
+    }
+
+    private Batch createBatch(int totalNumberOfDocuments) {
         if (batch != null && !batch.isEnded())
             throw new BatchConflictException();
-        batch = new Batch(totalNumberOfDocuments);
 
-        ui.onUIThreadDo(() -> {
-            ui.startBatch(batch, this, responder);
-        });
+        batch = new Batch(totalNumberOfDocuments);
+        return batch;
+    }
+
+    private void ensureCurrentBatch(Batch batch) {
+        if (this.batch != batch || batch.isEnded())
+            throw new BatchConflictException();
+    }
+
+    private AutogramException toAutogramException(Exception error) {
+        if (error instanceof AutogramException autogramException)
+            return autogramException;
+
+        return new AutogramException("BATCH_START_FAILED", error, error);
     }
 
     /**
@@ -258,6 +313,9 @@ public class Autogram {
     }
 
     public void onDocumentBatchSaved(BatchUiResult result) {
+        if (batch != null)
+            batch.end();
+        passwordManager.reset();
         ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(result));
     }
 

@@ -14,7 +14,10 @@ import java.util.function.Consumer;
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
 
-    void startBatch(Batch batch, Autogram autogram, BatchResponder responder);
+    void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
+
+    void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder);
 
     void cancelBatch(Batch batch);
 
@@ -58,7 +61,7 @@ public interface UI {
 
     char[] getContextSpecificPassword();
 
-    public void updateBatch();
+    void updateBatch();
 
     void resetSigningKey();
 

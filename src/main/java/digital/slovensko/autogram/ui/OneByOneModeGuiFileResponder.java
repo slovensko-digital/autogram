@@ -6,8 +6,8 @@ import java.util.List;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
@@ -39,18 +39,18 @@ public class OneByOneModeGuiFileResponder extends BatchGuiFileResponder {
             var currentFileNumber = currentFileIndex;
             var job = buildBatchJob(file, batch, () -> processNextFile(batch), error -> {
                 if (!error.batchCanContinue()) {
-                    onAllFilesSigned(batch);
+                    abortRemainingFiles(batch, new BatchCanceledException());
                     return;
                 }
                 processNextFile(batch);
             });
             job.setDialogTitleSuffix(String.format("(%d z %d)", currentFileNumber, list.size()));
+            batch.addJob(batch.getBatchId());
             autogram.sign(job);
         } catch (AutogramException e) {
             handleFileSubmissionFailure(file, batch, e);
             if (!e.batchCanContinue()) {
-                batch.end();
-                onAllFilesSigned(batch);
+                abortRemainingFiles(batch, new BatchCanceledException());
                 return;
             }
             processNextFile(batch);

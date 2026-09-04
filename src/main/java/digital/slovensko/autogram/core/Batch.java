@@ -17,7 +17,9 @@ enum BatchState {
 }
 
 /**
- * Batch is a session for signing multiple documents with the same key.
+ * Batch is a session for signing and tracking multiple documents. All-at-once
+ * batches retain a signing key, while interactive batches select a key in the
+ * normal signing dialog.
  * 
  * This class is used for checking runtime conditions and tracking progress.
  */
@@ -43,6 +45,10 @@ public class Batch {
             throw new BatchEndedException(CANNOT_RESTART);
         state = BatchState.STARTED;
         signingKey = key;
+    }
+
+    public void startOneByOne() {
+        start(null);
     }
 
     public void addJob(String batchId) {

@@ -5,12 +5,10 @@ import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.ui.BatchModeGuiFileResponder;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
@@ -69,19 +67,10 @@ public class GUI implements UI {
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, BatchResponder responder) {
-        if (responder instanceof BatchModeGuiFileResponder batchModeResponder) {
-            showBatchMethodSelectionDialog(batch, autogram, batchModeResponder);
-        } else {
-            // Server and other non-file responders keep the original key-pick/start flow.
-            startBatchWithDialog(batch, autogram, responder);
-        }
-    }
-
-    public void showBatchMethodSelectionDialog(Batch batch, Autogram autogram, BatchModeGuiFileResponder responder) {
+    public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder) {
         var controller = new BatchMethodSelectionDialogController(
-                batch, responder, autogram, this,
-                responder.getFilesList(), responder.getTargetDirectory(), userSettings);
+                batch, allAtOnceResponder, oneByOneResponder, autogram);
         var root = GUIUtils.loadFXML(controller, "batch-method-selection-dialog.fxml");
 
         var stage = new Stage();
@@ -89,7 +78,6 @@ public class GUI implements UI {
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
             cancelBatch(batch);
-            responder.onBatchStartFailure(new BatchCanceledException());
         });
 
         stage.setResizable(false);
@@ -99,18 +87,8 @@ public class GUI implements UI {
         setUserFriendlyPositionAndLimits(stage);
     }
 
-    public void startBatchWithDialog(Batch batch, Autogram autogram, BatchResponder responder) {
-        var callback = new BatchStartCallback(batch, responder) {
-            @Override
-            public void accept(SigningKey key) {
-                try {
-                    batch.start(key);
-                    responder.onBatchStartSuccess(batch);
-                } catch (Exception e) {
-                    handleException(e);
-                }
-            }
-        };
+    @Override
+    public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
         batchController = new BatchDialogController(batch, callback, autogram, this);
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
@@ -127,10 +105,6 @@ public class GUI implements UI {
         GUIUtils.suppressDefaultFocus(stage, batchController);
         GUIUtils.showOnTop(stage);
         setUserFriendlyPositionAndLimits(stage);
-    }
-
-    public void startBatchOneByOne(Batch batch, Autogram autogram, BatchResponder responder) {
-        responder.onBatchStartSuccess(batch);
     }
 
     @Override
@@ -390,7 +364,6 @@ public class GUI implements UI {
             title += " " + visualization.getJob().getDocument().getName();
         if (visualization.getJob().getDialogTitleSuffix() != null)
             title += " " + visualization.getJob().getDialogTitleSuffix();
-
         var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);
 
@@ -430,7 +403,10 @@ public class GUI implements UI {
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.WINDOW_MODAL);
-        stage.initOwner(getJobWindow(e.getJob()));
+        var jobController = jobControllers.get(e.getJob());
+        if (jobController != null)
+            stage.initOwner(jobController.mainBox.getScene().getWindow());
+        stage.setOnCloseRequest(event -> e.getJob().onDocumentSignFailed(new SigningCanceledByUserException()));
         GUIUtils.suppressDefaultFocus(stage, controller);
 
         GUIUtils.showOnTop(stage);

@@ -44,13 +44,7 @@ public abstract class BatchGuiFileResponder extends BatchResponder {
 
     @Override
     public void onBatchStartSuccess(Batch batch) {
-        try {
-            targetPath.mkdirIfDir();
-        } catch (AutogramException e) {
-            autogram.onSigningFailed(e);
-            throw e;
-        }
-
+        targetPath.mkdirIfDir();
         processFiles(batch);
     }
 
@@ -85,11 +79,23 @@ public abstract class BatchGuiFileResponder extends BatchResponder {
         Logging.log("Signing failed before job submission " + file + " all:" + batch.isAllProcessed());
     }
 
+    protected void abortRemainingFiles(Batch batch, AutogramException error) {
+        for (File file : list) {
+            if (targetFiles.containsKey(file))
+                continue;
+
+            initFileResult(file);
+            errors.put(file, error);
+            batch.onJobFailure();
+        }
+
+        onAllFilesSigned(batch);
+    }
+
     protected void onAllFilesSigned(Batch batch) {
         Logging.log("onAllFilesSigned " + batch.isAllProcessed() + " " + uiNotifiedOnAllFilesSigned);
         if (batch.isAllProcessed() && !uiNotifiedOnAllFilesSigned) {
             uiNotifiedOnAllFilesSigned = true;
-            batch.end();
             Logging.log(errors.values().stream().map(e -> e == null ? "" : e.toString()).toList());
             var result = new BatchUiResult(targetPath, targetFiles, errors);
             autogram.onDocumentBatchSaved(result);

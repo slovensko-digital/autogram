@@ -8,6 +8,7 @@ import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.ui.BatchModeGuiFileResponder;
+import digital.slovensko.autogram.ui.OneByOneModeGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -19,7 +20,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
+
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 public class MainMenuController extends BaseController implements SuppressedFocusController {
     private final Autogram autogram;
@@ -112,9 +116,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
                     userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
             autogram.sign(job);
         } else {
-            autogram.batchStart(filesList.size(), new BatchModeGuiFileResponder(autogram, filesList,
-                    filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(),
-                    userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled()));
+            startFileBatch(filesList, filesList.get(0).toPath().getParent().resolve("signed"), tspSource);
         }
     }
 
@@ -130,10 +132,20 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         // send null tspSource if signature shouldn't be timestamped
         var tspSource = userSettings.getTsaEnabled() ? userSettings.getTspSource() : null;
 
-        autogram.batchStart(filesList.size(),
-                new BatchModeGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(),
-                        userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(),
-                        userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled()));
+        startFileBatch(filesList, targetDirectory, tspSource);
+    }
+
+    private void startFileBatch(List<File> files, Path targetDirectory, TSPSource tspSource) {
+        var allAtOnceResponder = new BatchModeGuiFileResponder(autogram, files, targetDirectory,
+                userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(),
+                userSettings.shouldSignPDFAsPades(), userSettings.isEn319132(), tspSource,
+                userSettings.isPlainXmlEnabled());
+        var oneByOneResponder = new OneByOneModeGuiFileResponder(autogram, files, targetDirectory,
+                userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(),
+                userSettings.shouldSignPDFAsPades(), userSettings.isEn319132(), tspSource,
+                userSettings.isPlainXmlEnabled());
+
+        autogram.batchStartWithModeSelection(files.size(), allAtOnceResponder, oneByOneResponder);
     }
 
     public void onAboutButtonAction() {

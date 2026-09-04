@@ -81,8 +81,14 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, BatchResponder responder) {
-        // CLI doesn't support batch mode - user should use --cli with individual files
+    public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
+        // CLI batch signing uses its dedicated command flow.
+    }
+
+    @Override
+    public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder) {
+        // GUI-only flow.
     }
 
     @Override

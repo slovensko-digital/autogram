@@ -18,6 +18,7 @@
         <Text styleClass="autogram-heading-m" text="%batch.title" />
     </TextFlow>
 
+
     <VBox fx:id="batchVisualization" styleClass="autogram-batch-visualization" VBox.vgrow="ALWAYS">
         <VBox alignment="CENTER">
             <SVGPath styleClass="autogram-icon,autogram-icon--big,autogram-icon--warning"

@@ -22,13 +22,12 @@ import java.util.prefs.Preferences;
 import java.util.stream.Stream;
 
 
-public class UserSettings implements PasswordManagerSettings, SignatureTokenSettings, DriverDetectorSettings {
+public class UserSettings implements SignatureTokenSettings, DriverDetectorSettings {
     private static final String DEFAULT_LANGUAGE = null; // system language
     private static final String DEFAULT_SIGNATURE_LEVEL = SignatureLevelStringConverter.PADES;
     private static final String DEFAULT_DRIVER = "";
     private static final String DEFAULT_DRIVER_SLOT_INDEX_MAP = "";
     private static final boolean DEFAULT_EN319132 = false;
-    private static final boolean DEFAULT_BULK_ENABLED = true;
     private static final boolean DEFAULT_PLAIN_XML_ENABLED = false;
     private static final boolean DEFAULT_SIGN_INDIVIDUALLY = true;
     private static final boolean DEFAULT_CORRECT_DOCUMENT_DISPLAY = true;
@@ -69,7 +68,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private CompositeTSPSource tspSource;
     private boolean tsaEnabled;
     private String customTsaServer;
-    private boolean bulkEnabled;
     private int pdfDpi;
     private long tokenSessionTimeout;
     private String customPKCS11DriverPath;
@@ -82,7 +80,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", DEFAULT_SIGNATURE_LEVEL));
         settings.setDriver(prefs.get("DRIVER", DEFAULT_DRIVER));
         settings.setEn319132(prefs.getBoolean("EN319132", DEFAULT_EN319132));
-        settings.setBulkEnabled(prefs.getBoolean("BULK_ENABLED", DEFAULT_BULK_ENABLED));
         settings.setPlainXmlEnabled(prefs.getBoolean("PLAIN_XML_ENABLED", DEFAULT_PLAIN_XML_ENABLED));
         settings.setSignIndividually(prefs.getBoolean("SIGN_INDIVIDUALLY", DEFAULT_SIGN_INDIVIDUALLY));
         settings.setCorrectDocumentDisplay(prefs.getBoolean("CORRECT_DOCUMENT_DISPLAY", DEFAULT_CORRECT_DOCUMENT_DISPLAY));
@@ -139,7 +136,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.put("SIGNATURE_LEVEL", new SignatureLevelStringConverter().toString(signatureLevel));
         prefs.put("DRIVER", driver == null ? "" : driver);
         prefs.putBoolean("EN319132", en319132);
-        prefs.putBoolean("BULK_ENABLED", bulkEnabled);
         prefs.putBoolean("PLAIN_XML_ENABLED", plainXmlEnabled);
         prefs.putBoolean("SIGN_INDIVIDUALLY", signIndividually);
         prefs.putBoolean("CORRECT_DOCUMENT_DISPLAY", correctDocumentDisplay);
@@ -168,7 +164,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         setSignatureType(DEFAULT_SIGNATURE_LEVEL);
         setDriver(DEFAULT_DRIVER);
         setEn319132(DEFAULT_EN319132);
-        setBulkEnabled(DEFAULT_BULK_ENABLED);
         setPlainXmlEnabled(DEFAULT_PLAIN_XML_ENABLED);
         setSignIndividually(DEFAULT_SIGN_INDIVIDUALLY);
         setCorrectDocumentDisplay(DEFAULT_CORRECT_DOCUMENT_DISPLAY);
@@ -373,19 +368,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         tsaEnabled = value;
     }
 
-    public void setBulkEnabled(boolean value) {
-        bulkEnabled = value;
-    }
-
-    @Override
-    public boolean getCacheContextSpecificPasswordEnabled() {
-        return bulkEnabled; // faux settings
-    }
-
-    @Override
-    public boolean getForceContextSpecificLoginEnabled() {
-        return bulkEnabled; // faux settings
-    }
     @Override
     public int getDriverSlotIndex(String tokenDriverShortname) {
         return driverSlotIndexMap.getOrDefault(tokenDriverShortname, driverSlotIndexMap.getOrDefault("default", -1));
@@ -397,10 +379,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public DriverDetector getDriverDetector() {
         return new DefaultDriverDetector(this);
-    }
-
-    public boolean isBulkEnabled() {
-        return bulkEnabled;
     }
 
     public int getPdfDpi() {
