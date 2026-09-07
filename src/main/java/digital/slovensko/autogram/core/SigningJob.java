@@ -85,7 +85,7 @@ public class SigningJob {
         return parameters.getVisualizationWidth();
     }
 
-    public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
+    public void signWithKeyAndRespond(SigningKey key) throws AutogramException {
 
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
@@ -257,7 +257,6 @@ public class SigningJob {
             case CAdES:
                 return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
             default:
-                ;
         }
 
         if (isPDF(document.getMimeType())) switch (signatureType) {
@@ -268,7 +267,6 @@ public class SigningJob {
             case CAdES_BASELINE_B:
                 return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
             default:
-                ;
         }
 
         return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);

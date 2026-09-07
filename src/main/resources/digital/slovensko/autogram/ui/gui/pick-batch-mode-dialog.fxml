@@ -2,7 +2,6 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
@@ -17,10 +16,7 @@
         <Text styleClass="autogram-heading-l" text="%pickBatchMode.title" />
     </TextFlow>
 
-    <VBox styleClass="autogram-radio-options" spacing="0">
-        <fx:define>
-            <ToggleGroup fx:id="signingMode" />
-        </fx:define>
+    <VBox styleClass="autogram-radio-options">
         <VBox styleClass="autogram-radio-option">
             <RadioButton fx:id="signOneByOneButton" text="%batch.sign.oneByOne.btn" />
             <TextFlow styleClass="autogram-radio-hint">

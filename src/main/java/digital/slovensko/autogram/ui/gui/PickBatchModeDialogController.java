@@ -3,7 +3,6 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -27,7 +26,7 @@ public class PickBatchModeDialogController extends BaseController implements Sup
     @FXML
     public RadioButton signAllButton;
     @FXML
-    private ToggleGroup signingMode;
+    private final ToggleGroup signingMode = new ToggleGroup();
 
     public PickBatchModeDialogController(Batch batch, BatchResponder allAtOnceResponder,
             BatchResponder oneByOneResponder, Autogram autogram) {
@@ -44,7 +43,7 @@ public class PickBatchModeDialogController extends BaseController implements Sup
         signOneByOneButton.setSelected(true);
     }
 
-    public void onContinueButtonPressed(ActionEvent event) {
+    public void onContinueButtonPressed() {
         close();
         if (signOneByOneButton.isSelected())
             autogram.startOneByOneBatch(batch, oneByOneResponder);
