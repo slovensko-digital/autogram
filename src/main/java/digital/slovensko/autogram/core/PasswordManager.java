@@ -7,17 +7,32 @@ import java.util.Arrays;
 
 public class PasswordManager implements PasswordInputCallback {
     private final UI ui;
+    private final PasswordManagerSettings settings;
     private char[] cachedPassword;
+    private boolean batchCachingEnabled;
 
-    public PasswordManager(UI ui) {
+    public PasswordManager(UI ui, PasswordManagerSettings settings) {
         this.ui = ui;
+        this.settings = settings;
     }
 
     public char[] getContextSpecificPassword() {
-        if (cachedPassword == null) {
-            cachedPassword = ui.getContextSpecificPassword();
+        if (batchCachingEnabled || settings.getCacheContextSpecificPasswordEnabled()) {
+            if (cachedPassword == null) {
+                cachedPassword = ui.getContextSpecificPassword();
+            }
+            return cachedPassword;
+        } else {
+            return ui.getContextSpecificPassword();
         }
-        return cachedPassword;
+    }
+
+    public void enableBatchCaching() {
+        batchCachingEnabled = true;
+    }
+
+    public boolean isBatchCachingEnabled() {
+        return batchCachingEnabled;
     }
 
     public void reset() {
@@ -25,6 +40,7 @@ public class PasswordManager implements PasswordInputCallback {
             Arrays.fill(cachedPassword, '\0');
 
         cachedPassword = null;
+        batchCachingEnabled = false;
     }
 
     @Override

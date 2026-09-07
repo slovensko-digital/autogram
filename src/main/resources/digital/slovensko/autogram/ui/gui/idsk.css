@@ -910,9 +910,33 @@ TextFlow.autogram-body-s {
   -fx-alignment: center-left;
 }
 
+.autogram-radio-hint {
+  -fx-padding: 0 0 0 55px;
+  -fx-translate-y: -5px;
+}
+
+.autogram-radio-hint Text {
+  -fx-fill: -autogram-secondary-text-colour;
+  -fx-font-size: 1em;
+}
+
+.autogram-radio-options {
+  -fx-padding: 0.75em 0 0.75em 0;
+}
+
+.autogram-radio-option {
+  -fx-padding: 0 0 10px 0;
+}
+
 .autogram-actions {
   -fx-spacing: 15px;
   -fx-alignment: center-left;
+}
+
+.autogram-actions--wrapping {
+  -fx-hgap: 15px;
+  -fx-vgap: 10px;
+  -fx-alignment: top-left;
 }
 
 .autogram-visualization-header {
@@ -1241,5 +1265,3 @@ TextFlow.autogram-body-s {
 .autogram-label {
   -fx-font-size: 1.125em;
 }
-
-

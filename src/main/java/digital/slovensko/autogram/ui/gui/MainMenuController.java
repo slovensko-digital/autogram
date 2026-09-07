@@ -145,7 +145,11 @@ public class MainMenuController extends BaseController implements SuppressedFocu
                 userSettings.shouldSignPDFAsPades(), userSettings.isEn319132(), tspSource,
                 userSettings.isPlainXmlEnabled());
 
-        autogram.batchStartWithModeSelection(files.size(), allAtOnceResponder, oneByOneResponder);
+        if (userSettings.isBulkEnabled()) {
+            autogram.batchStart(files.size(), allAtOnceResponder);
+        } else {
+            autogram.batchStartWithModeSelection(files.size(), allAtOnceResponder, oneByOneResponder);
+        }
     }
 
     public void onAboutButtonAction() {

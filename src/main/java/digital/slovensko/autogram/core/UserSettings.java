@@ -22,12 +22,13 @@ import java.util.prefs.Preferences;
 import java.util.stream.Stream;
 
 
-public class UserSettings implements SignatureTokenSettings, DriverDetectorSettings {
+public class UserSettings implements PasswordManagerSettings, SignatureTokenSettings, DriverDetectorSettings {
     private static final String DEFAULT_LANGUAGE = null; // system language
     private static final String DEFAULT_SIGNATURE_LEVEL = SignatureLevelStringConverter.PADES;
     private static final String DEFAULT_DRIVER = "";
     private static final String DEFAULT_DRIVER_SLOT_INDEX_MAP = "";
     private static final boolean DEFAULT_EN319132 = false;
+    private static final boolean DEFAULT_BULK_ENABLED = true;
     private static final boolean DEFAULT_PLAIN_XML_ENABLED = false;
     private static final boolean DEFAULT_SIGN_INDIVIDUALLY = true;
     private static final boolean DEFAULT_CORRECT_DOCUMENT_DISPLAY = true;
@@ -55,6 +56,7 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
     private SignatureLevel signatureLevel;
     private String driver;
     private boolean en319132;
+    private boolean bulkEnabled;
     private boolean plainXmlEnabled;
     private boolean signIndividually;
     private boolean correctDocumentDisplay;
@@ -80,6 +82,7 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
         settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", DEFAULT_SIGNATURE_LEVEL));
         settings.setDriver(prefs.get("DRIVER", DEFAULT_DRIVER));
         settings.setEn319132(prefs.getBoolean("EN319132", DEFAULT_EN319132));
+        settings.setBulkEnabled(prefs.getBoolean("BULK_ENABLED", DEFAULT_BULK_ENABLED));
         settings.setPlainXmlEnabled(prefs.getBoolean("PLAIN_XML_ENABLED", DEFAULT_PLAIN_XML_ENABLED));
         settings.setSignIndividually(prefs.getBoolean("SIGN_INDIVIDUALLY", DEFAULT_SIGN_INDIVIDUALLY));
         settings.setCorrectDocumentDisplay(prefs.getBoolean("CORRECT_DOCUMENT_DISPLAY", DEFAULT_CORRECT_DOCUMENT_DISPLAY));
@@ -136,6 +139,7 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
         prefs.put("SIGNATURE_LEVEL", new SignatureLevelStringConverter().toString(signatureLevel));
         prefs.put("DRIVER", driver == null ? "" : driver);
         prefs.putBoolean("EN319132", en319132);
+        prefs.putBoolean("BULK_ENABLED", bulkEnabled);
         prefs.putBoolean("PLAIN_XML_ENABLED", plainXmlEnabled);
         prefs.putBoolean("SIGN_INDIVIDUALLY", signIndividually);
         prefs.putBoolean("CORRECT_DOCUMENT_DISPLAY", correctDocumentDisplay);
@@ -164,6 +168,7 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
         setSignatureType(DEFAULT_SIGNATURE_LEVEL);
         setDriver(DEFAULT_DRIVER);
         setEn319132(DEFAULT_EN319132);
+        setBulkEnabled(DEFAULT_BULK_ENABLED);
         setPlainXmlEnabled(DEFAULT_PLAIN_XML_ENABLED);
         setSignIndividually(DEFAULT_SIGN_INDIVIDUALLY);
         setCorrectDocumentDisplay(DEFAULT_CORRECT_DOCUMENT_DISPLAY);
@@ -250,6 +255,19 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
 
     public void setEn319132(boolean en319132) {
         this.en319132 = en319132;
+    }
+
+    public boolean isBulkEnabled() {
+        return bulkEnabled;
+    }
+
+    public void setBulkEnabled(boolean bulkEnabled) {
+        this.bulkEnabled = bulkEnabled;
+    }
+
+    @Override
+    public boolean getCacheContextSpecificPasswordEnabled() {
+        return bulkEnabled;
     }
 
     public boolean isSignIndividually() {

@@ -46,6 +46,8 @@ public class SettingsDialogController extends BaseController {
     @FXML
     private TextField tokenSessionTimeoutTextField;
     @FXML
+    private HBox bulkEnabledRadios;
+    @FXML
     private ChoiceBox<TokenDriver> driverChoiceBox;
     @FXML
     private VBox trustedCountriesList;
@@ -97,6 +99,7 @@ public class SettingsDialogController extends BaseController {
         initializeTsaServer();
         initializeEn319132CheckBox();
         initializePlainXmlEnabledCheckBox();
+        initializeBulkEnabledCheckBox();
         initializeTokenSessionTimeoutTextField();
         initializeCorrectDocumentDisplayCheckBox();
         initializeSignatureValidationCheckBox();
@@ -203,6 +206,10 @@ public class SettingsDialogController extends BaseController {
 
     private void initializePlainXmlEnabledCheckBox() {
         initializeBooleanRadios(plainXmlEnabledRadios, userSettings::setPlainXmlEnabled, userSettings.isPlainXmlEnabled());
+    }
+
+    private void initializeBulkEnabledCheckBox() {
+        initializeBooleanRadios(bulkEnabledRadios, userSettings::setBulkEnabled, userSettings.isBulkEnabled());
     }
 
     private void initializeCorrectDocumentDisplayCheckBox() {

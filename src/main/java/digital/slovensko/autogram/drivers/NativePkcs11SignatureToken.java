@@ -58,7 +58,9 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
 
-            if (isAlwaysAuthenticate(p11, sessionId, pk)) {
+            if (isAlwaysAuthenticate(p11, sessionId, pk)
+                    && (passwordManager.isBatchCachingEnabled()
+                    || !isProtectedAuthenticationPath(p11, getSlotListIndex()))) {
                 var password = passwordManager.getContextSpecificPassword();
                 if (password == null) throw new PasswordNotProvidedException();
                 invokeCLogin(p11, sessionId, CKU_CONTEXT_SPECIFIC, password);

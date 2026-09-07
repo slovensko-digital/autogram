@@ -5,6 +5,7 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Text?>
@@ -70,9 +71,13 @@
 
     <VBox fx:id="signaturesTable" />
 
-    <HBox styleClass="autogram-actions">
+    <FlowPane styleClass="autogram-actions,autogram-actions--wrapping">
         <Button fx:id="mainButton" styleClass="autogram-button" text="%general.sign.btn" onAction="#onMainButtonPressed"/>
+        <Button fx:id="skipButton" styleClass="autogram-button,autogram-button--secondary"
+                text="%batch.skip.btn" managed="false" visible="false" onAction="#onSkipButtonPressed"/>
+        <Button fx:id="skipRemainingButton" styleClass="autogram-button,autogram-button--warning"
+                text="%batch.endSigning.btn" managed="false" visible="false" onAction="#onSkipRemainingButtonPressed"/>
         <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="%signing.unsupportedVisualization.changeKey.btn"
                 visible="false" onAction="#onChangeKeyButtonPressed"/>
-    </HBox>
+    </FlowPane>
 </VBox>

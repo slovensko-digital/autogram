@@ -24,14 +24,18 @@ import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 
 public class SigningJob {
     private final Responder responder;
+    private final Batch batch;
     private final DSSDocument document;
     private final SigningParameters parameters;
     private String dialogTitleSuffix;
+    private Runnable skipAction;
+    private Runnable skipRemainingAction;
 
-    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder) {
+    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder, Batch batch) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
+        this.batch = batch;
     }
 
     public DSSDocument getDocument() {
@@ -48,6 +52,33 @@ public class SigningJob {
 
     public void setDialogTitleSuffix(String dialogTitleSuffix) {
         this.dialogTitleSuffix = dialogTitleSuffix;
+    }
+
+    public void setSkipActions(Runnable skipAction, Runnable skipRemainingAction) {
+        this.skipAction = skipAction;
+        this.skipRemainingAction = skipRemainingAction;
+    }
+
+    public boolean isMultiDocumentBatch() {
+        return batch != null && batch.getTotalNumberOfDocuments() > 1;
+    }
+
+    public boolean isPartOfBatch() {
+        return batch != null;
+    }
+
+    public boolean canSkip() {
+        return skipAction != null;
+    }
+
+    public void skip() {
+        if (skipAction != null)
+            skipAction.run();
+    }
+
+    public void skipRemaining() {
+        if (skipRemainingAction != null)
+            skipRemainingAction.run();
     }
 
     public int getVisualizationWidth() {
@@ -187,7 +218,7 @@ public class SigningJob {
         return fileDocument;
     }
 
-    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
+    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder, Batch batch) {
         if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
             document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
 
@@ -199,17 +230,21 @@ public class SigningJob {
             document.setName(getXdcfFilename(document.getName()));
         }
 
-        return new SigningJob(document, params, responder);
+        return new SigningJob(document, params, responder, batch);
     }
 
     public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
-        return build(document, params, responder);
+        return build(document, params, responder, null);
     }
 
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+        return buildFromFile(file, responder, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled, null);
+    }
+
+    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled, Batch batch) {
         var document = createDSSFileDocumentFromFile(file);
         var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return build(document, parameters, responder);
+        return build(document, parameters, responder, batch);
     }
 
     private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {

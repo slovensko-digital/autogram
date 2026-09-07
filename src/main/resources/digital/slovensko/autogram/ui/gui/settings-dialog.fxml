@@ -132,6 +132,20 @@
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
+                                            <Text styleClass="autogram-heading-s" text="%settings.signing.bulkEnabled.label"/>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description" text="%settings.signing.bulkEnabled.text"/>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="bulkEnabledRadios"
+                                              styleClass="autogram-smaller-radio-buttons" />
+                                    </VBox>
+                                </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
                                             <Text styleClass="autogram-heading-s" text="%settings.signing.en319132.label"/>
                                         </TextFlow>
                                         <TextFlow>

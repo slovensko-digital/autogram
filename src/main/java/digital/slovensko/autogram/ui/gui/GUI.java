@@ -69,12 +69,12 @@ public class GUI implements UI {
     @Override
     public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
             BatchResponder oneByOneResponder) {
-        var controller = new BatchMethodSelectionDialogController(
+        var controller = new PickBatchModeDialogController(
                 batch, allAtOnceResponder, oneByOneResponder, autogram);
-        var root = GUIUtils.loadFXML(controller, "batch-method-selection-dialog.fxml");
+        var root = GUIUtils.loadFXML(controller, "pick-batch-mode-dialog.fxml");
 
         var stage = new Stage();
-        stage.setTitle(controller.i18n("batch.mode.selection.title"));
+        stage.setTitle(controller.i18n("pickBatchMode.window.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
             cancelBatch(batch);

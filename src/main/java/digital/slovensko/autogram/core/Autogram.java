@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
+import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
 import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
@@ -40,7 +41,7 @@ public class Autogram {
     public Autogram(UI ui, UserSettings settings) {
         this.ui = ui;
         this.settings = settings;
-        this.passwordManager = new PasswordManager(ui);
+        this.passwordManager = new PasswordManager(ui, this.settings);
     }
 
     public void sign(SigningJob job) {
@@ -198,6 +199,8 @@ public class Autogram {
             throw new BatchConflictException();
 
         batch = new Batch(totalNumberOfDocuments);
+        if (totalNumberOfDocuments > 1)
+            passwordManager.enableBatchCaching();
         return batch;
     }
 
@@ -253,6 +256,12 @@ public class Autogram {
      * @param batchId - current batch ID, used to authenticate the request
      */
     public boolean batchEnd(String batchId) {
+        if (batch.isEnded()) {
+            if (!batch.hasBatchId(batchId))
+                throw new BatchInvalidIdException();
+            return false;
+        }
+
         batch.validate(batchId);
         batch.end();
         ui.onUIThreadDo(() -> {

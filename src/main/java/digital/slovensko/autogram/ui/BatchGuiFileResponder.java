@@ -61,7 +61,7 @@ public abstract class BatchGuiFileResponder extends BatchResponder {
             onFailure.accept(error);
         }), batch);
 
-        return SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled);
+        return SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled, batch);
     }
 
     protected void initFileResult(File file) {

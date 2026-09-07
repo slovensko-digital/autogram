@@ -95,6 +95,10 @@ public class Batch {
         if (!this.batchId.equals(batchId)) throw new BatchInvalidIdException();
     }
 
+    public boolean hasBatchId(String batchId) {
+        return this.batchId.equals(batchId);
+    }
+
     // public getters
 
     public String getBatchId() {

@@ -7,10 +7,12 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class BatchMethodSelectionDialogController extends BaseController implements SuppressedFocusController {
+public class PickBatchModeDialogController extends BaseController implements SuppressedFocusController {
     private final Batch batch;
     private final BatchResponder allAtOnceResponder;
     private final BatchResponder oneByOneResponder;
@@ -19,11 +21,15 @@ public class BatchMethodSelectionDialogController extends BaseController impleme
     @FXML
     VBox mainBox;
     @FXML
-    public Button signAllButton;
+    public Button continueButton;
     @FXML
-    public Button signOneByOneButton;
+    public RadioButton signOneByOneButton;
+    @FXML
+    public RadioButton signAllButton;
+    @FXML
+    private ToggleGroup signingMode;
 
-    public BatchMethodSelectionDialogController(Batch batch, BatchResponder allAtOnceResponder,
+    public PickBatchModeDialogController(Batch batch, BatchResponder allAtOnceResponder,
             BatchResponder oneByOneResponder, Autogram autogram) {
         this.batch = batch;
         this.allAtOnceResponder = allAtOnceResponder;
@@ -33,16 +39,17 @@ public class BatchMethodSelectionDialogController extends BaseController impleme
 
     @Override
     public void initialize() {
+        signOneByOneButton.setToggleGroup(signingMode);
+        signAllButton.setToggleGroup(signingMode);
+        signOneByOneButton.setSelected(true);
     }
 
-    public void onSignAllButtonPressed(ActionEvent event) {
+    public void onContinueButtonPressed(ActionEvent event) {
         close();
-        autogram.startBatch(batch, allAtOnceResponder);
-    }
-
-    public void onSignOneByOneButtonPressed(ActionEvent event) {
-        close();
-        autogram.startOneByOneBatch(batch, oneByOneResponder);
+        if (signOneByOneButton.isSelected())
+            autogram.startOneByOneBatch(batch, oneByOneResponder);
+        else
+            autogram.startBatch(batch, allAtOnceResponder);
     }
 
     public void close() {

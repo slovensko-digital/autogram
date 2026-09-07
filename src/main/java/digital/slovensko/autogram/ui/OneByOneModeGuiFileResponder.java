@@ -44,6 +44,9 @@ public class OneByOneModeGuiFileResponder extends BatchGuiFileResponder {
                 }
                 processNextFile(batch);
             });
+            job.setSkipActions(
+                    () -> skipCurrentFile(file, batch),
+                    () -> skipRemainingFiles(file, batch));
             job.setDialogTitleSuffix(String.format("(%d z %d)", currentFileNumber, list.size()));
             batch.addJob(batch.getBatchId());
             autogram.sign(job);
@@ -55,5 +58,28 @@ public class OneByOneModeGuiFileResponder extends BatchGuiFileResponder {
             }
             processNextFile(batch);
         }
+    }
+
+    private void skipCurrentFile(File file, Batch batch) {
+        errors.put(file, new BatchCanceledException());
+        batch.onJobFailure();
+        processNextFile(batch);
+    }
+
+    private void skipRemainingFiles(File currentFile, Batch batch) {
+        skipCurrentFileWithoutAdvancing(currentFile, batch);
+        while (currentFileIndex < list.size()) {
+            var file = list.get(currentFileIndex++);
+            initFileResult(file);
+            errors.put(file, new BatchCanceledException());
+            batch.addJob(batch.getBatchId());
+            batch.onJobFailure();
+        }
+        onAllFilesSigned(batch);
+    }
+
+    private void skipCurrentFileWithoutAdvancing(File file, Batch batch) {
+        errors.put(file, new BatchCanceledException());
+        batch.onJobFailure();
     }
 }
