@@ -12,13 +12,18 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface UI {
-    void startSigning(SigningJob job, Autogram autogram);
+    void startSigning(SigningJob job, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction);
 
     void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
 
+    void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder);
+
     void cancelBatch(Batch batch);
 
-    void showVisualization(Visualization visualization, Autogram autogram);
+    void showVisualization(Visualization visualization, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction);
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel);
 
@@ -58,7 +63,7 @@ public interface UI {
 
     char[] getContextSpecificPassword();
 
-    public void updateBatch();
+    void updateBatch();
 
     void resetSigningKey();
 

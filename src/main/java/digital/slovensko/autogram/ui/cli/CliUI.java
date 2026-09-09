@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
@@ -57,7 +58,8 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void startSigning(SigningJob job, Autogram autogram) {
+    public void startSigning(SigningJob job, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction) {
         if (activeKey == null) {
             autogram.pickSigningKeyAndThen(key -> {
                 activeKey = key;
@@ -81,7 +83,13 @@ public class CliUI implements UI {
 
     @Override
     public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
-        // TODO Auto-generated method stub
+        // CLI batch signing uses its dedicated command flow.
+    }
+
+    @Override
+    public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder) {
+        // GUI-only flow.
     }
 
     @Override
@@ -215,7 +223,8 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void showVisualization(Visualization visualization, Autogram autogram) {
+    public void showVisualization(Visualization visualization, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction) {
 
     }
 

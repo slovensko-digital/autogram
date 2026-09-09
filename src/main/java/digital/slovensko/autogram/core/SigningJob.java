@@ -11,7 +11,6 @@ import eu.europa.esig.dss.alert.LogOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -25,13 +24,15 @@ import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 
 public class SigningJob {
     private final Responder responder;
+    private final Batch batch;
     private final DSSDocument document;
     private final SigningParameters parameters;
 
-    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder) {
+    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder, Batch batch) {
         this.document = document;
         this.parameters = parameters;
         this.responder = responder;
+        this.batch = batch;
     }
 
     public DSSDocument getDocument() {
@@ -42,11 +43,23 @@ public class SigningJob {
         return parameters;
     }
 
+    public Batch getBatch() {
+        return batch;
+    }
+
+    public boolean isMultiDocumentBatch() {
+        return batch != null && batch.getTotalNumberOfDocuments() > 1;
+    }
+
+    public boolean isPartOfBatch() {
+        return batch != null;
+    }
+
     public int getVisualizationWidth() {
         return parameters.getVisualizationWidth();
     }
 
-    public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
+    public void signWithKeyAndRespond(SigningKey key) throws AutogramException {
 
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
@@ -64,12 +77,19 @@ public class SigningJob {
         responder.onDocumentSignFailed(e);
     }
 
+    public boolean isBatch() {
+        return responder.isBatch();
+    }
+
     private DSSDocument signDocumentAsCAdeS(SigningKey key) {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new CAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
         var signatureParameters = getParameters().getCAdESSignatureParameters();
+
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.CAdES_BASELINE_T))
+            service.setTspSource(getParameters().getTspSource());
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
@@ -104,6 +124,9 @@ public class SigningJob {
         var service = new XAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
         var signatureParameters = getParameters().getXAdESSignatureParameters();
+
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
+            service.setTspSource(getParameters().getTspSource());
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
@@ -169,7 +192,7 @@ public class SigningJob {
         return fileDocument;
     }
 
-    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder) {
+    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder, Batch batch) {
         if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
             document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
 
@@ -181,17 +204,21 @@ public class SigningJob {
             document.setName(getXdcfFilename(document.getName()));
         }
 
-        return new SigningJob(document, params, responder);
+        return new SigningJob(document, params, responder, batch);
     }
 
     public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
-        return build(document, params, responder);
+        return build(document, params, responder, null);
     }
 
     public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+        return buildFromFile(file, responder, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled, null);
+    }
+
+    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled, Batch batch) {
         var document = createDSSFileDocumentFromFile(file);
         var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return build(document, parameters, responder);
+        return build(document, parameters, responder, batch);
     }
 
     private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
@@ -204,7 +231,6 @@ public class SigningJob {
             case CAdES:
                 return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
             default:
-                ;
         }
 
         if (isPDF(document.getMimeType())) switch (signatureType) {
@@ -215,7 +241,6 @@ public class SigningJob {
             case CAdES_BASELINE_B:
                 return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
             default:
-                ;
         }
 
         return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);

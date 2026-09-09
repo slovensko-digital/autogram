@@ -18,6 +18,18 @@ public abstract class Visualization {
         return job;
     }
 
+    public String getDialogTitle(String documentLabel, Integer batchPosition) {
+        var title = documentLabel;
+        if (job.getDocument().getName() != null)
+            title += " " + job.getDocument().getName();
+
+        var batch = job.getBatch();
+        if (batchPosition != null && batch != null)
+            title += " (%d z %d)".formatted(batchPosition, batch.getTotalNumberOfDocuments());
+
+        return title;
+    }
+
     protected double getVisualizationWidth() {
         return job.getVisualizationWidth();
     }

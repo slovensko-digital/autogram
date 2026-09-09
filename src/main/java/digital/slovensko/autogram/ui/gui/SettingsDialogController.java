@@ -40,13 +40,13 @@ public class SettingsDialogController extends BaseController {
     @FXML
     private TextField customTsaServerTextField;
     @FXML
-    private HBox bulkEnabledRadios;
-    @FXML
     private HBox en319132Radios;
     @FXML
     private HBox plainXmlEnabledRadios;
     @FXML
     private TextField tokenSessionTimeoutTextField;
+    @FXML
+    private HBox bulkEnabledRadios;
     @FXML
     private ChoiceBox<TokenDriver> driverChoiceBox;
     @FXML
@@ -97,9 +97,9 @@ public class SettingsDialogController extends BaseController {
         initializeDriverChoiceBox();
         initializeTsaEnabled();
         initializeTsaServer();
-        initializeBulkEnabledCheckbox();
         initializeEn319132CheckBox();
         initializePlainXmlEnabledCheckBox();
+        initializeBulkEnabledCheckBox();
         initializeTokenSessionTimeoutTextField();
         initializeCorrectDocumentDisplayCheckBox();
         initializeSignatureValidationCheckBox();
@@ -200,16 +200,16 @@ public class SettingsDialogController extends BaseController {
             no.setSelected(true);
     }
 
-    private void initializeBulkEnabledCheckbox() {
-        initializeBooleanRadios(bulkEnabledRadios, userSettings::setBulkEnabled, userSettings.isBulkEnabled());
-    }
-
     private void initializeEn319132CheckBox() {
         initializeBooleanRadios(en319132Radios, userSettings::setEn319132, userSettings.isEn319132());
     }
 
     private void initializePlainXmlEnabledCheckBox() {
         initializeBooleanRadios(plainXmlEnabledRadios, userSettings::setPlainXmlEnabled, userSettings.isPlainXmlEnabled());
+    }
+
+    private void initializeBulkEnabledCheckBox() {
+        initializeBooleanRadios(bulkEnabledRadios, userSettings::setBulkEnabled, userSettings.isBulkEnabled());
     }
 
     private void initializeCorrectDocumentDisplayCheckBox() {

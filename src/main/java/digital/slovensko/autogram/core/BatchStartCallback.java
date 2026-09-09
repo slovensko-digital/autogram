@@ -38,6 +38,7 @@ public class BatchStartCallback {
     }
 
     private void handleException(Exception e) {
+        batch.end();
         if (e instanceof AutogramException)
             responder.onBatchStartFailure((AutogramException) e);
         else {

@@ -289,12 +289,18 @@ class AutogramTests {
 
     private static class FakeUI implements UI {
         @Override
-        public void startSigning(SigningJob signingJob, Autogram autogram) {
+        public void startSigning(SigningJob signingJob, Autogram autogram, Integer batchPosition,
+                Runnable skipAction, Runnable skipRemainingAction) {
 
         }
 
         @Override
         public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
+        }
+
+        @Override
+        public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+                BatchResponder oneByOneResponder) {
         }
 
         @Override
@@ -337,7 +343,8 @@ class AutogramTests {
         }
 
         @Override
-        public void showVisualization(Visualization visualization, Autogram autogram) {
+        public void showVisualization(Visualization visualization, Autogram autogram, Integer batchPosition,
+                Runnable skipAction, Runnable skipRemainingAction) {
 
         }
 

@@ -4,4 +4,9 @@ public class SigningCanceledByUserException extends AutogramException {
     public SigningCanceledByUserException() {
         super();
     }
+
+    @Override
+    public boolean batchCanContinue() {
+        return false;
+    }
 }
