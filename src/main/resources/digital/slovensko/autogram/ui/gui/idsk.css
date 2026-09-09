@@ -461,7 +461,6 @@
 
 .autogram-visualizer-pdf VBox {
   -fx-spacing: 10px;
-  -fx-padding: 5px;
 }
 
 .autogram-visualizer-plaintext {
@@ -650,6 +649,8 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-visualization-tab-pane .tab-label {
+  -fx-padding: 0.6875em 1em 0.6875em 0.75em;
+  -fx-font-size: 1em;
   -fx-text-overrun: center-ellipsis;
 }
 

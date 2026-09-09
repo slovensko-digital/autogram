@@ -12,6 +12,8 @@ class SignatureHtmlRendererTest {
 
         assertTrue(html.contains("45%"));
         assertTrue(html.contains("55%"));
+        assertTrue(html.contains(".summary-list"));
+        assertTrue(html.contains("font-size: 16px"));
         assertFalse(html.contains("__AUTOGRAM_SIGNATURE_BODY__"));
         assertFalse(html.contains("<!DOCTYPE html>"));
     }

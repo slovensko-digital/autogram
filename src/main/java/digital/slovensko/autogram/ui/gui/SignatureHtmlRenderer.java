@@ -47,6 +47,7 @@ final class SignatureHtmlRenderer {
                     .summary-list {
                         display: flex;
                         flex-direction: column;
+                        font-size: 16px;
                     }
 
                     .summary-row {
