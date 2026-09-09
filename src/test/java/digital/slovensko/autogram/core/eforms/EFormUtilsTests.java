@@ -1,10 +1,12 @@
 package digital.slovensko.autogram.core.eforms;
 
+import eu.europa.esig.dss.model.InMemoryDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.nio.charset.Charset;
 
 public class EFormUtilsTests {
     @ParameterizedTest
@@ -50,5 +52,22 @@ public class EFormUtilsTests {
     @Test
     void testIsOrsrUriReturnsFalseForNull() {
         Assertions.assertFalse(EFormUtils.isOrsrUri(null));
+    }
+
+    @Test
+    void testGetXmlFromDocumentHonorsWindows1250Declaration() {
+        var content = """
+                <?xml version="1.0" encoding="windows-1250"?>
+                <KVDPH_2025 xmlns="https://ekr.financnasprava.sk/Formulare/XSD/kv_dph_2025.xsd">
+                    <Identifikacia><Ulica>Bratislavská</Ulica></Identifikacia>
+                </KVDPH_2025>
+                """.getBytes(Charset.forName("windows-1250"));
+        var document = new InMemoryDocument(content, "kv-dph.xml");
+
+        var parsed = EFormUtils.getXmlFromDocument(document);
+        var street = parsed.getElementsByTagNameNS(
+                "https://ekr.financnasprava.sk/Formulare/XSD/kv_dph_2025.xsd", "Ulica").item(0);
+
+        Assertions.assertEquals("Bratislavská", street.getTextContent());
     }
 }
