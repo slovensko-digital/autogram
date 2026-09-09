@@ -110,8 +110,8 @@ public class BatchDialogController extends BaseController implements SuppressedF
     }
 
     public void onCancelBatchButtonPressed(ActionEvent event) {
-        batch.end();
-        close();
+        autogram.endBatch(batch);
+        gui.cancelBatch(batch);
     }
 
     public void refreshSigningKey() {
@@ -120,10 +120,12 @@ public class BatchDialogController extends BaseController implements SuppressedF
 
             if (key == null) {
                 mainButton.setText(i18n("general.sign.btn"));
+                changeKeyButton.setManaged(false);
                 changeKeyButton.setVisible(false);
 
             } else {
                 mainButton.setText(i18n("batch.signAs.btn") + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+                changeKeyButton.setManaged(true);
                 changeKeyButton.setVisible(true);
             }
         }

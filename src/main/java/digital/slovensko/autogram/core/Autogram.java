@@ -41,7 +41,7 @@ public class Autogram {
     public Autogram(UI ui, UserSettings settings) {
         this.ui = ui;
         this.settings = settings;
-        this.passwordManager = new PasswordManager(ui, this.settings);
+        this.passwordManager = new PasswordManager(ui);
     }
 
     public void sign(SigningJob job) {
@@ -108,7 +108,13 @@ public class Autogram {
 
     private void signCommonAndThen(SigningJob job, SigningKey signingKey, Consumer<SigningJob> callback) {
         try {
-            job.signWithKeyAndRespond(signingKey);
+            if (job.isBatch()) {
+                passwordManager.withCachedPIN(batch,
+                        () -> job.signWithKeyAndRespond(signingKey));
+            } else {
+                passwordManager.withoutCachedPIN(
+                        () -> job.signWithKeyAndRespond(signingKey));
+            }
             resetTokenSessionTimer();
 
             if (batch == null || batch.isEnded() || batch.isAllProcessed())
@@ -199,8 +205,6 @@ public class Autogram {
             throw new BatchConflictException();
 
         batch = new Batch(totalNumberOfDocuments);
-        if (totalNumberOfDocuments > 1)
-            passwordManager.enableBatchCaching();
         return batch;
     }
 
@@ -256,6 +260,9 @@ public class Autogram {
      * @param batchId - current batch ID, used to authenticate the request
      */
     public boolean batchEnd(String batchId) {
+        if (batch == null)
+            throw new BatchNotStartedException();
+
         if (batch.isEnded()) {
             if (!batch.hasBatchId(batchId))
                 throw new BatchInvalidIdException();
@@ -264,6 +271,7 @@ public class Autogram {
 
         batch.validate(batchId);
         batch.end();
+        passwordManager.reset();
         ui.onUIThreadDo(() -> {
             ui.cancelBatch(batch);
         });
@@ -274,6 +282,13 @@ public class Autogram {
         if (batch == null) throw new BatchNotStartedException(); // TODO replace with checked exception
         batch.validate(batchId);
         return batch;
+    }
+
+    /** Ends a batch from a UI action and clears any batch-scoped PIN cache. */
+    public void endBatch(Batch batch) {
+        if (this.batch == batch)
+            batch.end();
+        passwordManager.reset();
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {

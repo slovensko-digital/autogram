@@ -54,12 +54,12 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
     private void runContextSpecificLoginIfNeeded(Signature signature, PrivateKey pk) throws GeneralSecurityException {
         try {
-            // TODO cache & short-circuit
+            // PasswordManager supplies a flow-scoped PIN when appropriate.
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
 
             if (isAlwaysAuthenticate(p11, sessionId, pk)
-                    && (passwordManager.isBatchCachingEnabled()
+                    && (passwordManager.isCachingPIN()
                     || !isProtectedAuthenticationPath(p11, getSlotListIndex()))) {
                 var password = passwordManager.getContextSpecificPassword();
                 if (password == null) throw new PasswordNotProvidedException();
