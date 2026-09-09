@@ -75,6 +75,33 @@ public class VersionedSignRequestBodyTests {
     }
 
     @Test
+    void buildsSigningRequestWithAutomaticallyLoadedEform() {
+        var body = gson.fromJson("""
+                {
+                  "documents": [
+                    {
+                      "filename": "document.xml",
+                      "mimeType": "application/xml",
+                      "xdcParameters": {
+                        "autoLoadEform": true
+                      },
+                      "content": "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><GeneralAgenda xmlns=\\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\\"><subject>Nové podanie</subject><text>Podávam toto nové podanie.</text></GeneralAgenda>"
+                    }
+                  ],
+                  "parameters": {
+                    "format": "XAdES"
+                  }
+                }
+                """, VersionedSignRequestBody.class);
+
+        var request = body.getSigningRequest(null, false);
+
+        assertFalse(request.isMultiDocument());
+        assertEquals(1, request.getDocumentCount());
+        assertNotNull(request.getParameters().getTransformation());
+    }
+
+    @Test
     void buildsSinglePadesSigningRequestWithVisibleSignature() throws IOException {
         var samplePdf = Base64.getEncoder().encodeToString(
                 getClass().getResourceAsStream("../../sample.pdf").readAllBytes());

@@ -35,6 +35,7 @@ public class VersionedSignRequestBody {
         var resolvedParameters = parameters != null ? parameters : new VersionedSigningParameters();
         var preparedDocuments = new ArrayList<AutogramDocument>();
         var isMultiDocument = submittedDocuments.size() > 1;
+        SigningParameters coreSigningParameters = null;
 
         if (isMultiDocument && batchId != null)
             throw new RequestValidationException(MULTI_DOCUMENT_BATCH_UNSUPPORTED);
@@ -57,18 +58,12 @@ public class VersionedSignRequestBody {
                     submittedDocument.getXdcParameters() != null && submittedDocument.getXdcParameters().areResourcesBase64(),
                     rawDocument.toDssDocument(), tspSource, plainXmlEnabled);
 
+            if (coreSigningParameters == null)
+                coreSigningParameters = preprocessingParameters;
+
             preparedDocuments.add(SigningJob.prepareDocument(rawDocument, preprocessingParameters));
         }
 
-        var finalSigningParameters = resolvedParameters.toServerSigningParameters(presentation, null, isMultiDocument);
-
-        if (!isMultiDocument)
-            finalSigningParameters.resolveSigningLevel((InMemoryDocument) preparedDocuments.get(0).toDssDocument());
-
-        finalSigningParameters.validate(preparedDocuments.get(0).getMimeType());
-
-        var coreSigningParameters = finalSigningParameters.getSigningParameters(false,
-            preparedDocuments.get(0).toDssDocument(), tspSource, plainXmlEnabled);
         applyVisibleSignature(coreSigningParameters, submittedDocuments, isMultiDocument);
 
         return AutogramSigningRequest.of(preparedDocuments, coreSigningParameters);
