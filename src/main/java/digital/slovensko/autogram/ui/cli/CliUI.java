@@ -58,7 +58,8 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void startSigning(SigningJob job, Autogram autogram) {
+    public void startSigning(SigningJob job, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction) {
         if (activeKey == null) {
             autogram.pickSigningKeyAndThen(key -> {
                 activeKey = key;
@@ -222,7 +223,8 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void showVisualization(Visualization visualization, Autogram autogram) {
+    public void showVisualization(Visualization visualization, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction) {
 
     }
 

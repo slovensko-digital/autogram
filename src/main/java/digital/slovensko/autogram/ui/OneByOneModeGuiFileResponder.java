@@ -44,12 +44,11 @@ public class OneByOneModeGuiFileResponder extends BatchGuiFileResponder {
                 }
                 processNextFile(batch);
             });
-            job.setSkipActions(
+            batch.addJob(batch.getBatchId());
+            autogram.sign(job,
+                    currentFileNumber,
                     () -> skipCurrentFile(file, batch),
                     () -> skipRemainingFiles(file, batch));
-            job.setDialogTitleSuffix(String.format("(%d z %d)", currentFileNumber, list.size()));
-            batch.addJob(batch.getBatchId());
-            autogram.sign(job);
         } catch (AutogramException e) {
             handleFileSubmissionFailure(file, batch, e);
             if (!e.batchCanContinue()) {

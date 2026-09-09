@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface UI {
-    void startSigning(SigningJob job, Autogram autogram);
+    void startSigning(SigningJob job, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction);
 
     void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
 
@@ -21,7 +22,8 @@ public interface UI {
 
     void cancelBatch(Batch batch);
 
-    void showVisualization(Visualization visualization, Autogram autogram);
+    void showVisualization(Visualization visualization, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction);
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel);
 

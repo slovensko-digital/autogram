@@ -45,8 +45,11 @@ public class Autogram {
     }
 
     public void sign(SigningJob job) {
-        ui.onUIThreadDo(()
-        -> ui.startSigning(job, this));
+        sign(job, null, null, null);
+    }
+
+    public void sign(SigningJob job, Integer batchPosition, Runnable skipAction, Runnable skipRemainingAction) {
+        ui.onUIThreadDo(() -> ui.startSigning(job, this, batchPosition, skipAction, skipRemainingAction));
     }
 
     public void checkAndValidateSignatures(SigningJob job) {
@@ -76,7 +79,8 @@ public class Autogram {
         });
     }
 
-    public void startVisualization(SigningJob job) {
+    public void startVisualization(SigningJob job, Integer batchPosition, Runnable skipAction,
+            Runnable skipRemainingAction) {
         ui.onWorkThreadDo(() -> {
             if (PDFUtils.isPdfAndPasswordProtected(job.getDocument())) {
                 var error = new AutogramException("LOCKED_PDF");
@@ -89,12 +93,14 @@ public class Autogram {
 
             try {
                 var visualization = DocumentVisualizationBuilder.fromJob(job, settings);
-                ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
+                ui.onUIThreadDo(() -> ui.showVisualization(visualization, this, batchPosition,
+                        skipAction, skipRemainingAction));
             } catch (AutogramException e) {
                 notifyBatchJobFailure(job, e);
                 ui.onUIThreadDo(() -> ui.showError(e));
             } catch (Exception e) {
-                Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
+                Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this,
+                        batchPosition, skipAction, skipRemainingAction);
 
                 if (settings.isCorrectDocumentDisplay()) {
                     ui.onUIThreadDo(

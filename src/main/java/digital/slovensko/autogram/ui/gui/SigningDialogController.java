@@ -46,6 +46,8 @@ public class SigningDialogController extends BaseController implements Suppresse
     private Reports signatureValidationReports;
     private Reports signatureCheckReports;
     private final boolean shouldCheckValidityBeforeSigning;
+    private final Runnable skipAction;
+    private final Runnable skipRemainingAction;
 
     @FXML
     VBox mainBox;
@@ -79,12 +81,14 @@ public class SigningDialogController extends BaseController implements Suppresse
     Text headerText;
 
     public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui, String title,
-            boolean shouldCheckValidityBeforeSigning) {
+            boolean shouldCheckValidityBeforeSigning, Runnable skipAction, Runnable skipRemainingAction) {
         this.visualization = visualization;
         this.gui = gui;
         this.autogram = autogram;
         this.title = title;
         this.shouldCheckValidityBeforeSigning = shouldCheckValidityBeforeSigning;
+        this.skipAction = skipAction;
+        this.skipRemainingAction = skipRemainingAction;
     }
 
     @Override
@@ -93,7 +97,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         signaturesTable.setManaged(false);
         signaturesTable.setVisible(false);
         refreshSigningKey();
-        var canSkip = visualization.getJob().canSkip();
+        var canSkip = skipAction != null;
         var isPartOfBatch = visualization.getJob().isPartOfBatch();
         var isMultiDocumentBatch = visualization.getJob().isMultiDocumentBatch();
 
@@ -200,13 +204,13 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     public void onSkipButtonPressed(ActionEvent event) {
         mainBox.getScene().getWindow().hide();
-        visualization.getJob().skip();
+        skipAction.run();
     }
 
     public void onSkipRemainingButtonPressed(ActionEvent event) {
-        if (visualization.getJob().canSkip()) {
+        if (skipRemainingAction != null) {
             mainBox.getScene().getWindow().hide();
-            visualization.getJob().skipRemaining();
+            skipRemainingAction.run();
         } else {
             gui.cancelJob(visualization.getJob());
         }

@@ -27,9 +27,6 @@ public class SigningJob {
     private final Batch batch;
     private final DSSDocument document;
     private final SigningParameters parameters;
-    private String dialogTitleSuffix;
-    private Runnable skipAction;
-    private Runnable skipRemainingAction;
 
     private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder, Batch batch) {
         this.document = document;
@@ -46,39 +43,12 @@ public class SigningJob {
         return parameters;
     }
 
-    public String getDialogTitleSuffix() {
-        return dialogTitleSuffix;
-    }
-
-    public void setDialogTitleSuffix(String dialogTitleSuffix) {
-        this.dialogTitleSuffix = dialogTitleSuffix;
-    }
-
-    public void setSkipActions(Runnable skipAction, Runnable skipRemainingAction) {
-        this.skipAction = skipAction;
-        this.skipRemainingAction = skipRemainingAction;
-    }
-
     public boolean isMultiDocumentBatch() {
         return batch != null && batch.getTotalNumberOfDocuments() > 1;
     }
 
     public boolean isPartOfBatch() {
         return batch != null;
-    }
-
-    public boolean canSkip() {
-        return skipAction != null;
-    }
-
-    public void skip() {
-        if (skipAction != null)
-            skipAction.run();
-    }
-
-    public void skipRemaining() {
-        if (skipRemainingAction != null)
-            skipRemainingAction.run();
     }
 
     public int getVisualizationWidth() {

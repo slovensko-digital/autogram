@@ -62,8 +62,9 @@ public class GUI implements UI {
     }
 
     @Override
-    public void startSigning(SigningJob job, Autogram autogram) {
-        autogram.startVisualization(job);
+    public void startSigning(SigningJob job, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction) {
+        autogram.startVisualization(job, batchPosition, skipAction, skipRemainingAction);
     }
 
     @Override
@@ -358,13 +359,15 @@ public class GUI implements UI {
         controller.onSignatureCheckCompleted(reports.haveSignatures() ? reports.getReports() : null);
     }
 
-    public void showVisualization(Visualization visualization, Autogram autogram) {
+    public void showVisualization(Visualization visualization, Autogram autogram, Integer batchPosition,
+            Runnable skipAction, Runnable skipRemainingAction) {
         var title = SupportedLanguage.loadResources(userSettings).getString("general.document");
         if (visualization.getJob().getDocument().getName() != null)
             title += " " + visualization.getJob().getDocument().getName();
-        if (visualization.getJob().getDialogTitleSuffix() != null)
-            title += " " + visualization.getJob().getDialogTitleSuffix();
-        var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
+        if (batchPosition != null)
+            title += " (" + batchPosition + ")";
+        var controller = new SigningDialogController(visualization, autogram, this, title,
+                userSettings.isSignaturesValidity(), skipAction, skipRemainingAction);
         jobControllers.put(visualization.getJob(), controller);
 
         Parent root;
