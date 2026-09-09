@@ -43,6 +43,10 @@ public class SigningJob {
         return parameters;
     }
 
+    public Batch getBatch() {
+        return batch;
+    }
+
     public boolean isMultiDocumentBatch() {
         return batch != null && batch.getTotalNumberOfDocuments() > 1;
     }

@@ -361,11 +361,8 @@ public class GUI implements UI {
 
     public void showVisualization(Visualization visualization, Autogram autogram, Integer batchPosition,
             Runnable skipAction, Runnable skipRemainingAction) {
-        var title = SupportedLanguage.loadResources(userSettings).getString("general.document");
-        if (visualization.getJob().getDocument().getName() != null)
-            title += " " + visualization.getJob().getDocument().getName();
-        if (batchPosition != null)
-            title += " (" + batchPosition + ")";
+        var title = visualization.getDialogTitle(
+                SupportedLanguage.loadResources(userSettings).getString("general.document"), batchPosition);
         var controller = new SigningDialogController(visualization, autogram, this, title,
                 userSettings.isSignaturesValidity(), skipAction, skipRemainingAction);
         jobControllers.put(visualization.getJob(), controller);
