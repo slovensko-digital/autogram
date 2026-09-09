@@ -9,6 +9,8 @@ import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.validation.reports.Reports;
 
 public class ValidationReports {
+    public record SignatureEntry(DocumentReport documentReport, String signatureId) {}
+
     public record DocumentReport(int documentIndex, DSSDocument document, Reports reports) {
         public DocumentReport {
             Objects.requireNonNull(document, "document");
@@ -107,5 +109,47 @@ public class ValidationReports {
 
     public int getTotalSignatureCount() {
         return documentReports.stream().mapToInt(DocumentReport::getSignatureCount).sum();
+    }
+
+    public List<SignatureEntry> getSignatures() {
+        return documentReports.stream()
+                .flatMap(documentReport -> documentReport.reports().getSimpleReport().getSignatureIdList().stream()
+                        .map(signatureId -> new SignatureEntry(documentReport, signatureId)))
+                .toList();
+    }
+
+    public List<SignatureEntry> getSignaturesForPreviewDocument(DSSDocument previewDocument, int previewIndex) {
+        if (documentReports.size() != 1)
+            return documentReports.stream()
+                    .filter(documentReport -> documentReport.documentIndex() == previewIndex)
+                    .flatMap(documentReport -> signaturesFor(documentReport).stream())
+                    .toList();
+
+        var documentReport = documentReports.get(0);
+        if (!documentReport.hasMultipleContainerDocuments())
+            return signaturesFor(documentReport);
+
+        var previewName = previewDocument.getName();
+        return signaturesFor(documentReport).stream()
+                .filter(signature -> {
+                    var scope = documentReport.getSignatureScopeDocumentNames(signature.signatureId());
+                    return scope.isEmpty()
+                            || documentReport.signatureCoversAllDocuments(signature.signatureId())
+                            || scope.contains(previewName);
+                })
+                .toList();
+    }
+
+    public boolean hasIncompleteContainerCoverage() {
+        return documentReports.stream()
+                .filter(DocumentReport::hasMultipleContainerDocuments)
+                .anyMatch(documentReport -> signaturesFor(documentReport).stream()
+                        .anyMatch(signature -> !documentReport.signatureCoversAllDocuments(signature.signatureId())));
+    }
+
+    private static List<SignatureEntry> signaturesFor(DocumentReport documentReport) {
+        return documentReport.reports().getSimpleReport().getSignatureIdList().stream()
+                .map(signatureId -> new SignatureEntry(documentReport, signatureId))
+                .toList();
     }
 }

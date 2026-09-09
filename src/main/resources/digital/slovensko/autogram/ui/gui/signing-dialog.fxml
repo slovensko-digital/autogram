@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
@@ -80,15 +78,7 @@
 
 
     <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table" spacing="2">
-        <GridPane hgap="0">
-            <columnConstraints>
-                <ColumnConstraints percentWidth="45" />
-                <ColumnConstraints percentWidth="55" />
-            </columnConstraints>
-            <Text fx:id="signaturesSummaryTitle" styleClass="autogram-heading-s" managed="false" visible="false" GridPane.columnIndex="0" />
-            <Button fx:id="showSignaturesButton" styleClass="autogram-link" managed="false" visible="false" text="%signature.table.show.btn" onAction="#onShowSignaturesButtonPressed" GridPane.columnIndex="1" />
-        </GridPane>
-        <WebView fx:id="signaturesSummaryWebView" focusTraversable="false" managed="false" visible="false" prefHeight="56" />
+        <VBox fx:id="signaturesSummaryHost" spacing="8" />
     </VBox>
 
     <HBox styleClass="autogram-actions">

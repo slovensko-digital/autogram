@@ -16,6 +16,7 @@ import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
+import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -164,6 +165,11 @@ class AutogramTests {
         Assertions.assertEquals(List.of("first.txt", "second.txt"), documentReport.getContainerContentFiles());
         Assertions.assertEquals(List.of("first.txt", "second.txt"), documentReport.getSignatureScopeDocumentNames(signatureId));
         Assertions.assertTrue(documentReport.signatureCoversAllDocuments(signatureId));
+        Assertions.assertFalse(reports.hasIncompleteContainerCoverage());
+
+        var previewDocuments = AsicContainerUtils.getOriginalDocuments(signedDocument.getDocument());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(0), 0).size());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(1), 1).size());
         }
 
     @Test
@@ -232,6 +238,10 @@ class AutogramTests {
         Assertions.assertEquals(2, reports.getDocumentReports().size());
         Assertions.assertEquals("sample_signed.pdf", reports.getDocumentReports().get(0).document().getName());
         Assertions.assertEquals("sample_pdf_xades.asice", reports.getDocumentReports().get(1).document().getName());
+        Assertions.assertEquals(reports.getDocumentReports().get(0).getSignatureCount(),
+            reports.getSignaturesForPreviewDocument(reports.getDocumentReports().get(0).document(), 0).size());
+        Assertions.assertEquals(reports.getDocumentReports().get(1).getSignatureCount(),
+            reports.getSignaturesForPreviewDocument(reports.getDocumentReports().get(1).document(), 1).size());
     }
 
     @ParameterizedTest

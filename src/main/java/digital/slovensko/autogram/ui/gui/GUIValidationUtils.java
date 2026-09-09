@@ -33,22 +33,26 @@ import static eu.europa.esig.dss.enumerations.SignatureForm.XAdES;
 public class GUIValidationUtils {
     public static final SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
-    private record DisplayedSignature(ValidationReports.DocumentReport documentReport, String signatureId) {}
-
     public static Node createWarningText(String message) {
         var text = styled(new Text(message), "autogram-heading-s");
         return styled(new TextFlow(text), "autogram-warning-textflow");
     }
 
     public static GridPane createSignatureTableRows(ResourceBundle resources, ValidationReports validationReports, boolean isValidated, Consumer<String> callback, int maxRows) {
-        var titleKey = validationReports.shouldShowDocumentContext() ? "signature.table.title.documents" : "signature.table.title";
+        return createSignatureTableRows(resources, validationReports.getSignatures(),
+                validationReports.shouldShowDocumentContext(), isValidated, callback, maxRows);
+    }
+
+    public static GridPane createSignatureTableRows(ResourceBundle resources,
+            List<ValidationReports.SignatureEntry> signatures, boolean showDocumentContext, boolean isValidated,
+            Consumer<String> callback, int maxRows) {
+        var titleKey = showDocumentContext ? "signature.table.title.documents" : "signature.table.title";
         var headerText = styled(new TextFlow(new Text(translate(resources, titleKey))), "autogram-heading-s", "autogram-signatures-table-cell--left");
         var table = new GridPane();
         table.addRow(0, headerText, new TextFlow(createSignatureTableLink(callback, resources)));
         table.getColumnConstraints().addAll(columnPercent(45), columnPercent(55));
 
-        var signatures = getDisplayedSignatures(validationReports);
-        var totalSignatures = validationReports.getTotalSignatureCount();
+        var totalSignatures = signatures.size();
         if (totalSignatures > maxRows)
             signatures = signatures.subList(0, maxRows - 1);
 
@@ -57,16 +61,17 @@ public class GUIValidationUtils {
             var doc = signature.documentReport();
             var subject = styled(new HBox(new VBox(new TextFlow(new Text(doc.reports().getSimpleReport().getSignedBy(signature.signatureId()))))), "autogram-signatures-table-cell--left");
             var type = styled(new HBox(createSignatureQualificationBadge(resources, doc, isValidated, signature.signatureId(), 0)), "autogram-signature-badges");
-            if (doc.hasMultipleContainerDocuments()) {
-                type.getChildren().add(doc.signatureCoversAllDocuments(signature.signatureId())
-                        ? SignatureBadgeFactory.createValidQualifiedBadge(translate(resources, "signature.scope.allDocuments.label"))
-                        : SignatureBadgeFactory.createWarningBadge(translate(resources, "signature.scope.notAllDocuments.label")));
-            }
             table.addRow(rowIndex++, subject, type);
         }
 
+        if (totalSignatures == 0) {
+            var emptyState = styled(new TextFlow(new Text(translate(resources, "signature.table.empty.text"))),
+                    "autogram-body", "autogram-table-cell");
+            table.add(emptyState, 0, rowIndex, 2, 1);
+        }
+
         if (totalSignatures > maxRows) {
-            var moreTextKey = validationReports.shouldShowDocumentContext() ? "signature.table.more.documents.txt" : "signature.table.more.txt";
+            var moreTextKey = showDocumentContext ? "signature.table.more.documents.txt" : "signature.table.more.txt";
             var button = styled(new Button(translate(resources, "signature.table.more.btn")), "autogram-link");
             button.setWrapText(true);
             button.setOnMouseClicked(event -> callback.accept(null));
@@ -84,8 +89,8 @@ public class GUIValidationUtils {
         return button;
     }
 
-    public static VBox createSignatureBox(ResourceBundle resources, ValidationReports.DocumentReport documentReport,
-            boolean showDocumentName, boolean isValidated, String signatureId, Consumer<String> callback, boolean areTLsLoaded) {
+        public static VBox createSignatureBox(ResourceBundle resources, ValidationReports.DocumentReport documentReport,
+            boolean isValidated, String signatureId, Consumer<String> callback, boolean areTLsLoaded) {
         var reports = documentReport.reports();
         var simple = reports.getSimpleReport();
         var diagnostic = reports.getDiagnosticData();
@@ -114,12 +119,6 @@ public class GUIValidationUtils {
                                 signatureQualification, signatureForm, isTimestampInvalid, isTimestampIndeterminate, resources)
                         : translate(resources, "signature.details.validation.inProgress.label")));
 
-        if (showDocumentName)
-            signatureDetailsBox.getChildren().add(createTableRow(translate(resources, "general.document"), getDisplayDocumentName(resources, documentReport)));
-
-        if (documentReport.hasMultipleContainerDocuments())
-            signatureDetailsBox.getChildren().add(createTableRow(translate(resources, "general.documents"), getSignatureScopeLabel(resources, documentReport, signatureId)));
-
         signatureDetailsBox.getChildren().addAll(
                 createTableRow(translate(resources, "signature.details.certificate.label"), subject),
                 createTableRow(translate(resources, "signature.details.issuer.label"), issuer),
@@ -143,15 +142,6 @@ public class GUIValidationUtils {
         return translate(resources, "signing.multiDocument.unnamedDocument", documentReport.documentIndex() + 1);
     }
 
-    private static List<DisplayedSignature> getDisplayedSignatures(ValidationReports validationReports) {
-        var signatures = new java.util.ArrayList<DisplayedSignature>();
-        for (var documentReport : validationReports.getDocumentReports())
-            for (var signatureId : documentReport.reports().getSimpleReport().getSignatureIdList())
-                signatures.add(new DisplayedSignature(documentReport, signatureId));
-        
-        return signatures;
-    }
-
     private static Node createSignatureQualificationBadge(ResourceBundle resources, ValidationReports.DocumentReport documentReport,
             boolean isValidated, String signatureId, double prefWrapLength) {
         var reports = documentReport.reports();
@@ -163,14 +153,6 @@ public class GUIValidationUtils {
 
         return SignatureBadgeFactory.createCombinedBadgeFromQualification(resources,
                 reports.getDetailedReport().getSignatureQualification(signatureId), reports, signatureId, prefWrapLength);
-    }
-
-    static String getSignatureScopeLabel(ResourceBundle resources, ValidationReports.DocumentReport documentReport, String signatureId) {
-        if (documentReport.signatureCoversAllDocuments(signatureId))
-            return translate(resources, "signature.scope.allDocuments.label");
-        
-        var scopeDocuments = documentReport.getSignatureScopeDocumentNames(signatureId);
-        return scopeDocuments.isEmpty() ? translate(resources, "signature.scope.unknownDocuments.label") : String.join(", ", scopeDocuments);
     }
 
     static String validityToString(boolean isValid, boolean isFailed, boolean areTLsLoaded,

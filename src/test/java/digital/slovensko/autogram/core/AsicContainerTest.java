@@ -138,6 +138,11 @@ class AsicContainerTest {
         Assertions.assertEquals(List.of("test.txt", "test2.txt"), documentReport.getContainerContentFiles());
         Assertions.assertEquals(List.of("test.txt"), documentReport.getSignatureScopeDocumentNames(signatureId));
         Assertions.assertFalse(documentReport.signatureCoversAllDocuments(signatureId));
+        Assertions.assertTrue(reports.hasIncompleteContainerCoverage());
+
+        var previewDocuments = AsicContainerUtils.getOriginalDocuments(asiceWithMultipleFiles);
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(0), 0).size());
+        Assertions.assertTrue(reports.getSignaturesForPreviewDocument(previewDocuments.get(1), 1).isEmpty());
     }
 
     @Test

@@ -9,7 +9,6 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -28,7 +27,7 @@ public class SignaturesController extends BaseController implements SuppressedFo
     @FXML
     VBox mainBox;
     @FXML
-    WebView signaturesWebView;
+    VBox signaturesContainer;
     @FXML
     Button closeButton;
 
@@ -39,8 +38,6 @@ public class SignaturesController extends BaseController implements SuppressedFo
 
     @Override
     public void initialize() {
-        signaturesWebView.setContextMenuEnabled(false);
-        signaturesWebView.getEngine().setJavaScriptEnabled(false);
         renderSignatures();
     }
 
@@ -89,15 +86,21 @@ public class SignaturesController extends BaseController implements SuppressedFo
     }
 
     public void renderSignatures(ValidationReports reports, boolean isValidated) {
-        if (!reports.haveSignatures()) {
-            signaturesWebView.getEngine().loadContent(SignatureHtmlRenderer.emptyDocument(), "text/html");
-            return;
-        }
+        signaturesContainer.getChildren().clear();
+        var areTLsLoaded = SignatureValidator.getInstance().areTLsLoaded();
+        if (isValidated && !areTLsLoaded)
+            signaturesContainer.getChildren().add(
+                    GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));
 
-        signaturesWebView.getEngine().loadContent(
-                SignatureHtmlRenderer.buildPresentDocument(resources, reports, isValidated,
-                        isValidated && SignatureValidator.getInstance().areTLsLoaded()),
-                "text/html");
+        for (var signature : reports.getSignatures())
+            signaturesContainer.getChildren().add(GUIValidationUtils.createSignatureBox(resources,
+                    signature.documentReport(), isValidated, signature.signatureId(),
+                    ignored -> resizeToScene(), areTLsLoaded));
+    }
+
+    private void resizeToScene() {
+        if (mainBox.getScene() != null && mainBox.getScene().getWindow() instanceof Stage stage)
+            stage.sizeToScene();
     }
 
     private String buildSignatureValidationReportsHTML(ValidationReports reports) {

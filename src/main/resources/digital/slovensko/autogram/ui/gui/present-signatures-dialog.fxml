@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
-<?import javafx.scene.web.WebView?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       maxHeight="680"
@@ -15,7 +15,9 @@
 
     <TextFlow><Text styleClass="autogram-heading-m" text="%signature.present.summary.title"/></TextFlow>
 
-    <WebView fx:id="signaturesWebView" focusTraversable="false" prefHeight="560" VBox.vgrow="ALWAYS" />
+    <ScrollPane fitToWidth="true" prefHeight="560" VBox.vgrow="ALWAYS">
+      <VBox fx:id="signaturesContainer" spacing="12" />
+    </ScrollPane>
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="closeButton" styleClass="autogram-button, autogram-button--secondary" text="%general.close.btn" onAction="#onCloseButtonAction" />

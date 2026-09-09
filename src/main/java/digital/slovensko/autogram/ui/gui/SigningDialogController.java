@@ -59,6 +59,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     private ValidationReports signatureCheckReports;
     private final boolean shouldCheckValidityBeforeSigning;
     private List<DSSDocument> previewDocuments = List.of();
+    private List<Node> signatureSummaries = List.of();
 
     @FXML
     VBox mainBox;
@@ -91,11 +92,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     @FXML
     VBox signaturesTable;
     @FXML
-    WebView signaturesSummaryWebView;
-    @FXML
-    Text signaturesSummaryTitle;
-    @FXML
-    Button showSignaturesButton;
+    VBox signaturesSummaryHost;
     @FXML
     Text headerText;
 
@@ -122,13 +119,6 @@ public class SigningDialogController extends BaseController implements Suppresse
         plainTextArea.setMinHeight(0);
         signaturesTable.setManaged(false);
         signaturesTable.setVisible(false);
-        signaturesSummaryWebView.setContextMenuEnabled(false);
-        signaturesSummaryWebView.getEngine().setJavaScriptEnabled(true);
-        signaturesSummaryWebView.getEngine().getLoadWorker().stateProperty().addListener((observable, oldState,
-                newState) -> {
-            if (newState == Worker.State.SUCCEEDED)
-                Platform.runLater(this::resizeSignaturesSummaryWebView);
-        });
         previewDocuments = resolvePreviewDocuments();
         documentTabPane.sceneProperty().addListener((observable, oldScene, newScene) -> {
             if (newScene == null)
@@ -169,6 +159,7 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     private void showVisualizationForDocument(int documentIndex) {
         initializeVisualization(createVisualization(documentIndex));
+        showSignatureSummaryForDocument(documentIndex);
     }
 
     private Visualization createVisualization(int documentIndex) {
@@ -437,45 +428,40 @@ public class SigningDialogController extends BaseController implements Suppresse
         if (reports == null || !reports.haveSignatures())
             return;
 
+        var summaries = new ArrayList<Node>();
+        for (int index = 0; index < previewDocuments.size(); index++) {
+            var summary = new VBox(8);
+            if (!areTLsLoaded)
+                summary.getChildren().add(GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));
+            if (reports.hasIncompleteContainerCoverage())
+                summary.getChildren().add(GUIValidationUtils.createWarningText(
+                        i18n("signature.table.incompleteCoverage.warning")));
+
+            var signatures = reports.getSignaturesForPreviewDocument(previewDocuments.get(index), index);
+            var table = new VBox(GUIValidationUtils.createSignatureTableRows(resources, signatures, false,
+                    isValidated, ignored -> onShowSignaturesButtonPressed(null), 3));
+            table.getStyleClass().add("autogram-signatures-table");
+            summary.getChildren().add(table);
+            summaries.add(summary);
+        }
+        signatureSummaries = List.copyOf(summaries);
+
         signaturesTable.setManaged(true);
         signaturesTable.setVisible(true);
-        signaturesSummaryTitle.setText(i18n(
-            reports.shouldShowDocumentContext() ? "signature.table.title.documents" : "signature.table.title"));
-        signaturesSummaryTitle.setManaged(true);
-        signaturesSummaryTitle.setVisible(true);
+        var selectedIndex = documentTabPane.isManaged()
+                ? documentTabPane.getSelectionModel().getSelectedIndex()
+                : 0;
+        showSignatureSummaryForDocument(Math.max(0, selectedIndex));
 
-        var summaryDocument = SignatureHtmlRenderer.buildSummaryDocument(resources, reports, isValidated, areTLsLoaded,
-            3);
-        signaturesSummaryWebView.getEngine().loadContent(summaryDocument.html(), "text/html");
-        signaturesSummaryWebView.setManaged(true);
-        signaturesSummaryWebView.setVisible(true);
-
-        showSignaturesButton.setText(
-            i18n(summaryDocument.truncated() ? "signature.table.more.btn" : "signature.table.show.btn"));
-        showSignaturesButton.setManaged(true);
-        showSignaturesButton.setVisible(true);
-
-        var stage = (Stage) mainButton.getScene().getWindow();
-        stage.sizeToScene();
-
-        // Magic code to make the window resize to the correct size
-        signaturesTable.setManaged(true);
-        signaturesTable.setVisible(true);
-        stage.sizeToScene();
+        if (mainButton.getScene() != null && mainButton.getScene().getWindow() instanceof Stage stage)
+            stage.sizeToScene();
     }
 
-    private void resizeSignaturesSummaryWebView() {
-        try {
-            var contentHeight = signaturesSummaryWebView.getEngine()
-                    .executeScript("Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)");
-            if (contentHeight instanceof Number number) {
-            signaturesSummaryWebView.setPrefHeight(Math.max(42, Math.min(180, number.doubleValue() + 6)));
-                if (mainButton.getScene() != null && mainButton.getScene().getWindow() instanceof Stage stage)
-                    stage.sizeToScene();
-            }
-        } catch (Exception ignored) {
-            // Keep the default WebView height if the document is not measurable yet.
-        }
+    private void showSignatureSummaryForDocument(int documentIndex) {
+        if (documentIndex < 0 || documentIndex >= signatureSummaries.size())
+            return;
+
+        signaturesSummaryHost.getChildren().setAll(signatureSummaries.get(documentIndex));
     }
 
     public void refreshSigningKey() {
