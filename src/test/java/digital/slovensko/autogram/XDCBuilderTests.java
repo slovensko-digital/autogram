@@ -1,6 +1,6 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
@@ -35,7 +35,7 @@ class XDCBuilderTests {
             null,
             null,
             false);
-        var params = SigningParameters.prepareParameters(
+        var params = SigningInput.prepare(
             SignatureLevel.XAdES_BASELINE_B,
             DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E,
@@ -53,8 +53,8 @@ class XDCBuilderTests {
             null,
             true);
 
-        var out = XDCBuilder.transform(params.eFormAttributes(), params.signingParameters().getPropertiesCanonicalization(),
-            params.signingParameters().getDigestAlgorithm(), document.getName(),
+        var out = XDCBuilder.transform(params.getFirstDocument().getEFormAttributes(), params.getParameters().getPropertiesCanonicalization(),
+            params.getParameters().getDigestAlgorithm(), document.getName(),
             EFormUtils.getXmlFromDocument(document));
         var transformed = new String(out.openStream().readAllBytes(), StandardCharsets.UTF_8);
 

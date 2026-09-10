@@ -115,8 +115,7 @@ class AsicContainerTest {
     @Test
     void testSignatureCheckReportRecognizesPartialCoverageInMultiDocumentAsice() {
         var asiceWithMultipleFiles = createAsiceWithMultipleFiles();
-        var parameters = SigningParameters.buildForASiCWithXAdES(asiceWithMultipleFiles, false, false, null, true);
-        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(asiceWithMultipleFiles), parameters);
+        var input = SigningInput.prepareForASiCWithXAdES(asiceWithMultipleFiles, false, false, null, true);
         var job = SigningJob.fromInput(input, new Responder() {
             @Override
             public void onDocumentSigned(SignedDocument signedDocument) {
@@ -149,8 +148,7 @@ class AsicContainerTest {
     @Test
     void testBuildVisualizationForMultipleFilesInAsice() throws Exception {
         var asiceWithMultipleFiles = createAsiceWithMultipleFiles();
-        var parameters = SigningParameters.buildForASiCWithXAdES(asiceWithMultipleFiles, false, false, null, false);
-        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(asiceWithMultipleFiles), parameters);
+        var input = SigningInput.prepareForASiCWithXAdES(asiceWithMultipleFiles, false, false, null, false);
         var job = SigningJob.fromInput(input, new Responder() {
             @Override
             public void onDocumentSigned(SignedDocument signedDocument) {

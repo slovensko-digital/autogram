@@ -60,7 +60,7 @@ public class TransformationTests {
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                         "rozhodnutie_X4564-2.xml");
 
-                var params = SigningParameters.prepareParameters(
+                var params = SigningInput.prepare(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -86,8 +86,8 @@ public class TransformationTests {
                     true);
 
                 var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document)
-                                .withEFormAttributes(params.eFormAttributes()),
-                        params.signingParameters());
+                                .withEFormAttributes(params.getFirstDocument().getEFormAttributes()),
+                        params.getParameters());
                 SigningJob job = SigningJob.fromInput(input, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
@@ -146,7 +146,7 @@ public class TransformationTests {
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                         "rozhodnutie_X4564-2.xml");
 
-                var params = SigningParameters.prepareParameters(
+                var params = SigningInput.prepare(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -172,8 +172,8 @@ public class TransformationTests {
                     true);
 
                 var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document)
-                                .withEFormAttributes(params.eFormAttributes()),
-                        params.signingParameters());
+                                .withEFormAttributes(params.getFirstDocument().getEFormAttributes()),
+                        params.getParameters());
                 SigningJob job = SigningJob.fromInput(input, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
@@ -189,8 +189,7 @@ public class TransformationTests {
         @MethodSource("digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider")
         void testXdcfVisualizationIsNotUnsupported(InMemoryDocument document)
                 throws IOException, ParserConfigurationException, SAXException {
-                var params = SigningParameters.buildForASiCWithXAdES(document, false, false, null, false);
-                var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), params);
+                var input = SigningInput.prepareForASiCWithXAdES(document, false, false, null, false);
                 var job = SigningJob.fromInput(input, dummyResponder);
 
                 var visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
@@ -206,10 +205,11 @@ public class TransformationTests {
                 var secondDocument = AutogramDocument.fromContent(
                         this.getClass().getResourceAsStream("general_agenda.xdcf").readAllBytes(),
                         "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY);
-                var params = SigningParameters.buildForASiCWithXAdES(firstDocument.toDssDocument(), false, false, null,
+                var preparedFirstDocument = SigningInput.prepareForASiCWithXAdES(firstDocument, false, false, null,
                         false);
                 var job = SigningJob.fromInput(
-                        SigningInput.of(List.of(firstDocument, secondDocument), params), dummyResponder);
+                        SigningInput.of(List.of(firstDocument, secondDocument), preparedFirstDocument.getParameters()),
+                        dummyResponder);
 
                 Visualization visualization = DocumentVisualizationBuilder.fromDocument(job,
                         job.getAutogramDocuments().get(1),

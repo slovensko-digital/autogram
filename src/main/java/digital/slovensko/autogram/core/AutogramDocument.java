@@ -69,7 +69,7 @@ public class AutogramDocument {
         return eFormAttributes;
     }
 
-    public PreparedEFormAttributes prepareEFormAttributes(EFormAttributes attributes, boolean autoLoadEform,
+    public AutogramDocument prepareEFormAttributes(EFormAttributes attributes, boolean autoLoadEform,
             String fsFormId, String propertiesCanonicalization, DigestAlgorithm digestAlgorithm,
             boolean plainXmlEnabled) throws AutogramException {
         if (getMimeType() == null)
@@ -107,10 +107,7 @@ public class AutogramDocument {
                 && preparedAttributes.transformation() == null)
             throw new UnknownEformException();
 
-        return new PreparedEFormAttributes(preparedAttributes, extractedMimeType);
-    }
-
-    public record PreparedEFormAttributes(EFormAttributes eFormAttributes, MimeType mimeType) {
+        return withEFormAttributes(preparedAttributes);
     }
 
     private static DSSDocument normalize(DSSDocument dssDocument) {

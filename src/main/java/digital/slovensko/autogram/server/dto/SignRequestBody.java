@@ -76,17 +76,11 @@ public class SignRequestBody {
     }
 
     public SigningInput getSigningInput(TSPSource tspSource, boolean plainXmlEnabled) {
-        var document = getDocument();
-        var preparedParameters = parameters.getPreparedSigningParameters(isBase64(), document, tspSource,
-                plainXmlEnabled);
-
-        return SigningInput.fromDocument(document.withEFormAttributes(preparedParameters.eFormAttributes()),
-            preparedParameters.signingParameters());
+        return parameters.getSigningInput(isBase64(), getDocument(), tspSource, plainXmlEnabled);
     }
 
     public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getPreparedSigningParameters(isBase64(), getDocument(), tspSource,
-            plainXmlEnabled).signingParameters();
+        return getSigningInput(tspSource, plainXmlEnabled).getParameters();
     }
 
     public String getBatchId() {

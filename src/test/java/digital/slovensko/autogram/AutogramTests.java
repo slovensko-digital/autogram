@@ -63,9 +63,8 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, false);
+        var input = SigningInput.prepareForASiCWithXAdES(document, false, false, null, false);
         var responder = mock(Responder.class);
-        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), parameters);
 
         autogram.pickSigningKeyAndThen(
             key -> autogram.sign(SigningJob.fromInput(input, responder), key));
@@ -80,9 +79,8 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, true);
+        var input = SigningInput.prepareForASiCWithXAdES(document, false, false, null, true);
         var responder = mock(Responder.class);
-        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), parameters);
 
         autogram.pickSigningKeyAndThen(
             key -> autogram.sign(SigningJob.fromInput(input, responder), key));
@@ -93,7 +91,7 @@ class AutogramTests {
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
     void testSignNonEformNegativeScenario(InMemoryDocument document) {
-        Assertions.assertThrows(UnknownEformException.class, () -> SigningParameters.buildForASiCWithXAdES(document, false, false, null, false));
+        Assertions.assertThrows(UnknownEformException.class, () -> SigningInput.prepareForASiCWithXAdES(document, false, false, null, false));
     }
 
     @ParameterizedTest
@@ -104,9 +102,8 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForASiCWithCAdES(document, false, false, null, false);
+        var input = SigningInput.prepareForASiCWithCAdES(document, false, false, null, false);
         var responder = mock(Responder.class);
-        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), parameters);
 
         autogram.pickSigningKeyAndThen(
             key -> autogram.sign(SigningJob.fromInput(input, responder), key));
@@ -123,10 +120,10 @@ class AutogramTests {
             AutogramMimeType.fromMimeTypeString("text/plain"));
         var secondDocument = AutogramDocument.fromContent("second".getBytes(), "second.txt",
             AutogramMimeType.fromMimeTypeString("text/plain"));
-        var parameters = SigningParameters.buildForASiCWithXAdES(firstDocument.toDssDocument(), false, false, null, true);
+        var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, false, false, null, true);
 
         autogram.pickSigningKeyAndThen(key -> autogram.sign(
-            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), parameters), responder),
+            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()), responder),
             key));
 
         verify(responder).onDocumentSigned(any());
@@ -143,20 +140,18 @@ class AutogramTests {
             AutogramMimeType.fromMimeTypeString("text/plain"));
         var secondDocument = AutogramDocument.fromContent("second".getBytes(), "second.txt",
             AutogramMimeType.fromMimeTypeString("text/plain"));
-        var parameters = SigningParameters.buildForASiCWithXAdES(firstDocument.toDssDocument(), false, false, null, true);
+        var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, false, false, null, true);
 
         autogram.pickSigningKeyAndThen(key -> autogram.sign(
-            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), parameters), responder),
+            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()), responder),
             key));
 
         var signedDocumentCaptor = org.mockito.ArgumentCaptor.forClass(SignedDocument.class);
         verify(responder).onDocumentSigned(signedDocumentCaptor.capture());
 
         var signedDocument = signedDocumentCaptor.getValue();
-        var validationParameters = SigningParameters.buildForASiCWithXAdES(signedDocument.getDocument(), false, false,
+        var validationInput = SigningInput.prepareForASiCWithXAdES(signedDocument.getDocument(), false, false,
             null, true);
-        var validationDocument = AutogramDocument.fromDssDocument(signedDocument.getDocument());
-        var validationInput = SigningInput.fromDocument(validationDocument, validationParameters);
         var validationJob = SigningJob.fromInput(validationInput, mock(Responder.class));
         var reports = SignatureValidator.getSignatureCheckReport(validationJob);
 
@@ -255,9 +250,8 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildForPDF(document, false, false, null);
+        var input = SigningInput.prepareForPDF(document, false, false, null);
         var responder = mock(Responder.class);
-        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), parameters);
 
         autogram.pickSigningKeyAndThen(
             key -> autogram.sign(SigningJob.fromInput(input, responder), key));
@@ -600,8 +594,9 @@ class AutogramTests {
     }
 
     private static SigningJob createMultiDocumentJob(boolean checkPDFACompliance, AutogramDocument... documents) {
-        var parameters = SigningParameters.buildForASiCWithXAdES(documents[0].toDssDocument(), checkPDFACompliance,
+        var preparedInput = SigningInput.prepareForASiCWithXAdES(documents[0], checkPDFACompliance,
             false, null, true);
-        return SigningJob.fromInput(SigningInput.of(List.of(documents), parameters), mock(Responder.class));
+        return SigningJob.fromInput(SigningInput.of(List.of(documents), preparedInput.getParameters()),
+            mock(Responder.class));
     }
 }

@@ -1,7 +1,7 @@
 package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
-import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.*;
 import eu.europa.esig.dss.enumerations.*;
@@ -56,14 +56,14 @@ public class SigningParametersTests {
         var document = new InMemoryDocument(generalAgendaXml);
 
         Assertions.assertThrows(SigningParametersException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
                         false, inclusive, inclusive, inclusive, attributes, false, null, false, 800, document, tspSource, true));
     }
 
     @Test
     void testThrowsAutogramExceptionWhenNoDocument() {
         Assertions.assertThrows(SigningParametersException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
                         false, inclusive, inclusive, inclusive, attributes, false, null, false, 800, null, tspSource, true));
     }
 
@@ -72,17 +72,15 @@ public class SigningParametersTests {
         var document = new InMemoryDocument("not xml".getBytes(), "doc.xml", MimeTypeEnum.XML);
 
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, xsltTransformation, xsdSchema,
                         xdcXmlns, null, null, false), false, null, false, 800, document, tspSource, true));
     }
 
     @Test
     void testThrowsAutogramExceptionWhenNoSignatureLevel() {
-        var document = new InMemoryDocument(generalAgendaXml, "doc.xml", MimeTypeEnum.XML);
-
         Assertions.assertThrows(SigningParametersException.class,
-                () -> SigningParameters.prepareParameters(null, null, asice, enveloping,
+                () -> SigningInput.prepare(null, null, asice, enveloping,
                         false, inclusive, inclusive, inclusive, attributes, false, null, false, 800, null, tspSource, true));
     }
 
@@ -90,7 +88,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
     void testDoesNotThrowWithMinimalParametersForXadesNoConatiner(DSSDocument document) {
         Assertions.assertDoesNotThrow(
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null,
                         false, null, false, 800, document, tspSource, true));
     }
@@ -99,7 +97,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
     void testDoesNotThrowWithMinimalParametersForXadesInAsice(DSSDocument document) {
         Assertions.assertDoesNotThrow(
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, null, null, null, null,
                         false, null, false, 800, document, tspSource, true));
     }
@@ -108,7 +106,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
     void testDoesNotThrowWithMinimalParametersForXadesXdcInAsiceWith(DSSDocument document) {
         Assertions.assertDoesNotThrow(
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, xsltTransformation, xsdSchema,
                         xdcXmlns, null, null, false), false, null, false, 800, document, tspSource, true));
     }
@@ -118,7 +116,7 @@ public class SigningParametersTests {
     void testDoesNotThrowWithMinimalParametersForXadesXdcInAsiceAutoLoadEform(DSSDocument document) {
         // TODO: mock eform S3 resource
         Assertions.assertDoesNotThrow(
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
                         null, false, 800, document, tspSource, true));
     }
@@ -127,7 +125,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#invalidXmlProvider")
     void testThrowsAutogramExceptionWithInvalidXml(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, xsltTransformation, xsdSchema,
                         xdcXmlns, null, null, false), false, null, false, 800, document, tspSource, true));
     }
@@ -137,7 +135,7 @@ public class SigningParametersTests {
     void testThrowsAutogramExceptionWithInvalidXmlWithAutoLoadEform(DSSDocument document) {
         // TODO: mock eform S3 resource
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
                         null, false, 800, document, tspSource, true));
     }
@@ -147,7 +145,7 @@ public class SigningParametersTests {
     void testThrowsUnknownEformExceptionWithInvalidXmlEform(DSSDocument document) {
         // TODO: mock eform S3 resource
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
                         null, false, 800, document, tspSource, false));
     }
@@ -157,7 +155,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#xsdSchemaFailedValidationXmlProvider")
     void testThrowsAutogramExceptionWithInvalidXmlSchema(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, xsltTransformation, xsdSchema,
                         xdcXmlns, null, null, false), false, null, false, 800, document, tspSource, true));
     }
@@ -167,7 +165,7 @@ public class SigningParametersTests {
     void testThrowsAutogramExceptionWithInvalidXmlSchemaWithAutoLoadEform(DSSDocument document) {
         // TODO: mock eform S3 resource
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
                         null, false, 800, document, tspSource, true));
     }
@@ -175,7 +173,7 @@ public class SigningParametersTests {
     @ParameterizedTest
     @MethodSource("digital.slovensko.autogram.TestMethodSources#generalAgendaProvider")
         void testRejectsIncompleteEformUnlessAsiceResourcesCanBeLoaded(DSSDocument document) {
-                Executable prepareParameters = () -> SigningParameters.prepareParameters(
+                Executable prepareParameters = () -> SigningInput.prepare(
                         SignatureLevel.XAdES_BASELINE_B, null, asice, null, false, null, null, null,
                         new EFormAttributes(null, null, null, xdcXmlns, null, null, false), false,
                         null, false, 800, document, tspSource, false);
@@ -190,7 +188,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#unknownEfomXmlProvider")
     void testThrowsAutogramExceptionWithUnknownEformXmlWithAutoLoadEform(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
                         null, false, 800, document, tspSource, false));
     }
@@ -199,7 +197,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#mismatchedDigestsXmlProvider")
     void testThrowsAutogramExceptionWithMismatchedDigestsXml(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, xsltTransformation, xsdSchema,
                         xdcXmlns, null, null, false), false, null, false, 800, document, tspSource, true));
     }
@@ -209,7 +207,7 @@ public class SigningParametersTests {
             "digital.slovensko.autogram.TestMethodSources#mismatchedDigestsFSXmlProvider"})
     void testThrowsAutogramExceptionWithMismatchedDigestsXmlWithAutoLoadEform(DSSDocument document) {
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, null, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, null, null,
                         false, null, null, null, null, true,
                         "792_772", false, 800, document, tspSource, true));
     }
@@ -218,7 +216,7 @@ public class SigningParametersTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#invalidAsiceProvider")
     void testThrowsOriginalDocumentNotFoundWithAsiceWithoutSignature(DSSDocument document) throws IOException {
         Assertions.assertThrows(OriginalDocumentNotFoundException.class,
-                () -> SigningParameters.buildForASiCWithXAdES(document, false, false, tspSource, true));
+                () -> SigningInput.prepareForASiCWithXAdES(document, false, false, tspSource, true));
     }
 
     @Test
@@ -228,7 +226,7 @@ public class SigningParametersTests {
                 "empty_xml.asice");
 
         Assertions.assertThrows(XMLValidationException.class,
-                () -> SigningParameters.buildForASiCWithXAdES(document, false, false, tspSource, false));
+                () -> SigningInput.prepareForASiCWithXAdES(document, false, false, tspSource, false));
     }
 
     @Test
@@ -238,7 +236,7 @@ public class SigningParametersTests {
 
         var transformation = "invalid transformation";
         Assertions.assertThrows(TransformationParsingErrorException.class,
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, null,
                         false, inclusive, inclusive, inclusive, new EFormAttributes(identifier, transformation, xsdSchema,
                         xdcXmlns, null, null, false), false, null, false, 800, document, tspSource, true));
     }
@@ -249,7 +247,7 @@ public class SigningParametersTests {
         var eFormAttributes = new EFormAttributes(identifier, "", "", "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1", null, null, true);
 
         Assertions.assertDoesNotThrow(
-                () -> SigningParameters.prepareParameters(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
+                () -> SigningInput.prepare(SignatureLevel.XAdES_BASELINE_B, null, asice, enveloping,
                         false, inclusive, inclusive, inclusive, eFormAttributes, false, null, false, 800, document, tspSource, false));
     }
 
@@ -258,7 +256,7 @@ public class SigningParametersTests {
         var xdcContent = getClass().getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
         var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
-        var params = SigningParameters.prepareParameters(
+        var params = SigningInput.prepare(
                 SignatureLevel.XAdES_BASELINE_B,
                 DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E,
@@ -278,7 +276,7 @@ public class SigningParametersTests {
         );
 
         Assertions.assertNotNull(params);
-        Assertions.assertEquals(SignatureLevel.XAdES_BASELINE_B, params.signingParameters().getLevel());
+        Assertions.assertEquals(SignatureLevel.XAdES_BASELINE_B, params.getParameters().getLevel());
     }
 
     @Test
@@ -287,7 +285,7 @@ public class SigningParametersTests {
         var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
         Assertions.assertThrows(XMLValidationException.class, () ->
-            SigningParameters.prepareParameters(
+            SigningInput.prepare(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -314,7 +312,7 @@ public class SigningParametersTests {
         var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
         Assertions.assertThrows(XMLValidationException.class, () ->
-            SigningParameters.prepareParameters(
+            SigningInput.prepare(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -341,7 +339,7 @@ public class SigningParametersTests {
         var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
         Assertions.assertThrows(XMLValidationException.class, () ->
-            SigningParameters.prepareParameters(
+            SigningInput.prepare(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -368,7 +366,7 @@ public class SigningParametersTests {
         var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.XML_DATACONTAINER);
 
         Assertions.assertThrows(XMLValidationException.class, () ->
-            SigningParameters.prepareParameters(
+            SigningInput.prepare(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -394,7 +392,7 @@ public class SigningParametersTests {
         var xdcContent = getClass().getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
         var xdcDocument = new InMemoryDocument(xdcContent, "test.xml", AutogramMimeType.APPLICATION_XML);
 
-        var params = SigningParameters.prepareParameters(
+        var params = SigningInput.prepare(
                 SignatureLevel.XAdES_BASELINE_B,
                 DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E,
@@ -414,7 +412,7 @@ public class SigningParametersTests {
         );
 
         Assertions.assertNotNull(params);
-        Assertions.assertTrue(params.eFormAttributes().containerXmlns().contains("xmldatacontainer"));
+        Assertions.assertTrue(params.getFirstDocument().getEFormAttributes().containerXmlns().contains("xmldatacontainer"));
     }
 
     @Test
@@ -423,7 +421,7 @@ public class SigningParametersTests {
         var xmlDocument = new InMemoryDocument(xmlContent, "test.xml", AutogramMimeType.APPLICATION_XML);
 
         Assertions.assertThrows(Exception.class, () ->
-            SigningParameters.prepareParameters(
+            SigningInput.prepare(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -449,7 +447,7 @@ public class SigningParametersTests {
         var xmlContent = getClass().getResourceAsStream("general_agenda.xml").readAllBytes();
         var xmlDocument = new InMemoryDocument(xmlContent, "test.xml", AutogramMimeType.APPLICATION_XML);
 
-        var params = SigningParameters.prepareParameters(
+        var params = SigningInput.prepare(
                 SignatureLevel.XAdES_BASELINE_B,
                 DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E,
@@ -477,7 +475,7 @@ public class SigningParametersTests {
             var schema = new String(this.getClass().getResourceAsStream("crystal_test_data/rozhodnutie_X4564-2.xsd").readAllBytes());
             var document = new InMemoryDocument(this.getClass().getResourceAsStream("crystal_test_data/rozhodnutie_X4564-2.xml"), "rozhodnutie_X4564-2.xml");
 
-            Assertions.assertThrows(SigningParametersException.class, () -> SigningParameters.prepareParameters(
+            Assertions.assertThrows(SigningParametersException.class, () -> SigningInput.prepare(
                 SignatureLevel.XAdES_BASELINE_B,
                 DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E,
