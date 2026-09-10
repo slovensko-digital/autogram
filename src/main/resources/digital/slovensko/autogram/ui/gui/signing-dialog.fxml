@@ -77,7 +77,7 @@
     </VBox>
 
 
-    <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table"></VBox>
+    <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table" />
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button" text="%general.sign.btn" onAction="#onMainButtonPressed"/>
