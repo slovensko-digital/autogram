@@ -1009,43 +1009,6 @@ components:
             Text formats like XML can be optionally encoded using base64 but can be also supplied as plain text as seen in the examples, in which case the type is `application/xml`.
         xdcParameters:
           $ref: "#/components/schemas/XDCParameters"
-        visibleSignature:
-          $ref: "#/components/schemas/VisibleSignature"
-      required:
-        - content
-        - mimeType
-
-    VisibleSignature:
-      type: object
-      properties:
-        fieldId:
-          type: string
-          example: signature-field-123
-          description: Identifier of an existing prepared PDF signature field that should be used for the visible PAdES appearance.
-        text:
-          type: string
-          example: John Smith
-          description: Optional text content rendered inside the target signature field.
-        image:
-          $ref: "#/components/schemas/VisibleSignatureImage"
-      required:
-        - fieldId
-
-    VisibleSignatureImage:
-      type: object
-      properties:
-        filename:
-          type: string
-          example: signature.png
-          description: Optional filename hint for the image resource.
-        content:
-          type: string
-          example: iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wn0lKsAAAAASUVORK5CYII=
-          description: Image content. Binary image formats should be sent as base64.
-        mimeType:
-          type: string
-          example: image/png;base64
-          description: MIME type of the image content.
       required:
         - content
         - mimeType
