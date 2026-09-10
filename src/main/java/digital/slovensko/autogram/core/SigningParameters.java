@@ -2,7 +2,6 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
-import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
@@ -38,7 +37,6 @@ public class SigningParameters {
     private final String infoCanonicalization;
     private final String propertiesCanonicalization;
     private final String keyInfoCanonicalization;
-    private final EFormAttributes eFormAttributes;
     private final boolean checkPDFACompliance;
     private final int visualizationWidth;
     private final TSPSource tspSource;
@@ -46,7 +44,7 @@ public class SigningParameters {
     private SigningParameters(
             SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging signaturePackaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            EFormAttributes eFormAttributes, boolean checkPDFACompliance, int preferredPreviewWidth, TSPSource tspSource) {
+            boolean checkPDFACompliance, int preferredPreviewWidth, TSPSource tspSource) {
 
         this.level = level;
         this.digestAlgorithm = digestAlgorithm;
@@ -59,10 +57,9 @@ public class SigningParameters {
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
         this.tspSource = tspSource;
-        this.eFormAttributes = eFormAttributes;
     }
 
-    public static SigningParameters buildParameters(
+    public static PreparedParameters buildParameters(
             SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
             EFormAttributes eFormAttributes, boolean autoLoadEform, String fsFormId, boolean checkPDFACompliance,
@@ -80,15 +77,17 @@ public class SigningParameters {
         if (digestAlgorithm == null)
             digestAlgorithm = DigestAlgorithm.SHA256;
 
+        var isAsiceDocument = AutogramMimeType.isAsice(document.getMimeType());
         var extractedDocument = document;
-        if (AutogramMimeType.isAsice(document.getMimeType()))
+        if (isAsiceDocument)
             extractedDocument = AsicContainerUtils.getOriginalDocuments(document).get(0);
 
         if (AutogramMimeType.isXML(extractedDocument.getMimeType()) && XDCValidator.isXDCContent(extractedDocument))
             extractedDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER);
 
         fsFormId = EFormUtils.translateFsFormId(fsFormId);
-        eFormAttributes = EFormAttributes.build(eFormAttributes, autoLoadEform, fsFormId, extractedDocument, propertiesCanonicalization);
+        eFormAttributes = EFormAttributes.build(eFormAttributes, autoLoadEform || isAsiceDocument, fsFormId,
+            extractedDocument, propertiesCanonicalization);
 
         var extractedDocumentMimeType = extractedDocument.getMimeType();
 
@@ -120,30 +119,53 @@ public class SigningParameters {
         if (!plainXmlEnabled && (AutogramMimeType.isXML(extractedDocumentMimeType) || AutogramMimeType.isXDC(extractedDocumentMimeType)) && (eFormAttributes.transformation() == null))
             throw new UnknownEformException();
 
-        return new SigningParameters(
+        var signingParameters = new SigningParameters(
                 level, digestAlgorithm, container, packaging, en319132, infoCanonicalization, propertiesCanonicalization,
-                keyInfoCanonicalization, eFormAttributes, checkPDFACompliance, preferredPreviewWidth, tspSource);
+            keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth, tspSource);
+        return new PreparedParameters(signingParameters, eFormAttributes);
     }
 
+        public record PreparedParameters(SigningParameters signingParameters, EFormAttributes eFormAttributes) {
+        }
+
     public static SigningParameters buildForPDF(DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource) throws AutogramException {
+        return prepareForPDF(document, checkPDFACompliance, signAsEn319132, tspSource).signingParameters();
+        }
+
+        public static PreparedParameters prepareForPDF(DSSDocument document, boolean checkPDFACompliance,
+            boolean signAsEn319132, TSPSource tspSource) throws AutogramException {
         return buildParameters(
                 (tspSource == null) ? SignatureLevel.PAdES_BASELINE_B : SignatureLevel.PAdES_BASELINE_T, DigestAlgorithm.SHA256,
                 null, null, signAsEn319132, null, null, null, null, false,
-                null, checkPDFACompliance, 640, document, tspSource, true);
+            null, checkPDFACompliance, 640, document, tspSource, true);
     }
 
     public static SigningParameters buildForASiCWithXAdES(DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
+        return prepareForASiCWithXAdES(document, checkPDFACompliance, signAsEn319132, tspSource, plainXmlEnabled)
+            .signingParameters();
+        }
+
+        public static PreparedParameters prepareForASiCWithXAdES(DSSDocument document, boolean checkPDFACompliance,
+            boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
         return buildParameters(
                 (tspSource == null) ? SignatureLevel.XAdES_BASELINE_B : SignatureLevel.XAdES_BASELINE_T, DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, signAsEn319132, null, null, null,  null, true,
-                EFormUtils.getFsFormIdFromFilename(document.getName()), checkPDFACompliance, 640, document, tspSource, plainXmlEnabled);
+                EFormUtils.getFsFormIdFromFilename(document.getName()), checkPDFACompliance, 640, document, tspSource,
+            plainXmlEnabled);
     }
 
     public static SigningParameters buildForASiCWithCAdES(DSSDocument document, boolean checkPDFACompliance, boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
+        return prepareForASiCWithCAdES(document, checkPDFACompliance, signAsEn319132, tspSource, plainXmlEnabled)
+            .signingParameters();
+        }
+
+        public static PreparedParameters prepareForASiCWithCAdES(DSSDocument document, boolean checkPDFACompliance,
+            boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
         return buildParameters(
                 (tspSource == null) ? SignatureLevel.CAdES_BASELINE_B : SignatureLevel.CAdES_BASELINE_T, DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, signAsEn319132, null, null, null, null, true,
-                EFormUtils.getFsFormIdFromFilename(document.getName()), checkPDFACompliance, 640, document, tspSource, plainXmlEnabled);
+                EFormUtils.getFsFormIdFromFilename(document.getName()), checkPDFACompliance, 640, document, tspSource,
+            plainXmlEnabled);
     }
 
         public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
@@ -217,18 +239,6 @@ public class SigningParameters {
         return container;
     }
 
-    public String getContainerXmlns() {
-        return eFormAttributes.containerXmlns();
-    }
-
-    public String getSchema() {
-        return eFormAttributes.schema();
-    }
-
-    public String getTransformation() {
-        return eFormAttributes.transformation();
-    }
-
     public SignatureLevel getLevel() {
         return level != null ? level : SignatureLevel.XAdES_BASELINE_B;
     }
@@ -257,10 +267,6 @@ public class SigningParameters {
         return keyInfoCanonicalization != null ? keyInfoCanonicalization : CanonicalizationMethod.INCLUSIVE;
     }
 
-    public String getIdentifier() {
-        return eFormAttributes.identifier();
-    }
-
     public boolean getCheckPDFACompliance() {
         return checkPDFACompliance;
     }
@@ -269,27 +275,8 @@ public class SigningParameters {
         return (visualizationWidth > 0) ? visualizationWidth : 768;
     }
 
-    public String getXsltDestinationType() {
-        return eFormAttributes.xsltParams() != null ? eFormAttributes.xsltParams().destinationType() : null;
-    }
-
-    public String getXsdIdentifier() {
-        return eFormAttributes.xsdIdentifier();
-    }
-
-    public boolean shouldCreateXdc() {
-        return eFormAttributes.containerXmlns() != null && eFormAttributes.containerXmlns().contains("xmldatacontainer");
-    }
-
-    public XsltParams getXsltParams() {
-        return eFormAttributes.xsltParams();
-    }
-
     public TSPSource getTspSource() {
         return tspSource;
     }
 
-    public boolean shouldEmbedSchemas() {
-        return eFormAttributes.embedUsedSchemas();
-    }
 }

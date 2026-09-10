@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -34,9 +35,10 @@ public class CliApp {
 
             var finalAutogram = autogram;
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
-                    .map(f -> SigningJob.buildFromFile(f, new SaveFileResponder(f, finalAutogram, targetPathBuilder),
-                            settings.isPdfaCompliance(), settings.getSignatureLevel(), settings.isEn319132(),
-                            settings.getTspSource(), settings.isPlainXmlEnabled()))
+                        .map(f -> SigningJob.fromInput(
+                            SigningInput.fromFile(f, settings.isPdfaCompliance(), settings.getSignatureLevel(),
+                                settings.isEn319132(), settings.getTspSource(), settings.isPlainXmlEnabled()),
+                            new SaveFileResponder(f, finalAutogram, targetPathBuilder)))
                     .toList();
             if (settings.isPdfaCompliance()) {
                 jobs.forEach(job -> {

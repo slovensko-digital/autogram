@@ -273,7 +273,7 @@ public class SigningParametersTests {
         );
 
         Assertions.assertNotNull(params);
-        Assertions.assertEquals(SignatureLevel.XAdES_BASELINE_B, params.getLevel());
+        Assertions.assertEquals(SignatureLevel.XAdES_BASELINE_B, params.signingParameters().getLevel());
     }
 
     @Test
@@ -409,7 +409,7 @@ public class SigningParametersTests {
         );
 
         Assertions.assertNotNull(params);
-        Assertions.assertTrue(params.shouldCreateXdc());
+        Assertions.assertTrue(params.eFormAttributes().containerXmlns().contains("xmldatacontainer"));
     }
 
     @Test

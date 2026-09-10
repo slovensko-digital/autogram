@@ -85,7 +85,10 @@ public class TransformationTests {
                     null,
                     true);
 
-                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
+                var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document)
+                                .withEFormAttributes(params.eFormAttributes()),
+                        params.signingParameters());
+                SigningJob job = SigningJob.fromInput(input, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -168,7 +171,10 @@ public class TransformationTests {
                     null,
                     true);
 
-                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
+                var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document)
+                                .withEFormAttributes(params.eFormAttributes()),
+                        params.signingParameters());
+                SigningJob job = SigningJob.fromInput(input, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -184,7 +190,8 @@ public class TransformationTests {
         void testXdcfVisualizationIsNotUnsupported(InMemoryDocument document)
                 throws IOException, ParserConfigurationException, SAXException {
                 var params = SigningParameters.buildForASiCWithXAdES(document, false, false, null, false);
-                var job = SigningJob.buildFromRequest(document, params, dummyResponder);
+                var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), params);
+                var job = SigningJob.fromInput(input, dummyResponder);
 
                 var visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
 
@@ -201,10 +208,11 @@ public class TransformationTests {
                         "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY);
                 var params = SigningParameters.buildForASiCWithXAdES(firstDocument.toDssDocument(), false, false, null,
                         false);
-                var job = SigningJob.buildFromRequest(
-                        AutogramSigningRequest.of(List.of(firstDocument, secondDocument), params), dummyResponder);
+                var job = SigningJob.fromInput(
+                        SigningInput.of(List.of(firstDocument, secondDocument), params), dummyResponder);
 
-                Visualization visualization = DocumentVisualizationBuilder.fromDocument(job, job.getDocuments().get(1),
+                Visualization visualization = DocumentVisualizationBuilder.fromDocument(job,
+                        job.getAutogramDocuments().get(1),
                         UserSettings.load());
 
                 Assertions.assertFalse(visualization instanceof UnsupportedVisualization);

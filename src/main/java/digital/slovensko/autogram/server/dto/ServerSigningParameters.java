@@ -154,7 +154,8 @@ public class ServerSigningParameters {
         this.fsFormId = null;
     }
 
-    public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
+        public PreparedSigningParameters getPreparedSigningParameters(boolean isBase64, DSSDocument document,
+            TSPSource tspSource, boolean plainXmlEnabled) {
         var xsltParams = new XsltParams(
                 transformationIdentifier,
                 transformationLanguage,
@@ -171,7 +172,7 @@ public class ServerSigningParameters {
                 xsltParams,
                 getBoolean(embedUsedSchemas));
 
-        return SigningParameters.buildParameters(
+        var preparedParameters = SigningParameters.buildParameters(
                 getSignatureLevel(),
                 digestAlgorithm,
                 getContainer(),
@@ -188,6 +189,12 @@ public class ServerSigningParameters {
                 document,
                 tspSource,
                 plainXmlEnabled);
+
+        return new PreparedSigningParameters(preparedParameters.signingParameters(),
+            preparedParameters.eFormAttributes());
+    }
+
+    public record PreparedSigningParameters(SigningParameters signingParameters, EFormAttributes eFormAttributes) {
     }
 
     private static boolean getBoolean(Boolean variable) {

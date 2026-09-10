@@ -65,9 +65,10 @@ class AutogramTests {
 
         var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, false);
         var responder = mock(Responder.class);
+        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), parameters);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -81,9 +82,10 @@ class AutogramTests {
 
         var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, true);
         var responder = mock(Responder.class);
+        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), parameters);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -104,9 +106,10 @@ class AutogramTests {
 
         var parameters = SigningParameters.buildForASiCWithCAdES(document, false, false, null, false);
         var responder = mock(Responder.class);
+        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), parameters);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
     }
 
         @Test
@@ -123,7 +126,7 @@ class AutogramTests {
         var parameters = SigningParameters.buildForASiCWithXAdES(firstDocument.toDssDocument(), false, false, null, true);
 
         autogram.pickSigningKeyAndThen(key -> autogram.sign(
-            SigningJob.buildFromRequest(AutogramSigningRequest.of(List.of(firstDocument, secondDocument), parameters), responder),
+            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), parameters), responder),
             key));
 
         verify(responder).onDocumentSigned(any());
@@ -143,7 +146,7 @@ class AutogramTests {
         var parameters = SigningParameters.buildForASiCWithXAdES(firstDocument.toDssDocument(), false, false, null, true);
 
         autogram.pickSigningKeyAndThen(key -> autogram.sign(
-            SigningJob.buildFromRequest(AutogramSigningRequest.of(List.of(firstDocument, secondDocument), parameters), responder),
+            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), parameters), responder),
             key));
 
         var signedDocumentCaptor = org.mockito.ArgumentCaptor.forClass(SignedDocument.class);
@@ -152,8 +155,9 @@ class AutogramTests {
         var signedDocument = signedDocumentCaptor.getValue();
         var validationParameters = SigningParameters.buildForASiCWithXAdES(signedDocument.getDocument(), false, false,
             null, true);
-        var validationJob = SigningJob.buildFromRequest(signedDocument.getDocument(), validationParameters,
-            mock(Responder.class));
+        var validationDocument = AutogramDocument.fromDssDocument(signedDocument.getDocument());
+        var validationInput = SigningInput.fromDocument(validationDocument, validationParameters);
+        var validationJob = SigningJob.fromInput(validationInput, mock(Responder.class));
         var reports = SignatureValidator.getSignatureCheckReport(validationJob);
 
         Assertions.assertEquals(1, reports.getDocumentReports().size());
@@ -253,9 +257,10 @@ class AutogramTests {
 
         var parameters = SigningParameters.buildForPDF(document, false, false, null);
         var responder = mock(Responder.class);
+        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document), parameters);
 
         autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromRequest(document, parameters, responder), key));
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -285,8 +290,8 @@ class AutogramTests {
 
         var responder = mock(Responder.class);
 
-        autogram.pickSigningKeyAndThen(
-                key -> autogram.sign(SigningJob.buildFromFile(file, responder, false, SignatureLevel.XAdES_BASELINE_B, false, null, false), key));
+        var input = SigningInput.fromFile(file, false, SignatureLevel.XAdES_BASELINE_B, false, null, false);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(SigningJob.fromInput(input, responder), key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -597,6 +602,6 @@ class AutogramTests {
     private static SigningJob createMultiDocumentJob(boolean checkPDFACompliance, AutogramDocument... documents) {
         var parameters = SigningParameters.buildForASiCWithXAdES(documents[0].toDssDocument(), checkPDFACompliance,
                 false, null, true);
-        return SigningJob.buildFromRequest(AutogramSigningRequest.of(List.of(documents), parameters), mock(Responder.class));
+        return SigningJob.fromInput(SigningInput.of(List.of(documents), parameters), mock(Responder.class));
     }
 }

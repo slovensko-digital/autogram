@@ -1,10 +1,7 @@
 package digital.slovensko.autogram.core;
 
-import java.io.File;
 import java.util.List;
 
-import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.alert.LogOnStatusAlert;
@@ -14,28 +11,30 @@ import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
-import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 
 public class SigningJob {
     private final Responder responder;
-    private final AutogramSigningRequest request;
+    private final SigningInput input;
 
-    private SigningJob(AutogramSigningRequest request, Responder responder) {
-        this.request = request;
+    private SigningJob(SigningInput input, Responder responder) {
+        this.input = input;
         this.responder = responder;
     }
 
     public DSSDocument getDocument() {
-        return request.getFirstDocument().toDssDocument();
+        return input.getFirstDocument().toDssDocument();
     }
 
     public List<DSSDocument> getDocuments() {
-        return request.getDocuments().stream().map(AutogramDocument::toDssDocument).toList();
+        return input.getDocuments().stream().map(AutogramDocument::toDssDocument).toList();
+    }
+
+    public List<AutogramDocument> getAutogramDocuments() {
+        return input.getDocuments();
     }
 
     public List<DSSDocument> getDocumentsForContentChecks() {
@@ -43,7 +42,7 @@ public class SigningJob {
     }
 
     public SigningParameters getParameters() {
-        return request.getParameters();
+        return input.getParameters();
     }
 
     public int getVisualizationWidth() {
@@ -53,7 +52,7 @@ public class SigningJob {
     public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
 
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName()
-                + (request.isMultiDocument() ? " documents=" + request.getDocumentCount() : ""));
+            + (input.isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
@@ -161,72 +160,8 @@ public class SigningJob {
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    public static DSSDocument createDSSFileDocumentFromFile(File file) {
-        return AutogramDocument.fromFile(file).toDssDocument();
-    }
-
-    private static DSSDocument prepareDocument(DSSDocument document, SigningParameters params) {
-        if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
-            document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
-
-        if (isTxt(document.getMimeType()))
-            document.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
-
-        if (isXDC(document.getMimeType())) {
-            document.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
-            document.setName(getXdcfFilename(document.getName()));
-        }
-
-        return document;
-    }
-
-    public static AutogramDocument prepareDocument(AutogramDocument document, SigningParameters params) {
-        return AutogramDocument.fromDssDocument(prepareDocument(document.toDssDocument(), params));
-    }
-
-    public static SigningJob buildFromRequest(AutogramSigningRequest request, Responder responder) {
-        return new SigningJob(request, responder);
-    }
-
-    public static SigningJob buildFromRequest(AutogramDocument document, SigningParameters params, Responder responder) {
-        return buildFromRequest(AutogramSigningRequest.forSingleDocument(prepareDocument(document, params), params), responder);
-    }
-
-    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
-        return buildFromRequest(AutogramDocument.fromDssDocument(document), params, responder);
-    }
-
-    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var document = AutogramDocument.fromFile(file);
-        var parameters = getParametersForFile(document.toDssDocument(), checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return buildFromRequest(AutogramSigningRequest.forSingleDocument(prepareDocument(document, parameters), parameters), responder);
-    }
-
-    private static SigningParameters getParametersForFile(DSSDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var level = SignatureValidator.getSignedDocumentSignatureLevel(SignatureValidator.getSignedDocumentSimpleReport(document));
-        if (level != null) switch (level.getSignatureForm()) {
-            case PAdES:
-                return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
-            case XAdES:
-                return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
-            case CAdES:
-                return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
-            default:
-                ;
-        }
-
-        if (isPDF(document.getMimeType())) switch (signatureType) {
-            case PAdES_BASELINE_B:
-                return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
-            case XAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
-            case CAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
-            default:
-                ;
-        }
-
-        return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
+    public static SigningJob fromInput(SigningInput input, Responder responder) {
+        return new SigningJob(input, responder);
     }
 
     public boolean shouldCheckPDFCompliance() {

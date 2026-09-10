@@ -1,9 +1,8 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.AutogramSigningRequest;
+import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.MimeType;
@@ -11,9 +10,9 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.fromMimeTypeString;
 import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.BASE64_DECODING_FAILED;
@@ -28,41 +27,48 @@ public class VersionedSignRequestBody {
     private PresentationParameters presentation;
     private String batchId;
 
-    public AutogramSigningRequest getSigningRequest(TSPSource tspSource, boolean plainXmlEnabled) {
+    public SigningInput getSigningInput(TSPSource tspSource, boolean plainXmlEnabled) {
         var submittedDocuments = getSubmittedDocuments();
         var resolvedParameters = parameters != null ? parameters : new VersionedSigningParameters();
-        var preparedDocuments = new ArrayList<AutogramDocument>();
         var isMultiDocument = submittedDocuments.size() > 1;
-        SigningParameters coreSigningParameters = null;
 
         if (isMultiDocument && batchId != null)
             throw new RequestValidationException(MULTI_DOCUMENT_BATCH_UNSUPPORTED);
 
-        for (int index = 0; index < submittedDocuments.size(); index++) {
-            var submittedDocument = submittedDocuments.get(index);
-            validateDocument(submittedDocument, index, isMultiDocument);
+        var preparedDocuments = IntStream.range(0, submittedDocuments.size())
+            .mapToObj(index -> prepareSubmittedDocument(submittedDocuments.get(index), index, isMultiDocument,
+                resolvedParameters, tspSource, plainXmlEnabled))
+            .toList();
 
-            var requestDocument = buildRequestDocument(submittedDocument);
-            var rawDocument = AutogramDocument.fromDssDocument(requestDocument);
-            var serverSigningParameters = resolvedParameters.toServerSigningParameters(presentation,
-                    submittedDocument.getXdcParameters(), isMultiDocument);
+        return SigningInput.of(preparedDocuments.stream().map(PreparedDocument::document).toList(),
+            preparedDocuments.getFirst().parameters());
+    }
 
-            if (!isMultiDocument)
-                serverSigningParameters.resolveSigningLevel(requestDocument);
+    private PreparedDocument prepareSubmittedDocument(Document submittedDocument, int index, boolean isMultiDocument,
+            VersionedSigningParameters resolvedParameters, TSPSource tspSource, boolean plainXmlEnabled) {
+        validateDocument(submittedDocument, index, isMultiDocument);
 
-            serverSigningParameters.validate(rawDocument.getMimeType());
+        var requestDocument = buildRequestDocument(submittedDocument);
+        var rawDocument = AutogramDocument.fromDssDocument(requestDocument);
+        var serverSigningParameters = resolvedParameters.toServerSigningParameters(presentation,
+            submittedDocument.getXdcParameters(), isMultiDocument);
 
-            var preprocessingParameters = serverSigningParameters.getSigningParameters(
-                    submittedDocument.getXdcParameters() != null && submittedDocument.getXdcParameters().areResourcesBase64(),
-                    rawDocument.toDssDocument(), tspSource, plainXmlEnabled);
+        if (!isMultiDocument)
+            serverSigningParameters.resolveSigningLevel(requestDocument);
 
-            if (coreSigningParameters == null)
-                coreSigningParameters = preprocessingParameters;
+        serverSigningParameters.validate(rawDocument.getMimeType());
 
-            preparedDocuments.add(SigningJob.prepareDocument(rawDocument, preprocessingParameters));
+        var preparedParameters = serverSigningParameters.getPreparedSigningParameters(
+            submittedDocument.getXdcParameters() != null && submittedDocument.getXdcParameters().areResourcesBase64(),
+            rawDocument.toDssDocument(), tspSource, plainXmlEnabled);
+        var documentWithEFormAttributes = rawDocument.withEFormAttributes(preparedParameters.eFormAttributes());
+
+        return new PreparedDocument(
+            SigningInput.prepareDocument(documentWithEFormAttributes, preparedParameters.signingParameters()),
+            preparedParameters.signingParameters());
         }
 
-        return AutogramSigningRequest.of(preparedDocuments, coreSigningParameters);
+    private record PreparedDocument(AutogramDocument document, SigningParameters parameters) {
     }
 
     public String getBatchId() {

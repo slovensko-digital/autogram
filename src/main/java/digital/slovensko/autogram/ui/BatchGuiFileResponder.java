@@ -10,6 +10,7 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.ResponderInBatch;
+import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -64,7 +65,9 @@ public class BatchGuiFileResponder extends BatchResponder {
                     onAllFilesSigned(batch);
                 }), batch);
 
-                var job = SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled);
+                var input = SigningInput.fromFile(file, checkPDFACompliance, pDFSignatureLevel, isEn319132,
+                    tspSource, plainXmlEnabled);
+                var job = SigningJob.fromInput(input, responder);
                 autogram.batchSign(job, batch.getBatchId());
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);

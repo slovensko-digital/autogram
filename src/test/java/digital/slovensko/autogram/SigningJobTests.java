@@ -1,5 +1,6 @@
 package digital.slovensko.autogram;
 
+import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
@@ -10,7 +11,6 @@ import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
 
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +53,9 @@ public class SigningJobTests {
                 null);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-        var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(null, true), null);
+        var parameters = signRequestBody.getParameters(null, true);
+        var input = SigningInput.fromDocument(signRequestBody.getDocument(), parameters);
+        var job = SigningJob.fromInput(input, null);
         Visualization visualization = null;
         try {
             visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());

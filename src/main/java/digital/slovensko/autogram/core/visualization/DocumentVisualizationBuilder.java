@@ -7,6 +7,7 @@ import java.util.Locale;
 import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.AutogramDocument;
 import digital.slovensko.autogram.core.eforms.EFormResourcesBuilder;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
@@ -25,18 +26,20 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 public class DocumentVisualizationBuilder {
 
     private final DSSDocument document;
+    private final EFormAttributes eFormAttributes;
     private final SigningParameters parameters;
 
-    private DocumentVisualizationBuilder(DSSDocument document, SigningParameters parameters) {
-        this.document = document;
+    private DocumentVisualizationBuilder(AutogramDocument document, SigningParameters parameters) {
+        this.document = document.toDssDocument();
+        this.eFormAttributes = document.getEFormAttributes();
         this.parameters = parameters;
     }
 
     public static Visualization fromJob(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
-        return fromDocument(job, job.getDocument(), userSettings);
+        return fromDocument(job, job.getAutogramDocuments().getFirst(), userSettings);
     }
 
-    public static Visualization fromDocument(SigningJob job, DSSDocument document, UserSettings userSettings)
+    public static Visualization fromDocument(SigningJob job, AutogramDocument document, UserSettings userSettings)
             throws IOException, ParserConfigurationException, SAXException {
         return new DocumentVisualizationBuilder(document, job.getParameters()).build(job, userSettings);
     }
@@ -99,16 +102,18 @@ public class DocumentVisualizationBuilder {
     }
 
     private ResolvedTransformation resolveTransformation(DSSDocument documentToDisplay) {
-        var transformation = parameters.getTransformation();
-        var outputType = normalizeOutputType(parameters.getXsltDestinationType());
+        String transformation = null;
+        String outputType = null;
 
-        var eFormAttributes = resolveDocumentEFormAttributes(documentToDisplay);
-        if (eFormAttributes != null) {
-            if (eFormAttributes.transformation() != null)
-                transformation = eFormAttributes.transformation();
+        var resolvedEFormAttributes = eFormAttributes != null
+                ? eFormAttributes
+                : resolveDocumentEFormAttributes(documentToDisplay);
+        if (resolvedEFormAttributes != null) {
+            if (resolvedEFormAttributes.transformation() != null)
+                transformation = resolvedEFormAttributes.transformation();
 
-            if (eFormAttributes.xsltParams() != null)
-                outputType = normalizeOutputType(eFormAttributes.xsltParams().destinationType());
+            if (resolvedEFormAttributes.xsltParams() != null)
+                outputType = normalizeOutputType(resolvedEFormAttributes.xsltParams().destinationType());
         }
 
         if (transformation != null && outputType == null)

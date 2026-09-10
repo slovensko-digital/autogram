@@ -116,7 +116,8 @@ class AsicContainerTest {
     void testSignatureCheckReportRecognizesPartialCoverageInMultiDocumentAsice() {
         var asiceWithMultipleFiles = createAsiceWithMultipleFiles();
         var parameters = SigningParameters.buildForASiCWithXAdES(asiceWithMultipleFiles, false, false, null, true);
-        var job = SigningJob.buildFromRequest(asiceWithMultipleFiles, parameters, new Responder() {
+        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(asiceWithMultipleFiles), parameters);
+        var job = SigningJob.fromInput(input, new Responder() {
             @Override
             public void onDocumentSigned(SignedDocument signedDocument) {
             }
@@ -149,7 +150,8 @@ class AsicContainerTest {
     void testBuildVisualizationForMultipleFilesInAsice() throws Exception {
         var asiceWithMultipleFiles = createAsiceWithMultipleFiles();
         var parameters = SigningParameters.buildForASiCWithXAdES(asiceWithMultipleFiles, false, false, null, false);
-        var job = SigningJob.buildFromRequest(asiceWithMultipleFiles, parameters, new Responder() {
+        var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(asiceWithMultipleFiles), parameters);
+        var job = SigningJob.fromInput(input, new Responder() {
             @Override
             public void onDocumentSigned(SignedDocument signedDocument) {
             }
@@ -161,8 +163,12 @@ class AsicContainerTest {
         });
 
         var visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
+        var previewDocuments = AsicContainerUtils.getOriginalDocuments(asiceWithMultipleFiles);
+        var secondVisualization = DocumentVisualizationBuilder.fromDocument(job,
+            AutogramDocument.fromDssDocument(previewDocuments.get(1)), UserSettings.load());
 
         Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
+        Assertions.assertFalse(secondVisualization instanceof UnsupportedVisualization);
     }
 
     private InMemoryDocument createAsiceWithMultipleFiles() {

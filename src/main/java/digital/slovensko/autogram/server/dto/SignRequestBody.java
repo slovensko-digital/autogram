@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.AutogramSigningRequest;
+import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
@@ -75,16 +75,18 @@ public class SignRequestBody {
         parameters.validate(getDocument().getMimeType());
     }
 
-    public AutogramSigningRequest getSigningRequest(TSPSource tspSource, boolean plainXmlEnabled) {
+    public SigningInput getSigningInput(TSPSource tspSource, boolean plainXmlEnabled) {
         var document = getDocument();
-        var signingParameters = parameters.getSigningParameters(isBase64(), document.toDssDocument(), tspSource,
+        var preparedParameters = parameters.getPreparedSigningParameters(isBase64(), document.toDssDocument(), tspSource,
                 plainXmlEnabled);
 
-        return AutogramSigningRequest.forSingleDocument(document, signingParameters);
+        return SigningInput.fromDocument(document.withEFormAttributes(preparedParameters.eFormAttributes()),
+            preparedParameters.signingParameters());
     }
 
     public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getSigningParameters(isBase64(), getDocument().toDssDocument(), tspSource, plainXmlEnabled);
+        return parameters.getPreparedSigningParameters(isBase64(), getDocument().toDssDocument(), tspSource,
+            plainXmlEnabled).signingParameters();
     }
 
     public String getBatchId() {

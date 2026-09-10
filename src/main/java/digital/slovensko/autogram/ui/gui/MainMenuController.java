@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -107,9 +108,10 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-            var job = SigningJob.buildFromFile(file,
-                    new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
-                    userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
+                var input = SigningInput.fromFile(file, userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(),
+                    userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
+                var job = SigningJob.fromInput(input,
+                    new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
             autogram.sign(job);
         } else {
             autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,

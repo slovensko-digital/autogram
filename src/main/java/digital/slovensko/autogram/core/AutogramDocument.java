@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import java.io.File;
 
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -16,9 +17,15 @@ import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 
 public class AutogramDocument {
     private final DSSDocument dssDocument;
+    private final EFormAttributes eFormAttributes;
 
     private AutogramDocument(DSSDocument dssDocument) {
+        this(dssDocument, null);
+    }
+
+    private AutogramDocument(DSSDocument dssDocument, EFormAttributes eFormAttributes) {
         this.dssDocument = normalize(dssDocument);
+        this.eFormAttributes = eFormAttributes;
     }
 
     public static AutogramDocument fromDssDocument(DSSDocument dssDocument) {
@@ -33,6 +40,10 @@ public class AutogramDocument {
         return new AutogramDocument(new InMemoryDocument(content, filename, mimeType));
     }
 
+    public AutogramDocument withEFormAttributes(EFormAttributes eFormAttributes) {
+        return new AutogramDocument(dssDocument, eFormAttributes);
+    }
+
     public DSSDocument toDssDocument() {
         return dssDocument;
     }
@@ -43,6 +54,10 @@ public class AutogramDocument {
 
     public String getName() {
         return dssDocument.getName();
+    }
+
+    public EFormAttributes getEFormAttributes() {
+        return eFormAttributes;
     }
 
     private static DSSDocument normalize(DSSDocument dssDocument) {

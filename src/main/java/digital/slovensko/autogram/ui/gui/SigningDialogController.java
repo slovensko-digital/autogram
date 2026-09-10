@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.AutogramDocument;
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.UserSettings;
@@ -163,7 +164,7 @@ public class SigningDialogController extends BaseController implements Suppresse
 
         try {
             return DocumentVisualizationBuilder.fromDocument(visualization.getJob(),
-                    previewDocuments.get(documentIndex), userSettings);
+                    AutogramDocument.fromDssDocument(previewDocuments.get(documentIndex)), userSettings);
         } catch (Exception e) {
             return null;
         }
