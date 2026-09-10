@@ -80,8 +80,6 @@ public class SigningDialogController extends BaseController implements Suppresse
     @FXML
     VBox singleDocumentVisualizationContainer;
     @FXML
-    VBox visualizationHost;
-    @FXML
     TabPane documentTabPane;
     @FXML
     public Button mainButton;
@@ -91,8 +89,6 @@ public class SigningDialogController extends BaseController implements Suppresse
     VBox unsupportedVisualizationInfoBox;
     @FXML
     VBox signaturesTable;
-    @FXML
-    VBox signaturesSummaryHost;
     @FXML
     Text headerText;
 
@@ -112,7 +108,6 @@ public class SigningDialogController extends BaseController implements Suppresse
         headerText.setText(title);
         plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
         singleDocumentVisualizationContainer.setMinHeight(0);
-        visualizationHost.setMinHeight(0);
         webViewContainer.setMinHeight(0);
         pdfVisualizationContainer.setMinHeight(0);
         imageVisualizationContainer.setMinHeight(0);
@@ -461,7 +456,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         if (documentIndex < 0 || documentIndex >= signatureSummaries.size())
             return;
 
-        signaturesSummaryHost.getChildren().setAll(signatureSummaries.get(documentIndex));
+        signaturesTable.getChildren().setAll(signatureSummaries.get(documentIndex));
     }
 
     public void refreshSigningKey() {

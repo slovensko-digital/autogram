@@ -29,7 +29,7 @@
             styleClass="autogram-visualization-tab-pane" />
 
         <VBox fx:id="singleDocumentVisualizationContainer" minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
-            <VBox fx:id="visualizationHost" minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
+            <VBox minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
                 <!-- HTML visualization -->
                 <VBox fx:id="webViewContainer" minHeight="0" prefHeight="0" managed="false" visible="false" VBox.vgrow="ALWAYS">
                     <WebView fx:id="webView" focusTraversable="false" VBox.vgrow="ALWAYS" />
@@ -77,9 +77,7 @@
     </VBox>
 
 
-    <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table">
-        <VBox fx:id="signaturesSummaryHost" />
-    </VBox>
+    <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table"></VBox>
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button" text="%general.sign.btn" onAction="#onMainButtonPressed"/>
