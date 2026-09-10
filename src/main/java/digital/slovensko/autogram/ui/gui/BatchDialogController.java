@@ -16,8 +16,6 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
-import java.util.function.Consumer;
-
 public class BatchDialogController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
     private final Batch batch;

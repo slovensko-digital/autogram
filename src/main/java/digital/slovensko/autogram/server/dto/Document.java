@@ -5,7 +5,6 @@ public class Document {
     private String content;
     private String mimeType;
     private XDCParameters xdcParameters;
-    private VisibleSignature visibleSignature;
 
     public Document(String content) {
         this.content = content;
@@ -30,9 +29,5 @@ public class Document {
 
     public XDCParameters getXdcParameters() {
         return xdcParameters;
-    }
-
-    public VisibleSignature getVisibleSignature() {
-        return visibleSignature;
     }
 }

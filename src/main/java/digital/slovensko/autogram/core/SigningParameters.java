@@ -18,7 +18,6 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
-import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
@@ -43,7 +42,6 @@ public class SigningParameters {
     private final boolean checkPDFACompliance;
     private final int visualizationWidth;
     private final TSPSource tspSource;
-    private SignatureImageParameters padesVisibleSignatureParameters;
 
     private SigningParameters(
             SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging signaturePackaging,
@@ -196,8 +194,6 @@ public class SigningParameters {
         parameters.setSignatureLevel(getLevel());
         parameters.setDigestAlgorithm(getDigestAlgorithm());
         parameters.setEn319122(isEn319132());
-        if (padesVisibleSignatureParameters != null)
-            parameters.setImageParameters(padesVisibleSignatureParameters);
 
         return parameters;
     }
@@ -295,13 +291,5 @@ public class SigningParameters {
 
     public boolean shouldEmbedSchemas() {
         return eFormAttributes.embedUsedSchemas();
-    }
-
-    public SignatureImageParameters getPadesVisibleSignatureParameters() {
-        return padesVisibleSignatureParameters;
-    }
-
-    public void setPadesVisibleSignatureParameters(SignatureImageParameters padesVisibleSignatureParameters) {
-        this.padesVisibleSignatureParameters = padesVisibleSignatureParameters;
     }
 }
