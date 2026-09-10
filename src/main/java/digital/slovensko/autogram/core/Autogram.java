@@ -67,17 +67,24 @@ public class Autogram {
         if (!job.shouldCheckPDFCompliance())
             return;
 
+        var documentsToCheck = job.getDocumentsForContentChecks().stream()
+                .filter(document -> document.getMimeType() != null && AutogramMimeType.isPDF(document.getMimeType()))
+                .toList();
+
         ui.onWorkThreadDo(() -> {
-            var result = new PDFAStructureValidator().validate(job.getDocument());
-            if (!result.isCompliant()) {
-                ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
+            for (var document : documentsToCheck) {
+                var result = new PDFAStructureValidator().validate(document);
+                if (!result.isCompliant()) {
+                    ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
+                    return;
+                }
             }
         });
     }
 
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
-            if (PDFUtils.isPdfAndPasswordProtected(job.getDocument())) {
+            if (job.getDocumentsForContentChecks().stream().anyMatch(PDFUtils::isPdfAndPasswordProtected)) {
                 ui.onUIThreadDo(() -> {
                     ui.showError(new AutogramException("LOCKED_PDF"));
                 });

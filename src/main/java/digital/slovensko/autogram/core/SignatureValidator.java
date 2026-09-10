@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -133,14 +134,30 @@ public class SignatureValidator {
     }
 
     public synchronized ValidationReports getSignatureValidationReport(SigningJob job) {
-        var documentValidator = createDocumentValidator(job.getDocument());
-        if (documentValidator == null)
-            return new ValidationReports(null, job);
+        var documentReports = new ArrayList<ValidationReports.DocumentReport>();
+        var documents = job.getDocumentsForContentChecks();
 
-        return new ValidationReports(validate(documentValidator), job);
+        for (int index = 0; index < documents.size(); index++) {
+            var document = documents.get(index);
+            var documentValidator = createDocumentValidator(document);
+            if (documentValidator == null)
+                continue;
+
+            var reports = validate(documentValidator);
+            if (!hasSignatures(reports))
+                continue;
+
+            documentReports.add(new ValidationReports.DocumentReport(index, document, reports));
+        }
+
+        return new ValidationReports(documentReports, job);
     }
 
     public static String getSignatureValidationReportHTML(Reports signatureValidationReport) {
+        return wrapSignatureValidationReportHTML(getSignatureValidationReportBodyHTML(signatureValidationReport));
+    }
+
+    public static String getSignatureValidationReportBodyHTML(Reports signatureValidationReport) {
         try {
             var document = XMLUtils.getSecureDocumentBuilder().parse(new InputSource(new StringReader(signatureValidationReport.getXmlSimpleReport())));
             var xmlSource = new DOMSource(document);
@@ -152,24 +169,40 @@ public class SignatureValidator {
             var transformer = XMLUtils.getSecureTransformerFactory().newTransformer(xsltSource);
             transformer.transform(xmlSource, outputTarget);
 
-            var r = outputTarget.getWriter().toString().trim();
-
-            var templateFile = SignatureValidator.class.getResourceAsStream("simple-report-template.html");
-            var templateString = new String(templateFile.readAllBytes(), StandardCharsets.UTF_8);
-            return templateString.replace("{{content}}", r);
+            return outputTarget.getWriter().toString().trim();
 
         } catch (SAXException | IOException | ParserConfigurationException | TransformerException e) {
             return "Error transforming validation report";
         }
     }
 
-    public static ValidationReports getSignatureCheckReport(SigningJob job) {
-        var validator = createDocumentValidator(job.getDocument());
-        if (validator == null)
-            return new ValidationReports(null, job);
+    public static String wrapSignatureValidationReportHTML(String content) {
+        try {
+            var templateFile = SignatureValidator.class.getResourceAsStream("simple-report-template.html");
+            var templateString = new String(templateFile.readAllBytes(), StandardCharsets.UTF_8);
+            return templateString.replace("{{content}}", content);
+        } catch (IOException | NullPointerException e) {
+            return content;
+        }
+    }
 
-        validator.setCertificateVerifier(new CommonCertificateVerifier());
-        return new ValidationReports(validator.validateDocument(), job);
+    public static ValidationReports getSignatureCheckReport(SigningJob job) {
+        var documentReports = new ArrayList<ValidationReports.DocumentReport>();
+        var documents = job.getDocumentsForContentChecks();
+
+        for (int index = 0; index < documents.size(); index++) {
+            var document = documents.get(index);
+            var validator = createDocumentValidator(document);
+            if (validator == null)
+                continue;
+
+            validator.setCertificateVerifier(new CommonCertificateVerifier());
+            var reports = validator.validateDocument();
+            if (hasSignatures(reports))
+                documentReports.add(new ValidationReports.DocumentReport(index, document, reports));
+        }
+
+        return new ValidationReports(documentReports, job);
     }
 
     public static SimpleReport getSignedDocumentSimpleReport(DSSDocument document) {
@@ -196,4 +229,9 @@ public class SignatureValidator {
         // TODO: consider validation turned off as well
         return validationJob.getSummary().getNumberOfProcessedTLs() > 0;
     }
+
+    private static boolean hasSignatures(Reports reports) {
+        return reports != null && reports.getSimpleReport().getSignaturesCount() > 0;
+    }
+
 }

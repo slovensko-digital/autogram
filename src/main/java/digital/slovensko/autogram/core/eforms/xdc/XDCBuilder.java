@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.core.eforms.xdc;
 
 import digital.slovensko.autogram.core.AutogramMimeType;
-import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.TransformationException;
 import digital.slovensko.autogram.util.XMLUtils;
@@ -32,8 +32,9 @@ import static digital.slovensko.autogram.util.XMLUtils.getSecureDocumentBuilder;
 public abstract class XDCBuilder {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
 
-    public static DSSDocument transform(SigningParameters params, String filename, Document document) {
-        var identifier = params.getIdentifier();
+    public static DSSDocument transform(EFormAttributes eFormAttributes, String propertiesCanonicalization,
+            DigestAlgorithm digestAlgorithm, String filename, Document document) {
+        var identifier = eFormAttributes.identifier();
         var lastSlashIndex = identifier.lastIndexOf("/");
         if (lastSlashIndex == -1)
             throw new TransformationException(MISSING_SLASH, identifier);
@@ -46,15 +47,15 @@ public abstract class XDCBuilder {
             var parsedDocument = getSecureDocumentBuilder().newDocument();
             var importedNode = parsedDocument.importNode(document.getDocumentElement(), true);
             parsedDocument.appendChild(importedNode);
-            var usedSchemas = params.shouldEmbedSchemas()
-                    ? createUsedSchemasEmbedded(parsedDocument, params.getSchema(),
-                        params.getTransformation(), params.getXsltParams())
-                    : createUsedSchemasReferenced(parsedDocument, params.getSchema(),
-                        params.getTransformation(), params.getPropertiesCanonicalization(), params.getDigestAlgorithm(),
-                        params.getXsdIdentifier(), params.getXsltParams());
+            var usedSchemas = eFormAttributes.embedUsedSchemas()
+                    ? createUsedSchemasEmbedded(parsedDocument, eFormAttributes.schema(),
+                        eFormAttributes.transformation(), eFormAttributes.xsltParams())
+                    : createUsedSchemasReferenced(parsedDocument, eFormAttributes.schema(),
+                        eFormAttributes.transformation(), propertiesCanonicalization, digestAlgorithm,
+                        eFormAttributes.xsdIdentifier(), eFormAttributes.xsltParams());
 
-            var transformedDocument = transformDocument(parsedDocument, params.getContainerXmlns(), identifier,
-                    identifierVersion, usedSchemas, params.shouldEmbedSchemas());
+            var transformedDocument = transformDocument(parsedDocument, eFormAttributes.containerXmlns(), identifier,
+                    identifierVersion, usedSchemas, eFormAttributes.embedUsedSchemas());
 
             var content = getDocumentContent(transformedDocument).getBytes(ENCODING);
 

@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.server.dto;
 
+import digital.slovensko.autogram.core.AutogramDocument;
+import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
@@ -51,10 +53,14 @@ public class SignRequestBody {
         if (parameters == null)
             parameters = new ServerSigningParameters();
 
-        parameters.resolveSigningLevel(getDocument());
+        parameters.resolveSigningLevel(getRequestDocument());
     }
 
-    public InMemoryDocument getDocument() {
+    public AutogramDocument getDocument() {
+        return AutogramDocument.fromDssDocument(getRequestDocument());
+    }
+
+    private InMemoryDocument getRequestDocument() {
         var content = decodeDocumentContent(document.getContent(), isBase64());
         var filename = document.getFilename();
 
@@ -69,8 +75,12 @@ public class SignRequestBody {
         parameters.validate(getDocument().getMimeType());
     }
 
+    public SigningInput getSigningInput(TSPSource tspSource, boolean plainXmlEnabled) {
+        return parameters.getSigningInput(isBase64(), getDocument(), tspSource, plainXmlEnabled);
+    }
+
     public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getSigningParameters(isBase64(), getDocument(), tspSource, plainXmlEnabled);
+        return getSigningInput(tspSource, plainXmlEnabled).getParameters();
     }
 
     public String getBatchId() {

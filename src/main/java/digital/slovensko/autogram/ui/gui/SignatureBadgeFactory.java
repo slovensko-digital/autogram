@@ -8,6 +8,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.scene.Node;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
@@ -21,7 +22,12 @@ import static eu.europa.esig.dss.enumerations.SignatureForm.XAdES;
 
 public abstract class SignatureBadgeFactory {
     public static Node createBadge(String label, String styleClass) {
-        var box = new HBox(new TextFlow(new Text(label)));
+        var textFlow = new TextFlow(new Text(label));
+        textFlow.setMaxWidth(Region.USE_PREF_SIZE);
+
+        var box = new HBox(textFlow);
+        box.setMaxWidth(Region.USE_PREF_SIZE);
+        box.setMaxHeight(Region.USE_PREF_SIZE);
         box.getStyleClass().addAll("autogram-tag", styleClass);
 
         return box;
@@ -145,8 +151,13 @@ public abstract class SignatureBadgeFactory {
                                              String signatureId, double prefWrapLength, ResourceBundle resources) {
         var flowPane = new FlowPane(createReadableBadgeFromQualification(signatureQualification, resources));
         flowPane.getStyleClass().add("autogram-tag-multiple-box");
-        if (prefWrapLength > 1)
+        flowPane.setMaxHeight(Region.USE_PREF_SIZE);
+        if (prefWrapLength > 1) {
             flowPane.setPrefWrapLength(prefWrapLength);
+            flowPane.setMaxWidth(prefWrapLength);
+        } else {
+            flowPane.setMaxWidth(Region.USE_PREF_SIZE);
+        }
 
         var simple = reports.getSimpleReport();
         for (var timestamp : simple.getSignatureTimestamps(signatureId)) {
@@ -168,7 +179,10 @@ public abstract class SignatureBadgeFactory {
                 flowPane.getChildren().add(createUnknownBadge(translate(resources, "signature.timestamp.unknown.shortLabel")));
         }
 
-        return new HBox(flowPane);
+        var wrapper = new HBox(flowPane);
+        wrapper.setMaxWidth(Region.USE_PREF_SIZE);
+        wrapper.setMaxHeight(Region.USE_PREF_SIZE);
+        return wrapper;
     }
 
     private static Node createReadableBadgeFromQualification(SignatureQualification qualification, ResourceBundle resources) {

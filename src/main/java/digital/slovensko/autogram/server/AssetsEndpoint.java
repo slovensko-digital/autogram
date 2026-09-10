@@ -2,7 +2,6 @@ package digital.slovensko.autogram.server;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.InvalidUrlParamException;
 
 import java.io.IOException;
@@ -17,13 +16,15 @@ public class AssetsEndpoint implements HttpHandler {
     static  {
         assets = List.of(
                 "swagger-ui-bundle-v5.11.0.js",
-                "swagger-ui-v5.11.0.css"
+                "swagger-ui-v5.11.0.css",
+                "swagger-ui-bundle-v5.32.6.js",
+                "swagger-ui-v5.32.6.css"
         );
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        var fileName = exchange.getRequestURI().getPath().replaceFirst("/assets/?", "");
+        var fileName = exchange.getRequestURI().getPath().replaceFirst("^/(api/v1/)?assets/?", "");
 
         try {
             if (fileName.isBlank())

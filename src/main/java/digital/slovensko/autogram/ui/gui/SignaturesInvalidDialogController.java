@@ -1,17 +1,16 @@
 package digital.slovensko.autogram.ui.gui;
 
-import eu.europa.esig.dss.validation.reports.Reports;
+import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.ValidationReports;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import static digital.slovensko.autogram.ui.gui.GUIValidationUtils.createSignatureTableRows;
-
 public class SignaturesInvalidDialogController extends BaseController implements SuppressedFocusController {
     private final SigningDialogController signingDialogController;
-    private final Reports reports;
+    private final ValidationReports reports;
 
     @FXML
     Button cancelButton;
@@ -22,17 +21,21 @@ public class SignaturesInvalidDialogController extends BaseController implements
     @FXML
     VBox signaturesTable;
 
-    public SignaturesInvalidDialogController(SigningDialogController controller, Reports reports) {
+    public SignaturesInvalidDialogController(SigningDialogController controller, ValidationReports reports) {
         this.signingDialogController = controller;
         this.reports = reports;
     }
 
     public void initialize() {
-        signaturesTable.getChildren().clear();
-        signaturesTable.getChildren().addAll(
-                createSignatureTableRows(resources, reports, true, e -> {
-                    signingDialogController.onShowSignaturesButtonPressed(null);
-                }, 6));
+        if (!SignatureValidator.getInstance().areTLsLoaded())
+            signaturesTable.getChildren().add(
+                GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));
+        signaturesTable.getChildren().add(GUIValidationUtils.createSignatureTableRows(resources, reports, true,
+            ignored -> onShowSignaturesButtonAction(), 6));
+    }
+
+    public void onShowSignaturesButtonAction() {
+        signingDialogController.onShowSignaturesButtonPressed(null);
     }
 
     public void close() {
