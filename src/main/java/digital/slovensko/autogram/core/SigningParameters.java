@@ -2,31 +2,22 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
-import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
-import digital.slovensko.autogram.core.errors.UnknownEformException;
-import digital.slovensko.autogram.util.AsicContainerUtils;
-import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
-import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
-import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
-import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.EMPTY_DOCUMENT;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_LEVEL;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_MIME_TYPE;
-import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.WRONG_MIME_TYPE;
-import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.XSLT_NO_XDC;
 
 public class SigningParameters {
     private final SignatureLevel level;
@@ -59,70 +50,31 @@ public class SigningParameters {
         this.tspSource = tspSource;
     }
 
-    public static PreparedParameters buildParameters(
+    public static SigningParameters buildParameters(
             SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            EFormAttributes eFormAttributes, boolean autoLoadEform, String fsFormId, boolean checkPDFACompliance,
-            int preferredPreviewWidth, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
+            EFormAttributes eFormAttributes, MimeType documentMimeType, boolean checkPDFACompliance,
+            int preferredPreviewWidth, TSPSource tspSource) throws AutogramException {
 
         if (level == null)
             throw new SigningParametersException(NO_LEVEL);
 
-        if (document == null)
-            throw new SigningParametersException(EMPTY_DOCUMENT);
-
-        if (document.getMimeType() == null)
+        if (documentMimeType == null)
             throw new SigningParametersException(NO_MIME_TYPE);
 
         if (digestAlgorithm == null)
             digestAlgorithm = DigestAlgorithm.SHA256;
 
-        var isAsiceDocument = AutogramMimeType.isAsice(document.getMimeType());
-        var extractedDocument = document;
-        if (isAsiceDocument)
-            extractedDocument = AsicContainerUtils.getOriginalDocuments(document).get(0);
-
-        if (AutogramMimeType.isXML(extractedDocument.getMimeType()) && XDCValidator.isXDCContent(extractedDocument))
-            extractedDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER);
-
-        fsFormId = EFormUtils.translateFsFormId(fsFormId);
-        eFormAttributes = EFormAttributes.build(eFormAttributes, autoLoadEform || isAsiceDocument, fsFormId,
-            extractedDocument, propertiesCanonicalization);
-
-        var extractedDocumentMimeType = extractedDocument.getMimeType();
-
         if (eFormAttributes.containerXmlns() != null && eFormAttributes.containerXmlns().contains("xmldatacontainer")) {
             if (container == null) container = ASiCContainerType.ASiC_E;
 
             if (packaging == null) packaging = SignaturePackaging.ENVELOPING;
-
-            if (!AutogramMimeType.isXML(extractedDocumentMimeType) && !AutogramMimeType.isXDC(extractedDocumentMimeType))
-                throw new SigningParametersException(WRONG_MIME_TYPE);
         }
-
-        if (AutogramMimeType.isXDC(extractedDocumentMimeType) || AutogramMimeType.isXML(extractedDocumentMimeType)) {
-            XDCValidator.validateXml(
-                    eFormAttributes.schema(), eFormAttributes.transformation(), extractedDocument,
-                    propertiesCanonicalization, digestAlgorithm, eFormAttributes.embedUsedSchemas());
-        }
-
-        if (!AutogramMimeType.isXDC(extractedDocumentMimeType)) {
-            // if the document is not an XML resulting in XML Datacontainer, ignore all eForm attributes (mainly transformation)
-            if (eFormAttributes.containerXmlns() == null || !eFormAttributes.containerXmlns().contains("xmldatacontainer")) {
-                if (eFormAttributes.transformation() != null)
-                    throw new SigningParametersException(XSLT_NO_XDC);
-
-                eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false);
-            }
-        }
-
-        if (!plainXmlEnabled && (AutogramMimeType.isXML(extractedDocumentMimeType) || AutogramMimeType.isXDC(extractedDocumentMimeType)) && (eFormAttributes.transformation() == null))
-            throw new UnknownEformException();
 
         var signingParameters = new SigningParameters(
                 level, digestAlgorithm, container, packaging, en319132, infoCanonicalization, propertiesCanonicalization,
             keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth, tspSource);
-        return new PreparedParameters(signingParameters, eFormAttributes);
+        return signingParameters;
     }
 
         public record PreparedParameters(SigningParameters signingParameters, EFormAttributes eFormAttributes) {
@@ -134,7 +86,7 @@ public class SigningParameters {
 
         public static PreparedParameters prepareForPDF(DSSDocument document, boolean checkPDFACompliance,
             boolean signAsEn319132, TSPSource tspSource) throws AutogramException {
-        return buildParameters(
+        return prepareParameters(
                 (tspSource == null) ? SignatureLevel.PAdES_BASELINE_B : SignatureLevel.PAdES_BASELINE_T, DigestAlgorithm.SHA256,
                 null, null, signAsEn319132, null, null, null, null, false,
             null, checkPDFACompliance, 640, document, tspSource, true);
@@ -147,7 +99,7 @@ public class SigningParameters {
 
         public static PreparedParameters prepareForASiCWithXAdES(DSSDocument document, boolean checkPDFACompliance,
             boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
-        return buildParameters(
+        return prepareParameters(
                 (tspSource == null) ? SignatureLevel.XAdES_BASELINE_B : SignatureLevel.XAdES_BASELINE_T, DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, signAsEn319132, null, null, null,  null, true,
                 EFormUtils.getFsFormIdFromFilename(document.getName()), checkPDFACompliance, 640, document, tspSource,
@@ -161,74 +113,31 @@ public class SigningParameters {
 
         public static PreparedParameters prepareForASiCWithCAdES(DSSDocument document, boolean checkPDFACompliance,
             boolean signAsEn319132, TSPSource tspSource, boolean plainXmlEnabled) throws AutogramException {
-        return buildParameters(
+        return prepareParameters(
                 (tspSource == null) ? SignatureLevel.CAdES_BASELINE_B : SignatureLevel.CAdES_BASELINE_T, DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, signAsEn319132, null, null, null, null, true,
                 EFormUtils.getFsFormIdFromFilename(document.getName()), checkPDFACompliance, 640, document, tspSource,
             plainXmlEnabled);
     }
 
-        public ASiCWithXAdESSignatureParameters getASiCWithXAdESSignatureParameters() {
-        var parameters = new ASiCWithXAdESSignatureParameters();
+    public static PreparedParameters prepareParameters(
+            SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
+            boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
+            EFormAttributes eFormAttributes, boolean autoLoadEform, String fsFormId, boolean checkPDFACompliance,
+            int preferredPreviewWidth, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled)
+            throws AutogramException {
+        if (document == null)
+            throw new SigningParametersException(EMPTY_DOCUMENT);
 
-        parameters.aSiC().setContainerType(getContainer());
-        parameters.setSignatureLevel(getLevel());
-        parameters.setDigestAlgorithm(getDigestAlgorithm());
-        parameters.setSigningCertificateDigestMethod(getDigestAlgorithm());
-        parameters.setSignedInfoCanonicalizationMethod(getInfoCanonicalization());
-        parameters.setSignedPropertiesCanonicalizationMethod(getPropertiesCanonicalization());
-        parameters.setKeyInfoCanonicalizationMethod(getKeyInfoCanonicalization());
-        parameters.setEn319132(isEn319132());
-        parameters.setAddX509SubjectName(true);
+        var resolvedDigestAlgorithm = digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
+        var preparedDocument = AutogramDocument.fromDssDocument(document).prepareEFormAttributes(eFormAttributes,
+            autoLoadEform, fsFormId, propertiesCanonicalization, resolvedDigestAlgorithm, plainXmlEnabled);
 
-        return parameters;
-    }
-
-    public XAdESSignatureParameters getXAdESSignatureParameters() {
-        var parameters = new XAdESSignatureParameters();
-
-        parameters.setSignatureLevel(getLevel());
-        parameters.setDigestAlgorithm(getDigestAlgorithm());
-        parameters.setEn319132(isEn319132());
-        parameters.setSignedInfoCanonicalizationMethod(getInfoCanonicalization());
-        parameters.setSignedPropertiesCanonicalizationMethod(getPropertiesCanonicalization());
-        parameters.setSignaturePackaging(getSignaturePackaging());
-        parameters.setKeyInfoCanonicalizationMethod(getKeyInfoCanonicalization());
-        parameters.setAddX509SubjectName(true);
-
-        return parameters;
-    }
-
-    public CAdESSignatureParameters getCAdESSignatureParameters() {
-        var parameters = new CAdESSignatureParameters();
-
-        parameters.setSignatureLevel(getLevel());
-        parameters.setDigestAlgorithm(getDigestAlgorithm());
-        parameters.setSignaturePackaging(SignaturePackaging.ENVELOPING);
-        parameters.setEn319122(isEn319132());
-
-        return parameters;
-    }
-
-    public PAdESSignatureParameters getPAdESSignatureParameters() {
-        var parameters = new PAdESSignatureParameters();
-
-        parameters.setSignatureLevel(getLevel());
-        parameters.setDigestAlgorithm(getDigestAlgorithm());
-        parameters.setEn319122(isEn319132());
-
-        return parameters;
-    }
-
-    public ASiCWithCAdESSignatureParameters getASiCWithCAdESSignatureParameters() {
-        var parameters = new ASiCWithCAdESSignatureParameters();
-
-        parameters.setSignatureLevel(getLevel());
-        parameters.setDigestAlgorithm(getDigestAlgorithm());
-        parameters.setEn319122(isEn319132());
-        parameters.aSiC().setContainerType(getContainer());
-
-        return parameters;
+        var signingParameters = buildParameters(level, resolvedDigestAlgorithm, container, packaging, en319132,
+            infoCanonicalization,
+            propertiesCanonicalization, keyInfoCanonicalization, preparedDocument.eFormAttributes(),
+            preparedDocument.mimeType(), checkPDFACompliance, preferredPreviewWidth, tspSource);
+        return new PreparedParameters(signingParameters, preparedDocument.eFormAttributes());
     }
 
     public SignatureForm getSignatureType() {

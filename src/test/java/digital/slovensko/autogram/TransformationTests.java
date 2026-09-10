@@ -60,7 +60,7 @@ public class TransformationTests {
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                         "rozhodnutie_X4564-2.xml");
 
-                var params = SigningParameters.buildParameters(
+                var params = SigningParameters.prepareParameters(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -146,7 +146,7 @@ public class TransformationTests {
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                         "rozhodnutie_X4564-2.xml");
 
-                var params = SigningParameters.buildParameters(
+                var params = SigningParameters.prepareParameters(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,

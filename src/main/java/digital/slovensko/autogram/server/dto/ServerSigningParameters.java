@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.AutogramDocument;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
@@ -14,7 +15,6 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
@@ -154,7 +154,7 @@ public class ServerSigningParameters {
         this.fsFormId = null;
     }
 
-        public PreparedSigningParameters getPreparedSigningParameters(boolean isBase64, DSSDocument document,
+    public PreparedSigningParameters getPreparedSigningParameters(boolean isBase64, AutogramDocument document,
             TSPSource tspSource, boolean plainXmlEnabled) {
         var xsltParams = new XsltParams(
                 transformationIdentifier,
@@ -172,29 +172,28 @@ public class ServerSigningParameters {
                 xsltParams,
                 getBoolean(embedUsedSchemas));
 
-        var preparedParameters = SigningParameters.buildParameters(
+        var resolvedDigestAlgorithm = digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
+        var preparedDocument = document.prepareEFormAttributes(eFormAttributes, autoLoadEform, getFsFormId(),
+            getCanonicalizationMethodString(propertiesCanonicalization), resolvedDigestAlgorithm, plainXmlEnabled);
+        var signingParameters = SigningParameters.buildParameters(
                 getSignatureLevel(),
-                digestAlgorithm,
+            resolvedDigestAlgorithm,
                 getContainer(),
                 packaging,
                 getBoolean(en319132),
                 getCanonicalizationMethodString(infoCanonicalization),
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
-                eFormAttributes,
-                autoLoadEform,
-                getFsFormId(),
+                preparedDocument.eFormAttributes(),
+                preparedDocument.mimeType(),
                 getBoolean(checkPDFACompliance),
                 getVisualizationWidth(),
-                document,
-                tspSource,
-                plainXmlEnabled);
+                tspSource);
 
-        return new PreparedSigningParameters(preparedParameters.signingParameters(),
-            preparedParameters.eFormAttributes());
-    }
+            return new PreparedSigningParameters(signingParameters, preparedDocument.eFormAttributes());
+            }
 
-    public record PreparedSigningParameters(SigningParameters signingParameters, EFormAttributes eFormAttributes) {
+            public record PreparedSigningParameters(SigningParameters signingParameters, EFormAttributes eFormAttributes) {
     }
 
     private static boolean getBoolean(Boolean variable) {

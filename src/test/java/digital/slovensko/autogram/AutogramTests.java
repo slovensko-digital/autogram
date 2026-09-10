@@ -601,7 +601,7 @@ class AutogramTests {
 
     private static SigningJob createMultiDocumentJob(boolean checkPDFACompliance, AutogramDocument... documents) {
         var parameters = SigningParameters.buildForASiCWithXAdES(documents[0].toDssDocument(), checkPDFACompliance,
-                false, null, true);
+            false, null, true);
         return SigningJob.fromInput(SigningInput.of(List.of(documents), parameters), mock(Responder.class));
     }
 }

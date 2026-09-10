@@ -2,8 +2,14 @@ package digital.slovensko.autogram.core;
 
 import java.io.File;
 
+import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.SigningParametersException;
+import digital.slovensko.autogram.core.errors.UnknownEformException;
+import digital.slovensko.autogram.util.AsicContainerUtils;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.FileDocument;
@@ -14,6 +20,9 @@ import static digital.slovensko.autogram.core.AutogramMimeType.XML_DATACONTAINER
 import static digital.slovensko.autogram.core.AutogramMimeType.isTxt;
 import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
 import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
+import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.WRONG_MIME_TYPE;
+import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.XSLT_NO_XDC;
+import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_MIME_TYPE;
 
 public class AutogramDocument {
     private final DSSDocument dssDocument;
@@ -58,6 +67,50 @@ public class AutogramDocument {
 
     public EFormAttributes getEFormAttributes() {
         return eFormAttributes;
+    }
+
+    public PreparedEFormAttributes prepareEFormAttributes(EFormAttributes attributes, boolean autoLoadEform,
+            String fsFormId, String propertiesCanonicalization, DigestAlgorithm digestAlgorithm,
+            boolean plainXmlEnabled) throws AutogramException {
+        if (getMimeType() == null)
+            throw new SigningParametersException(NO_MIME_TYPE);
+
+        var extractedDocument = dssDocument;
+        var isAsiceDocument = AutogramMimeType.isAsice(getMimeType());
+        if (isAsiceDocument)
+            extractedDocument = normalize(AsicContainerUtils.getOriginalDocuments(dssDocument).get(0));
+
+        var translatedFsFormId = EFormUtils.translateFsFormId(fsFormId);
+        var preparedAttributes = EFormAttributes.build(attributes, autoLoadEform || isAsiceDocument,
+            translatedFsFormId, extractedDocument, propertiesCanonicalization);
+        var extractedMimeType = extractedDocument.getMimeType();
+
+        if (preparedAttributes.containerXmlns() != null
+                && preparedAttributes.containerXmlns().contains("xmldatacontainer")
+                && !isXML(extractedMimeType) && !isXDC(extractedMimeType))
+            throw new SigningParametersException(WRONG_MIME_TYPE);
+
+        if (isXDC(extractedMimeType) || isXML(extractedMimeType))
+            XDCValidator.validateXml(preparedAttributes.schema(), preparedAttributes.transformation(), extractedDocument,
+                propertiesCanonicalization, digestAlgorithm, preparedAttributes.embedUsedSchemas());
+
+        if (!isXDC(extractedMimeType)
+                && (preparedAttributes.containerXmlns() == null
+                    || !preparedAttributes.containerXmlns().contains("xmldatacontainer"))) {
+            if (preparedAttributes.transformation() != null)
+                throw new SigningParametersException(XSLT_NO_XDC);
+
+            preparedAttributes = new EFormAttributes(null, null, null, null, null, null, false);
+        }
+
+        if (!plainXmlEnabled && (isXML(extractedMimeType) || isXDC(extractedMimeType))
+                && preparedAttributes.transformation() == null)
+            throw new UnknownEformException();
+
+        return new PreparedEFormAttributes(preparedAttributes, extractedMimeType);
+    }
+
+    public record PreparedEFormAttributes(EFormAttributes eFormAttributes, MimeType mimeType) {
     }
 
     private static DSSDocument normalize(DSSDocument dssDocument) {

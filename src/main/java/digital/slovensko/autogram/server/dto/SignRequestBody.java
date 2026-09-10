@@ -77,7 +77,7 @@ public class SignRequestBody {
 
     public SigningInput getSigningInput(TSPSource tspSource, boolean plainXmlEnabled) {
         var document = getDocument();
-        var preparedParameters = parameters.getPreparedSigningParameters(isBase64(), document.toDssDocument(), tspSource,
+        var preparedParameters = parameters.getPreparedSigningParameters(isBase64(), document, tspSource,
                 plainXmlEnabled);
 
         return SigningInput.fromDocument(document.withEFormAttributes(preparedParameters.eFormAttributes()),
@@ -85,7 +85,7 @@ public class SignRequestBody {
     }
 
     public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getPreparedSigningParameters(isBase64(), getDocument().toDssDocument(), tspSource,
+        return parameters.getPreparedSigningParameters(isBase64(), getDocument(), tspSource,
             plainXmlEnabled).signingParameters();
     }
 

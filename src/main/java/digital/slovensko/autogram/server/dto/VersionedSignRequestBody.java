@@ -44,7 +44,7 @@ public class VersionedSignRequestBody {
             preparedDocuments.getFirst().parameters());
     }
 
-    private PreparedDocument prepareSubmittedDocument(Document submittedDocument, int index, boolean isMultiDocument,
+        private PreparedDocument prepareSubmittedDocument(Document submittedDocument, int index, boolean isMultiDocument,
             VersionedSigningParameters resolvedParameters, TSPSource tspSource, boolean plainXmlEnabled) {
         validateDocument(submittedDocument, index, isMultiDocument);
 
@@ -60,13 +60,13 @@ public class VersionedSignRequestBody {
 
         var preparedParameters = serverSigningParameters.getPreparedSigningParameters(
             submittedDocument.getXdcParameters() != null && submittedDocument.getXdcParameters().areResourcesBase64(),
-            rawDocument.toDssDocument(), tspSource, plainXmlEnabled);
+            rawDocument, tspSource, plainXmlEnabled);
         var documentWithEFormAttributes = rawDocument.withEFormAttributes(preparedParameters.eFormAttributes());
 
         return new PreparedDocument(
             SigningInput.prepareDocument(documentWithEFormAttributes, preparedParameters.signingParameters()),
             preparedParameters.signingParameters());
-        }
+    }
 
     private record PreparedDocument(AutogramDocument document, SigningParameters parameters) {
     }

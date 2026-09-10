@@ -73,7 +73,7 @@ public class SigningJob {
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new CAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
-        var signatureParameters = getParameters().getCAdESSignatureParameters();
+        var signatureParameters = DssSigningParametersFactory.createCAdESSignatureParameters(input);
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
@@ -88,7 +88,7 @@ public class SigningJob {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new ASiCWithXAdESService(commonCertificateVerifier);
-        var signatureParameters = getParameters().getASiCWithXAdESSignatureParameters();
+        var signatureParameters = DssSigningParametersFactory.createASiCWithXAdESSignatureParameters(input);
         var documents = getDocuments();
 
         signatureParameters.setSigningCertificate(key.getCertificate());
@@ -108,7 +108,7 @@ public class SigningJob {
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new XAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
-        var signatureParameters = getParameters().getXAdESSignatureParameters();
+        var signatureParameters = DssSigningParametersFactory.createXAdESSignatureParameters(input);
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
@@ -124,7 +124,7 @@ public class SigningJob {
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new ASiCWithCAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
-        var signatureParameters = getParameters().getASiCWithCAdESSignatureParameters();
+        var signatureParameters = DssSigningParametersFactory.createASiCWithCAdESSignatureParameters(input);
         var documents = getDocuments();
 
         signatureParameters.setSigningCertificate(key.getCertificate());
@@ -144,7 +144,7 @@ public class SigningJob {
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new PAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
-        var signatureParameters = getParameters().getPAdESSignatureParameters();
+        var signatureParameters = DssSigningParametersFactory.createPAdESSignatureParameters(input);
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
