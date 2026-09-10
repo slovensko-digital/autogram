@@ -1,6 +1,5 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
@@ -53,8 +52,7 @@ public class SigningJobTests {
                 null);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-        var parameters = signRequestBody.getParameters(null, true);
-        var input = SigningInput.fromDocument(signRequestBody.getDocument(), parameters);
+        var input = signRequestBody.getSigningInput(null, true);
         var job = SigningJob.fromInput(input, null);
         Visualization visualization = null;
         try {
