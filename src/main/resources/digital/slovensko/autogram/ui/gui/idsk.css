@@ -891,6 +891,11 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-signatures-table {
+  -fx-spacing: 8;
+}
+
+.autogram-signatures-table > VBox {
+  -fx-spacing: 8;
 }
 
 .autogram-signatures-table > GridPane > HBox {
@@ -951,7 +956,7 @@ TextFlow.autogram-body-s {
   -fx-alignment: center-left;
 }
 
-.autogram-visualization-header {
+.autogram-header {
   -fx-padding: 0 0 1em 0;
 }
 
@@ -1202,14 +1207,14 @@ TextFlow.autogram-body-s {
 }
 .autogram-signature-box > HBox > TextFlow {
   -fx-padding: 1em 0.75em;
-  -fx-pref-width: 13em;
+  -fx-pref-width: 14em;
 }
 
 .autogram-signature-box > HBox > TextFlow > Text {
   -fx-text-fill: -autogram-text-colour;
   -fx-fill: -autogram-text-colour;
 
-  -fx-font-size: 1em;
+  -fx-font-size: 1.1875em;
   -fx-font-weight: bold;
 
   -fx-padding: 0 0 0 15px;

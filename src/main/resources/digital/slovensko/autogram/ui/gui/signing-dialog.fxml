@@ -21,7 +21,7 @@
       fx:id="mainBox">
 
         <VBox minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
-        <TextFlow styleClass="autogram-visualization-header">
+        <TextFlow styleClass="autogram-header">
             <Text fx:id="headerText" styleClass="autogram-heading-m" />
         </TextFlow>
 
@@ -77,8 +77,8 @@
     </VBox>
 
 
-    <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table" spacing="2">
-        <VBox fx:id="signaturesSummaryHost" spacing="8" />
+    <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table">
+        <VBox fx:id="signaturesSummaryHost" />
     </VBox>
 
     <HBox styleClass="autogram-actions">

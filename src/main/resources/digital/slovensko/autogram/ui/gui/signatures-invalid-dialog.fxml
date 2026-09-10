@@ -19,7 +19,7 @@
                 <Text text="%signature.invalid.summary.title"/>
             </TextFlow>
         </HBox>
-        <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table" spacing="8" />
+        <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table" />
         <TextFlow styleClass="autogram-warning-summary__description"><Text text="%signature.invalid.text"/></TextFlow>
     </VBox>
 

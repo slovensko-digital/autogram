@@ -127,7 +127,7 @@ public class GUIValidationUtils {
         var timestampsBox = createTimestampsBox(isValidated, timestamps, simple, diagnostic, resources, e -> callback.accept(null));
         var hasTimestamps = !timestampsBox.getChildren().isEmpty();
         signatureDetailsBox.getChildren().add(createTableRow(translate(resources, "signature.details.type.label"),
-                SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm, resources), !hasTimestamps));
+            new HBox(SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm, resources)), !hasTimestamps));
         if (hasTimestamps)
             signatureDetailsBox.getChildren().add(createTableRow(translate(resources, "signature.details.timestamps.label"), timestampsBox, true));
 
