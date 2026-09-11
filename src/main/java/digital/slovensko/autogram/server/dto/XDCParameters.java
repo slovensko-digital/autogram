@@ -1,6 +1,19 @@
 package digital.slovensko.autogram.server.dto;
 
+import java.util.Base64;
+
+import digital.slovensko.autogram.core.eforms.EFormUtils;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.eforms.dto.XsltParams;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+
 public class XDCParameters {
+    private enum TransformationOutputMimeType {
+        TXT,
+        HTML,
+        XHTML
+    }
+
     private String fsFormIdentifier;
     private Boolean autoLoadEform;
     private String identifier;
@@ -12,11 +25,39 @@ public class XDCParameters {
     private String transformation;
     private String transformationIdentifier;
     private String transformationLanguage;
-    private ServerSigningParameters.TransformationOutputMimeType transformationMediaDestinationTypeDescription;
+    private TransformationOutputMimeType transformationMediaDestinationTypeDescription;
     private String transformationTargetEnvironment;
 
+    public EFormAttributes getEFormAttributes(String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
+        return new EFormAttributes(
+            getIdentifier(),
+            getTransformation(),
+            getSchema(),
+            getContainerXmlns(),
+            getSchemaIdentifier(),
+            getXsltParams(),
+            getEmbedUsedSchemas(),
+            getFsFormIdentifier(),
+            isAutoLoadEform(),
+            canonicalizationMethod,
+            digestAlgorithm
+        );
+    }
+
+    public XsltParams getXsltParams() {
+        return new XsltParams(
+            getTransformationIdentifier(),
+            getTransformationLanguage(),
+            getTransformationMediaDestinationTypeDescription().name(),
+            getTransformationTargetEnvironment(),
+            null
+        );
+    }
+
     public String getFsFormIdentifier() {
-        return fsFormIdentifier;
+        var translatedFsFormId = EFormUtils.translateFsFormId(fsFormIdentifier);
+
+        return translatedFsFormId;
     }
 
     public boolean isAutoLoadEform() {
@@ -36,6 +77,9 @@ public class XDCParameters {
     }
 
     public String getSchema() {
+        if (schemaMimeType != null && schemaMimeType.toLowerCase().contains("base64"))
+            return new String(Base64.getDecoder().decode(schema));
+
         return schema;
     }
 
@@ -48,6 +92,9 @@ public class XDCParameters {
     }
 
     public String getTransformation() {
+        if (schemaMimeType != null && schemaMimeType.toLowerCase().contains("base64"))
+            return new String(Base64.getDecoder().decode(transformation));
+
         return transformation;
     }
 
@@ -59,7 +106,7 @@ public class XDCParameters {
         return transformationLanguage;
     }
 
-    public ServerSigningParameters.TransformationOutputMimeType getTransformationMediaDestinationTypeDescription() {
+    public TransformationOutputMimeType getTransformationMediaDestinationTypeDescription() {
         return transformationMediaDestinationTypeDescription;
     }
 

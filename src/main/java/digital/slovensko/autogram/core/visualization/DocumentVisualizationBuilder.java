@@ -8,7 +8,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.eforms.EFormResourcesBuilder;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -17,7 +16,6 @@ import org.xml.sax.SAXException;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningParameters;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
@@ -27,12 +25,10 @@ public class DocumentVisualizationBuilder {
 
     private final DSSDocument document;
     private final EFormAttributes eFormAttributes;
-    private final SigningParameters parameters;
 
-    private DocumentVisualizationBuilder(AutogramDocument document, SigningParameters parameters) {
+    private DocumentVisualizationBuilder(AutogramDocument document) {
         this.document = document.toDssDocument();
         this.eFormAttributes = document.getEFormAttributes();
-        this.parameters = parameters;
     }
 
     public static Visualization fromJob(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
@@ -41,7 +37,7 @@ public class DocumentVisualizationBuilder {
 
     public static Visualization fromDocument(SigningJob job, AutogramDocument document, UserSettings userSettings)
             throws IOException, ParserConfigurationException, SAXException {
-        return new DocumentVisualizationBuilder(document, job.getParameters()).build(job, userSettings);
+        return new DocumentVisualizationBuilder(document).build(job, userSettings);
     }
 
     private Visualization build(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
@@ -105,38 +101,18 @@ public class DocumentVisualizationBuilder {
         String transformation = null;
         String outputType = null;
 
-        var resolvedEFormAttributes = eFormAttributes != null
-                ? eFormAttributes
-                : resolveDocumentEFormAttributes(documentToDisplay);
-        if (resolvedEFormAttributes != null) {
-            if (resolvedEFormAttributes.transformation() != null)
-                transformation = resolvedEFormAttributes.transformation();
+        if (eFormAttributes != null) {
+            if (eFormAttributes.transformation() != null)
+                transformation = eFormAttributes.transformation();
 
-            if (resolvedEFormAttributes.xsltParams() != null)
-                outputType = normalizeOutputType(resolvedEFormAttributes.xsltParams().destinationType());
+            if (eFormAttributes.xsltParams() != null)
+                outputType = normalizeOutputType(eFormAttributes.xsltParams().destinationType());
         }
 
         if (transformation != null && outputType == null)
             outputType = normalizeOutputType(EFormUtils.extractTransformationOutputMimeTypeString(transformation));
 
         return new ResolvedTransformation(transformation, outputType);
-    }
-
-    private EFormAttributes resolveDocumentEFormAttributes(DSSDocument documentToDisplay) {
-        if (!isDocumentSupportingTransformation(documentToDisplay))
-            return null;
-
-        try {
-            var eFormResources = EFormResourcesBuilder.build(documentToDisplay,
-                    EFormUtils.getFsFormIdFromFilename(documentToDisplay.getName()), null, null,
-                    parameters.getPropertiesCanonicalization());
-            if (eFormResources == null)
-                return null;
-
-            return eFormResources.getEformAttributes();
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     private String normalizeOutputType(String outputType) {

@@ -27,17 +27,17 @@ public class FsEFormResources extends EFormResources {
     private static final String SOURCE_URL = "https://forms-slovensko-digital.s3.eu-central-1.amazonaws.com/fs/";
     private String xdcIdentifier;
 
-    private FsEFormResources(String formUrl, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
-        super(formUrl, xsdDigest, xsltDigest, canonicalizationMethod);
+    private FsEFormResources(String formUrl, String xsdDigest, String xsltDigest) {
+        super(formUrl, xsdDigest, xsltDigest);
         this.embedUsedSchemas = false;
     }
 
-    public static FsEFormResources buildFromFsFormId(String fsFormId, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
-        return new FsEFormResources(getFormUrlFromFsFormId(fsFormId), canonicalizationMethod, xsdDigest, xsltDigest);
+    public static FsEFormResources buildFromFsFormId(String fsFormId, String xsdDigest, String xsltDigest) {
+        return new FsEFormResources(getFormUrlFromFsFormId(fsFormId), xsdDigest, xsltDigest);
     }
 
-    public static FsEFormResources buildFromXdcIdentifier(String xdcIdentifier, String canonicalizationMethod, String xsdDigest, String xsltDigest) {
-        return new FsEFormResources(getFormUrlFromXdcIdentifier(xdcIdentifier), canonicalizationMethod, xsdDigest, xsltDigest);
+    public static FsEFormResources buildFromXdcIdentifier(String xdcIdentifier, String xsdDigest, String xsltDigest) {
+        return new FsEFormResources(getFormUrlFromXdcIdentifier(xdcIdentifier), xsdDigest, xsltDigest);
     }
 
     private static String getFormUrlFromFsFormId(String fsFormId) {
@@ -104,7 +104,7 @@ public class FsEFormResources extends EFormResources {
     }
 
     @Override
-    public boolean findResources() throws XMLValidationException, EFormException {
+    public boolean findResources(String canonicalizationMethod) throws XMLValidationException, EFormException {
         var meta_xml = resourceLoader.getResource(SOURCE_URL + url + "/meta.xml");
         if (meta_xml == null)
             throw new EFormException(META_XML);
@@ -175,13 +175,13 @@ public class FsEFormResources extends EFormResources {
         return true;
     }
 
-    public EFormAttributes getEformAttributes() {
+    public EFormAttributes getEformAttributes(String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
         var transformation = getTransformation();
         var schema = getSchema();
         if (transformation == null || schema == null)
             throw new XMLValidationException(XSLT_OR_XSD_NOT_FOUND);
 
-        return new EFormAttributes(getIdentifier(), transformation, schema, EFormUtils.XDC_XMLNS, getXsdIdentifier(), getXsltParams(), shouldEmbedUsedSchemas());
+        return new EFormAttributes(getIdentifier(), transformation, schema, EFormUtils.XDC_XMLNS, getXsdIdentifier(), getXsltParams(), shouldEmbedUsedSchemas(), null, false, canonicalizationMethod, digestAlgorithm);
     }
 
     public String getIdentifier() {

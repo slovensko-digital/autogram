@@ -1,9 +1,4 @@
 package digital.slovensko.autogram.server.dto;
 
-public class PresentationParameters {
-    private ServerSigningParameters.VisualizationWidthEnum visualizationWidth;
-
-    public ServerSigningParameters.VisualizationWidthEnum getVisualizationWidth() {
-        return visualizationWidth;
-    }
+public record PresentationParameters(ServerSigningParameters.VisualizationWidthEnum visualizationWidth) {
 }

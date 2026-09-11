@@ -59,7 +59,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     private ValidationReports signatureValidationReports;
     private ValidationReports signatureCheckReports;
     private final boolean shouldCheckValidityBeforeSigning;
-    private List<DSSDocument> previewDocuments = List.of();
+    private List<AutogramDocument> previewDocuments = List.of();
     private List<Node> signatureSummaries = List.of();
 
     @FXML
@@ -139,7 +139,7 @@ public class SigningDialogController extends BaseController implements Suppresse
 
         documentTabPane.getTabs().clear();
         for (int i = 0; i < documents.size(); i++)
-            documentTabPane.getTabs().add(createDocumentTab(documents.get(i), i + 1));
+            documentTabPane.getTabs().add(createDocumentTab(documents.get(i).toDssDocument(), i + 1));
 
         documentTabPane.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null || newValue.intValue() < 0)
@@ -163,15 +163,14 @@ public class SigningDialogController extends BaseController implements Suppresse
             return visualization;
 
         try {
-            return DocumentVisualizationBuilder.fromDocument(visualization.getJob(),
-                    AutogramDocument.fromDssDocument(previewDocuments.get(documentIndex)), userSettings);
+            return DocumentVisualizationBuilder.fromDocument(visualization.getJob(), previewDocuments.get(documentIndex), userSettings);
         } catch (Exception e) {
             return null;
         }
     }
 
-    private List<DSSDocument> resolvePreviewDocuments() {
-        var jobDocuments = visualization.getJob().getDocuments();
+    private List<AutogramDocument> resolvePreviewDocuments() {
+        var jobDocuments = visualization.getJob().getAutogramDocuments();
         if (jobDocuments.size() > 1)
             return jobDocuments;
 
@@ -179,7 +178,7 @@ public class SigningDialogController extends BaseController implements Suppresse
             return jobDocuments;
 
         try {
-            var originalDocuments = AsicContainerUtils.getOriginalDocuments(visualization.getJob().getDocument());
+            var originalDocuments = AsicContainerUtils.getOriginalDocuments(visualization.getJob().getAutogramDocument());
             if (originalDocuments.size() > 1)
                 return originalDocuments;
         } catch (Exception e) {
@@ -433,7 +432,7 @@ public class SigningDialogController extends BaseController implements Suppresse
                 summary.getChildren().add(GUIValidationUtils.createWarningText(
                         i18n("signature.table.incompleteCoverage.warning")));
 
-            var signatures = reports.getSignaturesForPreviewDocument(previewDocuments.get(index), index);
+            var signatures = reports.getSignaturesForPreviewDocument(previewDocuments.get(index).toDssDocument(), index);
             var table = new VBox(GUIValidationUtils.createSignatureTableRows(resources, signatures, false,
                     isValidated, ignored -> onShowSignaturesButtonPressed(null), 3));
             table.getStyleClass().add("autogram-signatures-table");

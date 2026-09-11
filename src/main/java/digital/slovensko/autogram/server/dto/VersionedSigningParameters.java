@@ -5,102 +5,82 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_CONTAINER_UNSUPPORTED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_FORMAT_UNSUPPORTED;
 
+import digital.slovensko.autogram.core.SigningParameters;
+
 public class VersionedSigningParameters {
-    public enum BaselineLevel {
-        BASELINE_B,
-        BASELINE_T
+    public enum LocalCanonicalizationMethod {
+        INCLUSIVE,
+        EXCLUSIVE,
+        INCLUSIVE_WITH_COMMENTS,
+        EXCLUSIVE_WITH_COMMENTS,
+        INCLUSIVE_11,
+        INCLUSIVE_11_WITH_COMMENTS
     }
 
-    private SignatureForm format;
-    private BaselineLevel level;
+    private SignatureForm form;
+    private SignatureProfile profile;
     private ASiCContainerType container;
     private SignaturePackaging packaging;
     private DigestAlgorithm digestAlgorithm;
     private Boolean en319132;
-    private ServerSigningParameters.LocalCanonicalizationMethod infoCanonicalization;
-    private ServerSigningParameters.LocalCanonicalizationMethod propertiesCanonicalization;
-    private ServerSigningParameters.LocalCanonicalizationMethod keyInfoCanonicalization;
+    private LocalCanonicalizationMethod infoCanonicalization;
+    private LocalCanonicalizationMethod propertiesCanonicalization;
+    private LocalCanonicalizationMethod keyInfoCanonicalization;
     private Boolean checkPDFACompliance;
 
-    public ServerSigningParameters toServerSigningParameters(PresentationParameters presentation,
-            XDCParameters xdcParameters, boolean isMultiDocument) {
-        var resolvedFormat = resolveFormat(isMultiDocument);
-        var resolvedContainer = resolveContainer(isMultiDocument);
-        var resolvedLevel = resolveLevel(resolvedFormat);
-        var visualizationWidth = presentation != null ? presentation.getVisualizationWidth() : null;
+    public VersionedSigningParameters() {
+    }
 
-        return new ServerSigningParameters(
-                resolvedLevel,
-                resolvedContainer,
-                null,
-                xdcParameters != null ? xdcParameters.getContainerXmlns() : null,
-                packaging,
+    public VersionedSigningParameters(SignatureForm form, SignatureProfile profile, ASiCContainerType container,
+            SignaturePackaging packaging, DigestAlgorithm digestAlgorithm, Boolean en319132,
+            LocalCanonicalizationMethod infoCanonicalization, LocalCanonicalizationMethod propertiesCanonicalization,
+            LocalCanonicalizationMethod keyInfoCanonicalization, Boolean checkPDFACompliance) {
+
+        this.form = form;
+        this.profile = profile;
+        this.container = container;
+        this.packaging = packaging;
+        this.digestAlgorithm = digestAlgorithm;
+        this.en319132 = en319132;
+        this.infoCanonicalization = infoCanonicalization;
+        this.propertiesCanonicalization = propertiesCanonicalization;
+        this.keyInfoCanonicalization = keyInfoCanonicalization;
+        this.checkPDFACompliance = checkPDFACompliance;
+    }
+
+    public SigningParameters toSigningParameters(PresentationParameters presentation) {
+        return SigningParameters.buildParameters(
+                profile,
+                form,
                 digestAlgorithm,
+                container,
+                packaging,
                 en319132,
-                infoCanonicalization,
-                propertiesCanonicalization,
-                keyInfoCanonicalization,
-                xdcParameters != null ? xdcParameters.getSchema() : null,
-                xdcParameters != null ? xdcParameters.getTransformation() : null,
-                xdcParameters != null ? xdcParameters.getIdentifier() : null,
-                Boolean.TRUE.equals(checkPDFACompliance),
-                visualizationWidth,
-                xdcParameters != null && xdcParameters.isAutoLoadEform(),
-                xdcParameters != null && xdcParameters.getEmbedUsedSchemas(),
-                xdcParameters != null ? xdcParameters.getSchemaIdentifier() : null,
-                xdcParameters != null ? xdcParameters.getTransformationIdentifier() : null,
-                xdcParameters != null ? xdcParameters.getTransformationLanguage() : null,
-                xdcParameters != null ? xdcParameters.getTransformationMediaDestinationTypeDescription() : null,
-                xdcParameters != null ? xdcParameters.getTransformationTargetEnvironment() : null,
-                xdcParameters != null ? xdcParameters.getFsFormIdentifier() : null);
+                infoCanonicalization != null ? infoCanonicalization.name() : null,
+                propertiesCanonicalization != null ? propertiesCanonicalization.name() : null,
+                keyInfoCanonicalization != null ? keyInfoCanonicalization.name() : null,
+                checkPDFACompliance,
+                768,
+                null
+        );
     }
 
-    private SignatureForm resolveFormat(boolean isMultiDocument) {
+    public void resolveSignatureFormatAndContainer(boolean isMultiDocument) {
         if (!isMultiDocument)
-            return format;
+            return;
 
-        if (format == null)
-            return SignatureForm.XAdES;
+        if (form == null)
+            form = SignatureForm.XAdES;
 
-        if (format == SignatureForm.PAdES)
+        if (form == SignatureForm.PAdES)
             throw new RequestValidationException(MULTI_DOCUMENT_FORMAT_UNSUPPORTED);
-
-        return format;
-    }
-
-    private ASiCContainerType resolveContainer(boolean isMultiDocument) {
-        if (!isMultiDocument)
-            return container;
 
         if (container != null && container != ASiCContainerType.ASiC_E)
             throw new RequestValidationException(MULTI_DOCUMENT_CONTAINER_UNSUPPORTED);
-
-        return ASiCContainerType.ASiC_E;
-    }
-
-    private ServerSigningParameters.LocalSignatureLevel resolveLevel(SignatureForm resolvedFormat) {
-        var resolvedLevel = level == BaselineLevel.BASELINE_T
-                ? ServerSigningParameters.LocalSignatureLevel.BASELINE_T
-                : ServerSigningParameters.LocalSignatureLevel.BASELINE_B;
-
-        if (resolvedFormat == null)
-            return resolvedLevel;
-
-        return switch (resolvedFormat) {
-            case XAdES -> resolvedLevel == ServerSigningParameters.LocalSignatureLevel.BASELINE_T
-                    ? ServerSigningParameters.LocalSignatureLevel.XAdES_BASELINE_T
-                    : ServerSigningParameters.LocalSignatureLevel.XAdES_BASELINE_B;
-            case PAdES -> resolvedLevel == ServerSigningParameters.LocalSignatureLevel.BASELINE_T
-                    ? ServerSigningParameters.LocalSignatureLevel.PAdES_BASELINE_T
-                    : ServerSigningParameters.LocalSignatureLevel.PAdES_BASELINE_B;
-            case CAdES -> resolvedLevel == ServerSigningParameters.LocalSignatureLevel.BASELINE_T
-                    ? ServerSigningParameters.LocalSignatureLevel.CAdES_BASELINE_T
-                    : ServerSigningParameters.LocalSignatureLevel.CAdES_BASELINE_B;
-            default -> resolvedLevel;
-        };
     }
 }

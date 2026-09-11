@@ -46,18 +46,18 @@ public class SignRequestBody {
             throw new RequestValidationException(MISSING_FIELD, "Document.Content");
 
 //      TODO: resolve values at class instantiation
-        resolveSigningLevel();
+        validateSignatureLevel();
     }
 
-    private void resolveSigningLevel() throws RequestValidationException {
+    private void validateSignatureLevel() throws RequestValidationException {
         if (parameters == null)
             parameters = new ServerSigningParameters();
 
-        parameters.resolveSigningLevel(getRequestDocument());
+        parameters.resolveSignatureLevel(getRequestDocument());
     }
 
     public AutogramDocument getDocument() {
-        return AutogramDocument.fromDssDocument(getRequestDocument());
+        return AutogramDocument.build(getRequestDocument(), parameters.getEFormAttributes(isBase64()));
     }
 
     private InMemoryDocument getRequestDocument() {
@@ -72,7 +72,7 @@ public class SignRequestBody {
         if (parameters == null)
             throw new RequestValidationException(MISSING_PARAMS);
 
-        parameters.validate(getDocument().getMimeType());
+        parameters.validate(getDocument().toDssDocument());
     }
 
     public SigningInput getSigningInput(TSPSource tspSource, boolean plainXmlEnabled) {

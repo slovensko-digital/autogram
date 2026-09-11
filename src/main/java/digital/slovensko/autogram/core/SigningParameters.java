@@ -6,6 +6,7 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
@@ -14,9 +15,11 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_LEVEL;
 
 public class SigningParameters {
-    private final SignatureLevel level;
+    // private final SignatureLevel level;
+    private SignatureProfile signatureProfile;
+    private SignatureForm signatureForm;
+    private ASiCContainerType container;
     private final DigestAlgorithm digestAlgorithm;
-    private final ASiCContainerType container;
     private final SignaturePackaging packaging;
     private final boolean en319132;
     private final String infoCanonicalization;
@@ -27,11 +30,12 @@ public class SigningParameters {
     private final TSPSource tspSource;
 
     private SigningParameters(
-            SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging signaturePackaging,
+            SignatureProfile signatureProfile, SignatureForm signatureForm, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging signaturePackaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
             boolean checkPDFACompliance, int preferredPreviewWidth, TSPSource tspSource) {
 
-        this.level = level;
+        this.signatureProfile = signatureProfile;
+        this.signatureForm = signatureForm;
         this.digestAlgorithm = digestAlgorithm;
         this.container = container;
         this.packaging = signaturePackaging;
@@ -45,31 +49,53 @@ public class SigningParameters {
     }
 
     public static SigningParameters buildParameters(
-            SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
+            SignatureProfile profile, SignatureForm form, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean xmlDataContainer, boolean checkPDFACompliance,
-            int preferredPreviewWidth, TSPSource tspSource) throws AutogramException {
+            boolean checkPDFACompliance, int preferredPreviewWidth, TSPSource tspSource) throws AutogramException {
 
-        if (level == null)
+        if (profile == null)
             throw new SigningParametersException(NO_LEVEL);
 
         if (digestAlgorithm == null)
             digestAlgorithm = DigestAlgorithm.SHA256;
 
-        if (xmlDataContainer) {
-            if (container == null) container = ASiCContainerType.ASiC_E;
-
-            if (packaging == null) packaging = SignaturePackaging.ENVELOPING;
-        }
-
         var signingParameters = new SigningParameters(
-                level, digestAlgorithm, container, packaging, en319132, infoCanonicalization, propertiesCanonicalization,
+                profile, form, digestAlgorithm, container, packaging, en319132, infoCanonicalization, propertiesCanonicalization,
             keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth, tspSource);
         return signingParameters;
     }
 
-    public SignatureForm getSignatureType() {
-        return level.getSignatureForm();
+    public static SigningParameters buildParameters(
+            SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
+            boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
+            boolean checkPDFACompliance, int preferredPreviewWidth, TSPSource tspSource) throws AutogramException {
+
+        return buildParameters(
+                level.getSignatureProfile(),
+                level.getSignatureForm(),
+                digestAlgorithm,
+                container,
+                packaging,
+                en319132,
+                infoCanonicalization,
+                propertiesCanonicalization,
+                keyInfoCanonicalization,
+                checkPDFACompliance,
+                preferredPreviewWidth,
+                tspSource
+        );
+    }
+
+    public void setSignatureForm(SignatureForm signatureForm) {
+        this.signatureForm = signatureForm;
+    }
+
+    public void setContainer(ASiCContainerType container) {
+        this.container = container;
+    }
+
+    public SignatureForm getSignatureForm() {
+        return signatureForm;
     }
 
     public ASiCContainerType getContainer() {
@@ -77,7 +103,16 @@ public class SigningParameters {
     }
 
     public SignatureLevel getLevel() {
-        return level != null ? level : SignatureLevel.XAdES_BASELINE_B;
+        if (signatureForm == null && signatureProfile == null)
+            return SignatureLevel.XAdES_BASELINE_B;
+        
+        if (signatureForm == null)
+            signatureForm = SignatureForm.XAdES;
+
+        if (signatureProfile == null)
+            signatureProfile = SignatureProfile.BASELINE_B;
+
+        return SignatureLevel.getSignatureLevel(signatureForm, signatureProfile);
     }
 
     public SignaturePackaging getSignaturePackaging() {

@@ -4,28 +4,36 @@ import digital.slovensko.autogram.core.eforms.EFormResourcesBuilder;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.errors.EFormException;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 
 import static digital.slovensko.autogram.core.errors.EFormException.Error.MISSING_ID;
 import static digital.slovensko.autogram.core.errors.EFormException.Error.XSD;
 import static digital.slovensko.autogram.core.errors.EFormException.Error.XSLT;
 
-public record EFormAttributes(String identifier, String transformation, String schema, String containerXmlns,
-                              String xsdIdentifier, XsltParams xsltParams, boolean embedUsedSchemas) {
+import digital.slovensko.autogram.core.SigningParameters;
 
-    public static EFormAttributes build(EFormAttributes eFormAttributes, boolean autoLoadEform, String fsFormId, DSSDocument document, String propertiesCanonicalization) {
+public record EFormAttributes(String identifier, String transformation, String schema, String containerXmlns,
+        String xsdIdentifier, XsltParams xsltParams, boolean embedUsedSchemas, String fsFormId, boolean autoLoadEform,
+        String propertiesCanonicalization, DigestAlgorithm digestAlgorithm) {
+
+    public static EFormAttributes build(EFormAttributes eFormAttributes, DSSDocument document) {
         if (eFormAttributes == null)
-            eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false);
+            eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false, null, false, null, null);
 
         return build(eFormAttributes.identifier(), eFormAttributes.transformation(), eFormAttributes.schema(),
                 eFormAttributes.containerXmlns(),
                 eFormAttributes.xsdIdentifier(), eFormAttributes.xsltParams(), eFormAttributes.embedUsedSchemas(),
-                autoLoadEform, fsFormId, document, propertiesCanonicalization);
+                eFormAttributes.autoLoadEform(), eFormAttributes.fsFormId(), document, eFormAttributes.propertiesCanonicalization(), eFormAttributes.digestAlgorithm());
     }
-    private static EFormAttributes build(String identifier, String transformation, String schema, String containerXmlns, String xsdIdentifier, XsltParams xsltParams, boolean embedUsedSchemas, boolean autoLoadEform, String fsFormId, DSSDocument document, String propertiesCanonicalization) {
+
+    private static EFormAttributes build(String identifier, String transformation, String schema, String containerXmlns,
+            String xsdIdentifier, XsltParams xsltParams, boolean embedUsedSchemas, boolean autoLoadEform, String fsFormId,
+            DSSDocument document, String propertiesCanonicalization, DigestAlgorithm digestAlgorithm) {
+
         if (autoLoadEform || embedUsedSchemas || (fsFormId != null)) {
-            var eFormResources = EFormResourcesBuilder.build(document, fsFormId, xsdIdentifier, xsltParams, propertiesCanonicalization);
+            var eFormResources = EFormResourcesBuilder.build(document, fsFormId, xsdIdentifier, xsltParams, propertiesCanonicalization, digestAlgorithm);
             if (eFormResources != null) {
-                var loadedEFormAttributes = eFormResources.getEformAttributes();
+                var loadedEFormAttributes = eFormResources.getEformAttributes(propertiesCanonicalization, digestAlgorithm);
                 if (loadedEFormAttributes != null) {
                     schema = loadedEFormAttributes.schema();
                     transformation = loadedEFormAttributes.transformation();
@@ -62,6 +70,14 @@ public record EFormAttributes(String identifier, String transformation, String s
         if (EFormUtils.isOrsrUri(identifier))
             embedUsedSchemas = true;
 
-        return new EFormAttributes(identifier, transformation, schema, containerXmlns, xsdIdentifier, xsltParams, embedUsedSchemas);
+        return new EFormAttributes(identifier, transformation, schema, containerXmlns, xsdIdentifier, xsltParams, embedUsedSchemas, fsFormId, autoLoadEform, propertiesCanonicalization, digestAlgorithm);
+    }
+
+    public static EFormAttributes build(SigningParameters signingParameters, boolean autoLoadEform) {
+        return new EFormAttributes(null, null, null, null, null, null, false, null, autoLoadEform, signingParameters.getPropertiesCanonicalization(), signingParameters.getDigestAlgorithm());
+    }
+
+    public boolean shouldCreateXdc() {
+        return containerXmlns != null && containerXmlns.contains("xmldatacontainer");
     }
 }

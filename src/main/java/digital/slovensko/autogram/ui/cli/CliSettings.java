@@ -2,11 +2,16 @@ package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.DriverDetector;
+import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
 import digital.slovensko.autogram.core.errors.SlotIndexIsNotANumberException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
+
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
@@ -37,6 +42,18 @@ public class CliSettings extends UserSettings {
         settings.setTokenSessionTimeout(5);
         settings.setCustomPKCS11DriverPath(cmd.getOptionValue("pkcs11-driver-path", ""));
         return settings;
+    }
+
+    public SigningParameters getSigningParameters() {
+        return SigningParameters.buildParameters(
+                getSignatureLevel(),
+                DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E,
+                SignaturePackaging.ENVELOPING,
+                isEn319132(),
+                null,
+                null,
+                null, isPdfaCompliance(), 640, getTsaEnabled() && getTsaServer() != null ? getTspSource() : null);
     }
 
     @Override

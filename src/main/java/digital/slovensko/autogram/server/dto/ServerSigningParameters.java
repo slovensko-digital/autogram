@@ -3,6 +3,7 @@ package digital.slovensko.autogram.server.dto;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.AutogramDocument;
 import digital.slovensko.autogram.core.SigningInput;
+import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
@@ -10,11 +11,11 @@ import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
@@ -34,7 +35,6 @@ import static digital.slovensko.autogram.server.errors.RequestValidationExceptio
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.ID_MISSING;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.INVALID_PACKAGING;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MIME_TYPE_MISMATCH;
-import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SCHEMA_MISSING;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.TRANSFORMATION_MISSING;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.UNSUPPORTED_SIGN_LEVEL;
@@ -98,7 +98,7 @@ public class ServerSigningParameters {
     private final String fsFormId;
 
     public ServerSigningParameters(LocalSignatureLevel level, ASiCContainerType container,
-            String containerFilename, String containerXmlns, SignaturePackaging packaging,
+            String containerXmlns, SignaturePackaging packaging,
             DigestAlgorithm digestAlgorithm,
             Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
             LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
@@ -154,8 +154,26 @@ public class ServerSigningParameters {
         this.fsFormId = null;
     }
 
-    public SigningInput getSigningInput(boolean isBase64, AutogramDocument document,
-            TSPSource tspSource, boolean plainXmlEnabled) {
+    public SigningInput getSigningInput(boolean isBase64, AutogramDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
+        return SigningInput.fromFile(document, getSigningParameters(tspSource), plainXmlEnabled);
+    }
+
+    public SigningParameters getSigningParameters(TSPSource tspSource) {
+        return SigningParameters.buildParameters(
+                getSignatureLevel(),
+                digestAlgorithm,
+                getContainer(),
+                packaging,
+                getBoolean(en319132),
+                getCanonicalizationMethodString(infoCanonicalization),
+                getCanonicalizationMethodString(propertiesCanonicalization),
+                getCanonicalizationMethodString(keyInfoCanonicalization),
+                getBoolean(checkPDFACompliance),
+                getVisualizationWidth(),
+                tspSource);
+    }
+
+    public EFormAttributes getEFormAttributes(boolean isBase64) {
         var xsltParams = new XsltParams(
                 transformationIdentifier,
                 transformationLanguage,
@@ -163,22 +181,19 @@ public class ServerSigningParameters {
                 transformationTargetEnvironment,
                 null);
 
-        var eFormAttributes = new EFormAttributes(
+        return new EFormAttributes(
                 identifier,
                 getTransformation(isBase64),
                 getSchema(isBase64),
                 containerXmlns,
                 schemaIdentifier,
                 xsltParams,
-                getBoolean(embedUsedSchemas));
-
-        return SigningInput.prepare(getSignatureLevel(), digestAlgorithm, getContainer(), packaging,
-            getBoolean(en319132), getCanonicalizationMethodString(infoCanonicalization),
-            getCanonicalizationMethodString(propertiesCanonicalization),
-            getCanonicalizationMethodString(keyInfoCanonicalization), eFormAttributes, autoLoadEform, getFsFormId(),
-            getBoolean(checkPDFACompliance), getVisualizationWidth(), document.toDssDocument(), tspSource,
-            plainXmlEnabled);
-    }
+                getBoolean(embedUsedSchemas),
+                getFsFormId(),
+                autoLoadEform,
+                getCanonicalizationMethodString(propertiesCanonicalization),
+                digestAlgorithm);
+        }
 
     private static boolean getBoolean(Boolean variable) {
         if (variable == null)
@@ -262,7 +277,7 @@ public class ServerSigningParameters {
         return container;
     }
 
-    public void resolveSigningLevel(InMemoryDocument document) throws RequestValidationException {
+    public void resolveSignatureLevel(InMemoryDocument document) throws RequestValidationException {
         if (level != null && level != LocalSignatureLevel.BASELINE_B && level != LocalSignatureLevel.BASELINE_T)
             return;
 
@@ -293,9 +308,10 @@ public class ServerSigningParameters {
         return fsFormId;
     }
 
-    public void validate(MimeType mimeType) throws RequestValidationException {
+    public void validate(DSSDocument document) throws RequestValidationException {
+        var mimeType = document.getMimeType();
         if (level == null)
-            throw new RequestValidationException(MISSING_FIELD, "Parameters.Level");
+            throw new RequestValidationException(UNSUPPORTED_SIGN_LEVEL);
 
         var supportedLevels = Arrays.asList(
                 SignatureLevel.XAdES_BASELINE_B,

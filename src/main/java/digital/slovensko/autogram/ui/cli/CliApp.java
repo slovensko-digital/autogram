@@ -1,13 +1,17 @@
 package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.AutogramDocument;
 import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.TargetPath;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.core.errors.SourceNotDefinedException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import eu.europa.esig.dss.model.FileDocument;
+
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
@@ -34,10 +38,10 @@ public class CliApp {
             var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
 
             var finalAutogram = autogram;
+            var parameters = settings.getSigningParameters();
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
                         .map(f -> SigningJob.fromInput(
-                            SigningInput.fromFile(f, settings.isPdfaCompliance(), settings.getSignatureLevel(),
-                                settings.isEn319132(), settings.getTspSource(), settings.isPlainXmlEnabled()),
+                            SigningInput.fromFile(AutogramDocument.build(new FileDocument(f), EFormAttributes.build(parameters, true)), parameters, settings.isPlainXmlEnabled()),
                             new SaveFileResponder(f, finalAutogram, targetPathBuilder)))
                     .toList();
             if (settings.isPdfaCompliance()) {

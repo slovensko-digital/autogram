@@ -26,11 +26,15 @@ public class SigningJob {
     }
 
     public DSSDocument getDocument() {
-        return input.getFirstDocument().toDssDocument();
+        return getAutogramDocument().toDssDocument();
+    }
+
+    public AutogramDocument getAutogramDocument() {
+        return input.getFirstDocument();
     }
 
     public List<DSSDocument> getDocuments() {
-        return input.getDocuments().stream().map(AutogramDocument::toDssDocument).toList();
+        return getAutogramDocuments().stream().map(AutogramDocument::toDssDocument).toList();
     }
 
     public List<AutogramDocument> getAutogramDocuments() {
@@ -54,12 +58,12 @@ public class SigningJob {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName()
             + (input.isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
         boolean isContainer = getParameters().getContainer() != null;
-        var doc = switch (getParameters().getSignatureType()) {
+        var doc = switch (getParameters().getSignatureForm()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
             case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key) : signDocumentAsCAdeS(key);
             case PAdES -> signDocumentAsPAdeS(key);
             default -> throw new RuntimeException(
-                    "Unsupported signature type: " + getParameters().getSignatureType());
+                    "Unsupported signature type: " + getParameters().getSignatureForm());
         };
         responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
     }

@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.util;
 
+import digital.slovensko.autogram.core.AutogramDocument;
 import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
@@ -55,6 +56,42 @@ public class AsicContainerUtils {
         }
 
         return originalDocuments;
+    }
+
+    public static List<AutogramDocument> getOriginalDocuments(AutogramDocument document) throws OriginalDocumentNotFoundException {
+        var asice = document.toDssDocument();
+
+        SignedDocumentValidator documentValidator;
+        try {
+            documentValidator = SignedDocumentValidator.fromDocument(asice);
+        } catch (UnsupportedOperationException e) {
+            throw new OriginalDocumentNotFoundException(FILE_NOT_FOUND);
+        }
+
+        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
+        var signatures = documentValidator.getSignatures();
+        if (signatures.isEmpty())
+            throw new OriginalDocumentNotFoundException(NO_SIGNATURE);
+
+        var extractor = new ASiCWithXAdESContainerExtractor(asice);
+        var aSiCContent = extractor.extract();
+
+        if (aSiCContent.getAllDocuments().isEmpty())
+            throw new OriginalDocumentNotFoundException(NO_DOCUMENTS);
+
+        if (aSiCContent.getSignedDocuments().isEmpty())
+            throw new OriginalDocumentNotFoundException(NO_SIGNED_DOCUMENTS);
+
+        var originalDocuments = new ArrayList<>(aSiCContent.getSignedDocuments());
+        for (var originalDocument : originalDocuments) {
+            if (isXML(originalDocument.getMimeType()) || MimeTypeEnum.BINARY.equals(originalDocument.getMimeType()))
+                setMimeTypeFromManifest(asice, originalDocument);
+
+            if (MimeTypeEnum.BINARY.getMimeTypeString().equals(originalDocument.getMimeType().getMimeTypeString()) && XDCValidator.isXDCContent(originalDocument))
+                originalDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
+        }
+
+        return originalDocuments.stream().map(e -> AutogramDocument.build(e, document.getEFormAttributes())).toList();
     }
 
     public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,

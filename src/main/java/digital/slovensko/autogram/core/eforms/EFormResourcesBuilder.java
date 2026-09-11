@@ -9,25 +9,26 @@ import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSLT_OR_XSD_NOT_FOUND;
 
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class EFormResourcesBuilder {
-    public static EFormResources build(DSSDocument document, String fsFormId, String xsdIdentifier, XsltParams xsltParams, String propertiesCanonicalization) {
+    public static EFormResources build(DSSDocument document, String fsFormId, String xsdIdentifier, XsltParams xsltParams, String propertiesCanonicalization, DigestAlgorithm digestAlgorithm) {
         var documentMimeType = document.getMimeType();
         EFormResources eformResources = null;
         if (isXDC(documentMimeType))
             eformResources = tryToBuildFromEmbeddedXdc(document);
 
         if ((isXML(documentMimeType) || isXDC(documentMimeType)) && (eformResources == null))
-            return buildFromDocument(document, fsFormId, propertiesCanonicalization, xsdIdentifier, xsltParams);
+            return buildFromDocument(document, fsFormId, propertiesCanonicalization, xsdIdentifier, xsltParams, digestAlgorithm);
 
         return eformResources;
     }
 
-    public static EFormResources buildFromDocument(DSSDocument document, String fsFormId, String propertiesCanonicalization, String xsdIdentifier, XsltParams xsltParams)
+    public static EFormResources buildFromDocument(DSSDocument document, String fsFormId, String propertiesCanonicalization, String xsdIdentifier, XsltParams xsltParams, DigestAlgorithm digestAlgorithm)
             throws AutogramException {
 
         var xml = getXmlFromDocument(document);
@@ -40,7 +41,7 @@ public abstract class EFormResourcesBuilder {
         if (eformResources == null)
             return null;
 
-        if (!eformResources.findResources())
+        if (!eformResources.findResources(propertiesCanonicalization))
             throw new XMLValidationException(XSLT_OR_XSD_NOT_FOUND);
 
         return eformResources;
@@ -81,7 +82,7 @@ public abstract class EFormResourcesBuilder {
     private static EFormResources buildFromEFormXml(Document xml, String canonicalizationMethod, String xsdIdentifier, XsltParams xsltParams, String fsFormId)
             throws XMLValidationException, UnknownEformException {
         if (fsFormId != null)
-            return FsEFormResources.buildFromFsFormId(fsFormId, canonicalizationMethod, null, null);
+            return FsEFormResources.buildFromFsFormId(fsFormId, null, null);
 
         var formUri = getNamespaceFromEformXml(xml);
         if (isOrsrUri(formUri))
@@ -96,7 +97,7 @@ public abstract class EFormResourcesBuilder {
             return null;
 
         if (formUri.startsWith("http://www.drsr.sk/") || formUri.startsWith("https://ekr.financnasprava.sk/"))
-            return FsEFormResources.buildFromXdcIdentifier(formUri, canonicalizationMethod, xsdDigest, xsltDigest);
+            return FsEFormResources.buildFromXdcIdentifier(formUri, xsdDigest, xsltDigest);
 
         if (formUri.startsWith("http://schemas.gov.sk/form/") || formUri.startsWith("http://data.gov.sk/doc/eform/") || formUri.startsWith("https://data.gov.sk/id/egov/eform/")) {
             var parts = formUri.split("/");
