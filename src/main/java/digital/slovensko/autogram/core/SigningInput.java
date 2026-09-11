@@ -19,6 +19,9 @@ public class SigningInput {
 
         if (this.documents.isEmpty())
             throw new IllegalArgumentException("documents cannot be empty");
+
+        if (this.documents.size() > 1 || this.documents.stream().anyMatch(doc -> doc.isEForm()))
+            parameters.setContainer(ASiCContainerType.ASiC_E);
     }
 
     public static SigningInput of(List<AutogramDocument> documents, SigningParameters parameters) {

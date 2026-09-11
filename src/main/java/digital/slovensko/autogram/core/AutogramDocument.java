@@ -93,6 +93,10 @@ public class AutogramDocument {
         return eFormAttributes;
     }
 
+    public boolean isEForm() {
+        return eFormAttributes != null && eFormAttributes.identifier() != null && !eFormAttributes.identifier().isEmpty();
+    }
+
     private static DSSDocument normalize(DSSDocument dssDocument) {
         var mimeType = dssDocument.getMimeType();
         var name = dssDocument.getName();

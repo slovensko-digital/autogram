@@ -48,7 +48,7 @@ public class XDCParameters {
         return new XsltParams(
             getTransformationIdentifier(),
             getTransformationLanguage(),
-            getTransformationMediaDestinationTypeDescription().name(),
+            getTransformationMediaDestinationTypeDescription(),
             getTransformationTargetEnvironment(),
             null
         );
@@ -61,7 +61,7 @@ public class XDCParameters {
     }
 
     public boolean isAutoLoadEform() {
-        return Boolean.TRUE.equals(autoLoadEform);
+        return getBoolean(autoLoadEform);
     }
 
     public String getIdentifier() {
@@ -73,7 +73,7 @@ public class XDCParameters {
     }
 
     public boolean getEmbedUsedSchemas() {
-        return Boolean.TRUE.equals(embedUsedSchemas);
+        return getBoolean(embedUsedSchemas);
     }
 
     public String getSchema() {
@@ -106,11 +106,21 @@ public class XDCParameters {
         return transformationLanguage;
     }
 
-    public TransformationOutputMimeType getTransformationMediaDestinationTypeDescription() {
-        return transformationMediaDestinationTypeDescription;
+    public String getTransformationMediaDestinationTypeDescription() {
+        if (transformationMediaDestinationTypeDescription == null)
+            return null; 
+
+        return transformationMediaDestinationTypeDescription.name();
     }
 
     public String getTransformationTargetEnvironment() {
         return transformationTargetEnvironment;
+    }
+
+    private static boolean getBoolean(Boolean variable) {
+        if (variable == null)
+            return false;
+
+        return variable;
     }
 }

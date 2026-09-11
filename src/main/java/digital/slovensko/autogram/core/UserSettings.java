@@ -202,7 +202,9 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
                 isEn319132(),
                 null,
                 null,
-                null, isPdfaCompliance(), 640, getTsaEnabled() && getTsaServer() != null ? getTspSource() : null);
+                null,
+                isPdfaCompliance(),
+                640);
     }
 
     private void setSignatureType(String signatureType) {

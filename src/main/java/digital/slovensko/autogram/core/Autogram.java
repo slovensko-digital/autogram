@@ -19,7 +19,6 @@ import digital.slovensko.autogram.util.Logging;
 import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.io.File;
 import java.util.List;
@@ -111,7 +110,7 @@ public class Autogram {
 
     private void signCommonAndThen(SigningJob job, SigningKey signingKey, Consumer<SigningJob> callback) {
         try {
-            job.signWithKeyAndRespond(signingKey);
+            job.signWithKeyAndRespond(signingKey, settings.getTspSource());
             resetTokenSessionTimer();
 
             if (batch == null || batch.isEnded() || batch.isAllProcessed())
@@ -288,10 +287,6 @@ public class Autogram {
 
     public void updateSignatureValidatorLotl(List<String> tlCountries) {
         ui.onWorkThreadDo(() -> SignatureValidator.getInstance().updateLotl(tlCountries));
-    }
-
-    public TSPSource getTspSource() {
-        return settings.getTspSource();
     }
 
     public List<TokenDriver> getAvailableDrivers() {

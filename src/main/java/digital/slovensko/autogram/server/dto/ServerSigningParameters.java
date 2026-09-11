@@ -17,7 +17,6 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.nio.charset.StandardCharsets;
@@ -154,11 +153,11 @@ public class ServerSigningParameters {
         this.fsFormId = null;
     }
 
-    public SigningInput getSigningInput(boolean isBase64, AutogramDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
-        return SigningInput.fromFile(document, getSigningParameters(tspSource), plainXmlEnabled);
+    public SigningInput getSigningInput(boolean isBase64, AutogramDocument document, boolean plainXmlEnabled) {
+        return SigningInput.fromFile(document, getSigningParameters(), plainXmlEnabled);
     }
 
-    public SigningParameters getSigningParameters(TSPSource tspSource) {
+    public SigningParameters getSigningParameters() {
         return SigningParameters.buildParameters(
                 getSignatureLevel(),
                 digestAlgorithm,
@@ -169,8 +168,7 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getBoolean(checkPDFACompliance),
-                getVisualizationWidth(),
-                tspSource);
+                getVisualizationWidth());
     }
 
     public EFormAttributes getEFormAttributes(boolean isBase64) {

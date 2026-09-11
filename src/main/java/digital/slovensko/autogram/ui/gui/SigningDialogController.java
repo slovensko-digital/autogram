@@ -182,6 +182,7 @@ public class SigningDialogController extends BaseController implements Suppresse
             if (originalDocuments.size() > 1)
                 return originalDocuments;
         } catch (Exception e) {
+            throw new RuntimeException("Failed to extract original documents from ASiC container", e);
             // Fall back to the original job document when the input is not a signed ASiC container.
         }
 

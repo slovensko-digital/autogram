@@ -31,7 +31,7 @@ public class SignEndpoint implements HttpHandler {
             var responder = body.getBatchId() == null ? new ServerResponder(exchange)
                     : new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
                 var job = SigningJob.fromInput(
-                    body.getSigningInput(autogram.getTspSource(), autogram.isPlainXmlEnabled()), responder);
+                    body.getSigningInput(autogram.isPlainXmlEnabled()), responder);
 
             if (body.getBatchId() != null)
                 autogram.batchSign(job, body.getBatchId());

@@ -53,7 +53,7 @@ public class CliSettings extends UserSettings {
                 isEn319132(),
                 null,
                 null,
-                null, isPdfaCompliance(), 640, getTsaEnabled() && getTsaServer() != null ? getTspSource() : null);
+                null, isPdfaCompliance(), 640);
     }
 
     @Override

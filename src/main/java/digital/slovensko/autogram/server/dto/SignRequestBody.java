@@ -8,7 +8,6 @@ import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.util.Base64;
 
@@ -75,12 +74,12 @@ public class SignRequestBody {
         parameters.validate(getDocument().toDssDocument());
     }
 
-    public SigningInput getSigningInput(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getSigningInput(isBase64(), getDocument(), tspSource, plainXmlEnabled);
+    public SigningInput getSigningInput(boolean plainXmlEnabled) {
+        return parameters.getSigningInput(isBase64(), getDocument(), plainXmlEnabled);
     }
 
-    public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return getSigningInput(tspSource, plainXmlEnabled).getParameters();
+    public SigningParameters getParameters(boolean plainXmlEnabled) {
+        return getSigningInput(plainXmlEnabled).getParameters();
     }
 
     public String getBatchId() {

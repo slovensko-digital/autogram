@@ -91,7 +91,12 @@ public class AsicContainerUtils {
                 originalDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
         }
 
-        return originalDocuments.stream().map(e -> AutogramDocument.build(e, document.getEFormAttributes())).toList();
+        return originalDocuments.stream().map((e) -> {
+            if (AutogramMimeType.isXDC(e.getMimeType()))
+                return AutogramDocument.build(e, document.getEFormAttributes());
+                
+            return AutogramDocument.build(e, null);
+        }).toList();
     }
 
     public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,

@@ -12,6 +12,7 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
@@ -53,15 +54,15 @@ public class SigningJob {
         return getParameters().getVisualizationWidth();
     }
 
-    public void signWithKeyAndRespond(SigningKey key) throws InterruptedException, AutogramException {
+    public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
 
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName()
             + (input.isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureForm()) {
-            case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
-            case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key) : signDocumentAsCAdeS(key);
-            case PAdES -> signDocumentAsPAdeS(key);
+            case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key, tspSource) : signDocumentAsXAdeS(key, tspSource);
+            case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key, tspSource) : signDocumentAsCAdeS(key, tspSource);
+            case PAdES -> signDocumentAsPAdeS(key, tspSource);
             default -> throw new RuntimeException(
                     "Unsupported signature type: " + getParameters().getSignatureForm());
         };
@@ -72,7 +73,7 @@ public class SigningJob {
         responder.onDocumentSignFailed(e);
     }
 
-    private DSSDocument signDocumentAsCAdeS(SigningKey key) {
+    private DSSDocument signDocumentAsCAdeS(SigningKey key, TSPSource tspSource) {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new CAdESService(commonCertificateVerifier);
@@ -82,13 +83,16 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
+            service.setTspSource(tspSource);
+
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
+    private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key, TSPSource tspSource) {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new ASiCWithXAdESService(commonCertificateVerifier);
@@ -99,7 +103,7 @@ public class SigningJob {
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
         if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
-            service.setTspSource(getParameters().getTspSource());
+            service.setTspSource(tspSource);
 
         var dataToSign = service.getDataToSign(documents, signatureParameters);
         var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
@@ -107,7 +111,7 @@ public class SigningJob {
         return service.signDocument(documents, signatureParameters, signatureValue);
     }
 
-    private DSSDocument signDocumentAsXAdeS(SigningKey key) {
+    private DSSDocument signDocumentAsXAdeS(SigningKey key, TSPSource tspSource) {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new XAdESService(commonCertificateVerifier);
@@ -117,13 +121,16 @@ public class SigningJob {
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
+        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
+            service.setTspSource(tspSource);
+
         var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
         return service.signDocument(getDocument(), signatureParameters, signatureValue);
     }
 
-    private DSSDocument signDocumentAsASiCWithCAdeS(SigningKey key) {
+    private DSSDocument signDocumentAsASiCWithCAdeS(SigningKey key, TSPSource tspSource) {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new ASiCWithCAdESService(commonCertificateVerifier);
@@ -135,7 +142,7 @@ public class SigningJob {
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
         if (signatureParameters.getSignatureLevel().equals(SignatureLevel.CAdES_BASELINE_T))
-            service.setTspSource(getParameters().getTspSource());
+            service.setTspSource(tspSource);
 
         var dataToSign = service.getDataToSign(documents, signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
@@ -143,7 +150,7 @@ public class SigningJob {
         return service.signDocument(documents, signatureParameters, signatureValue);
     }
 
-    private DSSDocument signDocumentAsPAdeS(SigningKey key) {
+    private DSSDocument signDocumentAsPAdeS(SigningKey key, TSPSource tspSource) {
         var commonCertificateVerifier = new CommonCertificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new PAdESService(commonCertificateVerifier);
@@ -154,7 +161,7 @@ public class SigningJob {
         signatureParameters.setCertificateChain(key.getCertificateChain());
 
         if (signatureParameters.getSignatureLevel().equals(SignatureLevel.PAdES_BASELINE_T)) {
-            service.setTspSource(getParameters().getTspSource());
+            service.setTspSource(tspSource);
             signatureParameters.setContentSize(9472*2);
         }
 

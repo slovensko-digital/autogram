@@ -60,27 +60,36 @@ public class VersionedSigningParameters {
                 digestAlgorithm,
                 container,
                 packaging,
-                en319132,
+                getBoolean(en319132),
                 infoCanonicalization != null ? infoCanonicalization.name() : null,
                 propertiesCanonicalization != null ? propertiesCanonicalization.name() : null,
                 keyInfoCanonicalization != null ? keyInfoCanonicalization.name() : null,
-                checkPDFACompliance,
-                768,
-                null
+                getBoolean(checkPDFACompliance),
+                768
         );
     }
 
     public void resolveSignatureFormatAndContainer(boolean isMultiDocument) {
-        if (!isMultiDocument)
-            return;
+        if (profile == null)
+            profile = SignatureProfile.BASELINE_B;
 
         if (form == null)
             form = SignatureForm.XAdES;
+
+        if (!isMultiDocument)
+            return;
 
         if (form == SignatureForm.PAdES)
             throw new RequestValidationException(MULTI_DOCUMENT_FORMAT_UNSUPPORTED);
 
         if (container != null && container != ASiCContainerType.ASiC_E)
             throw new RequestValidationException(MULTI_DOCUMENT_CONTAINER_UNSUPPORTED);
+    }
+
+    private static boolean getBoolean(Boolean variable) {
+        if (variable == null)
+            return false;
+
+        return variable;
     }
 }

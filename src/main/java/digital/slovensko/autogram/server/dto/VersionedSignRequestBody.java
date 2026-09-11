@@ -4,7 +4,6 @@ import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ public class VersionedSignRequestBody {
     private PresentationParameters presentation;
     private String batchId;
 
-    public SigningInput getSigningInput(TSPSource tspSource, boolean plainXmlEnabled) {
+    public SigningInput getSigningInput(boolean plainXmlEnabled) {
         var submittedDocuments = getSubmittedDocuments();
         if (parameters == null)
             parameters = new VersionedSigningParameters();

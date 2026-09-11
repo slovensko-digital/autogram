@@ -8,7 +8,6 @@ import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
@@ -27,12 +26,11 @@ public class SigningParameters {
     private final String keyInfoCanonicalization;
     private final boolean checkPDFACompliance;
     private final int visualizationWidth;
-    private final TSPSource tspSource;
 
     private SigningParameters(
             SignatureProfile signatureProfile, SignatureForm signatureForm, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging signaturePackaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean checkPDFACompliance, int preferredPreviewWidth, TSPSource tspSource) {
+            boolean checkPDFACompliance, int preferredPreviewWidth) {
 
         this.signatureProfile = signatureProfile;
         this.signatureForm = signatureForm;
@@ -45,13 +43,12 @@ public class SigningParameters {
         this.keyInfoCanonicalization = keyInfoCanonicalization;
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
-        this.tspSource = tspSource;
     }
 
     public static SigningParameters buildParameters(
             SignatureProfile profile, SignatureForm form, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean checkPDFACompliance, int preferredPreviewWidth, TSPSource tspSource) throws AutogramException {
+            boolean checkPDFACompliance, int preferredPreviewWidth) throws AutogramException {
 
         if (profile == null)
             throw new SigningParametersException(NO_LEVEL);
@@ -61,14 +58,14 @@ public class SigningParameters {
 
         var signingParameters = new SigningParameters(
                 profile, form, digestAlgorithm, container, packaging, en319132, infoCanonicalization, propertiesCanonicalization,
-            keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth, tspSource);
+            keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth);
         return signingParameters;
     }
 
     public static SigningParameters buildParameters(
             SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean checkPDFACompliance, int preferredPreviewWidth, TSPSource tspSource) throws AutogramException {
+            boolean checkPDFACompliance, int preferredPreviewWidth) throws AutogramException {
 
         return buildParameters(
                 level.getSignatureProfile(),
@@ -81,8 +78,7 @@ public class SigningParameters {
                 propertiesCanonicalization,
                 keyInfoCanonicalization,
                 checkPDFACompliance,
-                preferredPreviewWidth,
-                tspSource
+                preferredPreviewWidth
         );
     }
 
@@ -146,9 +142,4 @@ public class SigningParameters {
     public int getVisualizationWidth() {
         return (visualizationWidth > 0) ? visualizationWidth : 768;
     }
-
-    public TSPSource getTspSource() {
-        return tspSource;
-    }
-
 }
