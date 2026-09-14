@@ -53,7 +53,7 @@ public class VersionedSigningParameters {
         this.checkPDFACompliance = checkPDFACompliance;
     }
 
-    public SigningParameters toSigningParameters(PresentationParameters presentation) {
+    public SigningParameters toSigningParameters(PresentationParameters presentation, boolean plainXmlEnabled) {
         return SigningParameters.buildParameters(
                 profile,
                 form,
@@ -65,7 +65,8 @@ public class VersionedSigningParameters {
                 propertiesCanonicalization != null ? propertiesCanonicalization.name() : null,
                 keyInfoCanonicalization != null ? keyInfoCanonicalization.name() : null,
                 getBoolean(checkPDFACompliance),
-                768
+                768,
+                plainXmlEnabled
         );
     }
 

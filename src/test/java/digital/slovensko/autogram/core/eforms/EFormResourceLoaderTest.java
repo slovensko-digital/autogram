@@ -54,7 +54,7 @@ public class EFormResourceLoaderTest {
 
 	private static NodeList getManifestFileEntries(String filename) throws Exception {
 		try (var input = EFormResourceLoaderTest.class.getResourceAsStream(
-				"/digital/slovensko/autogram/crystal_test_data/" + filename)) {
+				"/digital/slovensko/autogram/core/visualization/crystal_test_data/" + filename)) {
 			var document = XMLUtils.getSecureDocumentBuilder().parse(Objects.requireNonNull(input));
 			return document.getElementsByTagNameNS("urn:manifest:1.0", "file-entry");
 		}
@@ -77,7 +77,7 @@ public class EFormResourceLoaderTest {
 				return null;
 
 			try (var input = EFormResourceLoaderTest.class.getResourceAsStream(
-					"/digital/slovensko/autogram/crystal_test_data/" + fixture)) {
+					"/digital/slovensko/autogram/core/visualization/crystal_test_data/" + fixture)) {
 				return new InMemoryDocument(Objects.requireNonNull(input).readAllBytes(), fixture);
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);

@@ -26,11 +26,12 @@ public class SigningParameters {
     private final String keyInfoCanonicalization;
     private final boolean checkPDFACompliance;
     private final int visualizationWidth;
+    private final boolean plainXmlEnabled;
 
     private SigningParameters(
             SignatureProfile signatureProfile, SignatureForm signatureForm, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging signaturePackaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean checkPDFACompliance, int preferredPreviewWidth) {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled) {
 
         this.signatureProfile = signatureProfile;
         this.signatureForm = signatureForm;
@@ -43,12 +44,13 @@ public class SigningParameters {
         this.keyInfoCanonicalization = keyInfoCanonicalization;
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
+        this.plainXmlEnabled = plainXmlEnabled;
     }
 
     public static SigningParameters buildParameters(
             SignatureProfile profile, SignatureForm form, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean checkPDFACompliance, int preferredPreviewWidth) throws AutogramException {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled) throws AutogramException {
 
         if (profile == null)
             throw new SigningParametersException(NO_LEVEL);
@@ -58,14 +60,17 @@ public class SigningParameters {
 
         var signingParameters = new SigningParameters(
                 profile, form, digestAlgorithm, container, packaging, en319132, infoCanonicalization, propertiesCanonicalization,
-            keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth);
+            keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth, plainXmlEnabled);
         return signingParameters;
     }
 
     public static SigningParameters buildParameters(
             SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean checkPDFACompliance, int preferredPreviewWidth) throws AutogramException {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled) throws AutogramException {
+
+        if (level == null)
+            throw new SigningParametersException(NO_LEVEL);
 
         return buildParameters(
                 level.getSignatureProfile(),
@@ -78,7 +83,8 @@ public class SigningParameters {
                 propertiesCanonicalization,
                 keyInfoCanonicalization,
                 checkPDFACompliance,
-                preferredPreviewWidth
+                preferredPreviewWidth,
+                plainXmlEnabled
         );
     }
 
@@ -141,5 +147,9 @@ public class SigningParameters {
 
     public int getVisualizationWidth() {
         return (visualizationWidth > 0) ? visualizationWidth : 768;
+    }
+
+    public boolean isPlainXmlEnabled() {
+        return plainXmlEnabled;
     }
 }

@@ -29,15 +29,13 @@ public class BatchGuiFileResponder extends BatchResponder {
     private final TargetPath targetPath;
     private final SigningParameters signingParameters;
     private final EFormAttributes eFormAttributes;
-    private final boolean plainXmlEnabled;
 
-    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, SigningParameters signingParameters, EFormAttributes eFormAttributes, boolean signPDFAsPades, boolean plainXmlEnabled) {
+    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, SigningParameters signingParameters, EFormAttributes eFormAttributes, boolean signPDFAsPades) {
         this.autogram = autogram;
         this.list = list;
         this.signingParameters = signingParameters;
         this.eFormAttributes = eFormAttributes;
         this.targetPath = TargetPath.fromTargetDirectory(targetDirectory, signPDFAsPades);
-        this.plainXmlEnabled = plainXmlEnabled;
     }
 
     @Override
@@ -63,7 +61,7 @@ public class BatchGuiFileResponder extends BatchResponder {
                     onAllFilesSigned(batch);
                 }), batch);
 
-                var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes), signingParameters, plainXmlEnabled);
+                var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes), signingParameters);
                 var job = SigningJob.fromInput(input, responder);
                 autogram.batchSign(job, batch.getBatchId());
             } catch (AutogramException e) {

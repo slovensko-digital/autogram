@@ -176,9 +176,9 @@ class AsicContainerTest {
 
     private SigningInput prepareAsicXadesInput(InMemoryDocument document) {
         var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
-                ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640);
+                ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var autogramDocument = AutogramDocument.build(document, EFormAttributes.build(parameters, true));
-        return SigningInput.prepareForASiCWithXAdES(autogramDocument, parameters, true);
+        return SigningInput.prepareForASiCWithXAdES(autogramDocument, parameters);
     }
 
     private InMemoryDocument createAsiceWithMultipleFiles() {

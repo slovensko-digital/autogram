@@ -154,10 +154,10 @@ public class ServerSigningParameters {
     }
 
     public SigningInput getSigningInput(boolean isBase64, AutogramDocument document, boolean plainXmlEnabled) {
-        return SigningInput.fromFile(document, getSigningParameters(), plainXmlEnabled);
+        return SigningInput.fromFile(document, getSigningParameters(plainXmlEnabled));
     }
 
-    public SigningParameters getSigningParameters() {
+    public SigningParameters getSigningParameters(boolean plainXmlEnabled) {
         return SigningParameters.buildParameters(
                 getSignatureLevel(),
                 digestAlgorithm,
@@ -168,7 +168,8 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getBoolean(checkPDFACompliance),
-                getVisualizationWidth());
+                getVisualizationWidth(),
+                plainXmlEnabled);
     }
 
     public EFormAttributes getEFormAttributes(boolean isBase64) {

@@ -1,7 +1,6 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.TestMethodSources;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
 import digital.slovensko.autogram.core.visualization.Visualization;
@@ -62,7 +61,7 @@ public class SigningJobTests {
 
             var htmlTransformed = v.getDocument();
             var expected = new String(
-                    this.getClass().getResourceAsStream("transformed.html").readAllBytes(),
+                    TestMethodSources.loadContent("transformed.html"),
                     StandardCharsets.UTF_8);
 
             assertEquals(expected.replaceAll("\\r\\n?", "\n"), htmlTransformed.replaceAll("\\r\\n?", "\n"));

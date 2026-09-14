@@ -32,7 +32,7 @@ public class VersionedSignRequestBody {
         submittedDocuments.forEach(doc -> validateDocument(doc, submittedDocuments.indexOf(doc), isMultiDocument));
 
         parameters.resolveSignatureFormatAndContainer(isMultiDocument);
-        var signingParameters = parameters.toSigningParameters(presentation);
+        var signingParameters = parameters.toSigningParameters(presentation, plainXmlEnabled);
 
         var autogramDocuments = submittedDocuments.stream()
                 .map((doc) -> doc.toAutogramDocument(signingParameters.getPropertiesCanonicalization(), signingParameters.getDigestAlgorithm()))

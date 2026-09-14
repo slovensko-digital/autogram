@@ -6,6 +6,7 @@ import java.util.Objects;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.model.DSSDocument;
+import digital.slovensko.autogram.core.errors.UnknownEformException;
 
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
 
@@ -20,6 +21,10 @@ public class SigningInput {
         if (this.documents.isEmpty())
             throw new IllegalArgumentException("documents cannot be empty");
 
+        if (!parameters.isPlainXmlEnabled() && this.documents.stream()
+                .anyMatch(document -> isXML(document.getMimeType()) && !document.isEForm()))
+            throw new UnknownEformException();
+
         if (this.documents.size() > 1 || this.documents.stream().anyMatch(doc -> doc.isEForm()))
             parameters.setContainer(ASiCContainerType.ASiC_E);
     }
@@ -32,7 +37,7 @@ public class SigningInput {
         return new SigningInput(List.of(Objects.requireNonNull(document, "document")), parameters);
     }
 
-    public static SigningInput fromFile(AutogramDocument document, SigningParameters parameters, boolean plainXmlEnabled) {
+    public static SigningInput fromFile(AutogramDocument document, SigningParameters parameters) {
         var dssDocument = document.toDssDocument();
         var level = SignatureValidator.getSignedDocumentSignatureLevel(
             SignatureValidator.getSignedDocumentSimpleReport(dssDocument));
@@ -40,9 +45,9 @@ public class SigningInput {
             case PAdES:
                 return fromPDFFile(dssDocument, parameters);
             case XAdES:
-                return prepareForASiCWithXAdES(document, parameters, plainXmlEnabled);
+                return prepareForASiCWithXAdES(document, parameters);
             case CAdES:
-                return prepareForASiCWithCAdES(document, parameters, plainXmlEnabled);
+                return prepareForASiCWithCAdES(document, parameters);
             default:
                 ;
         }
@@ -51,33 +56,29 @@ public class SigningInput {
             case PAdES_BASELINE_B:
                 return fromPDFFile(dssDocument, parameters);
             case XAdES_BASELINE_B:
-                return prepareForASiCWithXAdES(document, parameters, plainXmlEnabled);
+                return prepareForASiCWithXAdES(document, parameters);
             case CAdES_BASELINE_B:
-                return prepareForASiCWithCAdES(document, parameters, plainXmlEnabled);
+                return prepareForASiCWithCAdES(document, parameters);
             default:
                 ;
         }
 
-        return prepareForASiCWithXAdES(document, parameters, plainXmlEnabled);
+        return prepareForASiCWithXAdES(document, parameters);
     }
 
     public static SigningInput fromPDFFile(DSSDocument document, SigningParameters parameters) {
         return fromDocument(AutogramDocument.build(document, null), parameters);
     }
 
-    public static SigningInput prepareForASiCWithXAdES(AutogramDocument document, SigningParameters parameters, boolean plainXmlEnabled) {
+    public static SigningInput prepareForASiCWithXAdES(AutogramDocument document, SigningParameters parameters) {
         parameters.setContainer(ASiCContainerType.ASiC_E);
         parameters.setSignatureForm(SignatureForm.XAdES);
-        return prepareInput(parameters, document, plainXmlEnabled);
+        return fromDocument(document, parameters);
     }
 
-    public static SigningInput prepareForASiCWithCAdES(AutogramDocument document, SigningParameters parameters, boolean plainXmlEnabled) {
+    public static SigningInput prepareForASiCWithCAdES(AutogramDocument document, SigningParameters parameters) {
         parameters.setContainer(ASiCContainerType.ASiC_E);
         parameters.setSignatureForm(SignatureForm.CAdES);
-        return prepareInput(parameters, document, plainXmlEnabled);
-    }
-
-    private static SigningInput prepareInput(SigningParameters parameters, AutogramDocument document, boolean plainXmlEnabled) {
         return fromDocument(document, parameters);
     }
 

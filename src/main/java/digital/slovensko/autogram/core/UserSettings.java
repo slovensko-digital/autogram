@@ -204,7 +204,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
                 null,
                 null,
                 isPdfaCompliance(),
-                640);
+                640,
+                isPlainXmlEnabled());
     }
 
     private void setSignatureType(String signatureType) {
