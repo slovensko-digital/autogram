@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core.eforms;
 
+import digital.slovensko.autogram.TestMethodSources;
 import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -53,8 +54,7 @@ public class EFormResourceLoaderTest {
 	}
 
 	private static NodeList getManifestFileEntries(String filename) throws Exception {
-		try (var input = EFormResourceLoaderTest.class.getResourceAsStream(
-				"/digital/slovensko/autogram/core/visualization/crystal_test_data/" + filename)) {
+		try (var input = TestMethodSources.loadContentStream("crystal_test_data/" + filename)) {
 			var document = XMLUtils.getSecureDocumentBuilder().parse(Objects.requireNonNull(input));
 			return document.getElementsByTagNameNS("urn:manifest:1.0", "file-entry");
 		}
@@ -76,8 +76,7 @@ public class EFormResourceLoaderTest {
 			if (fixture == null)
 				return null;
 
-			try (var input = EFormResourceLoaderTest.class.getResourceAsStream(
-					"/digital/slovensko/autogram/core/visualization/crystal_test_data/" + fixture)) {
+			try (var input = TestMethodSources.loadContentStream("crystal_test_data/" + fixture)) {
 				return new InMemoryDocument(Objects.requireNonNull(input).readAllBytes(), fixture);
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);

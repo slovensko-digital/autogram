@@ -10,6 +10,7 @@ import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -195,7 +196,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public SigningParameters getDefaultSigningParameters() {
         return SigningParameters.buildParameters(
-                getSignatureLevel(),
+                getTsaEnabled() ? SignatureProfile.BASELINE_T : SignatureProfile.BASELINE_B,
+                getSignatureLevel().getSignatureForm(),
                 DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E,
                 SignaturePackaging.ENVELOPING,

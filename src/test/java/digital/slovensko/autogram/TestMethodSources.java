@@ -6,10 +6,15 @@ import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import java.util.stream.Stream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public abstract class TestMethodSources {
     public static byte[] loadContent(String resourceName) throws IOException {
-        return TestMethodSources.class.getResourceAsStream(resourceName).readAllBytes();
+        return loadContentStream(resourceName).readAllBytes();
+    }
+
+    public static InputStream loadContentStream(String resourceName) throws IOException {
+        return TestMethodSources.class.getResourceAsStream(resourceName);
     }
 
     public static Stream<DSSDocument> generalAgendaProvider() throws IOException {
