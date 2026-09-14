@@ -5,8 +5,13 @@ import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundExce
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.util.AsicContainerUtils;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -115,7 +120,7 @@ class AsicContainerTest {
     @Test
     void testSignatureCheckReportRecognizesPartialCoverageInMultiDocumentAsice() {
         var asiceWithMultipleFiles = createAsiceWithMultipleFiles();
-        var input = SigningInput.prepareForASiCWithXAdES(asiceWithMultipleFiles, false, false, null, true);
+        var input = prepareAsicXadesInput(asiceWithMultipleFiles);
         var job = SigningJob.fromInput(input, new Responder() {
             @Override
             public void onDocumentSigned(SignedDocument signedDocument) {
@@ -148,7 +153,7 @@ class AsicContainerTest {
     @Test
     void testBuildVisualizationForMultipleFilesInAsice() throws Exception {
         var asiceWithMultipleFiles = createAsiceWithMultipleFiles();
-        var input = SigningInput.prepareForASiCWithXAdES(asiceWithMultipleFiles, false, false, null, false);
+        var input = prepareAsicXadesInput(asiceWithMultipleFiles);
         var job = SigningJob.fromInput(input, new Responder() {
             @Override
             public void onDocumentSigned(SignedDocument signedDocument) {
@@ -163,10 +168,17 @@ class AsicContainerTest {
         var visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
         var previewDocuments = AsicContainerUtils.getOriginalDocuments(asiceWithMultipleFiles);
         var secondVisualization = DocumentVisualizationBuilder.fromDocument(job,
-            AutogramDocument.fromDssDocument(previewDocuments.get(1)), UserSettings.load());
+            AutogramDocument.build(previewDocuments.get(1), null), UserSettings.load());
 
         Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
         Assertions.assertFalse(secondVisualization instanceof UnsupportedVisualization);
+    }
+
+    private SigningInput prepareAsicXadesInput(InMemoryDocument document) {
+        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640);
+        var autogramDocument = AutogramDocument.build(document, EFormAttributes.build(parameters, true));
+        return SigningInput.prepareForASiCWithXAdES(autogramDocument, parameters, true);
     }
 
     private InMemoryDocument createAsiceWithMultipleFiles() {

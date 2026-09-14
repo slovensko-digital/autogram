@@ -60,7 +60,7 @@ public class TransformationTests {
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                         "rozhodnutie_X4564-2.xml");
 
-                var params = SigningInput.prepare(
+                var params = SigningInputTestFactory.prepare(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -69,7 +69,7 @@ public class TransformationTests {
                     CanonicalizationMethod.INCLUSIVE,
                     CanonicalizationMethod.INCLUSIVE,
                     CanonicalizationMethod.INCLUSIVE,
-                    new EFormAttributes(
+                    SigningInputTestFactory.eForm(
                         "id1/asa",
                         transformation,
                         schema,
@@ -85,10 +85,7 @@ public class TransformationTests {
                     null,
                     true);
 
-                var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document)
-                                .withEFormAttributes(params.getFirstDocument().getEFormAttributes()),
-                        params.getParameters());
-                SigningJob job = SigningJob.fromInput(input, dummyResponder);
+                SigningJob job = SigningJob.fromInput(params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -146,7 +143,7 @@ public class TransformationTests {
                                 "crystal_test_data/rozhodnutie_X4564-2.xml"),
                         "rozhodnutie_X4564-2.xml");
 
-                var params = SigningInput.prepare(
+                var params = SigningInputTestFactory.prepare(
                     SignatureLevel.XAdES_BASELINE_B,
                     DigestAlgorithm.SHA256,
                     ASiCContainerType.ASiC_E,
@@ -155,7 +152,7 @@ public class TransformationTests {
                     CanonicalizationMethod.INCLUSIVE,
                     CanonicalizationMethod.INCLUSIVE,
                     CanonicalizationMethod.INCLUSIVE,
-                    new EFormAttributes(
+                    SigningInputTestFactory.eForm(
                         "id1/asa",
                         transformation,
                         schema,
@@ -171,10 +168,7 @@ public class TransformationTests {
                     null,
                     true);
 
-                var input = SigningInput.fromDocument(AutogramDocument.fromDssDocument(document)
-                                .withEFormAttributes(params.getFirstDocument().getEFormAttributes()),
-                        params.getParameters());
-                SigningJob job = SigningJob.fromInput(input, dummyResponder);
+                SigningJob job = SigningJob.fromInput(params, dummyResponder);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -189,7 +183,7 @@ public class TransformationTests {
         @MethodSource("digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider")
         void testXdcfVisualizationIsNotUnsupported(InMemoryDocument document)
                 throws IOException, ParserConfigurationException, SAXException {
-                var input = SigningInput.prepareForASiCWithXAdES(document, false, false, null, false);
+                var input = SigningInputTestFactory.forAsicXades(document, false, false, null, false);
                 var job = SigningJob.fromInput(input, dummyResponder);
 
                 var visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
@@ -200,13 +194,14 @@ public class TransformationTests {
         @Test
         void testMultiDocumentVisualizationUsesSelectedDocumentMetadata()
                 throws IOException, ParserConfigurationException, SAXException {
-                var firstDocument = AutogramDocument.fromContent("first".getBytes(StandardCharsets.UTF_8), "first.txt",
-                        MimeTypeEnum.TEXT);
-                var secondDocument = AutogramDocument.fromContent(
-                        this.getClass().getResourceAsStream("general_agenda.xdcf").readAllBytes(),
-                        "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY);
-                var preparedFirstDocument = SigningInput.prepareForASiCWithXAdES(firstDocument, false, false, null,
+                var firstDocument = SigningInputTestFactory.document(new InMemoryDocument("first".getBytes(StandardCharsets.UTF_8), "first.txt",
+                        MimeTypeEnum.TEXT));
+                var preparedFirstDocument = SigningInputTestFactory.forAsicXades(firstDocument, false, false, null,
                         false);
+                var secondDocument = AutogramDocument.build(new InMemoryDocument(
+                                this.getClass().getResourceAsStream("general_agenda.xdcf").readAllBytes(),
+                                "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY),
+                        EFormAttributes.build(preparedFirstDocument.getParameters(), true));
                 var job = SigningJob.fromInput(
                         SigningInput.of(List.of(firstDocument, secondDocument), preparedFirstDocument.getParameters()),
                         dummyResponder);

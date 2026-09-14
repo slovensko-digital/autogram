@@ -44,7 +44,7 @@ public class VersionedSignRequestBodyTests {
                 }
                 """, VersionedSignRequestBody.class);
 
-        var request = body.getSigningInput(null, true);
+        var request = body.getSigningInput(true);
 
         assertTrue(request.isMultiDocument());
         assertEquals(2, request.getDocumentCount());
@@ -68,7 +68,7 @@ public class VersionedSignRequestBodyTests {
                 }
                 """, VersionedSignRequestBody.class);
 
-        var request = body.getSigningInput(null, true);
+        var request = body.getSigningInput(true);
 
         assertFalse(request.isMultiDocument());
         assertEquals(1, request.getDocumentCount());
@@ -84,13 +84,16 @@ public class VersionedSignRequestBodyTests {
                   "documents": [
                     {
                       "mimeType": "application/vnd.etsi.asic-e+zip; base64",
+                      "xdcParameters": {
+                        "autoLoadEform": true
+                      },
                       "content": "%s"
                     }
                   ]
                 }
                 """.formatted(content), VersionedSignRequestBody.class);
 
-        var request = body.getSigningInput(null, false);
+        var request = body.getSigningInput(false);
 
         assertNotNull(request.getSingleDocument().getEFormAttributes().transformation());
     }
@@ -115,7 +118,7 @@ public class VersionedSignRequestBodyTests {
                 }
                 """, VersionedSignRequestBody.class);
 
-        var request = body.getSigningInput(null, false);
+        var request = body.getSigningInput(false);
 
         assertFalse(request.isMultiDocument());
         assertEquals(1, request.getDocumentCount());
@@ -147,7 +150,7 @@ public class VersionedSignRequestBodyTests {
                 }
                 """, VersionedSignRequestBody.class);
 
-        var request = body.getSigningInput(null, false);
+        var request = body.getSigningInput(false);
 
         assertNull(request.getDocuments().get(0).getEFormAttributes().transformation());
         assertNotNull(request.getDocuments().get(1).getEFormAttributes().transformation());
@@ -176,7 +179,7 @@ public class VersionedSignRequestBodyTests {
                 }
                 """, VersionedSignRequestBody.class);
 
-        var exception = assertThrows(RequestValidationException.class, () -> body.getSigningInput(null, true));
+        var exception = assertThrows(RequestValidationException.class, () -> body.getSigningInput(true));
 
         assertEquals("Documents[1].MimeType must not be ASiC when signing multiple documents together",
                 exception.getSubheading(SupportedLanguage.ENGLISH.loadResources()));

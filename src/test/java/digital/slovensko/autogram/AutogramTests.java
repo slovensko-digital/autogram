@@ -63,7 +63,9 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var input = SigningInput.prepareForASiCWithXAdES(document, false, false, null, false);
+        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null,
+            null, null, false, null, null, null, false, 640);
+        var input = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(document, null), parameters, false);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -79,7 +81,7 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var input = SigningInput.prepareForASiCWithXAdES(document, false, false, null, true);
+        var input = SigningInputTestFactory.forAsicXades(document, false, false, null, true);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -91,7 +93,7 @@ class AutogramTests {
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
     void testSignNonEformNegativeScenario(InMemoryDocument document) {
-        Assertions.assertThrows(UnknownEformException.class, () -> SigningInput.prepareForASiCWithXAdES(document, false, false, null, false));
+        Assertions.assertThrows(UnknownEformException.class, () -> SigningInputTestFactory.forAsicXades(document, false, false, null, false));
     }
 
     @ParameterizedTest
@@ -102,7 +104,7 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var input = SigningInput.prepareForASiCWithCAdES(document, false, false, null, false);
+        var input = SigningInputTestFactory.forAsicCades(document, false, false, null, false);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -116,11 +118,11 @@ class AutogramTests {
         var autogram = new Autogram(newUI, settings);
         var responder = mock(Responder.class);
 
-        var firstDocument = AutogramDocument.fromContent("first".getBytes(), "first.txt",
-            AutogramMimeType.fromMimeTypeString("text/plain"));
-        var secondDocument = AutogramDocument.fromContent("second".getBytes(), "second.txt",
-            AutogramMimeType.fromMimeTypeString("text/plain"));
-        var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, false, false, null, true);
+        var firstDocument = SigningInputTestFactory.document(new InMemoryDocument("first".getBytes(), "first.txt",
+            AutogramMimeType.fromMimeTypeString("text/plain")));
+        var secondDocument = SigningInputTestFactory.document(new InMemoryDocument("second".getBytes(), "second.txt",
+            AutogramMimeType.fromMimeTypeString("text/plain")));
+        var preparedInput = SigningInputTestFactory.forAsicXades(firstDocument, false, false, null, true);
 
         autogram.pickSigningKeyAndThen(key -> autogram.sign(
             SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()), responder),
@@ -136,11 +138,11 @@ class AutogramTests {
         var autogram = new Autogram(newUI, settings);
         var responder = mock(Responder.class);
 
-        var firstDocument = AutogramDocument.fromContent("first".getBytes(), "first.txt",
-            AutogramMimeType.fromMimeTypeString("text/plain"));
-        var secondDocument = AutogramDocument.fromContent("second".getBytes(), "second.txt",
-            AutogramMimeType.fromMimeTypeString("text/plain"));
-        var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, false, false, null, true);
+        var firstDocument = SigningInputTestFactory.document(new InMemoryDocument("first".getBytes(), "first.txt",
+            AutogramMimeType.fromMimeTypeString("text/plain")));
+        var secondDocument = SigningInputTestFactory.document(new InMemoryDocument("second".getBytes(), "second.txt",
+            AutogramMimeType.fromMimeTypeString("text/plain")));
+        var preparedInput = SigningInputTestFactory.forAsicXades(firstDocument, false, false, null, true);
 
         autogram.pickSigningKeyAndThen(key -> autogram.sign(
             SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()), responder),
@@ -150,7 +152,7 @@ class AutogramTests {
         verify(responder).onDocumentSigned(signedDocumentCaptor.capture());
 
         var signedDocument = signedDocumentCaptor.getValue();
-        var validationInput = SigningInput.prepareForASiCWithXAdES(signedDocument.getDocument(), false, false,
+        var validationInput = SigningInputTestFactory.forAsicXades(signedDocument.getDocument(), false, false,
             null, true);
         var validationJob = SigningJob.fromInput(validationInput, mock(Responder.class));
         var reports = SignatureValidator.getSignatureCheckReport(validationJob);
@@ -188,7 +190,7 @@ class AutogramTests {
         var autogram = new Autogram(newUI, settings);
         var job = createMultiDocumentJob(false,
                 createTextDocument("first.txt", "first"),
-                AutogramDocument.fromContent(createPasswordProtectedPdf(), "locked.pdf", MimeTypeEnum.PDF));
+                SigningInputTestFactory.document(new InMemoryDocument(createPasswordProtectedPdf(), "locked.pdf", MimeTypeEnum.PDF)));
 
         var exception = Assertions.assertThrows(AutogramException.class, () -> autogram.startVisualization(job));
 
@@ -250,7 +252,7 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var input = SigningInput.prepareForPDF(document, false, false, null);
+        var input = SigningInputTestFactory.forPdf(document, false, false, null);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -284,7 +286,7 @@ class AutogramTests {
 
         var responder = mock(Responder.class);
 
-        var input = SigningInput.fromFile(file, false, SignatureLevel.XAdES_BASELINE_B, false, null, false);
+        var input = SigningInputTestFactory.fromFile(file, false, SignatureLevel.XAdES_BASELINE_B, false, false);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(SigningJob.fromInput(input, responder), key));
 
         verify(responder).onDocumentSigned(any());
@@ -569,12 +571,12 @@ class AutogramTests {
     }
 
     private static AutogramDocument createTextDocument(String filename, String content) {
-        return AutogramDocument.fromContent(content.getBytes(StandardCharsets.UTF_8), filename, MimeTypeEnum.TEXT);
+        return SigningInputTestFactory.document(new InMemoryDocument(content.getBytes(StandardCharsets.UTF_8), filename, MimeTypeEnum.TEXT));
     }
 
     private static AutogramDocument loadDocument(String resourceName, MimeTypeEnum mimeType) throws IOException {
         var content = Objects.requireNonNull(AutogramTests.class.getResourceAsStream(resourceName)).readAllBytes();
-        return AutogramDocument.fromContent(content, resourceName, mimeType);
+        return SigningInputTestFactory.document(new InMemoryDocument(content, resourceName, mimeType));
     }
 
     private static byte[] createPasswordProtectedPdf() throws IOException {
@@ -594,7 +596,7 @@ class AutogramTests {
     }
 
     private static SigningJob createMultiDocumentJob(boolean checkPDFACompliance, AutogramDocument... documents) {
-        var preparedInput = SigningInput.prepareForASiCWithXAdES(documents[0], checkPDFACompliance,
+        var preparedInput = SigningInputTestFactory.forAsicXades(documents[0], checkPDFACompliance,
             false, null, true);
         return SigningJob.fromInput(SigningInput.of(List.of(documents), preparedInput.getParameters()),
             mock(Responder.class));

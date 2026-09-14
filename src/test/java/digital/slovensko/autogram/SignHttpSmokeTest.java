@@ -195,7 +195,6 @@ public class SignHttpSmokeTest {
 
         var level = fromMapToEnum(ServerSigningParameters.LocalSignatureLevel.class, map.get("level"));
         var container = fromMapToEnum(ASiCContainerType.class, map.get("container"));
-        var containerFilename = (String) map.get("containerFilename");
         var containerXmlns = (String) map.get("containerXmlns");
         var packaging = fromMapToEnum(SignaturePackaging.class, map.get("packaging"));
         var digestAlgorithm = fromMapToEnum(DigestAlgorithm.class, map.get("digestAlgorithm"));
@@ -222,7 +221,6 @@ public class SignHttpSmokeTest {
         return new ServerSigningParameters(
                 level,
                 container,
-                containerFilename,
                 containerXmlns,
                 packaging,
                 digestAlgorithm,

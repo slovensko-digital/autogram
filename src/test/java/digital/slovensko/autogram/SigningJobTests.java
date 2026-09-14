@@ -10,6 +10,7 @@ import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,10 +30,9 @@ public class SigningJobTests {
         var ssParams = new ServerSigningParameters(
                 ServerSigningParameters.LocalSignatureLevel.XAdES_BASELINE_B,
                 ASiCContainerType.ASiC_E,
-                null,
                 "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
                 null,
-                null,
+                DigestAlgorithm.SHA256,
                 null,
                 null,
                 null,
@@ -51,8 +51,8 @@ public class SigningJobTests {
                 null,
                 null);
 
-        var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-        var input = signRequestBody.getSigningInput(null, true);
+        var signRequestBody = new SignRequestBody(new Document("document.xml", content), ssParams, "application/xml;base64");
+        var input = signRequestBody.getSigningInput(true);
         var job = SigningJob.fromInput(input, null);
         Visualization visualization = null;
         try {

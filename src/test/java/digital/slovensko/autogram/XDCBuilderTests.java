@@ -1,8 +1,6 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -27,7 +25,7 @@ class XDCBuilderTests {
 
         var document = new InMemoryDocument(this.getClass().getResourceAsStream("general_agenda.xml").readAllBytes(), "general_agenda.xml", MimeTypeEnum.XML);
 
-        var eFormAttributes = new EFormAttributes(
+        var eFormAttributes = SigningInputTestFactory.eForm(
             "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
             transformation,
             xsdSchema,
@@ -35,7 +33,7 @@ class XDCBuilderTests {
             null,
             null,
             false);
-        var params = SigningInput.prepare(
+        var params = SigningInputTestFactory.prepare(
             SignatureLevel.XAdES_BASELINE_B,
             DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E,
