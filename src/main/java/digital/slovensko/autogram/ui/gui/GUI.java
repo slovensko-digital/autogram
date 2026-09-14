@@ -2,7 +2,6 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
@@ -65,27 +64,6 @@ public class GUI implements UI {
     public void startSigning(SigningJob job, Autogram autogram, Integer batchPosition,
             Runnable skipAction, Runnable skipRemainingAction) {
         autogram.startVisualization(job, batchPosition, skipAction, skipRemainingAction);
-    }
-
-    @Override
-    public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
-            BatchResponder oneByOneResponder) {
-        var controller = new PickBatchModeDialogController(
-                batch, allAtOnceResponder, oneByOneResponder, autogram);
-        var root = GUIUtils.loadFXML(controller, "pick-batch-mode-dialog.fxml");
-
-        var stage = new Stage();
-        stage.setTitle(controller.i18n("pickBatchMode.window.title"));
-        stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> {
-            cancelBatch(batch);
-        });
-
-        stage.setResizable(false);
-        stage.sizeToScene();
-        GUIUtils.suppressDefaultFocus(stage, controller);
-        GUIUtils.showOnTop(stage);
-        setUserFriendlyPositionAndLimits(stage);
     }
 
     @Override

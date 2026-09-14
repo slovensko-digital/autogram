@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -12,7 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class PickBatchModeDialogController extends BaseController implements SuppressedFocusController {
-    private final Batch batch;
+    private final int totalNumberOfDocuments;
     private final BatchResponder allAtOnceResponder;
     private final BatchResponder oneByOneResponder;
     private final Autogram autogram;
@@ -28,9 +27,9 @@ public class PickBatchModeDialogController extends BaseController implements Sup
     @FXML
     private final ToggleGroup signingMode = new ToggleGroup();
 
-    public PickBatchModeDialogController(Batch batch, BatchResponder allAtOnceResponder,
+    public PickBatchModeDialogController(int totalNumberOfDocuments, BatchResponder allAtOnceResponder,
             BatchResponder oneByOneResponder, Autogram autogram) {
-        this.batch = batch;
+        this.totalNumberOfDocuments = totalNumberOfDocuments;
         this.allAtOnceResponder = allAtOnceResponder;
         this.oneByOneResponder = oneByOneResponder;
         this.autogram = autogram;
@@ -46,9 +45,9 @@ public class PickBatchModeDialogController extends BaseController implements Sup
     public void onContinueButtonPressed() {
         close();
         if (signOneByOneButton.isSelected())
-            autogram.startOneByOneBatch(batch, oneByOneResponder);
+            autogram.batchStartOneByOne(totalNumberOfDocuments, oneByOneResponder);
         else
-            autogram.startBatch(batch, allAtOnceResponder);
+            autogram.batchStart(totalNumberOfDocuments, allAtOnceResponder);
     }
 
     public void close() {

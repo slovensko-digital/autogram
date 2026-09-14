@@ -182,10 +182,9 @@ public class Autogram {
         startBatch(newBatch, responder);
     }
 
-    public void batchStartWithModeSelection(int totalNumberOfDocuments, BatchResponder allAtOnceResponder,
-            BatchResponder oneByOneResponder) {
+    public void batchStartOneByOne(int totalNumberOfDocuments, BatchResponder responder) {
         var newBatch = createBatch(totalNumberOfDocuments);
-        ui.onUIThreadDo(() -> ui.selectBatchMode(newBatch, this, allAtOnceResponder, oneByOneResponder));
+        startOneByOneBatch(newBatch, responder);
     }
 
     public void startBatch(Batch batch, BatchResponder responder) {
@@ -194,7 +193,7 @@ public class Autogram {
         ui.onUIThreadDo(() -> ui.startBatch(batch, this, callback));
     }
 
-    public void startOneByOneBatch(Batch batch, BatchResponder responder) {
+    private void startOneByOneBatch(Batch batch, BatchResponder responder) {
         ensureCurrentBatch(batch);
         try {
             batch.startOneByOne();

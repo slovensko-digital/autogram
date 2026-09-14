@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -148,8 +149,23 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         if (userSettings.isBulkEnabled()) {
             autogram.batchStart(files.size(), allAtOnceResponder);
         } else {
-            autogram.batchStartWithModeSelection(files.size(), allAtOnceResponder, oneByOneResponder);
+            showBatchModeSelection(files.size(), allAtOnceResponder, oneByOneResponder);
         }
+    }
+
+    private void showBatchModeSelection(int totalNumberOfDocuments, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder) {
+        var controller = new PickBatchModeDialogController(totalNumberOfDocuments, allAtOnceResponder,
+                oneByOneResponder, autogram);
+        var root = GUIUtils.loadFXML(controller, "pick-batch-mode-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("pickBatchMode.window.title"));
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        GUIUtils.showOnTop(stage);
     }
 
     public void onAboutButtonAction() {
