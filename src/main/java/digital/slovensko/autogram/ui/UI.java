@@ -12,15 +12,13 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface UI {
-    void startSigning(SigningJob job, Autogram autogram, Integer batchPosition,
-            Runnable skipAction, Runnable skipRemainingAction);
+    void startSigning(SigningJob job, Autogram autogram);
 
     void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
 
     void cancelBatch(Batch batch);
 
-    void showVisualization(Visualization visualization, Autogram autogram, Integer batchPosition,
-            Runnable skipAction, Runnable skipRemainingAction);
+    void showVisualization(Visualization visualization, Autogram autogram);
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel);
 

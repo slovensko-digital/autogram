@@ -47,6 +47,18 @@ public class SigningJob {
         return batch;
     }
 
+    public Integer getBatchPosition() {
+        return responder.getBatchPosition();
+    }
+
+    public Runnable getSkipAction() {
+        return responder.getSkipAction();
+    }
+
+    public Runnable getSkipRemainingAction() {
+        return responder.getSkipRemainingAction();
+    }
+
     public boolean isMultiDocumentBatch() {
         return batch != null && batch.getTotalNumberOfDocuments() > 1;
     }

@@ -10,4 +10,16 @@ public abstract class Responder {
     public boolean isBatch() {
         return false;
     }
+
+    public Integer getBatchPosition() {
+        return null;
+    }
+
+    public Runnable getSkipAction() {
+        return null;
+    }
+
+    public Runnable getSkipRemainingAction() {
+        return null;
+    }
 }

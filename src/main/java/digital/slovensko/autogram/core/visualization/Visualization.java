@@ -18,12 +18,13 @@ public abstract class Visualization {
         return job;
     }
 
-    public String getDialogTitle(String documentLabel, Integer batchPosition) {
+    public String getDialogTitle(String documentLabel) {
         var title = documentLabel;
         if (job.getDocument().getName() != null)
             title += " " + job.getDocument().getName();
 
         var batch = job.getBatch();
+        var batchPosition = job.getBatchPosition();
         if (batchPosition != null && batch != null)
             title += " (%d z %d)".formatted(batchPosition, batch.getTotalNumberOfDocuments());
 

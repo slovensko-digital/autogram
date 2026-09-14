@@ -51,6 +51,11 @@ public abstract class BatchGuiFileResponder extends BatchResponder {
     protected abstract void processFiles(Batch batch);
 
     protected SigningJob buildBatchJob(File file, Batch batch, Runnable onSuccess, Consumer<AutogramException> onFailure) {
+        return buildBatchJob(file, batch, null, null, null, onSuccess, onFailure);
+    }
+
+    protected SigningJob buildBatchJob(File file, Batch batch, Integer batchPosition, Runnable skipAction,
+            Runnable skipRemainingAction, Runnable onSuccess, Consumer<AutogramException> onFailure) {
         var responder = new ResponderInBatch(new SaveFileFromBatchResponder(file, targetPath, targetFile -> {
             targetFiles.put(file, targetFile);
             Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments() + " signed " + file);
@@ -59,7 +64,7 @@ public abstract class BatchGuiFileResponder extends BatchResponder {
             Logging.log("Signing failed " + file + " all:" + batch.isAllProcessed());
             errors.put(file, error);
             onFailure.accept(error);
-        }), batch);
+        }), batch, batchPosition, skipAction, skipRemainingAction);
 
         return SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled, batch);
     }

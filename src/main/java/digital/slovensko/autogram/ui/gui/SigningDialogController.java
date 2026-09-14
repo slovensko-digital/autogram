@@ -46,8 +46,6 @@ public class SigningDialogController extends BaseController implements Suppresse
     private Reports signatureValidationReports;
     private Reports signatureCheckReports;
     private final boolean shouldCheckValidityBeforeSigning;
-    private final Runnable skipAction;
-    private final Runnable skipRemainingAction;
 
     @FXML
     VBox mainBox;
@@ -81,14 +79,12 @@ public class SigningDialogController extends BaseController implements Suppresse
     Text headerText;
 
     public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui, String title,
-            boolean shouldCheckValidityBeforeSigning, Runnable skipAction, Runnable skipRemainingAction) {
+            boolean shouldCheckValidityBeforeSigning) {
         this.visualization = visualization;
         this.gui = gui;
         this.autogram = autogram;
         this.title = title;
         this.shouldCheckValidityBeforeSigning = shouldCheckValidityBeforeSigning;
-        this.skipAction = skipAction;
-        this.skipRemainingAction = skipRemainingAction;
     }
 
     @Override
@@ -97,9 +93,10 @@ public class SigningDialogController extends BaseController implements Suppresse
         signaturesTable.setManaged(false);
         signaturesTable.setVisible(false);
         refreshSigningKey();
-        var canSkip = skipAction != null;
-        var isPartOfBatch = visualization.getJob().isPartOfBatch();
-        var isMultiDocumentBatch = visualization.getJob().isMultiDocumentBatch();
+        var job = visualization.getJob();
+        var canSkip = job.getSkipAction() != null;
+        var isPartOfBatch = job.isPartOfBatch();
+        var isMultiDocumentBatch = job.isMultiDocumentBatch();
 
         skipButton.setManaged(canSkip && isMultiDocumentBatch);
         skipButton.setVisible(canSkip && isMultiDocumentBatch);
@@ -204,10 +201,11 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     public void onSkipButtonPressed(ActionEvent event) {
         mainBox.getScene().getWindow().hide();
-        skipAction.run();
+        visualization.getJob().getSkipAction().run();
     }
 
     public void onSkipRemainingButtonPressed(ActionEvent event) {
+        var skipRemainingAction = visualization.getJob().getSkipRemainingAction();
         if (skipRemainingAction != null) {
             mainBox.getScene().getWindow().hide();
             skipRemainingAction.run();

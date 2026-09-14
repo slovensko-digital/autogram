@@ -37,18 +37,18 @@ public class OneByOneModeGuiFileResponder extends BatchGuiFileResponder {
         initFileResult(file);
         try {
             var currentFileNumber = currentFileIndex;
-            var job = buildBatchJob(file, batch, () -> processNextFile(batch), error -> {
-                if (!error.batchCanContinue()) {
-                    abortRemainingFiles(batch, new BatchCanceledException());
-                    return;
-                }
-                processNextFile(batch);
-            });
-            batch.addJob(batch.getBatchId());
-            autogram.sign(job,
-                    currentFileNumber,
+            var job = buildBatchJob(file, batch, currentFileNumber,
                     () -> skipCurrentFile(file, batch),
-                    () -> skipRemainingFiles(file, batch));
+                    () -> skipRemainingFiles(file, batch),
+                    () -> processNextFile(batch), error -> {
+                        if (!error.batchCanContinue()) {
+                            abortRemainingFiles(batch, new BatchCanceledException());
+                            return;
+                        }
+                        processNextFile(batch);
+                    });
+            batch.addJob(batch.getBatchId());
+            autogram.sign(job);
         } catch (AutogramException e) {
             handleFileSubmissionFailure(file, batch, e);
             if (!e.batchCanContinue()) {
