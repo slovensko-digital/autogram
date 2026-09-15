@@ -15,9 +15,8 @@ labels: release
 - [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
 - [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
 - [ ] funguje CLI `autogram-cli --help`
-- [ ] v nastaveniach funguje zapnutie/vypnutie "Hromadné podpisovanie"
-- [ ] pri zapnutom "Hromadnom podpisovaní" sa výber režimu nezobrazí a dokumenty sa podpíšu naraz bez zobrazenia
-- [ ] pri vypnutom "Hromadnom podpisovaní" sa zobrazí otázka "Ako chcete podpísať dokumenty?"
+- [ ] pri zapnutej voľbe "Vždy podpisovať hromadne" sa výber režimu nezobrazí a dokumenty sa podpíšu naraz bez zobrazenia
+- [ ] pri vypnutej voľbe "Vždy podpisovať hromadne" sa zobrazí otázka "Ako chcete podpísať dokumenty?"
 - [ ] funguje "Podpisovať po jednom" - zobrazí sa náhľad prvého dokumentu a PIN sa uchováva medzi dokumentmi
 - [ ] pri podpisovaní po jednom funguje "Preskočiť" aj "Ukončiť podpisovanie", vrátane posledného dokumentu
 - [ ] pri podpise jedného dokumentu sa zobrazí iba "Zrušiť" a PIN použije natívny driver
@@ -32,9 +31,8 @@ labels: release
 - [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
 - [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
 - [ ] funguje CLI `autogram --help`
-- [ ] v nastaveniach funguje zapnutie/vypnutie "Hromadné podpisovanie"
-- [ ] pri zapnutom "Hromadnom podpisovaní" sa výber režimu nezobrazí a dokumenty sa podpíšu naraz bez zobrazenia
-- [ ] pri vypnutom "Hromadnom podpisovaní" sa zobrazí otázka "Ako chcete podpísať dokumenty?"
+- [ ] pri zapnutej voľbe "Vždy podpisovať hromadne" sa výber režimu nezobrazí a dokumenty sa podpíšu naraz bez zobrazenia
+- [ ] pri vypnutej voľbe "Vždy podpisovať hromadne" sa zobrazí otázka "Ako chcete podpísať dokumenty?"
 - [ ] funguje "Podpisovať po jednom" - zobrazí sa náhľad prvého dokumentu a PIN sa uchováva medzi dokumentmi
 - [ ] pri podpisovaní po jednom funguje "Preskočiť" aj "Ukončiť podpisovanie", vrátane posledného dokumentu
 - [ ] pri podpise jedného dokumentu sa zobrazí iba "Zrušiť" a PIN použije natívny driver
@@ -48,9 +46,8 @@ labels: release
 - [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
 - [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
 - [ ] funguje CLI `/Applications/Autogram.app/Contents/MacOS/AutogramApp --help`
-- [ ] v nastaveniach funguje zapnutie/vypnutie "Hromadné podpisovanie"
-- [ ] pri zapnutom "Hromadnom podpisovaní" sa výber režimu nezobrazí a dokumenty sa podpíšu naraz bez zobrazenia
-- [ ] pri vypnutom "Hromadnom podpisovaní" sa zobrazí otázka "Ako chcete podpísať dokumenty?"
+- [ ] pri zapnutej voľbe "Vždy podpisovať hromadne" sa výber režimu nezobrazí a dokumenty sa podpíšu naraz bez zobrazenia
+- [ ] pri vypnutej voľbe "Vždy podpisovať hromadne" sa zobrazí otázka "Ako chcete podpísať dokumenty?"
 - [ ] funguje "Podpisovať po jednom" - zobrazí sa náhľad prvého dokumentu a PIN sa uchováva medzi dokumentmi
 - [ ] pri podpisovaní po jednom funguje "Preskočiť" aj "Ukončiť podpisovanie", vrátane posledného dokumentu
 - [ ] pri podpise jedného dokumentu sa zobrazí iba "Zrušiť" a PIN použije natívny driver
