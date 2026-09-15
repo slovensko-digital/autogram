@@ -5,8 +5,8 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.*;
 import static digital.slovensko.autogram.core.eforms.EFormUtils.*;
-import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XSLT_OR_XSD_NOT_FOUND;
 
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -54,9 +54,9 @@ public abstract class EFormResourcesBuilder {
             if (formUri == null)
                 return null;
 
-            var schemaNode = (Element) getNoTextFirstChild(getElementFromXdc(xdc, "UsedXSDEmbedded"));
+            var schemaNode = getFirstElementChild(getElementFromXdc(xdc, "UsedXSDEmbedded"));
             var schema = transformElementToString(schemaNode);
-            var transformationNode = (Element) getNoTextFirstChild(getElementFromXdc(xdc, "UsedPresentationSchemaEmbedded"));
+            var transformationNode = getFirstElementChild(getElementFromXdc(xdc, "UsedPresentationSchemaEmbedded"));
             var transformation = transformElementToString(transformationNode);
             if (transformation == null || schema == null)
                 return null;

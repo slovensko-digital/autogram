@@ -9,8 +9,6 @@ import java.util.stream.Stream;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import static digital.slovensko.autogram.core.eforms.EFormUtils.computeDigest;
-
 import java.io.IOException;
 import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import digital.slovensko.autogram.core.errors.ServiceUnavailableException;
@@ -146,14 +144,29 @@ public class EFormResourceLoader {
     }
 
     public ManifestXsltEntry selectXslt(ArrayList<ManifestXsltEntry> entries, String xsltDestinationType, String xsltLanguage, String xsltTarget, String xsltDigest, String canonicalizationMethod, String sourcePrefix) {
+        if (xsltDigest != null) {
+            entries.removeIf(entry -> {
+                try {
+                    var xsltString = getResource(sourcePrefix + entry.fullPath());
+                    if (xsltString == null)
+                        return false;
+
+                    var canidateDigest = EFormUtils.computeDigest(xsltString, canonicalizationMethod, DigestAlgorithm.SHA256, EFormUtils.ENCODING);
+
+                    return !canidateDigest.equals(xsltDigest);
+                } catch (XMLValidationException e) {
+                    return true;
+                }
+            });
+        
+            return entries.stream().findFirst().orElse(null);
+        }
+
         if (xsltDestinationType != null)
             entries.removeIf(entry -> !xsltDestinationType.equals(entry.destinationType()));
 
         if (xsltLanguage != null)
-            entries.removeIf(entry -> !xsltLanguage.equals(entry.language()));
-
-        if (xsltTarget != null)
-            entries.removeIf(entry -> !xsltTarget.equals(entry.target()));
+            entries.removeIf(entry -> !xsltLanguage.toLowerCase().equals(entry.language().toLowerCase()));
 
         entries = filterIfExist(entries, e -> e.mediaDestination().equals("sign"));
         entries = filterIfExist(entries, e -> List.of("HTML", "XHTML").contains(e.destinationType()));
@@ -162,21 +175,9 @@ public class EFormResourceLoader {
         entries = filterIfExist(entries, e -> e.language().equals("sk"));
         entries = filterIfExist(entries, e -> e.language().equals("en"));
 
-
-        if (xsltDigest != null)
-            entries.removeIf(entry -> {
-                try {
-                    var xsltString = getResource(sourcePrefix + entry.fullPath());
-                    if (xsltString == null)
-                        return false;
-
-                    var canidateDigest = computeDigest(xsltString, canonicalizationMethod, DigestAlgorithm.SHA256, EFormUtils.ENCODING);
-
-                    return !canidateDigest.equals(xsltDigest);
-                } catch (XMLValidationException e) {
-                    return true;
-                }
-            });
+        // TargetEnvironment shall only be used to distinguish between transformations with the same destination type and language.
+        if (xsltTarget != null)
+            entries = filterIfExist(entries, e -> !xsltTarget.equals(e.target()));
 
         return entries.stream().findFirst().orElse(null);
     }
