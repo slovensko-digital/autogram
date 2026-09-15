@@ -2,14 +2,12 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
-import digital.slovensko.autogram.core.dto.AutogramDocument;
-import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
-import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.model.DSSDocument;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -54,11 +52,9 @@ public class SigningDialogController extends BaseController implements Suppresse
     private SignaturesNotValidatedDialogController signaturesNotValidatedDialogController;
     private boolean signatureValidationCompleted = false;
     private boolean signatureCheckCompleted = false;
-    private final Visualization visualization;
+    private final SigningJob job;
     private ValidationReports signatureValidationReports;
     private ValidationReports signatureCheckReports;
-    private final boolean shouldCheckValidityBeforeSigning;
-    private List<AutogramDocument> previewDocuments = List.of();
     private List<Node> signatureSummaries = List.of();
 
     @FXML
@@ -92,15 +88,12 @@ public class SigningDialogController extends BaseController implements Suppresse
     @FXML
     Text headerText;
 
-    public SigningDialogController(Visualization visualization, Autogram autogram, GUI gui, String title,
-            UserSettings userSettings,
-            boolean shouldCheckValidityBeforeSigning) {
-        this.visualization = visualization;
+    public SigningDialogController(SigningJob job, Autogram autogram, GUI gui, String title, UserSettings userSettings) {
+        this.job = job;
         this.gui = gui;
         this.autogram = autogram;
         this.title = title;
         this.userSettings = userSettings;
-        this.shouldCheckValidityBeforeSigning = shouldCheckValidityBeforeSigning;
     }
 
     @Override
@@ -114,7 +107,6 @@ public class SigningDialogController extends BaseController implements Suppresse
         plainTextArea.setMinHeight(0);
         signaturesTable.setManaged(false);
         signaturesTable.setVisible(false);
-        previewDocuments = resolvePreviewDocuments();
         documentTabPane.sceneProperty().addListener((observable, oldScene, newScene) -> {
             if (newScene == null)
                 return;
@@ -123,13 +115,13 @@ public class SigningDialogController extends BaseController implements Suppresse
         });
         setupDocumentTabs();
         refreshSigningKey();
-        autogram.checkPDFACompliance(visualization.getJob());
+        autogram.checkPDFACompliance(job);
     }
 
     private void setupDocumentTabs() {
-        var documents = previewDocuments;
-        if (documents.size() <= 1) {
-            initializeVisualization(visualization);
+        var visualizations = job.getVisualizations();
+        if (visualizations.size() <= 1) {
+            initializeVisualization(visualizations.get(0));
             return;
         }
 
@@ -137,8 +129,8 @@ public class SigningDialogController extends BaseController implements Suppresse
         documentTabPane.setVisible(true);
 
         documentTabPane.getTabs().clear();
-        for (int i = 0; i < documents.size(); i++)
-            documentTabPane.getTabs().add(createDocumentTab(documents.get(i).toDssDocument(), i + 1));
+        for (int i = 0; i < visualizations.size(); i++)
+            documentTabPane.getTabs().add(createDocumentTab(visualizations.get(i).getName(), i + 1));
 
         documentTabPane.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null || newValue.intValue() < 0)
@@ -153,39 +145,12 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     private void showVisualizationForDocument(int documentIndex) {
-        initializeVisualization(createVisualization(documentIndex));
+        initializeVisualization(job.getVisualizations().get(documentIndex));
         showSignatureSummaryForDocument(documentIndex);
     }
 
-    private Visualization createVisualization(int documentIndex) {
-        if (documentIndex == 0)
-            return visualization;
-
-        try {
-            return DocumentVisualizationBuilder.fromDocument(visualization.getJob(), previewDocuments.get(documentIndex), userSettings);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private List<AutogramDocument> resolvePreviewDocuments() {
-        var jobDocuments = visualization.getJob().getDocuments();
-        if (jobDocuments.size() > 1)
-            return jobDocuments;
-
-        if (!visualization.getJob().getDocument().isAsice())
-            return jobDocuments;
-
-        try {
-            var originalDocuments = AsicContainerUtils.getOriginalDocuments(visualization.getJob().getDocument());
-            if (originalDocuments.size() > 1)
-                return originalDocuments;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to extract original documents from ASiC container", e);
-            // Fall back to the original job document when the input is not a signed ASiC container.
-        }
-
-        return jobDocuments;
+    public int getPdfDpi() {
+        return userSettings.getPdfDpi();
     }
 
     private void initializeVisualization(Visualization currentVisualization) {
@@ -258,19 +223,17 @@ public class SigningDialogController extends BaseController implements Suppresse
         refreshLayout();
     }
 
-    private String getDisplayDocumentName(DSSDocument document, int index) {
-        var name = document.getName();
+    private String getDisplayDocumentName(String name, int index) {
         if (name != null && !name.isBlank())
             return name;
 
         return i18n("signing.multiDocument.unnamedDocument", index);
     }
 
-    private Tab createDocumentTab(DSSDocument document, int index) {
-        var fullName = getDisplayDocumentName(document, index);
-        var tab = new Tab(abbreviateMiddle(fullName, MAX_DOCUMENT_TAB_TITLE_LENGTH));
+    private Tab createDocumentTab(String name, int index) {
+        var tab = new Tab(abbreviateMiddle(getDisplayDocumentName(name, index), MAX_DOCUMENT_TAB_TITLE_LENGTH));
         tab.setClosable(false);
-        tab.setTooltip(new Tooltip(fullName));
+        tab.setTooltip(new Tooltip(getDisplayDocumentName(name, index)));
         return tab;
     }
 
@@ -333,7 +296,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     private void checkExistingSignatureValidityAndSign() {
-        if (!shouldCheckValidityBeforeSigning) {
+        if (!userSettings.isSignaturesValidity()) {
             sign();
             return;
         }
@@ -364,13 +327,13 @@ public class SigningDialogController extends BaseController implements Suppresse
                 gui.setActiveSigningKeyAndThen(key, k -> {
                     gui.disableSigning();
                     getNodeForLoosingFocus().requestFocus();
-                    autogram.sign(visualization.getJob(), k);
+                    autogram.sign(job, k);
                 });
             });
         } else {
             gui.disableSigning();
             getNodeForLoosingFocus().requestFocus();
-            autogram.sign(visualization.getJob(), signingKey);
+            autogram.sign(job, signingKey);
         }
     }
 
@@ -424,7 +387,7 @@ public class SigningDialogController extends BaseController implements Suppresse
             return;
 
         var summaries = new ArrayList<Node>();
-        for (int index = 0; index < previewDocuments.size(); index++) {
+        for (int index = 0; index < job.getVisualizations().size(); index++) {
             var summary = new VBox(8);
             if (!areTLsLoaded)
                 summary.getChildren().add(GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));
@@ -432,7 +395,7 @@ public class SigningDialogController extends BaseController implements Suppresse
                 summary.getChildren().add(GUIValidationUtils.createWarningText(
                         i18n("signature.table.incompleteCoverage.warning")));
 
-            var signatures = reports.getSignaturesForPreviewDocument(previewDocuments.get(index).toDssDocument(), index);
+            var signatures = reports.getSignaturesForPreviewDocument(job.getVisualizations().get(index).getName(), index);
             var table = new VBox(GUIValidationUtils.createSignatureTableRows(resources, signatures, false,
                     isValidated, ignored -> onShowSignaturesButtonPressed(null), 3));
             table.getStyleClass().add("autogram-signatures-table");
@@ -462,10 +425,10 @@ public class SigningDialogController extends BaseController implements Suppresse
     public void refreshSigningKey() {
         var key = gui.getActiveSigningKey();
         if (key == null) {
-            mainButton.setText(i18n("general.sign.btn"));
+            mainButton.setText(i18n(job.isMultiDocument() ? "general.sign.btn.multi" : "general.sign.btn.single"));
             changeKeyButton.setVisible(false);
         } else {
-            mainButton.setText(i18n("signing.signAs.btn", DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253())));
+            mainButton.setText(i18n(job.isMultiDocument() ? "signing.signAs.btn.multi" : "signing.signAs.btn.single", DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253())));
             changeKeyButton.setVisible(true);
         }
     }
@@ -568,7 +531,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     @Override
-    public void setPrefWidth(double prefWidth) {
-        mainBox.setPrefWidth(prefWidth);
+    public void setPrefWidth() {
+        mainBox.setPrefWidth(job.getVisualizationWidth());
     }
 }

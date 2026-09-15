@@ -49,19 +49,7 @@ public class DocumentVisualizationBuilderTests {
         var schema = new String(TestMethodSources.loadContent("crystal_test_data/rozhodnutie_X4564-2.xsd"), StandardCharsets.UTF_8);
         var document = new InMemoryDocument(TestMethodSources.loadContent("crystal_test_data/rozhodnutie_X4564-2.xml"),"rozhodnutie_X4564-2.xml");
 
-        var parameters = SigningParameters.buildParameters(
-            SignatureLevel.XAdES_BASELINE_B,
-            DigestAlgorithm.SHA256,
-            ASiCContainerType.ASiC_E,
-            SignaturePackaging.ENVELOPING,
-            false,
-            CanonicalizationMethod.INCLUSIVE,
-            CanonicalizationMethod.INCLUSIVE,
-            CanonicalizationMethod.INCLUSIVE,
-            false,
-            800,
-            true);
-            var eFormAttributes = new EFormAttributes(
+        var eFormAttributes = new EFormAttributes(
             "id1/asa",
             transformation,
             schema,
@@ -71,13 +59,10 @@ public class DocumentVisualizationBuilderTests {
             false,
             null,
             false,
-            parameters.getPropertiesCanonicalization(),
-            parameters.getDigestAlgorithm());
+            CanonicalizationMethod.INCLUSIVE,
+            DigestAlgorithm.SHA256);
 
-        var params = SigningInput.fromDocument(AutogramDocument.build(document, eFormAttributes), parameters);
-        SigningJob job = SigningJob.fromInput(params, dummyResponder);
-
-        var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
+        var visualizedDocument = DocumentVisualizationBuilder.fromDocument(AutogramDocument.build(document, eFormAttributes));
         if (visualizedDocument instanceof HTMLVisualization d) {
             var html = d.getDocument();
             assertFalse(html.isEmpty());
@@ -121,19 +106,7 @@ public class DocumentVisualizationBuilderTests {
         var schema = new String(TestMethodSources.loadContent("crystal_test_data/rozhodnutie_X4564-2.xsd"));
         var document = new InMemoryDocument(TestMethodSources.loadContent("crystal_test_data/rozhodnutie_X4564-2.xml"), "rozhodnutie_X4564-2.xml");
 
-        var parameters = SigningParameters.buildParameters(
-            SignatureLevel.XAdES_BASELINE_B,
-            DigestAlgorithm.SHA256,
-            ASiCContainerType.ASiC_E,
-            SignaturePackaging.ENVELOPING,
-            false,
-            CanonicalizationMethod.INCLUSIVE,
-            CanonicalizationMethod.INCLUSIVE,
-            CanonicalizationMethod.INCLUSIVE,
-            false,
-            800,
-            true);
-            var eFormAttributes = new EFormAttributes(
+        var eFormAttributes = new EFormAttributes(
             "id1/asa",
             transformation,
             schema,
@@ -143,13 +116,10 @@ public class DocumentVisualizationBuilderTests {
             false,
             null,
             false,
-            parameters.getPropertiesCanonicalization(),
-            parameters.getDigestAlgorithm());
+            CanonicalizationMethod.INCLUSIVE,
+            DigestAlgorithm.SHA256);
 
-        var params = SigningInput.fromDocument(AutogramDocument.build(document, eFormAttributes), parameters);
-        SigningJob job = SigningJob.fromInput(params, dummyResponder);
-
-        var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
+        var visualizedDocument = DocumentVisualizationBuilder.fromDocument(AutogramDocument.build(document, eFormAttributes));
         if (visualizedDocument instanceof HTMLVisualization d) {
                 var html = d.getDocument();
                 assertFalse(html.isEmpty());
@@ -168,7 +138,8 @@ public class DocumentVisualizationBuilderTests {
         var input = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
         var job = SigningJob.fromInput(input, dummyResponder);
 
-        var visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
+        job.initializeVisualizations();
+        var visualization = job.getVisualizations().get(0);
 
         Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
     }
@@ -188,7 +159,8 @@ public class DocumentVisualizationBuilderTests {
         var job = SigningJob.fromInput(
                 SigningInput.of(List.of(firstDocument, secondDocument), preparedFirstDocument.getParameters()), dummyResponder);
 
-        Visualization visualization = DocumentVisualizationBuilder.fromDocument(job, job.getDocuments().get(1), UserSettings.load());
+        job.initializeVisualizations();
+        Visualization visualization = job.getVisualizations().get(1);
 
         Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
     }

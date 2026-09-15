@@ -105,6 +105,14 @@ public class AutogramDocument {
         return dssDocument.getMimeType() != null && AutogramMimeType.isPDF(dssDocument.getMimeType());
     }
 
+    public boolean isXML() {
+        return dssDocument.getMimeType() != null && AutogramMimeType.isXML(dssDocument.getMimeType());
+    }
+
+    public boolean isXDC() {
+        return dssDocument.getMimeType() != null && AutogramMimeType.isXDC(dssDocument.getMimeType());
+    }
+
     public boolean isAsice() {
         return AutogramMimeType.isAsice(dssDocument.getMimeType());
     }

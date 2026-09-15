@@ -150,29 +150,16 @@ class AsicContainerTest {
         Assertions.assertTrue(reports.hasIncompleteContainerCoverage());
 
         var previewDocuments = AsicContainerUtils.getOriginalDocuments(asiceWithMultipleFiles);
-        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(0), 0).size());
-        Assertions.assertTrue(reports.getSignaturesForPreviewDocument(previewDocuments.get(1), 1).isEmpty());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(0).getName(), 0).size());
+        Assertions.assertTrue(reports.getSignaturesForPreviewDocument(previewDocuments.get(1).getName(), 1).isEmpty());
     }
 
     @Test
     void testBuildVisualizationForMultipleFilesInAsice() throws Exception {
         var asiceWithMultipleFiles = createAsiceWithMultipleFiles();
-        var input = prepareAsicXadesInput(asiceWithMultipleFiles);
-        var job = SigningJob.fromInput(input, new Responder() {
-            @Override
-            public void onDocumentSigned(SignedDocument signedDocument) {
-            }
-
-            @Override
-            public void onDocumentSignFailed(AutogramException error) {
-                Assertions.fail(error);
-            }
-        });
-
-        var visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
         var previewDocuments = AsicContainerUtils.getOriginalDocuments(asiceWithMultipleFiles);
-        var secondVisualization = DocumentVisualizationBuilder.fromDocument(job,
-            AutogramDocument.build(previewDocuments.get(1), null), UserSettings.load());
+        var visualization = DocumentVisualizationBuilder.fromDocument(AutogramDocument.build(previewDocuments.get(0), null));
+        var secondVisualization = DocumentVisualizationBuilder.fromDocument(AutogramDocument.build(previewDocuments.get(1), null));
 
         Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
         Assertions.assertFalse(secondVisualization instanceof UnsupportedVisualization);

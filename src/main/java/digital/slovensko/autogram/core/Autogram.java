@@ -9,8 +9,6 @@ import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
-import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
@@ -87,12 +85,11 @@ public class Autogram {
             }
 
             try {
-                var visualization = DocumentVisualizationBuilder.fromJob(job, settings);
-                ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
-            } catch (AutogramException e) {
-                ui.onUIThreadDo(() -> ui.showError(e));
-            } catch (Exception e) {
-                Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
+                job.initializeVisualizations();
+                ui.onUIThreadDo(() -> ui.showSigningJob(job, this));
+
+            } catch (FailedVisualizationException e) {
+                Runnable onContinue = () -> ui.showSigningJob(job, this);
 
                 if (settings.isCorrectDocumentDisplay()) {
                     ui.onUIThreadDo(
@@ -100,6 +97,9 @@ public class Autogram {
                 } else {
                     ui.onUIThreadDo(onContinue);
                 }
+
+            } catch (AutogramException e) {
+                ui.onUIThreadDo(() -> ui.showError(e));
             }
         });
     }

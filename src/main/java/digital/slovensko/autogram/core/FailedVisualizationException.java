@@ -7,4 +7,8 @@ public class FailedVisualizationException extends IgnorableException {
     public FailedVisualizationException(Throwable e, SigningJob job, Runnable onContinueCallback) {
         super(e, job, onContinueCallback);
     }
+
+    public FailedVisualizationException(Throwable e) {
+        super(e, null, null);
+    }
 }

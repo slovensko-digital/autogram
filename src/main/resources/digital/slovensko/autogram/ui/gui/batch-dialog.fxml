@@ -57,7 +57,7 @@
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="mainButton" styleClass="autogram-button"
-                text="%general.sign.btn" onAction="#onMainButtonPressed" />
+                text="%batch.sign.btn" onAction="#onMainButtonPressed" />
         <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="%batch.sign.otherCert.btn" visible="false"
             onAction="#onChangeKeyButtonPressed" />
         <Button fx:id="cancelBatchButton" styleClass="autogram-button,autogram-button--warning"

@@ -118,18 +118,20 @@ public class ValidationReports {
                 .toList();
     }
 
-    public List<SignatureEntry> getSignaturesForPreviewDocument(DSSDocument previewDocument, int previewIndex) {
+    public List<SignatureEntry> getSignaturesForPreviewDocument(String previewName, int previewIndex) {
+        // multiple standalone documents
         if (documentReports.size() != 1)
             return documentReports.stream()
                     .filter(documentReport -> documentReport.documentIndex() == previewIndex)
                     .flatMap(documentReport -> signaturesFor(documentReport).stream())
                     .toList();
 
+        // single asice containing single document
         var documentReport = documentReports.get(0);
         if (!documentReport.hasMultipleContainerDocuments())
             return signaturesFor(documentReport);
-
-        var previewName = previewDocument.getName();
+                    
+        // single asice containing multiple documents
         return signaturesFor(documentReport).stream()
                 .filter(signature -> {
                     var scope = documentReport.getSignatureScopeDocumentNames(signature.signatureId());

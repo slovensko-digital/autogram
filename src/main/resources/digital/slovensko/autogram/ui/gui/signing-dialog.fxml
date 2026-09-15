@@ -80,7 +80,7 @@
     <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table" />
 
     <HBox styleClass="autogram-actions">
-        <Button fx:id="mainButton" styleClass="autogram-button" text="%general.sign.btn" onAction="#onMainButtonPressed"/>
+        <Button fx:id="mainButton" styleClass="autogram-button" onAction="#onMainButtonPressed"/>
         <Button fx:id="changeKeyButton" styleClass="autogram-button,autogram-button--secondary" text="%signing.unsupportedVisualization.changeKey.btn"
                 visible="false" onAction="#onChangeKeyButtonPressed"/>
     </HBox>

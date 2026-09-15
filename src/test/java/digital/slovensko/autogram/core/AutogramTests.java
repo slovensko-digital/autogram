@@ -15,7 +15,6 @@ import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejected
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.PDFAComplianceException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
-import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.server.dto.CertificatesResponse;
@@ -197,8 +196,8 @@ class AutogramTests {
         Assertions.assertFalse(reports.hasIncompleteContainerCoverage());
 
         var previewDocuments = AsicContainerUtils.getOriginalDocuments(signedDocument.getDocument());
-        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(0), 0).size());
-        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(1), 1).size());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(0).getName(), 0).size());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(1).getName(), 1).size());
         }
 
     @Test
@@ -206,7 +205,7 @@ class AutogramTests {
         var settings = new TestSettings();
         var newUI = new FakeUI() {
             @Override
-            public void showVisualization(Visualization visualization, Autogram autogram) {
+            public void showSigningJob(SigningJob job, Autogram autogram) {
                 Assertions.fail("Visualization should not start for a bundle containing a locked PDF");
             }
 
@@ -268,9 +267,9 @@ class AutogramTests {
         Assertions.assertEquals("sample_signed.pdf", reports.getDocumentReports().get(0).document().getName());
         Assertions.assertEquals("sample_pdf_xades.asice", reports.getDocumentReports().get(1).document().getName());
         Assertions.assertEquals(reports.getDocumentReports().get(0).getSignatureCount(),
-            reports.getSignaturesForPreviewDocument(reports.getDocumentReports().get(0).document(), 0).size());
+            reports.getSignaturesForPreviewDocument(reports.getDocumentReports().get(0).document().getName(), 0).size());
         Assertions.assertEquals(reports.getDocumentReports().get(1).getSignatureCount(),
-            reports.getSignaturesForPreviewDocument(reports.getDocumentReports().get(1).document(), 1).size());
+            reports.getSignaturesForPreviewDocument(reports.getDocumentReports().get(1).document().getName(), 1).size());
     }
 
     @ParameterizedTest
@@ -518,7 +517,7 @@ class AutogramTests {
         }
 
         @Override
-        public void showVisualization(Visualization visualization, Autogram autogram) {
+        public void showSigningJob(SigningJob job, Autogram autogram) {
 
         }
 

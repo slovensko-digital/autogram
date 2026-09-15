@@ -6,6 +6,10 @@ import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
+import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
+import digital.slovensko.autogram.core.visualization.Visualization;
+import digital.slovensko.autogram.util.AsicContainerUtils;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.alert.LogOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
@@ -24,9 +28,12 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 public class SigningJob {
     private final Responder responder;
     private final SigningInput input;
+    private final List<AutogramDocument> documentsToVisualize;
+    private List<Visualization> visualizations;
 
-    private SigningJob(SigningInput input, Responder responder) {
+    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Responder responder) {
         this.input = input;
+        this.documentsToVisualize = documentsToVisualize;
         this.responder = responder;
     }
 
@@ -46,6 +53,10 @@ public class SigningJob {
         return getDocument().toDssDocument();
     }
 
+    public List<Visualization> getVisualizations() {
+        return visualizations;
+    }
+
     public SigningParameters getParameters() {
         return input.getParameters();
     }
@@ -55,7 +66,7 @@ public class SigningJob {
     }
 
     public boolean isMultiDocument() {
-        return input.isMultiDocument();
+        return documentsToVisualize.size() > 1;
     }
 
     public int getPreviewDocumentsCount() {
@@ -66,10 +77,16 @@ public class SigningJob {
         return input.getName();
     }
 
+    public void initializeVisualizations() throws OriginalDocumentNotFoundException, FailedVisualizationException {
+        visualizations = documentsToVisualize.stream()
+            .map(DocumentVisualizationBuilder::fromDocument)
+            .toList();
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
-            + (input.isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
+            + (isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
 
         var signatureParameters = DssSigningParametersFactory.createSignatureParameters(input, key);
         var signatureService = createSignatureService(tspSource);
@@ -98,7 +115,14 @@ public class SigningJob {
     }
 
     public static SigningJob fromInput(SigningInput input, Responder responder) {
-        return new SigningJob(input, responder);
+        List<AutogramDocument> documentsToVisualize;
+        if (input.getDocuments().size() == 1 && input.getFirstDocument().isAsice()) {
+            documentsToVisualize = AsicContainerUtils.getOriginalDocuments(input.getFirstDocument()).stream().toList();
+        } else {
+            documentsToVisualize = input.getDocuments();
+        }
+
+        return new SigningJob(input, documentsToVisualize, responder);
     }
 
     public boolean shouldCheckPDFCompliance() {
