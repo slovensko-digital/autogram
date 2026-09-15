@@ -55,7 +55,6 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
     private SignatureLevel signatureLevel;
     private String driver;
     private boolean en319132;
-    private boolean bulkEnabled;
     private boolean plainXmlEnabled;
     private boolean correctDocumentDisplay;
     private boolean signaturesValidity;
@@ -68,6 +67,7 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
     private CompositeTSPSource tspSource;
     private boolean tsaEnabled;
     private String customTsaServer;
+    private boolean bulkEnabled;
     private int pdfDpi;
     private long tokenSessionTimeout;
     private String customPKCS11DriverPath;
@@ -252,14 +252,6 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
         this.en319132 = en319132;
     }
 
-    public boolean isBulkEnabled() {
-        return bulkEnabled;
-    }
-
-    public void setBulkEnabled(boolean bulkEnabled) {
-        this.bulkEnabled = bulkEnabled;
-    }
-
     public boolean isCorrectDocumentDisplay() {
         return correctDocumentDisplay;
     }
@@ -368,6 +360,10 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
         tsaEnabled = value;
     }
 
+    public void setBulkEnabled(boolean value) {
+        bulkEnabled = value;
+    }
+
     @Override
     public int getDriverSlotIndex(String tokenDriverShortname) {
         return driverSlotIndexMap.getOrDefault(tokenDriverShortname, driverSlotIndexMap.getOrDefault("default", -1));
@@ -379,6 +375,10 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
 
     public DriverDetector getDriverDetector() {
         return new DefaultDriverDetector(this);
+    }
+
+    public boolean isBulkEnabled() {
+        return bulkEnabled;
     }
 
     public int getPdfDpi() {
