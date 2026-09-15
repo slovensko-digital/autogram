@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.core;
+package digital.slovensko.autogram.core.dto;
 
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.x509.CertificateToken;

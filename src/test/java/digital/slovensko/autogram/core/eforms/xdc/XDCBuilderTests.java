@@ -1,8 +1,8 @@
 package digital.slovensko.autogram.core.eforms.xdc;
 
-import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;

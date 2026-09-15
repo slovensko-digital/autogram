@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.server.dto;
-import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.AutogramMimeType;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeType;

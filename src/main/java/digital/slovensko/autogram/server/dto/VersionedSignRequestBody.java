@@ -1,13 +1,14 @@
 package digital.slovensko.autogram.server.dto;
 
-import digital.slovensko.autogram.core.SigningInput;
+import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 
 import java.util.List;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.fromMimeTypeString;
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.fromMimeTypeString;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_BATCH_UNSUPPORTED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_NESTED_ASICE_UNSUPPORTED;
@@ -30,6 +31,12 @@ public class VersionedSignRequestBody {
             throw new RequestValidationException(MULTI_DOCUMENT_BATCH_UNSUPPORTED);
 
         submittedDocuments.forEach(doc -> validateDocument(doc, submittedDocuments.indexOf(doc), isMultiDocument));
+
+        submittedDocuments.stream()
+            .map(Document::getDSSDocument)
+            .map(SignatureValidator::getSignedDocumentSignature)
+            .filter(java.util.Objects::nonNull)
+            .forEach(parameters::applySignedDocumentSignature);
 
         parameters.resolveSignatureFormatAndContainer(isMultiDocument);
         var signingParameters = parameters.toSigningParameters(presentation, plainXmlEnabled);

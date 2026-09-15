@@ -1,10 +1,10 @@
 package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.TargetPath;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
@@ -46,7 +46,7 @@ public class CliApp {
                     .toList();
             if (settings.isPdfaCompliance()) {
                 jobs.forEach(job -> {
-                    System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
+                    System.out.println("Checking PDF/A file compatibility for " + job.getName());
                     finalAutogram.checkPDFACompliance(job);
                 });
             }

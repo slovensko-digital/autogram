@@ -2,7 +2,7 @@ package digital.slovensko.autogram.ui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Responder;
-import digital.slovensko.autogram.core.SignedDocument;
+import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;

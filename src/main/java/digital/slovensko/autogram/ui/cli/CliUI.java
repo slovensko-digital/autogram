@@ -70,7 +70,7 @@ public class CliUI implements UI {
     }
 
     private void sign(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++,
+        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getName(), nJobsSigned++,
                 nJobsTotal));
         autogram.sign(job, activeKey);
     }

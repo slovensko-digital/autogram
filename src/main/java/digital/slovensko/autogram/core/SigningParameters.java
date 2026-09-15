@@ -19,7 +19,7 @@ public class SigningParameters {
     private SignatureForm signatureForm;
     private ASiCContainerType container;
     private final DigestAlgorithm digestAlgorithm;
-    private final SignaturePackaging packaging;
+    private SignaturePackaging packaging;
     private final boolean en319132;
     private final String infoCanonicalization;
     private final String propertiesCanonicalization;
@@ -94,6 +94,10 @@ public class SigningParameters {
 
     public void setContainer(ASiCContainerType container) {
         this.container = container;
+    }
+
+    public void setSignaturePackaging(SignaturePackaging packaging) {
+        this.packaging = packaging;
     }
 
     public SignatureForm getSignatureForm() {

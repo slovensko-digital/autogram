@@ -1,8 +1,8 @@
 package digital.slovensko.autogram.server.dto;
 
-import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
@@ -11,7 +11,7 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 
 import java.util.Base64;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.fromMimeTypeString;
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.fromMimeTypeString;
 import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.BASE64_DECODING_FAILED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_PARAMS;

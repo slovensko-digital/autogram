@@ -14,7 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -114,6 +118,24 @@ public class SigningInputTests {
         assertSame(parameters, input.getParameters());
     }
 
+        @Test
+        void rejectsEnvelopedXadesForNonXmlDocumentOutsideContainer() {
+                var document = AutogramDocument.build(new InMemoryDocument("test".getBytes(), "test.txt", MimeTypeEnum.TEXT), null);
+                var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+                                null, null, false, null, null, null, false, 640, false);
+
+                assertThrows(SigningParametersException.class, () -> SigningInput.fromDocument(document, parameters));
+        }
+
+        @Test
+        void acceptsEnvelopingXadesForNonXmlDocumentOutsideContainer() {
+                var document = AutogramDocument.build(new InMemoryDocument("test".getBytes(), "test.txt", MimeTypeEnum.TEXT), null);
+                var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+                                null, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
+
+                org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> SigningInput.fromDocument(document, parameters));
+        }
+
     @Test
     void multipleDocumentInputRejectsSingleDocumentAccessor() {
         var document1 = AutogramDocument.build(new InMemoryDocument("test-1".getBytes(), "test-1.pdf", MimeTypeEnum.PDF), null);
@@ -127,6 +149,33 @@ public class SigningInputTests {
         assertEquals(ASiCContainerType.ASiC_E, input.getParameters().getContainer());
         assertThrows(IllegalStateException.class, input::getSingleDocument);
     }
+
+    @Test
+    void asiceDocumentForcesAsiceContainer() throws IOException {
+        var document = AutogramDocument.build(
+                new InMemoryDocument(TestMethodSources.loadContent("general_agenda.asice"), "document.asice",
+                        MimeTypeEnum.ASICE),
+                null);
+        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+                null, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
+
+        var input = SigningInput.fromDocument(document, parameters);
+
+        assertEquals(ASiCContainerType.ASiC_E, input.getParameters().getContainer());
+    }
+
+        @Test
+        void signedPdfUsesExistingSignatureForm() throws IOException {
+                var document = AutogramDocument.build(new InMemoryDocument(
+                                TestMethodSources.loadContent("sample_signed.pdf"), "sample_signed.pdf", MimeTypeEnum.PDF), null);
+                var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+                                ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
+
+                var input = SigningInput.fromFile(document, parameters);
+
+                assertEquals(SignatureLevel.PAdES_BASELINE_B, input.getParameters().getLevel());
+                assertEquals(null, input.getParameters().getContainer());
+        }
 
     @Test
     void documentPreparationKeepsEFormAttributesAndForcesAsice() throws IOException {

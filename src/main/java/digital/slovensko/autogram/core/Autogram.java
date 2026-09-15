@@ -16,7 +16,6 @@ import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
-import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
@@ -66,13 +65,10 @@ public class Autogram {
         if (!job.shouldCheckPDFCompliance())
             return;
 
-        var documentsToCheck = job.getDocumentsForContentChecks().stream()
-                .filter(document -> document.getMimeType() != null && AutogramMimeType.isPDF(document.getMimeType()))
-                .toList();
-
+        var documentsToCheck = job.getDocuments().stream().filter(d -> d.isPDF()).toList();
         ui.onWorkThreadDo(() -> {
             for (var document : documentsToCheck) {
-                var result = new PDFAStructureValidator().validate(document);
+                var result = new PDFAStructureValidator().validate(document.toDssDocument());
                 if (!result.isCompliant()) {
                     ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
                     return;
@@ -83,7 +79,7 @@ public class Autogram {
 
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
-            if (job.getDocumentsForContentChecks().stream().anyMatch(PDFUtils::isPdfAndPasswordProtected)) {
+            if (job.getDocuments().stream().anyMatch(d -> d.isPDFAndPasswordProtected())) {
                 ui.onUIThreadDo(() -> {
                     ui.showError(new AutogramException("LOCKED_PDF"));
                 });
@@ -179,7 +175,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 signCommonAndThen(job, batch.getSigningKey(), (jobNew) -> {
-                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getDocument().getName());
+                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getName());
                 });
             } catch (AutogramException e) {
                 job.onDocumentSignFailed(e);

@@ -2,6 +2,9 @@ package digital.slovensko.autogram.core;
 
 import java.util.List;
 
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SignedDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.alert.LogOnStatusAlert;
@@ -15,8 +18,6 @@ import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.*;
-
 public class SigningJob {
     private final Responder responder;
     private final SigningInput input;
@@ -26,24 +27,20 @@ public class SigningJob {
         this.responder = responder;
     }
 
-    public DSSDocument getDocument() {
-        return getAutogramDocument().toDssDocument();
-    }
-
-    public AutogramDocument getAutogramDocument() {
+    public AutogramDocument getDocument() {
         return input.getFirstDocument();
     }
 
-    public List<DSSDocument> getDocuments() {
-        return getAutogramDocuments().stream().map(AutogramDocument::toDssDocument).toList();
-    }
-
-    public List<AutogramDocument> getAutogramDocuments() {
+    public List<AutogramDocument> getDocuments() {
         return input.getDocuments();
     }
 
-    public List<DSSDocument> getDocumentsForContentChecks() {
-        return getDocuments();
+    private List<DSSDocument> getDssDocuments() {
+        return getDocuments().stream().map(AutogramDocument::toDssDocument).toList();
+    }
+
+    private DSSDocument getDssDocument() {
+        return getDocument().toDssDocument();
     }
 
     public SigningParameters getParameters() {
@@ -54,10 +51,22 @@ public class SigningJob {
         return getParameters().getVisualizationWidth();
     }
 
-    public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
+    public boolean isMultiDocument() {
+        return input.isMultiDocument();
+    }
 
-        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName()
+    public int getPreviewDocumentsCount() {
+        return input.getPreviewDocumentsCount();
+    }
+
+    public String getName() {
+        return input.getName();
+    }
+
+    public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
+        Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
             + (input.isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
+
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureForm()) {
             case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key, tspSource) : signDocumentAsXAdeS(key, tspSource);
@@ -86,10 +95,11 @@ public class SigningJob {
         if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
             service.setTspSource(tspSource);
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var document = getDssDocument(); 
+        var dataToSign = service.getDataToSign(document, signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(document, signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key, TSPSource tspSource) {
@@ -97,7 +107,7 @@ public class SigningJob {
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
         var service = new ASiCWithXAdESService(commonCertificateVerifier);
         var signatureParameters = DssSigningParametersFactory.createASiCWithXAdESSignatureParameters(input);
-        var documents = getDocuments();
+        var documents = getDssDocuments();
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
@@ -124,10 +134,11 @@ public class SigningJob {
         if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
             service.setTspSource(tspSource);
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var document = getDssDocument();
+        var dataToSign = service.getDataToSign(document, signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(document, signatureParameters, signatureValue);
     }
 
     private DSSDocument signDocumentAsASiCWithCAdeS(SigningKey key, TSPSource tspSource) {
@@ -136,7 +147,7 @@ public class SigningJob {
         var service = new ASiCWithCAdESService(commonCertificateVerifier);
         var jobParameters = getParameters();
         var signatureParameters = DssSigningParametersFactory.createASiCWithCAdESSignatureParameters(input);
-        var documents = getDocuments();
+        var documents = getDssDocuments();
 
         signatureParameters.setSigningCertificate(key.getCertificate());
         signatureParameters.setCertificateChain(key.getCertificateChain());
@@ -165,10 +176,11 @@ public class SigningJob {
             signatureParameters.setContentSize(9472*2);
         }
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var document = getDssDocument();
+        var dataToSign = service.getDataToSign(document, signatureParameters);
         var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
 
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        return service.signDocument(document, signatureParameters, signatureValue);
     }
 
     public static SigningJob fromInput(SigningInput input, Responder responder) {
@@ -176,8 +188,6 @@ public class SigningJob {
     }
 
     public boolean shouldCheckPDFCompliance() {
-        return getParameters().getCheckPDFACompliance()
-                && getDocumentsForContentChecks().stream()
-                        .anyMatch(document -> document.getMimeType() != null && isPDF(document.getMimeType()));
+        return getParameters().getCheckPDFACompliance() && getDocuments().stream().anyMatch(d -> d.isPDF());
     }
 }

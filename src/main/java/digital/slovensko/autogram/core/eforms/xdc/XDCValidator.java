@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.core.eforms.xdc;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;

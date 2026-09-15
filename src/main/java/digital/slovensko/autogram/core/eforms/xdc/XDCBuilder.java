@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.core.eforms.xdc;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.TransformationException;

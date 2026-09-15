@@ -96,7 +96,7 @@ public class ValidationReports {
     }
 
     public boolean isMultiDocumentJob() {
-        return signingJob != null && signingJob.getDocumentsForContentChecks().size() > 1;
+        return signingJob != null && signingJob.getDocuments().size() > 1;
     }
 
     public boolean hasMultipleContainerDocuments() {

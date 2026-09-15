@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.ui.SupportedLanguage;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 public class VersionedSignRequestBodyTests {
     private final Gson gson = new Gson();
 
@@ -38,7 +39,7 @@ public class VersionedSignRequestBodyTests {
                     }
                   ],
                   "parameters": {
-                    "format": "XAdES",
+                    "form": "XAdES",
                     "container": "ASiC_E"
                   }
                 }
@@ -62,7 +63,7 @@ public class VersionedSignRequestBodyTests {
                     "mimeType": "text/plain;base64"
                   },
                   "parameters": {
-                    "format": "XAdES",
+                    "form": "XAdES",
                     "container": "ASiC_E"
                   }
                 }
@@ -73,6 +74,134 @@ public class VersionedSignRequestBodyTests {
         assertFalse(request.isMultiDocument());
         assertEquals(1, request.getDocumentCount());
         assertEquals("only.txt", request.getSingleDocument().getName());
+    }
+
+    @Test
+    void buildsPadesSigningInputWithPresentationParameters() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample.pdf")));
+        var body = gson.fromJson("""
+                {
+                  "parameters": {
+                    "form": "PAdES",
+                    "profile": "BASELINE_T",
+                    "checkPDFACompliance": true
+                  },
+                  "presentation": {
+                    "visualizationWidth": "lg"
+                  },
+                  "documents": [
+                    {
+                      "mimeType": "application/pdf; base64",
+                      "content": "%s"
+                    }
+                  ]
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertEquals(SignatureLevel.PAdES_BASELINE_T, request.getParameters().getLevel());
+        assertNull(request.getParameters().getContainer());
+        assertTrue(request.getParameters().getCheckPDFACompliance());
+        assertEquals(1024, request.getParameters().getVisualizationWidth());
+    }
+
+    @Test
+    void signedPdfInheritsSignatureFormWhenItIsOmitted() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample_signed.pdf")));
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "mimeType": "application/pdf; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertEquals(SignatureLevel.PAdES_BASELINE_B, request.getParameters().getLevel());
+        assertNull(request.getParameters().getContainer());
+    }
+
+    @Test
+    void signedPdfAllowsDifferentRequestedProfile() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample_signed.pdf")));
+        var body = gson.fromJson("""
+                {
+                  "parameters": {
+                    "profile": "BASELINE_T"
+                  },
+                  "document": {
+                    "mimeType": "application/pdf; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertEquals(SignatureLevel.PAdES_BASELINE_T, request.getParameters().getLevel());
+    }
+
+    @Test
+    void rejectsIncompatibleSignatureFormForSignedPdf() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample_signed.pdf")));
+        var body = gson.fromJson("""
+                {
+                  "parameters": {
+                    "form": "XAdES"
+                  },
+                  "document": {
+                    "mimeType": "application/pdf; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        assertThrows(RequestValidationException.class, () -> body.getSigningInput(false));
+    }
+
+    @Test
+    void rejectsPackagingOverrideForSignedPdf() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample_signed.pdf")));
+        var body = gson.fromJson("""
+                {
+                  "parameters": {
+                    "packaging": "ENVELOPING"
+                  },
+                  "document": {
+                    "mimeType": "application/pdf; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        assertThrows(RequestValidationException.class, () -> body.getSigningInput(false));
+    }
+
+    @Test
+    void rejectsPackagingOverrideForSignedAsice() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample_pdf_xades.asice")));
+        var body = gson.fromJson("""
+                {
+                  "parameters": {
+                    "packaging": "ENVELOPING"
+                  },
+                  "document": {
+                    "mimeType": "application/vnd.etsi.asic-e+zip; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        assertThrows(RequestValidationException.class, () -> body.getSigningInput(false));
     }
 
     @Test
@@ -99,6 +228,27 @@ public class VersionedSignRequestBodyTests {
     }
 
     @Test
+    void infersAsiceContainerFromSingleAsiceDocument() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.asice")));
+        var body = gson.fromJson("""
+                {
+                  "documents": [
+                    {
+                      "mimeType": "application/vnd.etsi.asic-e+zip; base64",
+                      "content": "%s"
+                    }
+                  ]
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertEquals(eu.europa.esig.dss.enumerations.ASiCContainerType.ASiC_E,
+                request.getParameters().getContainer());
+    }
+
+    @Test
     void buildsSigningInputWithAutomaticallyLoadedEform() {
         var body = gson.fromJson("""
                 {
@@ -113,7 +263,7 @@ public class VersionedSignRequestBodyTests {
                     }
                   ],
                   "parameters": {
-                    "format": "XAdES"
+                    "form": "XAdES"
                   }
                 }
                 """, VersionedSignRequestBody.class);
@@ -145,7 +295,7 @@ public class VersionedSignRequestBodyTests {
                     }
                   ],
                   "parameters": {
-                    "format": "XAdES"
+                    "form": "XAdES"
                   }
                 }
                 """, VersionedSignRequestBody.class);
@@ -173,7 +323,7 @@ public class VersionedSignRequestBodyTests {
                     }
                   ],
                   "parameters": {
-                    "format": "XAdES",
+                    "form": "XAdES",
                     "container": "ASiC_E"
                   }
                 }

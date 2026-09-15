@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.server.errors.RequestValidationException;
+import digital.slovensko.autogram.core.dto.SignedDocumentSignature;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
@@ -9,6 +10,9 @@ import eu.europa.esig.dss.enumerations.SignatureProfile;
 
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_CONTAINER_UNSUPPORTED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_FORMAT_UNSUPPORTED;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SIGNED_DOCUMENT_CONTAINER_MISMATCH;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SIGNED_DOCUMENT_FORM_MISMATCH;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SIGNED_DOCUMENT_PACKAGING_MISMATCH;
 
 import digital.slovensko.autogram.core.SigningParameters;
 
@@ -65,7 +69,7 @@ public class VersionedSigningParameters {
                 propertiesCanonicalization != null ? propertiesCanonicalization.name() : null,
                 keyInfoCanonicalization != null ? keyInfoCanonicalization.name() : null,
                 getBoolean(checkPDFACompliance),
-                768,
+                presentation != null ? presentation.getVisualizationWidth() : 0,
                 plainXmlEnabled
         );
     }
@@ -85,6 +89,21 @@ public class VersionedSigningParameters {
 
         if (container != null && container != ASiCContainerType.ASiC_E)
             throw new RequestValidationException(MULTI_DOCUMENT_CONTAINER_UNSUPPORTED);
+    }
+
+    public void applySignedDocumentSignature(SignedDocumentSignature signedDocumentSignature) {
+        if (form != null && form != signedDocumentSignature.form())
+            throw new RequestValidationException(SIGNED_DOCUMENT_FORM_MISMATCH);
+
+        if (container != null && container != signedDocumentSignature.container())
+            throw new RequestValidationException(SIGNED_DOCUMENT_CONTAINER_MISMATCH);
+
+        if (packaging != null && packaging != signedDocumentSignature.packaging())
+            throw new RequestValidationException(SIGNED_DOCUMENT_PACKAGING_MISMATCH);
+
+        form = signedDocumentSignature.form();
+        container = signedDocumentSignature.container();
+        packaging = signedDocumentSignature.packaging();
     }
 
     private static boolean getBoolean(Boolean variable) {

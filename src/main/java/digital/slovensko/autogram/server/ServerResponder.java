@@ -2,7 +2,7 @@ package digital.slovensko.autogram.server;
 
 import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.Responder;
-import digital.slovensko.autogram.core.SignedDocument;
+import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.server.dto.SignResponse;

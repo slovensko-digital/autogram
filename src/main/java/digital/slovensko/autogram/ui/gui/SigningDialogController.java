@@ -1,11 +1,10 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.AutogramMimeType;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
@@ -170,15 +169,15 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     private List<AutogramDocument> resolvePreviewDocuments() {
-        var jobDocuments = visualization.getJob().getAutogramDocuments();
+        var jobDocuments = visualization.getJob().getDocuments();
         if (jobDocuments.size() > 1)
             return jobDocuments;
 
-        if (!AutogramMimeType.isAsice(visualization.getJob().getDocument().getMimeType()))
+        if (!visualization.getJob().getDocument().isAsice())
             return jobDocuments;
 
         try {
-            var originalDocuments = AsicContainerUtils.getOriginalDocuments(visualization.getJob().getAutogramDocument());
+            var originalDocuments = AsicContainerUtils.getOriginalDocuments(visualization.getJob().getDocument());
             if (originalDocuments.size() > 1)
                 return originalDocuments;
         } catch (Exception e) {

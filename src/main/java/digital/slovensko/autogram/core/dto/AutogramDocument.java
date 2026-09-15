@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.core;
+package digital.slovensko.autogram.core.dto;
 
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
@@ -6,19 +6,18 @@ import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
+import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.DSSDocument;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.TEXT_WITH_CHARSET;
-import static digital.slovensko.autogram.core.AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET;
-import static digital.slovensko.autogram.core.AutogramMimeType.isTxt;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
-import static digital.slovensko.autogram.core.AutogramMimeType.isAsice;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.WRONG_MIME_TYPE;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.XSLT_NO_XDC;
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.TEXT_WITH_CHARSET;
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_MIME_TYPE;
 import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
+
+import java.util.List;
 
 public class AutogramDocument {
     private final DSSDocument dssDocument;
@@ -30,7 +29,12 @@ public class AutogramDocument {
 
     private AutogramDocument(DSSDocument dssDocument, EFormAttributes eFormAttributes) {
         this.dssDocument = dssDocument;
-        this.eFormAttributes = eFormAttributes;
+        
+        if (eFormAttributes == null)
+            this.eFormAttributes = EFormAttributes.build(null, null);
+        
+        else
+            this.eFormAttributes = eFormAttributes;
     }
 
     public static AutogramDocument build(DSSDocument document, EFormAttributes eFormAttributes) {
@@ -49,27 +53,27 @@ public class AutogramDocument {
 
         if (preparedAttributes.containerXmlns() != null
                 && preparedAttributes.containerXmlns().contains("xmldatacontainer")
-                && !isXML(extractedMimeType) && !isXDC(extractedMimeType))
+                && !AutogramMimeType.isXML(extractedMimeType) && !AutogramMimeType.isXDC(extractedMimeType))
             throw new SigningParametersException(WRONG_MIME_TYPE);
 
-        if (isXDC(extractedMimeType) || isXML(extractedMimeType))
+        if (AutogramMimeType.isXDC(extractedMimeType) || AutogramMimeType.isXML(extractedMimeType))
             XDCValidator.validateXml(preparedAttributes.schema(), preparedAttributes.transformation(), extractedDocument,
                 preparedAttributes.propertiesCanonicalization(), preparedAttributes.digestAlgorithm(), preparedAttributes.embedUsedSchemas());
 
-        if (!isXDC(extractedMimeType)
+        if (!AutogramMimeType.isXDC(extractedMimeType)
                 && (preparedAttributes.containerXmlns() == null
                     || !preparedAttributes.containerXmlns().contains("xmldatacontainer"))) {
             if (preparedAttributes.transformation() != null)
                 throw new SigningParametersException(XSLT_NO_XDC);
 
-            preparedAttributes = new EFormAttributes(null, null, null, null, null, null, false, null, false, null, null);
+            preparedAttributes = eFormAttributes;
         }
 
-        if (preparedAttributes != null && preparedAttributes.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
+        if (preparedAttributes != null && preparedAttributes.shouldCreateXdc() && !AutogramMimeType.isXDC(document.getMimeType()) && !AutogramMimeType.isAsice(document.getMimeType()))
             document = XDCBuilder.transform(preparedAttributes, preparedAttributes.propertiesCanonicalization(),
                     preparedAttributes.digestAlgorithm(), document.getName(), EFormUtils.getXmlFromDocument(document));
 
-        if (isXDC(document.getMimeType())) {
+        if (AutogramMimeType.isXDC(document.getMimeType())) {
             document.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
             document.setName(getXdcfFilename(document.getName()));
         }
@@ -97,16 +101,35 @@ public class AutogramDocument {
         return eFormAttributes != null && eFormAttributes.identifier() != null && !eFormAttributes.identifier().isEmpty();
     }
 
+    public boolean isPDF() {
+        return dssDocument.getMimeType() != null && AutogramMimeType.isPDF(dssDocument.getMimeType());
+    }
+
+    public boolean isAsice() {
+        return AutogramMimeType.isAsice(dssDocument.getMimeType());
+    }
+
+    public boolean isPDFAndPasswordProtected() {
+        return isPDF() && PDFUtils.isPdfAndPasswordProtected(dssDocument);
+    }
+
+    public List<DSSDocument> getOriginalDocuments() {
+        if (!isAsice())
+            return List.of(dssDocument);
+
+        return AsicContainerUtils.getOriginalDocuments(dssDocument);
+    }
+
     private static DSSDocument normalize(DSSDocument dssDocument) {
         var mimeType = dssDocument.getMimeType();
         var name = dssDocument.getName();
 
         if (name != null && name.endsWith(".xdcf")) {
             dssDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
-        } else if (mimeType != null && (isXDC(mimeType)
-                || isXML(mimeType) && XDCValidator.isXDCContent(dssDocument))) {
+        } else if (mimeType != null && (AutogramMimeType.isXDC(mimeType)
+                || AutogramMimeType.isXML(mimeType) && XDCValidator.isXDCContent(dssDocument))) {
             dssDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
-        } else if (mimeType != null && isTxt(mimeType)) {
+        } else if (mimeType != null && AutogramMimeType.isTxt(mimeType)) {
             dssDocument.setMimeType(TEXT_WITH_CHARSET);
         }
 

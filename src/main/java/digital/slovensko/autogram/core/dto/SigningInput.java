@@ -1,14 +1,19 @@
-package digital.slovensko.autogram.core;
+package digital.slovensko.autogram.core.dto;
 
 import java.util.List;
 import java.util.Objects;
 
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
+import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.errors.SigningParametersException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.*;
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.*;
+import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.INVALID_PACKAGING;
 
 public class SigningInput {
     private final List<AutogramDocument> documents;
@@ -25,8 +30,16 @@ public class SigningInput {
                 .anyMatch(document -> isXML(document.getMimeType()) && !document.isEForm()))
             throw new UnknownEformException();
 
-        if (this.documents.size() > 1 || this.documents.stream().anyMatch(doc -> doc.isEForm()))
+        if (this.documents.size() > 1
+            || this.documents.stream().anyMatch(document -> document.isEForm() || isAsice(document.getMimeType())))
             parameters.setContainer(ASiCContainerType.ASiC_E);
+
+        if (parameters.getSignatureForm() == SignatureForm.XAdES
+            && parameters.getContainer() == null
+            && parameters.getSignaturePackaging() != SignaturePackaging.ENVELOPING
+            && this.documents.stream().anyMatch(document -> !isXML(document.getMimeType())
+                && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType())))
+            throw new SigningParametersException(INVALID_PACKAGING);
     }
 
     public static SigningInput of(List<AutogramDocument> documents, SigningParameters parameters) {
@@ -39,17 +52,23 @@ public class SigningInput {
 
     public static SigningInput fromFile(AutogramDocument document, SigningParameters parameters) {
         var dssDocument = document.toDssDocument();
-        var level = SignatureValidator.getSignedDocumentSignatureLevel(
-            SignatureValidator.getSignedDocumentSimpleReport(dssDocument));
-        if (level != null) switch (level.getSignatureForm()) {
-            case PAdES:
-                return fromPDFFile(dssDocument, parameters);
-            case XAdES:
-                return prepareForASiCWithXAdES(document, parameters);
-            case CAdES:
-                return prepareForASiCWithCAdES(document, parameters);
-            default:
-                ;
+        var signedDocumentSignature = SignatureValidator.getSignedDocumentSignature(dssDocument);
+        if (signedDocumentSignature != null) {
+            parameters.setSignatureForm(signedDocumentSignature.form());
+            parameters.setContainer(signedDocumentSignature.container());
+            if (signedDocumentSignature.packaging() != null)
+                parameters.setSignaturePackaging(signedDocumentSignature.packaging());
+
+            if (signedDocumentSignature.container() == null)
+                return signedDocumentSignature.form() == SignatureForm.PAdES
+                        ? fromPDFFile(dssDocument, parameters)
+                        : fromDocument(document, parameters);
+
+            return switch (signedDocumentSignature.form()) {
+                case XAdES -> prepareForASiCWithXAdES(document, parameters);
+                case CAdES -> prepareForASiCWithCAdES(document, parameters);
+                default -> fromDocument(document, parameters);
+            };
         }
 
         if (isPDF(document.getMimeType())) switch (parameters.getLevel()) {
@@ -82,6 +101,13 @@ public class SigningInput {
         return fromDocument(document, parameters);
     }
 
+    public int getPreviewDocumentsCount() {
+        if (documents.size() == 1 && documents.get(0).isAsice())
+            return documents.get(0).getOriginalDocuments().size();
+
+        return documents.size();
+    }
+
     public List<AutogramDocument> getDocuments() {
         return documents;
     }
@@ -103,6 +129,10 @@ public class SigningInput {
 
     public boolean isMultiDocument() {
         return documents.size() > 1;
+    }
+
+    public String getName() {
+        return documents.get(0).getName();
     }
 
     public SigningParameters getParameters() {

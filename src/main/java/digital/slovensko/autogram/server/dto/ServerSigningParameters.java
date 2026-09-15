@@ -1,9 +1,10 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.SignatureValidator;
-import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.SigningInput;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
@@ -23,9 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.isAsice;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.INVALID_XSD;
 import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.INVALID_XSLT;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.CONTAINER_MISMATCH;
@@ -332,13 +330,13 @@ public class ServerSigningParameters {
         }
 
         if (getSignatureLevel().getSignatureForm() == SignatureForm.XAdES) {
-            if (!isXML(mimeType) && !isXDC(mimeType) && !isAsice(mimeType) && container == null)
+            if (!AutogramMimeType.isXML(mimeType) && !AutogramMimeType.isXDC(mimeType) && !AutogramMimeType.isAsice(mimeType) && container == null)
                 if (!(packaging != null && packaging == SignaturePackaging.ENVELOPING))
                     throw new RequestValidationException(INVALID_PACKAGING, mimeType.getMimeTypeString());
         }
 
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")
-                && !isXDC(mimeType)) {
+                && !AutogramMimeType.isXDC(mimeType)) {
 
             if (!autoLoadEform && (transformation == null || transformation.isEmpty()))
                 throw new RequestValidationException(TRANSFORMATION_MISSING);
@@ -349,7 +347,7 @@ public class ServerSigningParameters {
             if (identifier == null || identifier.isEmpty())
                 throw new RequestValidationException(ID_MISSING);
 
-            if (!isXML(mimeType))
+            if (!AutogramMimeType.isXML(mimeType))
                 throw new RequestValidationException(CONTAINER_MISMATCH, mimeType.getMimeTypeString());
         }
     }

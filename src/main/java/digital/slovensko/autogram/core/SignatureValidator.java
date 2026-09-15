@@ -22,8 +22,12 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import digital.slovensko.autogram.core.dto.SignedDocumentSignature;
 import digital.slovensko.autogram.util.XMLUtils;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
@@ -135,10 +139,10 @@ public class SignatureValidator {
 
     public synchronized ValidationReports getSignatureValidationReport(SigningJob job) {
         var documentReports = new ArrayList<ValidationReports.DocumentReport>();
-        var documents = job.getDocumentsForContentChecks();
+        var documents = job.getDocuments();
 
         for (int index = 0; index < documents.size(); index++) {
-            var document = documents.get(index);
+            var document = documents.get(index).toDssDocument();
             var documentValidator = createDocumentValidator(document);
             if (documentValidator == null)
                 continue;
@@ -186,12 +190,15 @@ public class SignatureValidator {
         }
     }
 
+    // Returns a report indicating which documents in the signing job have signatures.
+    // Using empty CertificateVerifier so it does not perform any actual certificate validation,
+    // just fast structure and integrity check.
     public static ValidationReports getSignatureCheckReport(SigningJob job) {
         var documentReports = new ArrayList<ValidationReports.DocumentReport>();
-        var documents = job.getDocumentsForContentChecks();
+        var documents = job.getDocuments();
 
         for (int index = 0; index < documents.size(); index++) {
-            var document = documents.get(index);
+            var document = documents.get(index).toDssDocument();
             var validator = createDocumentValidator(document);
             if (validator == null)
                 continue;
@@ -223,6 +230,39 @@ public class SignatureValidator {
             return null;
 
         return report.getSignatureFormat(report.getSignatureIdList().get(0));
+    }
+
+    public static SignedDocumentSignature getSignedDocumentSignature(DSSDocument document) {
+        var report = getSignedDocumentSimpleReport(document);
+        var level = getSignedDocumentSignatureLevel(report);
+        if (level == null)
+            return null;
+
+        return new SignedDocumentSignature(level.getSignatureForm(), report.getContainerType(),
+                getSignaturePackaging(document, level, report.getContainerType()));
+    }
+
+    private static SignaturePackaging getSignaturePackaging(DSSDocument document, SignatureLevel level,
+            ASiCContainerType container) {
+        if (container != null || level.getSignatureForm() == SignatureForm.PAdES)
+            return null;
+
+        if (level.getSignatureForm() == SignatureForm.CAdES)
+            return SignaturePackaging.ENVELOPING;
+
+        if (level.getSignatureForm() != SignatureForm.XAdES)
+            return null;
+
+        try (var inputStream = document.openStream()) {
+            var documentElement = XMLUtils.getSecureDocumentBuilder().parse(inputStream).getDocumentElement();
+            if ("Signature".equals(documentElement.getLocalName())
+                    && "http://www.w3.org/2000/09/xmldsig#".equals(documentElement.getNamespaceURI()))
+                return SignaturePackaging.ENVELOPING;
+
+            return SignaturePackaging.ENVELOPED;
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            throw new IllegalArgumentException("Unable to determine XAdES signature packaging", e);
+        }
     }
 
     public synchronized boolean areTLsLoaded() {

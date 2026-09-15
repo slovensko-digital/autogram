@@ -12,6 +12,9 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.TestMethodSources;
 import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SignedDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -185,7 +188,7 @@ public class DocumentVisualizationBuilderTests {
         var job = SigningJob.fromInput(
                 SigningInput.of(List.of(firstDocument, secondDocument), preparedFirstDocument.getParameters()), dummyResponder);
 
-        Visualization visualization = DocumentVisualizationBuilder.fromDocument(job, job.getAutogramDocuments().get(1), UserSettings.load());
+        Visualization visualization = DocumentVisualizationBuilder.fromDocument(job, job.getDocuments().get(1), UserSettings.load());
 
         Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
     }

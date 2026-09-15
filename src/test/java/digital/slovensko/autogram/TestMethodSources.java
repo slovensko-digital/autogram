@@ -1,10 +1,12 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import java.util.stream.Stream;
+
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
+
 import java.io.IOException;
 import java.io.InputStream;
 

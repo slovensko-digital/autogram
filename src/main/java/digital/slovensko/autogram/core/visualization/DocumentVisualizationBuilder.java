@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.core.visualization;
 
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.*;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -7,14 +9,13 @@ import java.util.Locale;
 import javax.xml.parsers.ParserConfigurationException;
 
 import digital.slovensko.autogram.core.UserSettings;
-import digital.slovensko.autogram.core.AutogramDocument;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import eu.europa.esig.dss.model.DSSDocument;
 
 import org.xml.sax.SAXException;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import digital.slovensko.autogram.core.SigningJob;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -32,7 +33,7 @@ public class DocumentVisualizationBuilder {
     }
 
     public static Visualization fromJob(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
-        return fromDocument(job, job.getAutogramDocuments().getFirst(), userSettings);
+        return fromDocument(job, job.getDocuments().getFirst(), userSettings);
     }
 
     public static Visualization fromDocument(SigningJob job, AutogramDocument document, UserSettings userSettings)

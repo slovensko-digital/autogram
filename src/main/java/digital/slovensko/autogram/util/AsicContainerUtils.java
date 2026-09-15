@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.util;
 
-import digital.slovensko.autogram.core.AutogramDocument;
-import digital.slovensko.autogram.core.AutogramMimeType;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
@@ -17,7 +17,7 @@ import org.xml.sax.InputSource;
 import java.util.ArrayList;
 import java.util.List;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.isXML;
 import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.FILE_NOT_FOUND;
 import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.NO_DOCUMENTS;
 import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException.Error.NO_SIGNATURE;
