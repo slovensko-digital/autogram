@@ -5,7 +5,7 @@
     <option name="MAIN_CLASS_NAME" value="digital.slovensko.autogram.Main" />
     <module name="autogram" />
     <option name="PROGRAM_PARAMETERS" value="--url=&quot;autogram://listen?protocol=http&amp;port=37200&quot;" />
-    <option name="VM_PARAMETERS" value="--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --enable-native-access=javafx.graphics" />
+    <option name="VM_PARAMETERS" value="--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --enable-native-access=javafx.graphics,javafx.web" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="digital.slovensko.autogram.ui.*" />
