@@ -104,6 +104,10 @@ public class SigningParameters {
         return signatureForm;
     }
 
+    public SignatureProfile getSignatureProfile() {
+        return signatureProfile;
+    }
+
     public ASiCContainerType getContainer() {
         return container;
     }

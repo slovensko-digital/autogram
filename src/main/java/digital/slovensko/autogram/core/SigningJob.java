@@ -9,11 +9,14 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.alert.LogOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
+import eu.europa.esig.dss.asic.common.signature.AbstractASiCSignatureService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
+import eu.europa.esig.dss.signature.AbstractSignatureService;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
@@ -63,124 +66,35 @@ public class SigningJob {
         return input.getName();
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
             + (input.isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
 
-        boolean isContainer = getParameters().getContainer() != null;
-        var doc = switch (getParameters().getSignatureForm()) {
-            case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key, tspSource) : signDocumentAsXAdeS(key, tspSource);
-            case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key, tspSource) : signDocumentAsCAdeS(key, tspSource);
-            case PAdES -> signDocumentAsPAdeS(key, tspSource);
-            default -> throw new RuntimeException(
-                    "Unsupported signature type: " + getParameters().getSignatureForm());
-        };
-        responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
+        var signatureParameters = DssSigningParametersFactory.createSignatureParameters(input, key);
+        var signatureService = createSignatureService(tspSource);
+
+        if (input.getParameters().getContainer() == ASiCContainerType.ASiC_E) {
+            var castedService = (AbstractASiCSignatureService) signatureService;
+            var documents = getDssDocuments();
+
+            var dataToSign = castedService.getDataToSign(documents, signatureParameters);
+            var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
+            var signedDocument = castedService.signDocument(documents, signatureParameters, signatureValue);
+            responder.onDocumentSigned(new SignedDocument(signedDocument, key.getCertificate()));
+
+        } else {
+            var document = getDssDocument();
+
+            var dataToSign = signatureService.getDataToSign(document, signatureParameters);
+            var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
+            var signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
+            responder.onDocumentSigned(new SignedDocument(signedDocument, key.getCertificate()));
+        }
     }
 
     public void onDocumentSignFailed(AutogramException e) {
         responder.onDocumentSignFailed(e);
-    }
-
-    private DSSDocument signDocumentAsCAdeS(SigningKey key, TSPSource tspSource) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new CAdESService(commonCertificateVerifier);
-        var jobParameters = getParameters();
-        var signatureParameters = DssSigningParametersFactory.createCAdESSignatureParameters(input);
-
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
-
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
-            service.setTspSource(tspSource);
-
-        var document = getDssDocument(); 
-        var dataToSign = service.getDataToSign(document, signatureParameters);
-        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
-
-        return service.signDocument(document, signatureParameters, signatureValue);
-    }
-
-    private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key, TSPSource tspSource) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new ASiCWithXAdESService(commonCertificateVerifier);
-        var signatureParameters = DssSigningParametersFactory.createASiCWithXAdESSignatureParameters(input);
-        var documents = getDssDocuments();
-
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
-
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
-            service.setTspSource(tspSource);
-
-        var dataToSign = service.getDataToSign(documents, signatureParameters);
-        var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
-
-        return service.signDocument(documents, signatureParameters, signatureValue);
-    }
-
-    private DSSDocument signDocumentAsXAdeS(SigningKey key, TSPSource tspSource) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new XAdESService(commonCertificateVerifier);
-        var jobParameters = getParameters();
-        var signatureParameters = DssSigningParametersFactory.createXAdESSignatureParameters(input);
-
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
-
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
-            service.setTspSource(tspSource);
-
-        var document = getDssDocument();
-        var dataToSign = service.getDataToSign(document, signatureParameters);
-        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
-
-        return service.signDocument(document, signatureParameters, signatureValue);
-    }
-
-    private DSSDocument signDocumentAsASiCWithCAdeS(SigningKey key, TSPSource tspSource) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new ASiCWithCAdESService(commonCertificateVerifier);
-        var jobParameters = getParameters();
-        var signatureParameters = DssSigningParametersFactory.createASiCWithCAdESSignatureParameters(input);
-        var documents = getDssDocuments();
-
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
-
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.CAdES_BASELINE_T))
-            service.setTspSource(tspSource);
-
-        var dataToSign = service.getDataToSign(documents, signatureParameters);
-        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
-
-        return service.signDocument(documents, signatureParameters, signatureValue);
-    }
-
-    private DSSDocument signDocumentAsPAdeS(SigningKey key, TSPSource tspSource) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new PAdESService(commonCertificateVerifier);
-        var jobParameters = getParameters();
-        var signatureParameters = DssSigningParametersFactory.createPAdESSignatureParameters(input);
-
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
-
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.PAdES_BASELINE_T)) {
-            service.setTspSource(tspSource);
-            signatureParameters.setContentSize(9472*2);
-        }
-
-        var document = getDssDocument();
-        var dataToSign = service.getDataToSign(document, signatureParameters);
-        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
-
-        return service.signDocument(document, signatureParameters, signatureValue);
     }
 
     public static SigningJob fromInput(SigningInput input, Responder responder) {
@@ -189,5 +103,27 @@ public class SigningJob {
 
     public boolean shouldCheckPDFCompliance() {
         return getParameters().getCheckPDFACompliance() && getDocuments().stream().anyMatch(d -> d.isPDF());
+    }
+
+    @SuppressWarnings("rawtypes")
+    private AbstractSignatureService createSignatureService(TSPSource tspSource) {
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
+
+        var isContainer = input.getParameters().getContainer() != null;
+        if (!isContainer && input.getDocuments().size() > 1)
+            throw new AutogramException("Multiple documents are not allowed for non-container signatures");
+
+        var service = switch (input.getParameters().getSignatureForm()) {
+            case XAdES -> isContainer ? new ASiCWithXAdESService(commonCertificateVerifier) : new XAdESService(commonCertificateVerifier);
+            case CAdES -> isContainer ? new ASiCWithCAdESService(commonCertificateVerifier) : new CAdESService(commonCertificateVerifier);
+            case PAdES -> new PAdESService(commonCertificateVerifier);
+            default -> throw new RuntimeException("Unsupported signature type: " + input.getParameters().getSignatureForm());
+        };
+
+        if (input.getParameters().getSignatureProfile().equals(SignatureProfile.BASELINE_T) && tspSource != null)
+            service.setTspSource(tspSource);
+
+        return service;
     }
 }
