@@ -9,6 +9,8 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.dto.VersionedSignRequestBody;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
+
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -122,7 +124,10 @@ public class ServerYmlExamplesTest {
                 job.initializeVisualizations();
 
                 assertVisualizationsAreSupported(name, job);
-                signAndAssertSuccess(name, job, responder);
+
+                // TODO mock TSP in order to test BASELINE_T examples reliably
+                if (job.getParameters().getSignatureProfile() == SignatureProfile.BASELINE_B)
+                    signAndAssertSuccess(name, job, responder);
             }));
         }
 
@@ -150,7 +155,10 @@ public class ServerYmlExamplesTest {
                 job.initializeVisualizations();
 
                 assertVisualizationsAreSupported(name, job);
-                signAndAssertSuccess(name, job, responder);
+
+                // TODO mock TSP in order to test BASELINE_T examples reliably
+                if (job.getParameters().getSignatureProfile() == SignatureProfile.BASELINE_B)
+                    signAndAssertSuccess(name, job, responder);
             }));
         }
 
