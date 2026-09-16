@@ -7,19 +7,13 @@ import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import java.util.Base64;
-public class Document {
-    private String filename;
-    private String content;
-    private String mimeType;
-    private XDCParameters xdcParameters;
-
+public record Document (String filename, String content, String mimeType, XDCParameters xdcParameters) {
     public Document(String content) {
-        this.content = content;
+        this(null, content, null, null);
     }
 
     public Document(String filename, String content) {
-        this.filename = filename;
-        this.content = content;
+        this(filename, content, null, null);
     }
 
     public String getFilename() {
@@ -30,10 +24,6 @@ public class Document {
         return filename;
     }
 
-    public String getContent() {
-        return content;
-    }
-
     public String getMimeTypeString() {
         return mimeType;
     }
@@ -42,19 +32,19 @@ public class Document {
         return AutogramMimeType.fromMimeTypeString(mimeType.split(";")[0]);
     }
 
-    public XDCParameters getXdcParameters() {
-        return xdcParameters;
+    public boolean isBase64() {
+        return mimeType != null && mimeType.toLowerCase().contains("base64");
     }
 
-    public EFormAttributes getEformAttributes(String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
-        if (getXdcParameters() == null)
+    private EFormAttributes getEformAttributes(String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
+        if (xdcParameters() == null)
             return null;
 
-        return getXdcParameters().getEFormAttributes(canonicalizationMethod, digestAlgorithm);
+        return xdcParameters().getEFormAttributes(canonicalizationMethod, digestAlgorithm, isBase64());
     }
 
     public DSSDocument getDSSDocument() {
-        var contentBytes = getContent().getBytes();
+        var contentBytes = content().getBytes();
         if (mimeType.toLowerCase().contains("base64")) 
             contentBytes = Base64.getDecoder().decode(contentBytes);
 

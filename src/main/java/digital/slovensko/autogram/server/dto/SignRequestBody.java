@@ -41,7 +41,7 @@ public class SignRequestBody {
         if (document == null)
             throw new RequestValidationException(MISSING_FIELD, "Document");
 
-        if (document.getContent() == null)
+        if (document.content() == null)
             throw new RequestValidationException(MISSING_FIELD, "Document.Content");
 
 //      TODO: resolve values at class instantiation
@@ -60,8 +60,10 @@ public class SignRequestBody {
     }
 
     private InMemoryDocument getRequestDocument() {
-        var content = decodeDocumentContent(document.getContent(), isBase64());
-        var filename = document.getFilename();
+        var content = decodeDocumentContent(document.content(), isBase64());
+        var filename = document.filename() != null && !document.filename().isEmpty()
+                ? document.filename()
+                : "document" + getMimetype().getExtension();
 
         return new InMemoryDocument(content, filename, getMimetype());
     }

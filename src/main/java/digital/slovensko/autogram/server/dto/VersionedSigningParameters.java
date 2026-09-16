@@ -15,6 +15,7 @@ import static digital.slovensko.autogram.server.errors.RequestValidationExceptio
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SIGNED_DOCUMENT_PACKAGING_MISMATCH;
 
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.SigningParametersResolver;
 
 public class VersionedSigningParameters {
     public enum LocalCanonicalizationMethod {
@@ -58,7 +59,7 @@ public class VersionedSigningParameters {
     }
 
     public SigningParameters toSigningParameters(PresentationParameters presentation, boolean plainXmlEnabled) {
-        return SigningParameters.buildParameters(
+        return SigningParametersResolver.buildRequested(
                 profile,
                 form,
                 digestAlgorithm,

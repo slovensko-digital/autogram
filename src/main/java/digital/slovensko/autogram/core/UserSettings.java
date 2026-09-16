@@ -195,7 +195,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public SigningParameters getDefaultSigningParameters() {
-        return SigningParameters.buildParameters(
+        return SigningParametersResolver.buildRequested(
                 getTsaEnabled() ? SignatureProfile.BASELINE_T : SignatureProfile.BASELINE_B,
                 getSignatureLevel().getSignatureForm(),
                 DigestAlgorithm.SHA256,
@@ -207,7 +207,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
                 null,
                 isPdfaCompliance(),
                 640,
-                isPlainXmlEnabled());
+                isPlainXmlEnabled()
+        );
     }
 
     private void setSignatureType(String signatureType) {

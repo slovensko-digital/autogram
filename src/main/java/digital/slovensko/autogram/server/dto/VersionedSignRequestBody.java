@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.MimeType;
@@ -8,22 +9,16 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 
 import java.util.List;
 
-import static digital.slovensko.autogram.core.dto.AutogramMimeType.fromMimeTypeString;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_BATCH_UNSUPPORTED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_NESTED_ASICE_UNSUPPORTED;
 
-public class VersionedSignRequestBody {
-    private Document document;
-    private List<Document> documents;
-    private VersionedSigningParameters parameters;
-    private PresentationParameters presentation;
-    private String batchId;
+public record VersionedSignRequestBody (Document document, List<Document> documents,
+        VersionedSigningParameters parameters, PresentationParameters presentation, String batchId) {
 
     public SigningInput getSigningInput(boolean plainXmlEnabled) {
         var submittedDocuments = getSubmittedDocuments();
-        if (parameters == null)
-            parameters = new VersionedSigningParameters();
+        var parameters = this.parameters == null ? new VersionedSigningParameters() : this.parameters;
 
         var isMultiDocument = submittedDocuments.size() > 1;
 
@@ -49,10 +44,6 @@ public class VersionedSignRequestBody {
         return SigningInput.of(autogramDocuments, signingParameters);
     }
 
-    public String getBatchId() {
-        return batchId;
-    }
-
     private List<Document> getSubmittedDocuments() {
         if (documents != null && !documents.isEmpty())
             return documents;
@@ -69,7 +60,7 @@ public class VersionedSignRequestBody {
         if (document == null)
             throw new RequestValidationException(MISSING_FIELD, documentLabel);
 
-        if (document.getContent() == null)
+        if (document.content() == null)
             throw new RequestValidationException(MISSING_FIELD, documentLabel + ".Content");
 
         if (document.getMimeType() == null)
@@ -81,6 +72,6 @@ public class VersionedSignRequestBody {
     }
 
     private MimeType getMimeType(Document document) {
-        return fromMimeTypeString(document.getMimeTypeString().split(";")[0]);
+        return AutogramMimeType.fromMimeTypeString(document.getMimeTypeString().split(";")[0]);
     }
 }

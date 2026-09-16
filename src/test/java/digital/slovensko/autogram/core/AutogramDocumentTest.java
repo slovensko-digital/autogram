@@ -27,7 +27,8 @@ import digital.slovensko.autogram.core.errors.TransformationParsingErrorExceptio
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
@@ -250,7 +251,7 @@ class AutogramDocumentTest {
     }
 
     private static SigningParameters parameters(boolean plainXmlEnabled) {
-        return SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256, null, null,
+        return SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256, null, null,
                 false, null, null, null, false, 800, plainXmlEnabled);
     }
 

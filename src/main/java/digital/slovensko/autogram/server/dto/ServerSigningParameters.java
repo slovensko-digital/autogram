@@ -2,6 +2,7 @@ package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.SigningParametersResolver;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.dto.SigningInput;
@@ -156,8 +157,9 @@ public class ServerSigningParameters {
     }
 
     public SigningParameters getSigningParameters(boolean plainXmlEnabled) {
-        return SigningParameters.buildParameters(
-                getSignatureLevel(),
+        return SigningParametersResolver.buildRequested(
+                getSignatureLevel().getSignatureProfile(),
+                getSignatureLevel().getSignatureForm(),
                 digestAlgorithm,
                 getContainer(),
                 packaging,
@@ -167,7 +169,8 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(keyInfoCanonicalization),
                 getBoolean(checkPDFACompliance),
                 getVisualizationWidth(),
-                plainXmlEnabled);
+                plainXmlEnabled
+        );
     }
 
     public EFormAttributes getEFormAttributes(boolean isBase64) {
@@ -189,8 +192,12 @@ public class ServerSigningParameters {
                 getFsFormId(),
                 autoLoadEform,
                 getCanonicalizationMethodString(propertiesCanonicalization),
-                digestAlgorithm);
+                getDigestAlgorithm());
         }
+
+    private DigestAlgorithm getDigestAlgorithm() {
+        return digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
+    }
 
     private static boolean getBoolean(Boolean variable) {
         if (variable == null)

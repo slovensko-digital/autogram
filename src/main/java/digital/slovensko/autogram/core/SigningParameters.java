@@ -14,12 +14,11 @@ import javax.xml.crypto.dsig.CanonicalizationMethod;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_LEVEL;
 
 public class SigningParameters {
-    // private final SignatureLevel level;
-    private SignatureProfile signatureProfile;
-    private SignatureForm signatureForm;
-    private ASiCContainerType container;
+    private final SignatureProfile signatureProfile;
+    private final SignatureForm signatureForm;
+    private final ASiCContainerType container;
     private final DigestAlgorithm digestAlgorithm;
-    private SignaturePackaging packaging;
+    private final SignaturePackaging packaging;
     private final boolean en319132;
     private final String infoCanonicalization;
     private final String propertiesCanonicalization;
@@ -47,7 +46,7 @@ public class SigningParameters {
         this.plainXmlEnabled = plainXmlEnabled;
     }
 
-    public static SigningParameters buildParameters(
+    static SigningParameters buildParameters(
             SignatureProfile profile, SignatureForm form, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
             boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled) throws AutogramException {
@@ -62,42 +61,6 @@ public class SigningParameters {
                 profile, form, digestAlgorithm, container, packaging, en319132, infoCanonicalization, propertiesCanonicalization,
             keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth, plainXmlEnabled);
         return signingParameters;
-    }
-
-    public static SigningParameters buildParameters(
-            SignatureLevel level, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
-            boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled) throws AutogramException {
-
-        if (level == null)
-            throw new SigningParametersException(NO_LEVEL);
-
-        return buildParameters(
-                level.getSignatureProfile(),
-                level.getSignatureForm(),
-                digestAlgorithm,
-                container,
-                packaging,
-                en319132,
-                infoCanonicalization,
-                propertiesCanonicalization,
-                keyInfoCanonicalization,
-                checkPDFACompliance,
-                preferredPreviewWidth,
-                plainXmlEnabled
-        );
-    }
-
-    public void setSignatureForm(SignatureForm signatureForm) {
-        this.signatureForm = signatureForm;
-    }
-
-    public void setContainer(ASiCContainerType container) {
-        this.container = container;
-    }
-
-    public void setSignaturePackaging(SignaturePackaging packaging) {
-        this.packaging = packaging;
     }
 
     public SignatureForm getSignatureForm() {
@@ -115,14 +78,11 @@ public class SigningParameters {
     public SignatureLevel getLevel() {
         if (signatureForm == null && signatureProfile == null)
             return SignatureLevel.XAdES_BASELINE_B;
-        
-        if (signatureForm == null)
-            signatureForm = SignatureForm.XAdES;
 
-        if (signatureProfile == null)
-            signatureProfile = SignatureProfile.BASELINE_B;
+        var form = signatureForm != null ? signatureForm : SignatureForm.XAdES;
+        var profile = signatureProfile != null ? signatureProfile : SignatureProfile.BASELINE_B;
 
-        return SignatureLevel.getSignatureLevel(signatureForm, signatureProfile);
+        return SignatureLevel.getSignatureLevel(form, profile);
     }
 
     public SignaturePackaging getSignaturePackaging() {

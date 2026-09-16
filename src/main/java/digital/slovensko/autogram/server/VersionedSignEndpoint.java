@@ -26,13 +26,13 @@ public class VersionedSignEndpoint implements HttpHandler {
         try {
             var body = EndpointUtils.loadFromJsonExchange(exchange, VersionedSignRequestBody.class);
 
-            var responder = body.getBatchId() == null ? new ServerResponder(exchange)
-                    : new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
+            var responder = body.batchId() == null ? new ServerResponder(exchange)
+                    : new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.batchId()));
                 var job = SigningJob.fromInput(
                     body.getSigningInput(autogram.isPlainXmlEnabled()), responder);
 
-            if (body.getBatchId() != null)
-                autogram.batchSign(job, body.getBatchId());
+            if (body.batchId() != null)
+                autogram.batchSign(job, body.batchId());
             else
                 autogram.sign(job);
 

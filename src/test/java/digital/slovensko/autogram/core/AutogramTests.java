@@ -26,8 +26,9 @@ import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
@@ -73,7 +74,7 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, null,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, null,
             null, null, false, null, null, null, false, 640, true);
         var input = SigningInput.prepareForASiCWithXAdES(
             AutogramDocument.build(document, EFormAttributes.build(parameters, false)), parameters);
@@ -92,7 +93,7 @@ class AutogramTests {
         var newUI = new FakeUI();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var input = SigningInput.prepareForASiCWithXAdES(
             AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
@@ -107,7 +108,7 @@ class AutogramTests {
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
     void testSignNonEformNegativeScenario(InMemoryDocument document) {
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
         Assertions.assertThrows(UnknownEformException.class, () -> SigningInput.prepareForASiCWithXAdES(
             AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters));
@@ -121,7 +122,7 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildParameters(SignatureLevel.CAdES_BASELINE_B, DigestAlgorithm.SHA256,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.CAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
         var input = SigningInput.prepareForASiCWithCAdES(
             AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
@@ -142,7 +143,7 @@ class AutogramTests {
             AutogramMimeType.fromMimeTypeString("text/plain")), null);
         var secondDocument = AutogramDocument.build(new InMemoryDocument("second".getBytes(), "second.txt",
             AutogramMimeType.fromMimeTypeString("text/plain")), null);
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);
 
@@ -164,7 +165,7 @@ class AutogramTests {
             AutogramMimeType.fromMimeTypeString("text/plain")), null);
         var secondDocument = AutogramDocument.build(new InMemoryDocument("second".getBytes(), "second.txt",
             AutogramMimeType.fromMimeTypeString("text/plain")), null);
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);
 
@@ -176,7 +177,7 @@ class AutogramTests {
         verify(responder).onDocumentSigned(signedDocumentCaptor.capture());
 
         var signedDocument = signedDocumentCaptor.getValue();
-        var validationParameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B,
+        var validationParameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
             DigestAlgorithm.SHA256, ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null,
             null, false, 640, true);
         var validationInput = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(
@@ -279,7 +280,7 @@ class AutogramTests {
         var settings = new TestSettings();
         var autogram = new Autogram(newUI, settings);
 
-        var parameters = SigningParameters.buildParameters(SignatureLevel.PAdES_BASELINE_B, DigestAlgorithm.SHA256,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.PAdES, DigestAlgorithm.SHA256,
             null, null, false, null, null, null, false, 640, false);
         var input = SigningInput.fromPDFFile(document, parameters);
         var responder = mock(Responder.class);
@@ -315,7 +316,7 @@ class AutogramTests {
 
         var responder = mock(Responder.class);
 
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
         var fileDocument = new FileDocument(file);
         var eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false,
@@ -632,7 +633,7 @@ class AutogramTests {
     }
 
     private static SigningJob createMultiDocumentJob(boolean checkPDFACompliance, AutogramDocument... documents) {
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null,
             checkPDFACompliance, 640, true);
         var preparedInput = SigningInput.prepareForASiCWithXAdES(documents[0], parameters);

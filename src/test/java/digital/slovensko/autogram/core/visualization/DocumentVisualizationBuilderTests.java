@@ -24,8 +24,9 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -88,7 +89,7 @@ public class DocumentVisualizationBuilderTests {
     // "crystal_test_data/rozhodnutie_X4564-2.xml"),
     // "rozhodnutie_X4564-2.xml");
 
-    // var params = new SigningParameters(SignatureLevel.XAdES_BASELINE_B,
+    // var params = new SigningParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
     // ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
     // DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
     // CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
@@ -132,7 +133,7 @@ public class DocumentVisualizationBuilderTests {
     @MethodSource("digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider")
     void testXdcfVisualizationIsNotUnsupported(InMemoryDocument document)
             throws IOException, ParserConfigurationException, SAXException {
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B,
+        var parameters = SigningParametersResolver.buildRequested(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
                 DigestAlgorithm.SHA256, ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false,
                 null, null, null, false, 640, false);
         var input = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
@@ -148,7 +149,7 @@ public class DocumentVisualizationBuilderTests {
     void testMultiDocumentVisualizationUsesSelectedDocumentMetadata()
         throws IOException, ParserConfigurationException, SAXException {
         var firstDocument = AutogramDocument.build(new InMemoryDocument("first".getBytes(StandardCharsets.UTF_8), "first.txt", MimeTypeEnum.TEXT), null);
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B,
+        var parameters = SigningParametersResolver.buildRequested(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
                 DigestAlgorithm.SHA256, ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false,
                 null, null, null, false, 640, false);
         var preparedFirstDocument = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);

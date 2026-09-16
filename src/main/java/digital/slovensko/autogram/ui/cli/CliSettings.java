@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.DriverDetector;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.SigningParametersResolver;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
 import digital.slovensko.autogram.core.errors.SlotIndexIsNotANumberException;
@@ -45,15 +46,20 @@ public class CliSettings extends UserSettings {
     }
 
     public SigningParameters getSigningParameters() {
-        return SigningParameters.buildParameters(
-                getSignatureLevel(),
+        return SigningParametersResolver.buildRequested(
+                getSignatureLevel().getSignatureProfile(),
+                getSignatureLevel().getSignatureForm(),
                 DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E,
                 SignaturePackaging.ENVELOPING,
                 isEn319132(),
                 null,
                 null,
-                null, isPdfaCompliance(), 640, isPlainXmlEnabled());
+                null,
+                isPdfaCompliance(),
+                640,
+                isPlainXmlEnabled()
+        );
     }
 
     @Override

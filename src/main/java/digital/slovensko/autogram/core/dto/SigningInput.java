@@ -5,15 +5,9 @@ import java.util.Objects;
 
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureForm;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
-import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.errors.SigningParametersException;
-import digital.slovensko.autogram.core.errors.UnknownEformException;
-
-import static digital.slovensko.autogram.core.dto.AutogramMimeType.*;
-import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.INVALID_PACKAGING;
+import digital.slovensko.autogram.core.SigningParametersResolver;
 
 public class SigningInput {
     private final List<AutogramDocument> documents;
@@ -25,80 +19,39 @@ public class SigningInput {
 
         if (this.documents.isEmpty())
             throw new IllegalArgumentException("documents cannot be empty");
-
-        if (!parameters.isPlainXmlEnabled() && this.documents.stream()
-                .anyMatch(document -> isXML(document.getMimeType()) && !document.isEForm()))
-            throw new UnknownEformException();
-
-        if (this.documents.size() > 1
-            || this.documents.stream().anyMatch(document -> document.isEForm() || isAsice(document.getMimeType())))
-            parameters.setContainer(ASiCContainerType.ASiC_E);
-
-        if (parameters.getSignatureForm() == SignatureForm.XAdES
-            && parameters.getContainer() == null
-            && parameters.getSignaturePackaging() != SignaturePackaging.ENVELOPING
-            && this.documents.stream().anyMatch(document -> !isXML(document.getMimeType())
-                && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType())))
-            throw new SigningParametersException(INVALID_PACKAGING);
     }
 
     public static SigningInput of(List<AutogramDocument> documents, SigningParameters parameters) {
-        return new SigningInput(documents, parameters);
+        return new SigningInput(documents, SigningParametersResolver.resolveStrict(parameters, documents));
     }
 
     public static SigningInput fromDocument(AutogramDocument document, SigningParameters parameters) {
-        return new SigningInput(List.of(Objects.requireNonNull(document, "document")), parameters);
+        var documents = List.of(Objects.requireNonNull(document, "document"));
+        return new SigningInput(documents, SigningParametersResolver.resolveStrict(parameters, documents));
     }
 
     public static SigningInput fromFile(AutogramDocument document, SigningParameters parameters) {
-        var dssDocument = document.toDssDocument();
-        var signedDocumentSignature = SignatureValidator.getSignedDocumentSignature(dssDocument);
-        if (signedDocumentSignature != null) {
-            parameters.setSignatureForm(signedDocumentSignature.form());
-            parameters.setContainer(signedDocumentSignature.container());
-            if (signedDocumentSignature.packaging() != null)
-                parameters.setSignaturePackaging(signedDocumentSignature.packaging());
-
-            if (signedDocumentSignature.container() == null)
-                return signedDocumentSignature.form() == SignatureForm.PAdES
-                        ? fromPDFFile(dssDocument, parameters)
-                        : fromDocument(document, parameters);
-
-            return switch (signedDocumentSignature.form()) {
-                case XAdES -> prepareForASiCWithXAdES(document, parameters);
-                case CAdES -> prepareForASiCWithCAdES(document, parameters);
-                default -> fromDocument(document, parameters);
-            };
-        }
-
-        if (isPDF(document.getMimeType())) switch (parameters.getLevel()) {
-            case PAdES_BASELINE_B:
-                return fromPDFFile(dssDocument, parameters);
-            case XAdES_BASELINE_B:
-                return prepareForASiCWithXAdES(document, parameters);
-            case CAdES_BASELINE_B:
-                return prepareForASiCWithCAdES(document, parameters);
-            default:
-                ;
-        }
-
-        return prepareForASiCWithXAdES(document, parameters);
+        var documents = List.of(document);
+        return new SigningInput(documents, SigningParametersResolver.resolveLenientFromFile(parameters, document));
     }
 
     public static SigningInput fromPDFFile(DSSDocument document, SigningParameters parameters) {
-        return fromDocument(AutogramDocument.build(document, null), parameters);
+        return fromDocumentLenient(AutogramDocument.build(document, null), parameters);
     }
 
     public static SigningInput prepareForASiCWithXAdES(AutogramDocument document, SigningParameters parameters) {
-        parameters.setContainer(ASiCContainerType.ASiC_E);
-        parameters.setSignatureForm(SignatureForm.XAdES);
-        return fromDocument(document, parameters);
+        var forced = SigningParametersResolver.withFormAndContainer(parameters, SignatureForm.XAdES, ASiCContainerType.ASiC_E);
+        return fromDocumentLenient(document, forced);
     }
 
     public static SigningInput prepareForASiCWithCAdES(AutogramDocument document, SigningParameters parameters) {
-        parameters.setContainer(ASiCContainerType.ASiC_E);
-        parameters.setSignatureForm(SignatureForm.CAdES);
-        return fromDocument(document, parameters);
+        var forced = SigningParametersResolver.withFormAndContainer(parameters, SignatureForm.CAdES, ASiCContainerType.ASiC_E);
+        return fromDocumentLenient(document, forced);
+    }
+
+    private static SigningInput fromDocumentLenient(AutogramDocument document, SigningParameters parameters) {
+        var documents = List.of(document);
+        return new SigningInput(documents, SigningParametersResolver.resolveLenient(parameters, documents));
     }
 
     public int getPreviewDocumentsCount() {

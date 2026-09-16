@@ -14,8 +14,9 @@ import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -166,7 +167,7 @@ class AsicContainerTest {
     }
 
     private SigningInput prepareAsicXadesInput(InMemoryDocument document) {
-        var parameters = SigningParameters.buildParameters(SignatureLevel.XAdES_BASELINE_B, DigestAlgorithm.SHA256,
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var autogramDocument = AutogramDocument.build(document, EFormAttributes.build(parameters, true));
         return SigningInput.prepareForASiCWithXAdES(autogramDocument, parameters);

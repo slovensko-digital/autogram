@@ -1,6 +1,8 @@
 package digital.slovensko.autogram.core.eforms.xdc;
 
-import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.SigningParametersResolver;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
@@ -8,7 +10,6 @@ import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import digital.slovensko.autogram.TestMethodSources;
@@ -40,8 +41,9 @@ class XDCBuilderTests {
             false,
             CanonicalizationMethod.INCLUSIVE,
             DigestAlgorithm.SHA256);
-        var parameters = SigningParameters.buildParameters(
-            SignatureLevel.XAdES_BASELINE_B,
+        var parameters = SigningParametersResolver.buildRequested(
+            SignatureProfile.BASELINE_B,
+            SignatureForm.XAdES,
             DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E,
             SignaturePackaging.ENVELOPING,
