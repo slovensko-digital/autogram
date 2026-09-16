@@ -744,12 +744,12 @@ TextFlow.autogram-body-s {
 }
 
 .menu-item > .label {
-  -fx-text-fill: -autogram-border-colour;
+  -fx-text-fill: -autogram-text-colour;
   -fx-padding: 3px;
 }
 
 .menu-item:focused > .label {
-  -fx-text-fill: -autogram-border-colour;
+  -fx-text-fill: -autogram-text-colour;
 }
 
 /* Choice boxes */
