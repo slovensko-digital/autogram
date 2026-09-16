@@ -38,6 +38,10 @@ public class AutogramDocument {
     }
 
     public static AutogramDocument build(DSSDocument document, EFormAttributes eFormAttributes) {
+        return build(document, eFormAttributes, false);
+    }
+
+    public static AutogramDocument build(DSSDocument document, EFormAttributes eFormAttributes, boolean preserveFileName) {
         if (document.getMimeType() == null)
             throw new SigningParametersException(NO_MIME_TYPE);
 
@@ -75,7 +79,9 @@ public class AutogramDocument {
 
         if (AutogramMimeType.isXDC(document.getMimeType())) {
             document.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
-            document.setName(getXdcfFilename(document.getName()));
+
+            if (!preserveFileName)
+                document.setName(getXdcfFilename(document.getName()));
         }
 
         return new AutogramDocument(document, preparedAttributes);

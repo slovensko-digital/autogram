@@ -93,19 +93,10 @@ public class AsicContainerUtils {
 
         return originalDocuments.stream().map((e) -> {
             if (AutogramMimeType.isXDC(e.getMimeType()))
-                return AutogramDocument.build(e, document.getEFormAttributes());
+                return AutogramDocument.build(e, document.getEFormAttributes(), true);
                 
-            return AutogramDocument.build(e, null);
+            return AutogramDocument.build(e, null, true);
         }).toList();
-    }
-
-    public static DSSDocument getOriginalDocument(DSSDocument asice) throws OriginalDocumentNotFoundException,
-            MultipleOriginalDocumentsFoundException {
-        var originalDocuments = getOriginalDocuments(asice);
-        if (originalDocuments.size() > 1)
-            throw new MultipleOriginalDocumentsFoundException();
-
-        return originalDocuments.get(0);
     }
 
     private static void setMimeTypeFromManifest(DSSDocument asiceContainer, DSSDocument documentToDisplay) {
