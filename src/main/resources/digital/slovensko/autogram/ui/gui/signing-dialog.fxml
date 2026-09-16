@@ -26,7 +26,7 @@
         </TextFlow>
 
         <TabPane fx:id="documentTabPane" managed="false" visible="false" tabClosingPolicy="UNAVAILABLE"
-            styleClass="autogram-visualization-tab-pane" />
+            styleClass="autogram-tab-pane,autogram-visualization-tab-pane" />
 
         <VBox fx:id="singleDocumentVisualizationContainer" minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
             <VBox minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">

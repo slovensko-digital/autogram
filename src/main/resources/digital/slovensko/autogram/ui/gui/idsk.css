@@ -16,17 +16,20 @@
   -autogram-link-colour: #1d70b8;
   -autogram-link-hover-colour: #003078;
 
-  -autogram-border-colour: #b1b4b6;
+  -autogram-border-colour: #cecece;
   -autogram-input-border-colour: #0b0c0c;
   -autogram-input-background-color: #ffffff;
 
   -autogram-success-colour: #00703c;
   -autogram-priamry-button-hover-colour: #204e2e;
+  -autogram-primary-button-bottom-color: #083d29;
 
-  -autogram-secondary-hover-colour: #dee0e2;
+  -autogram-secondary-button-hover-colour: #dee0e2;
+  -autogram-secondary-button-bottom-color: #858686;
 
   -autogram-warning-button-colour: #d0190f;
-  -autorgam-warning-button-hover-colour: #9e1912;
+  -autogram-warning-button-hover-colour: #9e1912;
+  -autogram-warning-button-bottom-colour: #651b1b;
 
   -autogram-background-colour: #ffffff;
   -autogram-secondary-background-colour: #f3f2f1;
@@ -124,7 +127,7 @@
 }
 
 .autogram-smaller-radio-buttons .radio-button:focused:hover .radio {
-  -fx-background-color: -autogram-secondary-hover-colour, -autogram-focus-colour, -autogram-input-border-colour, -autogram-background-colour;
+  -fx-background-color: -autogram-secondary-button-hover-colour, -autogram-focus-colour, -autogram-input-border-colour, -autogram-background-colour;
   -fx-background-insets: -10, -4, 0, 4;
   -fx-background-radius: 25px;
 }
@@ -134,7 +137,7 @@
 }
 
 .autogram-smaller-radio-buttons .radio-button:hover .radio {
-  -fx-background-color: -autogram-secondary-hover-colour, -autogram-input-border-colour,
+  -fx-background-color: -autogram-secondary-button-hover-colour, -autogram-input-border-colour,
   -autogram-background-colour;
   -fx-background-insets: -10, 0, 2;
   -fx-background-radius: 25px;
@@ -144,7 +147,7 @@
 .autogram-button {
   -fx-cursor: hand;
   -fx-background-color: -autogram-success-colour;
-  -fx-border-color: -autogram-input-border-colour;
+  -fx-border-color: -autogram-primary-button-bottom-color;
   -fx-border-width: 0 0 2px 0;
   -fx-text-fill: -autogram-background-colour;
   -fx-padding: 7px 10px 7px 10px;
@@ -161,8 +164,6 @@
 .autogram-button.autogram-button--warning:focused {
   -fx-background-color: -autogram-focus-colour !important;
   -fx-text-fill: -autogram-text-colour;
-
-  -fx-border-color: -autogram-input-border-colour;
 }
 
 .autogram-button:disabled {
@@ -197,20 +198,20 @@
 .autogram-button.autogram-button--secondary {
   -fx-text-fill: -autogram-text-colour;
   -fx-background-color: -autogram-secondary-background-colour;
-  -fx-border-color: -autogram-border-colour;
+  -fx-border-color: -autogram-secondary-button-bottom-color;
 }
 
 .autogram-button.autogram-button--secondary:hover {
-  -fx-background-color: -autogram-secondary-hover-colour;
+  -fx-background-color: -autogram-secondary-button-hover-colour;
 }
 
 .autogram-button.autogram-button--warning {
   -fx-background-color: -autogram-error-colour;
-  -fx-border-color: -autogram-warning-button-colour;
+  -fx-border-color: -autogram-warning-button-bottom-colour;
 }
 
 .autogram-button.autogram-button--warning:hover {
-  -fx-background-color: -autorgam-warning-button-hover-colour;
+  -fx-background-color: -autogram-warning-button-hover-colour;
 }
 
 /* Text styling */
@@ -453,8 +454,8 @@
 .autogram-visualizer-html,
 .autogram-visualizer-pdf VBox > HBox,
 .autogram-visualizer-image {
-  -fx-border-color: -autogram-input-border-colour;
-  -fx-border-width: 2px;
+  -fx-border-color: -autogram-border-colour;
+  -fx-border-width: 1px;
   -fx-border-style: solid;
   -fx-wrap-text: true;
 }
@@ -479,7 +480,7 @@
 }
 
 .autogram-dropzone--entered {
-  -fx-border-color: -autogram-input-border-colour;
+  -fx-border-color: -autogram-border-colour;
   -fx-border-width: 2px;
   -fx-background-color: -autogram-focus-colour, -autogram-background-colour;
   -fx-background-insets: -3, 0;
@@ -601,15 +602,14 @@ TextFlow.autogram-body-s {
 
 /* Borders */
 .borders {
-  -fx-border-color: -autogram-input-border-colour;
+  -fx-border-color: -autogram-border-colour;
 }
 
 /* Tabs */
-.tab .tab-label {
+.autogram-tab-pane .tab .tab-label {
   -fx-underline: true;
   -fx-text-fill: -autogram-text-colour;
   -fx-background-color: -autogram-secondary-background-colour;
-  -fx-border-color: -autogram-border-colour;
   -fx-cursor: hand;
   -fx-padding: 0.6875em 1.25em 0.6875em 1em;
   -fx-background-insets: 0.1875em 0.25em 0.1875em 0;
@@ -618,18 +618,37 @@ TextFlow.autogram-body-s {
   -fx-border-width: 0 0 0 0;
 }
 
-.tab:selected .tab-label {
+.autogram-tab-pane .tab:selected .tab-label {
   -fx-underline: false;
   -fx-background-color: -autogram-background-colour;
   -fx-border-width: 1px 1px 0 1px;
   -fx-background-insets: 0.125em 0.25em 0 0;
   -fx-border-insets: 0 0.25em 0 0;
   -fx-padding: 0.6875em 0.9375em 0.6875em 0.9375em;
-  -fx-border-color: -autogram-input-border-colour;
+  -fx-border-color: -autogram-border-colour;
 }
 
-.tab:selected {
+.autogram-tab-pane:focused .tab:selected .tab-label {
+  -fx-background-color: -autogram-focus-text-colour, -autogram-focus-colour;
+  -fx-text-fill: -autogram-focus-text-colour;
+  -fx-background-insets: 0.75em 1.125em 0.5em 1em, 0.6875em 1.125em 0.6875em 1em;
+}
+
+.autogram-settings-tab-pane .tab:selected {
   -fx-padding: 0 -1em 0 0;
+}
+
+.autogram-settings-tab-pane ScrollPane {
+  -fx-border-color: -autogram-border-colour;
+  -fx-border-width: 1px;
+  -fx-max-height: 560px;
+  -fx-hbar-policy: never;
+}
+
+.autogram-settings-tab-pane ScrollPane .container {
+  -fx-padding: 2em 0 2em 2em;
+  -fx-max-width: 50em;
+  -fx-min-width: 50em;
 }
 
 .autogram-visualization-tab-pane > .tab-content-area {
@@ -642,38 +661,6 @@ TextFlow.autogram-body-s {
 .autogram-visualization-tab-pane {
   -fx-tab-min-width: 6em;
   -fx-tab-max-width: 30em;
-}
-
-.autogram-visualization-tab-pane > .tab-header-area {
-  -fx-padding: 0 0 0 0;
-}
-
-.autogram-visualization-tab-pane .tab-label {
-  -fx-padding: 0.6875em 1em 0.6875em 0.75em;
-  -fx-font-size: 1em;
-  -fx-text-overrun: center-ellipsis;
-}
-
-.autogram-visualization-tab-pane .tab:selected {
-  -fx-padding: 0;
-}
-
-.autogram-visualization-tab-pane .tab:selected .tab-label {
-  -fx-background-insets: 0.125em 0 0 0;
-  -fx-border-insets: 0;
-}
-
-.autogram-settings-tab-pane ScrollPane {
-  -fx-border-color: -autogram-input-border-colour;
-  -fx-border-width: 1px;
-  -fx-max-height: 560px;
-  -fx-hbar-policy: never;
-}
-
-.autogram-settings-tab-pane ScrollPane .container {
-  -fx-padding: 2em 0 2em 2em;
-  -fx-max-width: 50em;
-  -fx-min-width: 50em;
 }
 
 .autogram-settings-row {
@@ -748,21 +735,21 @@ TextFlow.autogram-body-s {
   -fx-background-insets: 1em 0 0 0;
   -fx-border-insets: 1em 0 0 0;
   -fx-border-style: solid;
-  -fx-border-color: -autogram-input-border-colour;
+  -fx-border-color: -autogram-border-colour;
   -fx-border-width: 1px;
 }
 
 .menu-item:focused {
-  -fx-background-color: -autogram-secondary-hover-colour;
+  -fx-background-color: -autogram-secondary-button-hover-colour;
 }
 
 .menu-item > .label {
-  -fx-text-fill: -autogram-input-border-colour;
+  -fx-text-fill: -autogram-border-colour;
   -fx-padding: 3px;
 }
 
 .menu-item:focused > .label {
-  -fx-text-fill: -autogram-input-border-colour;
+  -fx-text-fill: -autogram-border-colour;
 }
 
 /* Choice boxes */
@@ -823,7 +810,7 @@ TextFlow.autogram-body-s {
 }
 
 .check-box:hover .box {
-  -fx-background-color: -autogram-secondary-hover-colour, -autogram-background-colour;
+  -fx-background-color: -autogram-secondary-button-hover-colour, -autogram-background-colour;
   -fx-background-insets: 0, 10px;
 }
 
@@ -834,7 +821,7 @@ TextFlow.autogram-body-s {
 }
 
 .check-box:focused:hover .box {
-  -fx-background-color: -autogram-secondary-hover-colour, -autogram-focus-colour, -autogram-background-colour;
+  -fx-background-color: -autogram-secondary-button-hover-colour, -autogram-focus-colour, -autogram-background-colour;
   -fx-border-width: 4px;
   -fx-background-insets: 0, 7px, 10px;
 }
@@ -1244,7 +1231,7 @@ TextFlow.autogram-body-s {
 
 .autogram-signature-box {
   -fx-border-color: -autogram-border-colour;
-  -fx-border-width: 2px;
+  -fx-border-width: 1px;
   -fx-max-width: 688px;
 }
 

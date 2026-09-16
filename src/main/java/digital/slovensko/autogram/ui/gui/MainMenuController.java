@@ -152,6 +152,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
         stage.showAndWait();
 
         if (!userSettings.getLanguageLocale().getLanguage().equals(resources.getLocale().getLanguage())) {
