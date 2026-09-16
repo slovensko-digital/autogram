@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.server;
 
 import com.google.gson.Gson;
+import digital.slovensko.autogram.TestAutogramFactory;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -25,16 +26,6 @@ public class ServerYmlExamplesTest {
     private static final String YML_PATH = "digital/slovensko/autogram/server/server.yml";
 
     private static final Set<String> EXPECTED_UNSUPPORTED_EXTENSIONS = Set.of(".docx");
-
-    private static final Responder NOOP_RESPONDER = new Responder() {
-        @Override
-        public void onDocumentSigned(SignedDocument signedDocument) {
-        }
-
-        @Override
-        public void onDocumentSignFailed(AutogramException error) {
-        }
-    };
 
     private static Map<String, Object> loadYml() {
         try (InputStream in = ServerYmlExamplesTest.class.getClassLoader().getResourceAsStream(YML_PATH)) {
@@ -92,8 +83,28 @@ public class ServerYmlExamplesTest {
         }
     }
 
+    private static void signAndAssertSuccess(String exampleName, SigningJob job, RecordingResponder responder) {
+        var autogram = TestAutogramFactory.create();
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
+
+        assertTrue(responder.signed, exampleName + ": signing did not report success");
+    }
+
+    private static class RecordingResponder extends Responder {
+        private boolean signed = false;
+
+        @Override
+        public void onDocumentSigned(SignedDocument signedDocument) {
+            signed = true;
+        }
+
+        @Override
+        public void onDocumentSignFailed(AutogramException error) {
+        }
+    }
+
     @TestFactory
-    List<DynamicTest> versionedSignExamplesBuildAndVisualizeSuccessfully() {
+    List<DynamicTest> versionedSignExamplesBuildVisualizeAndSignSuccessfully() {
         var root = loadYml();
         var examplesComponents = componentsExamples(root);
         var gson = new Gson();
@@ -106,10 +117,12 @@ public class ServerYmlExamplesTest {
                 var body = gson.fromJson(json, VersionedSignRequestBody.class);
 
                 var input = body.getSigningInput(true);
-                var job = SigningJob.fromInput(input, NOOP_RESPONDER);
+                var responder = new RecordingResponder();
+                var job = SigningJob.fromInput(input, responder);
                 job.initializeVisualizations();
 
                 assertVisualizationsAreSupported(name, job);
+                signAndAssertSuccess(name, job, responder);
             }));
         }
 
@@ -117,7 +130,7 @@ public class ServerYmlExamplesTest {
     }
 
     @TestFactory
-    List<DynamicTest> legacySignExamplesBuildAndVisualizeSuccessfully() {
+    List<DynamicTest> legacySignExamplesBuildVisualizeAndSignSuccessfully() {
         var root = loadYml();
         var examplesComponents = componentsExamples(root);
         var gson = new Gson();
@@ -132,10 +145,12 @@ public class ServerYmlExamplesTest {
                 body.validateDocument();
                 body.validateSigningParameters();
                 var input = body.getSigningInput(true);
-                var job = SigningJob.fromInput(input, NOOP_RESPONDER);
+                var responder = new RecordingResponder();
+                var job = SigningJob.fromInput(input, responder);
                 job.initializeVisualizations();
 
                 assertVisualizationsAreSupported(name, job);
+                signAndAssertSuccess(name, job, responder);
             }));
         }
 

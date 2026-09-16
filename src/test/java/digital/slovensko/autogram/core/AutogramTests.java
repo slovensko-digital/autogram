@@ -3,6 +3,7 @@ package digital.slovensko.autogram.core;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 
+import digital.slovensko.autogram.TestAutogramFactory;
 import digital.slovensko.autogram.TestMethodSources;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
@@ -18,10 +19,8 @@ import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.server.dto.CertificatesResponse;
-import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.UI;
-import digital.slovensko.autogram.ui.gui.IgnorableException;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -32,7 +31,6 @@ import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
-import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -70,9 +68,7 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider" })
     void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
-        var settings = new TestSettings();
-        var newUI = new FakeUI();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
 
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, null,
             null, null, false, null, null, null, false, 640, true);
@@ -89,9 +85,7 @@ class AutogramTests {
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
     void testSignNonEformHappyScenario(InMemoryDocument document) {
-        var settings = new TestSettings();
-        var newUI = new FakeUI();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
 
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
@@ -118,9 +112,7 @@ class AutogramTests {
     @MethodSource({"digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider"})
     void testSignAsiceCadesHappyScenario(InMemoryDocument document) {
-        var newUI = new FakeUI();
-        var settings = new TestSettings();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
 
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.CAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
@@ -134,9 +126,7 @@ class AutogramTests {
 
         @Test
         void testSignMultipleDocumentsAsiceXadesHappyScenario() {
-        var settings = new TestSettings();
-        var newUI = new FakeUI();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
         var responder = mock(Responder.class);
 
         var firstDocument = AutogramDocument.build(new InMemoryDocument("first".getBytes(), "first.txt",
@@ -156,9 +146,7 @@ class AutogramTests {
 
         @Test
         void testSignedMultiDocumentAsiceSignatureCoversAllDocuments() {
-        var settings = new TestSettings();
-        var newUI = new FakeUI();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
         var responder = mock(Responder.class);
 
         var firstDocument = AutogramDocument.build(new InMemoryDocument("first".getBytes(), "first.txt",
@@ -203,8 +191,7 @@ class AutogramTests {
 
     @Test
     void testStartVisualizationThrowsWhenLaterBundleDocumentIsLockedPdf() throws IOException {
-        var settings = new TestSettings();
-        var newUI = new FakeUI() {
+        var newUI = new TestAutogramFactory.FakeUI() {
             @Override
             public void showSigningJob(SigningJob job, Autogram autogram) {
                 Assertions.fail("Visualization should not start for a bundle containing a locked PDF");
@@ -215,7 +202,7 @@ class AutogramTests {
                 throw exception;
             }
         };
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create(newUI);
         var job = createMultiDocumentJob(false,
                 createTextDocument("first.txt", "first"),
             AutogramDocument.build(new InMemoryDocument(createPasswordProtectedPdf(), "locked.pdf", MimeTypeEnum.PDF), null));
@@ -228,14 +215,13 @@ class AutogramTests {
 
     @Test
     void testCheckPDFAComplianceFailsWhenLaterBundleDocumentIsNotPdfa() throws IOException {
-        var settings = new TestSettings();
-        var newUI = new FakeUI() {
+        var newUI = new TestAutogramFactory.FakeUI() {
             @Override
             public void onPDFAComplianceCheckFailed(SigningJob job) {
                 throw new PDFAComplianceException();
             }
         };
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create(newUI);
         var job = createMultiDocumentJob(true,
                 createTextDocument("first.txt", "first"),
                 loadDocument("sample.pdf", MimeTypeEnum.PDF));
@@ -276,9 +262,7 @@ class AutogramTests {
     @ParameterizedTest
     @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
     void testSignPadesHappyScenario(InMemoryDocument document) {
-        var newUI = new FakeUI();
-        var settings = new TestSettings();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
 
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.PAdES, DigestAlgorithm.SHA256,
             null, null, false, null, null, null, false, 640, false);
@@ -305,9 +289,7 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider",
             "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider"})
     void testSignBuildFromFileHappyScenario(InMemoryDocument document) throws IOException {
-        var newUI = new FakeUI();
-        var settings = new TestSettings();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
 
         var file = new File(Path.of(tempTestsPath.toString(), document.getName()).toString());
         var outputStream = new FileOutputStream(file);
@@ -352,14 +334,13 @@ class AutogramTests {
 
     @Test
     void testGetCertificatesThrowsOnConsentRejected() {
-        var settings = new TestSettings();
-        var newUI = new FakeUI() {
+        var newUI = new TestAutogramFactory.FakeUI() {
                     @Override
                     public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onCancel) {
                         onCancel.run();
                     }
         };
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create(newUI);
 
         var responder = mock(CertificatesResponder.class);
         List<String> drivers = List.of();
@@ -369,9 +350,7 @@ class AutogramTests {
 
     @Test
     void testGetCertificatesHappyScenario() {
-        var settings = new TestSettings();
-        var newUI = new FakeUI();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
 
         var responder = mock(CertificatesResponder.class);
         List<String> drivers = List.of();
@@ -382,9 +361,7 @@ class AutogramTests {
 
     @Test
     void testGetCertificatesHappyScenarioWithResponse() throws IOException {
-        var settings = new TestSettings();
-        var newUI = new FakeUI();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
 
         var exchange = mock(HttpExchange.class);
         var responseBody = mock(java.io.OutputStream.class);
@@ -405,9 +382,7 @@ class AutogramTests {
 
     @Test
     void testGetCertificatesHappyScenarioWithDriverSelectorAndResponse() throws IOException {
-        var settings = new TestSettings();
-        var newUI = new FakeUI();
-        var autogram = new Autogram(newUI, settings);
+        var autogram = TestAutogramFactory.create();
 
         var exchange = mock(HttpExchange.class);
         var responseBody = mock(java.io.OutputStream.class);
@@ -465,136 +440,6 @@ class AutogramTests {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    private static class FakeUI implements UI {
-        @Override
-        public void startSigning(SigningJob signingJob, Autogram autogram) {
-
-        }
-
-        @Override
-        public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
-        }
-
-        @Override
-        public void cancelBatch(Batch batch) {
-        }
-
-        @Override
-        public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel) {
-            callback.accept(drivers.get(0));
-        }
-
-        @Override
-        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
-            callback.accept(keys.get(0));
-        }
-
-        @Override
-        public void onWorkThreadDo(Runnable callback) {
-            callback.run();
-        }
-
-        @Override
-        public void onUIThreadDo(Runnable callback) {
-            callback.run();
-        }
-
-        @Override
-        public void onUpdateAvailable() {
-
-        }
-
-        @Override
-        public void onAboutInfo() {
-
-        }
-
-        @Override
-        public void onPDFAComplianceCheckFailed(SigningJob job) {
-
-        }
-
-        @Override
-        public void showSigningJob(SigningJob job, Autogram autogram) {
-
-        }
-
-        @Override
-        public void showIgnorableExceptionDialog(IgnorableException exception) {
-
-        }
-
-        @Override
-        public void showError(AutogramException exception) {
-
-        }
-
-        @Override
-        public char[] getKeystorePassword() {
-            return null;
-        }
-
-        @Override
-        public char[] getContextSpecificPassword() {
-            return null;
-        }
-
-        @Override
-        public void onSigningSuccess(SigningJob signingJob) {
-
-        }
-
-        @Override
-        public void onSigningFailed(AutogramException e, SigningJob job) {
-            throw e;
-        }
-
-        @Override
-        public void onSigningFailed(AutogramException e) {
-            throw e;
-        }
-
-        @Override
-        public void onDocumentSaved(File targetFiles) {
-
-        }
-
-        @Override
-        public void onDocumentBatchSaved(BatchUiResult result) {
-
-        }
-
-        @Override
-        public void onPickSigningKeyFailed(AutogramException ae) {
-            throw new RuntimeException();
-        }
-
-        @Override
-        public void onSignatureValidationCompleted(ValidationReports wrapper) {
-
-        }
-
-        @Override
-        public void onSignatureCheckCompleted(ValidationReports wrapper) {
-
-        }
-
-        @Override
-        public void updateBatch() {
-
-        }
-
-        @Override
-        public void resetSigningKey() {
-
-        }
-
-        @Override
-        public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onCancel) {
-            callback.accept(() -> {});
         }
     }
 
