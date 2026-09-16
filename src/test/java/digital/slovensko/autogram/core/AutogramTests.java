@@ -16,6 +16,7 @@ import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejected
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.PDFAComplianceException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
+import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.server.dto.CertificatesResponse;
@@ -45,6 +46,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -188,6 +190,56 @@ class AutogramTests {
         Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(0).getName(), 0).size());
         Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(1).getName(), 1).size());
         }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#multiDocumentAsiceProvider" })
+    void testSignMultiDocumentAsiceContainerHappyScenario(InMemoryDocument document) {
+        var autogram = TestAutogramFactory.create();
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
+        var input = SigningInput.prepareForASiCWithXAdES(
+            AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#multiDocumentAsiceProvider" })
+    void testStartVisualizationForMultiDocumentAsiceContainer(InMemoryDocument document) {
+        var shownJobs = new ArrayList<SigningJob>();
+        var newUI = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void showSigningJob(SigningJob job, Autogram autogram) {
+                shownJobs.add(job);
+            }
+
+            @Override
+            public void showError(AutogramException exception) {
+                throw exception;
+            }
+        };
+        var autogram = TestAutogramFactory.create(newUI);
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
+        var input = SigningInput.prepareForASiCWithXAdES(
+            AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
+        var job = SigningJob.fromInput(input, mock(Responder.class));
+
+        autogram.startVisualization(job);
+
+        Assertions.assertEquals(1, shownJobs.size());
+
+        var previewDocumentsCount = AsicContainerUtils.getOriginalDocuments(document).size();
+        Assertions.assertEquals(previewDocumentsCount, job.getVisualizations().size());
+        for (var visualization : job.getVisualizations())
+            Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
+    }
 
     @Test
     void testStartVisualizationThrowsWhenLaterBundleDocumentIsLockedPdf() throws IOException {

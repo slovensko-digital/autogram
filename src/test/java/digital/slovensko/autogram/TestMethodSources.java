@@ -311,6 +311,20 @@ public abstract class TestMethodSources {
         );
     }
 
+    public static Stream<InMemoryDocument> multiDocumentAsiceProvider() throws IOException {
+        var basic = loadContent("multi_document/basic.asice");
+        var formPdfDifferent = loadContent("multi_document/form_pdf_different.asice");
+        var gaFupsMulti = loadContent("multi_document/ga_fups_multi.asice");
+        var gaPdfNoSigned = loadContent("multi_document/ga_pdf_no_signed.asice");
+
+        return Stream.of(
+                new InMemoryDocument(basic, "basic.asice", MimeTypeEnum.ASICE),
+                new InMemoryDocument(formPdfDifferent, "form_pdf_different.asice", MimeTypeEnum.ASICE),
+                new InMemoryDocument(gaFupsMulti, "ga_fups_multi.asice", MimeTypeEnum.ASICE),
+                new InMemoryDocument(gaPdfNoSigned, "ga_pdf_no_signed.asice", MimeTypeEnum.ASICE)
+        );
+    }
+
     public static Stream<InMemoryDocument> embeddedOrsrDocumentsProvider() throws IOException {
         var fupsXml = loadContent("FUPS.xdc.xml");
         var fupsXdcNoNamespaceXml = loadContent("FUPS_wo_namespace.xdc.xml");

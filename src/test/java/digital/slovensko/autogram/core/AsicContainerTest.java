@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
@@ -17,6 +16,7 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -171,6 +171,110 @@ class AsicContainerTest {
                 ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var autogramDocument = AutogramDocument.build(document, EFormAttributes.build(parameters, true));
         return SigningInput.prepareForASiCWithXAdES(autogramDocument, parameters);
+    }
+
+    @Test
+    void testSignatureCheckReportForAsiceWithFilesSignedByOneSignature() throws Exception {
+        var asice = loadMultiDocumentAsice("basic.asice");
+        var previewDocuments = AsicContainerUtils.getOriginalDocuments(asice);
+        Assertions.assertEquals(List.of("document.xdcf", "PdfDocument.pdf", "TextDocument.txt"),
+                previewDocuments.stream().map(DSSDocument::getName).toList());
+
+        var reports = SignatureValidator.getSignatureCheckReport(prepareAsicXadesJob(asice));
+
+        Assertions.assertEquals(1, reports.getDocumentReports().size());
+        var documentReport = reports.getDocumentReports().get(0);
+        var signatureId = documentReport.reports().getSimpleReport().getSignatureIdList().get(0);
+
+        Assertions.assertTrue(documentReport.hasMultipleContainerDocuments());
+        Assertions.assertTrue(documentReport.signatureCoversAllDocuments(signatureId));
+        Assertions.assertFalse(reports.hasIncompleteContainerCoverage());
+
+        for (int i = 0; i < previewDocuments.size(); i++)
+            Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(i).getName(), i).size());
+    }
+
+    @Test
+    void testSignatureCheckReportForAsiceWithFormAndPdfSignedSeparately() throws Exception {
+        var asice = loadMultiDocumentAsice("form_pdf_different.asice");
+        var previewDocuments = AsicContainerUtils.getOriginalDocuments(asice);
+        Assertions.assertEquals(List.of("sample.pdf", "general_agenda.xml"),
+                previewDocuments.stream().map(DSSDocument::getName).toList());
+
+        var reports = SignatureValidator.getSignatureCheckReport(prepareAsicXadesJob(asice));
+
+        Assertions.assertEquals(1, reports.getDocumentReports().size());
+        var documentReport = reports.getDocumentReports().get(0);
+        Assertions.assertTrue(documentReport.hasMultipleContainerDocuments());
+        Assertions.assertEquals(2, documentReport.getSignatureCount());
+
+        for (var signatureId : documentReport.reports().getSimpleReport().getSignatureIdList())
+            Assertions.assertFalse(documentReport.signatureCoversAllDocuments(signatureId));
+
+        Assertions.assertTrue(reports.hasIncompleteContainerCoverage());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument("sample.pdf", 0).size());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument("general_agenda.xml", 1).size());
+    }
+
+    @Test
+    void testSignatureCheckReportForAsiceWithTwoDifferentEformsSignedSeparately() throws Exception {
+        var asice = loadMultiDocumentAsice("ga_fups_multi.asice");
+        var previewDocuments = AsicContainerUtils.getOriginalDocuments(asice);
+        Assertions.assertEquals(List.of("general_agenda.xml", "FUPS.xdcf"),
+                previewDocuments.stream().map(DSSDocument::getName).toList());
+
+        var reports = SignatureValidator.getSignatureCheckReport(prepareAsicXadesJob(asice));
+
+        Assertions.assertEquals(1, reports.getDocumentReports().size());
+        var documentReport = reports.getDocumentReports().get(0);
+        Assertions.assertTrue(documentReport.hasMultipleContainerDocuments());
+        Assertions.assertEquals(2, documentReport.getSignatureCount());
+
+        for (var signatureId : documentReport.reports().getSimpleReport().getSignatureIdList())
+            Assertions.assertFalse(documentReport.signatureCoversAllDocuments(signatureId));
+
+        Assertions.assertTrue(reports.hasIncompleteContainerCoverage());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument("general_agenda.xml", 0).size());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument("FUPS.xdcf", 1).size());
+    }
+
+    @Test
+    void testSignatureCheckReportForAsiceWithSignedEformAndUnsignedPdf() throws Exception {
+        var asice = loadMultiDocumentAsice("ga_pdf_no_signed.asice");
+        var previewDocuments = AsicContainerUtils.getOriginalDocuments(asice);
+        Assertions.assertEquals(List.of("sample.pdf", "general_agenda.xml"),
+                previewDocuments.stream().map(DSSDocument::getName).toList());
+
+        var reports = SignatureValidator.getSignatureCheckReport(prepareAsicXadesJob(asice));
+
+        Assertions.assertEquals(1, reports.getDocumentReports().size());
+        var documentReport = reports.getDocumentReports().get(0);
+        Assertions.assertTrue(documentReport.hasMultipleContainerDocuments());
+        Assertions.assertEquals(1, documentReport.getSignatureCount());
+
+        Assertions.assertTrue(reports.hasIncompleteContainerCoverage());
+        Assertions.assertTrue(reports.getSignaturesForPreviewDocument("sample.pdf", 0).isEmpty());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument("general_agenda.xml", 1).size());
+    }
+
+    private SigningJob prepareAsicXadesJob(InMemoryDocument document) {
+        var input = prepareAsicXadesInput(document);
+        return SigningJob.fromInput(input, new Responder() {
+            @Override
+            public void onDocumentSigned(SignedDocument signedDocument) {
+            }
+
+            @Override
+            public void onDocumentSignFailed(AutogramException error) {
+                Assertions.fail(error);
+            }
+        });
+    }
+
+    private InMemoryDocument loadMultiDocumentAsice(String filename) throws Exception {
+        try (var in = getClass().getResourceAsStream("/digital/slovensko/autogram/multi_document/" + filename)) {
+            return new InMemoryDocument(in.readAllBytes(), filename, MimeTypeEnum.ASICE);
+        }
     }
 
     private InMemoryDocument createAsiceWithMultipleFiles() {
