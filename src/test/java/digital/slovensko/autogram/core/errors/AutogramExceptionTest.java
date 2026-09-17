@@ -11,6 +11,16 @@ class AutogramExceptionTest {
     }
 
     @Test
+    void pinIncorrectIsRetryableTest() {
+        Assertions.assertTrue(new PINIncorrectException().isRetryable());
+    }
+
+    @Test
+    void errorsAreNotRetryableByDefaultTest() {
+        Assertions.assertFalse(new AutogramException("SOME_ERROR").isRetryable());
+    }
+
+    @Test
     void createFromIllegalArgumentExceptionNoMessageTest() {
         Assertions.assertSame(UnrecognizedException.class, AutogramException.createFromIllegalArgumentException(new IllegalArgumentException()).getClass());
     }

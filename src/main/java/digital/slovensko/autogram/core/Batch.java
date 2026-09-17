@@ -29,6 +29,7 @@ public class Batch {
 
     private BatchState state = BatchState.INITIALIZED;
     private SigningKey signingKey = null;
+    private boolean oneByOne = false;
 
     private Date expirationDate;
     private int addedDocumentsCount = 0;
@@ -49,6 +50,7 @@ public class Batch {
 
     public void startOneByOne() {
         start(null);
+        oneByOne = true;
     }
 
     public void addJob(String batchId) {
@@ -109,6 +111,10 @@ public class Batch {
 
     public boolean isEnded() {
         return state == BatchState.ENDED;
+    }
+
+    public boolean isOneByOne() {
+        return oneByOne;
     }
 
     public boolean isAllProcessed() {

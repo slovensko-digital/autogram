@@ -2,12 +2,14 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
@@ -81,6 +83,32 @@ public class GUI implements UI {
         stage.setResizable(false);
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, batchController);
+        GUIUtils.showOnTop(stage);
+        setUserFriendlyPositionAndLimits(stage);
+    }
+
+    @Override
+    public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder) {
+        if (userSettings.isBulkEnabled()) {
+            autogram.startBatch(batch, allAtOnceResponder);
+            return;
+        }
+
+        var controller = new PickBatchModeDialogController(batch, allAtOnceResponder,
+                oneByOneResponder, autogram);
+        var root = GUIUtils.loadFXML(controller, "pick-batch-mode-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("pickBatchMode.window.title"));
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> {
+            autogram.endBatch(batch);
+            allAtOnceResponder.onBatchStartFailure(new BatchCanceledException());
+        });
+        stage.setResizable(false);
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
         GUIUtils.showOnTop(stage);
         setUserFriendlyPositionAndLimits(stage);
     }

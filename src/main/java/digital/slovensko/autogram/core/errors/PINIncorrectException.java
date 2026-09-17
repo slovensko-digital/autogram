@@ -9,4 +9,9 @@ public class PINIncorrectException extends AutogramException {
     public boolean batchCanContinue() {
         return false;
     }
+
+    @Override
+    public boolean isRetryable() {
+        return true;
+    }
 }
