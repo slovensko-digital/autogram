@@ -15,13 +15,13 @@
       xmlns:fx="http://javafx.com/fxml"
       minHeight="400"
       maxHeight="800"
-            prefHeight="760"
+      prefHeight="760"
       minWidth="680"
       prefWidth="680"
       fx:id="mainBox">
 
-        <VBox minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
-        <TextFlow styleClass="autogram-header">
+    <VBox minHeight="0" prefHeight="0" VBox.vgrow="ALWAYS">
+        <TextFlow fx:id="headerFlow" styleClass="autogram-header">
             <Text fx:id="headerText" styleClass="autogram-heading-m" />
         </TextFlow>
 

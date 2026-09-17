@@ -31,6 +31,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -86,6 +87,8 @@ public class SigningDialogController extends BaseController implements Suppresse
     @FXML
     VBox signaturesTable;
     @FXML
+    TextFlow headerFlow;
+    @FXML
     Text headerText;
 
     public SigningDialogController(SigningJob job, Autogram autogram, GUI gui, String title, UserSettings userSettings) {
@@ -98,7 +101,7 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     @Override
     public void initialize() throws IOException {
-        headerText.setText(title);
+        setupHeader();
         plainTextArea.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
         singleDocumentVisualizationContainer.setMinHeight(0);
         webViewContainer.setMinHeight(0);
@@ -116,6 +119,15 @@ public class SigningDialogController extends BaseController implements Suppresse
         setupDocumentTabs();
         refreshSigningKey();
         autogram.checkPDFACompliance(job);
+    }
+
+    private void setupHeader() {
+        if (job.isMultiDocument()) {
+            headerFlow.setVisible(false);
+            headerFlow.setManaged(false);
+        } else {
+            headerText.setText(title);
+        }
     }
 
     private void setupDocumentTabs() {
