@@ -5,15 +5,7 @@ import digital.slovensko.autogram.ui.gui.GUIApp;
 import javafx.application.Application;
 import org.apache.commons.cli.*;
 
-import java.io.File;
 import java.io.PrintWriter;
-import java.net.URI;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AppStarter {
     private static final Options options = new Options().
@@ -23,7 +15,7 @@ public class AppStarter {
         ).
         addOption("h", "help", false, "Print this command line help.").
         addOption("u", "usage", false, "Print usage examples.").
-        addOption("s", "source", true, "Source file or directory of files to sign.").
+        addOption("s", "source", true, "Source file or directory of files to sign. Can also be given as a single positional argument.").
         addOption("t", "target", true, "Target file or directory for signed files. Type (file/directory) must match the source.").
         addOption("f", "force", false, "Overwrite existing file(s).").
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
@@ -37,16 +29,9 @@ public class AppStarter {
         addOption(null, "plain-xml", false, "Enable signing plain (non-slovak-eform) XML files.").
         addOption(null, "pkcs11-driver-path", true, "Absolute path to a file with custom PKCS11 driver.");
 
-    private static final Set<String> OPTIONS_WITH_VALUES = options.getOptions().stream()
-            .filter(Option::hasArg)
-            .flatMap(option -> Stream.of(option.getOpt(), option.getLongOpt()))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toUnmodifiableSet());
-
     public static void start(String[] args) {
         try {
-            var resolvedArgs = resolveArgs(args);
-            CommandLine cmd = new DefaultParser().parse(options, resolvedArgs);
+            CommandLine cmd = new DefaultParser().parse(options, args);
 
             if (cmd.hasOption("h")) {
                 printHelp();
@@ -55,72 +40,14 @@ public class AppStarter {
             } else if (cmd.hasOption("c")) {
                 CliApp.start(cmd);
             } else {
-                // --url starts a server instance that holds no single-instance lock or
-                // socket, so a GUI instance started later becomes the primary instead.
-                // This is intentional: the server is a separate integration surface and
-                // must not be a forwarding target for the desktop single-instance flow.
-                if (!cmd.hasOption("url")) {
-                    if (!SingleInstanceManager.start(GUIApp.getFilesToOpen()))
-                        return;
-                }
-                Application.launch(GUIApp.class, resolvedArgs);
+                if (!SingleInstanceManager.start(cmd.getArgList()))
+                    return;
+                Application.launch(GUIApp.class, args);
             }
         } catch (ParseException e) {
             System.err.println("Unable to parse program args");
             System.err.println(e);
         }
-    }
-
-    static String[] resolveArgs(String[] args) {
-        var filesToOpen = new ArrayList<String>();
-        var resolved = new ArrayList<String>();
-
-        for (var i = 0; i < args.length; i++) {
-            var arg = args[i];
-            if (isValueOfOption(args, i)) {
-                resolved.add(arg);
-            } else if (arg.startsWith("autogram://")) {
-                resolved.add("--url=" + arg);
-            } else if (arg.startsWith("file://")) {
-                filesToOpen.add(decodeFileUri(arg));
-            } else if (new File(arg).isFile()) {
-                filesToOpen.add(arg);
-            } else {
-                resolved.add(arg);
-            }
-        }
-
-        if (!filesToOpen.isEmpty()) {
-            GUIApp.setFilesToOpen(filesToOpen);
-        }
-
-        return resolved.toArray(new String[0]);
-    }
-
-    private static String decodeFileUri(String uri) {
-        try {
-            return Path.of(URI.create(uri)).toString();
-        } catch (IllegalArgumentException e) {
-            return uri.substring(7);
-        }
-    }
-
-    private static boolean isValueOfOption(String[] args, int index) {
-        if (index == 0)
-            return false;
-
-        var previous = args[index - 1];
-        if (previous.contains("="))
-            return false;
-
-        return OPTIONS_WITH_VALUES.contains(normalizeOptionName(previous));
-    }
-
-    private static String normalizeOptionName(String arg) {
-        var name = arg;
-        while (name.startsWith("-"))
-            name = name.substring(1);
-        return name;
     }
 
     public static void printHelp() {
@@ -146,6 +73,7 @@ public class AppStarter {
                 autogram [options]
                 autogram --url=http://localhost:32700
                 autogram --cli [options]
+                autogram --cli target/directory-example/file-example.pdf
                 autogram --cli -s target/directory-example/file-example.pdf -t target/output-example/out-example.pdf
                 autogram --cli -s target/directory-example -t target/output-example -f
                 autogram --cli -s target/directory-example -t target/non-existent-dir/output-example --parents

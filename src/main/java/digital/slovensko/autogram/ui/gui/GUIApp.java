@@ -12,26 +12,18 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class GUIApp extends Application {
+    private static final Logger logger = LoggerFactory.getLogger(GUIApp.class);
+
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
     private final ExecutorService cachedExecutorService = Executors.newFixedThreadPool(8);
-
-    private static List<String> filesToOpen;
-
-    public static void setFilesToOpen(List<String> files) {
-        filesToOpen = files;
-    }
-
-    public static List<String> getFilesToOpen() {
-        return filesToOpen;
-    }
 
     @Override
     public void start(Stage windowStage) throws Exception {
@@ -93,27 +85,25 @@ public class GUIApp extends Application {
 
             var singleInstanceManager = SingleInstanceManager.getInstance();
             if (singleInstanceManager != null) {
-                singleInstanceManager.onFilesReceived(files ->
-                        Platform.runLater(() -> {
-                            windowStage.setIconified(false);
-                            windowStage.show();
-                            windowStage.toFront();
-                            windowStage.requestFocus();
-                            controller.onFilesSelected(files.stream().map(File::new).toList());
-                        }));
-                singleInstanceManager.onActivated(() -> Platform.runLater(() -> {
-                    windowStage.setIconified(false);
-                    windowStage.show();
-                    windowStage.toFront();
-                    windowStage.requestFocus();
-                }));
-            } else if (filesToOpen != null && !filesToOpen.isEmpty()) {
-                var files = filesToOpen.stream().map(File::new).toList();
-                Platform.runLater(() -> controller.onFilesSelected(files));
+                // Forwarded args may also carry an autogram:// URL; the server is
+                // already running here, so only actual files trigger anything.
+                singleInstanceManager.onArgsReceived(args -> {
+                    var files = LaunchParameters.filesFrom(args);
+                    if (files.isEmpty())
+                        return;
+                    Platform.runLater(() -> {
+                        raiseWindow(windowStage);
+                        controller.onFilesSelected(files);
+                    });
+                });
+                singleInstanceManager.onActivated(() -> Platform.runLater(() -> raiseWindow(windowStage)));
+            } else if (!params.getFiles().isEmpty()) {
+                Platform.runLater(() -> controller.onFilesSelected(params.getFiles()));
             }
 
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
+            logger.error("Failed to start Autogram GUI", e);
             var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
             var finalAutogram = autogram;
             Platform.runLater(() -> {
@@ -129,8 +119,19 @@ public class GUIApp extends Application {
         }
     }
 
+    private static void raiseWindow(Stage windowStage) {
+        windowStage.setIconified(false);
+        windowStage.show();
+        windowStage.toFront();
+        windowStage.requestFocus();
+    }
+
     @Override
     public void stop() throws Exception {
+        var singleInstanceManager = SingleInstanceManager.getInstance();
+        if (singleInstanceManager != null)
+            singleInstanceManager.shutdown();
+
         if (!scheduledExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS))
             scheduledExecutorService.shutdownNow();
 
