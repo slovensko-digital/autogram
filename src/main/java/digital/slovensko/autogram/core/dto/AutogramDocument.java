@@ -104,7 +104,8 @@ public class AutogramDocument {
     }
 
     public boolean isEForm() {
-        return eFormAttributes != null && eFormAttributes.identifier() != null && !eFormAttributes.identifier().isEmpty();
+        return eFormAttributes != null && eFormAttributes.shouldCreateXdc()
+                && eFormAttributes.identifier() != null && !eFormAttributes.identifier().isEmpty();
     }
 
     public boolean isPDF() {

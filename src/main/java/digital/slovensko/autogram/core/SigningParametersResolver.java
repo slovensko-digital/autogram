@@ -7,7 +7,6 @@ import digital.slovensko.autogram.core.errors.UnknownEformException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 
@@ -73,11 +72,11 @@ public class SigningParametersResolver {
             return resolveLenient(withSignedDocumentSignature(requested, signedDocumentSignature), documents);
 
         if (document.isPDF()) {
-            var level = requested.getLevel();
-            if (level == SignatureLevel.PAdES_BASELINE_B)
-                return resolveLenient(requested, documents);
+            var form = requested.getSignatureForm();
+            if (form == SignatureForm.PAdES)
+                return resolveLenient(withFormAndContainer(requested, SignatureForm.PAdES, null), documents);
 
-            if (level == SignatureLevel.CAdES_BASELINE_B)
+            if (form == SignatureForm.CAdES)
                 return resolveLenient(withFormAndContainer(requested, SignatureForm.CAdES, ASiCContainerType.ASiC_E), documents);
         }
 

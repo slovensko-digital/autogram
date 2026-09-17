@@ -5,7 +5,10 @@ import java.util.Base64;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
+import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+
+import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.BASE64_DECODING_FAILED;
 
 public record XDCParameters (
         String fsFormIdentifier, Boolean autoLoadEform, String identifier, String containerXmlns,
@@ -64,11 +67,9 @@ public record XDCParameters (
         if (schema == null)
             return null;
 
-        if (schemaMimeType != null && schemaMimeType.toLowerCase().contains("base64"))
-            return new String(Base64.getDecoder().decode(schema));
-
-        if (schemaMimeType == null && isDocumentBase64)
-            return new String(Base64.getDecoder().decode(schema));
+        if ((schemaMimeType != null && schemaMimeType.toLowerCase().contains("base64"))
+                || (schemaMimeType == null && isDocumentBase64))
+            return decodeBase64(schema);
 
         return schema;
     }
@@ -81,13 +82,19 @@ public record XDCParameters (
         if (transformation == null)
             return null;
 
-        if (schemaMimeType != null && schemaMimeType.toLowerCase().contains("base64"))
-            return new String(Base64.getDecoder().decode(transformation));
-
-        if (schemaMimeType == null && isDocumentBase64)
-            return new String(Base64.getDecoder().decode(transformation));
+        if ((schemaMimeType != null && schemaMimeType.toLowerCase().contains("base64"))
+                || (schemaMimeType == null && isDocumentBase64))
+            return decodeBase64(transformation);
 
         return transformation;
+    }
+
+    private static String decodeBase64(String value) {
+        try {
+            return new String(Base64.getDecoder().decode(value));
+        } catch (IllegalArgumentException e) {
+            throw new MalformedBodyException(BASE64_DECODING_FAILED);
+        }
     }
 
     public String getTransformationMediaDestinationTypeDescription() {

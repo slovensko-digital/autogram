@@ -1,6 +1,8 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.TestMethodSources;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
 import digital.slovensko.autogram.server.dto.Document;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
@@ -11,15 +13,22 @@ import digital.slovensko.autogram.server.dto.XDCParameters;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SigningJobTests {
 
@@ -141,5 +150,39 @@ public class SigningJobTests {
         } catch (Exception e) {
             fail();
         }
+    }
+
+    @Test
+    void signingPdfAsPadesWithAsicEContainerMustNotThrowClassCastException() throws IOException {
+        // fromDocument uses resolveStrict, which (unlike the now-fixed resolveLenientFromFile)
+        // does not clear an explicitly requested container, so the PAdES+ASiC-E mismatch survives.
+        var samplePdf = AutogramDocument.build(new InMemoryDocument(TestMethodSources.loadContent("sample.pdf"), "sample.pdf", MimeTypeEnum.PDF), null);
+        var params = SigningParametersResolver.buildRequested(
+                SignatureProfile.BASELINE_B, SignatureForm.PAdES, DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING,
+                false, null, null, null, false, 640, false);
+        var input = SigningInput.fromDocument(samplePdf, params);
+        assertEquals(ASiCContainerType.ASiC_E, input.getParameters().getContainer(),
+                "precondition: an explicitly requested ASiC-E container survives strict resolution");
+
+        var job = SigningJob.fromInput(input, mock(Responder.class));
+
+        // A real certificate is required because DSS computes the encryption algorithm from it;
+        // the signature itself stays mocked so no real signing happens.
+        var key = mock(SigningKey.class);
+        var keystore = SigningJobTests.class
+                .getResource("/digital/slovensko/autogram/core/test.keystore").getFile();
+        try (var token = new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection(new char[0]))) {
+            var testKey = token.getKeys().get(0);
+            when(key.getCertificate()).thenReturn(testKey.getCertificate());
+            when(key.getCertificateChain()).thenReturn(testKey.getCertificateChain());
+        }
+
+        var thrown = assertThrows(Throwable.class, () -> job.signWithKeyAndRespond(key, null),
+                "the mocked signature value cannot produce a real signature, so signing is expected to fail eventually");
+
+        assertFalse(thrown instanceof ClassCastException,
+                "A PDF PAdES job carrying an ASiC-E container must not be cast to AbstractASiCSignatureService, "
+                        + "but got " + thrown);
     }
 }

@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -239,6 +240,16 @@ class AutogramDocumentTest {
         var result = AutogramDocument.build(document, EFormAttributes.build(parameters, true));
 
         assertTrue(result.getEFormAttributes().containerXmlns().contains("xmldatacontainer"));
+    }
+
+    @Test
+    void plainDocumentWithIdentifierButNoXdcContainerIsNotAnEForm() {
+        var document = new InMemoryDocument("test".getBytes(), "test.txt", MimeTypeEnum.TEXT);
+        var attributes = new EFormAttributes(IDENTIFIER, null, null, null, null, null, false, null, false, null, null);
+
+        var autogramDocument = AutogramDocument.build(document, attributes);
+
+        assertFalse(autogramDocument.isEForm());
     }
 
     private static void assertXdcValidationFails(String resource) throws IOException {

@@ -16,7 +16,6 @@ import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.common.signature.AbstractASiCSignatureService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
@@ -83,7 +82,7 @@ public class SigningJob {
             .toList();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("unchecked")
     public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
             + (isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
@@ -91,8 +90,7 @@ public class SigningJob {
         var signatureParameters = DssSigningParametersFactory.createSignatureParameters(input, key);
         var signatureService = createSignatureService(tspSource);
 
-        if (input.getParameters().getContainer() == ASiCContainerType.ASiC_E) {
-            var castedService = (AbstractASiCSignatureService) signatureService;
+        if (signatureService instanceof AbstractASiCSignatureService castedService) {
             var documents = getDssDocuments();
 
             var dataToSign = castedService.getDataToSign(documents, signatureParameters);

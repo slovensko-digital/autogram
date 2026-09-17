@@ -32,6 +32,7 @@ import static digital.slovensko.autogram.server.errors.RequestValidationExceptio
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.EMPTY_PARAMS_LEVEL;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.ID_MISSING;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.INVALID_PACKAGING;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MIME_TYPE_MISMATCH;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SCHEMA_MISSING;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.TRANSFORMATION_MISSING;
@@ -315,7 +316,7 @@ public class ServerSigningParameters {
     public void validate(DSSDocument document) throws RequestValidationException {
         var mimeType = document.getMimeType();
         if (level == null)
-            throw new RequestValidationException(UNSUPPORTED_SIGN_LEVEL);
+            throw new RequestValidationException(MISSING_FIELD, "Parameters.Level");
 
         var supportedLevels = Arrays.asList(
                 SignatureLevel.XAdES_BASELINE_B,

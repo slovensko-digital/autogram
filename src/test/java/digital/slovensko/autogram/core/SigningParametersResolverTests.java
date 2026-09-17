@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -236,7 +237,8 @@ public class SigningParametersResolverTests {
 
         var resolved = SigningParametersResolver.resolveLenientFromFile(parameters, document);
 
-        assertSame(parameters, resolved);
+        assertEquals(SignatureForm.PAdES, resolved.getSignatureForm());
+        assertNull(resolved.getContainer());
     }
 
     @Test
@@ -370,5 +372,45 @@ public class SigningParametersResolverTests {
 
         assertEquals(SignatureLevel.XAdES_BASELINE_T, result.getLevel());
         assertEquals(ASiCContainerType.ASiC_E, result.getContainer());
+    }
+
+    @Test
+    void plainDocumentWithIdentifierDoesNotForceAsicContainer() {
+        var document = new InMemoryDocument("test".getBytes(), "test.txt", MimeTypeEnum.TEXT);
+        var attributes = new EFormAttributes("http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9", null, null, null, null, null, false, null, false, null, null);
+        var autogramDocument = AutogramDocument.build(document, attributes);
+        var requested = SigningParametersResolver.buildRequested(SignatureProfile.BASELINE_B, SignatureForm.PAdES,
+                DigestAlgorithm.SHA256, null, null, false, null, null, null, false, 640, false);
+
+        var resolved = SigningParametersResolver.resolveStrict(requested, List.of(autogramDocument));
+
+        assertNull(resolved.getContainer());
+    }
+
+    @Test
+    void pdfForPadesMustNotKeepAsicEContainer() throws IOException {
+        var params = SigningParametersResolver.buildRequested(
+                SignatureProfile.BASELINE_B, SignatureForm.PAdES, DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING,
+                false, null, null, null, false, 640, false);
+        var resolved = SigningParametersResolver.resolveLenientFromFile(
+                params, AutogramDocument.build(new InMemoryDocument(TestMethodSources.loadContent("sample.pdf"), "sample.pdf", MimeTypeEnum.PDF), null));
+
+        assertEquals(SignatureForm.PAdES, resolved.getSignatureForm());
+        assertNull(resolved.getContainer(),
+                "A PDF auto-detected for PAdES must resolve to a raw PDF (container == null), not ASiC-E");
+    }
+
+    @Test
+    void pdfForPadesWithTsaMustStayPades() throws IOException {
+        var params = SigningParametersResolver.buildRequested(
+                SignatureProfile.BASELINE_T, SignatureForm.PAdES, DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING,
+                false, null, null, null, false, 640, false);
+        var resolved = SigningParametersResolver.resolveLenientFromFile(
+                params, AutogramDocument.build(new InMemoryDocument(TestMethodSources.loadContent("sample.pdf"), "sample.pdf", MimeTypeEnum.PDF), null));
+
+        assertEquals(SignatureForm.PAdES, resolved.getSignatureForm(),
+                "A PDF with TSA enabled (BASELINE_T) must stay PAdES, not silently become XAdES");
     }
 }

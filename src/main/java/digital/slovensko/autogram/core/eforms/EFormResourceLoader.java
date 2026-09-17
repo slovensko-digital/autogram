@@ -166,7 +166,7 @@ public class EFormResourceLoader {
             entries.removeIf(entry -> !xsltDestinationType.equals(entry.destinationType()));
 
         if (xsltLanguage != null)
-            entries.removeIf(entry -> !xsltLanguage.toLowerCase().equals(entry.language().toLowerCase()));
+            entries.removeIf(entry -> entry.language() == null || !xsltLanguage.equalsIgnoreCase(entry.language()));
 
         entries = filterIfExist(entries, e -> e.mediaDestination().equals("sign"));
         entries = filterIfExist(entries, e -> List.of("HTML", "XHTML").contains(e.destinationType()));
@@ -177,7 +177,7 @@ public class EFormResourceLoader {
 
         // TargetEnvironment shall only be used to distinguish between transformations with the same destination type and language.
         if (xsltTarget != null)
-            entries = filterIfExist(entries, e -> !xsltTarget.equals(e.target()));
+            entries = filterIfExist(entries, e -> xsltTarget.equals(e.target()));
 
         return entries.stream().findFirst().orElse(null);
     }

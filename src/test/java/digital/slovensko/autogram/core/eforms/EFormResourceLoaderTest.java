@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core.eforms;
 
 import digital.slovensko.autogram.TestMethodSources;
+import digital.slovensko.autogram.core.eforms.dto.ManifestXsltEntry;
 import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -59,6 +60,32 @@ public class EFormResourceLoaderTest {
 			return document.getElementsByTagNameNS("urn:manifest:1.0", "file-entry");
 		}
 	}
+
+	@Test
+	void selectXsltDoesNotThrowWhenEntryLanguageIsNull() {
+		var entries = new ArrayList<ManifestXsltEntry>();
+		entries.add(new ManifestXsltEntry(null, null, "HTML", null, "x.xslt", "sign"));
+
+		var result = Assertions.assertDoesNotThrow(
+				() -> new EFormResourceLoader().selectXslt(entries, null, "sk", null, null, null, "prefix/"));
+
+		Assertions.assertNull(result);
+	}
+
+	@Test
+    void selectXsltKeepsEntryWithRequestedTargetEnvironment() {
+        var entries = new ArrayList<ManifestXsltEntry>();
+        entries.add(new ManifestXsltEntry(
+                "application/xslt+xml", "sk", "HTML", "A", "form.sb.xslt", "sign"));
+        entries.add(new ManifestXsltEntry(
+                "application/xslt+xml", "sk", "HTML", "B", "form2.sb.xslt", "sign"));
+
+        var selected = new EFormResourceLoader()
+                .selectXslt(entries, null, null, "A", null, null, "prefix/");
+
+        Assertions.assertNotNull(selected);
+        Assertions.assertEquals("A", selected.target());
+    }
 
 	private static final class TestDataLoader extends FileCacheDataLoader {
 		private final Map<String, String> fixturesByUrl;

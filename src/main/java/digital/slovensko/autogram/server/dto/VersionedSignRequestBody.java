@@ -63,7 +63,7 @@ public record VersionedSignRequestBody (Document document, List<Document> docume
         if (document.content() == null)
             throw new RequestValidationException(MISSING_FIELD, documentLabel + ".Content");
 
-        if (document.getMimeType() == null)
+        if (document.getMimeTypeString() == null)
             throw new RequestValidationException(MISSING_FIELD, documentLabel + ".MimeType");
 
     if (isMultiDocument && MimeTypeEnum.ASICE.equals(getMimeType(document)))
