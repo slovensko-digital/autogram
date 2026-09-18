@@ -46,7 +46,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private static final long DEFAULT_TOKEN_SESSION_TIMEOUT = 5L;
     private static final String DEFAULT_CUSTOM_PKCS11_DRIVER_PATH = "";
     public static final String DEFAULT_TSA_SERVER = "http://timestamp.sectigo.com/qualified,http://tsa.belgium.be/connect";
-    private final String DEFAULT_LAST_USED_DIRECTORY = "";
+    private static final String DEFAULT_LAST_USED_DIRECTORY = "";
 
     private final List<String> PROBLEMATIC_DEFAULT_TSA_SERVERS = List.of(
         "http://tsa.belgium.be/connect,http://ts.quovadisglobal.com/eu,http://tsa.sep.bg",
@@ -101,7 +101,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setPdfDpi(prefs.getInt("PDF_DPI", DEFAULT_PDF_DPI));
         settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", DEFAULT_TOKEN_SESSION_TIMEOUT));
         settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", DEFAULT_CUSTOM_PKCS11_DRIVER_PATH));
-        settings.setLastUsedDirectory(prefs.get("LAST_USED_DIRECTORY", settings.DEFAULT_LAST_USED_DIRECTORY));
+        settings.setLastUsedDirectory(prefs.get("LAST_USED_DIRECTORY", DEFAULT_LAST_USED_DIRECTORY));
 
         String mapString = prefs.get("DRIVER_SLOT_INDEX_MAP", DEFAULT_DRIVER_SLOT_INDEX_MAP);
         if (!mapString.isEmpty()) {
@@ -444,7 +444,10 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public Optional<String> getLastUsedDirectory() {
         return Optional.ofNullable(lastUsedDirectory)
-                .filter(not(String::isBlank));
+                .filter(not(String::isBlank))
+                .map(Paths::get)
+                .filter(Files::isDirectory)
+                .map(Path::toString);
     }
 
     public void setLastUsedDirectory(Path lastUsedDirectory) {
