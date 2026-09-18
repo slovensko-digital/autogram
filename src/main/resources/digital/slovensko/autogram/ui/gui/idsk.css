@@ -760,6 +760,12 @@ TextFlow.autogram-body-s {
   -fx-background-insets: 0 10px 0 0;
 }
 
+.choice-box:focused {
+  -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour,
+    -autogram-background-colour;
+  -fx-background-insets: -3, 2, 4;
+}
+
 /* Check boxes */
 .check-box {
   -fx-cursor: hand;
