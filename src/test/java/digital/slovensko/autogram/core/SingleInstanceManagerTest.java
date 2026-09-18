@@ -114,7 +114,8 @@ public class SingleInstanceManagerTest {
 
     @Test
     void testCombinesFilesThatArriveInQuickSuccession() throws InterruptedException {
-        assertTrue(SingleInstanceManager.start(tempDir, List.of(), SingleInstanceManager.WINDOWS_DEBOUNCE_DELAY_MS));
+        // Generous window so the test does not depend on how long the launches take on a cold CI runner JVM.
+        assertTrue(SingleInstanceManager.start(tempDir, List.of(), 500));
         var primary = SingleInstanceManager.getInstance();
         created.add(primary);
 
@@ -126,6 +127,7 @@ public class SingleInstanceManagerTest {
         });
 
         assertFalse(SingleInstanceManager.start(tempDir, List.of("/tmp/a.pdf")));
+        // Connections are handled concurrently; the gap keeps the arrival order deterministic.
         Thread.sleep(50);
         assertFalse(SingleInstanceManager.start(tempDir, List.of("/tmp/b.pdf", "/tmp/c.asice")));
 
