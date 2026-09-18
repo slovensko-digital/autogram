@@ -1148,6 +1148,11 @@ TextFlow.autogram-body-s {
   -fx-font-size: 2em;
 }
 
+.autogram-confirmation .autogram-link:focused,
+.autogram-confirmation .autogram-link:focused:hover {
+  -fx-text-fill: -autogram-focus-text-colour;
+}
+
 .autogram-summary-header {
   -fx-background-color: -autogram-secondary-background-colour;
 }

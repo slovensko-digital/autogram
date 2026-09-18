@@ -7,13 +7,14 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 public class BatchSigningSuccessDialogController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
     private final BatchUiResult result;
 
     @FXML
-    Hyperlink folderPathText;
+    TextFlow folderTextFlow;
     @FXML
     Node mainBox;
 
@@ -29,11 +30,23 @@ public class BatchSigningSuccessDialogController extends BaseController implemen
 
     @Override
     public void initialize() {
-        folderPathText.setText(result.getTargetDirectory().toString());
+        initHyperlink();
         var signedFileNamesList = result.getTargetFilesSortedList().stream().filter(e -> e != null)
                 .map(file -> file.getName())
                 .toList();
         successCount.setText(String.valueOf(signedFileNamesList.size()));
+    }
+
+    public void initHyperlink() {
+        var path = result.getTargetDirectory().toString().split("((?<=/|\\\\))");
+        for (int i = 0; i < path.length; i++) {
+            var hyperlink = new Hyperlink(path[i]);
+            hyperlink.getStyleClass().add("autogram-body");
+            hyperlink.getStyleClass().add("autogram-link");
+            hyperlink.getStyleClass().add("autogram-font-weight-bold");
+            hyperlink.setOnAction(this::onOpenFolderAction);
+            folderTextFlow.getChildren().add(folderTextFlow.getChildren().size() - 1, hyperlink);
+        }
     }
 
     public void onOpenFolderAction(ActionEvent ignored) {
