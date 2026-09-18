@@ -279,6 +279,10 @@ public class Autogram {
                 480, 480, java.util.concurrent.TimeUnit.MINUTES);
     }
 
+    public void updateSignatureValidatorLotl(List<String> tlCountries) {
+        ui.onWorkThreadDo(() -> SignatureValidator.getInstance().updateLotl(tlCountries));
+    }
+
     public TSPSource getTspSource() {
         return settings.getTspSource();
     }

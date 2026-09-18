@@ -1191,7 +1191,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertDoesNotThrow(() -> {signRequestBody.getParameters(null, true);});
+        Assertions.assertThrows(XMLValidationException.class, () -> {signRequestBody.getParameters(null, true);});
     }
 
     @Test
@@ -1341,7 +1341,7 @@ class SignRequestBodyTest {
 
         SignRequestBody signRequestBody = new SignRequestBody(document, signingParameters, payloadMimeType);
 
-        Assertions.assertDoesNotThrow(() -> {signRequestBody.getParameters(null, true);});
+        Assertions.assertThrows(XMLValidationException.class, () -> {signRequestBody.getParameters(null, true);});
     }
 
     @Test

@@ -15,10 +15,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.computeDigest;
-import static digital.slovensko.autogram.core.eforms.EFormUtils.getManifestXsltEntries;
-import static digital.slovensko.autogram.core.eforms.EFormUtils.getResource;
 import static digital.slovensko.autogram.core.eforms.EFormUtils.getXmlFromDocument;
-import static digital.slovensko.autogram.core.eforms.EFormUtils.selectXslt;
 import static digital.slovensko.autogram.core.errors.EFormException.Error.MANIFEST;
 import static digital.slovensko.autogram.core.errors.EFormException.Error.META_XML;
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.AUTO_XSD_DIGEST_MISMATCH;
@@ -44,7 +41,7 @@ public class FsEFormResources extends EFormResources {
     }
 
     private static String getFormUrlFromFsFormId(String fsFormId) {
-        var forms_xml = getResource(SOURCE_URL + "forms.xml");
+        var forms_xml = new EFormResourceLoader().getResource(SOURCE_URL + "forms.xml");
         if (forms_xml == null)
             throw new XMLValidationException(FORMS_NOT_FOUND);
 
@@ -68,7 +65,7 @@ public class FsEFormResources extends EFormResources {
     }
 
     private static String getFormUrlFromXdcIdentifier(String xdcIdentifier) {
-        var forms_xml = getResource(SOURCE_URL + "forms.xml");
+        var forms_xml = new EFormResourceLoader().getResource(SOURCE_URL + "forms.xml");
         if (forms_xml == null)
             throw new XMLValidationException(FORMS_NOT_FOUND);
 
@@ -108,7 +105,7 @@ public class FsEFormResources extends EFormResources {
 
     @Override
     public boolean findResources() throws XMLValidationException, EFormException {
-        var meta_xml = getResource(SOURCE_URL + url + "/meta.xml");
+        var meta_xml = resourceLoader.getResource(SOURCE_URL + url + "/meta.xml");
         if (meta_xml == null)
             throw new EFormException(META_XML);
 
@@ -132,7 +129,7 @@ public class FsEFormResources extends EFormResources {
         xsltIdentifier = nodes_meta.item(0).getFirstChild().getNodeValue();
 
 
-        var manifest_xml = getResource(SOURCE_URL + url + "/META-INF/manifest.xml");
+        var manifest_xml = resourceLoader.getResource(SOURCE_URL + url + "/META-INF/manifest.xml");
         if (manifest_xml == null) {
             throw new EFormException(MANIFEST);
         }
@@ -140,15 +137,15 @@ public class FsEFormResources extends EFormResources {
         var parsed_manifest_xml = getXmlFromDocument(new InMemoryDocument(manifest_xml, "manifest.xml"));
 
         var nodes = parsed_manifest_xml.getElementsByTagNameNS("urn:manifest:1.0", "file-entry");
-        var entries = getManifestXsltEntries(nodes, SOURCE_URL, url);
+        var entries = resourceLoader.getManifestXsltEntries(nodes, SOURCE_URL, url);
         if (entries.isEmpty())
             return false;
 
-        var entry = selectXslt(entries, xsltDestinationType, xsltLanguage, xsltTarget);
+        var entry = resourceLoader.selectXslt(entries, xsltDestinationType, xsltLanguage, xsltTarget, this.xsltDigest, canonicalizationMethod, SOURCE_URL + url + "/");
         if (entry == null)
             return false;
 
-        var xsltString = getResource(SOURCE_URL + url + "/" + entry.fullPath());
+        var xsltString = resourceLoader.getResource(SOURCE_URL + url + "/" + entry.fullPath());
         if (xsltString == null)
             return false;
 
@@ -165,7 +162,7 @@ public class FsEFormResources extends EFormResources {
         this.xsltMediaType = entry.mediaType();
         this.xsltTarget = entry.target();
 
-        var xsdString = getResource(SOURCE_URL + url + "/schema.xsd");
+        var xsdString = resourceLoader.getResource(SOURCE_URL + url + "/schema.xsd");
         if (xsdString == null)
             return false;
 

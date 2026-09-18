@@ -7,10 +7,7 @@ import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
 import static digital.slovensko.autogram.core.eforms.EFormUtils.computeDigest;
-import static digital.slovensko.autogram.core.eforms.EFormUtils.getManifestXsltEntries;
-import static digital.slovensko.autogram.core.eforms.EFormUtils.getResource;
 import static digital.slovensko.autogram.core.eforms.EFormUtils.getXmlFromDocument;
-import static digital.slovensko.autogram.core.eforms.EFormUtils.selectXslt;
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.AUTO_XSD_DIGEST_MISMATCH;
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.AUTO_XSLT_DIGEST_MISMATCH;
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.MANIFEST_NOT_FOUND;
@@ -44,11 +41,11 @@ public class UpvsEFormResources extends EFormResources {
         var parsed_manifest_xml = getXmlFromDocument(new InMemoryDocument(manifest_xml, "manifest.xml"));
         var nodes = parsed_manifest_xml.getElementsByTagNameNS("urn:manifest:1.0", "file-entry");
 
-        var entries = getManifestXsltEntries(nodes, SOURCE_URL, url);
+        var entries = resourceLoader.getManifestXsltEntries(nodes, SOURCE_URL, url);
         if (entries.isEmpty())
             return false;
 
-        var entry = selectXslt(entries, xsltDestinationType, xsltLanguage, xsltTarget);
+        var entry = resourceLoader.selectXslt(entries, xsltDestinationType, xsltLanguage, xsltTarget, this.xsltDigest, canonicalizationMethod, SOURCE_URL + url + "/");
         if (entry == null)
             return false;
 
@@ -82,7 +79,7 @@ public class UpvsEFormResources extends EFormResources {
     }
 
     private byte[] getRemoteResource(String url) {
-        var bytes = getResource(url);
+        var bytes = resourceLoader.getResource(url);
         if (bytes == null)
             return null;
 

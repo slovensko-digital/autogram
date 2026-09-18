@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.Autogram;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -18,48 +19,37 @@ public class SettingsResetDialogController extends BaseController implements Sup
     @FXML
     private Button rejectResetButton;
 
+    private Autogram autogram;
     private UserSettings userSettings;
     private Button resetButton;
 
 
-    public SettingsResetDialogController() {
+    public SettingsResetDialogController(Autogram autogram, UserSettings userSettings, Button resetButton) {
+        this.autogram = autogram;
+        this.userSettings = userSettings;
+        this.resetButton = resetButton;
     }
 
     @Override
     public void initialize() { }
 
-
     public void onConfirmResetButtonAction() {
+        if (userSettings == null)
+            return;
 
-        if (userSettings != null) {
+        userSettings.reset();
+        autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
 
-            userSettings.reset();
-
-            var stage = (Stage) confirmResetButton.getScene().getWindow();
-            stage.close();
-
-            var parentStage = (Stage) resetButton.getScene().getWindow();
-            parentStage.close();
-        }
+        ((Stage)confirmResetButton.getScene().getWindow()).close();
+        ((Stage) resetButton.getScene().getWindow()).close();
     }
 
     public void onRejectResetButtonAction() {
-
-        var stage = (Stage) rejectResetButton.getScene().getWindow();
-        stage.close();
+        ((Stage) rejectResetButton.getScene().getWindow()).close();
     }
-
 
     @Override
     public Node getNodeForLoosingFocus() {
         return mainBox;
-    }
-
-    public void setUserSettings(UserSettings userSettings) {
-        this.userSettings = userSettings;
-    }
-
-    public void setResetButton(Button resetButton) {
-        this.resetButton = resetButton;
     }
 }

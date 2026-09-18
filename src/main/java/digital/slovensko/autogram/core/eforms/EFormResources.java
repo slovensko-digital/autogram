@@ -24,12 +24,22 @@ public abstract class EFormResources {
     protected String xsltTarget;
     protected String schema;
     protected boolean embedUsedSchemas;
+    protected EFormResourceLoader resourceLoader;
 
     protected EFormResources(String url, String xsdDigest, String xsltDigest, String canonicalizationMethod) {
         this.url = url;
         this.xsdDigest = xsdDigest;
         this.xsltDigest = xsltDigest;
         this.canonicalizationMethod = canonicalizationMethod;
+        this.resourceLoader = new EFormResourceLoader();
+    }
+
+    protected EFormResources(String url, String xsdDigest, String xsltDigest, String canonicalizationMethod, EFormResourceLoader resourceLoader) {
+        this.url = url;
+        this.xsdDigest = xsdDigest;
+        this.xsltDigest = xsltDigest;
+        this.canonicalizationMethod = canonicalizationMethod;
+        this.resourceLoader = resourceLoader;
     }
 
     public XsltParams getXsltParams() {

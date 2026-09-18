@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui;
 
 import digital.slovensko.autogram.core.LanguageSettings;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -31,7 +30,6 @@ public enum SupportedLanguage {
      * @param locale locale specifying the language to search for
      * @return found enum, or null if not found
      */
-    @Nullable
     public static SupportedLanguage getByLocale(Locale locale) {
         if (locale == null) return null;
         return getByLanguage(locale.getLanguage());
@@ -43,7 +41,6 @@ public enum SupportedLanguage {
      * @param language language to search for
      * @return found enum, or null if not found
      */
-    @Nullable
     public static SupportedLanguage getByLanguage(String language) {
         for (SupportedLanguage item : values()) {
             if (item.locale.getLanguage().equals(language)) {

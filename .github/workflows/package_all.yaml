@@ -1,0 +1,65 @@
+name: Package All
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  extract-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract-version.outputs.version }}
+    steps:
+      - name: Extract version from tag
+        id: extract-version
+        run: |
+          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+  linux-debian:
+    needs: extract-version
+    uses: ./.github/workflows/package_linux_debian.yaml
+    with:
+      environment: packaging
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit
+
+  linux-ubuntu:
+    needs: extract-version
+    uses: ./.github/workflows/package_linux_ubuntu.yaml
+    with:
+      environment: packaging
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit
+
+  linux-fedora:
+    needs: extract-version
+    uses: ./.github/workflows/package_linux_fedora.yaml
+    with:
+      environment: packaging
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit
+
+  macos-intel:
+    needs: extract-version
+    uses: ./.github/workflows/package_macos_intel.yaml
+    with:
+      environment: packaging
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit
+
+  macos-arm:
+    needs: extract-version
+    uses: ./.github/workflows/package_macos_arm.yaml
+    with:
+      environment: packaging
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit
+
+  windows:
+    needs: extract-version
+    uses: ./.github/workflows/package_windows.yaml
+    with:
+      environment: packaging
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit

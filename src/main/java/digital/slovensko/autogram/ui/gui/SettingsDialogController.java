@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
@@ -77,15 +78,17 @@ public class SettingsDialogController extends BaseController {
     @FXML
     private VBox driverSlot;
 
+    private final Autogram autogram;
     private final UserSettings userSettings;
     private final List<String> preDefinedTsaServers = List.of(
-            "http://tsa.baltstamp.lt,http://ts.quovadisglobal.com/eu",
-            "http://tsa.baltstamp.lt",
-            "http://ts.quovadisglobal.com/eu"
+            UserSettings.DEFAULT_TSA_SERVER,
+            "http://timestamp.sectigo.com/qualified",
+            "http://tsa.belgium.be/connect"
     );
 
-    public SettingsDialogController(UserSettings userSettings) {
+    public SettingsDialogController(Autogram autogram, UserSettings userSettings) {
         this.userSettings = userSettings;
+        this.autogram = autogram;
     }
 
     @Override
@@ -377,6 +380,8 @@ public class SettingsDialogController extends BaseController {
     }
 
     public void onSaveButtonAction() {
+        if (userSettings.tlCountriesChanged())
+            autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
 
         userSettings.save();
 
@@ -385,13 +390,8 @@ public class SettingsDialogController extends BaseController {
     }
 
     public void onResetButtonAction() {
-
-        var controller = new SettingsResetDialogController();
-        controller.setUserSettings(userSettings);
-        controller.setResetButton(resetButton);
-
+        var controller = new SettingsResetDialogController(autogram, userSettings, resetButton);
         var root = GUIUtils.loadFXML(controller, "settings-reset-dialog.fxml");
-
         var stage = new Stage();
         stage.setTitle(controller.i18n("settings.reset.title"));
         stage.setScene(new Scene(root));
