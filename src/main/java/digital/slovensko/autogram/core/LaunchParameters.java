@@ -19,7 +19,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 public class LaunchParameters {
-    private static final String AUTOGRAM_URL_PREFIX = "autogram://";
+    private static final String AUTOGRAM_URL_PREFIX = Configuration.getBuildProperty("protocol") + "://";
     private static final String FILE_URI_PREFIX = "file://";
 
     protected Map<String, String> parameters;

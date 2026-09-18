@@ -88,7 +88,7 @@ so extract the app bundle from its payload and copy it into `/Applications` inst
 rm -rf /tmp/autogram-pkg
 pkgutil --expand-full target/Autogram-1.0.0.pkg /tmp/autogram-pkg
 osascript -e 'tell application id "digital.slovensko.autogram.helper" to quit'
-rm -rf /Applications/Autogram.app
+sudo rm -rf /Applications/Autogram.app
 ditto /tmp/autogram-pkg/Autogram-app.pkg/Payload/Autogram.app /Applications/Autogram.app
 chmod +x /Applications/Autogram.app/Contents/MacOS/Autogram \
          /Applications/Autogram.app/Contents/Library/AutogramHelper.app/Contents/MacOS/Autogram
