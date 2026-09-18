@@ -209,6 +209,7 @@ public class SigningJob {
 
         if (isPDF(document.getMimeType())) switch (signatureType) {
             case PAdES_BASELINE_B:
+            case PAdES_BASELINE_T:
                 return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
             case XAdES_BASELINE_B:
                 return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);

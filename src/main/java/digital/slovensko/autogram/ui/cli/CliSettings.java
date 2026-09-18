@@ -16,6 +16,9 @@ public class CliSettings extends UserSettings {
     private File source;
     private boolean isForce;
     private boolean shouldMakeParentDirectories;
+    private String keySelector;
+    private boolean pinFromStdin;
+    private boolean listKeys;
 
     public static CliSettings fromCmd(CommandLine cmd) {
         var settings = new CliSettings();
@@ -23,6 +26,9 @@ public class CliSettings extends UserSettings {
         settings.setSource(getValidSource(cmd.getOptionValue("s")));
         settings.setTarget(cmd.getOptionValue("t"));
         settings.setDriver(cmd.getOptionValue("d"));
+        settings.setKeySelector(cmd.getOptionValue("key"));
+        settings.setPinFromStdin(cmd.hasOption("pin-stdin"));
+        settings.setListKeys(cmd.hasOption("list-keys"));
         settings.setCustomKeystorePath(cmd.getOptionValue("keystore", ""));
         settings.setDriverSlotIndex("default", getValidSlotIndex(cmd.getOptionValue("slot-id")));
         settings.setForce(cmd.hasOption("f"));
@@ -74,6 +80,30 @@ public class CliSettings extends UserSettings {
 
     public boolean shouldMakeParentDirectories() {
         return shouldMakeParentDirectories;
+    }
+
+    public String getKeySelector() {
+        return keySelector;
+    }
+
+    private void setKeySelector(String value) {
+        keySelector = value;
+    }
+
+    public boolean isPinFromStdin() {
+        return pinFromStdin;
+    }
+
+    private void setPinFromStdin(boolean value) {
+        pinFromStdin = value;
+    }
+
+    public boolean isListKeys() {
+        return listKeys;
+    }
+
+    private void setListKeys(boolean value) {
+        listKeys = value;
     }
 
     private static File getValidSource(String sourcePath) throws SourceDoesNotExistException {

@@ -21,9 +21,12 @@ public class AppStarter {
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
         addOption(null, "parents", false, "Create all parent directories for target if needed.").
         addOption("d", "driver", true, "PCKS driver name for signing. Supported values: eid, cz_eid, secure_store, monet, gemalto, keystore, custom_pkcs11 (requires valid path within pkcs11-driver-path option).").
+        addOption(null, "key", true, "Certificate serial number or common name to use without an interactive key prompt.").
+        addOption(null, "pin-stdin", false, "Read the signing PIN or password from standard input without an interactive prompt.").
+        addOption(null, "list-keys", false, "List available signing certificates and exit.").
         addOption(null, "keystore", true, "Absolute path to a keystore file that can be used for signing.").
         addOption(null, "slot-id", true, "Slot ID for PKCS11 driver. If not specified, first available slot is used.").
-        addOption(null, "pdf-level", true, "PDF signature level. Supported values: PAdES_BASELINE_B (default), XAdES_BASELINE_B, CAdES_BASELINE_B.").
+        addOption(null, "pdf-level", true, "PDF signature level. Supported values include PAdES_BASELINE_B and PAdES_BASELINE_T.").
         addOption(null, "en319132", false, "Sign according to EN 319 132 or EN 319 122.").
         addOption(null, "tsa-server", true, "Url of TimeStamp Authority server that should be used for timestamping in signature level BASELINE_T. If provided, BASELINE_T signatures are made.").
         addOption(null, "plain-xml", false, "Enable signing plain (non-slovak-eform) XML files.").
@@ -39,7 +42,7 @@ public class AppStarter {
             } else if (cmd.hasOption("u")) {
                 printUsage();
             } else if (cmd.hasOption("c")) {
-                CliApp.start(cmd);
+                System.exit(CliApp.start(cmd));
             } else {
                 Application.launch(GUIApp.class, args);
             }

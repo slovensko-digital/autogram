@@ -11,6 +11,8 @@ import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 
 import org.junit.jupiter.api.Test;
 
@@ -69,5 +71,23 @@ public class SigningJobTests {
         } catch (Exception e) {
             fail();
         }
+    }
+
+    @Test
+    void treatsPadesBaselineTAsPdfSigningJob() {
+        var file = new java.io.File("src/test/resources/digital/slovensko/autogram/sample.pdf");
+        var job = SigningJob.buildFromFile(file, null, false, SignatureLevel.PAdES_BASELINE_T,
+                false, new CompositeTSPSource(), true);
+
+        assertEquals(SignatureForm.PAdES, job.getParameters().getSignatureType());
+        assertEquals(SignatureLevel.PAdES_BASELINE_T, job.getParameters().getLevel());
+    }
+
+    @Test
+    void treatsPadesBaselineTAsPadesInUserSettings() {
+        var settings = new UserSettings();
+        settings.setSignatureLevel(SignatureLevel.PAdES_BASELINE_T);
+
+        assertTrue(settings.shouldSignPDFAsPades());
     }
 }

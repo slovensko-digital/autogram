@@ -19,6 +19,16 @@ Vyvolať spustenie programu je možné priamo z webového prehliadača otvorení
 
 Autogram je možné spúšťať aj z príkazového riadku (CLI mód). Detailné informácie o prepínačoch sú popísané v nápovede po spustení `autogram --help`, resp. `autogram-cli --help` na Windows.
 
+Pre skriptovaný výber certifikátu, zadanie PIN-u cez štandardný vstup, PAdES Baseline T a návratové kódy pozri [CLI podpisovanie bez interakcie](docs/cli-headless-signing.md).
+
+## macOS Finder Quick Action
+
+Súčasťou repozitára je aj Automator Quick Action na podpisovanie jedného alebo viacerých označených PDF súborov vo Finderi cez Autogram CLI. Ide o integráciu do Finderu, nie o workflow pre macOS Shortcuts. Výber úložiska certifikátu, certifikátu a zadanie PIN-u prebieha cez macOS dialógy, samotné podpisovanie prebieha bez otvorenia grafického rozhrania Autogramu alebo Terminálu.
+
+Integrácia vyžaduje macOS s Finderom a Automatorom, kompatibilný token alebo kartu s PKCS#11 ovládačom, PIN a sieťové pripojenie ku kvalifikovanej službe časových pečiatok pri PAdES Baseline T. Na Apple Silicon môže byť pri Intel-only PKCS#11 ovládači potrebná Rosetta a Intel build Autogramu.
+
+Pozri [macOS CLI a Finder Quick Action](docs/macos-cli-automation.md), kde je návod na inštaláciu, hromadné podpisovanie, konfiguráciu a riešenie problémov.
+
 ### Štýlovanie
 
 Aplikácia momentálne podporuje len jeden štýl - štátny IDSK dizajn. Ďalšie štýly sú plánované. Štýlovanie sa však už teraz deje výhradne cez kaskádové štýly, viď [idsk.css](https://github.com/slovensko-digital/autogram/blob/main/src/main/resources/digital/slovensko/autogram/ui/gui/idsk.css)
