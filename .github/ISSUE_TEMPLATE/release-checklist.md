@@ -35,7 +35,7 @@ labels: release
 - [ ] podpísaný súbor otvorím v autograme a pod náhľadom dokumentu je zobrazený môj podpis
 - [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
 - [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
-- [ ] funguje CLI `/Applications/Autogram.app/Contents/MacOS/AutogramApp --help`
+- [ ] funguje CLI `/Applications/Autogram.app/Contents/Library/AutogramHelper.app/Contents/MacOS/Autogram --help`
 
 
 ## Na aspoň jednom systéme
