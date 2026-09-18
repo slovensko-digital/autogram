@@ -1146,6 +1146,13 @@ TextFlow.autogram-body-s {
 }
 .autogram-confirmation Hyperlink {
   -fx-font-size: 2em;
+  -fx-text-alignment: center;
+  -fx-alignment: center;
+}
+
+.autogram-confirmation .autogram-link:focused,
+.autogram-confirmation .autogram-link:focused:hover {
+  -fx-text-fill: -autogram-focus-text-colour;
 }
 
 .autogram-confirmation .autogram-link:focused,
