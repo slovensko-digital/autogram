@@ -12,16 +12,12 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class GUIApp extends Application {
-    private static final Logger logger = LoggerFactory.getLogger(GUIApp.class);
-
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
     private final ExecutorService cachedExecutorService = Executors.newFixedThreadPool(8);
 
@@ -91,19 +87,14 @@ public class GUIApp extends Application {
                     var files = LaunchParameters.filesFrom(args);
                     if (files.isEmpty())
                         return;
-                    Platform.runLater(() -> {
-                        raiseWindow(windowStage);
-                        controller.onFilesSelected(files);
-                    });
+                    Platform.runLater(() -> controller.onFilesSelected(files));
                 });
-                singleInstanceManager.onActivated(() -> Platform.runLater(() -> raiseWindow(windowStage)));
             } else if (!params.getFiles().isEmpty()) {
                 Platform.runLater(() -> controller.onFilesSelected(params.getFiles()));
             }
 
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
-            logger.error("Failed to start Autogram GUI", e);
             var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
             var finalAutogram = autogram;
             Platform.runLater(() -> {
@@ -117,13 +108,6 @@ public class GUIApp extends Application {
                 Platform.exit();
             });
         }
-    }
-
-    private static void raiseWindow(Stage windowStage) {
-        windowStage.setIconified(false);
-        windowStage.show();
-        windowStage.toFront();
-        windowStage.requestFocus();
     }
 
     @Override
