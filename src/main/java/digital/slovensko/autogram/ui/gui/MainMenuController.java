@@ -3,12 +3,16 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import eu.europa.esig.dss.model.FileDocument;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -101,20 +105,20 @@ public class MainMenuController extends BaseController implements SuppressedFocu
     }
 
     private void signFiles(List<File> list) {
-        // send null tspSource if signature shouldn't be timestamped
-        var tspSource = userSettings.getTsaEnabled() ? userSettings.getTspSource() : null;
+        var defaultSigningParameters = userSettings.getDefaultSigningParameters();
+        var defaultEFormAttributes = EFormAttributes.build(defaultSigningParameters, true);
 
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-            var job = SigningJob.buildFromFile(file,
-                    new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
-                    userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
+                var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), defaultEFormAttributes), defaultSigningParameters);
+                var job = SigningJob.fromInput(input,
+                    new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
             autogram.sign(job);
         } else {
-            autogram.batchStart(filesList.size(), new BatchGuiFileResponder(autogram, filesList,
-                    filesList.get(0).toPath().getParent().resolve("signed"), userSettings.isPdfaCompliance(),
-                    userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled()));
+            autogram.batchStart(filesList.size(),
+                    new BatchGuiFileResponder(autogram, filesList, filesList.get(0).toPath().getParent().resolve("signed"),
+                        defaultSigningParameters, defaultEFormAttributes, userSettings.shouldSignPDFAsPades()));
         }
     }
 
@@ -127,13 +131,12 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         var targetDirectoryName = dir.getName() + "_signed";
         var targetDirectory = dir.toPath().getParent().resolve(targetDirectoryName);
 
-        // send null tspSource if signature shouldn't be timestamped
-        var tspSource = userSettings.getTsaEnabled() ? userSettings.getTspSource() : null;
+        var defaultSigningParameters = userSettings.getDefaultSigningParameters();
+        var defaultEFormAttributes = EFormAttributes.build(defaultSigningParameters, true);
 
         autogram.batchStart(filesList.size(),
-                new BatchGuiFileResponder(autogram, filesList, targetDirectory, userSettings.isPdfaCompliance(),
-                        userSettings.getSignatureLevel(), userSettings.shouldSignPDFAsPades(),
-                        userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled()));
+                new BatchGuiFileResponder(autogram, filesList, targetDirectory, defaultSigningParameters, defaultEFormAttributes,
+                    userSettings.shouldSignPDFAsPades()));
     }
 
     public void onAboutButtonAction() {
@@ -149,6 +152,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
         stage.showAndWait();
 
         if (!userSettings.getLanguageLocale().getLanguage().equals(resources.getLocale().getLanguage())) {

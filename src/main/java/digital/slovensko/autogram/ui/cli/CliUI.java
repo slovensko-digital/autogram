@@ -32,7 +32,6 @@ import digital.slovensko.autogram.core.errors.TokenNotRecognizedException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.TsaServerMisconfiguredException;
 import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
-import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
@@ -70,7 +69,7 @@ public class CliUI implements UI {
     }
 
     private void sign(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++,
+        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getName(), nJobsSigned++,
                 nJobsTotal));
         autogram.sign(job, activeKey);
     }
@@ -215,7 +214,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void showVisualization(Visualization visualization, Autogram autogram) {
+    public void showSigningJob(SigningJob job, Autogram autogram) {
 
     }
 

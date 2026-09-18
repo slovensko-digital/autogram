@@ -15,7 +15,6 @@ import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.SupportedLanguage;
@@ -325,22 +324,23 @@ public class GUI implements UI {
     @Override
     public void onSignatureValidationCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureValidationCompleted(reports.getReports());
+        controller.onSignatureValidationCompleted(reports);
     }
 
     @Override
     public void onSignatureCheckCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureCheckCompleted(reports.haveSignatures() ? reports.getReports() : null);
+        controller.onSignatureCheckCompleted(reports);
     }
 
-    public void showVisualization(Visualization visualization, Autogram autogram) {
-        var title = SupportedLanguage.loadResources(userSettings).getString("general.document");
-        if (visualization.getJob().getDocument().getName() != null)
-            title += " " + visualization.getJob().getDocument().getName();
+    public void showSigningJob(SigningJob job, Autogram autogram) {
+        var resources = SupportedLanguage.loadResources(userSettings);
+        var title = job.isMultiDocument() ?
+            resources.getString("general.documents") + " (" + job.getPreviewDocumentsCount() + ")" :
+            resources.getString("general.document") + " " + job.getName();
 
-        var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
-        jobControllers.put(visualization.getJob(), controller);
+        var controller = new SigningDialogController(job, autogram, this, title, userSettings);
+        jobControllers.put(job, controller);
 
         Parent root;
         try {
@@ -355,7 +355,7 @@ public class GUI implements UI {
         var stage = new Stage();
         stage.setTitle(title);
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> cancelJob(visualization.getJob()));
+        stage.setOnCloseRequest(e -> cancelJob(job));
 
         stage.sizeToScene();
 
@@ -364,8 +364,7 @@ public class GUI implements UI {
         GUIUtils.hackToForceRelayout(stage);
         setUserFriendlyPositionAndLimits(stage);
 
-        onWorkThreadDo(()
-                -> autogram.checkAndValidateSignatures(visualization.getJob()));
+        onWorkThreadDo(() -> autogram.checkAndValidateSignatures(job));
     }
 
     @Override

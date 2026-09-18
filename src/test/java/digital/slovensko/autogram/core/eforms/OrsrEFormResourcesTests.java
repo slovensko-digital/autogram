@@ -15,7 +15,7 @@ public class OrsrEFormResourcesTests {
     })
     void testFindResourcesRejectsNonOrsrUrl(String schemaLocation) {
         var resources = new OrsrEFormResources(schemaLocation, null, null);
-        Assertions.assertThrows(XMLValidationException.class, resources::findResources);
+        Assertions.assertThrows(XMLValidationException.class, () -> resources.findResources("dummy"));
     }
 }
 

@@ -8,6 +8,7 @@
             "mainClass": "digital.slovensko.autogram.Main",
             "projectName": "autogram",
             "preLaunchTask": "java (build): Build Workspace",
+            "classPaths": ["$Runtime", "${workspaceFolder}/src/main/resources"],
             "vmArgs": "--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --add-modules jdk.crypto.cryptoki --enable-native-access=javafx.graphics,javafx.web",
         },
         {
@@ -16,6 +17,7 @@
             "request": "launch",
             "mainClass": "digital.slovensko.autogram.Main",
             "projectName": "autogram",
+            "classPaths": ["$Runtime", "${workspaceFolder}/src/main/resources"],
             "vmArgs": "--add-exports javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED --add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --add-modules jdk.crypto.cryptoki --enable-native-access=javafx.graphics,javafx.web",
             "args": "--url=\"autogram://listen?protocol=http&host=localhost&port=37200&origin=*&language=sk\"",
             "osx": {
@@ -29,6 +31,7 @@
             "request": "launch",
             "mainClass": "digital.slovensko.autogram.Main",
             "projectName": "autogram",
+            "classPaths": ["$Runtime", "${workspaceFolder}/src/main/resources"],
             "vmArgs": "--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --add-modules jdk.crypto.cryptoki --enable-native-access=javafx.graphics,javafx.web",
             "args": "--url=\"autogram://listen?protocol=https&host=localhost&port=37200&origin=*&language=sk\"",
             "osx": {
@@ -42,6 +45,7 @@
             "request": "launch",
             "mainClass": "digital.slovensko.autogram.Main",
             "projectName": "autogram",
+            "classPaths": ["$Runtime", "${workspaceFolder}/src/main/resources"],
             "vmArgs": "--add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED --add-modules jdk.crypto.cryptoki --enable-native-access=javafx.graphics,javafx.web",
             "args": "${input:commandLineArguments}",
             "osx": {

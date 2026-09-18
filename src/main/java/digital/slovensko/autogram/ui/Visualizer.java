@@ -15,5 +15,7 @@ public interface Visualizer {
 
     void showImageVisualization(DSSDocument document);
 
-    void setPrefWidth(double visualizationWidth);
+    void setPrefWidth();
+
+    int getPdfDpi();
 }

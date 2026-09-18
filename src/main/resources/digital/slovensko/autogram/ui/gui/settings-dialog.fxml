@@ -14,7 +14,7 @@
       prefWidth="896">
     <VBox>
         <TabPane maxHeight="640" prefWidth="896" xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml" styleClass="autogram-settings-tab-pane">
+            xmlns:fx="http://javafx.com/fxml" styleClass="autogram-tab-pane,autogram-settings-tab-pane">
             <tabs>
                 <Tab text="%settings.signing.title">
                     <content>

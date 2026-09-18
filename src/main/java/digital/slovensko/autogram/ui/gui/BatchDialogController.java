@@ -16,8 +16,6 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
-import java.util.function.Consumer;
-
 public class BatchDialogController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
     private final Batch batch;
@@ -122,11 +120,11 @@ public class BatchDialogController extends BaseController implements SuppressedF
             var key = gui.getActiveSigningKey();
 
             if (key == null) {
-                mainButton.setText(i18n("general.sign.btn"));
+                mainButton.setText(i18n("general.sign.btn.multi"));
                 changeKeyButton.setVisible(false);
 
             } else {
-                mainButton.setText(i18n("batch.signAs.btn") + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+                mainButton.setText(i18n("batch.signAs.btn.multi") + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
                 changeKeyButton.setVisible(true);
             }
         }

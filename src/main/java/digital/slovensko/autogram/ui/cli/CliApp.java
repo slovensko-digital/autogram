@@ -3,10 +3,15 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.TargetPath;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.core.errors.SourceNotDefinedException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
+import eu.europa.esig.dss.model.FileDocument;
+
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
@@ -33,14 +38,15 @@ public class CliApp {
             var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
 
             var finalAutogram = autogram;
+            var parameters = settings.getSigningParameters();
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
-                    .map(f -> SigningJob.buildFromFile(f, new SaveFileResponder(f, finalAutogram, targetPathBuilder),
-                            settings.isPdfaCompliance(), settings.getSignatureLevel(), settings.isEn319132(),
-                            settings.getTspSource(), settings.isPlainXmlEnabled()))
+                        .map(f -> SigningJob.fromInput(
+                            SigningInput.fromFile(AutogramDocument.build(new FileDocument(f), EFormAttributes.build(parameters, true)), parameters),
+                            new SaveFileResponder(f, finalAutogram, targetPathBuilder)))
                     .toList();
             if (settings.isPdfaCompliance()) {
                 jobs.forEach(job -> {
-                    System.out.println("Checking PDF/A file compatibility for " + job.getDocument().getName());
+                    System.out.println("Checking PDF/A file compatibility for " + job.getName());
                     finalAutogram.checkPDFACompliance(job);
                 });
             }

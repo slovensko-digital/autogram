@@ -1,0 +1,540 @@
+package digital.slovensko.autogram.core;
+
+import com.google.gson.Gson;
+import com.sun.net.httpserver.HttpExchange;
+
+import digital.slovensko.autogram.TestAutogramFactory;
+import digital.slovensko.autogram.TestMethodSources;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
+import digital.slovensko.autogram.core.dto.SignedDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
+import digital.slovensko.autogram.core.eforms.EFormUtils;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
+import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.PDFAComplianceException;
+import digital.slovensko.autogram.core.errors.UnknownEformException;
+import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
+import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.server.CertificatesResponder;
+import digital.slovensko.autogram.server.dto.CertificatesResponse;
+import digital.slovensko.autogram.ui.SupportedLanguage;
+import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.AsicContainerUtils;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
+import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
+import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.security.KeyStore;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+class AutogramTests {
+    private static final Path tempTestsPath = Path.of(System.getProperty("java.io.tmpdir"), "autogram-tests");
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
+            "digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider",
+            "digital.slovensko.autogram.TestMethodSources#orsrDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider" })
+    void testSignAsiceXadesHappyScenario(InMemoryDocument document) {
+        var autogram = TestAutogramFactory.create();
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, null,
+            null, null, false, null, null, null, false, 640, true);
+        var input = SigningInput.prepareForASiCWithXAdES(
+            AutogramDocument.build(document, EFormAttributes.build(parameters, false)), parameters);
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
+    void testSignNonEformHappyScenario(InMemoryDocument document) {
+        var autogram = TestAutogramFactory.create();
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
+        var input = SigningInput.prepareForASiCWithXAdES(
+            AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#nonEformXmlProvider"})
+    void testSignNonEformNegativeScenario(InMemoryDocument document) {
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
+        Assertions.assertThrows(UnknownEformException.class, () -> SigningInput.prepareForASiCWithXAdES(
+            AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters));
+    }
+
+    @ParameterizedTest
+    @MethodSource({"digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider"})
+    void testSignAsiceCadesHappyScenario(InMemoryDocument document) {
+        var autogram = TestAutogramFactory.create();
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.CAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
+        var input = SigningInput.prepareForASiCWithCAdES(
+            AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+    }
+
+        @Test
+        void testSignMultipleDocumentsAsiceXadesHappyScenario() {
+        var autogram = TestAutogramFactory.create();
+        var responder = mock(Responder.class);
+
+        var firstDocument = AutogramDocument.build(new InMemoryDocument("first".getBytes(), "first.txt",
+            AutogramMimeType.fromMimeTypeString("text/plain")), null);
+        var secondDocument = AutogramDocument.build(new InMemoryDocument("second".getBytes(), "second.txt",
+            AutogramMimeType.fromMimeTypeString("text/plain")), null);
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
+        var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);
+
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(
+            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()), responder),
+            key));
+
+        verify(responder).onDocumentSigned(any());
+        }
+
+        @Test
+        void testSignedMultiDocumentAsiceSignatureCoversAllDocuments() {
+        var autogram = TestAutogramFactory.create();
+        var responder = mock(Responder.class);
+
+        var firstDocument = AutogramDocument.build(new InMemoryDocument("first".getBytes(), "first.txt",
+            AutogramMimeType.fromMimeTypeString("text/plain")), null);
+        var secondDocument = AutogramDocument.build(new InMemoryDocument("second".getBytes(), "second.txt",
+            AutogramMimeType.fromMimeTypeString("text/plain")), null);
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
+        var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);
+
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(
+            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()), responder),
+            key));
+
+        var signedDocumentCaptor = org.mockito.ArgumentCaptor.forClass(SignedDocument.class);
+        verify(responder).onDocumentSigned(signedDocumentCaptor.capture());
+
+        var signedDocument = signedDocumentCaptor.getValue();
+        var validationParameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
+            DigestAlgorithm.SHA256, ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null,
+            null, false, 640, true);
+        var validationInput = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(
+            signedDocument.getDocument(), EFormAttributes.build(validationParameters, true)), validationParameters);
+        var validationJob = SigningJob.fromInput(validationInput, mock(Responder.class));
+        var reports = SignatureValidator.getSignatureCheckReport(validationJob);
+
+        Assertions.assertEquals(1, reports.getDocumentReports().size());
+
+        var documentReport = reports.getDocumentReports().get(0);
+        var signatureId = documentReport.reports().getSimpleReport().getSignatureIdList().get(0);
+
+        Assertions.assertTrue(documentReport.hasMultipleContainerDocuments());
+        Assertions.assertEquals(List.of("first.txt", "second.txt"), documentReport.getContainerContentFiles());
+        Assertions.assertEquals(List.of("first.txt", "second.txt"), documentReport.getSignatureScopeDocumentNames(signatureId));
+        Assertions.assertTrue(documentReport.signatureCoversAllDocuments(signatureId));
+        Assertions.assertFalse(reports.hasIncompleteContainerCoverage());
+
+        var previewDocuments = AsicContainerUtils.getOriginalDocuments(signedDocument.getDocument());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(0).getName(), 0).size());
+        Assertions.assertEquals(1, reports.getSignaturesForPreviewDocument(previewDocuments.get(1).getName(), 1).size());
+        }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#multiDocumentAsiceProvider" })
+    void testSignMultiDocumentAsiceContainerHappyScenario(InMemoryDocument document) {
+        var autogram = TestAutogramFactory.create();
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
+        var input = SigningInput.prepareForASiCWithXAdES(
+            AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#multiDocumentAsiceProvider" })
+    void testStartVisualizationForMultiDocumentAsiceContainer(InMemoryDocument document) {
+        var shownJobs = new ArrayList<SigningJob>();
+        var newUI = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void showSigningJob(SigningJob job, Autogram autogram) {
+                shownJobs.add(job);
+            }
+
+            @Override
+            public void showError(AutogramException exception) {
+                throw exception;
+            }
+        };
+        var autogram = TestAutogramFactory.create(newUI);
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
+        var input = SigningInput.prepareForASiCWithXAdES(
+            AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
+        var job = SigningJob.fromInput(input, mock(Responder.class));
+
+        autogram.startVisualization(job);
+
+        Assertions.assertEquals(1, shownJobs.size());
+
+        var previewDocumentsCount = AsicContainerUtils.getOriginalDocuments(document).size();
+        Assertions.assertEquals(previewDocumentsCount, job.getVisualizations().size());
+        for (var visualization : job.getVisualizations())
+            Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
+    }
+
+    @Test
+    void testStartVisualizationThrowsWhenLaterBundleDocumentIsLockedPdf() throws IOException {
+        var newUI = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void showSigningJob(SigningJob job, Autogram autogram) {
+                Assertions.fail("Visualization should not start for a bundle containing a locked PDF");
+            }
+
+            @Override
+            public void showError(AutogramException exception) {
+                throw exception;
+            }
+        };
+        var autogram = TestAutogramFactory.create(newUI);
+        var job = createMultiDocumentJob(false,
+                createTextDocument("first.txt", "first"),
+            AutogramDocument.build(new InMemoryDocument(createPasswordProtectedPdf(), "locked.pdf", MimeTypeEnum.PDF), null));
+
+        var exception = Assertions.assertThrows(AutogramException.class, () -> autogram.startVisualization(job));
+
+        Assertions.assertEquals("The document is password protected",
+                exception.getSubheading(SupportedLanguage.ENGLISH.loadResources()));
+    }
+
+    @Test
+    void testCheckPDFAComplianceFailsWhenLaterBundleDocumentIsNotPdfa() throws IOException {
+        var newUI = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void onPDFAComplianceCheckFailed(SigningJob job) {
+                throw new PDFAComplianceException();
+            }
+        };
+        var autogram = TestAutogramFactory.create(newUI);
+        var job = createMultiDocumentJob(true,
+                createTextDocument("first.txt", "first"),
+                loadDocument("sample.pdf", MimeTypeEnum.PDF));
+
+        Assertions.assertThrows(PDFAComplianceException.class, () -> autogram.checkPDFACompliance(job));
+    }
+
+    @Test
+    void testSignatureCheckReportUsesLaterBundleDocument() throws IOException {
+        var job = createMultiDocumentJob(false,
+                createTextDocument("first.txt", "first"),
+                loadDocument("sample_signed.pdf", MimeTypeEnum.PDF));
+
+        var reports = SignatureValidator.getSignatureCheckReport(job);
+
+        Assertions.assertTrue(reports.haveSignatures());
+        Assertions.assertTrue(reports.getReports().getSimpleReport().getSignaturesCount() > 0);
+    }
+
+    @Test
+    void testSignatureCheckReportIncludesAllSignedDocumentsInBundle() throws IOException {
+        var job = createMultiDocumentJob(false,
+                loadDocument("sample_signed.pdf", MimeTypeEnum.PDF),
+                loadDocument("sample_pdf_xades.asice", MimeTypeEnum.ASICE));
+
+        var reports = SignatureValidator.getSignatureCheckReport(job);
+
+        Assertions.assertTrue(reports.haveSignatures());
+        Assertions.assertEquals(2, reports.getDocumentReports().size());
+        Assertions.assertEquals("sample_signed.pdf", reports.getDocumentReports().get(0).document().getName());
+        Assertions.assertEquals("sample_pdf_xades.asice", reports.getDocumentReports().get(1).document().getName());
+        Assertions.assertEquals(reports.getDocumentReports().get(0).getSignatureCount(),
+            reports.getSignaturesForPreviewDocument(reports.getDocumentReports().get(0).document().getName(), 0).size());
+        Assertions.assertEquals(reports.getDocumentReports().get(1).getSignatureCount(),
+            reports.getSignaturesForPreviewDocument(reports.getDocumentReports().get(1).document().getName(), 1).size());
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider" })
+    void testSignPadesHappyScenario(InMemoryDocument document) {
+        var autogram = TestAutogramFactory.create();
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.PAdES, DigestAlgorithm.SHA256,
+            null, null, false, null, null, null, false, 640, false);
+        var input = SigningInput.fromPDFFile(document, parameters);
+        var responder = mock(Responder.class);
+
+        autogram.pickSigningKeyAndThen(
+            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @BeforeAll
+    public static void setupTempTestDirectory() {
+        tempTestsPath.toFile().mkdirs();
+    }
+
+    @ParameterizedTest
+    @MethodSource({ "digital.slovensko.autogram.TestMethodSources#generalAgendaProvider",
+            "digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider",
+            "digital.slovensko.autogram.TestMethodSources#validOtherDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider",
+            "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider"})
+    void testSignBuildFromFileHappyScenario(InMemoryDocument document) throws IOException {
+        var autogram = TestAutogramFactory.create();
+
+        var file = new File(Path.of(tempTestsPath.toString(), document.getName()).toString());
+        var outputStream = new FileOutputStream(file);
+        outputStream.write(document.getBytes());
+        outputStream.close();
+
+        var responder = mock(Responder.class);
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
+        var fileDocument = new FileDocument(file);
+        var eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false,
+            EFormUtils.getFsFormIdFromFilename(fileDocument.getName()), true,
+            parameters.getPropertiesCanonicalization(), parameters.getDigestAlgorithm());
+        var input = SigningInput.fromFile(AutogramDocument.build(fileDocument, eFormAttributes), parameters);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    @Test
+    void testSignCertificatePickFailed() {
+
+    }
+
+    @Test
+    void testSignFailedAfterCertificatePick() {
+
+    }
+
+    @Test
+    void testGetCertificatesThrowsOnNonexistentDriver() {
+        var settings = new TestSettings();
+        var newUI = mock(UI.class);
+        var autogram = new Autogram(newUI, settings);
+
+        var responder = mock(CertificatesResponder.class);
+        List<String> drivers = List.of("nonexistent-driver");
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+        verify(responder).onError(any(NoDriversDetectedException.class));
+    }
+
+    @Test
+    void testGetCertificatesThrowsOnConsentRejected() {
+        var newUI = new TestAutogramFactory.FakeUI() {
+                    @Override
+                    public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onCancel) {
+                        onCancel.run();
+                    }
+        };
+        var autogram = TestAutogramFactory.create(newUI);
+
+        var responder = mock(CertificatesResponder.class);
+        List<String> drivers = List.of();
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+        verify(responder).onError(any(CertificatesReadingConsentRejectedException.class));
+    }
+
+    @Test
+    void testGetCertificatesHappyScenario() {
+        var autogram = TestAutogramFactory.create();
+
+        var responder = mock(CertificatesResponder.class);
+        List<String> drivers = List.of();
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+
+        verify(responder).onSuccess(any());
+    }
+
+    @Test
+    void testGetCertificatesHappyScenarioWithResponse() throws IOException {
+        var autogram = TestAutogramFactory.create();
+
+        var exchange = mock(HttpExchange.class);
+        var responseBody = mock(java.io.OutputStream.class);
+        when(exchange.getResponseHeaders()).thenReturn(mock(com.sun.net.httpserver.Headers.class));
+        when(exchange.getRequestURI()).thenReturn(mock(java.net.URI.class));
+        when(exchange.getRequestMethod()).thenReturn("GET");
+        when(exchange.getResponseBody()).thenReturn(responseBody);
+
+        var responder = new CertificatesResponder(exchange);
+        List<String> drivers = List.of();
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+
+        verify(exchange).sendResponseHeaders(200, 0);
+
+        var expected = new Gson().fromJson("{\"certificates\":[{\"subject\":\"CN\u003dJano Suchal, O\u003dSolver IT\",\"issuedBy\":\"CN\u003dJano Suchal, O\u003dSolver IT\"}]}", CertificatesResponse.class);
+        verify(responseBody).write(new Gson().toJson(expected).getBytes());
+    }
+
+    @Test
+    void testGetCertificatesHappyScenarioWithDriverSelectorAndResponse() throws IOException {
+        var autogram = TestAutogramFactory.create();
+
+        var exchange = mock(HttpExchange.class);
+        var responseBody = mock(java.io.OutputStream.class);
+        when(exchange.getResponseHeaders()).thenReturn(mock(com.sun.net.httpserver.Headers.class));
+        when(exchange.getRequestURI()).thenReturn(mock(java.net.URI.class));
+        when(exchange.getRequestMethod()).thenReturn("GET");
+        when(exchange.getResponseBody()).thenReturn(responseBody);
+
+        var responder = new CertificatesResponder(exchange);
+        List<String> drivers = List.of("fake", "non-existent-driver");
+        autogram.consentCertificateReadingAndThen(responder, drivers);
+
+        verify(exchange).sendResponseHeaders(200, 0);
+
+        var expected = new Gson().fromJson("{\"certificates\":[{\"subject\":\"CN\u003dJano Suchal, O\u003dSolver IT\",\"issuedBy\":\"CN\u003dJano Suchal, O\u003dSolver IT\"}]}", CertificatesResponse.class);
+        verify(responseBody).write(new Gson().toJson(expected).getBytes());
+    }
+
+    private record FakeDriverDetector(List<TokenDriver> drivers) implements DriverDetector {
+        @Override
+        public List<TokenDriver> getAvailableDrivers() {
+            return drivers;
+        }
+    }
+
+    private static class FakeTokenDriver extends TokenDriver {
+        public FakeTokenDriver(String name) {
+            super(name, Path.of(""), "fake", "");
+        }
+
+        @Override
+        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
+            try {
+                var keystore = Objects.requireNonNull(this.getClass().getResource("test.keystore")).getFile();
+                return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private static class FakeTokenDriverWithExpiredCertificate extends TokenDriver {
+
+        public FakeTokenDriverWithExpiredCertificate() {
+            super("fake-token-driver-with-expired-certificate", Path.of(""), "fake", "");
+        }
+
+        @Override
+        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
+            try {
+                var keystore = Objects.requireNonNull(this.getClass().getResource("expired_certificate.keystore"))
+                        .getFile();
+                return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("test123".toCharArray()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private class TestSettings extends UserSettings {
+        @Override
+        public DriverDetector getDriverDetector() {
+            List<TokenDriver> drivers = List.of(new FakeTokenDriver("fake"));
+            return new FakeDriverDetector(drivers);
+        }
+    }
+
+    private static AutogramDocument createTextDocument(String filename, String content) {
+        return AutogramDocument.build(
+            new InMemoryDocument(content.getBytes(StandardCharsets.UTF_8), filename, MimeTypeEnum.TEXT), null);
+    }
+
+    private static AutogramDocument loadDocument(String resourceName, MimeTypeEnum mimeType) throws IOException {
+        return AutogramDocument.build(
+            new InMemoryDocument(TestMethodSources.loadContent(resourceName), resourceName, mimeType), null);
+    }
+
+    private static byte[] createPasswordProtectedPdf() throws IOException {
+        try (var document = new PDDocument(); var outputStream = new ByteArrayOutputStream()) {
+            document.addPage(new PDPage());
+
+            var permissions = new AccessPermission();
+            var protectionPolicy = new StandardProtectionPolicy("owner-password", "user-password", permissions);
+            protectionPolicy.setEncryptionKeyLength(128);
+            protectionPolicy.setPermissions(permissions);
+
+            document.protect(protectionPolicy);
+            document.save(outputStream);
+
+            return outputStream.toByteArray();
+        }
+    }
+
+    private static SigningJob createMultiDocumentJob(boolean checkPDFACompliance, AutogramDocument... documents) {
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null,
+            checkPDFACompliance, 640, true);
+        var preparedInput = SigningInput.prepareForASiCWithXAdES(documents[0], parameters);
+        return SigningJob.fromInput(SigningInput.of(List.of(documents), preparedInput.getParameters()),
+            mock(Responder.class));
+    }
+}

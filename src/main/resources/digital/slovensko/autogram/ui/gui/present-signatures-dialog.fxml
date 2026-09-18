@@ -8,17 +8,19 @@
 <?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      maxHeight="800"
-      prefWidth="768"
+      maxHeight="680"
+      prefWidth="608"
       fx:id="mainBox">
 
-    <TextFlow><Text styleClass="autogram-heading-m" text="%signature.present.summary.title"/></TextFlow>
+    <VBox minHeight="0" VBox.vgrow="ALWAYS">
+        <TextFlow styleClass="autogram-header">
+          <Text styleClass="autogram-heading-m" text="%signature.present.summary.title"/>
+        </TextFlow>
 
-    <ScrollPane>
-        <VBox>
-            <VBox fx:id="signaturesBox" spacing="10" />
-        </VBox>
-    </ScrollPane>
+        <ScrollPane fitToWidth="true" prefHeight="560" VBox.vgrow="ALWAYS">
+          <VBox fx:id="signaturesContainer" spacing="12" />
+        </ScrollPane>
+    </VBox>
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="closeButton" styleClass="autogram-button, autogram-button--secondary" text="%general.close.btn" onAction="#onCloseButtonAction" />

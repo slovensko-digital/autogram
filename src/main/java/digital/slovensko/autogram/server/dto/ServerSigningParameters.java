@@ -2,6 +2,10 @@ package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.SigningParametersResolver;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
@@ -9,23 +13,18 @@ import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.isAsice;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
-import static digital.slovensko.autogram.core.AutogramMimeType.isXML;
 import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.INVALID_XSD;
 import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.INVALID_XSLT;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.CONTAINER_MISMATCH;
@@ -33,8 +32,8 @@ import static digital.slovensko.autogram.server.errors.RequestValidationExceptio
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.EMPTY_PARAMS_LEVEL;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.ID_MISSING;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.INVALID_PACKAGING;
-import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MIME_TYPE_MISMATCH;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MIME_TYPE_MISMATCH;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SCHEMA_MISSING;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.TRANSFORMATION_MISSING;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.UNSUPPORTED_SIGN_LEVEL;
@@ -98,7 +97,7 @@ public class ServerSigningParameters {
     private final String fsFormId;
 
     public ServerSigningParameters(LocalSignatureLevel level, ASiCContainerType container,
-            String containerFilename, String containerXmlns, SignaturePackaging packaging,
+            String containerXmlns, SignaturePackaging packaging,
             DigestAlgorithm digestAlgorithm,
             Boolean en319132, LocalCanonicalizationMethod infoCanonicalization,
             LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
@@ -154,25 +153,14 @@ public class ServerSigningParameters {
         this.fsFormId = null;
     }
 
-    public SigningParameters getSigningParameters(boolean isBase64, DSSDocument document, TSPSource tspSource, boolean plainXmlEnabled) {
-        var xsltParams = new XsltParams(
-                transformationIdentifier,
-                transformationLanguage,
-                getTransformationMediaDestinationTypeDescription(),
-                transformationTargetEnvironment,
-                null);
+    public SigningInput getSigningInput(boolean isBase64, AutogramDocument document, boolean plainXmlEnabled) {
+        return SigningInput.fromFile(document, getSigningParameters(plainXmlEnabled));
+    }
 
-        var eFormAttributes = new EFormAttributes(
-                identifier,
-                getTransformation(isBase64),
-                getSchema(isBase64),
-                containerXmlns,
-                schemaIdentifier,
-                xsltParams,
-                getBoolean(embedUsedSchemas));
-
-        return SigningParameters.buildParameters(
-                getSignatureLevel(),
+    public SigningParameters getSigningParameters(boolean plainXmlEnabled) {
+        return SigningParametersResolver.buildRequested(
+                getSignatureLevel().getSignatureProfile(),
+                getSignatureLevel().getSignatureForm(),
                 digestAlgorithm,
                 getContainer(),
                 packaging,
@@ -180,14 +168,36 @@ public class ServerSigningParameters {
                 getCanonicalizationMethodString(infoCanonicalization),
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getCanonicalizationMethodString(keyInfoCanonicalization),
-                eFormAttributes,
-                autoLoadEform,
-                getFsFormId(),
                 getBoolean(checkPDFACompliance),
                 getVisualizationWidth(),
-                document,
-                tspSource,
-                plainXmlEnabled);
+                plainXmlEnabled
+        );
+    }
+
+    public EFormAttributes getEFormAttributes(boolean isBase64) {
+        var xsltParams = new XsltParams(
+                transformationIdentifier,
+                transformationLanguage,
+                getTransformationMediaDestinationTypeDescription(),
+                transformationTargetEnvironment,
+                null);
+
+        return new EFormAttributes(
+                identifier,
+                getTransformation(isBase64),
+                getSchema(isBase64),
+                containerXmlns,
+                schemaIdentifier,
+                xsltParams,
+                getBoolean(embedUsedSchemas),
+                getFsFormId(),
+                autoLoadEform,
+                getCanonicalizationMethodString(propertiesCanonicalization),
+                getDigestAlgorithm());
+        }
+
+    private DigestAlgorithm getDigestAlgorithm() {
+        return digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
     }
 
     private static boolean getBoolean(Boolean variable) {
@@ -272,7 +282,7 @@ public class ServerSigningParameters {
         return container;
     }
 
-    public void resolveSigningLevel(InMemoryDocument document) throws RequestValidationException {
+    public void resolveSignatureLevel(InMemoryDocument document) throws RequestValidationException {
         if (level != null && level != LocalSignatureLevel.BASELINE_B && level != LocalSignatureLevel.BASELINE_T)
             return;
 
@@ -303,7 +313,8 @@ public class ServerSigningParameters {
         return fsFormId;
     }
 
-    public void validate(MimeType mimeType) throws RequestValidationException {
+    public void validate(DSSDocument document) throws RequestValidationException {
+        var mimeType = document.getMimeType();
         if (level == null)
             throw new RequestValidationException(MISSING_FIELD, "Parameters.Level");
 
@@ -327,13 +338,13 @@ public class ServerSigningParameters {
         }
 
         if (getSignatureLevel().getSignatureForm() == SignatureForm.XAdES) {
-            if (!isXML(mimeType) && !isXDC(mimeType) && !isAsice(mimeType) && container == null)
+            if (!AutogramMimeType.isXML(mimeType) && !AutogramMimeType.isXDC(mimeType) && !AutogramMimeType.isAsice(mimeType) && container == null)
                 if (!(packaging != null && packaging == SignaturePackaging.ENVELOPING))
                     throw new RequestValidationException(INVALID_PACKAGING, mimeType.getMimeTypeString());
         }
 
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")
-                && !isXDC(mimeType)) {
+                && !AutogramMimeType.isXDC(mimeType)) {
 
             if (!autoLoadEform && (transformation == null || transformation.isEmpty()))
                 throw new RequestValidationException(TRANSFORMATION_MISSING);
@@ -344,7 +355,7 @@ public class ServerSigningParameters {
             if (identifier == null || identifier.isEmpty())
                 throw new RequestValidationException(ID_MISSING);
 
-            if (!isXML(mimeType))
+            if (!AutogramMimeType.isXML(mimeType))
                 throw new RequestValidationException(CONTAINER_MISMATCH, mimeType.getMimeTypeString());
         }
     }

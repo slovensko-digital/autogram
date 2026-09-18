@@ -11,11 +11,14 @@ import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.ResponderInBatch;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.TargetPath;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
+import eu.europa.esig.dss.model.FileDocument;
 
 public class BatchGuiFileResponder extends BatchResponder {
     private final Autogram autogram;
@@ -24,21 +27,15 @@ public class BatchGuiFileResponder extends BatchResponder {
     private final Map<File, AutogramException> errors = new HashMap<>();
     private boolean uiNotifiedOnAllFilesSigned = false;
     private final TargetPath targetPath;
-    private final boolean checkPDFACompliance;
-    private final SignatureLevel pDFSignatureLevel;
-    private final boolean isEn319132;
-    private final TSPSource tspSource;
-    private final boolean plainXmlEnabled;
+    private final SigningParameters signingParameters;
+    private final EFormAttributes eFormAttributes;
 
-    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, boolean checkPDFACompliance, SignatureLevel pDFSignatureLevel, boolean signPDFAsPades, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+    public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, SigningParameters signingParameters, EFormAttributes eFormAttributes, boolean signPDFAsPades) {
         this.autogram = autogram;
         this.list = list;
-        this.checkPDFACompliance = checkPDFACompliance;
-        this.pDFSignatureLevel = pDFSignatureLevel;
-        this.isEn319132 = isEn319132;
+        this.signingParameters = signingParameters;
+        this.eFormAttributes = eFormAttributes;
         this.targetPath = TargetPath.fromTargetDirectory(targetDirectory, signPDFAsPades);
-        this.tspSource = tspSource;
-        this.plainXmlEnabled = plainXmlEnabled;
     }
 
     @Override
@@ -64,7 +61,8 @@ public class BatchGuiFileResponder extends BatchResponder {
                     onAllFilesSigned(batch);
                 }), batch);
 
-                var job = SigningJob.buildFromFile(file, responder, checkPDFACompliance, pDFSignatureLevel, isEn319132, tspSource, plainXmlEnabled);
+                var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes), signingParameters);
+                var job = SigningJob.fromInput(input, responder);
                 autogram.batchSign(job, batch.getBatchId());
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);

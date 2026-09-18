@@ -1,15 +1,19 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.core.eforms.xdc;
 
 import java.io.IOException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
+
+import digital.slovensko.autogram.TestMethodSources;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 
 public class XDCValidatorTests {
@@ -23,7 +27,7 @@ public class XDCValidatorTests {
 
     @Test
     void testGetDigestValueElementNotFound() throws IOException, XMLValidationException {
-        var content = new String(this.getClass().getResourceAsStream("document-content-no-UsedXSDReference.xml").readAllBytes());
+        var content = new String(TestMethodSources.loadContent("document-content-no-UsedXSDReference.xml"));
         var document =  new InMemoryDocument(content.getBytes(), null);
 
         var schema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n\n\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>";
@@ -33,7 +37,7 @@ public class XDCValidatorTests {
 
     @Test
     void testGetDigestValueAttributesOfElementNotFound() throws IOException, XMLValidationException {
-        var content = new String(this.getClass().getResourceAsStream("document-content-UsedXSDReference-no-attributes.xml").readAllBytes());
+        var content = new String(TestMethodSources.loadContent("document-content-UsedXSDReference-no-attributes.xml"));
         var document =  new InMemoryDocument(content.getBytes(), null);
 
         var schema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n\n\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>";
@@ -43,7 +47,7 @@ public class XDCValidatorTests {
 
     @Test
     void testGetDigestValueNotFound() throws IOException, XMLValidationException {
-        var content = new String(this.getClass().getResourceAsStream("document-content-UsedXSDReference-no-DigestValue.xml").readAllBytes());
+        var content = new String(TestMethodSources.loadContent("document-content-UsedXSDReference-no-DigestValue.xml"));
         var document =  new InMemoryDocument(content.getBytes(), null);
 
         var schema = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><xs:schema elementFormDefault=\"qualified\" attributeFormDefault=\"unqualified\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\" xmlns=\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\">\n<xs:simpleType name=\"textArea\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n<xs:simpleType name=\"meno\">\n<xs:restriction base=\"xs:string\">\n</xs:restriction>\n</xs:simpleType>\n\n\n<xs:element name=\"GeneralAgenda\">\n<xs:complexType>\n<xs:sequence>\n<xs:element name=\"subject\" type=\"meno\" minOccurs=\"0\" nillable=\"true\" />\n<xs:element name=\"text\" type=\"textArea\" minOccurs=\"0\" nillable=\"true\" />\n</xs:sequence>\n</xs:complexType>\n</xs:element>\n</xs:schema>";
@@ -66,5 +70,18 @@ public class XDCValidatorTests {
 
 
         Assertions.assertThrows(XMLValidationException.class, () -> EFormUtils.getEformXmlFromXdcDocument(document));
+    }
+
+    @ParameterizedTest
+    @MethodSource({"digital.slovensko.autogram.TestMethodSources#xdcDocumentsProvider",
+            "digital.slovensko.autogram.TestMethodSources#xdcDocumentsWithXmlMimetypeProvider"})
+    void testReturnsTrueForAllXDCsRegerdlessOfMimeType(DSSDocument document) {
+        Assertions.assertTrue(XDCValidator.isXDCContent(document));
+    }
+
+    @ParameterizedTest
+    @MethodSource({"digital.slovensko.autogram.TestMethodSources#nonXdcXmlDocumentsProvider"})
+    void testReturnsFalseForAllNonXDCsRegerdlessOfMimeType(DSSDocument document) {
+        Assertions.assertFalse(XDCValidator.isXDCContent(document));
     }
 }

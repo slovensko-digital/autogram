@@ -2,7 +2,6 @@ package digital.slovensko.autogram.ui;
 
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -18,7 +17,7 @@ public interface UI {
 
     void cancelBatch(Batch batch);
 
-    void showVisualization(Visualization visualization, Autogram autogram);
+    void showSigningJob(SigningJob job, Autogram autogram);
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel);
 

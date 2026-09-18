@@ -25,6 +25,6 @@
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="cancelButton" styleClass="autogram-button,autogram-button--warning" text="%signature.notValidated.cancel.btn" onAction="#onCancelAction" />
-        <Button fx:id="continueButton" styleClass="autogram-button,autogram-button--secondary" text="%general.sign.btn" onAction="#onContinueAction" />
+        <Button fx:id="continueButton" styleClass="autogram-button,autogram-button--secondary" text="%general.sign.btn.single" onAction="#onContinueAction" />
     </HBox>
 </VBox>
