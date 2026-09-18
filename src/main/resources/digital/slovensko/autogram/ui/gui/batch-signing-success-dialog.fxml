@@ -23,10 +23,9 @@
             </TextFlow>
             <TextFlow styleClass="autogram-body">
                 <Text styleClass="autogram-body" text="%batchSigning.success.folder.before.text" />
-                <Hyperlink styleClass="autogram-body,autogram-link,autogram-font-weight-bold"
-                    fx:id="folderPathText" onAction="#onOpenFolderAction" wrapText="true" />
-                <Text styleClass="autogram-body" text="%batchSigning.success.folder.after.text" />
             </TextFlow>
+            <Hyperlink styleClass="autogram-body,autogram-link,autogram-font-weight-bold"
+                fx:id="folderPathText" onAction="#onOpenFolderAction" wrapText="true" maxWidth="Infinity" />
         </VBox>
 
         <HBox styleClass="autogram-actions">

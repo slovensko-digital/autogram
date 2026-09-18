@@ -29,7 +29,7 @@ public class BatchSigningSuccessDialogController extends BaseController implemen
 
     @Override
     public void initialize() {
-        folderPathText.setText(result.getTargetDirectory().toString());
+        folderPathText.setText(GUIUtils.wrappablePath(result.getTargetDirectory().toString()));
         var signedFileNamesList = result.getTargetFilesSortedList().stream().filter(e -> e != null)
                 .map(file -> file.getName())
                 .toList();

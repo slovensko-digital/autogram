@@ -760,6 +760,12 @@ TextFlow.autogram-body-s {
   -fx-background-insets: 0 10px 0 0;
 }
 
+.choice-box:focused {
+  -fx-background-color: -autogram-focus-colour, -autogram-input-border-colour,
+    -autogram-background-colour;
+  -fx-background-insets: -3, 2, 4;
+}
+
 /* Check boxes */
 .check-box {
   -fx-cursor: hand;
@@ -1140,6 +1146,18 @@ TextFlow.autogram-body-s {
 }
 .autogram-confirmation Hyperlink {
   -fx-font-size: 2em;
+  -fx-text-alignment: center;
+  -fx-alignment: center;
+}
+
+.autogram-confirmation .autogram-link:focused,
+.autogram-confirmation .autogram-link:focused:hover {
+  -fx-text-fill: -autogram-focus-text-colour;
+}
+
+.autogram-confirmation .autogram-link:focused,
+.autogram-confirmation .autogram-link:focused:hover {
+  -fx-text-fill: -autogram-focus-text-colour;
 }
 
 .autogram-summary-header {
