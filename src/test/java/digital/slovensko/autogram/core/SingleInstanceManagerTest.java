@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.util.OperatingSystem;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -113,7 +114,7 @@ public class SingleInstanceManagerTest {
 
     @Test
     void testCombinesFilesThatArriveInQuickSuccession() throws InterruptedException {
-        assertTrue(SingleInstanceManager.start(tempDir, List.of()));
+        assertTrue(SingleInstanceManager.start(tempDir, List.of(), SingleInstanceManager.WINDOWS_DEBOUNCE_DELAY_MS));
         var primary = SingleInstanceManager.getInstance();
         created.add(primary);
 
@@ -130,6 +131,13 @@ public class SingleInstanceManagerTest {
 
         assertTrue(latch.await(5, TimeUnit.SECONDS));
         assertEquals(List.of("/tmp/a.pdf", "/tmp/b.pdf", "/tmp/c.asice"), received.get());
+    }
+
+    @Test
+    void testDebounceIsOnlyEnabledOnWindows() {
+        assertEquals(SingleInstanceManager.WINDOWS_DEBOUNCE_DELAY_MS, SingleInstanceManager.debounceDelayFor(OperatingSystem.WINDOWS));
+        assertEquals(0, SingleInstanceManager.debounceDelayFor(OperatingSystem.MAC));
+        assertEquals(0, SingleInstanceManager.debounceDelayFor(OperatingSystem.LINUX));
     }
 
     @Test
@@ -209,7 +217,7 @@ public class SingleInstanceManagerTest {
 
     @Test
     void testFailsOpenWhenUnixSocketsAreUnsupported() throws InterruptedException {
-        var manager = new SingleInstanceManager(tempDir.resolve("autogram.sock"), tempDir.resolve("autogram.lock")) {
+        var manager = new SingleInstanceManager(tempDir.resolve("autogram.sock"), tempDir.resolve("autogram.lock"), 0) {
             @Override
             SocketChannel openClientChannel() {
                 throw new UnsupportedOperationException("Unix domain sockets not supported");

@@ -45,9 +45,11 @@ import java.util.function.Consumer;
  * launch becomes its own primary instance and just opens the files it was
  * started with.
  * <p>
- * Arguments that arrive around the same time (on Windows, opening several files
- * launches one process per file) are collected for a short debounce window and
- * delivered together, so the running instance opens them in a single batch.
+ * On Windows, opening several files launches one process per file, so
+ * arguments that arrive around the same time are collected for a short
+ * debounce window and delivered together, so the running instance opens them
+ * in a single batch. Other platforms hand over all files in one launch, so
+ * there the window is disabled and arguments are delivered right away.
  * <p>
  * The socket is only protected by the OS file permissions of the user's data
  * directory, so any process running as the same user could connect to it and
@@ -60,7 +62,7 @@ public class SingleInstanceManager {
     private static final long CONNECT_RETRY_DELAY_MS = 200;
     private static final int MAX_CONNECT_ATTEMPTS = 50;
     private static final long CONNECTION_READ_TIMEOUT_MS = 2_000;
-    private static final long DEBOUNCE_DELAY_MS = 500;
+    static final long WINDOWS_DEBOUNCE_DELAY_MS = 150;
     static final int MAX_MESSAGE_BYTES = 64 * 1024;
     private static final String ARG_SEPARATOR = "\0";
     private static final String SOCKET_FILE_NAME = "autogram.sock";
@@ -70,6 +72,7 @@ public class SingleInstanceManager {
 
     private final Path socketPath;
     private final Path lockPath;
+    private final long debounceDelayMs;
 
     private final ExecutorService serverExecutor = Executors.newSingleThreadExecutor(runnable -> {
         var thread = new Thread(runnable, "autogram-single-instance");
@@ -94,9 +97,10 @@ public class SingleInstanceManager {
     private Runnable activateHandler;
     private ScheduledFuture<?> debounceTask;
 
-    SingleInstanceManager(Path socketPath, Path lockPath) {
+    SingleInstanceManager(Path socketPath, Path lockPath, long debounceDelayMs) {
         this.socketPath = socketPath;
         this.lockPath = lockPath;
+        this.debounceDelayMs = debounceDelayMs;
     }
 
     /**
@@ -133,9 +137,22 @@ public class SingleInstanceManager {
     }
 
     static boolean start(Path dataDir, List<String> args) {
-        return start(new SingleInstanceManager(
+        return start(dataDir, args, debounceDelayFor(OperatingSystem.current()));
+    }
+
+    static boolean start(Path dataDir, List<String> args, long debounceDelayMs) {
+        return start(
+            new SingleInstanceManager(
                 dataDir.resolve(SOCKET_FILE_NAME),
-                dataDir.resolve(LOCK_FILE_NAME)), args);
+                dataDir.resolve(LOCK_FILE_NAME),
+                debounceDelayMs
+            ),
+            args
+        );
+    }
+
+    static long debounceDelayFor(OperatingSystem os) {
+        return os == OperatingSystem.WINDOWS ? WINDOWS_DEBOUNCE_DELAY_MS : 0;
     }
 
     static boolean start(SingleInstanceManager manager, List<String> args) {
@@ -366,7 +383,7 @@ public class SingleInstanceManager {
     private void scheduleDispatch() {
         if (debounceTask != null)
             debounceTask.cancel(false);
-        debounceTask = debounceExecutor.schedule(this::dispatch, DEBOUNCE_DELAY_MS, TimeUnit.MILLISECONDS);
+        debounceTask = debounceExecutor.schedule(this::dispatch, debounceDelayMs, TimeUnit.MILLISECONDS);
     }
 
     private void dispatch() {
