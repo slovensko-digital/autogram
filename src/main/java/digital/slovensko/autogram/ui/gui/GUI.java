@@ -2,12 +2,14 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
@@ -74,8 +76,8 @@ public class GUI implements UI {
         stage.setTitle(batchController.i18n("batch.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
+            autogram.endBatch(batch);
             cancelBatch(batch);
-            callback.cancel();
         });
 
         stage.setResizable(false);
@@ -86,8 +88,36 @@ public class GUI implements UI {
     }
 
     @Override
+    public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder) {
+        if (userSettings.isBulkEnabled()) {
+            autogram.startBatch(batch, allAtOnceResponder);
+            return;
+        }
+
+        var controller = new PickBatchModeDialogController(batch, allAtOnceResponder,
+                oneByOneResponder, autogram);
+        var root = GUIUtils.loadFXML(controller, "pick-batch-mode-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("pickBatchMode.window.title"));
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> {
+            autogram.endBatch(batch);
+            allAtOnceResponder.onBatchStartFailure(new BatchCanceledException());
+        });
+        stage.setResizable(false);
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        GUIUtils.showOnTop(stage);
+        setUserFriendlyPositionAndLimits(stage);
+    }
+
+    @Override
     public void cancelBatch(Batch batch) {
-        batchController.close();
+        if (batchController != null) {
+            batchController.close();
+        }
         batch.end();
         refreshKeyOnAllJobs();
         enableSigningOnAllJobs();
@@ -335,11 +365,10 @@ public class GUI implements UI {
     }
 
     public void showVisualization(Visualization visualization, Autogram autogram) {
-        var title = SupportedLanguage.loadResources(userSettings).getString("general.document");
-        if (visualization.getJob().getDocument().getName() != null)
-            title += " " + visualization.getJob().getDocument().getName();
-
-        var controller = new SigningDialogController(visualization, autogram, this, title, userSettings.isSignaturesValidity());
+        var title = visualization.getDialogTitle(
+                SupportedLanguage.loadResources(userSettings).getString("general.document"));
+        var controller = new SigningDialogController(visualization, autogram, this, title,
+                userSettings.isSignaturesValidity());
         jobControllers.put(visualization.getJob(), controller);
 
         Parent root;
@@ -378,7 +407,10 @@ public class GUI implements UI {
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.WINDOW_MODAL);
-        stage.initOwner(getJobWindow(e.getJob()));
+        var jobController = jobControllers.get(e.getJob());
+        if (jobController != null)
+            stage.initOwner(jobController.mainBox.getScene().getWindow());
+        stage.setOnCloseRequest(event -> e.getJob().onDocumentSignFailed(new SigningCanceledByUserException()));
         GUIUtils.suppressDefaultFocus(stage, controller);
 
         GUIUtils.showOnTop(stage);

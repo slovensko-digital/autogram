@@ -68,6 +68,10 @@ public class SigningDialogController extends BaseController implements Suppresse
     @FXML
     public Button changeKeyButton;
     @FXML
+    public Button skipButton;
+    @FXML
+    public Button skipRemainingButton;
+    @FXML
     VBox unsupportedVisualizationInfoBox;
     @FXML
     VBox signaturesTable;
@@ -89,6 +93,19 @@ public class SigningDialogController extends BaseController implements Suppresse
         signaturesTable.setManaged(false);
         signaturesTable.setVisible(false);
         refreshSigningKey();
+        var job = visualization.getJob();
+        var canSkip = job.getSkipAction() != null;
+        var isPartOfBatch = job.isPartOfBatch();
+        var isMultiDocumentBatch = job.isMultiDocumentBatch();
+
+        skipButton.setManaged(canSkip && isMultiDocumentBatch);
+        skipButton.setVisible(canSkip && isMultiDocumentBatch);
+        var showCancelButton = canSkip || !isPartOfBatch;
+        skipRemainingButton.setManaged(showCancelButton);
+        skipRemainingButton.setVisible(showCancelButton);
+        skipRemainingButton.setText(i18n(isMultiDocumentBatch
+                ? "batch.endSigning.btn"
+                : "general.cancel.btn"));
         visualization.initialize(this);
         autogram.checkPDFACompliance(visualization.getJob());
     }
@@ -180,6 +197,21 @@ public class SigningDialogController extends BaseController implements Suppresse
     public void onChangeKeyButtonPressed(ActionEvent event) {
         gui.resetSigningKey();
         checkExistingSignatureValidityAndSign();
+    }
+
+    public void onSkipButtonPressed(ActionEvent event) {
+        mainBox.getScene().getWindow().hide();
+        visualization.getJob().getSkipAction().run();
+    }
+
+    public void onSkipRemainingButtonPressed(ActionEvent event) {
+        var skipRemainingAction = visualization.getJob().getSkipRemainingAction();
+        if (skipRemainingAction != null) {
+            mainBox.getScene().getWindow().hide();
+            skipRemainingAction.run();
+        } else {
+            gui.cancelJob(visualization.getJob());
+        }
     }
 
     public void onShowSignaturesButtonPressed(ActionEvent event) {

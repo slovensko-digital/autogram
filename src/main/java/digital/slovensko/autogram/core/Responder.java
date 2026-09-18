@@ -6,4 +6,20 @@ public abstract class Responder {
     abstract public void onDocumentSigned(SignedDocument signedDocument);
 
     abstract public void onDocumentSignFailed(AutogramException error);
+
+    public boolean isBatch() {
+        return false;
+    }
+
+    public Integer getBatchPosition() {
+        return null;
+    }
+
+    public Runnable getSkipAction() {
+        return null;
+    }
+
+    public Runnable getSkipRemainingAction() {
+        return null;
+    }
 }

@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -35,6 +36,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -156,6 +159,77 @@ class AutogramTests {
     @Test
     void testSignFailedAfterCertificatePick() {
 
+    }
+
+    @Test
+    void testBatchSignAsksForPinAgainAfterRetryableFailure() throws IOException {
+        var settings = new TestSettings();
+        var keyRef = new AtomicReference<SigningKey>();
+        var batchRef = new AtomicReference<Batch>();
+
+        var newUI = new FakeUI() {
+            @Override
+            public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
+                batchRef.set(batch);
+                callback.accept(keyRef.get());
+            }
+        };
+        var autogram = new Autogram(newUI, settings);
+
+        autogram.pickSigningKeyAndThen(keyRef::set);
+
+        var signingAttempts = new AtomicInteger();
+        var responder = mock(Responder.class);
+        doAnswer(invocation -> {
+            if (signingAttempts.incrementAndGet() == 1)
+                throw new PINIncorrectException();
+
+            return null;
+        }).when(responder).onDocumentSigned(any());
+
+        var document = TestMethodSources.generalAgendaProvider().findFirst().orElseThrow();
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, false);
+        var job = SigningJob.buildFromRequest(document, parameters, responder);
+
+        autogram.batchStart(1, mock(BatchResponder.class));
+        autogram.batchSign(job, batchRef.get().getBatchId());
+
+        Assertions.assertEquals(2, signingAttempts.get(), "a wrong PIN should be retried");
+        verify(responder, never()).onDocumentSignFailed(any());
+    }
+
+    @Test
+    void testOneByOneBatchSignsEachDocumentInteractively() throws IOException {
+        var settings = new TestSettings();
+        var batchRef = new AtomicReference<Batch>();
+        var interactiveSigningStarted = new AtomicInteger();
+
+        var newUI = new FakeUI() {
+            @Override
+            public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+                    BatchResponder oneByOneResponder) {
+                batchRef.set(batch);
+                autogram.startOneByOneBatch(batch, oneByOneResponder);
+            }
+
+            @Override
+            public void startSigning(SigningJob job, Autogram autogram) {
+                interactiveSigningStarted.incrementAndGet();
+            }
+        };
+        var autogram = new Autogram(newUI, settings);
+
+        autogram.batchStartWithModeSelection(1, mock(BatchResponder.class), mock(BatchResponder.class));
+
+        var document = TestMethodSources.generalAgendaProvider().findFirst().orElseThrow();
+        var parameters = SigningParameters.buildForASiCWithXAdES(document, false, false, null, false);
+        var job = SigningJob.buildFromRequest(document, parameters,
+                new ResponderInBatch(mock(Responder.class), batchRef.get()));
+
+        autogram.batchSign(job, batchRef.get().getBatchId());
+
+        Assertions.assertEquals(1, interactiveSigningStarted.get(),
+                "one-by-one batches should sign each document through the interactive flow");
     }
 
     @Test
@@ -295,6 +369,12 @@ class AutogramTests {
 
         @Override
         public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
+        }
+
+        @Override
+        public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+                BatchResponder oneByOneResponder) {
+            autogram.startBatch(batch, allAtOnceResponder);
         }
 
         @Override

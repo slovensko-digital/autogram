@@ -16,6 +16,9 @@ public interface UI {
 
     void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
 
+    void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
+            BatchResponder oneByOneResponder);
+
     void cancelBatch(Batch batch);
 
     void showVisualization(Visualization visualization, Autogram autogram);
@@ -58,7 +61,7 @@ public interface UI {
 
     char[] getContextSpecificPassword();
 
-    public void updateBatch();
+    void updateBatch();
 
     void resetSigningKey();
 
