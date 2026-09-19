@@ -70,7 +70,8 @@ public class AppStarter {
         final HelpFormatter formatter = new HelpFormatter();
         final String syntax = """
                 autogram [options]
-                autogram --url=http://localhost:32700
+                autogram --url=autogram://go
+                autogram --url=autogram://go?protocol=https&port=12345
                 autogram --cli [options]
                 autogram --cli -s target/directory-example/file-example.pdf -t target/output-example/out-example.pdf
                 autogram --cli -s target/directory-example -t target/output-example -f
