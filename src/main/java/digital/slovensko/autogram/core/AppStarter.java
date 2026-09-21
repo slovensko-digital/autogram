@@ -71,7 +71,7 @@ public class AppStarter {
         final String syntax = """
                 autogram [options]
                 autogram --url=autogram://go
-                autogram --url=autogram://go?protocol=https&port=12345
+                autogram --url=autogram://go?protocol=https&port=37200
                 autogram --cli [options]
                 autogram --cli -s target/directory-example/file-example.pdf -t target/output-example/out-example.pdf
                 autogram --cli -s target/directory-example -t target/output-example -f
