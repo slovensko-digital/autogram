@@ -56,7 +56,7 @@ public class SignRequestBody {
     }
 
     public AutogramDocument getDocument() {
-        return AutogramDocument.build(getRequestDocument(), parameters.getEFormAttributes(isBase64()));
+        return AutogramDocument.build(getRequestDocument(), parameters.getEFormAttributes(isBase64(), getMimetype()));
     }
 
     private InMemoryDocument getRequestDocument() {

@@ -249,6 +249,87 @@ public class VersionedSignRequestBodyTests {
     }
 
     @Test
+    void autoLoadsEformByDefaultForAsiceDocument() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.asice")));
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "mimeType": "application/vnd.etsi.asic-e+zip; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertTrue(request.getSingleDocument().getEFormAttributes().autoLoadEform());
+        assertNotNull(request.getSingleDocument().getEFormAttributes().transformation());
+    }
+
+    @Test
+    void autoLoadsEformByDefaultForXdcDocument() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda_xdc.xml")));
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "mimeType": "application/vnd.gov.sk.xmldatacontainer+xml; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertTrue(request.getSingleDocument().getEFormAttributes().autoLoadEform());
+        assertNotNull(request.getSingleDocument().getEFormAttributes().transformation());
+    }
+
+    @Test
+    void doesNotAutoLoadEformForAsiceDocumentWhenExplicitlyDisabled() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.asice")));
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "mimeType": "application/vnd.etsi.asic-e+zip; base64",
+                    "xdcParameters": {
+                      "autoLoadEform": false
+                    },
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertFalse(request.getSingleDocument().getEFormAttributes().autoLoadEform());
+        assertNull(request.getSingleDocument().getEFormAttributes().transformation());
+    }
+
+    @Test
+    void doesNotAutoLoadEformByDefaultForXmlDocument() {
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "filename": "document.xml",
+                    "mimeType": "application/xml",
+                    "content": "<?xml version=\\"1.0\\" encoding=\\"UTF-8\\"?><GeneralAgenda xmlns=\\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\\"><subject>Nové podanie</subject><text>Podávam toto nové podanie.</text></GeneralAgenda>"
+                  },
+                  "parameters": {
+                    "form": "XAdES"
+                  }
+                }
+                """, VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(true);
+
+        assertFalse(request.getSingleDocument().getEFormAttributes().autoLoadEform());
+        assertNull(request.getSingleDocument().getEFormAttributes().transformation());
+    }
+
+    @Test
     void buildsSigningInputWithAutomaticallyLoadedEform() {
         var body = gson.fromJson("""
                 {
