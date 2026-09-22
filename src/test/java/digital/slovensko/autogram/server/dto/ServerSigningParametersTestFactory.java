@@ -16,7 +16,7 @@ final class ServerSigningParametersTestFactory {
             ServerSigningParameters.LocalCanonicalizationMethod propertiesCanonicalization,
             ServerSigningParameters.LocalCanonicalizationMethod keyInfoCanonicalization,
             String schema, String transformation, String identifier, boolean checkPDFACompliance,
-            ServerSigningParameters.VisualizationWidthEnum visualizationWidth, boolean autoLoadEform,
+            ServerSigningParameters.VisualizationWidthEnum visualizationWidth, Boolean autoLoadEform,
             boolean embedUsedSchemas, String schemaIdentifier, String transformationIdentifier,
             String transformationLanguage,
             ServerSigningParameters.TransformationOutputMimeType transformationMediaDestinationTypeDescription,

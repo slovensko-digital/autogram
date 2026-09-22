@@ -40,10 +40,15 @@ public record Document (String filename, String content, String mimeType, XDCPar
     }
 
     private EFormAttributes getEformAttributes(String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
-        if (xdcParameters() == null)
-            return null;
+        var parameters = xdcParameters() == null ? XDCParameters.empty() : xdcParameters();
 
-        return xdcParameters().getEFormAttributes(canonicalizationMethod, digestAlgorithm, isBase64());
+        return parameters.getEFormAttributes(canonicalizationMethod, digestAlgorithm, isBase64(), shouldAutoLoadEformByDefault());
+    }
+
+    public boolean shouldAutoLoadEformByDefault() {
+        var mimeType = getMimeType();
+
+        return AutogramMimeType.isAsice(mimeType) || AutogramMimeType.isXDC(mimeType);
     }
 
     public DSSDocument getDSSDocument() {

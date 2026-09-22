@@ -1455,4 +1455,61 @@ class SignRequestBodyTest {
 
         Assertions.assertDoesNotThrow(() -> {signRequestBody.getParameters(true);});
     }
+
+    private static ServerSigningParameters createParametersWithAutoLoadEform(Boolean autoLoadEform) {
+        return ServerSigningParametersTestFactory.create(
+                ServerSigningParameters.LocalSignatureLevel.XAdES_BASELINE_B,
+                null, null, null, null, null, null, null, null, null, null, null, null,
+                false, null, autoLoadEform, false, null, null, null, null, null, null);
+    }
+
+    @Test
+    void testAutoLoadsEformByDefaultForAsicePayload() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                this.getClass().getResourceAsStream("../../general_agenda.asice").readAllBytes());
+        var signRequestBody = new SignRequestBody(new Document(content), createParametersWithAutoLoadEform(null),
+                "application/vnd.etsi.asic-e+zip; base64");
+
+        var eFormAttributes = signRequestBody.getDocument().getEFormAttributes();
+
+        Assertions.assertTrue(eFormAttributes.autoLoadEform());
+        Assertions.assertNotNull(eFormAttributes.transformation());
+    }
+
+    @Test
+    void testAutoLoadsEformByDefaultForXdcPayload() throws IOException {
+        var content = new String(this.getClass().getResourceAsStream("../../general_agenda_xdc.xml").readAllBytes());
+        var signRequestBody = new SignRequestBody(new Document("document.xml", content),
+                createParametersWithAutoLoadEform(null), "application/vnd.gov.sk.xmldatacontainer+xml");
+
+        var eFormAttributes = signRequestBody.getDocument().getEFormAttributes();
+
+        Assertions.assertTrue(eFormAttributes.autoLoadEform());
+        Assertions.assertNotNull(eFormAttributes.transformation());
+    }
+
+    @Test
+    void testDoesNotAutoLoadEformForAsicePayloadWhenExplicitlyDisabled() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                this.getClass().getResourceAsStream("../../general_agenda.asice").readAllBytes());
+        var signRequestBody = new SignRequestBody(new Document(content), createParametersWithAutoLoadEform(false),
+                "application/vnd.etsi.asic-e+zip; base64");
+
+        var eFormAttributes = signRequestBody.getDocument().getEFormAttributes();
+
+        Assertions.assertFalse(eFormAttributes.autoLoadEform());
+        Assertions.assertNull(eFormAttributes.transformation());
+    }
+
+    @Test
+    void testDoesNotAutoLoadEformByDefaultForXmlPayload() throws IOException {
+        var content = new String(this.getClass().getResourceAsStream("../../general_agenda.xml").readAllBytes());
+        var signRequestBody = new SignRequestBody(new Document("document.xml", content),
+                createParametersWithAutoLoadEform(null), "application/xml");
+
+        var eFormAttributes = signRequestBody.getDocument().getEFormAttributes();
+
+        Assertions.assertFalse(eFormAttributes.autoLoadEform());
+        Assertions.assertNull(eFormAttributes.transformation());
+    }
 }

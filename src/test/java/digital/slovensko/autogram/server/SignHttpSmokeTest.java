@@ -203,7 +203,7 @@ public class SignHttpSmokeTest {
         var identifier = (String) map.get("identifier");
         var checkPDFACompliance = (boolean) map.getOrDefault("checkPDFACompliance", false);
         var visualizationWidth = fromMapToEnum(VisualizationWidthEnum.class, map.get("visualizationWidth"));
-        var autoLoadEform = (boolean) map.getOrDefault("autoLoadEform", false);
+        var autoLoadEform = (Boolean) map.get("autoLoadEform");
         var embedUsedSchemas = (boolean) map.getOrDefault("embedUsedSchemas", false);
         var schemaIdentifier = (String) map.get("schemaIdentifier");
         var transformationIdentifier = (String) map.get("transformationIdentifier");

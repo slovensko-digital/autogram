@@ -13,6 +13,7 @@ import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.server.errors.UnsupportedSignatureLevelException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -87,7 +88,7 @@ public class ServerSigningParameters {
     private final String identifier;
     private final boolean checkPDFACompliance;
     private final VisualizationWidthEnum visualizationWidth;
-    private final boolean autoLoadEform;
+    private final Boolean autoLoadEform;
     private final boolean embedUsedSchemas;
     private final String schemaIdentifier;
     private final String transformationIdentifier;
@@ -103,7 +104,7 @@ public class ServerSigningParameters {
             LocalCanonicalizationMethod propertiesCanonicalization, LocalCanonicalizationMethod keyInfoCanonicalization,
             String schema, String transformation,
             String Identifier, boolean checkPDFACompliance, VisualizationWidthEnum preferredPreviewWidth,
-            boolean autoLoadEform, boolean embedUsedSchemas, String schemaIdentifier, String transformationIdentifier,
+            Boolean autoLoadEform, boolean embedUsedSchemas, String schemaIdentifier, String transformationIdentifier,
             String transformationLanguage, TransformationOutputMimeType transformationMediaDestinationTypeDescription,
             String transformationTargetEnvironment, String fsFormId) {
         this.level = level;
@@ -143,7 +144,7 @@ public class ServerSigningParameters {
         this.identifier = null;
         this.checkPDFACompliance = false;
         this.visualizationWidth = null;
-        this.autoLoadEform = false;
+        this.autoLoadEform = null;
         this.embedUsedSchemas = false;
         this.schemaIdentifier = null;
         this.transformationIdentifier = null;
@@ -174,7 +175,7 @@ public class ServerSigningParameters {
         );
     }
 
-    public EFormAttributes getEFormAttributes(boolean isBase64) {
+    public EFormAttributes getEFormAttributes(boolean isBase64, MimeType mimeType) {
         var xsltParams = new XsltParams(
                 transformationIdentifier,
                 transformationLanguage,
@@ -191,13 +192,20 @@ public class ServerSigningParameters {
                 xsltParams,
                 getBoolean(embedUsedSchemas),
                 getFsFormId(),
-                autoLoadEform,
+                isAutoLoadEform(mimeType),
                 getCanonicalizationMethodString(propertiesCanonicalization),
                 getDigestAlgorithm());
         }
 
     private DigestAlgorithm getDigestAlgorithm() {
         return digestAlgorithm != null ? digestAlgorithm : DigestAlgorithm.SHA256;
+    }
+
+    public boolean isAutoLoadEform(MimeType mimeType) {
+        if (autoLoadEform == null)
+            return AutogramMimeType.isAsice(mimeType) || AutogramMimeType.isXDC(mimeType);
+
+        return autoLoadEform;
     }
 
     private static boolean getBoolean(Boolean variable) {
@@ -346,10 +354,10 @@ public class ServerSigningParameters {
         if (containerXmlns != null && containerXmlns.contains("xmldatacontainer")
                 && !AutogramMimeType.isXDC(mimeType)) {
 
-            if (!autoLoadEform && (transformation == null || transformation.isEmpty()))
+            if (!isAutoLoadEform(mimeType) && (transformation == null || transformation.isEmpty()))
                 throw new RequestValidationException(TRANSFORMATION_MISSING);
 
-            if (!autoLoadEform && (schema == null || schema.isEmpty()))
+            if (!isAutoLoadEform(mimeType) && (schema == null || schema.isEmpty()))
                 throw new RequestValidationException(SCHEMA_MISSING);
 
             if (identifier == null || identifier.isEmpty())

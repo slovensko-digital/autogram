@@ -23,7 +23,11 @@ public record XDCParameters (
         XHTML
     }
 
-    public EFormAttributes getEFormAttributes(String canonicalizationMethod, DigestAlgorithm digestAlgorithm, boolean isDocumentBase64) {
+    public static XDCParameters empty() {
+        return new XDCParameters(null, null, null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    public EFormAttributes getEFormAttributes(String canonicalizationMethod, DigestAlgorithm digestAlgorithm, boolean isDocumentBase64, boolean defaultAutoLoadEform) {
         return new EFormAttributes(
             identifier(),
             getTransformation(isDocumentBase64),
@@ -33,7 +37,7 @@ public record XDCParameters (
             getXsltParams(),
             getEmbedUsedSchemas(),
             getFsFormIdentifier(),
-            isAutoLoadEform(),
+            isAutoLoadEform(defaultAutoLoadEform),
             canonicalizationMethod,
             digestAlgorithm
         );
@@ -55,8 +59,11 @@ public record XDCParameters (
         return translatedFsFormId;
     }
 
-    public boolean isAutoLoadEform() {
-        return getBoolean(autoLoadEform);
+    public boolean isAutoLoadEform(boolean defaultValue) {
+        if (autoLoadEform == null)
+            return defaultValue;
+
+        return autoLoadEform;
     }
 
     public boolean getEmbedUsedSchemas() {
