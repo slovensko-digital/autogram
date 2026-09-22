@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -327,6 +328,131 @@ public class VersionedSignRequestBodyTests {
 
         assertFalse(request.getSingleDocument().getEFormAttributes().autoLoadEform());
         assertNull(request.getSingleDocument().getEFormAttributes().transformation());
+    }
+
+    @Test
+    void buildsXdcFromPlainXmlNamedAsXdcf() throws IOException {
+        var schema = Files.readString(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.xsd"));
+        var transformation = Files.readString(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.xslt"));
+        var body = gson.fromJson("""
+                {
+                  "documents": [
+                    {
+                      "filename": "Vseobecna_agenda.xdcf",
+                      "mimeType": "application/xml",
+                      "xdcParameters": {
+                        "identifier": "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
+                        "containerXmlns": "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                        "embedUsedSchemas": false,
+                        "schema": %s,
+                        "schemaIdentifier": "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd",
+                        "transformation": %s,
+                        "transformationIdentifier": "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt",
+                        "transformationLanguage": "sk"
+                      },
+                      "content": "<GeneralAgenda xmlns=\\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\\"><subject>tt</subject><text>Fff</text></GeneralAgenda>"
+                    }
+                  ],
+                  "parameters": {
+                    "form": "XAdES",
+                    "container": "ASiC_E",
+                    "packaging": "ENVELOPING"
+                  }
+                }
+                """.formatted(gson.toJson(schema), gson.toJson(transformation)), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertTrue(AutogramMimeType.isXDC(request.getSingleDocument().getMimeType()));
+        assertEquals("Vseobecna_agenda.xdcf", request.getSingleDocument().getName());
+    }
+
+    @Test
+    void buildsXdcWithExplicitCanonicalizationMethods() throws IOException {
+        var schema = Files.readString(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.xsd"));
+        var transformation = Files.readString(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.xslt"));
+        var body = gson.fromJson("""
+                {
+                  "documents": [
+                    {
+                      "filename": "Vseobecna_agenda.xdcf",
+                      "mimeType": "application/xml",
+                      "xdcParameters": {
+                        "identifier": "http://data.gov.sk/doc/eform/App.GeneralAgenda/1.9",
+                        "containerXmlns": "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                        "schema": %s,
+                        "schemaIdentifier": "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xsd",
+                        "transformation": %s,
+                        "transformationIdentifier": "http://schemas.gov.sk/form/App.GeneralAgenda/1.9/form.xslt"
+                      },
+                      "content": "<GeneralAgenda xmlns=\\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\\"><subject>tt</subject><text>Fff</text></GeneralAgenda>"
+                    }
+                  ],
+                  "parameters": {
+                    "form": "XAdES",
+                    "container": "ASiC_E",
+                    "packaging": "ENVELOPING",
+                    "infoCanonicalization": "INCLUSIVE",
+                    "propertiesCanonicalization": "INCLUSIVE",
+                    "keyInfoCanonicalization": "INCLUSIVE"
+                  }
+                }
+                """.formatted(gson.toJson(schema), gson.toJson(transformation)), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertEquals(javax.xml.crypto.dsig.CanonicalizationMethod.INCLUSIVE,
+                request.getParameters().getPropertiesCanonicalization());
+        assertTrue(AutogramMimeType.isXDC(request.getSingleDocument().getMimeType()));
+    }
+
+    @Test
+    void keepsXdcNamedAsXdcfUntouched() throws IOException {
+        var content = Files.readString(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.xdcf"));
+        var body = gson.fromJson("""
+                {
+                  "documents": [
+                    {
+                      "filename": "Vseobecna_agenda.xdcf",
+                      "mimeType": "application/xml",
+                      "content": %s
+                    }
+                  ],
+                  "parameters": {
+                    "form": "XAdES",
+                    "container": "ASiC_E"
+                  }
+                }
+                """.formatted(gson.toJson(content)), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertTrue(AutogramMimeType.isXDC(request.getSingleDocument().getMimeType()));
+        assertEquals("Vseobecna_agenda.xdcf", request.getSingleDocument().getName());
+    }
+
+    @Test
+    void signsPlainXmlNamedAsXdcfWithoutXdcParameters() {
+        var body = gson.fromJson("""
+                {
+                  "documents": [
+                    {
+                      "filename": "Vseobecna_agenda.xdcf",
+                      "mimeType": "application/xml",
+                      "content": "<GeneralAgenda xmlns=\\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\\"><subject>tt</subject><text>Fff</text></GeneralAgenda>"
+                    }
+                  ],
+                  "parameters": {
+                    "form": "XAdES",
+                    "container": "ASiC_E"
+                  }
+                }
+                """, VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(true);
+
+        assertTrue(AutogramMimeType.isXML(request.getSingleDocument().getMimeType()));
+        assertEquals("Vseobecna_agenda.xdcf", request.getSingleDocument().getName());
     }
 
     @Test
