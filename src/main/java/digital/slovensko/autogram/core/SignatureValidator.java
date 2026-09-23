@@ -17,6 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import eu.europa.esig.dss.simplereport.SimpleReport;
+import eu.europa.esig.dss.spi.exception.IllegalInputException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
@@ -225,16 +226,18 @@ public class SignatureValidator {
         return report;
     }
 
-    public static SignatureLevel getSignedDocumentSignatureLevel(SimpleReport report) {
+    public static SignedDocumentSignature getSignedDocumentSignature(DSSDocument document) {
+        SimpleReport report;
+        try {
+            report = getSignedDocumentSimpleReport(document);
+        } catch (IllegalInputException e) {
+            return null;
+        }
+
         if (report == null)
             return null;
 
-        return report.getSignatureFormat(report.getSignatureIdList().get(0));
-    }
-
-    public static SignedDocumentSignature getSignedDocumentSignature(DSSDocument document) {
-        var report = getSignedDocumentSimpleReport(document);
-        var level = getSignedDocumentSignatureLevel(report);
+        var level = report.getSignatureFormat(report.getSignatureIdList().get(0));
         if (level == null)
             return null;
 

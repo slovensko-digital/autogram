@@ -1,6 +1,21 @@
 package digital.slovensko.autogram.server.dto;
 
-public record PresentationParameters(ServerSigningParameters.VisualizationWidthEnum visualizationWidth) {
+public record PresentationParameters(VisualizationWidthEnum visualizationWidth) {
+	public enum VisualizationWidthEnum {
+        sm,
+        md,
+        lg,
+        xl,
+        xxl
+    }
+
+	public static PresentationParameters fromString(String visualizationWidth) {
+		if (visualizationWidth == null)
+			return new PresentationParameters(null);
+		
+		return new PresentationParameters(VisualizationWidthEnum.valueOf(visualizationWidth));
+	}
+
 	public int getVisualizationWidth() {
 		if (visualizationWidth == null)
 			return 0;

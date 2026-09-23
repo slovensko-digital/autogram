@@ -34,6 +34,7 @@ public record VersionedSignRequestBody (Document document, List<Document> docume
             .forEach(parameters::applySignedDocumentSignature);
 
         parameters.resolveSignatureFormatAndContainer(isMultiDocument);
+        parameters.validatePadesCompatibility(submittedDocuments.stream().map(Document::getMimeType).toList());
         var signingParameters = parameters.toSigningParameters(presentation, plainXmlEnabled);
 
         var autogramDocuments = submittedDocuments.stream()

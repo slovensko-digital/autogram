@@ -57,14 +57,14 @@ public record EFormAttributes(String identifier, String transformation, String s
             if (schema == null)
                 throw new EFormException(XSD);
 
-            if (!embedUsedSchemas && xsdIdentifier == null)
-                xsdIdentifier = EFormUtils.fillXsdIdentifier(identifier);
-
             if (transformation == null)
                 throw new EFormException(XSLT);
 
             if (!embedUsedSchemas && identifier == null)
                 throw new EFormException(MISSING_ID);
+
+            if (!embedUsedSchemas && xsdIdentifier == null)
+                xsdIdentifier = EFormUtils.fillXsdIdentifier(identifier);
         }
 
         if (EFormUtils.isOrsrUri(identifier))

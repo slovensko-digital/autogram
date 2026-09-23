@@ -6,7 +6,7 @@ public class EFormException extends AutogramException {
     }
 
     public enum Error {
-        XSD, XSLT, MISSING_ID, META_XML, FS_FORM_ID, MANIFEST;
+        XSD, XSLT, INVALID_XSD, INVALID_XSLT, MISSING_ID, META_XML, FS_FORM_ID, MANIFEST;
 
         private String toErrorCode() {
             return "EFormException." + this.name();
