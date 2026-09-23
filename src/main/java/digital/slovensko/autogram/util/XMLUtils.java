@@ -39,6 +39,10 @@ public abstract class XMLUtils {
         // collections altogether.
         var configuration = transformerFactory.getConfiguration();
         configuration.setConfigurationProperty(Feature.ALLOWED_PROTOCOLS, "");
+        // FEATURE_SECURE_PROCESSING already implies this (and with it disables xsl:result-document), set it
+        // explicitly so the protection does not hinge on a single flag
+        configuration.setConfigurationProperty(Feature.ALLOW_EXTERNAL_FUNCTIONS, false);
+        configuration.setConfigurationProperty(Feature.DISABLE_XSL_EVALUATE, true);
         configuration.setCollectionFinder((context, collectionURI) -> {
             throw new XPathException("Access to collection " + collectionURI + " is not allowed", "FODC0002");
         });

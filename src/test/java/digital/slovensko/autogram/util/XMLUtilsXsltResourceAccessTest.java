@@ -140,6 +140,34 @@ public class XMLUtilsXsltResourceAccessTest {
     }
 
     @Test
+    public void testStylesheetCannotWriteFiles() {
+        transform(stylesheet(fill("<xsl:result-document href=\"SECRET_DIRwritten.txt\" method=\"text\">x</xsl:result-document>")));
+
+        assertFalse(Files.exists(tempDir.resolve("written.txt")), "Stylesheet wrote a local file");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "<xsl:value-of select=\"environment-variable('PATH')\"/>",
+            "<xsl:value-of select=\"string-join(available-environment-variables())\"/>",
+            "<xsl:value-of select=\"system-property('user.home')\"/>",
+            "<xsl:value-of select=\"system-property('java.version')\"/>",
+            "<xsl:value-of select=\"Q{java:java.lang.System}getProperty('user.home')\"/>",
+            "<xsl:value-of select=\"Q{java:java.lang.Runtime}availableProcessors(Q{java:java.lang.Runtime}getRuntime())\"/>",
+    })
+    public void testStylesheetCannotReadEnvironmentOrCallJava(String body) {
+        var output = transform(stylesheet(body));
+
+        if (output != null)
+            assertEquals("", output, "Stylesheet leaked environment or called Java");
+    }
+
+    @Test
+    public void testStylesheetCannotUseXslEvaluate() {
+        assertNull(transform(stylesheet("<xsl:evaluate xpath=\"'1'\"/>")), "xsl:evaluate is enabled");
+    }
+
+    @Test
     public void testStylesheetStillProducesOutput() {
         var output = transform(stylesheet("<xsl:value-of select=\"/foo\"/>"));
 
