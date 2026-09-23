@@ -61,7 +61,7 @@ public class BatchGuiFileResponder extends BatchResponder {
                     onAllFilesSigned(batch);
                 }), batch);
 
-                var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes), signingParameters);
+                var input = SigningInput.fromFile(AutogramDocument.buildFromFile(new FileDocument(file), eFormAttributes), signingParameters);
                 var job = SigningJob.fromInput(input, responder);
                 autogram.batchSign(job, batch.getBatchId());
             } catch (AutogramException e) {
