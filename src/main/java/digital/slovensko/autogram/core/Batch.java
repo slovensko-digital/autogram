@@ -24,11 +24,17 @@ enum BatchState {
  * This class is used for checking runtime conditions and tracking progress.
  */
 public class Batch {
+    /** Interactive signing needs time for the user to review and authorize each document. */
+    private static final long INTERACTIVE_DOCUMENT_TIMEOUT_MILLIS = 1000L * 60 * 5; // 5 minutes
+    private static final long AUTOMATED_DOCUMENT_TIMEOUT_MILLIS = 1000L * 60; // 1 minute
+    private static final long INITIAL_TIMEOUT_MILLIS = 1000L * 60 * 5; // 5 minutes
+
     private final String batchId = generateNewBatchId();
     private final int totalNumberOfDocuments;
 
     private BatchState state = BatchState.INITIALIZED;
     private SigningKey signingKey = null;
+    private SigningMode mode = SigningMode.AUTOMATED;
 
     private Date expirationDate;
     private int addedDocumentsCount = 0;
@@ -37,7 +43,7 @@ public class Batch {
 
     public Batch(int totalNumberOfDocuments) {
         this.totalNumberOfDocuments = totalNumberOfDocuments;
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 5); // 5 minutes
+        expirationDate = new Date(System.currentTimeMillis() + INITIAL_TIMEOUT_MILLIS);
     }
 
     public void start(SigningKey key) {
@@ -45,6 +51,22 @@ public class Batch {
             throw new BatchEndedException(CANNOT_RESTART);
         state = BatchState.STARTED;
         signingKey = key;
+    }
+
+    /** The signing mode of this batch; must be set before it is started. */
+    public void setMode(SigningMode mode) {
+        if (state != BatchState.INITIALIZED)
+            throw new IllegalStateException("Signing mode must be set before the batch is started");
+
+        this.mode = mode;
+    }
+
+    public SigningMode getMode() {
+        return mode;
+    }
+
+    public boolean isInteractive() {
+        return mode == SigningMode.INTERACTIVE;
     }
 
     public void addJob(String batchId) {
@@ -103,6 +125,11 @@ public class Batch {
         return batchId;
     }
 
+    /** Returns the batch id without validating the batch state (e.g. for cache lookups). */
+    public String getId() {
+        return batchId;
+    }
+
     public boolean isEnded() {
         return state == BatchState.ENDED;
     }
@@ -142,7 +169,12 @@ public class Batch {
     }
 
     public void resetExpirationDate() {
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60); // 1 minute
+        expirationDate = new Date(System.currentTimeMillis() + documentTimeoutMillis());
+    }
+
+    /** Time window in milliseconds within which the next document must be added. */
+    long documentTimeoutMillis() {
+        return isInteractive() ? INTERACTIVE_DOCUMENT_TIMEOUT_MILLIS : AUTOMATED_DOCUMENT_TIMEOUT_MILLIS;
     }
 
     public void log() {

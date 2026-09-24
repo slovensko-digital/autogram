@@ -34,6 +34,20 @@ final class BatchNotStarted extends Batch {
     }
 
     @Override
+    public void setMode(SigningMode mode) {
+    }
+
+    @Override
+    public SigningMode getMode() {
+        return SigningMode.AUTOMATED;
+    }
+
+    @Override
+    public boolean isInteractive() {
+        return false;
+    }
+
+    @Override
     public void start(SigningKey key) {
         throw new BatchNotStartedException();
     }

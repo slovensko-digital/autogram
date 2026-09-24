@@ -20,7 +20,7 @@ public class PasswordManager implements PasswordInputCallback {
     public synchronized char[] getContextSpecificPassword() {
         var batch = currentBatch.get();
         if (batch != null) {
-            if (cachedBatch == null || !cachedBatch.hasBatchId(batch.getBatchId())) {
+            if (cachedBatch == null || !cachedBatch.hasBatchId(batch.getId())) {
                 clearCachedPassword();
                 cachedBatch = batch;
             }

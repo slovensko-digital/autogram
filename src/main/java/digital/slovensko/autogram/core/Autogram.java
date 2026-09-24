@@ -34,8 +34,6 @@ public class Autogram {
     private final UI ui;
     private final UserSettings settings;
     private Batch batch = new BatchNotStarted();
-    /** Mode of the current batch; only a command parameter, not stored in {@link Batch}. */
-    private SigningMode batchMode = SigningMode.INTERACTIVE;
     private final PasswordManager passwordManager;
     private final Map<SigningJob, SigningResponder> pendingSignings = new IdentityHashMap<>();
     private Timer tokenSessionTimer = null;
@@ -76,7 +74,7 @@ public class Autogram {
     public void batchSign(SigningJob job, String batchId, SigningResponder responder) {
         batch.addJob(batchId);
 
-        if (batchMode == SigningMode.INTERACTIVE) {
+        if (batch.isInteractive()) {
             pendingSignings.put(job, responder);
             ui.onUIThreadDo(() -> ui.startSigning(job, this));
             return;
@@ -124,7 +122,7 @@ public class Autogram {
      */
     public void startBatch(int totalNumberOfDocuments, SigningMode mode, SigningResponder responder) {
         var newBatch = createBatch(totalNumberOfDocuments);
-        batchMode = mode;
+        newBatch.setMode(mode);
         startBatch(newBatch, responder);
     }
 
@@ -136,7 +134,7 @@ public class Autogram {
         var newBatch = createBatch(totalNumberOfDocuments);
         ui.onUIThreadDo(() -> ui.selectBatchMode(newBatch,
                 mode -> {
-                    batchMode = mode;
+                    newBatch.setMode(mode);
                     startBatch(newBatch, responder);
                 },
                 () -> {
@@ -149,10 +147,10 @@ public class Autogram {
     private void startBatch(Batch batch, SigningResponder responder) {
         ensureCurrentBatch(batch);
 
-        if (batchMode == SigningMode.INTERACTIVE) {
+        if (batch.isInteractive()) {
             try {
                 batch.start(null);
-                responder.onBatchStarted(batch, SigningMode.INTERACTIVE);
+                responder.onBatchStarted(batch, batch.getMode());
             } catch (Exception e) {
                 batch.end();
                 passwordManager.reset();

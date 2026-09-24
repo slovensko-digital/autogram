@@ -29,7 +29,7 @@ public class VersionedSignEndpoint implements HttpHandler {
 
             if (body.batchId() != null) {
                 var batch = autogram.getBatch(body.batchId());
-                var job = SigningJob.fromInput(input, batch);
+                var job = SigningJob.fromInput(input, batch, batch.getProcessedDocumentsCount() + 1);
                 autogram.batchSign(job, body.batchId(), responder);
             } else {
                 var job = SigningJob.fromInput(input);

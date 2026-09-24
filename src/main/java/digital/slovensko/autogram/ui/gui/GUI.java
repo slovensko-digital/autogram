@@ -30,10 +30,12 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -352,12 +354,23 @@ public class GUI implements UI {
         controller.onSignatureCheckCompleted(reports);
     }
 
+    static String buildTitle(SigningJob job, ResourceBundle resources) {
+        var title = job.isMultiDocument()
+            ? resources.getString("general.documents") + " (" + job.getPreviewDocumentsCount() + ")"
+            : resources.getString("general.document") + " " + job.getName();
+
+        var batch = job.getBatch();
+        var batchPosition = job.getBatchPosition();
+        if (batch != null && batchPosition != null)
+            title += " " + MessageFormat.format(resources.getString("batch.document.position"),
+                    batchPosition, batch.getTotalNumberOfDocuments());
+
+        return title;
+    }
+
     public void showSigningJob(SigningJob job, Autogram autogram) {
         this.autogram = autogram;
-        var resources = SupportedLanguage.loadResources(userSettings);
-        var title = job.isMultiDocument() ?
-            resources.getString("general.documents") + " (" + job.getPreviewDocumentsCount() + ")" :
-            resources.getString("general.document") + " " + job.getName();
+        var title = buildTitle(job, SupportedLanguage.loadResources(userSettings));
 
         var controller = new SigningDialogController(job, autogram, this, title, userSettings);
         jobControllers.put(job, controller);

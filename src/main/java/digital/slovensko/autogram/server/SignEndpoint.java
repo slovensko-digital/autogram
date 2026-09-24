@@ -31,7 +31,7 @@ public class SignEndpoint implements HttpHandler {
 
             if (body.getBatchId() != null) {
                 var batch = autogram.getBatch(body.getBatchId());
-                var job = SigningJob.fromInput(input, batch);
+                var job = SigningJob.fromInput(input, batch, batch.getProcessedDocumentsCount() + 1);
                 autogram.batchSign(job, body.getBatchId(), responder);
             } else {
                 var job = SigningJob.fromInput(input);

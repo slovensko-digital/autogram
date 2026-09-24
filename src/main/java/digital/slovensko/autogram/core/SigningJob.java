@@ -28,12 +28,15 @@ public class SigningJob {
     private final SigningInput input;
     private final List<AutogramDocument> documentsToVisualize;
     private final Batch batch;
+    private final Integer batchPosition;
     private List<Visualization> visualizations;
 
-    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Batch batch) {
+    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Batch batch,
+            Integer batchPosition) {
         this.input = input;
         this.documentsToVisualize = documentsToVisualize;
         this.batch = batch;
+        this.batchPosition = batchPosition;
     }
 
     public AutogramDocument getDocument() {
@@ -80,6 +83,11 @@ public class SigningJob {
         return batch;
     }
 
+    /** 1-based position of this document within its batch, or null when unknown. */
+    public Integer getBatchPosition() {
+        return batchPosition;
+    }
+
     public boolean isPartOfBatch() {
         return batch != null;
     }
@@ -122,10 +130,14 @@ public class SigningJob {
     }
 
     public static SigningJob fromInput(SigningInput input) {
-        return fromInput(input, null);
+        return fromInput(input, null, null);
     }
 
     public static SigningJob fromInput(SigningInput input, Batch batch) {
+        return fromInput(input, batch, null);
+    }
+
+    public static SigningJob fromInput(SigningInput input, Batch batch, Integer batchPosition) {
         List<AutogramDocument> documentsToVisualize;
         if (input.getDocuments().size() == 1 && input.getFirstDocument().isAsice()) {
             documentsToVisualize = AsicContainerUtils.getOriginalDocuments(input.getFirstDocument()).stream().toList();
@@ -133,7 +145,7 @@ public class SigningJob {
             documentsToVisualize = input.getDocuments();
         }
 
-        return new SigningJob(input, documentsToVisualize, batch);
+        return new SigningJob(input, documentsToVisualize, batch, batchPosition);
     }
 
     public boolean shouldCheckPDFCompliance() {
