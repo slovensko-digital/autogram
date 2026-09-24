@@ -2,10 +2,10 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -54,6 +54,7 @@ public class GUI implements UI {
     private final HostServices hostServices;
     private final UserSettings userSettings;
     private BatchDialogController batchController;
+    private Autogram autogram;
     private static final boolean DEBUG = false;
     private int nWindows = 0;
 
@@ -64,6 +65,7 @@ public class GUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
+        this.autogram = autogram;
         autogram.startVisualization(job);
     }
 
@@ -88,24 +90,19 @@ public class GUI implements UI {
     }
 
     @Override
-    public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
-            BatchResponder oneByOneResponder) {
+    public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
         if (userSettings.isBulkEnabled()) {
-            autogram.startBatch(batch, allAtOnceResponder);
+            onSelected.accept(SigningMode.AUTOMATED);
             return;
         }
 
-        var controller = new PickBatchModeDialogController(batch, allAtOnceResponder,
-                oneByOneResponder, autogram);
+        var controller = new PickBatchModeDialogController(onSelected, onCancel);
         var root = GUIUtils.loadFXML(controller, "pick-batch-mode-dialog.fxml");
 
         var stage = new Stage();
         stage.setTitle(controller.i18n("pickBatchMode.window.title"));
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> {
-            autogram.endBatch(batch);
-            allAtOnceResponder.onBatchStartFailure(new BatchCanceledException());
-        });
+        stage.setOnCloseRequest(e -> controller.getOnCancel().run());
         stage.setResizable(false);
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, controller);
@@ -365,6 +362,7 @@ public class GUI implements UI {
     }
 
     public void showVisualization(Visualization visualization, Autogram autogram) {
+        this.autogram = autogram;
         var title = visualization.getDialogTitle(
                 SupportedLanguage.loadResources(userSettings).getString("general.document"));
         var controller = new SigningDialogController(visualization, autogram, this, title,
@@ -384,7 +382,7 @@ public class GUI implements UI {
         var stage = new Stage();
         stage.setTitle(title);
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> cancelJob(visualization.getJob()));
+        stage.setOnCloseRequest(e -> autogram.cancel(visualization.getJob()));
 
         stage.sizeToScene();
 
@@ -410,7 +408,7 @@ public class GUI implements UI {
         var jobController = jobControllers.get(e.getJob());
         if (jobController != null)
             stage.initOwner(jobController.mainBox.getScene().getWindow());
-        stage.setOnCloseRequest(event -> e.getJob().onDocumentSignFailed(new SigningCanceledByUserException()));
+        stage.setOnCloseRequest(event -> e.getOnCancelCallback().run());
         GUIUtils.suppressDefaultFocus(stage, controller);
 
         GUIUtils.showOnTop(stage);
@@ -554,8 +552,10 @@ public class GUI implements UI {
     }
 
     public void cancelJob(SigningJob job) {
-        job.onDocumentSignFailed(new SigningCanceledByUserException());
-        jobControllers.get(job).close();
+        autogram.cancel(job);
+        var controller = jobControllers.get(job);
+        if (controller != null)
+            controller.close();
     }
 
     public void focusJob(SigningJob job) {

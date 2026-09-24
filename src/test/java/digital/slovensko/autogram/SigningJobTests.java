@@ -53,7 +53,7 @@ public class SigningJobTests {
                 null);
 
         var signRequestBody = new SignRequestBody(new Document(content), ssParams, "application/xml;base64");
-        var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(null, true), null);
+        var job = SigningJob.buildFromRequest(signRequestBody.getDocument(), signRequestBody.getParameters(null, true));
         Visualization visualization = null;
         try {
             visualization = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());

@@ -94,7 +94,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         signaturesTable.setVisible(false);
         refreshSigningKey();
         var job = visualization.getJob();
-        var canSkip = job.getSkipAction() != null;
+        var canSkip = job.isPartOfBatch();
         var isPartOfBatch = job.isPartOfBatch();
         var isMultiDocumentBatch = job.isMultiDocumentBatch();
 
@@ -201,16 +201,16 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     public void onSkipButtonPressed(ActionEvent event) {
         mainBox.getScene().getWindow().hide();
-        visualization.getJob().getSkipAction().run();
+        autogram.skipCurrent(visualization.getJob());
     }
 
     public void onSkipRemainingButtonPressed(ActionEvent event) {
-        var skipRemainingAction = visualization.getJob().getSkipRemainingAction();
-        if (skipRemainingAction != null) {
+        var job = visualization.getJob();
+        if (job.isPartOfBatch()) {
             mainBox.getScene().getWindow().hide();
-            skipRemainingAction.run();
+            autogram.skipRemaining(job);
         } else {
-            gui.cancelJob(visualization.getJob());
+            gui.cancelJob(job);
         }
     }
 

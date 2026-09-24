@@ -22,17 +22,22 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 import static digital.slovensko.autogram.core.AutogramMimeType.*;
 import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
 
+/**
+ * Pure signing payload: the document, its parameters and optional batch
+ * membership. It has no responder, no skip actions and no outcome flag; the
+ * caller ({@link Autogram}) owns delivery and navigation.
+ */
 public class SigningJob {
-    private final Responder responder;
     private final Batch batch;
+    private final Integer batchPosition;
     private final DSSDocument document;
     private final SigningParameters parameters;
 
-    private SigningJob(DSSDocument document, SigningParameters parameters, Responder responder, Batch batch) {
+    private SigningJob(DSSDocument document, SigningParameters parameters, Batch batch, Integer batchPosition) {
         this.document = document;
         this.parameters = parameters;
-        this.responder = responder;
         this.batch = batch;
+        this.batchPosition = batchPosition;
     }
 
     public DSSDocument getDocument() {
@@ -48,31 +53,23 @@ public class SigningJob {
     }
 
     public Integer getBatchPosition() {
-        return responder.getBatchPosition();
-    }
-
-    public Runnable getSkipAction() {
-        return responder.getSkipAction();
-    }
-
-    public Runnable getSkipRemainingAction() {
-        return responder.getSkipRemainingAction();
-    }
-
-    public boolean isMultiDocumentBatch() {
-        return batch != null && batch.getTotalNumberOfDocuments() > 1;
+        return batchPosition;
     }
 
     public boolean isPartOfBatch() {
         return batch != null;
     }
 
+    public boolean isMultiDocumentBatch() {
+        return batch != null && batch.getTotalNumberOfDocuments() > 1;
+    }
+
     public int getVisualizationWidth() {
         return parameters.getVisualizationWidth();
     }
 
-    public void signWithKeyAndRespond(SigningKey key) throws AutogramException {
-
+    /** Signs the document and returns the result. Delivering it is the caller's job. */
+    public SignedDocument signWithKey(SigningKey key) throws AutogramException {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
         boolean isContainer = getParameters().getContainer() != null;
         var doc = switch (getParameters().getSignatureType()) {
@@ -82,15 +79,8 @@ public class SigningJob {
             default -> throw new RuntimeException(
                     "Unsupported signature type: " + getParameters().getSignatureType());
         };
-        responder.onDocumentSigned(new SignedDocument(doc, key.getCertificate()));
-    }
 
-    public void onDocumentSignFailed(AutogramException e) {
-        responder.onDocumentSignFailed(e);
-    }
-
-    public boolean isBatch() {
-        return responder.isBatch();
+        return new SignedDocument(doc, key.getCertificate());
     }
 
     private DSSDocument signDocumentAsCAdeS(SigningKey key) {
@@ -204,7 +194,8 @@ public class SigningJob {
         return fileDocument;
     }
 
-    private static SigningJob build(DSSDocument document, SigningParameters params, Responder responder, Batch batch) {
+    private static SigningJob build(DSSDocument document, SigningParameters params, Batch batch,
+            Integer batchPosition) {
         if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
             document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
 
@@ -216,21 +207,30 @@ public class SigningJob {
             document.setName(getXdcfFilename(document.getName()));
         }
 
-        return new SigningJob(document, params, responder, batch);
+        return new SigningJob(document, params, batch, batchPosition);
     }
 
-    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Responder responder) {
-        return build(document, params, responder, null);
+    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params) {
+        return build(document, params, null, null);
     }
 
-    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        return buildFromFile(file, responder, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled, null);
+    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Batch batch,
+            Integer batchPosition) {
+        return build(document, params, batch, batchPosition);
     }
 
-    public static SigningJob buildFromFile(File file, Responder responder, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled, Batch batch) {
+    public static SigningJob buildFromFile(File file, boolean checkPDFACompliance, SignatureLevel signatureType,
+            boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
+        return buildFromFile(file, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled, null,
+                null);
+    }
+
+    public static SigningJob buildFromFile(File file, boolean checkPDFACompliance, SignatureLevel signatureType,
+            boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled, Batch batch, Integer batchPosition) {
         var document = createDSSFileDocumentFromFile(file);
-        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled);
-        return build(document, parameters, responder, batch);
+        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource,
+                plainXmlEnabled);
+        return build(document, parameters, batch, batchPosition);
     }
 
     private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {

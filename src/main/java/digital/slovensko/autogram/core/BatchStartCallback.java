@@ -8,9 +8,9 @@ import digital.slovensko.autogram.util.Logging;
 public class BatchStartCallback {
 
     private final Batch batch;
-    private final BatchResponder responder;
+    private final SigningResponder responder;
 
-    public BatchStartCallback(Batch batch, BatchResponder responder) {
+    public BatchStartCallback(Batch batch, SigningResponder responder) {
         this.batch = batch;
         this.responder = responder;
     }
@@ -19,7 +19,7 @@ public class BatchStartCallback {
         try {
             Logging.log("Starting batch");
             batch.start(key);
-            responder.onBatchStartSuccess(batch);
+            responder.onBatchStarted(batch, SigningMode.AUTOMATED);
         } catch (Exception e) {
             handleException(e);
         }
@@ -29,8 +29,8 @@ public class BatchStartCallback {
         try {
             Logging.log("Cancelling batch");
             batch.end();
-            responder.onBatchStartFailure(new BatchCanceledException());
-        }catch (ResponseNetworkErrorException ex){
+            responder.onBatchStartFailed(new BatchCanceledException());
+        } catch (ResponseNetworkErrorException ex) {
             Logging.log("ResponseNetworkErrorException: " + ex.getMessage());
         } catch (Exception e) {
             handleException(e);
@@ -40,10 +40,10 @@ public class BatchStartCallback {
     private void handleException(Exception e) {
         batch.end();
         if (e instanceof AutogramException)
-            responder.onBatchStartFailure((AutogramException) e);
+            responder.onBatchStartFailed((AutogramException) e);
         else {
             Logging.log("Batch start failed with exception: " + e);
-            responder.onBatchStartFailure(new AutogramException("BATCH_START_FAILED", e, e));
+            responder.onBatchStartFailed(new AutogramException("BATCH_START_FAILED", e, e));
         }
     }
 }

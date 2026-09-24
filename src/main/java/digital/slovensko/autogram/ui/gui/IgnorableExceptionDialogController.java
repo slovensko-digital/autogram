@@ -33,7 +33,7 @@ public class IgnorableExceptionDialogController extends BaseController implement
 
     public void onCancelAction(ActionEvent ignored) {
         GUIUtils.closeWindow(mainBox);
-        exception.getJob().onDocumentSignFailed(new SigningCanceledByUserException());
+        exception.getOnCancelCallback().run();
     }
 
     public void onContinueAction(ActionEvent ignored) {

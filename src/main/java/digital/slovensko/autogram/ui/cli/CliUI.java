@@ -3,8 +3,8 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.BatchStartCallback;
+import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.Updater;
@@ -86,10 +86,9 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
-            BatchResponder oneByOneResponder) {
-        // There is no interactive mode selection in CLI, so fall back to all-at-once signing.
-        autogram.startBatch(batch, allAtOnceResponder);
+    public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+        // There is no interactive mode selection in CLI, so fall back to automated signing.
+        onSelected.accept(SigningMode.AUTOMATED);
     }
 
     @Override

@@ -26,17 +26,6 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 
 public class TransformationTests {
 
-        Responder dummyResponder = new Responder() {
-                @Override
-                public void onDocumentSigned(SignedDocument signedDocument) {
-                }
-
-                @Override
-                public void onDocumentSignFailed(AutogramException error) {
-                        fail("Should not have thrown any exception", error);
-                }
-        };
-
         @Test
         void testSigningJobTransformToHtml() throws IOException, ParserConfigurationException,
                 SAXException {
@@ -79,7 +68,7 @@ public class TransformationTests {
                     null,
                     true);
 
-                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(document, params);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {
@@ -162,7 +151,7 @@ public class TransformationTests {
                     null,
                     true);
 
-                SigningJob job = SigningJob.buildFromRequest(document, params, dummyResponder);
+                SigningJob job = SigningJob.buildFromRequest(document, params);
 
                 var visualizedDocument = DocumentVisualizationBuilder.fromJob(job, UserSettings.load());
                 if (visualizedDocument instanceof HTMLVisualization d) {

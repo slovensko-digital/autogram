@@ -7,8 +7,7 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.ui.BatchModeGuiFileResponder;
-import digital.slovensko.autogram.ui.OneByOneModeGuiFileResponder;
+import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -112,9 +111,8 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         if (filesList.size() == 1) {
             var file = filesList.get(0);
             var job = SigningJob.buildFromFile(file,
-                    new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()),
                     userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(), userSettings.isEn319132(), tspSource, userSettings.isPlainXmlEnabled());
-            autogram.sign(job);
+            autogram.submit(job, new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
         } else {
             startFileBatch(filesList, filesList.get(0).toPath().getParent().resolve("signed"), tspSource);
         }
@@ -136,16 +134,12 @@ public class MainMenuController extends BaseController implements SuppressedFocu
     }
 
     private void startFileBatch(List<File> files, Path targetDirectory, TSPSource tspSource) {
-        var allAtOnceResponder = new BatchModeGuiFileResponder(autogram, files, targetDirectory,
-                userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(),
-                userSettings.shouldSignPDFAsPades(), userSettings.isEn319132(), tspSource,
-                userSettings.isPlainXmlEnabled());
-        var oneByOneResponder = new OneByOneModeGuiFileResponder(autogram, files, targetDirectory,
+        var responder = new BatchGuiFileResponder(autogram, files, targetDirectory,
                 userSettings.isPdfaCompliance(), userSettings.getSignatureLevel(),
                 userSettings.shouldSignPDFAsPades(), userSettings.isEn319132(), tspSource,
                 userSettings.isPlainXmlEnabled());
 
-        autogram.batchStartWithModeSelection(files.size(), allAtOnceResponder, oneByOneResponder);
+        autogram.startBatchWithModeSelection(files.size(), responder);
     }
 
     public void onAboutButtonAction() {

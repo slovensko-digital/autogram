@@ -16,8 +16,7 @@ public interface UI {
 
     void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
 
-    void selectBatchMode(Batch batch, Autogram autogram, BatchResponder allAtOnceResponder,
-            BatchResponder oneByOneResponder);
+    void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel);
 
     void cancelBatch(Batch batch);
 

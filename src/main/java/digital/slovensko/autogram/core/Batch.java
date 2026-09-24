@@ -17,10 +17,10 @@ enum BatchState {
 }
 
 /**
- * Batch is a session for signing and tracking multiple documents. All-at-once
- * batches retain a signing key, while interactive batches select a key in the
- * normal signing dialog.
- * 
+ * Batch is a session for signing and tracking multiple documents. Automated
+ * batches retain a signing key, interactive batches select a key in the normal
+ * signing dialog. The signing mode is a command parameter and is not stored here.
+ *
  * This class is used for checking runtime conditions and tracking progress.
  */
 public class Batch {
@@ -29,7 +29,6 @@ public class Batch {
 
     private BatchState state = BatchState.INITIALIZED;
     private SigningKey signingKey = null;
-    private boolean oneByOne = false;
 
     private Date expirationDate;
     private int addedDocumentsCount = 0;
@@ -46,11 +45,6 @@ public class Batch {
             throw new BatchEndedException(CANNOT_RESTART);
         state = BatchState.STARTED;
         signingKey = key;
-    }
-
-    public void startOneByOne() {
-        start(null);
-        oneByOne = true;
     }
 
     public void addJob(String batchId) {
@@ -111,10 +105,6 @@ public class Batch {
 
     public boolean isEnded() {
         return state == BatchState.ENDED;
-    }
-
-    public boolean isOneByOne() {
-        return oneByOne;
     }
 
     public boolean isAllProcessed() {
