@@ -3,7 +3,6 @@ package digital.slovensko.autogram.util;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
-import digital.slovensko.autogram.core.errors.MultipleOriginalDocumentsFoundException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import eu.europa.esig.dss.asic.xades.extract.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;

@@ -9,12 +9,10 @@ import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
 import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -31,9 +29,6 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -45,8 +40,6 @@ import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
 
 public class GUI implements UI {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GUI.class);
-
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
     private boolean driverWasAlreadySet = false;
@@ -54,7 +47,6 @@ public class GUI implements UI {
     private final UserSettings userSettings;
     private BatchDialogController batchController;
     private Autogram autogram;
-    private static final boolean DEBUG = false;
     private int nWindows = 0;
 
     public GUI(HostServices hostServices, UserSettings userSettings) {

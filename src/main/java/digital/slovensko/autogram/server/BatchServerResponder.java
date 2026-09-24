@@ -8,7 +8,6 @@ import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.SigningResponder;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.dto.BatchStartResponseBody;
-import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 
 import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.JSON_PARSING_FAILED;

@@ -317,7 +317,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         stage.sizeToScene();
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(mainButton.getScene().getWindow());
-        stage.setOnCloseRequest(event -> signaturesInvalidDialogController.close());;
+        stage.setOnCloseRequest(event -> signaturesInvalidDialogController.close());
 
         GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
 

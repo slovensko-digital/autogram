@@ -27,7 +27,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 public class MainMenuController extends BaseController implements SuppressedFocusController {
     private final Autogram autogram;

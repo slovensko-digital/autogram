@@ -48,7 +48,7 @@ public class SaveFileFromBatchResponder implements SigningResponder {
         try {
             var targetFile = targetPath.getSaveFilePath(file.toPath(), MimeTypeEnum.PDF.equals(signedDocument.getDocument().getMimeType()));
             signedDocument.getDocument().save(targetFile.toString());
-            Logging.log("Saved file " + targetFile.toString());
+            Logging.log("Saved file " + targetFile);
             callbackSuccess.accept(targetFile.toFile());
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -558,7 +558,7 @@ class AutogramTests {
         var batch = batchRef.get();
         var batchId = batch.getBatchId();
         var responder = mock(SigningResponder.class);
-        var job = SigningJob.fromInput(input, batch, null);
+        var job = SigningJob.fromInput(input, batch);
         autogram.submitToBatch(job, batchId, responder);
         autogram.skipRemaining(job);
 
@@ -567,7 +567,7 @@ class AutogramTests {
             "the skipped document is counted exactly once");
         verify(responder).onDocumentSkippedRemaining();
 
-        var another = SigningJob.fromInput(input, batch, null);
+        var another = SigningJob.fromInput(input, batch);
         Assertions.assertThrows(BatchEndedException.class,
             () -> autogram.submitToBatch(another, batchId, mock(SigningResponder.class)),
             "no further documents may be submitted after skipRemaining");
@@ -657,7 +657,7 @@ class AutogramTests {
         var input = SigningInput.prepareForASiCWithXAdES(
             AutogramDocument.build(TestMethodSources.generalAgendaProvider().findFirst().orElseThrow(),
                 EFormAttributes.build(parameters, false)), parameters);
-        var job = SigningJob.fromInput(input, batchRef.get(), null);
+        var job = SigningJob.fromInput(input, batchRef.get());
         autogram.submitToBatch(job, batchRef.get().getBatchId(), mock(SigningResponder.class));
 
         Assertions.assertEquals(1, interactiveSigningStarted.get(),

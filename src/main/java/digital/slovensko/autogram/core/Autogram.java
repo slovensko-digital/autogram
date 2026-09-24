@@ -16,7 +16,6 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
-import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
@@ -483,6 +482,8 @@ public class Autogram {
 
     private void fetchKeysAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
         try {
+            // The token is intentionally kept open and handed over to the SigningKey.
+            //noinspection resource
             var token = driver.createToken(passwordManager, settings);
             var keys = token.getKeys();
             resetTokenSessionTimer();
@@ -517,10 +518,6 @@ public class Autogram {
     public void onDocumentBatchSaved(BatchUiResult result) {
         endActiveBatch();
         ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(result));
-    }
-
-    public void onSigningFailed(AutogramException e, SigningJob job) {
-        ui.onUIThreadDo(() -> ui.onSigningFailed(e, job));
     }
 
     public void onSigningFailed(AutogramException e) {

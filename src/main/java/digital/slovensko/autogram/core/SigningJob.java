@@ -33,15 +33,12 @@ public class SigningJob {
     private final SigningInput input;
     private final List<AutogramDocument> documentsToVisualize;
     private final Batch batch;
-    private final Integer batchPosition;
     private List<Visualization> visualizations;
 
-    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Batch batch,
-            Integer batchPosition) {
+    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Batch batch) {
         this.input = input;
         this.documentsToVisualize = documentsToVisualize;
         this.batch = batch;
-        this.batchPosition = batchPosition;
     }
 
     public AutogramDocument getDocument() {
@@ -88,10 +85,6 @@ public class SigningJob {
         return batch;
     }
 
-    public Integer getBatchPosition() {
-        return batchPosition;
-    }
-
     public boolean isPartOfBatch() {
         return batch != null;
     }
@@ -107,7 +100,7 @@ public class SigningJob {
     }
 
     /** Signs the document and returns the result. Delivering it is the caller's job. */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public SignedDocument signWithKey(SigningKey key, TSPSource tspSource)
             throws InterruptedException, AutogramException {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
@@ -134,10 +127,10 @@ public class SigningJob {
     }
 
     public static SigningJob fromInput(SigningInput input) {
-        return fromInput(input, null, null);
+        return fromInput(input, null);
     }
 
-    public static SigningJob fromInput(SigningInput input, Batch batch, Integer batchPosition) {
+    public static SigningJob fromInput(SigningInput input, Batch batch) {
         List<AutogramDocument> documentsToVisualize;
         if (input.getDocuments().size() == 1 && input.getFirstDocument().isAsice()) {
             documentsToVisualize = AsicContainerUtils.getOriginalDocuments(input.getFirstDocument()).stream().toList();
@@ -145,7 +138,7 @@ public class SigningJob {
             documentsToVisualize = input.getDocuments();
         }
 
-        return new SigningJob(input, documentsToVisualize, batch, batchPosition);
+        return new SigningJob(input, documentsToVisualize, batch);
     }
 
     public boolean shouldCheckPDFCompliance() {

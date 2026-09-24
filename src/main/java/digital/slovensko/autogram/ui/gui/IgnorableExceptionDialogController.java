@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;

@@ -6,7 +6,6 @@ import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.server.dto.BatchEndRequestBody;
 import digital.slovensko.autogram.server.dto.BatchStartRequestBody;
-import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 
 import java.io.IOException;

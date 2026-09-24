@@ -80,7 +80,7 @@ public class BatchGuiFileResponder implements SigningResponder {
                             errors.put(file, error);
                             onAllFilesSigned(batch);
                         });
-                var job = buildJob(file, batch, null);
+                var job = buildJob(file, batch);
                 autogram.submitToBatch(job, batch.getBatchId(), responder);
             } catch (AutogramException e) {
                 handleFileSubmissionFailure(file, e);
@@ -105,7 +105,6 @@ public class BatchGuiFileResponder implements SigningResponder {
         initFileResult(file);
 
         try {
-            var batchPosition = currentFileIndex;
             var responder = new SaveFileFromBatchResponder(file, targetPath,
                     targetFile -> {
                         targetFiles.put(file, targetFile);
@@ -126,7 +125,7 @@ public class BatchGuiFileResponder implements SigningResponder {
                         errors.put(file, new BatchCanceledException());
                         abortRemainingFiles(batch, new BatchCanceledException());
                     });
-            var job = buildJob(file, batch, batchPosition);
+            var job = buildJob(file, batch);
             autogram.submitToBatch(job, batch.getBatchId(), responder);
         } catch (AutogramException e) {
             handleFileSubmissionFailure(file, e);
@@ -138,10 +137,10 @@ public class BatchGuiFileResponder implements SigningResponder {
         }
     }
 
-    private SigningJob buildJob(File file, Batch batch, Integer batchPosition) {
+    private SigningJob buildJob(File file, Batch batch) {
         var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes),
                 signingParameters);
-        return SigningJob.fromInput(input, batch, batchPosition);
+        return SigningJob.fromInput(input, batch);
     }
 
     private void initFileResult(File file) {
