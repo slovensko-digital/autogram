@@ -82,7 +82,7 @@ public class CliUI implements UI {
 
     @Override
     public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
-        // CLI batch signing uses its dedicated command flow.
+        // TODO Auto-generated method stub
     }
 
     @Override
