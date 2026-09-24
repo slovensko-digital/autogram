@@ -8,6 +8,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
@@ -99,6 +100,7 @@ public class XMLUtilsXsltResourceAccessTest {
             "<xsl:value-of select=\"unparsed-text('SECRET_FILE')\"/>",
             "<xsl:value-of select=\"unparsed-text-lines('SECRET_FILE')\"/>",
             "<xsl:value-of select=\"json-doc('SECRET_DIRsecret.json')?s\"/>",
+            "<xsl:value-of select=\"string(Q{http://saxon.sf.net/}doc('SECRET_DIRsecret.xml', map{}))\"/>",
             "<xsl:source-document href=\"SECRET_DIRsecret.xml\" streamable=\"no\"><xsl:value-of select=\".\"/></xsl:source-document>",
             "<xsl:value-of select=\"transform(map{'stylesheet-location':'SECRET_DIRsecret.xml','source-node':.})?output\"/>",
             "<xsl:try><xsl:value-of select=\"unparsed-text('jar:SECRET_FILE!/x')\"/><xsl:catch/></xsl:try>"
@@ -137,6 +139,77 @@ public class XMLUtilsXsltResourceAccessTest {
 
         if (output != null)
             assertFalse(output.contains("secret.txt"), "Stylesheet leaked directory listing: " + output);
+    }
+
+    /**
+     * A nested fn:transform() may bring its own Saxon configuration via vendor options, which would replace
+     * all the restrictions set up in {@link XMLUtils#getSecureTransformerFactory()}.
+     */
+    private String nestedTransformReadingSecret(String transformFunction) {
+        var nested = "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"3.0\">"
+                + "<xsl:template name=\"xsl:initial-template\"><xsl:value-of select=\"unparsed-text(''SECRET_FILE'')\"/></xsl:template>"
+                + "</xsl:stylesheet>";
+        var config = "<configuration xmlns=\"http://saxon.sf.net/ns/configuration\" edition=\"HE\">"
+                + "<global allowedProtocols=\"all\"/></configuration>";
+        var expression = "string(" + transformFunction + "(map{"
+                + "'stylesheet-text': '" + nested + "',"
+                + "'initial-template': QName('http://www.w3.org/1999/XSL/Transform', 'initial-template'),"
+                + "'vendor-options': map{QName('http://saxon.sf.net/', 'configuration'): parse-xml('" + config + "')/*}"
+                + "})?output)";
+
+        return fill(expression).replace("&", "&amp;").replace("<", "&lt;").replace("\"", "&quot;");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "transform",
+            "transform#1",
+            "function-lookup(QName('http://www.w3.org/2005/xpath-functions', 'transform'), 1)",
+    })
+    public void testNestedTransformCannotReplaceConfiguration(String transformFunction) {
+        var output = transform(stylesheet("<xsl:value-of select=\"" + nestedTransformReadingSecret(transformFunction) + "\"/>"));
+
+        if (output != null)
+            assertFalse(output.contains(SECRET), "Nested transform leaked local file contents: " + output);
+    }
+
+    @Test
+    public void testStaticNestedTransformCannotReplaceConfiguration() {
+        var output = transform("<xsl:stylesheet version=\"3.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
+                + "<xsl:variable name=\"leak\" static=\"yes\" select=\"" + nestedTransformReadingSecret("transform") + "\"/>"
+                + "<xsl:output method=\"text\"/>"
+                + "<xsl:template match=\"/\"><xsl:value-of select=\"$leak\"/></xsl:template>"
+                + "</xsl:stylesheet>");
+
+        if (output != null)
+            assertFalse(output.contains(SECRET), "Static nested transform leaked local file contents: " + output);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "<xsl:value-of select=\"TRANSFORM_CALL\"/>",
+            "<xsl:value-of select=\"TRANSFORM_REF\"/>",
+            "<xsl:value-of select=\"string(Q{http://saxon.sf.net/}doc('SECRET_DIRsecret.xml', map{}))\"/>",
+            "<xsl:value-of select=\"Q{java:java.lang.System}getProperty('user.home')\"/>",
+    })
+    public void testNewTransformerRejectsDeniedFunctions(String body) {
+        var xslt = stylesheet(fill(body)
+                .replace("TRANSFORM_CALL", nestedTransformReadingSecret("transform"))
+                .replace("TRANSFORM_REF", nestedTransformReadingSecret("transform#1")));
+
+        assertThrows(TransformerException.class,
+                () -> XMLUtils.getSecureTransformerFactory().newTransformer(new StreamSource(new StringReader(xslt))));
+    }
+
+    @Test
+    public void testNewTransformerRejectsStaticNestedTransform() {
+        var xslt = "<xsl:stylesheet version=\"3.0\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
+                + "<xsl:variable name=\"leak\" static=\"yes\" select=\"" + nestedTransformReadingSecret("transform") + "\"/>"
+                + "<xsl:template match=\"/\"><xsl:value-of select=\"$leak\"/></xsl:template>"
+                + "</xsl:stylesheet>";
+
+        assertThrows(TransformerException.class,
+                () -> XMLUtils.getSecureTransformerFactory().newTransformer(new StreamSource(new StringReader(xslt))));
     }
 
     @Test
