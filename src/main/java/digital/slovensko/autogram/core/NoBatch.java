@@ -8,8 +8,8 @@ import digital.slovensko.autogram.core.errors.BatchNotStartedException;
  * id validation, adding documents) still fails with
  * {@link BatchNotStartedException}, so the HTTP contract is unchanged.
  */
-final class BatchNotStarted extends Batch {
-    public BatchNotStarted() {
+final class NoBatch extends Batch {
+    public NoBatch() {
         super(0);
     }
 

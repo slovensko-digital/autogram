@@ -16,6 +16,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
@@ -33,7 +34,7 @@ import java.util.function.Consumer;
 public class Autogram {
     private final UI ui;
     private final UserSettings settings;
-    private Batch batch = new BatchNotStarted();
+    private Batch batch = new NoBatch();
     private final PasswordManager passwordManager;
     private final Map<SigningJob, SigningResponder> pendingSignings = new IdentityHashMap<>();
     private Timer tokenSessionTimer = null;
@@ -100,10 +101,10 @@ public class Autogram {
             }
 
             if (failure == null) {
-                recordSuccess();
+                batch.onJobSuccess();
                 responder.onDocumentSigned(signedDocument);
             } else {
-                recordFailure();
+                batch.onJobFailure();
                 responder.onDocumentFailed(failure);
                 if (!failure.batchCanContinue())
                     ui.onUIThreadDo(() -> ui.cancelBatch(batch));
@@ -159,8 +160,38 @@ public class Autogram {
             return;
         }
 
-        var callback = new BatchStartCallback(batch, responder);
-        ui.onUIThreadDo(() -> ui.startBatch(batch, this, callback));
+        ui.onUIThreadDo(() -> ui.startBatch(batch, this,
+                key -> startBatchWithKey(batch, responder, key),
+                () -> cancelBatchStart(batch, responder)));
+    }
+
+    private void startBatchWithKey(Batch batch, SigningResponder responder, SigningKey key) {
+        try {
+            Logging.log("Starting batch");
+            batch.start(key);
+            responder.onBatchStarted(batch, batch.getMode());
+        } catch (Exception e) {
+            handleBatchStartException(batch, responder, e);
+        }
+    }
+
+    private void cancelBatchStart(Batch batch, SigningResponder responder) {
+        try {
+            Logging.log("Cancelling batch");
+            batch.end();
+            responder.onBatchStartFailed(new BatchCanceledException());
+        } catch (ResponseNetworkErrorException e) {
+            Logging.log("ResponseNetworkErrorException: " + e.getMessage());
+        } catch (Exception e) {
+            handleBatchStartException(batch, responder, e);
+        }
+    }
+
+    private void handleBatchStartException(Batch batch, SigningResponder responder, Exception error) {
+        batch.end();
+        if (!(error instanceof AutogramException))
+            Logging.log("Batch start failed with exception: " + error);
+        responder.onBatchStartFailed(toAutogramException(error));
     }
 
     /**
@@ -188,7 +219,7 @@ public class Autogram {
         if (responder == null)
             return;
 
-        recordFailure();
+        batch.onJobFailure();
         responder.onDocumentSkipped();
     }
 
@@ -198,7 +229,7 @@ public class Autogram {
         if (responder == null)
             return;
 
-        recordFailure();
+        batch.onJobFailure();
         endActiveBatch();
         responder.onDocumentSkippedRemaining();
     }
@@ -209,20 +240,20 @@ public class Autogram {
         if (responder == null)
             return;
 
-        recordFailure();
+        batch.onJobFailure();
         endActiveBatch();
         responder.onDocumentCanceled();
     }
 
     /** Records documents that failed before they could be submitted to the active batch. */
     public void recordPreSubmissionFailure() {
-        recordFailure();
+        batch.onJobFailure();
     }
 
     /** Records documents that were aborted after a fatal batch failure. */
     public void recordAborted(int count) {
         for (var i = 0; i < count; i++)
-            recordFailure();
+            batch.onJobFailure();
     }
 
     /** Ends a batch from a UI action and clears any batch-scoped PIN cache. */
@@ -256,7 +287,7 @@ public class Autogram {
         // Deliver outside the signing try/catch: an exception thrown by the adapter's
         // responder is not a signing failure and must not be re-counted.
         pendingSignings.remove(job);
-        recordSuccess();
+        batch.onJobSuccess();
         responder.onDocumentSigned(signedDocument);
         ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
     }
@@ -319,7 +350,7 @@ public class Autogram {
         }
 
         pendingSignings.remove(job);
-        recordFailure();
+        batch.onJobFailure();
         ui.onUIThreadDo(() -> {
             if (isPending || job.isPartOfBatch())
                 ui.onSigningFailed(error, job);
@@ -327,14 +358,6 @@ public class Autogram {
                 ui.onSigningFailed(error);
         });
         responder.onDocumentFailed(error);
-    }
-
-    private void recordSuccess() {
-        batch.onJobSuccess();
-    }
-
-    private void recordFailure() {
-        batch.onJobFailure();
     }
 
     private void endActiveBatch() {
@@ -411,7 +434,7 @@ public class Autogram {
         if (responder == null)
             return;
 
-        recordFailure();
+        batch.onJobFailure();
         responder.onDocumentFailed(error);
     }
 

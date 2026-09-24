@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
 
-    void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
+    void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> onKeySelected, Runnable onCancel);
 
     void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel);
 

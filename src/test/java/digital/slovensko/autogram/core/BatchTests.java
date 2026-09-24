@@ -34,7 +34,7 @@ class BatchTests {
 
     @Test
     void nullBatchIsInactiveAndRejectsBatchIds() {
-        var batch = new BatchNotStarted();
+        var batch = new NoBatch();
 
         Assertions.assertFalse(batch.isActive());
         Assertions.assertFalse(batch.isInteractive());

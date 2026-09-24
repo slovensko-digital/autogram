@@ -2,7 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchStartCallback;
+import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
 import digital.slovensko.autogram.util.Logging;
 import javafx.application.Platform;
@@ -15,11 +15,13 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.util.function.Consumer;
+
 public class BatchDialogController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
     private final Batch batch;
     private final Autogram autogram;
-    private final BatchStartCallback startBatchCallback;
+    private final Consumer<SigningKey> onKeySelected;
 
     @FXML
     VBox mainBox;
@@ -40,12 +42,12 @@ public class BatchDialogController extends BaseController implements SuppressedF
     @FXML
     public Button cancelBatchButton;
 
-    public BatchDialogController(Batch batch, BatchStartCallback startBatchCallback, Autogram autogram, GUI gui) {
+    public BatchDialogController(Batch batch, Consumer<SigningKey> onKeySelected, Autogram autogram, GUI gui) {
 
         this.gui = gui;
         this.autogram = autogram;
         this.batch = batch;
-        this.startBatchCallback = startBatchCallback;
+        this.onKeySelected = onKeySelected;
     }
 
     public void initialize() {
@@ -74,7 +76,7 @@ public class BatchDialogController extends BaseController implements SuppressedF
                     getNodeForLoosingFocus().requestFocus();
                     gui.disableSigning();
                     gui.onWorkThreadDo(() -> {
-                        startBatchCallback.accept(k);
+                        onKeySelected.accept(k);
                     });
                 });
             });
@@ -85,7 +87,7 @@ public class BatchDialogController extends BaseController implements SuppressedF
             getNodeForLoosingFocus().requestFocus();
             gui.disableSigning();
             gui.onWorkThreadDo(() -> {
-                startBatchCallback.accept(signingKey);
+                onKeySelected.accept(signingKey);
             });
         }
     }
@@ -102,7 +104,7 @@ public class BatchDialogController extends BaseController implements SuppressedF
                     getNodeForLoosingFocus().requestFocus();
                     gui.disableSigning();
                     gui.onWorkThreadDo(() -> {
-                        startBatchCallback.accept(k);
+                        onKeySelected.accept(k);
                     });
                 });
             });

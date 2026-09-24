@@ -3,7 +3,6 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
@@ -81,7 +80,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
+    public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> onKeySelected, Runnable onCancel) {
         // TODO Auto-generated method stub
     }
 
