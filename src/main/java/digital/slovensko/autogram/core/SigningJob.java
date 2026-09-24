@@ -24,11 +24,6 @@ import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
-/**
- * Pure signing payload: the document(s), their parameters and optional batch
- * membership. It has no responder, no skip actions and no outcome flag; the
- * caller ({@link Autogram}) owns delivery and navigation.
- */
 public class SigningJob {
     private final SigningInput input;
     private final List<AutogramDocument> documentsToVisualize;

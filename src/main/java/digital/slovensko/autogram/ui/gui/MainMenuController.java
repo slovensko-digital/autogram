@@ -27,7 +27,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 
-
 public class MainMenuController extends BaseController implements SuppressedFocusController {
     private final Autogram autogram;
     private final UserSettings userSettings;
@@ -116,7 +115,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
             var file = filesList.get(0);
             var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), defaultEFormAttributes), defaultSigningParameters);
             var job = SigningJob.fromInput(input);
-            autogram.submit(job, new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
+            autogram.startSigning(job, new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
         } else {
             startFileBatch(filesList, filesList.get(0).toPath().getParent().resolve("signed"),
                     defaultSigningParameters, defaultEFormAttributes);

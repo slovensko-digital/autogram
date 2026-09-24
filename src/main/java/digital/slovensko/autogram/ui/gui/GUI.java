@@ -69,8 +69,8 @@ public class GUI implements UI {
         stage.setTitle(batchController.i18n("batch.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
-            autogram.endBatch(batch);
             cancelBatch(batch);
+            callback.cancel();
         });
 
         stage.setResizable(false);
@@ -375,7 +375,7 @@ public class GUI implements UI {
         var stage = new Stage();
         stage.setTitle(title);
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> autogram.cancel(job));
+        stage.setOnCloseRequest(e -> cancelJob(job));
 
         stage.sizeToScene();
 

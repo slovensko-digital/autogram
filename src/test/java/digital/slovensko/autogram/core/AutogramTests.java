@@ -81,7 +81,7 @@ class AutogramTests {
         var responder = mock(SigningResponder.class);
 
         var job = SigningJob.fromInput(input);
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
@@ -99,7 +99,7 @@ class AutogramTests {
         var responder = mock(SigningResponder.class);
 
         var job = SigningJob.fromInput(input);
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
@@ -127,7 +127,7 @@ class AutogramTests {
         var responder = mock(SigningResponder.class);
 
         var job = SigningJob.fromInput(input);
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
     }
 
@@ -145,7 +145,7 @@ class AutogramTests {
         var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);
 
         var job = SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()));
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
@@ -165,7 +165,7 @@ class AutogramTests {
         var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);
 
         var job = SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()));
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         var signedDocumentCaptor = org.mockito.ArgumentCaptor.forClass(SignedDocument.class);
@@ -208,7 +208,7 @@ class AutogramTests {
         var responder = mock(SigningResponder.class);
 
         var job = SigningJob.fromInput(input);
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
@@ -328,7 +328,7 @@ class AutogramTests {
         var responder = mock(SigningResponder.class);
 
         var job = SigningJob.fromInput(input);
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
@@ -365,7 +365,7 @@ class AutogramTests {
             parameters.getPropertiesCanonicalization(), parameters.getDigestAlgorithm());
         var input = SigningInput.fromFile(AutogramDocument.build(fileDocument, eFormAttributes), parameters);
         var job = SigningJob.fromInput(input);
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
@@ -527,7 +527,7 @@ class AutogramTests {
         });
 
         var responder = mock(SigningResponder.class);
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.sign(job, keyRef.get());
         autogram.sign(job, keyRef.get());
 
@@ -590,7 +590,7 @@ class AutogramTests {
             null, null, false, null, null, null, false, 640, false);
         var job = SigningJob.fromInput(SigningInput.fromDocument(document, parameters));
 
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
 
         verify(responder).onDocumentFailed(any());
         verify(responder, never()).onDocumentSigned(any());

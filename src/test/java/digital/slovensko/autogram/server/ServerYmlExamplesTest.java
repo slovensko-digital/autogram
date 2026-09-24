@@ -87,7 +87,7 @@ public class ServerYmlExamplesTest {
 
     private static void signAndAssertSuccess(String exampleName, SigningJob job, RecordingResponder responder) {
         var autogram = TestAutogramFactory.create();
-        autogram.submit(job, responder);
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         assertTrue(responder.signed, exampleName + ": signing did not report success");

@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchCanceledException;
@@ -53,10 +54,10 @@ public class Autogram {
     // ------------------------------------------------------------------
 
     /**
-     * Submits a single document for interactive signing and remembers its reply
+     * Starts an interactive signing of a single document and remembers its reply
      * channel. The signing itself happens later via {@link #sign(SigningJob, SigningKey)}.
      */
-    public void submit(SigningJob job, SigningResponder responder) {
+    public void startSigning(SigningJob job, SigningResponder responder) {
         pendingSignings.put(job, responder);
         ui.onUIThreadDo(() -> ui.startSigning(job, this));
     }
@@ -394,7 +395,7 @@ public class Autogram {
 
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
-            if (job.getDocuments().stream().anyMatch(d -> d.isPDFAndPasswordProtected())) {
+            if (job.getDocuments().stream().anyMatch(AutogramDocument::isPDFAndPasswordProtected)) {
                 var error = new AutogramException("LOCKED_PDF");
                 notifyJobFailure(job, error);
                 ui.onUIThreadDo(() -> ui.showError(error));

@@ -34,7 +34,7 @@ public class VersionedSignEndpoint implements HttpHandler {
                 autogram.submitToBatch(job, body.batchId(), responder);
             } else {
                 var job = SigningJob.fromInput(input);
-                autogram.submit(job, responder);
+                autogram.startSigning(job, responder);
             }
 
         } catch (JsonSyntaxException | IOException e) {

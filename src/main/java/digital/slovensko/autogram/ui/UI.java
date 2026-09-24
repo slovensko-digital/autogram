@@ -59,7 +59,7 @@ public interface UI {
 
     char[] getContextSpecificPassword();
 
-    void updateBatch();
+    public void updateBatch();
 
     void resetSigningKey();
 

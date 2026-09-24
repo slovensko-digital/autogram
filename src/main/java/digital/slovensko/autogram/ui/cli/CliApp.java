@@ -49,7 +49,7 @@ public class CliApp {
                     System.out.println("Checking PDF/A file compatibility for " + job.getName());
                     autogram.checkPDFACompliance(job);
                 }
-                autogram.submit(job, new SaveFileResponder(file, autogram, targetPathBuilder));
+                autogram.startSigning(job, new SaveFileResponder(file, autogram, targetPathBuilder));
             }
 
         } catch (AutogramException e) {

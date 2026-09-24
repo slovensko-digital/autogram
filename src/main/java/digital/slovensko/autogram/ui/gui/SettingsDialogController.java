@@ -100,7 +100,7 @@ public class SettingsDialogController extends BaseController implements Suppress
         initializeDriverChoiceBox();
         initializeTsaEnabled();
         initializeTsaServer();
-        initializeBulkEnabledCheckBox();
+        initializeBulkEnabledCheckbox();
         initializeEn319132CheckBox();
         initializePlainXmlEnabledCheckBox();
         initializeTokenSessionTimeoutTextField();
@@ -203,7 +203,7 @@ public class SettingsDialogController extends BaseController implements Suppress
             no.setSelected(true);
     }
 
-    private void initializeBulkEnabledCheckBox() {
+    private void initializeBulkEnabledCheckbox() {
         initializeBooleanRadios(bulkEnabledRadios, userSettings::setBulkEnabled, userSettings.isBulkEnabled());
     }
 

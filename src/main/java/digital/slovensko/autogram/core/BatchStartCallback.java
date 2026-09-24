@@ -30,7 +30,7 @@ public class BatchStartCallback {
             Logging.log("Cancelling batch");
             batch.end();
             responder.onBatchStartFailed(new BatchCanceledException());
-        } catch (ResponseNetworkErrorException ex) {
+        }catch (ResponseNetworkErrorException ex){
             Logging.log("ResponseNetworkErrorException: " + ex.getMessage());
         } catch (Exception e) {
             handleException(e);
