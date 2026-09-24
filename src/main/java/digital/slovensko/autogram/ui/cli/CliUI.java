@@ -81,7 +81,6 @@ public class CliUI implements UI {
 
     @Override
     public void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> onKeySelected, Runnable onCancel) {
-        // TODO Auto-generated method stub
     }
 
     @Override
@@ -92,7 +91,6 @@ public class CliUI implements UI {
 
     @Override
     public void cancelBatch(Batch batch) {
-        // TODO Auto-generated method stub
     }
 
     @Override
@@ -310,7 +308,6 @@ public class CliUI implements UI {
 
     @Override
     public void updateBatch() {
-        // TODO: no usage for this in CLI UI
     }
 
     @Override

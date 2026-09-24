@@ -12,11 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-/**
- * Per-document responder for a GUI file batch. It saves the signed file and
- * reports the outcome back to the batch driver; batch counters are owned by
- * {@code Autogram}.
- */
+/** Saves a signed batch document and reports its outcome to the batch coordinator. */
 public class SaveFileFromBatchResponder implements SigningResponder {
     private final File file;
     private final TargetPath targetPath;

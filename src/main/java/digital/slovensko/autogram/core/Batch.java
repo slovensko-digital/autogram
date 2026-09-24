@@ -16,18 +16,12 @@ enum BatchState {
     INITIALIZED, STARTED, ENDED
 }
 
-/**
- * Batch is a session for signing and tracking multiple documents. Automated
- * batches retain a signing key, interactive batches select a key in the normal
- * signing dialog. The signing mode is a command parameter and is not stored here.
- *
- * This class is used for checking runtime conditions and tracking progress.
- */
+/** A signing session that tracks expected and completed documents. */
 public class Batch {
     /** Interactive signing needs time for the user to review and authorize each document. */
-    private static final long INTERACTIVE_DOCUMENT_TIMEOUT_MILLIS = 1000L * 60 * 5; // 5 minutes
-    private static final long AUTOMATED_DOCUMENT_TIMEOUT_MILLIS = 1000L * 60; // 1 minute
-    private static final long INITIAL_TIMEOUT_MILLIS = 1000L * 60 * 5; // 5 minutes
+    private static final long INTERACTIVE_DOCUMENT_TIMEOUT_MILLIS = 1000L * 60 * 5;
+    private static final long AUTOMATED_DOCUMENT_TIMEOUT_MILLIS = 1000L * 60;
+    private static final long INITIAL_TIMEOUT_MILLIS = 1000L * 60 * 5;
 
     private final String batchId = generateNewBatchId();
     private final int totalNumberOfDocuments;
@@ -117,8 +111,6 @@ public class Batch {
         return this.batchId.equals(batchId);
     }
 
-    // public getters
-
     public String getBatchId() {
         validate(batchId);
 
@@ -159,7 +151,6 @@ public class Batch {
         return signingKey;
     }
 
-    // private
     private static String generateNewBatchId() {
         return UUID.randomUUID().toString();
     }
@@ -172,7 +163,6 @@ public class Batch {
         expirationDate = new Date(System.currentTimeMillis() + documentTimeoutMillis());
     }
 
-    /** Time window in milliseconds within which the next document must be added. */
     long documentTimeoutMillis() {
         return isInteractive() ? INTERACTIVE_DOCUMENT_TIMEOUT_MILLIS : AUTOMATED_DOCUMENT_TIMEOUT_MILLIS;
     }

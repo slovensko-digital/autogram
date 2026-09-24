@@ -233,7 +233,6 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         return throwable != null && PKCS11_EXCEPTION_CLASS_NAME.equals(throwable.getClass().getName());
     }
 
-    // mostly copy & paste just to call overridden private sign method
     @Override
     public SignatureValue sign(ToBeSigned toBeSigned, SignatureAlgorithm signatureAlgorithm, DSSPrivateKeyEntry keyEntry) throws DSSException {
         assertEncryptionAlgorithmValid(signatureAlgorithm, keyEntry);
@@ -256,7 +255,6 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
     }
 
-    // copy & paste
     private void assertEncryptionAlgorithmValid(SignatureAlgorithm signatureAlgorithm, DSSPrivateKeyEntry keyEntry) {
         Objects.requireNonNull(signatureAlgorithm, "SignatureAlgorithm shall be provided.");
         Objects.requireNonNull(signatureAlgorithm.getEncryptionAlgorithm(), "EncryptionAlgorithm shall be provided within the SignatureAlgorithm.");

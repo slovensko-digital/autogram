@@ -2,12 +2,7 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 
-/**
- * Null object for "no batch started". Replaces the {@code batch == null} checks
- * in {@link Autogram} with no-op calls; anything that needs a real batch (batch
- * id validation, adding documents) still fails with
- * {@link BatchNotStartedException}, so the HTTP contract is unchanged.
- */
+/** Sentinel representing the absence of an active batch. */
 final class NoBatch extends Batch {
     public NoBatch() {
         super(0);

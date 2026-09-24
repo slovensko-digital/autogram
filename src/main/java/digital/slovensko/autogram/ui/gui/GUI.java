@@ -47,7 +47,6 @@ public class GUI implements UI {
     private final HostServices hostServices;
     private final UserSettings userSettings;
     private BatchDialogController batchController;
-    private Autogram autogram;
     private int nWindows = 0;
 
     public GUI(HostServices hostServices, UserSettings userSettings) {
@@ -57,7 +56,6 @@ public class GUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
-        this.autogram = autogram;
         autogram.startVisualization(job);
     }
 
@@ -128,7 +126,6 @@ public class GUI implements UI {
             refreshKeyOnAllJobs();
             enableSigningOnAllJobs();
         } else if (drivers.size() == 1) {
-            // short-circuit if only one driver present
             callback.accept(drivers.get(0));
         } else {
             if (!driverWasAlreadySet && userSettings.getDefaultDriver() != null) {
@@ -175,8 +172,6 @@ public class GUI implements UI {
         }
 
         var keysStream = keys.stream();
-//        TODO: NFC eID returns false for qualified certificate #367
-//        var keysStream = keys.stream().filter(k -> k.getCertificate().checkKeyUsage(KeyUsageBit.DIGITAL_SIGNATURE));
         if (!userSettings.isExpiredCertsEnabled()) {
             var now = new Date();
             keysStream = keysStream.filter(k -> k.getCertificate().isValidOn(now));
@@ -328,7 +323,8 @@ public class GUI implements UI {
 
     @Override
     public void onPDFAComplianceCheckFailed(SigningJob job) {
-        var controller = new PDFAComplianceDialogController(job, this);
+        var jobController = jobControllers.get(job);
+        var controller = new PDFAComplianceDialogController(job, this, jobController::cancel);
         var root = GUIUtils.loadFXML(controller, "pdfa-compliance-dialog.fxml");
 
         var stage = new Stage();
@@ -368,7 +364,6 @@ public class GUI implements UI {
     }
 
     public void showSigningJob(SigningJob job, Autogram autogram) {
-        this.autogram = autogram;
         var title = buildTitle(job, SupportedLanguage.loadResources(userSettings));
 
         var controller = new SigningDialogController(job, autogram, this, title, userSettings);
@@ -387,7 +382,7 @@ public class GUI implements UI {
         var stage = new Stage();
         stage.setTitle(title);
         stage.setScene(new Scene(root));
-        stage.setOnCloseRequest(e -> cancelJob(job));
+        stage.setOnCloseRequest(e -> controller.cancel());
 
         stage.sizeToScene();
 
@@ -555,13 +550,6 @@ public class GUI implements UI {
         });
     }
 
-    public void cancelJob(SigningJob job) {
-        autogram.cancel(job);
-        var controller = jobControllers.get(job);
-        if (controller != null)
-            controller.close();
-    }
-
     public void focusJob(SigningJob job) {
         getJobWindow(job).requestFocus();
     }
@@ -575,12 +563,10 @@ public class GUI implements UI {
         var maxOffset = 25;
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         var sceneWidth = stage.getScene().getWidth();
-        var availabeWidth = (bounds.getWidth() - sceneWidth);
-        var singleOffsetXPx = Math.round(Math.min(maxOffset, (availabeWidth / 2) / maxWindows)); // spread windows into
-        // half of availabe
-        // screen width
+        var availableWidth = (bounds.getWidth() - sceneWidth);
+        var singleOffsetXPx = Math.round(Math.min(maxOffset, (availableWidth / 2) / maxWindows));
         var offsetX = singleOffsetXPx * (nWindows - maxWindows / 2);
-        double idealX = bounds.getMinX() + availabeWidth / 2 + offsetX;
+        double idealX = bounds.getMinX() + availableWidth / 2 + offsetX;
         double x = Math.max(bounds.getMinX(), Math.min(bounds.getMaxX() - sceneWidth, idealX));
         var sceneHeight = stage.getScene().getHeight();
         double y = Math.max(bounds.getMinY(),

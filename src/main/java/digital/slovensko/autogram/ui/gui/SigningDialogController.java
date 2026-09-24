@@ -381,7 +381,7 @@ public class SigningDialogController extends BaseController implements Suppresse
             mainBox.getScene().getWindow().hide();
             autogram.skipRemaining(job);
         } else {
-            gui.cancelJob(job);
+            cancel();
         }
     }
 
@@ -493,6 +493,11 @@ public class SigningDialogController extends BaseController implements Suppresse
         }
     }
 
+    public void cancel() {
+        autogram.cancel(job);
+        close();
+    }
+
     public void disableKeyPicking() {
         mainButton.setText(i18n("signing.keyPicking.btn"));
         mainButton.setDisable(true);
@@ -550,7 +555,6 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     public void showImageVisualization(DSSDocument doc) {
-        // TODO what about visualization
         imageVisualization.fitWidthProperty().unbind();
         imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
         imageVisualization.setImage(new Image(doc.openStream()));

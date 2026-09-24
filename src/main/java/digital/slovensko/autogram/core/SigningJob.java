@@ -102,7 +102,6 @@ public class SigningJob {
             .toList();
     }
 
-    /** Signs the document and returns the result. Delivering it is the caller's job. */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public SignedDocument signWithKey(SigningKey key, TSPSource tspSource)
             throws InterruptedException, AutogramException {

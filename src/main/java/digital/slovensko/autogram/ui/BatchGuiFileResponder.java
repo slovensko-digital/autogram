@@ -21,12 +21,7 @@ import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.FileDocument;
 
-/**
- * Drives a GUI file batch for both {@link SigningMode}s. Automated batches submit
- * all files at once and share one key; interactive batches open the signing dialog
- * for one file at a time. Batch counters are owned by {@code Autogram}; this
- * responder only keeps the per-file result maps used for the summary dialog.
- */
+/** Coordinates file selection and result reporting for GUI batch signing. */
 public class BatchGuiFileResponder implements SigningResponder {
     private final Autogram autogram;
     private final List<File> list;

@@ -27,18 +27,12 @@ public class AutogramException extends RuntimeException {
         this.i18nArgs = i18nArgs;
     }
 
-    /**
-     * Uses the class name as the error code.
-     */
     protected AutogramException(Throwable e, Object... i18nArgs) {
         super(e);
         this.i18nArgs = i18nArgs;
         this.errorCode = this.getClass().getSimpleName();
     }
 
-    /**
-     * Uses the class name as the error code.
-     */
     protected AutogramException(Object... i18nArgs) {
         this.i18nArgs = i18nArgs;
         this.errorCode = this.getClass().getSimpleName();

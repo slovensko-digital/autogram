@@ -45,20 +45,11 @@ public class Autogram {
         this.passwordManager = new PasswordManager(ui);
     }
 
-    // ------------------------------------------------------------------
-    // Commands
-    // ------------------------------------------------------------------
-
-    /**
-     * Starts an interactive signing of a single document and remembers its reply
-     * channel. The signing itself happens later via {@link #sign(SigningJob, SigningKey)}.
-     */
     public void startSigning(SigningJob job, SigningResponder responder) {
         pendingSignings.put(job, responder);
         ui.onUIThreadDo(() -> ui.startSigning(job, this));
     }
 
-    /** Performs a previously submitted interactive signing. */
     public void sign(SigningJob job, SigningKey signingKey) {
         var responder = pendingSignings.get(job);
         if (responder == null)
@@ -127,10 +118,7 @@ public class Autogram {
         startBatch(newBatch, responder);
     }
 
-    /**
-     * Starts a batch after letting the frontend pick the mode. The batch is created
-     * eagerly so that concurrent start requests are rejected before any dialog.
-     */
+    /** Reserves the batch while the user chooses its signing mode. */
     public void startBatchWithModeSelection(int totalNumberOfDocuments, SigningResponder responder) {
         var newBatch = createBatch(totalNumberOfDocuments);
         ui.onUIThreadDo(() -> ui.selectBatchMode(newBatch,
@@ -245,18 +233,15 @@ public class Autogram {
         responder.onDocumentCanceled();
     }
 
-    /** Records documents that failed before they could be submitted to the active batch. */
     public void recordPreSubmissionFailure() {
         batch.onJobFailure();
     }
 
-    /** Records documents that were aborted after a fatal batch failure. */
     public void recordAborted(int count) {
         for (var i = 0; i < count; i++)
             batch.onJobFailure();
     }
 
-    /** Ends a batch from a UI action and clears any batch-scoped PIN cache. */
     public void endBatch(Batch batch) {
         if (this.batch == batch)
             batch.end();
@@ -267,10 +252,6 @@ public class Autogram {
         batch.validate(batchId);
         return batch;
     }
-
-    // ------------------------------------------------------------------
-    // Signing
-    // ------------------------------------------------------------------
 
     private void performSigning(SigningJob job, SigningKey signingKey, SigningResponder responder) {
         SignedDocument signedDocument;
@@ -365,10 +346,6 @@ public class Autogram {
         passwordManager.reset();
     }
 
-    // ------------------------------------------------------------------
-    // Batch lifecycle helpers
-    // ------------------------------------------------------------------
-
     private Batch createBatch(int totalNumberOfDocuments) {
         ensureNoActiveBatch();
 
@@ -392,10 +369,6 @@ public class Autogram {
 
         return new AutogramException("BATCH_START_FAILED", error, error);
     }
-
-    // ------------------------------------------------------------------
-    // Visualization and validation
-    // ------------------------------------------------------------------
 
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
@@ -468,10 +441,6 @@ public class Autogram {
             }
         });
     }
-
-    // ------------------------------------------------------------------
-    // Keys, certificates, updates
-    // ------------------------------------------------------------------
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
         var drivers = settings.getDriverDetector().getAvailableDrivers();

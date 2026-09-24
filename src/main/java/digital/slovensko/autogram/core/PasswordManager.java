@@ -12,7 +12,6 @@ public class PasswordManager implements PasswordInputCallback {
     private Batch cachedBatch;
     private final ThreadLocal<Batch> currentBatch = new ThreadLocal<>();
 
-    /** The settings argument is retained for source compatibility; caching is flow-scoped. */
     public PasswordManager(UI ui) {
         this.ui = ui;
     }
