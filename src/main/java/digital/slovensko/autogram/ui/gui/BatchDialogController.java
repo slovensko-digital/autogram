@@ -124,7 +124,7 @@ public class BatchDialogController extends BaseController implements SuppressedF
                 changeKeyButton.setVisible(false);
 
             } else {
-                mainButton.setText(i18n("batch.signAs.btn.multi") + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+                mainButton.setText(i18n("batch.signAs.btn") + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
                 changeKeyButton.setVisible(true);
             }
         }
