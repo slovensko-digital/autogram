@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.DriverDetector;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.SigningParametersResolver;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.errors.MultipleSourcesException;
 import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
 import digital.slovensko.autogram.core.errors.SlotIndexIsNotANumberException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
@@ -26,7 +27,7 @@ public class CliSettings extends UserSettings {
     public static CliSettings fromCmd(CommandLine cmd) {
         var settings = new CliSettings();
         settings.setCorrectDocumentDisplay(false);
-        settings.setSource(getValidSource(cmd.getOptionValue("s")));
+        settings.setSource(getValidSource(resolveSourcePath(cmd)));
         settings.setTarget(cmd.getOptionValue("t"));
         settings.setDriver(cmd.getOptionValue("d"));
         settings.setCustomKeystorePath(cmd.getOptionValue("keystore", ""));
@@ -97,6 +98,18 @@ public class CliSettings extends UserSettings {
 
     public boolean shouldMakeParentDirectories() {
         return shouldMakeParentDirectories;
+    }
+
+    static String resolveSourcePath(CommandLine cmd) throws MultipleSourcesException {
+        var positional = cmd.getArgList();
+        var source = cmd.getOptionValue("s");
+        if (positional.isEmpty())
+            return source;
+
+        if (source == null && positional.size() == 1)
+            return positional.get(0);
+
+        throw new MultipleSourcesException();
     }
 
     private static File getValidSource(String sourcePath) throws SourceDoesNotExistException {

@@ -15,7 +15,7 @@ public class AppStarter {
         ).
         addOption("h", "help", false, "Print this command line help.").
         addOption("u", "usage", false, "Print usage examples.").
-        addOption("s", "source", true, "Source file or directory of files to sign.").
+        addOption("s", "source", true, "Source file or directory of files to sign. Can also be given as a single positional argument.").
         addOption("t", "target", true, "Target file or directory for signed files. Type (file/directory) must match the source.").
         addOption("f", "force", false, "Overwrite existing file(s).").
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
@@ -29,7 +29,6 @@ public class AppStarter {
         addOption(null, "plain-xml", false, "Enable signing plain (non-slovak-eform) XML files.").
         addOption(null, "pkcs11-driver-path", true, "Absolute path to a file with custom PKCS11 driver.");
 
-
     public static void start(String[] args) {
         try {
             CommandLine cmd = new DefaultParser().parse(options, args);
@@ -41,6 +40,8 @@ public class AppStarter {
             } else if (cmd.hasOption("c")) {
                 CliApp.start(cmd);
             } else {
+                if (!SingleInstanceManager.start(cmd.getArgList()))
+                    return;
                 Application.launch(GUIApp.class, args);
             }
         } catch (ParseException e) {
@@ -73,6 +74,7 @@ public class AppStarter {
                 autogram --url=autogram://go
                 autogram --url=autogram://go?protocol=https&port=37200
                 autogram --cli [options]
+                autogram --cli target/directory-example/file-example.pdf
                 autogram --cli -s target/directory-example/file-example.pdf -t target/output-example/out-example.pdf
                 autogram --cli -s target/directory-example -t target/output-example -f
                 autogram --cli -s target/directory-example -t target/non-existent-dir/output-example --parents
