@@ -12,6 +12,7 @@ import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.FunctionCanceledException;
 import digital.slovensko.autogram.core.errors.InitializationFailedException;
+import digital.slovensko.autogram.core.errors.MultipleSourcesException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.PDFAComplianceException;
@@ -33,7 +34,6 @@ import digital.slovensko.autogram.core.errors.TokenNotRecognizedException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.TsaServerMisconfiguredException;
 import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
-import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
@@ -71,7 +71,7 @@ public class CliUI implements UI {
     }
 
     private void sign(SigningJob job, Autogram autogram) {
-        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getDocument().getName(), nJobsSigned++,
+        System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getName(), nJobsSigned++,
                 nJobsTotal));
         autogram.sign(job, activeKey);
     }
@@ -222,7 +222,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void showVisualization(Visualization visualization, Autogram autogram) {
+    public void showSigningJob(SigningJob job, Autogram autogram) {
 
     }
 
@@ -271,6 +271,8 @@ public class CliUI implements UI {
             return "Source does not exist";
         } else if (e instanceof SourceNotDefinedException) {
             return "Source not defined";
+        } else if (e instanceof MultipleSourcesException) {
+            return "Only one source is allowed (use -s or a single positional argument; pass a directory to sign multiple files)";
         } else if (e instanceof UnableToCreateDirectoryException) {
             return "Unable to create directory";
         } else if (e instanceof TokenDriverDoesNotExistException) {

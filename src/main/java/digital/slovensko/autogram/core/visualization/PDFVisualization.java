@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.ui.Visualizer;
 import eu.europa.esig.dss.model.DSSDocument;
 import org.apache.pdfbox.Loader;
@@ -16,22 +14,20 @@ import javax.imageio.ImageIO;
 
 public class PDFVisualization extends Visualization {
     private final DSSDocument document;
-    private final UserSettings settings;
 
 
-    public PDFVisualization(DSSDocument document, SigningJob job, UserSettings settings) {
-        super(job);
+    public PDFVisualization(DSSDocument document) {
+        super(document.getName());
         this.document = document;
-        this.settings = settings;
     }
 
-    private ArrayList<byte []> getPdfImages() throws IOException {
+    private ArrayList<byte []> getPdfImages(int pdfDpi) throws IOException {
         var pdfDocument = Loader.loadPDF(this.document.openStream().readAllBytes());
         var pdfRenderer = new PDFRenderer(pdfDocument);
         var divs = new ArrayList<byte[]>();
         for (int page = 0; page < pdfDocument.getNumberOfPages(); ++page) {
             var os = new ByteArrayOutputStream();
-            var bim = pdfRenderer.renderImageWithDPI(page, settings.getPdfDpi(), ImageType.RGB);
+            var bim = pdfRenderer.renderImageWithDPI(page, pdfDpi, ImageType.RGB);
             ImageIO.write(bim, "png", os);
             divs.add(os.toByteArray());
         }
@@ -43,7 +39,7 @@ public class PDFVisualization extends Visualization {
 
     @Override
     public void initialize(Visualizer visualizer) throws IOException {
-        visualizer.setPrefWidth(getVisualizationWidth());
-        visualizer.showPDFVisualization(getPdfImages());
+        visualizer.setPrefWidth();
+        visualizer.showPDFVisualization(getPdfImages(visualizer.getPdfDpi()));
     }
 }

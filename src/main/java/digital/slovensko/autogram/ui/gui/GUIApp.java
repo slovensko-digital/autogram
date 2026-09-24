@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
+import digital.slovensko.autogram.core.SingleInstanceManager;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
@@ -78,6 +79,20 @@ public class GUIApp extends Application {
             windowStage.setResizable(false);
             windowStage.show();
 
+            var singleInstanceManager = SingleInstanceManager.getInstance();
+            if (singleInstanceManager != null) {
+                // Forwarded args may also carry an autogram:// URL; the server is
+                // already running here, so only actual files trigger anything.
+                singleInstanceManager.onArgsReceived(args -> {
+                    var files = LaunchParameters.filesFrom(args);
+                    if (files.isEmpty())
+                        return;
+                    Platform.runLater(() -> controller.onFilesSelected(files));
+                });
+            } else if (!params.getFiles().isEmpty()) {
+                Platform.runLater(() -> controller.onFilesSelected(params.getFiles()));
+            }
+
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
             var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
@@ -97,6 +112,10 @@ public class GUIApp extends Application {
 
     @Override
     public void stop() throws Exception {
+        var singleInstanceManager = SingleInstanceManager.getInstance();
+        if (singleInstanceManager != null)
+            singleInstanceManager.shutdown();
+
         if (!scheduledExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS))
             scheduledExecutorService.shutdownNow();
 

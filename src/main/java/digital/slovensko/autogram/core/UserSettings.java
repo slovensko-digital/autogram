@@ -7,6 +7,10 @@ import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -183,6 +187,23 @@ public class UserSettings implements SignatureTokenSettings, DriverDetectorSetti
         driverSlotIndexMap.put("default", -1); // default slot index
 
         save();
+    }
+
+    public SigningParameters getDefaultSigningParameters() {
+        return SigningParametersResolver.buildRequested(
+                getTsaEnabled() ? SignatureProfile.BASELINE_T : SignatureProfile.BASELINE_B,
+                getSignatureLevel().getSignatureForm(),
+                DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E,
+                SignaturePackaging.ENVELOPING,
+                isEn319132(),
+                null,
+                null,
+                null,
+                isPdfaCompliance(),
+                640,
+                isPlainXmlEnabled()
+        );
     }
 
     private void setSignatureType(String signatureType) {

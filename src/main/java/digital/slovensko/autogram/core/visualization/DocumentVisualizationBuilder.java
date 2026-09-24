@@ -1,92 +1,104 @@
 package digital.slovensko.autogram.core.visualization;
 
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.*;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import digital.slovensko.autogram.core.UserSettings;
-import eu.europa.esig.dss.model.DSSDocument;
+import digital.slovensko.autogram.core.FailedVisualizationException;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.eforms.EFormUtils;
 
 import org.xml.sax.SAXException;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
-import static digital.slovensko.autogram.core.AutogramMimeType.*;
-import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningParameters;
-
-import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 
 public class DocumentVisualizationBuilder {
+    private final AutogramDocument document;
 
-    private final DSSDocument document;
-    private final SigningParameters parameters;
-
-    private DocumentVisualizationBuilder(DSSDocument document, SigningParameters parameters) {
+    private DocumentVisualizationBuilder(AutogramDocument document) {
         this.document = document;
-        this.parameters = parameters;
     }
 
-    public static Visualization fromJob(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
-        return new DocumentVisualizationBuilder(job.getDocument(), job.getParameters()).build(job, userSettings);
-    }
-
-    private Visualization build(SigningJob job, UserSettings userSettings) throws IOException, ParserConfigurationException, SAXException {
-        return createVisualization(job, userSettings);
-    }
-
-    private Visualization createVisualization(SigningJob job, UserSettings userSettings)
-        throws IOException, ParserConfigurationException, SAXException {
-
-        var documentToDisplay = document;
-        if (isAsice(documentToDisplay.getMimeType())) {
-            try {
-                documentToDisplay = AsicContainerUtils.getOriginalDocument(document);
-            } catch (AutogramException e) {
-                return new UnsupportedVisualization(job);
-            }
+    public static Visualization fromDocument(AutogramDocument document) throws FailedVisualizationException {
+        try {
+            return new DocumentVisualizationBuilder(document).build();
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            throw new FailedVisualizationException(e);
         }
+    }
 
-        var transformation = parameters.getTransformation();
+    private Visualization build() throws IOException, ParserConfigurationException, SAXException {
+        var resolvedTransformation = resolveTransformation();
+        var transformation = resolvedTransformation.transformation();
+        var transformationOutputMimeType = resolvedTransformation.outputType();
 
-        if (isDocumentSupportingTransformation(documentToDisplay) && isTranformationAvailable(transformation)) {
-            var transformationOutputMimeType = parameters.getXsltDestinationType();
+        var documentToDisplay = document.toDssDocument();
 
-            if (transformationOutputMimeType.equals("HTML"))
-                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+        if (isDocumentSupportingTransformation() && isTranformationAvailable(transformation)) {
+            if ("HTML".equals(transformationOutputMimeType))
+                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), documentToDisplay.getName());
 
-            if (transformationOutputMimeType.equals("XHTML"))
-                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+            if ("XHTML".equals(transformationOutputMimeType))
+                return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), documentToDisplay.getName());
 
-            if (transformationOutputMimeType.equals("TXT"))
-                return new PlainTextVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+            if ("TXT".equals(transformationOutputMimeType))
+                return new PlainTextVisualization(EFormUtils.transform(documentToDisplay, transformation), documentToDisplay.getName());
 
-            return new UnsupportedVisualization(job);
+            return new UnsupportedVisualization(documentToDisplay.getName());
         }
 
         if (documentToDisplay.getMimeType().equals(MimeTypeEnum.HTML))
-            return new HTMLVisualization(EFormUtils.transform(documentToDisplay, transformation), job);
+            return new HTMLVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), documentToDisplay.getName());
 
         if (isTxt(documentToDisplay.getMimeType()))
-            return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), job);
+            return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), documentToDisplay.getName());
 
         if (isPDF(documentToDisplay.getMimeType()))
-            return new PDFVisualization(documentToDisplay, job, userSettings);
+            return new PDFVisualization(documentToDisplay);
 
         if (isImage(documentToDisplay.getMimeType()))
-            return new ImageVisualization(documentToDisplay, job);
+            return new ImageVisualization(documentToDisplay);
 
-        return new UnsupportedVisualization(job);
+        return new UnsupportedVisualization(documentToDisplay.getName());
     }
 
     private boolean isTranformationAvailable(String transformation) {
         return transformation != null;
     }
 
-    private boolean isDocumentSupportingTransformation(DSSDocument document) {
-        return isXDC(document.getMimeType()) || isXML(document.getMimeType());
+    private boolean isDocumentSupportingTransformation() {
+        return document.isXDC() || document.isXML();
+    }
+
+    private ResolvedTransformation resolveTransformation() {
+        String transformation = null;
+        String outputType = null;
+
+        if (document.getEFormAttributes() != null) {
+            if (document.getEFormAttributes().transformation() != null)
+                transformation = document.getEFormAttributes().transformation();
+
+            if (document.getEFormAttributes().xsltParams() != null)
+                outputType = normalizeOutputType(document.getEFormAttributes().xsltParams().destinationType());
+        }
+
+        if (transformation != null && outputType == null)
+            outputType = normalizeOutputType(EFormUtils.extractTransformationOutputMimeTypeString(transformation));
+
+        return new ResolvedTransformation(transformation, outputType);
+    }
+
+    private String normalizeOutputType(String outputType) {
+        if (outputType == null)
+            return null;
+
+        return outputType.toUpperCase(Locale.ROOT);
+    }
+
+    private record ResolvedTransformation(String transformation, String outputType) {
     }
 }

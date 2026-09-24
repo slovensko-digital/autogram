@@ -8,4 +8,8 @@ public class FailedVisualizationException extends IgnorableException {
             Runnable onCancelCallback) {
         super(e, job, onContinueCallback, onCancelCallback);
     }
+
+    public FailedVisualizationException(Throwable e) {
+        super(e, null, null, null);
+    }
 }

@@ -310,10 +310,6 @@ public class TargetPathTest {
 
     /* Assert helpers */
 
-    private void assertEqualPath(FileSystem fs, String expected, String actual) {
-        assertEqualPath(fs.getPath(expected), fs.getPath(actual));
-    }
-
     private void assertEqualPath(String expected, Path actual) {
         assertEqualPath(actual.getFileSystem().getPath(expected), actual);
     }

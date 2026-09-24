@@ -35,7 +35,7 @@ jvmOptions="-Dfile.encoding=UTF-8 \
     --add-exports jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED \
     --add-opens java.base/java.security=ALL-UNNAMED \
     --add-opens jdk.crypto.cryptoki/sun.security.pkcs11=ALL-UNNAMED \
-    --enable-native-access=javafx.graphics"
+    --enable-native-access=javafx.graphics,javafx.web"
     
 arguments=(
     "--input" "${appDirectory}"
@@ -49,6 +49,8 @@ arguments=(
     "--resource-dir" "./"
     "--dest" "${output}"
     "--description" "${properties_description}"
+    "--file-associations" "${resourcesDir}/FApdf.properties"
+    "--file-associations" "${resourcesDir}/FAasice.properties"
 )
 
 if [[ "${platform}" == "win" ]]; then

@@ -1,4 +1,4 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.server;
 
 import java.io.IOException;
 import java.net.URI;

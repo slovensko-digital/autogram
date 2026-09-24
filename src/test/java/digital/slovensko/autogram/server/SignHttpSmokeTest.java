@@ -1,4 +1,4 @@
-package digital.slovensko.autogram;
+package digital.slovensko.autogram.server;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -36,12 +36,11 @@ import digital.slovensko.autogram.server.dto.ServerSigningParameters.Visualizati
 import digital.slovensko.autogram.server.dto.ServerSigningParameters.TransformationOutputMimeType;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.dto.SignResponse;
 
-// TODO mvn test -Psmoke
+
 @TestInstance(Lifecycle.PER_CLASS)
 @Tag("HttpSmokeTest")
 public class SignHttpSmokeTest {
@@ -108,10 +107,6 @@ public class SignHttpSmokeTest {
         signRequest.setEntity(new StringEntity(signRequestBody, "UTF-8"));
         var signResponse = clientBuilder.build().execute(signRequest);
         assertEquals(HttpStatus.SC_OK, signResponse.getStatusLine().getStatusCode());
-        // System.out.println("Sign Response: " + signResponse.getStatusLine());
-        // System.out.println("Sign Response: " + new String(
-        // signResponse.getEntity().getContent().readAllBytes(),
-        // StandardCharsets.UTF_8));
     }
 
    @ParameterizedTest
@@ -183,7 +178,6 @@ public class SignHttpSmokeTest {
                         var o = f.get(response);
                         assertNotNull(o);
                     } catch (IllegalArgumentException | IllegalAccessException e1) {
-                        // TODO Auto-generated catch block
                         e1.printStackTrace();
                     }
                 });
@@ -195,7 +189,6 @@ public class SignHttpSmokeTest {
 
         var level = fromMapToEnum(ServerSigningParameters.LocalSignatureLevel.class, map.get("level"));
         var container = fromMapToEnum(ASiCContainerType.class, map.get("container"));
-        var containerFilename = (String) map.get("containerFilename");
         var containerXmlns = (String) map.get("containerXmlns");
         var packaging = fromMapToEnum(SignaturePackaging.class, map.get("packaging"));
         var digestAlgorithm = fromMapToEnum(DigestAlgorithm.class, map.get("digestAlgorithm"));
@@ -210,7 +203,7 @@ public class SignHttpSmokeTest {
         var identifier = (String) map.get("identifier");
         var checkPDFACompliance = (boolean) map.getOrDefault("checkPDFACompliance", false);
         var visualizationWidth = fromMapToEnum(VisualizationWidthEnum.class, map.get("visualizationWidth"));
-        var autoLoadEform = (boolean) map.getOrDefault("autoLoadEform", false);
+        var autoLoadEform = (Boolean) map.get("autoLoadEform");
         var embedUsedSchemas = (boolean) map.getOrDefault("embedUsedSchemas", false);
         var schemaIdentifier = (String) map.get("schemaIdentifier");
         var transformationIdentifier = (String) map.get("transformationIdentifier");
@@ -222,7 +215,6 @@ public class SignHttpSmokeTest {
         return new ServerSigningParameters(
                 level,
                 container,
-                containerFilename,
                 containerXmlns,
                 packaging,
                 digestAlgorithm,

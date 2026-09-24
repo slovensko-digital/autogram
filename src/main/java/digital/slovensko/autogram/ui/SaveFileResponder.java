@@ -2,7 +2,7 @@ package digital.slovensko.autogram.ui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningResponder;
-import digital.slovensko.autogram.core.SignedDocument;
+import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -38,6 +38,7 @@ public class SaveFileResponder implements SigningResponder {
 
     @Override
     public void onDocumentFailed(AutogramException error) {
+        // TODO tu je zozrany error
         System.err.println("Sign failed error occurred: " + error.toString());
     }
 }

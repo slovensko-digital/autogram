@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.core;
+package digital.slovensko.autogram.core.dto;
 
 import java.util.Objects;
 

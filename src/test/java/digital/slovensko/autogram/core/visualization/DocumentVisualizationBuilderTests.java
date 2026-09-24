@@ -1,0 +1,157 @@
+package digital.slovensko.autogram.core.visualization;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+import javax.xml.parsers.ParserConfigurationException;
+
+import digital.slovensko.autogram.TestMethodSources;
+import digital.slovensko.autogram.core.*;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SignedDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
+import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
+import digital.slovensko.autogram.core.errors.AutogramException;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+public class DocumentVisualizationBuilderTests {
+
+    @Test
+    void testSigningJobTransformToHtml() throws IOException, ParserConfigurationException, SAXException {
+        var transformation = new String(TestMethodSources.loadContent("crystal_test_data/PovolenieZdravotnictvo.html.xslt"), StandardCharsets.UTF_8);
+        var schema = new String(TestMethodSources.loadContent("crystal_test_data/rozhodnutie_X4564-2.xsd"), StandardCharsets.UTF_8);
+        var document = new InMemoryDocument(TestMethodSources.loadContent("crystal_test_data/rozhodnutie_X4564-2.xml"),"rozhodnutie_X4564-2.xml");
+
+        var eFormAttributes = new EFormAttributes(
+            "id1/asa",
+            transformation,
+            schema,
+            "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+            null,
+            null,
+            false,
+            null,
+            false,
+            CanonicalizationMethod.INCLUSIVE,
+            DigestAlgorithm.SHA256);
+
+        var visualizedDocument = DocumentVisualizationBuilder.fromDocument(AutogramDocument.build(document, eFormAttributes));
+        if (visualizedDocument instanceof HTMLVisualization d) {
+            var html = d.getDocument();
+            assertFalse(html.isEmpty());
+        } else {
+            if (visualizedDocument != null)
+                fail("Expected HTMLVisualizedDocument but got" + visualizedDocument.getClass().getName());
+
+            fail("Expected HTMLVisualizedDocument but got null");
+        }
+    }
+
+    // @Test
+    // void testSigningJobTransformFo() throws IOException,
+    // ParserConfigurationException,
+    // SAXException, TransformerException {
+    // var transformation = new String(this.getClass()
+    // .getResourceAsStream(
+    // "crystal_test_data/PovolenieZdravotnictvo.fo.xsl")
+    // .readAllBytes());
+
+    // var document = new InMemoryDocument(
+    // this.getClass().getResourceAsStream(
+    // "crystal_test_data/rozhodnutie_X4564-2.xml"),
+    // "rozhodnutie_X4564-2.xml");
+
+    // var params = new SigningParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
+    // ASiCContainerType.ASiC_E, null, SignaturePackaging.ENVELOPING,
+    // DigestAlgorithm.SHA256, false, CanonicalizationMethod.INCLUSIVE,
+    // CanonicalizationMethod.INCLUSIVE, CanonicalizationMethod.INCLUSIVE,
+    // null, transformation, "id1/asa", false, 800);
+
+    // SigningJob job = new SigningJob(document, params, dummyResponder);
+
+    // var xml = DocumentVisualization.fromJob(job).getVisualizedDocument();
+    // assertFalse(xml.isEmpty());
+    // }
+
+    @Test
+    void testSigningJobTransformSb() throws IOException, ParserConfigurationException, SAXException {
+        var transformation = new String(TestMethodSources.loadContent("crystal_test_data/PovolenieZdravotnictvo.sb.xslt"));
+        var schema = new String(TestMethodSources.loadContent("crystal_test_data/rozhodnutie_X4564-2.xsd"));
+        var document = new InMemoryDocument(TestMethodSources.loadContent("crystal_test_data/rozhodnutie_X4564-2.xml"), "rozhodnutie_X4564-2.xml");
+
+        var eFormAttributes = new EFormAttributes(
+            "id1/asa",
+            transformation,
+            schema,
+            "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+            null,
+            null,
+            false,
+            null,
+            false,
+            CanonicalizationMethod.INCLUSIVE,
+            DigestAlgorithm.SHA256);
+
+        var visualizedDocument = DocumentVisualizationBuilder.fromDocument(AutogramDocument.build(document, eFormAttributes));
+        if (visualizedDocument instanceof HTMLVisualization d) {
+                var html = d.getDocument();
+                assertFalse(html.isEmpty());
+        } else {
+                fail("Expected HTMLVisualizedDocument");
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider")
+    void testXdcfVisualizationIsNotUnsupported(InMemoryDocument document)
+            throws IOException, ParserConfigurationException, SAXException {
+        var parameters = SigningParametersResolver.buildRequested(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
+                DigestAlgorithm.SHA256, ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false,
+                null, null, null, false, 640, false);
+        var input = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
+        var job = SigningJob.fromInput(input);
+
+        job.initializeVisualizations();
+        var visualization = job.getVisualizations().get(0);
+
+        Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
+    }
+
+    @Test
+    void testMultiDocumentVisualizationUsesSelectedDocumentMetadata()
+        throws IOException, ParserConfigurationException, SAXException {
+        var firstDocument = AutogramDocument.build(new InMemoryDocument("first".getBytes(StandardCharsets.UTF_8), "first.txt", MimeTypeEnum.TEXT), null);
+        var parameters = SigningParametersResolver.buildRequested(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
+                DigestAlgorithm.SHA256, ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false,
+                null, null, null, false, 640, false);
+        var preparedFirstDocument = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);
+        var secondDocument = AutogramDocument.build(new InMemoryDocument(
+                    TestMethodSources.loadContent("general_agenda.xdcf"),
+                    "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY),
+        EFormAttributes.build(preparedFirstDocument.getParameters(), true));
+        var job = SigningJob.fromInput(
+                SigningInput.of(List.of(firstDocument, secondDocument), preparedFirstDocument.getParameters()));
+
+        job.initializeVisualizations();
+        Visualization visualization = job.getVisualizations().get(1);
+
+        Assertions.assertFalse(visualization instanceof UnsupportedVisualization);
+    }
+}

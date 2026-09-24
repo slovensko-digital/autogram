@@ -53,7 +53,7 @@ public class PasswordController extends BaseController {
         }
 
         if(isSigningStep) {
-            mainButton.setText(i18n("general.sign.btn"));
+            mainButton.setText(i18n("general.sign.btn.single"));
             cancelButton.setManaged(true);
             cancelButton.setVisible(true);
         }

@@ -119,12 +119,12 @@ public class BatchDialogController extends BaseController implements SuppressedF
             var key = gui.getActiveSigningKey();
 
             if (key == null) {
-                mainButton.setText(i18n("general.sign.btn"));
+                mainButton.setText(i18n("general.sign.btn.multi"));
                 changeKeyButton.setManaged(false);
                 changeKeyButton.setVisible(false);
 
             } else {
-                mainButton.setText(i18n("batch.signAs.btn") + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+                mainButton.setText(i18n("batch.signAs.btn.multi") + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
                 changeKeyButton.setManaged(true);
                 changeKeyButton.setVisible(true);
             }

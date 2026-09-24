@@ -17,7 +17,7 @@ public class UpvsEFormResources extends EFormResources {
 
     public UpvsEFormResources(String url, String xsdDigest, String xsltDigest, String xsdIdentifier,
                            XsltParams xsltParams, String canonicalizationMethod) {
-        super(url, xsdDigest, xsltDigest, canonicalizationMethod);
+        super(url, xsdDigest, xsltDigest);
 
         this.xsdIdentifier = xsdIdentifier;
         this.xsltIdentifier = xsltParams != null ? xsltParams.identifier() : null;
@@ -33,7 +33,7 @@ public class UpvsEFormResources extends EFormResources {
     }
 
     @Override
-    public boolean findResources() throws XMLValidationException {
+    public boolean findResources(String canonicalizationMethod) throws XMLValidationException {
         var manifest_xml = getRemoteResource(SOURCE_URL + url + "/META-INF/manifest.xml");
         if (manifest_xml == null)
             throw new XMLValidationException(MANIFEST_NOT_FOUND);

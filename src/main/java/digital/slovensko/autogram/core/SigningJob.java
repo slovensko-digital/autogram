@@ -1,51 +1,87 @@
 package digital.slovensko.autogram.core;
 
-import java.io.File;
+import java.util.List;
 
-import digital.slovensko.autogram.core.eforms.EFormUtils;
-import digital.slovensko.autogram.core.eforms.xdc.XDCBuilder;
-import digital.slovensko.autogram.core.eforms.xdc.XDCValidator;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SignedDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
+import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
+import digital.slovensko.autogram.core.visualization.Visualization;
+import digital.slovensko.autogram.util.AsicContainerUtils;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.alert.LogOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
+import eu.europa.esig.dss.asic.common.signature.AbstractASiCSignatureService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
+import eu.europa.esig.dss.signature.AbstractSignatureService;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.*;
-import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
-
 /**
- * Pure signing payload: the document, its parameters and optional batch
+ * Pure signing payload: the document(s), their parameters and optional batch
  * membership. It has no responder, no skip actions and no outcome flag; the
  * caller ({@link Autogram}) owns delivery and navigation.
  */
 public class SigningJob {
+    private final SigningInput input;
+    private final List<AutogramDocument> documentsToVisualize;
     private final Batch batch;
     private final Integer batchPosition;
-    private final DSSDocument document;
-    private final SigningParameters parameters;
+    private List<Visualization> visualizations;
 
-    private SigningJob(DSSDocument document, SigningParameters parameters, Batch batch, Integer batchPosition) {
-        this.document = document;
-        this.parameters = parameters;
+    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Batch batch,
+            Integer batchPosition) {
+        this.input = input;
+        this.documentsToVisualize = documentsToVisualize;
         this.batch = batch;
         this.batchPosition = batchPosition;
     }
 
-    public DSSDocument getDocument() {
-        return this.document;
+    public AutogramDocument getDocument() {
+        return input.getFirstDocument();
+    }
+
+    public List<AutogramDocument> getDocuments() {
+        return input.getDocuments();
+    }
+
+    private List<DSSDocument> getDssDocuments() {
+        return getDocuments().stream().map(AutogramDocument::toDssDocument).toList();
+    }
+
+    private DSSDocument getDssDocument() {
+        return getDocument().toDssDocument();
+    }
+
+    public List<Visualization> getVisualizations() {
+        return visualizations;
     }
 
     public SigningParameters getParameters() {
-        return parameters;
+        return input.getParameters();
+    }
+
+    public int getVisualizationWidth() {
+        return getParameters().getVisualizationWidth();
+    }
+
+    public boolean isMultiDocument() {
+        return documentsToVisualize.size() > 1;
+    }
+
+    public int getPreviewDocumentsCount() {
+        return input.getPreviewDocumentsCount();
+    }
+
+    public String getName() {
+        return input.getName();
     }
 
     public Batch getBatch() {
@@ -64,201 +100,77 @@ public class SigningJob {
         return batch != null && batch.getTotalNumberOfDocuments() > 1;
     }
 
-    public int getVisualizationWidth() {
-        return parameters.getVisualizationWidth();
+    public void initializeVisualizations() throws OriginalDocumentNotFoundException, FailedVisualizationException {
+        visualizations = documentsToVisualize.stream()
+            .map(DocumentVisualizationBuilder::fromDocument)
+            .toList();
     }
 
     /** Signs the document and returns the result. Delivering it is the caller's job. */
-    public SignedDocument signWithKey(SigningKey key) throws AutogramException {
-        Logging.log("Signing Job: " + this.hashCode() + " file " + getDocument().getName());
-        boolean isContainer = getParameters().getContainer() != null;
-        var doc = switch (getParameters().getSignatureType()) {
-            case XAdES -> isContainer ? signDocumentAsAsiCWithXAdeS(key) : signDocumentAsXAdeS(key);
-            case CAdES -> isContainer ? signDocumentAsASiCWithCAdeS(key) : signDocumentAsCAdeS(key);
-            case PAdES -> signDocumentAsPAdeS(key);
-            default -> throw new RuntimeException(
-                    "Unsupported signature type: " + getParameters().getSignatureType());
-        };
+    @SuppressWarnings("unchecked")
+    public SignedDocument signWithKey(SigningKey key, TSPSource tspSource)
+            throws InterruptedException, AutogramException {
+        Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
+            + (isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
 
-        return new SignedDocument(doc, key.getCertificate());
-    }
+        var signatureParameters = DssSigningParametersFactory.createSignatureParameters(input, key);
+        var signatureService = createSignatureService(tspSource);
 
-    private DSSDocument signDocumentAsCAdeS(SigningKey key) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new CAdESService(commonCertificateVerifier);
-        var jobParameters = getParameters();
-        var signatureParameters = getParameters().getCAdESSignatureParameters();
+        if (signatureService instanceof AbstractASiCSignatureService castedService) {
+            var documents = getDssDocuments();
 
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.CAdES_BASELINE_T))
-            service.setTspSource(getParameters().getTspSource());
+            var dataToSign = castedService.getDataToSign(documents, signatureParameters);
+            var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
+            var signedDocument = castedService.signDocument(documents, signatureParameters, signatureValue);
+            return new SignedDocument(signedDocument, key.getCertificate());
+        }
 
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
+        var document = getDssDocument();
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
-        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
-
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
-    }
-
-    private DSSDocument signDocumentAsAsiCWithXAdeS(SigningKey key) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new ASiCWithXAdESService(commonCertificateVerifier);
-        var signatureParameters = getParameters().getASiCWithXAdESSignatureParameters();
-
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
-
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
-            service.setTspSource(getParameters().getTspSource());
-
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
+        var dataToSign = signatureService.getDataToSign(document, signatureParameters);
         var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
-
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+        var signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
+        return new SignedDocument(signedDocument, key.getCertificate());
     }
 
-    private DSSDocument signDocumentAsXAdeS(SigningKey key) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new XAdESService(commonCertificateVerifier);
-        var jobParameters = getParameters();
-        var signatureParameters = getParameters().getXAdESSignatureParameters();
-
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.XAdES_BASELINE_T))
-            service.setTspSource(getParameters().getTspSource());
-
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
-
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
-        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
-
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
+    public static SigningJob fromInput(SigningInput input) {
+        return fromInput(input, null, null);
     }
 
-    private DSSDocument signDocumentAsASiCWithCAdeS(SigningKey key) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new ASiCWithCAdESService(commonCertificateVerifier);
-        var jobParameters = getParameters();
-        var signatureParameters = getParameters().getASiCWithCAdESSignatureParameters();
-
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
-
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.CAdES_BASELINE_T))
-            service.setTspSource(getParameters().getTspSource());
-
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
-        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
-
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
-    }
-
-    private DSSDocument signDocumentAsPAdeS(SigningKey key) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
-        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
-        var service = new PAdESService(commonCertificateVerifier);
-        var jobParameters = getParameters();
-        var signatureParameters = getParameters().getPAdESSignatureParameters();
-
-        signatureParameters.setSigningCertificate(key.getCertificate());
-        signatureParameters.setCertificateChain(key.getCertificateChain());
-
-        if (signatureParameters.getSignatureLevel().equals(SignatureLevel.PAdES_BASELINE_T)) {
-            service.setTspSource(getParameters().getTspSource());
-            signatureParameters.setContentSize(9472*2);
+    public static SigningJob fromInput(SigningInput input, Batch batch, Integer batchPosition) {
+        List<AutogramDocument> documentsToVisualize;
+        if (input.getDocuments().size() == 1 && input.getFirstDocument().isAsice()) {
+            documentsToVisualize = AsicContainerUtils.getOriginalDocuments(input.getFirstDocument()).stream().toList();
+        } else {
+            documentsToVisualize = input.getDocuments();
         }
 
-        var dataToSign = service.getDataToSign(getDocument(), signatureParameters);
-        var signatureValue = key.sign(dataToSign, jobParameters.getDigestAlgorithm());
-
-        return service.signDocument(getDocument(), signatureParameters, signatureValue);
-    }
-
-    public static FileDocument createDSSFileDocumentFromFile(File file) {
-        var fileDocument = new FileDocument(file);
-
-        if (fileDocument.getName().endsWith(".xdcf"))
-            fileDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
-
-        else if (isXDC(fileDocument.getMimeType()) || isXML(fileDocument.getMimeType()) && XDCValidator.isXDCContent(fileDocument))
-            fileDocument.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
-
-        else if (isTxt(fileDocument.getMimeType()))
-            fileDocument.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
-
-        return fileDocument;
-    }
-
-    private static SigningJob build(DSSDocument document, SigningParameters params, Batch batch,
-            Integer batchPosition) {
-        if (params.shouldCreateXdc() && !isXDC(document.getMimeType()) && !isAsice(document.getMimeType()))
-            document = XDCBuilder.transform(params, document.getName(), EFormUtils.getXmlFromDocument(document));
-
-        if (isTxt(document.getMimeType()))
-            document.setMimeType(AutogramMimeType.TEXT_WITH_CHARSET);
-
-        if (isXDC(document.getMimeType())) {
-            document.setMimeType(AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET);
-            document.setName(getXdcfFilename(document.getName()));
-        }
-
-        return new SigningJob(document, params, batch, batchPosition);
-    }
-
-    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params) {
-        return build(document, params, null, null);
-    }
-
-    public static SigningJob buildFromRequest(DSSDocument document, SigningParameters params, Batch batch,
-            Integer batchPosition) {
-        return build(document, params, batch, batchPosition);
-    }
-
-    public static SigningJob buildFromFile(File file, boolean checkPDFACompliance, SignatureLevel signatureType,
-            boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        return buildFromFile(file, checkPDFACompliance, signatureType, isEn319132, tspSource, plainXmlEnabled, null,
-                null);
-    }
-
-    public static SigningJob buildFromFile(File file, boolean checkPDFACompliance, SignatureLevel signatureType,
-            boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled, Batch batch, Integer batchPosition) {
-        var document = createDSSFileDocumentFromFile(file);
-        var parameters = getParametersForFile(document, checkPDFACompliance, signatureType, isEn319132, tspSource,
-                plainXmlEnabled);
-        return build(document, parameters, batch, batchPosition);
-    }
-
-    private static SigningParameters getParametersForFile(FileDocument document, boolean checkPDFACompliance, SignatureLevel signatureType, boolean isEn319132, TSPSource tspSource, boolean plainXmlEnabled) {
-        var level = SignatureValidator.getSignedDocumentSignatureLevel(SignatureValidator.getSignedDocumentSimpleReport(document));
-        if (level != null) switch (level.getSignatureForm()) {
-            case PAdES:
-                return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
-            case XAdES:
-                return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
-            case CAdES:
-                return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
-            default:
-        }
-
-        if (isPDF(document.getMimeType())) switch (signatureType) {
-            case PAdES_BASELINE_B:
-                return SigningParameters.buildForPDF(document, checkPDFACompliance, isEn319132, tspSource);
-            case XAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
-            case CAdES_BASELINE_B:
-                return SigningParameters.buildForASiCWithCAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
-            default:
-        }
-
-        return SigningParameters.buildForASiCWithXAdES(document, checkPDFACompliance, isEn319132, tspSource, plainXmlEnabled);
+        return new SigningJob(input, documentsToVisualize, batch, batchPosition);
     }
 
     public boolean shouldCheckPDFCompliance() {
-        return parameters.getCheckPDFACompliance() && isPDF(document.getMimeType());
+        return getParameters().getCheckPDFACompliance() && getDocuments().stream().anyMatch(d -> d.isPDF());
+    }
+
+    @SuppressWarnings("rawtypes")
+    private AbstractSignatureService createSignatureService(TSPSource tspSource) {
+        var commonCertificateVerifier = new CommonCertificateVerifier();
+        commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
+
+        var isContainer = input.getParameters().getContainer() != null;
+        if (!isContainer && input.getDocuments().size() > 1)
+            throw new AutogramException("Multiple documents are not allowed for non-container signatures");
+
+        var service = switch (input.getParameters().getSignatureForm()) {
+            case XAdES -> isContainer ? new ASiCWithXAdESService(commonCertificateVerifier) : new XAdESService(commonCertificateVerifier);
+            case CAdES -> isContainer ? new ASiCWithCAdESService(commonCertificateVerifier) : new CAdESService(commonCertificateVerifier);
+            case PAdES -> new PAdESService(commonCertificateVerifier);
+            default -> throw new RuntimeException("Unsupported signature type: " + input.getParameters().getSignatureForm());
+        };
+
+        if (input.getParameters().getSignatureProfile().equals(SignatureProfile.BASELINE_T) && tspSource != null)
+            service.setTspSource(tspSource);
+
+        return service;
     }
 }

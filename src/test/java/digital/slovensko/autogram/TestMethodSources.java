@@ -1,25 +1,34 @@
 package digital.slovensko.autogram;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import java.util.stream.Stream;
+
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
+
 import java.io.IOException;
+import java.io.InputStream;
 
 public abstract class TestMethodSources {
-    private static final Class cls = TestMethodSources.class;
+    public static byte[] loadContent(String resourceName) throws IOException {
+        return loadContentStream(resourceName).readAllBytes();
+    }
+
+    public static InputStream loadContentStream(String resourceName) throws IOException {
+        return TestMethodSources.class.getResourceAsStream(resourceName);
+    }
 
     public static Stream<DSSDocument> generalAgendaProvider() throws IOException {
-        var inlineXml = cls.getResourceAsStream("general_agenda.xml").readAllBytes();
-        var inlineXmlHeader = cls.getResourceAsStream("general_agenda_header.xml").readAllBytes();
-        var indentedXml = cls.getResourceAsStream("general_agenda_indented.xml").readAllBytes();
-        var indentedXmlHeader = cls.getResourceAsStream("general_agenda_header_indented.xml").readAllBytes();
-        var inlineXdc = cls.getResourceAsStream("general_agenda_xdc.xml").readAllBytes();
-        var inlineXdcf = cls.getResourceAsStream("general_agenda.xdcf").readAllBytes();
-        var indentedXdc = cls.getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
-        var inlineAsice = cls.getResourceAsStream("general_agenda.asice").readAllBytes();
-        var indentedAsice = cls.getResourceAsStream("general_agenda_indented.asice").readAllBytes();
+        var inlineXml = loadContent("general_agenda.xml");
+        var inlineXmlHeader = loadContent("general_agenda_header.xml");
+        var indentedXml = loadContent("general_agenda_indented.xml");
+        var indentedXmlHeader = loadContent("general_agenda_header_indented.xml");
+        var inlineXdc = loadContent("general_agenda_xdc.xml");
+        var inlineXdcf = loadContent("general_agenda.xdcf");
+        var indentedXdc = loadContent("general_agenda_xdc_indented.xml");
+        var inlineAsice = loadContent("general_agenda.asice");
+        var indentedAsice = loadContent("general_agenda_indented.asice");
 
         return Stream.of(
             new InMemoryDocument(inlineXml, "generalAgendaInlineXml.xml", MimeTypeEnum.XML),
@@ -35,7 +44,7 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<DSSDocument> unsetXdcfMimetypeProvider() throws IOException {
-        var inlineXdcf = cls.getResourceAsStream("general_agenda.xdcf").readAllBytes();
+        var inlineXdcf = loadContent("general_agenda.xdcf");
 
         return Stream.of(
             new InMemoryDocument(inlineXdcf, "generalAgendaInlineXdcf.xdcf", AutogramMimeType.XML_DATACONTAINER),
@@ -45,15 +54,15 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<DSSDocument> fsDPFOProvider() throws IOException {
-        var inlineXml = cls.getResourceAsStream("fs_forms/dic2120515056_fs792_772.xml").readAllBytes();
-        var inlineXmlHeader = cls.getResourceAsStream("fs_forms/d_fs792_772_header.xml").readAllBytes();
-        var indentedXml = cls.getResourceAsStream("fs_forms/d_fs792_772_indented.xml").readAllBytes();
-        var indentedXmlHeader = cls.getResourceAsStream("fs_forms/d_fs792_772_header_indented.xml").readAllBytes();
-        var inlineXdc = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc.xml").readAllBytes();
-        var indentedXdc = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc_indented.xml").readAllBytes();
-        var inlineAsice = cls.getResourceAsStream("fs_forms/signed.asice").readAllBytes();
-        var indentedAsice = cls.getResourceAsStream("fs_forms/signed_indented.asice").readAllBytes();
-        var timestampedAsice = cls.getResourceAsStream("fs_forms/signed_indented_ts.asice").readAllBytes();
+        var inlineXml = loadContent("fs_forms/dic2120515056_fs792_772.xml");
+        var inlineXmlHeader = loadContent("fs_forms/d_fs792_772_header.xml");
+        var indentedXml = loadContent("fs_forms/d_fs792_772_indented.xml");
+        var indentedXmlHeader = loadContent("fs_forms/d_fs792_772_header_indented.xml");
+        var inlineXdc = loadContent("fs_forms/d_fs792_772_xdc.xml");
+        var indentedXdc = loadContent("fs_forms/d_fs792_772_xdc_indented.xml");
+        var inlineAsice = loadContent("fs_forms/signed.asice");
+        var indentedAsice = loadContent("fs_forms/signed_indented.asice");
+        var timestampedAsice = loadContent("fs_forms/signed_indented_ts.asice");
 
         return Stream.of(
             new InMemoryDocument(inlineXml, "dic2120515056_fs792_772.xml", MimeTypeEnum.XML),
@@ -70,8 +79,8 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<DSSDocument> fsUnmarkedXdcProvider() throws IOException {
-        var dpfoAsice = cls.getResourceAsStream("fs_forms/DPFOBv23.asice").readAllBytes();
-        var dpfoXdc = cls.getResourceAsStream("fs_forms/unmarked_xdc_indented.xml").readAllBytes();
+        var dpfoAsice = loadContent("fs_forms/DPFOBv23.asice");
+        var dpfoXdc = loadContent("fs_forms/unmarked_xdc_indented.xml");
 
         return Stream.of(
             new InMemoryDocument(dpfoAsice, "DPFOBv23.asice", MimeTypeEnum.ASICE),
@@ -99,7 +108,7 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<DSSDocument> nonEFormXmlProvider() throws IOException {
-        var wrongXdcSchemaXml = cls.getResourceAsStream("wrong_schema_xdc.xml").readAllBytes();
+        var wrongXdcSchemaXml = loadContent("wrong_schema_xdc.xml");
 
         return Stream.of(
                 new InMemoryDocument(wrongXdcSchemaXml, "wrongXdcSchemaXml.xml", AutogramMimeType.XML_DATACONTAINER)
@@ -107,8 +116,8 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<DSSDocument> xsdSchemaFailedValidationXmlProvider() throws IOException {
-        var wrongSchemaGAXml = cls.getResourceAsStream("wrong_schema_ga.xml").readAllBytes();
-        var wrongSchemaGAXdc = cls.getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
+        var wrongSchemaGAXml = loadContent("wrong_schema_ga.xml");
+        var wrongSchemaGAXdc = loadContent("wrong_schema_ga_xdc.xml");
 
         return Stream.of(
             new InMemoryDocument(wrongSchemaGAXml, "wrongSchemaGAXml.xml", MimeTypeEnum.XML),
@@ -117,10 +126,10 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<DSSDocument> mismatchedDigestsXmlProvider() throws IOException {
-        var mismatchedXsdGAXdcXml = cls.getResourceAsStream("mismatched_xsd_ga_xdc.xml").readAllBytes();
-        var mismatchedXsltGAXdcXml = cls.getResourceAsStream("mismatched_xslt_ga_xdc.xml").readAllBytes();
-        var mismatchedXsdGAXdcAsice = cls.getResourceAsStream("mismatched_xsd_ga_xdc.asice").readAllBytes();
-        var mismatchedXsltGAXdcAsice = cls.getResourceAsStream("mismatched_xslt_ga_xdc.asice").readAllBytes();
+        var mismatchedXsdGAXdcXml = loadContent("mismatched_xsd_ga_xdc.xml");
+        var mismatchedXsltGAXdcXml = loadContent("mismatched_xslt_ga_xdc.xml");
+        var mismatchedXsdGAXdcAsice = loadContent("mismatched_xsd_ga_xdc.asice");
+        var mismatchedXsltGAXdcAsice = loadContent("mismatched_xslt_ga_xdc.asice");
 
         return Stream.of(
             new InMemoryDocument(mismatchedXsdGAXdcXml, "mismatchedXsdGAXdcXml.xml", AutogramMimeType.XML_DATACONTAINER),
@@ -131,10 +140,10 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<DSSDocument> mismatchedDigestsFSXmlProvider() throws IOException {
-        var mismatchedXsltFSXdcXml = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc_xsd_digest.xml").readAllBytes();
-        var mismatchedXsltFSXsltXdcXml = cls.getResourceAsStream("fs_forms/d_fs792_772_xdc_xslt_digest.xml").readAllBytes();
-        var mismatchedXsltFSXdcAsice = cls.getResourceAsStream("fs_forms/signed_xdc_xsd_digest.asice").readAllBytes();
-        var mismatchedXsltFSXsltXdcAsice = cls.getResourceAsStream("fs_forms/signed_xdc_xslt_digest.asice").readAllBytes();
+        var mismatchedXsltFSXdcXml = loadContent("fs_forms/d_fs792_772_xdc_xsd_digest.xml");
+        var mismatchedXsltFSXsltXdcXml = loadContent("fs_forms/d_fs792_772_xdc_xslt_digest.xml");
+        var mismatchedXsltFSXdcAsice = loadContent("fs_forms/signed_xdc_xsd_digest.asice");
+        var mismatchedXsltFSXsltXdcAsice = loadContent("fs_forms/signed_xdc_xslt_digest.asice");
 
         return Stream.of(
             new InMemoryDocument(mismatchedXsltFSXdcXml, "d_fs792_772_xdc_xsd_digest.xml", AutogramMimeType.XML_DATACONTAINER),
@@ -145,9 +154,9 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<DSSDocument> unknownEfomXmlProvider() throws IOException {
-        var unknownEfomXml = cls.getResourceAsStream("unknown_eform.xml").readAllBytes();
-        var unknownEfomXdc = cls.getResourceAsStream("unknown_eform_xdc.xml").readAllBytes();
-        var unknownEfomAsice = cls.getResourceAsStream("unknown_eform.asice").readAllBytes();
+        var unknownEfomXml = loadContent("unknown_eform.xml");
+        var unknownEfomXdc = loadContent("unknown_eform_xdc.xml");
+        var unknownEfomAsice = loadContent("unknown_eform.asice");
 
         return Stream.of(
             new InMemoryDocument(unknownEfomXml, "unknownEfomXml.xml", MimeTypeEnum.XML),
@@ -157,13 +166,13 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<DSSDocument> invalidAsiceProvider() throws IOException {
-        var noSignaturesAsice = cls.getResourceAsStream("no_signatures.asice").readAllBytes();
-        var invalidAsice = cls.getResourceAsStream("invalid_asice.asice").readAllBytes();
-        var noMetaInfAsice = cls.getResourceAsStream("no_meta_inf.asice").readAllBytes();
+        var noSignaturesAsice = loadContent("no_signatures.asice");
+        var invalidAsice = loadContent("invalid_asice.asice");
+        var noMetaInfAsice = loadContent("no_meta_inf.asice");
 
         // TODO: implement these asice validations
-        // var noManifestAsice = cls.getResourceAsStream("no_manifest.asice").readAllBytes();
-        // var noMimetypeAsice = cls.getResourceAsStream("no_mimetype.asice").readAllBytes();
+        // var noManifestAsice = loadContent("no_manifest.asice");
+        // var noMimetypeAsice = loadContent("no_mimetype.asice");
 
         return Stream.of(
             new InMemoryDocument(noSignaturesAsice, "noSignaturesAsice.asice", MimeTypeEnum.ASICE),
@@ -173,11 +182,11 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<InMemoryDocument> validOtherDocumentsProvider() throws IOException {
-        var sampleTxt = cls.getResourceAsStream("sample.txt").readAllBytes();
-        var samplePdf = cls.getResourceAsStream("sample.pdf").readAllBytes();
-        var samplePng = cls.getResourceAsStream("sample.png").readAllBytes();
-        var sampleIco = cls.getResourceAsStream("sample.ico").readAllBytes();
-        var sampleDocx = cls.getResourceAsStream("sample.docx").readAllBytes();
+        var sampleTxt = loadContent("sample.txt");
+        var samplePdf = loadContent("sample.pdf");
+        var samplePng = loadContent("sample.png");
+        var sampleIco = loadContent("sample.ico");
+        var sampleDocx = loadContent("sample.docx");
 
         return Stream.of(
             new InMemoryDocument(sampleTxt, "sample.txt", MimeTypeEnum.TEXT),
@@ -189,7 +198,7 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<InMemoryDocument> nonEformXmlProvider() throws IOException {
-        var nonEformXml = cls.getResourceAsStream("non_eform.xml").readAllBytes();
+        var nonEformXml = loadContent("non_eform.xml");
 
         return Stream.of(
             new InMemoryDocument(nonEformXml, "nonEformXml.xml", MimeTypeEnum.XML)
@@ -197,8 +206,8 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<InMemoryDocument> pdfForPadesProvider() throws IOException {
-        var samplePdf = cls.getResourceAsStream("sample.pdf").readAllBytes();
-        var samplePdfSigned = cls.getResourceAsStream("sample_signed.pdf").readAllBytes();
+        var samplePdf = loadContent("sample.pdf");
+        var samplePdfSigned = loadContent("sample_signed.pdf");
 
         return Stream.of(
             new InMemoryDocument(samplePdf, "sample.pdf", MimeTypeEnum.PDF),
@@ -207,12 +216,12 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<InMemoryDocument> validXadesDocumentsProvider() throws IOException {
-        var generalAgendaAsice = cls.getResourceAsStream("general_agenda.asice").readAllBytes();
-        var sampleTxtXadesAsice = cls.getResourceAsStream("sample_txt_xades.asice").readAllBytes();
-        var samplePdfXadesAsice = cls.getResourceAsStream("sample_pdf_xades.asice").readAllBytes();
-        var samplePngXadesAsice = cls.getResourceAsStream("sample_png_xades.asice").readAllBytes();
-        var sampleIcoXadesAsice = cls.getResourceAsStream("sample_ico_xades.asice").readAllBytes();
-        var sampleDocxXadesAsice = cls.getResourceAsStream("sample_docx_xades.asice").readAllBytes();
+        var generalAgendaAsice = loadContent("general_agenda.asice");
+        var sampleTxtXadesAsice = loadContent("sample_txt_xades.asice");
+        var samplePdfXadesAsice = loadContent("sample_pdf_xades.asice");
+        var samplePngXadesAsice = loadContent("sample_png_xades.asice");
+        var sampleIcoXadesAsice = loadContent("sample_ico_xades.asice");
+        var sampleDocxXadesAsice = loadContent("sample_docx_xades.asice");
 
         return Stream.of(
             new InMemoryDocument(generalAgendaAsice, "generalAgendaAsice.asice", MimeTypeEnum.ASICE),
@@ -225,12 +234,12 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<InMemoryDocument> xdcDocumentsProvider() throws IOException {
-        var generalAgendaXdcIndented = cls.getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
-        var generalAgendaXdc = cls.getResourceAsStream("general_agenda_xdc.xml").readAllBytes();
-        var mismatchedXsdGAXdc = cls.getResourceAsStream("mismatched_xsd_ga_xdc.xml").readAllBytes();
-        var mismatchedXsltGAXdc = cls.getResourceAsStream("mismatched_xslt_ga_xdc.xml").readAllBytes();
-        var unknownEfomXdc = cls.getResourceAsStream("unknown_eform_xdc.xml").readAllBytes();
-        var wrongSchemaGAXdc = cls.getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
+        var generalAgendaXdcIndented = loadContent("general_agenda_xdc_indented.xml");
+        var generalAgendaXdc = loadContent("general_agenda_xdc.xml");
+        var mismatchedXsdGAXdc = loadContent("mismatched_xsd_ga_xdc.xml");
+        var mismatchedXsltGAXdc = loadContent("mismatched_xslt_ga_xdc.xml");
+        var unknownEfomXdc = loadContent("unknown_eform_xdc.xml");
+        var wrongSchemaGAXdc = loadContent("wrong_schema_ga_xdc.xml");
 
         return Stream.of(
             new InMemoryDocument(generalAgendaXdcIndented, "generalAgendaXdcIndented.xml", AutogramMimeType.XML_DATACONTAINER),
@@ -243,12 +252,12 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<InMemoryDocument> xdcDocumentsWithXmlMimetypeProvider() throws IOException {
-        var generalAgendaXdcIndented = cls.getResourceAsStream("general_agenda_xdc_indented.xml").readAllBytes();
-        var generalAgendaXdc = cls.getResourceAsStream("general_agenda_xdc.xml").readAllBytes();
-        var mismatchedXsdGAXdc = cls.getResourceAsStream("mismatched_xsd_ga_xdc.xml").readAllBytes();
-        var mismatchedXsltGAXdc = cls.getResourceAsStream("mismatched_xslt_ga_xdc.xml").readAllBytes();
-        var unknownEfomXdc = cls.getResourceAsStream("unknown_eform_xdc.xml").readAllBytes();
-        var wrongSchemaGAXdc = cls.getResourceAsStream("wrong_schema_ga_xdc.xml").readAllBytes();
+        var generalAgendaXdcIndented = loadContent("general_agenda_xdc_indented.xml");
+        var generalAgendaXdc = loadContent("general_agenda_xdc.xml");
+        var mismatchedXsdGAXdc = loadContent("mismatched_xsd_ga_xdc.xml");
+        var mismatchedXsltGAXdc = loadContent("mismatched_xslt_ga_xdc.xml");
+        var unknownEfomXdc = loadContent("unknown_eform_xdc.xml");
+        var wrongSchemaGAXdc = loadContent("wrong_schema_ga_xdc.xml");
 
         return Stream.of(
             new InMemoryDocument(generalAgendaXdcIndented, "generalAgendaXdcIndented.xml", MimeTypeEnum.XML),
@@ -261,12 +270,12 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<InMemoryDocument> nonXdcXmlDocumentsProvider() throws IOException {
-        var documentContentNoUsedXSDReference = cls.getResourceAsStream("document-content-no-UsedXSDReference.xml").readAllBytes();
-        var documentContentUsedXSDReferenceNoAttributes = cls.getResourceAsStream("document-content-UsedXSDReference-no-attributes.xml").readAllBytes();
-        var documentContentUsedXSDReferenceNoDigestValue = cls.getResourceAsStream("document-content-UsedXSDReference-no-DigestValue.xml").readAllBytes();
-        var emptyXml = cls.getResourceAsStream("empty_xml.xml").readAllBytes();
-        var nonEformXml = cls.getResourceAsStream("non_eform.xml").readAllBytes();
-        var wrongSchemaXdcXml = cls.getResourceAsStream("wrong_schema_xdc.xml").readAllBytes();
+        var documentContentNoUsedXSDReference = loadContent("document-content-no-UsedXSDReference.xml");
+        var documentContentUsedXSDReferenceNoAttributes = loadContent("document-content-UsedXSDReference-no-attributes.xml");
+        var documentContentUsedXSDReferenceNoDigestValue = loadContent("document-content-UsedXSDReference-no-DigestValue.xml");
+        var emptyXml = loadContent("empty_xml.xml");
+        var nonEformXml = loadContent("non_eform.xml");
+        var wrongSchemaXdcXml = loadContent("wrong_schema_xdc.xml");
 
         return Stream.of(
             new InMemoryDocument(documentContentNoUsedXSDReference, "documentContentNoUsedXSDReference.xml", MimeTypeEnum.XML),
@@ -279,7 +288,7 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<InMemoryDocument> validCadesDocumentsProvider() throws IOException {
-        var samplePdfCadesAsice = cls.getResourceAsStream("sample_pdf_cades.asice").readAllBytes();
+        var samplePdfCadesAsice = loadContent("sample_pdf_cades.asice");
 
         return Stream.of(
             new InMemoryDocument(samplePdfCadesAsice, "samplePdfCadesAsice.asice", MimeTypeEnum.ASICE)
@@ -287,11 +296,11 @@ public abstract class TestMethodSources {
     }
 
     public static Stream<InMemoryDocument> orsrDocumentsProvider() throws  IOException {
-        var fupaXml = cls.getResourceAsStream("FUPA.xml").readAllBytes();
-        var fupsXml = cls.getResourceAsStream("FUPS.xml").readAllBytes();
-        var fuzsNewXml = cls.getResourceAsStream("fuzs_new.xml").readAllBytes();
-        var fupsXdcXml = cls.getResourceAsStream("FUPS.xdc.xml").readAllBytes();
-        var fupsXdcNoNamespaceXml = cls.getResourceAsStream("FUPS_wo_namespace.xdc.xml").readAllBytes();
+        var fupaXml = loadContent("FUPA.xml");
+        var fupsXml = loadContent("FUPS.xml");
+        var fuzsNewXml = loadContent("fuzs_new.xml");
+        var fupsXdcXml = loadContent("FUPS.xdc.xml");
+        var fupsXdcNoNamespaceXml = loadContent("FUPS_wo_namespace.xdc.xml");
 
         return Stream.of(
                 new InMemoryDocument(fupaXml, "FUPA.xml", MimeTypeEnum.XML),
@@ -302,12 +311,26 @@ public abstract class TestMethodSources {
         );
     }
 
+    public static Stream<InMemoryDocument> multiDocumentAsiceProvider() throws IOException {
+        var basic = loadContent("multi_document/basic.asice");
+        var formPdfDifferent = loadContent("multi_document/form_pdf_different.asice");
+        var gaFupsMulti = loadContent("multi_document/ga_fups_multi.asice");
+        var gaPdfNoSigned = loadContent("multi_document/ga_pdf_no_signed.asice");
+
+        return Stream.of(
+                new InMemoryDocument(basic, "basic.asice", MimeTypeEnum.ASICE),
+                new InMemoryDocument(formPdfDifferent, "form_pdf_different.asice", MimeTypeEnum.ASICE),
+                new InMemoryDocument(gaFupsMulti, "ga_fups_multi.asice", MimeTypeEnum.ASICE),
+                new InMemoryDocument(gaPdfNoSigned, "ga_pdf_no_signed.asice", MimeTypeEnum.ASICE)
+        );
+    }
+
     public static Stream<InMemoryDocument> embeddedOrsrDocumentsProvider() throws IOException {
-        var fupsXml = cls.getResourceAsStream("FUPS.xdc.xml").readAllBytes();
-        var fupsXdcNoNamespaceXml = cls.getResourceAsStream("FUPS_wo_namespace.xdc.xml").readAllBytes();
-        var fupsSignedAsice = cls.getResourceAsStream("FUPS_signed.asice").readAllBytes();
-        var fupsXdcSignedAsice = cls.getResourceAsStream("FUPS_xdc_signed.asice").readAllBytes();
-        var fupsXdcWoNamespaceSignedAsice = cls.getResourceAsStream("FUPS_wo_namespace_signed.asice").readAllBytes();
+        var fupsXml = loadContent("FUPS.xdc.xml");
+        var fupsXdcNoNamespaceXml = loadContent("FUPS_wo_namespace.xdc.xml");
+        var fupsSignedAsice = loadContent("FUPS_signed.asice");
+        var fupsXdcSignedAsice = loadContent("FUPS_xdc_signed.asice");
+        var fupsXdcWoNamespaceSignedAsice = loadContent("FUPS_wo_namespace_signed.asice");
 
         return Stream.of(
                 new InMemoryDocument(fupsXml, "FUPS_embedded.xml", MimeTypeEnum.XML),

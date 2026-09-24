@@ -57,6 +57,15 @@ public class GUIUtils {
         }));
     }
 
+    /**
+     * Inserts a hair space (U+200A) after every path separator so JavaFX text
+     * wrapping can break a long path at directory boundaries. Display only,
+     * do not use the result as a file path.
+     */
+    public static String wrappablePath(String path) {
+        return path.replaceAll("([/\\\\])", "$1\u200A");
+    }
+
     public static void closeWindow(Node node) {
         ((Stage) node.getScene().getWindow()).close();
     }

@@ -22,7 +22,7 @@ public class OrsrEFormResources extends EFormResources {
     }
 
     @Override
-    public boolean findResources() throws XMLValidationException {
+    public boolean findResources(String canonicalizationMethod) throws XMLValidationException {
         validateResourceUrl(url);
 
         if (schema == null) {

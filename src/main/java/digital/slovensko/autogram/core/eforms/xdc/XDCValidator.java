@@ -1,6 +1,6 @@
 package digital.slovensko.autogram.core.eforms.xdc;
 
-import digital.slovensko.autogram.core.AutogramMimeType;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
@@ -30,12 +30,14 @@ public abstract class XDCValidator {
     private static final Charset ENCODING = StandardCharsets.UTF_8;
 
     public static boolean isXDCContent(DSSDocument document) {
-        try {
-            var is = document.openStream();
-            var docString = new String(is.readAllBytes(), ENCODING);
-            var xdcSchema = EFormUtils.class.getResourceAsStream("xmldatacontainer.xsd");
+        try (var documentStream = document.openStream();
+             var xdcSchema = EFormUtils.class.getResourceAsStream("xmldatacontainer.xsd")) {
+            if (xdcSchema == null)
+                return false;
 
-            return validateXmlContentAgainstXsd(docString, new String(xdcSchema.readAllBytes(), ENCODING));
+            var schema = XMLUtils.getSecureSchemaFactory().newSchema(new StreamSource(xdcSchema));
+            schema.newValidator().validate(new StreamSource(documentStream));
+            return true;
 
         } catch (IOException | NullPointerException | XMLValidationException e) {
             return false;

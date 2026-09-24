@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
@@ -11,17 +12,13 @@ import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
-import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
-import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.io.File;
 import java.util.IdentityHashMap;
@@ -282,12 +279,21 @@ public class Autogram {
 
     private SignedDocument signWithKey(SigningJob job, SigningKey signingKey) {
         var signedDocumentRef = new AtomicReference<SignedDocument>();
+        Runnable signing = () -> {
+            try {
+                signedDocumentRef.set(job.signWithKey(signingKey, settings.getTspSource()));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new UnrecognizedException(e);
+            }
+        };
+
         try {
             var jobBatch = job.getBatch();
             if (jobBatch != null)
-                passwordManager.withCachedPIN(jobBatch, () -> signedDocumentRef.set(job.signWithKey(signingKey)));
+                passwordManager.withCachedPIN(jobBatch, signing);
             else
-                passwordManager.withoutCachedPIN(() -> signedDocumentRef.set(job.signWithKey(signingKey)));
+                passwordManager.withoutCachedPIN(signing);
 
             resetTokenSessionTimer();
 
@@ -389,7 +395,7 @@ public class Autogram {
 
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
-            if (PDFUtils.isPdfAndPasswordProtected(job.getDocument())) {
+            if (job.getDocuments().stream().anyMatch(d -> d.isPDFAndPasswordProtected())) {
                 var error = new AutogramException("LOCKED_PDF");
                 notifyJobFailure(job, error);
                 ui.onUIThreadDo(() -> ui.showError(error));
@@ -397,13 +403,11 @@ public class Autogram {
             }
 
             try {
-                var visualization = DocumentVisualizationBuilder.fromJob(job, settings);
-                ui.onUIThreadDo(() -> ui.showVisualization(visualization, this));
-            } catch (AutogramException e) {
-                notifyJobFailure(job, e);
-                ui.onUIThreadDo(() -> ui.showError(e));
-            } catch (Exception e) {
-                Runnable onContinue = () -> ui.showVisualization(new UnsupportedVisualization(job), this);
+                job.initializeVisualizations();
+                ui.onUIThreadDo(() -> ui.showSigningJob(job, this));
+
+            } catch (FailedVisualizationException e) {
+                Runnable onContinue = () -> ui.showSigningJob(job, this);
                 Runnable onCancel = () -> cancel(job);
 
                 if (settings.isCorrectDocumentDisplay()) {
@@ -413,6 +417,10 @@ public class Autogram {
                 } else {
                     ui.onUIThreadDo(onContinue);
                 }
+
+            } catch (AutogramException e) {
+                notifyJobFailure(job, e);
+                ui.onUIThreadDo(() -> ui.showError(e));
             }
         });
     }
@@ -445,10 +453,14 @@ public class Autogram {
         if (!job.shouldCheckPDFCompliance())
             return;
 
+        var documentsToCheck = job.getDocuments().stream().filter(d -> d.isPDF()).toList();
         ui.onWorkThreadDo(() -> {
-            var result = new PDFAStructureValidator().validate(job.getDocument());
-            if (!result.isCompliant()) {
-                ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
+            for (var document : documentsToCheck) {
+                var result = new PDFAStructureValidator().validate(document.toDssDocument());
+                if (!result.isCompliant()) {
+                    ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
+                    return;
+                }
             }
         });
     }
@@ -526,10 +538,6 @@ public class Autogram {
 
     public void updateSignatureValidatorLotl(List<String> tlCountries) {
         ui.onWorkThreadDo(() -> SignatureValidator.getInstance().updateLotl(tlCountries));
-    }
-
-    public TSPSource getTspSource() {
-        return settings.getTspSource();
     }
 
     public List<TokenDriver> getAvailableDrivers() {

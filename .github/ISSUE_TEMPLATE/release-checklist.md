@@ -45,7 +45,7 @@ labels: release
 - [ ] podpísaný súbor otvorím v autograme a pod náhľadom dokumentu je zobrazený môj podpis
 - [ ] kliknem na "Zobraziť detail podpisov" a otvorí sa detail podpisov
 - [ ] kliknem na "Zobraziť technické detaily" a otvorí sa report
-- [ ] funguje CLI `/Applications/Autogram.app/Contents/MacOS/AutogramApp --help`
+- [ ] funguje CLI `/Applications/Autogram.app/Contents/Library/AutogramHelper.app/Contents/MacOS/Autogram --help`
 - [ ] pri zapnutej voľbe "Vždy podpisovať hromadne" sa výber režimu nezobrazí a dokumenty sa podpíšu naraz bez zobrazenia
 - [ ] pri vypnutej voľbe "Vždy podpisovať hromadne" sa zobrazí otázka "Ako chcete podpísať dokumenty?"
 - [ ] funguje "Podpisovať po jednom" - zobrazí sa náhľad prvého dokumentu a PIN sa uchováva medzi dokumentmi

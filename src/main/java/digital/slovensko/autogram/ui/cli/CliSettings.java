@@ -2,11 +2,18 @@ package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.DriverDetector;
+import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.SigningParametersResolver;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.errors.MultipleSourcesException;
 import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
 import digital.slovensko.autogram.core.errors.SlotIndexIsNotANumberException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
+
 import org.apache.commons.cli.CommandLine;
 
 import java.io.File;
@@ -20,7 +27,7 @@ public class CliSettings extends UserSettings {
     public static CliSettings fromCmd(CommandLine cmd) {
         var settings = new CliSettings();
         settings.setCorrectDocumentDisplay(false);
-        settings.setSource(getValidSource(cmd.getOptionValue("s")));
+        settings.setSource(getValidSource(resolveSourcePath(cmd)));
         settings.setTarget(cmd.getOptionValue("t"));
         settings.setDriver(cmd.getOptionValue("d"));
         settings.setCustomKeystorePath(cmd.getOptionValue("keystore", ""));
@@ -36,6 +43,23 @@ public class CliSettings extends UserSettings {
         settings.setTokenSessionTimeout(5);
         settings.setCustomPKCS11DriverPath(cmd.getOptionValue("pkcs11-driver-path", ""));
         return settings;
+    }
+
+    public SigningParameters getSigningParameters() {
+        return SigningParametersResolver.buildRequested(
+                getSignatureLevel().getSignatureProfile(),
+                getSignatureLevel().getSignatureForm(),
+                DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E,
+                SignaturePackaging.ENVELOPING,
+                isEn319132(),
+                null,
+                null,
+                null,
+                isPdfaCompliance(),
+                640,
+                isPlainXmlEnabled()
+        );
     }
 
     @Override
@@ -73,6 +97,18 @@ public class CliSettings extends UserSettings {
 
     public boolean shouldMakeParentDirectories() {
         return shouldMakeParentDirectories;
+    }
+
+    static String resolveSourcePath(CommandLine cmd) throws MultipleSourcesException {
+        var positional = cmd.getArgList();
+        var source = cmd.getOptionValue("s");
+        if (positional.isEmpty())
+            return source;
+
+        if (source == null && positional.size() == 1)
+            return positional.get(0);
+
+        throw new MultipleSourcesException();
     }
 
     private static File getValidSource(String sourcePath) throws SourceDoesNotExistException {

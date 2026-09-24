@@ -22,6 +22,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
+import javafx.scene.Node;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
@@ -30,7 +31,9 @@ import java.util.function.Consumer;
 
 import static javafx.collections.FXCollections.observableArrayList;
 
-public class SettingsDialogController extends BaseController {
+public class SettingsDialogController extends BaseController implements SuppressedFocusController {
+    @FXML
+    private VBox mainBox;
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
     @FXML
@@ -399,5 +402,10 @@ public class SettingsDialogController extends BaseController {
         stage.initModality(Modality.APPLICATION_MODAL);
         GUIUtils.suppressDefaultFocus(stage, controller);
         stage.show();
+    }
+
+    @Override
+    public Node getNodeForLoosingFocus() {
+        return mainBox;
     }
 }

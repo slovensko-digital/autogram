@@ -19,12 +19,12 @@
                 <Text text="%signature.invalid.summary.title"/>
             </TextFlow>
         </HBox>
-        <VBox fx:id="signaturesTable" />
+        <VBox fx:id="signaturesTable" styleClass="autogram-signatures-table" />
         <TextFlow styleClass="autogram-warning-summary__description"><Text text="%signature.invalid.text"/></TextFlow>
     </VBox>
 
     <HBox styleClass="autogram-actions">
         <Button fx:id="cancelButton" styleClass="autogram-button,autogram-button--warning" text="%signature.invalid.cancel.btn" onAction="#onCancelAction" />
-        <Button fx:id="continueButton" styleClass="autogram-button,autogram-button--secondary" text="%general.sign.btn" onAction="#onContinueAction" />
+        <Button fx:id="continueButton" styleClass="autogram-button,autogram-button--secondary" text="%general.sign.btn.single" onAction="#onContinueAction" />
     </HBox>
 </VBox>

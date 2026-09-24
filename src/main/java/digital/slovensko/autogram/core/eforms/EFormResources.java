@@ -3,7 +3,7 @@ package digital.slovensko.autogram.core.eforms;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
-
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -14,7 +14,6 @@ public abstract class EFormResources {
     protected final String url;
     protected final String xsdDigest;
     protected final String xsltDigest;
-    protected final String canonicalizationMethod;
     protected String xsdIdentifier;
     protected String transformation;
     protected String xsltIdentifier;
@@ -26,19 +25,17 @@ public abstract class EFormResources {
     protected boolean embedUsedSchemas;
     protected EFormResourceLoader resourceLoader;
 
-    protected EFormResources(String url, String xsdDigest, String xsltDigest, String canonicalizationMethod) {
+    protected EFormResources(String url, String xsdDigest, String xsltDigest) {
         this.url = url;
         this.xsdDigest = xsdDigest;
         this.xsltDigest = xsltDigest;
-        this.canonicalizationMethod = canonicalizationMethod;
         this.resourceLoader = new EFormResourceLoader();
     }
 
-    protected EFormResources(String url, String xsdDigest, String xsltDigest, String canonicalizationMethod, EFormResourceLoader resourceLoader) {
+    protected EFormResources(String url, String xsdDigest, String xsltDigest, EFormResourceLoader resourceLoader) {
         this.url = url;
         this.xsdDigest = xsdDigest;
         this.xsltDigest = xsltDigest;
-        this.canonicalizationMethod = canonicalizationMethod;
         this.resourceLoader = resourceLoader;
     }
 
@@ -46,16 +43,16 @@ public abstract class EFormResources {
         return new XsltParams(xsltIdentifier, xsltLanguage, xsltDestinationType, xsltTarget, xsltMediaType);
     }
 
-    public abstract boolean findResources() throws XMLValidationException;
+    public abstract boolean findResources(String canonicalizationMethod) throws XMLValidationException;
 
-    public EFormAttributes getEformAttributes() {
+    public EFormAttributes getEformAttributes(String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
         var transformation = getTransformation();
         var schema = getSchema();
         if (transformation == null || schema == null)
             throw new XMLValidationException(XSLT_OR_XSD_NOT_FOUND);
 
         return new EFormAttributes(getIdentifier(), transformation, schema, EFormUtils.XDC_XMLNS, getXsdIdentifier(),
-                getXsltParams(), shouldEmbedUsedSchemas());
+                getXsltParams(), shouldEmbedUsedSchemas(), null, false, canonicalizationMethod, digestAlgorithm);
     }
 
     public String getIdentifier() {

@@ -6,7 +6,6 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 
 import java.io.File;
 
@@ -17,7 +16,7 @@ public class SigningSuccessDialogController extends BaseController implements Su
     @FXML
     Text filenameText;
     @FXML
-    TextFlow successTextFlow;
+    Hyperlink folderPathText;
     @FXML
     Node mainBox;
 
@@ -34,20 +33,7 @@ public class SigningSuccessDialogController extends BaseController implements Su
     @Override
     public void initialize() {
         filenameText.setText(targetFile.getName());
-        initHyperlink();
-    }
-
-
-    public void initHyperlink() {
-        var path = targetFile.getParent().split("((?<=/|\\\\))");
-        for (int i = 0; i < path.length; i++) {
-            var hyperlink = new Hyperlink(path[i]);
-            hyperlink.getStyleClass().add("autogram-body");
-            hyperlink.getStyleClass().add("autogram-link");
-            hyperlink.getStyleClass().add("autogram-font-weight-bold");
-            hyperlink.setOnAction(this::onOpenFolderAction);
-            successTextFlow.getChildren().add(successTextFlow.getChildren().size() - 1, hyperlink);
-        }
+        folderPathText.setText(GUIUtils.wrappablePath(targetFile.getParent()));
     }
 
     public void onOpenFolderAction(ActionEvent ignored) {

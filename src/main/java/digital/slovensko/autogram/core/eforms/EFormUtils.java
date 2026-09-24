@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.isXDC;
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.isXDC;
 import static digital.slovensko.autogram.core.errors.EFormException.Error.FS_FORM_ID;
 import static digital.slovensko.autogram.core.errors.TransformationException.Error.XSLT_FAILED;
 import static digital.slovensko.autogram.core.errors.TransformationParsingErrorException.Error.FAILED_PARSING;
@@ -49,7 +49,6 @@ import static digital.slovensko.autogram.core.errors.XMLValidationException.Erro
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.EMPTY_XMLDATA;
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.FAILED_TO_LOAD_XML;
 import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.FORM_ID_TO_XSD;
-import static digital.slovensko.autogram.core.errors.XMLValidationException.Error.XMLDATA_INVALID_TEXT;
 
 public abstract class EFormUtils {
     public static final Charset ENCODING = StandardCharsets.UTF_8;
@@ -151,7 +150,7 @@ public abstract class EFormUtils {
             try {
                 node = document.importNode(element, true);
             } catch (DOMException e) {
-                node = document.importNode(getNoTextFirstChild(element), true);
+                node = document.importNode(getFirstElementChild(element), true);
             }
 
             document.appendChild(node);
@@ -200,19 +199,27 @@ public abstract class EFormUtils {
             return null;
 
         var identifierNode = xmlData.getAttributes().getNamedItem("Identifier");
+        String result = null;
 
-        if (identifierNode != null)
-            return identifierNode.getNodeValue();
+        if (identifierNode != null) {
+            result = identifierNode.getNodeValue();
+        } else {
+            var firstChild = getFirstElementChild(xmlData);
+            if (firstChild == null)
+                return null;
 
-        var firstChild = getNoTextFirstChild(xmlData);
-        if (firstChild == null)
+            var xsiSchemaLocationNode = firstChild.getAttributes().getNamedItemNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
+            if (xsiSchemaLocationNode == null)
+                return null;
+
+            result = xsiSchemaLocationNode.getNodeValue();
+        }
+
+        if (result == null || result.isEmpty())
             return null;
 
-        var xsiSchemaLocationNode = firstChild.getAttributes().getNamedItemNS("http://www.w3.org/2001/XMLSchema-instance", "schemaLocation");
-        if (xsiSchemaLocationNode == null)
-            return null;
-
-        return xsiSchemaLocationNode.getNodeValue();
+        result = result.replace("/form.xsd", "");
+        return result;
     }
 
     public static String getNamespaceFromEformXml(Document xml) {
@@ -243,13 +250,8 @@ public abstract class EFormUtils {
     }
 
     public static Document getXmlFromDocument(DSSDocument documentToDisplay) throws XMLValidationException {
-        try {
-            var is = documentToDisplay.openStream();
-            var inputSource = new InputSource(is);
-            inputSource.setEncoding(ENCODING.displayName());
-            var parsedDocument = XMLUtils.getSecureDocumentBuilder().parse(inputSource);
-
-            return parsedDocument;
+        try (var is = documentToDisplay.openStream()) {
+            return XMLUtils.getSecureDocumentBuilder().parse(is);
 
         } catch (Exception e) {
             throw new XMLValidationException(FAILED_TO_LOAD_XML, e);
@@ -273,7 +275,7 @@ public abstract class EFormUtils {
         if (xmlData.getFirstChild() == null)
             throw new XMLValidationException(EMPTY_XMLDATA);
 
-        var firstChild = getNoTextFirstChild(xmlData);
+        var firstChild = getFirstElementChild(xmlData);
         if (firstChild == null)
             throw new XMLValidationException(EMPTY_XMLDATA);
 
@@ -287,18 +289,12 @@ public abstract class EFormUtils {
         return responseDocument;
     }
 
-    static Node getNoTextFirstChild(Node xmlData) {
-        var node = xmlData.getFirstChild();
-        // In an indented XML, whitespaces between XMLData and its content are considered as text nodes.
-        // If there is a text node, validate it against all-whitespace regex and skip it.
-        if (node.getNodeType() == Node.TEXT_NODE) {
-            if (!node.getNodeValue().matches("\\s*"))
-                throw new XMLValidationException(XMLDATA_INVALID_TEXT);
+    static Element getFirstElementChild(Node xmlData) {
+        for (var sibling = xmlData.getFirstChild(); sibling != null; sibling = sibling.getNextSibling())
+            if (sibling.getNodeType() == Node.ELEMENT_NODE)
+                return (Element) sibling;
 
-            return node.getNextSibling();
-        }
-
-        return node;
+        return null;
     }
 
     public static String transform(DSSDocument documentToDisplay, String transformation) throws TransformationException {

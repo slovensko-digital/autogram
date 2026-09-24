@@ -1,16 +1,17 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.core.SigningParameters;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
+import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.util.Base64;
 
-import static digital.slovensko.autogram.core.AutogramMimeType.fromMimeTypeString;
+import static digital.slovensko.autogram.core.dto.AutogramMimeType.fromMimeTypeString;
 import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.BASE64_DECODING_FAILED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_PARAMS;
@@ -40,23 +41,29 @@ public class SignRequestBody {
         if (document == null)
             throw new RequestValidationException(MISSING_FIELD, "Document");
 
-        if (document.getContent() == null)
+        if (document.content() == null)
             throw new RequestValidationException(MISSING_FIELD, "Document.Content");
 
 //      TODO: resolve values at class instantiation
-        resolveSigningLevel();
+        validateSignatureLevel();
     }
 
-    private void resolveSigningLevel() throws RequestValidationException {
+    private void validateSignatureLevel() throws RequestValidationException {
         if (parameters == null)
             parameters = new ServerSigningParameters();
 
-        parameters.resolveSigningLevel(getDocument());
+        parameters.resolveSignatureLevel(getRequestDocument());
     }
 
-    public InMemoryDocument getDocument() {
-        var content = decodeDocumentContent(document.getContent(), isBase64());
-        var filename = document.getFilename();
+    public AutogramDocument getDocument() {
+        return AutogramDocument.build(getRequestDocument(), parameters.getEFormAttributes(isBase64(), getMimetype()));
+    }
+
+    private InMemoryDocument getRequestDocument() {
+        var content = decodeDocumentContent(document.content(), isBase64());
+        var filename = document.filename() != null && !document.filename().isEmpty()
+                ? document.filename()
+                : "document" + getMimetype().getExtension();
 
         return new InMemoryDocument(content, filename, getMimetype());
     }
@@ -66,11 +73,15 @@ public class SignRequestBody {
         if (parameters == null)
             throw new RequestValidationException(MISSING_PARAMS);
 
-        parameters.validate(getDocument().getMimeType());
+        parameters.validate(getDocument().toDssDocument());
     }
 
-    public SigningParameters getParameters(TSPSource tspSource, boolean plainXmlEnabled) {
-        return parameters.getSigningParameters(isBase64(), getDocument(), tspSource, plainXmlEnabled);
+    public SigningInput getSigningInput(boolean plainXmlEnabled) {
+        return parameters.getSigningInput(isBase64(), getDocument(), plainXmlEnabled);
+    }
+
+    public SigningParameters getParameters(boolean plainXmlEnabled) {
+        return getSigningInput(plainXmlEnabled).getParameters();
     }
 
     public String getBatchId() {
