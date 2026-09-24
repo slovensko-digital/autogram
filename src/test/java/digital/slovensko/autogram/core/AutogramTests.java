@@ -559,7 +559,7 @@ class AutogramTests {
         var batchId = batch.getBatchId();
         var responder = mock(SigningResponder.class);
         var job = SigningJob.fromInput(input, batch);
-        autogram.submitToBatch(job, batchId, responder);
+        autogram.batchSign(job, batchId, responder);
         autogram.skipRemaining(job);
 
         Assertions.assertTrue(batch.isEnded(), "skipRemaining must end the batch");
@@ -569,7 +569,7 @@ class AutogramTests {
 
         var another = SigningJob.fromInput(input, batch);
         Assertions.assertThrows(BatchEndedException.class,
-            () -> autogram.submitToBatch(another, batchId, mock(SigningResponder.class)),
+            () -> autogram.batchSign(another, batchId, mock(SigningResponder.class)),
             "no further documents may be submitted after skipRemaining");
     }
 
@@ -624,7 +624,7 @@ class AutogramTests {
         });
 
         var responder = mock(SigningResponder.class);
-        autogram.submitToBatch(job, batchRef.get().getBatchId(), responder);
+        autogram.batchSign(job, batchRef.get().getBatchId(), responder);
 
         Assertions.assertEquals(2, signingAttempts.get(), "a wrong PIN should be retried");
         Assertions.assertEquals(1, batchRef.get().getProcessedDocumentsCount(),
@@ -658,7 +658,7 @@ class AutogramTests {
             AutogramDocument.build(TestMethodSources.generalAgendaProvider().findFirst().orElseThrow(),
                 EFormAttributes.build(parameters, false)), parameters);
         var job = SigningJob.fromInput(input, batchRef.get());
-        autogram.submitToBatch(job, batchRef.get().getBatchId(), mock(SigningResponder.class));
+        autogram.batchSign(job, batchRef.get().getBatchId(), mock(SigningResponder.class));
 
         Assertions.assertEquals(1, interactiveSigningStarted.get(),
             "one-by-one batches should sign each document through the interactive flow");

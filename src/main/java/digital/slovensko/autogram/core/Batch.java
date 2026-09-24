@@ -107,6 +107,11 @@ public class Batch {
         return state == BatchState.ENDED;
     }
 
+    /** True while the batch may still accept documents (initialized or started). */
+    public boolean isActive() {
+        return state != BatchState.ENDED;
+    }
+
     public boolean isAllProcessed() {
         return getProcessedDocumentsCount() >= totalNumberOfDocuments;
     }

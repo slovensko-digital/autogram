@@ -81,7 +81,7 @@ public class BatchGuiFileResponder implements SigningResponder {
                             onAllFilesSigned(batch);
                         });
                 var job = buildJob(file, batch);
-                autogram.submitToBatch(job, batch.getBatchId(), responder);
+                autogram.batchSign(job, batch.getBatchId(), responder);
             } catch (AutogramException e) {
                 handleFileSubmissionFailure(file, e);
                 autogram.onSigningFailed(e);
@@ -126,7 +126,7 @@ public class BatchGuiFileResponder implements SigningResponder {
                         abortRemainingFiles(batch, new BatchCanceledException());
                     });
             var job = buildJob(file, batch);
-            autogram.submitToBatch(job, batch.getBatchId(), responder);
+            autogram.batchSign(job, batch.getBatchId(), responder);
         } catch (AutogramException e) {
             handleFileSubmissionFailure(file, e);
             if (batch.isEnded() || !e.batchCanContinue()) {

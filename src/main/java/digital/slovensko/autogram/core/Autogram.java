@@ -6,7 +6,6 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
 import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
-import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
@@ -34,12 +33,10 @@ import java.util.function.Consumer;
 public class Autogram {
     private final UI ui;
     private final UserSettings settings;
-    /** Current batch, should be null if no batch was started yet */
-    private Batch batch = null;
+    private Batch batch = new BatchNotStarted();
     /** Mode of the current batch; only a command parameter, not stored in {@link Batch}. */
-    private SigningMode batchMode = SigningMode.AUTOMATED;
+    private SigningMode batchMode = SigningMode.INTERACTIVE;
     private final PasswordManager passwordManager;
-    /** Interactive signings that were submitted and are waiting for a key. */
     private final Map<SigningJob, SigningResponder> pendingSignings = new IdentityHashMap<>();
     private Timer tokenSessionTimer = null;
 
@@ -76,10 +73,7 @@ public class Autogram {
      * the document is signed through the interactive flow; in {@link SigningMode#AUTOMATED}
      * it is signed right away with the batch key.
      */
-    public void submitToBatch(SigningJob job, String batchId, SigningResponder responder) {
-        if (batch == null)
-            throw new BatchNotStartedException();
-
+    public void batchSign(SigningJob job, String batchId, SigningResponder responder) {
         batch.addJob(batchId);
 
         if (batchMode == SigningMode.INTERACTIVE) {
@@ -96,8 +90,6 @@ public class Autogram {
                     signedDocument = signWithKey(job, batch.getSigningKey());
                     break;
                 } catch (AutogramException e) {
-                    // A retryable failure (e.g. a wrong PIN) must not kill the batch: the failed
-                    // attempt already cleared the cached PIN, so retrying asks the user again.
                     if (e.isRetryable())
                         continue;
 
@@ -109,8 +101,6 @@ public class Autogram {
                 }
             }
 
-            // Deliver outside the signing try/catch: an exception thrown by the adapter's
-            // responder is not a signing failure and must not be retried or re-counted.
             if (failure == null) {
                 recordSuccess();
                 responder.onDocumentSigned(signedDocument);
@@ -181,9 +171,6 @@ public class Autogram {
      * @param batchId - current batch ID, used to authenticate the request
      */
     public boolean endBatch(String batchId) {
-        if (batch == null)
-            throw new BatchNotStartedException();
-
         if (batch.isEnded()) {
             if (!batch.hasBatchId(batchId))
                 throw new BatchInvalidIdException();
@@ -248,7 +235,6 @@ public class Autogram {
     }
 
     public Batch getBatch(String batchId) {
-        if (batch == null) throw new BatchNotStartedException(); // TODO replace with checked exception
         batch.validate(batchId);
         return batch;
     }
@@ -297,7 +283,7 @@ public class Autogram {
 
             resetTokenSessionTimer();
 
-            if (batch == null || batch.isEnded() || batch.isAllProcessed())
+            if (!batch.isActive() || batch.isAllProcessed())
                 passwordManager.reset();
         } catch (PINIncorrectException e) {
             passwordManager.reset();
@@ -346,18 +332,15 @@ public class Autogram {
     }
 
     private void recordSuccess() {
-        if (batch != null)
-            batch.onJobSuccess();
+        batch.onJobSuccess();
     }
 
     private void recordFailure() {
-        if (batch != null)
-            batch.onJobFailure();
+        batch.onJobFailure();
     }
 
     private void endActiveBatch() {
-        if (batch != null)
-            batch.end();
+        batch.end();
         passwordManager.reset();
     }
 
@@ -373,7 +356,7 @@ public class Autogram {
     }
 
     private void ensureNoActiveBatch() {
-        if (batch != null && !batch.isEnded())
+        if (batch.isActive())
             throw new BatchConflictException();
     }
 
