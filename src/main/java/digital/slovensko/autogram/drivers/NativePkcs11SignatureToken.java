@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.drivers;
 
 import digital.slovensko.autogram.core.PasswordManager;
-import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
@@ -30,12 +29,10 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private static final String CK_ATTRIBUTE_CLASS_NAME = "sun.security.pkcs11.wrapper.CK_ATTRIBUTE";
 
     private final PasswordManager passwordManager;
-    private final SignatureTokenSettings settings;
 
-    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex) {
+    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, int driverSlotIndex) {
         super(pkcsPath, pm, -1, driverSlotIndex, null);
         this.passwordManager = pm;
-        this.settings = settings;
     }
 
     private byte[] sign(final byte[] bytes, final String javaSignatureAlgorithm, final AlgorithmParameterSpec param, final DSSPrivateKeyEntry keyEntry) throws GeneralSecurityException {
@@ -57,11 +54,13 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
     private void runContextSpecificLoginIfNeeded(Signature signature, PrivateKey pk) throws GeneralSecurityException {
         try {
-            // TODO cache & short-circuit
+            // PasswordManager supplies a flow-scoped PIN when appropriate.
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
 
-            if (isAlwaysAuthenticate(p11, sessionId, pk) && (settings.getForceContextSpecificLoginEnabled() || !isProtectedAuthenticationPath(p11, getSlotListIndex()))) {
+            if (isAlwaysAuthenticate(p11, sessionId, pk)
+                    && (passwordManager.isCachingPIN()
+                    || !isProtectedAuthenticationPath(p11, getSlotListIndex()))) {
                 var password = passwordManager.getContextSpecificPassword();
                 if (password == null) throw new PasswordNotProvidedException();
                 invokeCLogin(p11, sessionId, CKU_CONTEXT_SPECIFIC, password);
@@ -234,7 +233,6 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         return throwable != null && PKCS11_EXCEPTION_CLASS_NAME.equals(throwable.getClass().getName());
     }
 
-    // mostly copy & paste just to call overridden private sign method
     @Override
     public SignatureValue sign(ToBeSigned toBeSigned, SignatureAlgorithm signatureAlgorithm, DSSPrivateKeyEntry keyEntry) throws DSSException {
         assertEncryptionAlgorithmValid(signatureAlgorithm, keyEntry);
@@ -257,7 +255,6 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
     }
 
-    // copy & paste
     private void assertEncryptionAlgorithmValid(SignatureAlgorithm signatureAlgorithm, DSSPrivateKeyEntry keyEntry) {
         Objects.requireNonNull(signatureAlgorithm, "SignatureAlgorithm shall be provided.");
         Objects.requireNonNull(signatureAlgorithm.getEncryptionAlgorithm(), "EncryptionAlgorithm shall be provided within the SignatureAlgorithm.");

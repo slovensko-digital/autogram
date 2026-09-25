@@ -4,9 +4,7 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.ResponderInBatch;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 
@@ -28,22 +26,21 @@ public class SignEndpoint implements HttpHandler {
             body.validateDocument();
             body.validateSigningParameters();
 
-            var responder = body.getBatchId() == null ? new ServerResponder(exchange)
-                    : new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
-                var job = SigningJob.fromInput(
-                    body.getSigningInput(autogram.isPlainXmlEnabled()), responder);
+            var responder = new ServerResponder(exchange);
+            var input = body.getSigningInput(autogram.isPlainXmlEnabled());
 
-            if (body.getBatchId() != null)
-                autogram.batchSign(job, body.getBatchId());
-            else
-                autogram.sign(job);
+            if (body.getBatchId() != null) {
+                var batch = autogram.getBatch(body.getBatchId());
+                var job = SigningJob.fromInput(input, batch, batch.getProcessedDocumentsCount() + 1);
+                autogram.batchSign(job, body.getBatchId(), responder);
+            } else {
+                var job = SigningJob.fromInput(input);
+                autogram.startSigning(job, responder);
+            }
 
         } catch (JsonSyntaxException | IOException e) {
             var response = ErrorResponseBuilder.buildFromException(new MalformedBodyException(JSON_PARSING_FAILED, e));
             EndpointUtils.respondWithError(response, exchange);
-
-        } catch (AutogramException e) {
-            EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(e), exchange);
 
         } catch (Exception e) {
             EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(e), exchange);

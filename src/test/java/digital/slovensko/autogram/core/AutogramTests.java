@@ -12,9 +12,12 @@ import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchEndedException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.PDFAComplianceException;
+import digital.slovensko.autogram.core.errors.PINIncorrectException;
+import digital.slovensko.autogram.core.errors.PINLockedException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -76,10 +79,11 @@ class AutogramTests {
             null, null, false, null, null, null, false, 640, true);
         var input = SigningInput.prepareForASiCWithXAdES(
             AutogramDocument.build(document, EFormAttributes.build(parameters, false)), parameters);
-        var responder = mock(Responder.class);
+        var responder = mock(SigningResponder.class);
 
-        autogram.pickSigningKeyAndThen(
-            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+        var job = SigningJob.fromInput(input);
+        autogram.startSigning(job, responder);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -93,10 +97,11 @@ class AutogramTests {
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var input = SigningInput.prepareForASiCWithXAdES(
             AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
-        var responder = mock(Responder.class);
+        var responder = mock(SigningResponder.class);
 
-        autogram.pickSigningKeyAndThen(
-            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+        var job = SigningJob.fromInput(input);
+        autogram.startSigning(job, responder);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -120,16 +125,17 @@ class AutogramTests {
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
         var input = SigningInput.prepareForASiCWithCAdES(
             AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
-        var responder = mock(Responder.class);
+        var responder = mock(SigningResponder.class);
 
-        autogram.pickSigningKeyAndThen(
-            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+        var job = SigningJob.fromInput(input);
+        autogram.startSigning(job, responder);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
     }
 
         @Test
         void testSignMultipleDocumentsAsiceXadesHappyScenario() {
         var autogram = TestAutogramFactory.create();
-        var responder = mock(Responder.class);
+        var responder = mock(SigningResponder.class);
 
         var firstDocument = AutogramDocument.build(new InMemoryDocument("first".getBytes(), "first.txt",
             AutogramMimeType.fromMimeTypeString("text/plain")), null);
@@ -139,9 +145,9 @@ class AutogramTests {
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);
 
-        autogram.pickSigningKeyAndThen(key -> autogram.sign(
-            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()), responder),
-            key));
+        var job = SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()));
+        autogram.startSigning(job, responder);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
         }
@@ -149,7 +155,7 @@ class AutogramTests {
         @Test
         void testSignedMultiDocumentAsiceSignatureCoversAllDocuments() {
         var autogram = TestAutogramFactory.create();
-        var responder = mock(Responder.class);
+        var responder = mock(SigningResponder.class);
 
         var firstDocument = AutogramDocument.build(new InMemoryDocument("first".getBytes(), "first.txt",
             AutogramMimeType.fromMimeTypeString("text/plain")), null);
@@ -159,9 +165,9 @@ class AutogramTests {
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var preparedInput = SigningInput.prepareForASiCWithXAdES(firstDocument, parameters);
 
-        autogram.pickSigningKeyAndThen(key -> autogram.sign(
-            SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()), responder),
-            key));
+        var job = SigningJob.fromInput(SigningInput.of(List.of(firstDocument, secondDocument), preparedInput.getParameters()));
+        autogram.startSigning(job, responder);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         var signedDocumentCaptor = org.mockito.ArgumentCaptor.forClass(SignedDocument.class);
         verify(responder).onDocumentSigned(signedDocumentCaptor.capture());
@@ -172,7 +178,7 @@ class AutogramTests {
             null, false, 640, true);
         var validationInput = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(
             signedDocument.getDocument(), EFormAttributes.build(validationParameters, true)), validationParameters);
-        var validationJob = SigningJob.fromInput(validationInput, mock(Responder.class));
+        var validationJob = SigningJob.fromInput(validationInput);
         var reports = SignatureValidator.getSignatureCheckReport(validationJob);
 
         Assertions.assertEquals(1, reports.getDocumentReports().size());
@@ -200,10 +206,11 @@ class AutogramTests {
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var input = SigningInput.prepareForASiCWithXAdES(
             AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
-        var responder = mock(Responder.class);
+        var responder = mock(SigningResponder.class);
 
-        autogram.pickSigningKeyAndThen(
-            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+        var job = SigningJob.fromInput(input);
+        autogram.startSigning(job, responder);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -229,7 +236,7 @@ class AutogramTests {
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
         var input = SigningInput.prepareForASiCWithXAdES(
             AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
-        var job = SigningJob.fromInput(input, mock(Responder.class));
+        var job = SigningJob.fromInput(input);
 
         autogram.startVisualization(job);
 
@@ -319,10 +326,11 @@ class AutogramTests {
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.PAdES, DigestAlgorithm.SHA256,
             null, null, false, null, null, null, false, 640, false);
         var input = SigningInput.fromPDFFile(document, parameters);
-        var responder = mock(Responder.class);
+        var responder = mock(SigningResponder.class);
 
-        autogram.pickSigningKeyAndThen(
-            key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+        var job = SigningJob.fromInput(input);
+        autogram.startSigning(job, responder);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -348,7 +356,7 @@ class AutogramTests {
         outputStream.write(document.getBytes());
         outputStream.close();
 
-        var responder = mock(Responder.class);
+        var responder = mock(SigningResponder.class);
 
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
@@ -357,7 +365,9 @@ class AutogramTests {
             EFormUtils.getFsFormIdFromFilename(fileDocument.getName()), true,
             parameters.getPropertiesCanonicalization(), parameters.getDigestAlgorithm());
         var input = SigningInput.fromFile(AutogramDocument.build(fileDocument, eFormAttributes), parameters);
-        autogram.pickSigningKeyAndThen(key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+        var job = SigningJob.fromInput(input);
+        autogram.startSigning(job, responder);
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         verify(responder).onDocumentSigned(any());
     }
@@ -495,6 +505,193 @@ class AutogramTests {
         }
     }
 
+    @Test
+    void testInteractiveSigningCanRetryAfterRetryableFailure() throws InterruptedException {
+        var keyRef = new java.util.concurrent.atomic.AtomicReference<SigningKey>();
+        var autogram = TestAutogramFactory.create();
+        autogram.pickSigningKeyAndThen(keyRef::set);
+
+        var signedDocument = mock(SignedDocument.class);
+        var attempts = new java.util.concurrent.atomic.AtomicInteger();
+        var job = mock(SigningJob.class);
+        when(job.signWithKey(any(), any())).thenAnswer(invocation -> {
+            if (attempts.incrementAndGet() == 1)
+                throw new PINIncorrectException();
+
+            return signedDocument;
+        });
+
+        var responder = mock(SigningResponder.class);
+        autogram.startSigning(job, responder);
+        autogram.sign(job, keyRef.get());
+
+        Assertions.assertEquals(2, attempts.get(), "the same document should be retried");
+        verify(responder).onDocumentSigned(signedDocument);
+        verify(responder, never()).onDocumentFailed(any());
+    }
+
+    @Test
+    void testLockedPinEndsInteractiveBatch() throws InterruptedException {
+        var batchRef = new java.util.concurrent.atomic.AtomicReference<Batch>();
+        var batchResponder = mock(BatchResponder.class);
+        doAnswer(invocation -> {
+            batchRef.set(invocation.getArgument(0));
+            return null;
+        }).when(batchResponder).onBatchStarted(any());
+        var responder = mock(SigningResponder.class);
+
+        var ui = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void onSigningFailed(AutogramException error, SigningJob job) {
+            }
+        };
+        var autogram = TestAutogramFactory.create(ui);
+        autogram.startBatch(2, SigningMode.INTERACTIVE, batchResponder);
+
+        var batch = batchRef.get();
+        var job = mock(SigningJob.class);
+        when(job.isPartOfBatch()).thenReturn(true);
+        when(job.getBatch()).thenReturn(batch);
+        when(job.signWithKey(any(), any())).thenThrow(new PINLockedException());
+
+        autogram.batchSign(job, batch.getBatchId(), responder);
+        autogram.sign(job, mock(SigningKey.class));
+
+        Assertions.assertTrue(batch.isEnded());
+        Assertions.assertThrows(BatchEndedException.class,
+                () -> autogram.batchSign(mock(SigningJob.class), batch.getBatchId(), responder));
+        verify(responder).onDocumentFailed(any(PINLockedException.class));
+    }
+
+    @Test
+    void testSkipRemainingEndsBatchAndRejectsFurtherSubmissions() throws IOException {
+        var batchRef = new java.util.concurrent.atomic.AtomicReference<Batch>();
+        var newUI = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+                batchRef.set(batch);
+                onSelected.accept(SigningMode.INTERACTIVE);
+            }
+        };
+        var autogram = TestAutogramFactory.create(newUI);
+        autogram.startBatchWithModeSelection(3, mock(BatchResponder.class));
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, null,
+            null, null, false, null, null, null, false, 640, true);
+        var input = SigningInput.prepareForASiCWithXAdES(
+            AutogramDocument.build(TestMethodSources.generalAgendaProvider().findFirst().orElseThrow(),
+                EFormAttributes.build(parameters, false)), parameters);
+
+        var batch = batchRef.get();
+        var batchId = batch.getBatchId();
+        var responder = mock(SigningResponder.class);
+        var job = SigningJob.fromInput(input, batch);
+        autogram.batchSign(job, batchId, responder);
+        autogram.skipRemaining(job);
+
+        Assertions.assertTrue(batch.isEnded(), "skipRemaining must end the batch");
+        Assertions.assertEquals(1, batch.getProcessedDocumentsCount(),
+            "the skipped document is counted exactly once");
+        verify(responder).onDocumentSkippedRemaining();
+
+        var another = SigningJob.fromInput(input, batch);
+        Assertions.assertThrows(BatchEndedException.class,
+            () -> autogram.batchSign(another, batchId, mock(SigningResponder.class)),
+            "no further documents may be submitted after skipRemaining");
+    }
+
+    @Test
+    void testSingleSigningRespondsForLockedPdf() throws IOException {
+        var newUI = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void startSigning(SigningJob job, Autogram autogram) {
+                autogram.startVisualization(job);
+            }
+        };
+        var autogram = TestAutogramFactory.create(newUI);
+
+        var responder = mock(SigningResponder.class);
+        var document = AutogramDocument.build(
+            new InMemoryDocument(createPasswordProtectedPdf(), "locked.pdf", MimeTypeEnum.PDF), null);
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.PAdES, null,
+            null, null, false, null, null, null, false, 640, false);
+        var job = SigningJob.fromInput(SigningInput.fromDocument(document, parameters));
+
+        autogram.startSigning(job, responder);
+
+        verify(responder).onDocumentFailed(any());
+        verify(responder, never()).onDocumentSigned(any());
+    }
+
+    @Test
+    void testBatchSignAsksForPinAgainAfterRetryableFailure() throws InterruptedException {
+        var keyRef = new java.util.concurrent.atomic.AtomicReference<SigningKey>();
+        var batchRef = new java.util.concurrent.atomic.AtomicReference<Batch>();
+        var newUI = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void startBatch(Batch batch, Autogram autogram, java.util.function.Consumer<SigningKey> onKeySelected,
+                    Runnable onCancel) {
+                batchRef.set(batch);
+                onKeySelected.accept(keyRef.get());
+            }
+        };
+        var autogram = TestAutogramFactory.create(newUI);
+        autogram.pickSigningKeyAndThen(keyRef::set);
+
+        autogram.startBatch(1, SigningMode.BULK, mock(BatchResponder.class));
+
+        var signedDocument = mock(SignedDocument.class);
+        var signingAttempts = new java.util.concurrent.atomic.AtomicInteger();
+        var job = mock(SigningJob.class);
+        when(job.getBatch()).thenReturn(batchRef.get());
+        when(job.signWithKey(any(), any())).thenAnswer(invocation -> {
+            if (signingAttempts.incrementAndGet() == 1)
+                throw new PINIncorrectException();
+
+            return signedDocument;
+        });
+
+        var responder = mock(SigningResponder.class);
+        autogram.batchSign(job, batchRef.get().getBatchId(), responder);
+
+        Assertions.assertEquals(2, signingAttempts.get(), "a wrong PIN should be retried");
+        Assertions.assertEquals(1, batchRef.get().getProcessedDocumentsCount(),
+            "a retried document is counted exactly once");
+        verify(responder).onDocumentSigned(signedDocument);
+        verify(responder, never()).onDocumentFailed(any());
+    }
+
+    @Test
+    void testOneByOneBatchSignsEachDocumentInteractively() throws IOException {
+        var batchRef = new java.util.concurrent.atomic.AtomicReference<Batch>();
+        var interactiveSigningStarted = new java.util.concurrent.atomic.AtomicInteger();
+        var newUI = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+                batchRef.set(batch);
+                onSelected.accept(SigningMode.INTERACTIVE);
+            }
+
+            @Override
+            public void startSigning(SigningJob job, Autogram autogram) {
+                interactiveSigningStarted.incrementAndGet();
+            }
+        };
+        var autogram = TestAutogramFactory.create(newUI);
+        autogram.startBatchWithModeSelection(1, mock(BatchResponder.class));
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, null,
+            null, null, false, null, null, null, false, 640, true);
+        var input = SigningInput.prepareForASiCWithXAdES(
+            AutogramDocument.build(TestMethodSources.generalAgendaProvider().findFirst().orElseThrow(),
+                EFormAttributes.build(parameters, false)), parameters);
+        var job = SigningJob.fromInput(input, batchRef.get());
+        autogram.batchSign(job, batchRef.get().getBatchId(), mock(SigningResponder.class));
+
+        Assertions.assertEquals(1, interactiveSigningStarted.get(),
+            "one-by-one batches should sign each document through the interactive flow");
+    }
+
     private class TestSettings extends UserSettings {
         @Override
         public DriverDetector getDriverDetector() {
@@ -534,7 +731,6 @@ class AutogramTests {
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null,
             checkPDFACompliance, 640, true);
         var preparedInput = SigningInput.prepareForASiCWithXAdES(documents[0], parameters);
-        return SigningJob.fromInput(SigningInput.of(List.of(documents), preparedInput.getParameters()),
-            mock(Responder.class));
+        return SigningJob.fromInput(SigningInput.of(List.of(documents), preparedInput.getParameters()));
     }
 }

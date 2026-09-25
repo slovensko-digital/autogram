@@ -2,8 +2,8 @@ package digital.slovensko.autogram.server;
 
 import com.google.gson.Gson;
 import digital.slovensko.autogram.TestAutogramFactory;
-import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningResponder;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
@@ -87,12 +87,13 @@ public class ServerYmlExamplesTest {
 
     private static void signAndAssertSuccess(String exampleName, SigningJob job, RecordingResponder responder) {
         var autogram = TestAutogramFactory.create();
+        autogram.startSigning(job, responder);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(job, key));
 
         assertTrue(responder.signed, exampleName + ": signing did not report success");
     }
 
-    private static class RecordingResponder extends Responder {
+    private static class RecordingResponder implements SigningResponder {
         private boolean signed = false;
 
         @Override
@@ -101,7 +102,19 @@ public class ServerYmlExamplesTest {
         }
 
         @Override
-        public void onDocumentSignFailed(AutogramException error) {
+        public void onDocumentFailed(AutogramException error) {
+        }
+
+        @Override
+        public void onDocumentCanceled() {
+        }
+
+        @Override
+        public void onDocumentSkipped() {
+        }
+
+        @Override
+        public void onDocumentSkippedRemaining() {
         }
     }
 
@@ -120,7 +133,7 @@ public class ServerYmlExamplesTest {
 
                 var input = body.getSigningInput(true);
                 var responder = new RecordingResponder();
-                var job = SigningJob.fromInput(input, responder);
+                var job = SigningJob.fromInput(input);
                 job.initializeVisualizations();
 
                 assertVisualizationsAreSupported(name, job);
@@ -151,7 +164,7 @@ public class ServerYmlExamplesTest {
                 body.validateSigningParameters();
                 var input = body.getSigningInput(true);
                 var responder = new RecordingResponder();
-                var job = SigningJob.fromInput(input, responder);
+                var job = SigningJob.fromInput(input);
                 job.initializeVisualizations();
 
                 assertVisualizationsAreSupported(name, job);

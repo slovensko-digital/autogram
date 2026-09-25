@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -37,6 +38,35 @@ public class SigningJobTests {
     private static final String content = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48R2VuZXJhbEFnZW5kYSB4bWxucz0iaHR0cDovL3NjaGVtYXMuZ292LnNrL2Zvcm0vQXBwLkdlbmVyYWxBZ2VuZGEvMS45Ij4KICA8c3ViamVjdD5Ob3bDqSBwb2RhbmllPC9zdWJqZWN0PgogIDx0ZXh0PlBvZMOhdmFtIHRvdG8gbm92w6kgcG9kYW5pZS48L3RleHQ+CjwvR2VuZXJhbEFnZW5kYT4=";
     private static final String identifier = "http://schemas.gov.sk/form/App.GeneralAgenda/1.9";
     private static final String containerXmlns = "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1";
+
+    @Test
+    void standaloneSigningJobUsesNoBatchDomainObject() {
+        var input = mock(SigningInput.class);
+        var document = mock(AutogramDocument.class);
+        when(input.getDocuments()).thenReturn(List.of(document));
+        when(input.getFirstDocument()).thenReturn(document);
+        when(document.isAsice()).thenReturn(false);
+
+        var job = SigningJob.fromInput(input);
+
+        assertFalse(job.isPartOfBatch());
+        assertFalse(job.isMultiDocumentBatch());
+        assertInstanceOf(NoBatch.class, job.getBatch());
+    }
+
+    @Test
+    void batchedSigningJobUsesBatchDomainProperties() {
+        var input = mock(SigningInput.class);
+        var document = mock(AutogramDocument.class);
+        when(input.getDocuments()).thenReturn(List.of(document));
+        when(input.getFirstDocument()).thenReturn(document);
+        when(document.isAsice()).thenReturn(false);
+
+        var job = SigningJob.fromInput(input, new Batch(2));
+
+        assertTrue(job.isPartOfBatch());
+        assertTrue(job.isMultiDocumentBatch());
+    }
 
     @Test
     void testEnd2EndHtmlTransformationEncodingLegacy() throws IOException, RequestValidationException {
@@ -67,7 +97,7 @@ public class SigningJobTests {
 
         var signRequestBody = new SignRequestBody(new Document("document.xml", content), ssParams, "application/xml;base64");
         var input = signRequestBody.getSigningInput(true);
-        var job = SigningJob.fromInput(input, null);
+        var job = SigningJob.fromInput(input);
         try {
             job.initializeVisualizations();
             var visualization = job.getVisualizations().get(0);
@@ -105,7 +135,7 @@ public class SigningJobTests {
 
         var signRequestBody = new VersionedSignRequestBody(document, null, ssParams, null, null);
         var input = signRequestBody.getSigningInput(true);
-        var job = SigningJob.fromInput(input, null);
+        var job = SigningJob.fromInput(input);
         try {
             job.initializeVisualizations();
             var visualization = job.getVisualizations().get(0);
@@ -138,7 +168,7 @@ public class SigningJobTests {
         var document = new Document("document.xml", content, "application/xml;base64", xdcParameters); 
         var signRequestBody = new VersionedSignRequestBody(document, null, ssParams, null, null);
         var input = signRequestBody.getSigningInput(true);
-        var job = SigningJob.fromInput(input, null);
+        var job = SigningJob.fromInput(input);
         try {
             job.initializeVisualizations();
             var visualization = job.getVisualizations().get(0);
@@ -165,7 +195,7 @@ public class SigningJobTests {
         assertEquals(ASiCContainerType.ASiC_E, input.getParameters().getContainer(),
                 "precondition: an explicitly requested ASiC-E container survives strict resolution");
 
-        var job = SigningJob.fromInput(input, mock(Responder.class));
+        var job = SigningJob.fromInput(input);
 
         // A real certificate is required because DSS computes the encryption algorithm from it;
         // the signature itself stays mocked so no real signing happens.
@@ -178,7 +208,7 @@ public class SigningJobTests {
             when(key.getCertificateChain()).thenReturn(testKey.getCertificateChain());
         }
 
-        var thrown = assertThrows(Throwable.class, () -> job.signWithKeyAndRespond(key, null),
+        var thrown = assertThrows(Throwable.class, () -> job.signWithKey(key, null),
                 "the mocked signature value cannot produce a real signature, so signing is expected to fail eventually");
 
         assertFalse(thrown instanceof ClassCastException,

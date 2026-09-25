@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -33,7 +32,7 @@ public class IgnorableExceptionDialogController extends BaseController implement
 
     public void onCancelAction(ActionEvent ignored) {
         GUIUtils.closeWindow(mainBox);
-        exception.getJob().onDocumentSignFailed(new SigningCanceledByUserException());
+        exception.getOnCancelCallback().run();
     }
 
     public void onContinueAction(ActionEvent ignored) {

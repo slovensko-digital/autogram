@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
@@ -10,7 +11,6 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.model.FileDocument;
 import javafx.fxml.FXML;
@@ -23,6 +23,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 public class MainMenuController extends BaseController implements SuppressedFocusController {
@@ -111,14 +112,12 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-                var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), defaultEFormAttributes), defaultSigningParameters);
-                var job = SigningJob.fromInput(input,
-                    new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
-            autogram.sign(job);
+            var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), defaultEFormAttributes), defaultSigningParameters);
+            var job = SigningJob.fromInput(input);
+            autogram.startSigning(job, new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
         } else {
-            autogram.batchStart(filesList.size(),
-                    new BatchGuiFileResponder(autogram, filesList, filesList.get(0).toPath().getParent().resolve("signed"),
-                        defaultSigningParameters, defaultEFormAttributes, userSettings.shouldSignPDFAsPades()));
+            startFileBatch(filesList, filesList.get(0).toPath().getParent().resolve("signed"),
+                    defaultSigningParameters, defaultEFormAttributes);
         }
     }
 
@@ -134,9 +133,15 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         var defaultSigningParameters = userSettings.getDefaultSigningParameters();
         var defaultEFormAttributes = EFormAttributes.build(defaultSigningParameters, true);
 
-        autogram.batchStart(filesList.size(),
-                new BatchGuiFileResponder(autogram, filesList, targetDirectory, defaultSigningParameters, defaultEFormAttributes,
-                    userSettings.shouldSignPDFAsPades()));
+        startFileBatch(filesList, targetDirectory, defaultSigningParameters, defaultEFormAttributes);
+    }
+
+    private void startFileBatch(List<File> files, Path targetDirectory, SigningParameters signingParameters,
+            EFormAttributes eFormAttributes) {
+        var responder = new BatchFileResponder(autogram, files, targetDirectory,
+                signingParameters, eFormAttributes, userSettings.shouldSignPDFAsPades());
+
+        autogram.startBatchWithModeSelection(files.size(), responder);
     }
 
     public void onAboutButtonAction() {

@@ -5,5 +5,8 @@ public class PINLockedException extends AutogramException {
         super();
     }
 
-
+    @Override
+    public boolean batchCanContinue() {
+        return false;
+    }
 }

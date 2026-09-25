@@ -126,16 +126,7 @@ class AsicContainerTest {
     void testSignatureCheckReportRecognizesPartialCoverageInMultiDocumentAsice() {
         var asiceWithMultipleFiles = createAsiceWithMultipleFiles();
         var input = prepareAsicXadesInput(asiceWithMultipleFiles);
-        var job = SigningJob.fromInput(input, new Responder() {
-            @Override
-            public void onDocumentSigned(SignedDocument signedDocument) {
-            }
-
-            @Override
-            public void onDocumentSignFailed(AutogramException error) {
-                Assertions.fail(error);
-            }
-        });
+        var job = SigningJob.fromInput(input);
 
         var reports = SignatureValidator.getSignatureCheckReport(job);
 
@@ -259,16 +250,7 @@ class AsicContainerTest {
 
     private SigningJob prepareAsicXadesJob(InMemoryDocument document) {
         var input = prepareAsicXadesInput(document);
-        return SigningJob.fromInput(input, new Responder() {
-            @Override
-            public void onDocumentSigned(SignedDocument signedDocument) {
-            }
-
-            @Override
-            public void onDocumentSignFailed(AutogramException error) {
-                Assertions.fail(error);
-            }
-        });
+        return SigningJob.fromInput(input);
     }
 
     private InMemoryDocument loadMultiDocumentAsice(String filename) throws Exception {

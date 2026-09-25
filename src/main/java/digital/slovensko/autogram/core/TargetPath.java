@@ -139,11 +139,6 @@ public class TargetPath {
         return (bothAreDirectories || bothAreFiles);
     }
 
-    /*
-     * Use these functions to get concrete file to be saved to
-     *
-     */
-
     public Path getSaveFilePath(Path singleSourceFile) {
         return getSaveFilePath(singleSourceFile, shouldUsePdfExtension(singleSourceFile));
 
