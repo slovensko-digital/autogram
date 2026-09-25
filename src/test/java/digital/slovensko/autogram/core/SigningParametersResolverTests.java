@@ -325,7 +325,7 @@ public class SigningParametersResolverTests {
 
     @Test
     void resolveLenientFromFileProducesIndependentResultsForDifferentDocumentsFromSharedInput() throws IOException {
-        // Mirrors CliApp/BatchGuiFileResponder: one SigningParameters instance built once from user
+        // Mirrors CliApp/BatchFileResponder: one SigningParameters instance built once from user
         // defaults and reused for every file in a batch. Since SigningParameters is immutable this
         // can no longer literally mutate, but resolution must still be independent per document.
         var sharedDefaults = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.PAdES, DigestAlgorithm.SHA256,

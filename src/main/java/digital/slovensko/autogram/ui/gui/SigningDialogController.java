@@ -178,6 +178,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         showSignatureSummaryForDocument(documentIndex);
     }
 
+    @Override
     public int getPdfDpi() {
         return userSettings.getPdfDpi();
     }
@@ -470,9 +471,11 @@ public class SigningDialogController extends BaseController implements Suppresse
         var key = gui.getActiveSigningKey();
         if (key == null) {
             mainButton.setText(i18n(job.isMultiDocument() ? "general.sign.btn.multi" : "general.sign.btn.single"));
+            changeKeyButton.setManaged(false);
             changeKeyButton.setVisible(false);
         } else {
             mainButton.setText(i18n(job.isMultiDocument() ? "signing.signAs.btn.multi" : "signing.signAs.btn.single", DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253())));
+            changeKeyButton.setManaged(true);
             changeKeyButton.setVisible(true);
         }
     }
@@ -518,12 +521,14 @@ public class SigningDialogController extends BaseController implements Suppresse
         skipRemainingButton.setDisable(true);
     }
 
+    @Override
     public void showPlainTextVisualization(String text) {
         plainTextArea.setText(text);
         plainTextArea.setVisible(true);
         plainTextArea.setManaged(true);
     }
 
+    @Override
     public void showHTMLVisualization(String html) {
         webView.setContextMenuEnabled(false);
         webView.getEngine().setJavaScriptEnabled(false);
@@ -546,6 +551,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         webViewContainer.setManaged(true);
     }
 
+    @Override
     public void showPDFVisualization(ArrayList<byte[]> data) {
         data.forEach(page -> {
             var imgView = new ImageView();
@@ -562,6 +568,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         pdfVisualizationContainer.setManaged(true);
     }
 
+    @Override
     public void showImageVisualization(DSSDocument doc) {
         imageVisualization.fitWidthProperty().unbind();
         imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
@@ -575,6 +582,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         imageVisualizationContainer.setManaged(true);
     }
 
+    @Override
     public void showUnsupportedVisualization() {
         unsupportedVisualizationInfoBox.setVisible(true);
         unsupportedVisualizationInfoBox.setManaged(true);

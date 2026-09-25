@@ -233,6 +233,7 @@ public class CliUI implements UI {
 
     }
 
+    @Override
     public void showIgnorableExceptionDialog(IgnorableException exception) {
         throw exception;
     }
@@ -302,6 +303,7 @@ public class CliUI implements UI {
         return System.console().readPassword("Enter keystore password (hidden): ");
     }
 
+    @Override
     public char[] getContextSpecificPassword(AutogramException previousError) {
         if (previousError != null)
             showError(previousError);

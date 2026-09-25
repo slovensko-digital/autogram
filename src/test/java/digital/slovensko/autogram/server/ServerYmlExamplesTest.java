@@ -104,6 +104,18 @@ public class ServerYmlExamplesTest {
         @Override
         public void onDocumentFailed(AutogramException error) {
         }
+
+        @Override
+        public void onDocumentCanceled() {
+        }
+
+        @Override
+        public void onDocumentSkipped() {
+        }
+
+        @Override
+        public void onDocumentSkippedRemaining() {
+        }
     }
 
     @TestFactory

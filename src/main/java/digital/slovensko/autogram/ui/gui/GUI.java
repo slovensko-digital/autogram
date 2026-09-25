@@ -110,6 +110,7 @@ public class GUI implements UI {
         enableSigningOnAllJobs();
     }
 
+    @Override
     public void updateBatch() {
         if (batchController == null)
             return;
@@ -238,6 +239,7 @@ public class GUI implements UI {
         stage.show();
     }
 
+    @Override
     public char[] getKeystorePassword() {
         var futurePassword = new FutureTask<>(() -> {
             var controller = new PasswordController("password.keystore.text", "password.keystore.error.text", "password.keystore.subtitle", false, true);
@@ -267,6 +269,7 @@ public class GUI implements UI {
     }
 
 
+    @Override
     public char[] getContextSpecificPassword(AutogramException previousError) {
         var futurePassword = new FutureTask<>(() -> {
             var controller = new PasswordController("password.context.text", "password.context.error.text", null,
