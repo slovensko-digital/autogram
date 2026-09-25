@@ -367,6 +367,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
+        autogram.clearContextSpecificPasswordError();
         gui.resetSigningKey();
         checkExistingSignatureValidityAndSign();
     }
@@ -496,6 +497,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     public void cancel() {
         autogram.cancel(job);
         close();
+        gui.enableSigningOnAllJobs();
     }
 
     public void disableKeyPicking() {

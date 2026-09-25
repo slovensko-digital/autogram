@@ -302,7 +302,9 @@ public class CliUI implements UI {
         return System.console().readPassword("Enter keystore password (hidden): ");
     }
 
-    public char[] getContextSpecificPassword() {
+    public char[] getContextSpecificPassword(AutogramException previousError) {
+        if (previousError != null)
+            showError(previousError);
         return System.console().readPassword("Enter key password (hidden): ");
     }
 

@@ -173,7 +173,7 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public char[] getContextSpecificPassword() {
+        public char[] getContextSpecificPassword(AutogramException previousError) {
             return null;
         }
 

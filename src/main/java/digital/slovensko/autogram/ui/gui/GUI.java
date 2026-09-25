@@ -172,6 +172,8 @@ public class GUI implements UI {
         }
 
         var keysStream = keys.stream();
+        // TODO: NFC eID returns false for qualified certificate #367
+        // var keysStream = keys.stream().filter(k -> k.getCertificate().checkKeyUsage(KeyUsageBit.DIGITAL_SIGNATURE));
         if (!userSettings.isExpiredCertsEnabled()) {
             var now = new Date();
             keysStream = keysStream.filter(k -> k.getCertificate().isValidOn(now));
@@ -265,9 +267,10 @@ public class GUI implements UI {
     }
 
 
-    public char[] getContextSpecificPassword() {
+    public char[] getContextSpecificPassword(AutogramException previousError) {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("password.context.text", "password.context.error.text", null, true, false);
+            var controller = new PasswordController("password.context.text", "password.context.error.text", null,
+                    true, false, previousError);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();
@@ -455,6 +458,13 @@ public class GUI implements UI {
             refreshKeyOnAllJobs();
         }
         enableSigningOnAllJobs();
+    }
+
+    @Override
+    public void onSigningRetryable(AutogramException e, SigningJob job) {
+        var controller = jobControllers.get(job);
+        if (controller != null)
+            controller.enableSigning();
     }
 
     @Override

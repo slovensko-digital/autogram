@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.errors.AutogramException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -14,6 +15,7 @@ public class PasswordController extends BaseController {
     private final String subtitleKey;
     private final boolean isSigningStep;
     private final boolean allowEmpty;
+    private final AutogramException previousError;
 
     private char[] password;
 
@@ -35,17 +37,25 @@ public class PasswordController extends BaseController {
     VBox mainBox;
 
     public PasswordController(String questionKey, String blankPasswordErrorKey, String subtitleKey, boolean isSigningStep, boolean allowEmpty) {
+        this(questionKey, blankPasswordErrorKey, subtitleKey, isSigningStep, allowEmpty, null);
+    }
+
+    public PasswordController(String questionKey, String blankPasswordErrorKey, String subtitleKey,
+            boolean isSigningStep, boolean allowEmpty, AutogramException previousError) {
         this.questionKey = questionKey;
         this.errorKey = blankPasswordErrorKey;
         this.subtitleKey = subtitleKey;
         this.isSigningStep = isSigningStep;
         this.allowEmpty = allowEmpty;
+        this.previousError = previousError;
     }
 
     @Override
     public void initialize() {
         question.setText(i18n(questionKey));
         error.setText(i18n(errorKey));
+        if (previousError != null)
+            showInputError(previousError.getSubheading(resources));
         if(subtitleKey != null) {
             subtitle.setText(i18n(subtitleKey));
             subtitle.setManaged(true);
@@ -61,10 +71,7 @@ public class PasswordController extends BaseController {
 
     public void onPasswordAction() {
         if (passwordField.getText().isEmpty() && !allowEmpty) {
-            error.setManaged(true);
-            error.setVisible(true);
-            formGroup.getStyleClass().add("autogram-form-group--error");
-            passwordField.getStyleClass().add("autogram-input--error");
+            showInputError(i18n(errorKey));
 
             formGroup.getScene().getWindow().sizeToScene();
             passwordField.requestFocus();
@@ -83,5 +90,15 @@ public class PasswordController extends BaseController {
 
     public char[] getPassword() {
         return password;
+    }
+
+    private void showInputError(String message) {
+        error.setText(message);
+        error.setManaged(true);
+        error.setVisible(true);
+        if (!formGroup.getStyleClass().contains("autogram-form-group--error"))
+            formGroup.getStyleClass().add("autogram-form-group--error");
+        if (!passwordField.getStyleClass().contains("autogram-input--error"))
+            passwordField.getStyleClass().add("autogram-input--error");
     }
 }

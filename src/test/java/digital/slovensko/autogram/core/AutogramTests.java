@@ -508,10 +508,12 @@ class AutogramTests {
     @Test
     void testInteractiveSigningCanRetryAfterRetryableFailure() throws InterruptedException {
         var keyRef = new java.util.concurrent.atomic.AtomicReference<SigningKey>();
+        var retryableNotifications = new java.util.concurrent.atomic.AtomicInteger();
         var newUI = new TestAutogramFactory.FakeUI() {
             @Override
-            public void onSigningFailed(AutogramException e) {
-                // A retryable failure keeps the dialog open, so it is not reported as an error.
+            public void onSigningRetryable(AutogramException e, SigningJob job) {
+                Assertions.assertInstanceOf(PINIncorrectException.class, e);
+                retryableNotifications.incrementAndGet();
             }
         };
         var autogram = TestAutogramFactory.create(newUI);
@@ -533,6 +535,7 @@ class AutogramTests {
         autogram.sign(job, keyRef.get());
 
         Assertions.assertEquals(2, attempts.get(), "the same document should be retried");
+        Assertions.assertEquals(1, retryableNotifications.get());
         verify(responder).onDocumentSigned(signedDocument);
         verify(responder, never()).onDocumentFailed(any());
     }

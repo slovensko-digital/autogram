@@ -15,6 +15,7 @@ class GUITests {
     void batchPositionIsShownInTitle() {
         var job = mock(SigningJob.class);
         when(job.getName()).thenReturn("a.txt");
+        when(job.isPartOfBatch()).thenReturn(true);
         when(job.getBatch()).thenReturn(new Batch(5));
         when(job.getBatchPosition()).thenReturn(2);
 

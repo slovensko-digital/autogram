@@ -33,6 +33,9 @@ public interface UI {
 
     void onSigningFailed(AutogramException e);
 
+    default void onSigningRetryable(AutogramException e, SigningJob job) {
+    }
+
     void onDocumentSaved(File targetFile);
 
     void onDocumentBatchSaved(BatchUiResult result);
@@ -57,7 +60,7 @@ public interface UI {
 
     char[] getKeystorePassword();
 
-    char[] getContextSpecificPassword();
+    char[] getContextSpecificPassword(AutogramException previousError);
 
     public void updateBatch();
 

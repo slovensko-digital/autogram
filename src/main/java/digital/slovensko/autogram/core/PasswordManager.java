@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.core.errors.AutogramException;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 
 import java.util.Arrays;
@@ -11,12 +12,15 @@ public class PasswordManager implements PasswordInputCallback {
     private char[] cachedPassword;
     private Batch cachedBatch;
     private final ThreadLocal<Batch> currentBatch = new ThreadLocal<>();
+    private AutogramException contextSpecificPasswordError;
 
     public PasswordManager(UI ui) {
         this.ui = ui;
     }
 
     public synchronized char[] getContextSpecificPassword() {
+        var previousError = contextSpecificPasswordError;
+        contextSpecificPasswordError = null;
         var batch = currentBatch.get();
         if (batch != null) {
             if (cachedBatch == null || !cachedBatch.hasBatchId(batch.getId())) {
@@ -25,12 +29,12 @@ public class PasswordManager implements PasswordInputCallback {
             }
 
             if (cachedPassword == null) {
-                cachedPassword = ui.getContextSpecificPassword();
+                cachedPassword = ui.getContextSpecificPassword(previousError);
             }
             return cachedPassword;
         }
 
-        return ui.getContextSpecificPassword();
+        return ui.getContextSpecificPassword(previousError);
     }
 
     public boolean isCachingPIN() {
@@ -58,9 +62,20 @@ public class PasswordManager implements PasswordInputCallback {
         }
     }
 
+    public synchronized void onContextSpecificPasswordRejected(AutogramException error) {
+        clearCachedPassword();
+        cachedBatch = null;
+        contextSpecificPasswordError = Objects.requireNonNull(error);
+    }
+
+    public synchronized void clearContextSpecificPasswordError() {
+        contextSpecificPasswordError = null;
+    }
+
     public synchronized void reset() {
         clearCachedPassword();
         cachedBatch = null;
+        contextSpecificPasswordError = null;
     }
 
     private void clearCachedPassword() {

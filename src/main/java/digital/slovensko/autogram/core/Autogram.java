@@ -91,6 +91,7 @@ public class Autogram {
                 }
             }
 
+            passwordManager.clearContextSpecificPasswordError();
             if (failure == null) {
                 batch.onJobSuccess();
                 responder.onDocumentSigned(signedDocument);
@@ -207,6 +208,7 @@ public class Autogram {
         if (responder == null)
             return;
 
+        passwordManager.clearContextSpecificPasswordError();
         batch.onJobFailure();
         responder.onDocumentSkipped();
     }
@@ -268,6 +270,7 @@ public class Autogram {
         // Deliver outside the signing try/catch: an exception thrown by the adapter's
         // responder is not a signing failure and must not be re-counted.
         pendingSignings.remove(job);
+        passwordManager.clearContextSpecificPasswordError();
         batch.onJobSuccess();
         responder.onDocumentSigned(signedDocument);
         ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
@@ -295,7 +298,7 @@ public class Autogram {
             if (!batch.isActive() || batch.isAllProcessed())
                 passwordManager.reset();
         } catch (PINIncorrectException e) {
-            passwordManager.reset();
+            passwordManager.onContextSpecificPasswordRejected(e);
             throw e;
         } catch (AutogramException e) {
             throw e;
@@ -318,18 +321,20 @@ public class Autogram {
         if (isPending && error.isRetryable()) {
             // Keep the dialog open and the pending signing registered so the user can
             // retry the same document. Any cached PIN was already cleared.
-            ui.onUIThreadDo(() -> ui.onSigningFailed(error));
+            ui.onUIThreadDo(() -> ui.onSigningRetryable(error, job));
             return;
         }
 
         if (error instanceof ResponseNetworkErrorException) {
             // The response channel itself failed; do not try to respond again.
+            passwordManager.clearContextSpecificPasswordError();
             ui.onUIThreadDo(() -> ui.onSigningFailed(error, job));
             pendingSignings.remove(job);
             return;
         }
 
         pendingSignings.remove(job);
+        passwordManager.clearContextSpecificPasswordError();
         batch.onJobFailure();
         if (job.isPartOfBatch() && !error.batchCanContinue())
             endActiveBatch();
@@ -498,6 +503,10 @@ public class Autogram {
 
     public void onSigningFailed(AutogramException e) {
         ui.onUIThreadDo(() -> ui.onSigningFailed(e));
+    }
+
+    public void clearContextSpecificPasswordError() {
+        passwordManager.clearContextSpecificPasswordError();
     }
 
     public void initializeSignatureValidator(ScheduledExecutorService scheduledExecutorService, ExecutorService cachedExecutorService, List<String> tlCountries) {
