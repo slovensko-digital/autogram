@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import com.google.gson.Gson;
 
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
+import digital.slovensko.autogram.core.errors.EFormException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -511,6 +512,101 @@ public class VersionedSignRequestBodyTests {
 
         assertNull(request.getDocuments().get(0).getEFormAttributes().transformation());
         assertNotNull(request.getDocuments().get(1).getEFormAttributes().transformation());
+    }
+
+    @Test
+    void rejectsPadesWithNonPdfDocument() {
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "filename": "document.txt",
+                    "mimeType": "text/plain;base64",
+                    "content": "Zmlyc3Q="
+                  },
+                  "parameters": {
+                    "form": "PAdES"
+                  }
+                }
+                """, VersionedSignRequestBody.class);
+
+        var exception = assertThrows(RequestValidationException.class, () -> body.getSigningInput(true));
+
+        assertEquals("PayloadMimeType and Parameters.Level mismatch",
+                exception.getSubheading(SupportedLanguage.ENGLISH.loadResources()));
+    }
+
+    @Test
+    void rejectsPadesWithContainer() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample.pdf")));
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "filename": "document.pdf",
+                    "mimeType": "application/pdf;base64",
+                    "content": "%s"
+                  },
+                  "parameters": {
+                    "form": "PAdES",
+                    "container": "ASiC_E"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var exception = assertThrows(RequestValidationException.class, () -> body.getSigningInput(true));
+
+        assertEquals("Parameters.Container is not supported for PAdES",
+                exception.getSubheading(SupportedLanguage.ENGLISH.loadResources()));
+    }
+
+    @Test
+    void acceptsPadesWithPdfDocument() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample.pdf")));
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "filename": "document.pdf",
+                    "mimeType": "application/pdf;base64",
+                    "content": "%s"
+                  },
+                  "parameters": {
+                    "form": "PAdES"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(true);
+
+        assertEquals(SignatureLevel.PAdES_BASELINE_B, request.getParameters().getLevel());
+    }
+
+    @Test
+    void rejectsXdcWithoutIdentifier() throws IOException {
+        var schema = Files.readString(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.xsd"));
+        var transformation = Files.readString(Path.of("src/test/resources/digital/slovensko/autogram/general_agenda.xslt"));
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "filename": "document.xml",
+                    "mimeType": "application/xml",
+                    "xdcParameters": {
+                      "containerXmlns": "http://data.gov.sk/def/container/xmldatacontainer+xml/1.1",
+                      "schema": %s,
+                      "transformation": %s
+                    },
+                    "content": "<GeneralAgenda xmlns=\\"http://schemas.gov.sk/form/App.GeneralAgenda/1.9\\"><subject>tt</subject><text>Fff</text></GeneralAgenda>"
+                  },
+                  "parameters": {
+                    "form": "XAdES",
+                    "container": "ASiC_E"
+                  }
+                }
+                """.formatted(gson.toJson(schema), gson.toJson(transformation)), VersionedSignRequestBody.class);
+
+        var exception = assertThrows(EFormException.class, () -> body.getSigningInput(false));
+
+        assertEquals("Missing identifier", exception.getSubheading(SupportedLanguage.ENGLISH.loadResources()));
     }
 
     @Test

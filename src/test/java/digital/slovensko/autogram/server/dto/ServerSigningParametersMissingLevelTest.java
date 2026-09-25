@@ -7,21 +7,20 @@ import org.junit.jupiter.api.Test;
 
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.ui.SupportedLanguage;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.model.InMemoryDocument;
 
 class ServerSigningParametersMissingLevelTest {
 
     @Test
     void missingLevelIsReportedAsMissingField() {
-        var params = new ServerSigningParameters();
+        var document = new LegacyDocument("x.xml", "eA==");
+        var legacyBody = new SignRequestBody(document, null, "application/xml;base64");
 
         var exception = assertThrows(RequestValidationException.class,
-                () -> params.validate(new InMemoryDocument("x".getBytes(), "x.xml", MimeTypeEnum.XML)));
+                () -> legacyBody.toVersionedBody());
 
-        // Legacy /sign behavior: a missing level is a MISSING_FIELD "Parameters.Level" error,
-        // not an UNSUPPORTED_SIGN_LEVEL error.
-        assertEquals("Parameters.Level is required",
+        // Legacy /sign behavior: the level may only be omitted for an already signed document,
+        // whose signature form is then reused.
+        assertEquals("Parameters.Level can't be empty if document is not signed yet",
                 exception.getSubheading(SupportedLanguage.ENGLISH.loadResources()));
     }
 }
