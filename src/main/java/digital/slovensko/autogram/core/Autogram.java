@@ -257,14 +257,19 @@ public class Autogram {
 
     private void performSigning(SigningJob job, SigningKey signingKey, SigningResponder responder) {
         SignedDocument signedDocument;
-        try {
-            signedDocument = signWithKey(job, signingKey);
-        } catch (AutogramException e) {
-            handleSigningFailure(job, responder, e);
-            return;
-        } catch (Exception e) {
-            handleSigningFailure(job, responder, new UnrecognizedException(e));
-            return;
+        while (true) {
+            try {
+                signedDocument = signWithKey(job, signingKey);
+                break;
+            } catch (PINIncorrectException e) {
+                // The password manager passes this failure to the next PIN prompt.
+            } catch (AutogramException e) {
+                handleSigningFailure(job, responder, e);
+                return;
+            } catch (Exception e) {
+                handleSigningFailure(job, responder, new UnrecognizedException(e));
+                return;
+            }
         }
 
         // Deliver outside the signing try/catch: an exception thrown by the adapter's
