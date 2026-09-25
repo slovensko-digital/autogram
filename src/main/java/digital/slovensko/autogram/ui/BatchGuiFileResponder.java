@@ -8,10 +8,9 @@ import java.util.Map;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.SigningParameters;
-import digital.slovensko.autogram.core.SigningResponder;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
@@ -22,7 +21,7 @@ import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.FileDocument;
 
 /** Coordinates file selection and result reporting for GUI batch signing. */
-public class BatchGuiFileResponder implements SigningResponder {
+public class BatchGuiFileResponder implements BatchResponder {
     private final Autogram autogram;
     private final List<File> list;
     private final Map<File, File> targetFiles = new HashMap<>();
@@ -43,7 +42,7 @@ public class BatchGuiFileResponder implements SigningResponder {
     }
 
     @Override
-    public void onBatchStarted(Batch batch, SigningMode mode) {
+    public void onBatchStarted(Batch batch) {
         try {
             targetPath.mkdirIfDir();
         } catch (AutogramException e) {
@@ -51,7 +50,7 @@ public class BatchGuiFileResponder implements SigningResponder {
             throw e;
         }
 
-        if (mode == SigningMode.INTERACTIVE)
+        if (batch.isInteractive())
             processNextInteractive(batch);
         else
             processAllAtOnce(batch);

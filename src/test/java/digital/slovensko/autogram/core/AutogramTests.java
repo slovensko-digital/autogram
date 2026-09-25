@@ -533,11 +533,12 @@ class AutogramTests {
     @Test
     void testLockedPinEndsInteractiveBatch() throws InterruptedException {
         var batchRef = new java.util.concurrent.atomic.AtomicReference<Batch>();
-        var responder = mock(SigningResponder.class);
+        var batchResponder = mock(BatchResponder.class);
         doAnswer(invocation -> {
             batchRef.set(invocation.getArgument(0));
             return null;
-        }).when(responder).onBatchStarted(any(), any());
+        }).when(batchResponder).onBatchStarted(any());
+        var responder = mock(SigningResponder.class);
 
         var ui = new TestAutogramFactory.FakeUI() {
             @Override
@@ -545,7 +546,7 @@ class AutogramTests {
             }
         };
         var autogram = TestAutogramFactory.create(ui);
-        autogram.startBatch(2, SigningMode.INTERACTIVE, responder);
+        autogram.startBatch(2, SigningMode.INTERACTIVE, batchResponder);
 
         var batch = batchRef.get();
         var job = mock(SigningJob.class);
@@ -573,7 +574,7 @@ class AutogramTests {
             }
         };
         var autogram = TestAutogramFactory.create(newUI);
-        autogram.startBatchWithModeSelection(3, mock(SigningResponder.class));
+        autogram.startBatchWithModeSelection(3, mock(BatchResponder.class));
 
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, null,
             null, null, false, null, null, null, false, 640, true);
@@ -637,7 +638,7 @@ class AutogramTests {
         var autogram = TestAutogramFactory.create(newUI);
         autogram.pickSigningKeyAndThen(keyRef::set);
 
-        autogram.startBatch(1, SigningMode.BULK, mock(SigningResponder.class));
+        autogram.startBatch(1, SigningMode.BULK, mock(BatchResponder.class));
 
         var signedDocument = mock(SignedDocument.class);
         var signingAttempts = new java.util.concurrent.atomic.AtomicInteger();
@@ -677,7 +678,7 @@ class AutogramTests {
             }
         };
         var autogram = TestAutogramFactory.create(newUI);
-        autogram.startBatchWithModeSelection(1, mock(SigningResponder.class));
+        autogram.startBatchWithModeSelection(1, mock(BatchResponder.class));
 
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, null,
             null, null, false, null, null, null, false, 640, true);

@@ -10,13 +10,12 @@ import java.util.ResourceBundle;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.SigningMode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
  * Guards the HTTP contract of the signing endpoints for the events of the new
- * single {@code SigningResponder} port.
+ * separate batch and document responder ports.
  */
 class ServerResponderTest {
 
@@ -59,7 +58,7 @@ class ServerResponderTest {
         var batch = new Batch(1);
         batch.start(null);
 
-        new BatchServerResponder(exchange).onBatchStarted(batch, SigningMode.BULK);
+        new BatchServerResponder(exchange).onBatchStarted(batch);
 
         verify(exchange).sendResponseHeaders(200, 0);
     }

@@ -111,16 +111,16 @@ public class Autogram {
      *
      * @param totalNumberOfDocuments - expected number of documents to be signed
      * @param mode                   - automated (one key for all) or interactive (per document)
-     * @param responder              - output port for batch and document events
+     * @param responder              - output port for batch lifecycle events
      */
-    public void startBatch(int totalNumberOfDocuments, SigningMode mode, SigningResponder responder) {
+    public void startBatch(int totalNumberOfDocuments, SigningMode mode, BatchResponder responder) {
         var newBatch = createBatch(totalNumberOfDocuments);
         newBatch.setMode(mode);
         startBatch(newBatch, responder);
     }
 
     /** Reserves the batch while the user chooses its signing mode. */
-    public void startBatchWithModeSelection(int totalNumberOfDocuments, SigningResponder responder) {
+    public void startBatchWithModeSelection(int totalNumberOfDocuments, BatchResponder responder) {
         var newBatch = createBatch(totalNumberOfDocuments);
         ui.onUIThreadDo(() -> ui.selectBatchMode(newBatch,
                 mode -> {
@@ -134,13 +134,13 @@ public class Autogram {
                 }));
     }
 
-    private void startBatch(Batch batch, SigningResponder responder) {
+    private void startBatch(Batch batch, BatchResponder responder) {
         ensureCurrentBatch(batch);
 
         if (batch.isInteractive()) {
             try {
                 batch.start(null);
-                responder.onBatchStarted(batch, batch.getMode());
+                responder.onBatchStarted(batch);
             } catch (Exception e) {
                 batch.end();
                 passwordManager.reset();
@@ -154,17 +154,17 @@ public class Autogram {
                 () -> cancelBatchStart(batch, responder)));
     }
 
-    private void startBatchWithKey(Batch batch, SigningResponder responder, SigningKey key) {
+    private void startBatchWithKey(Batch batch, BatchResponder responder, SigningKey key) {
         try {
             Logging.log("Starting batch");
             batch.start(key);
-            responder.onBatchStarted(batch, batch.getMode());
+            responder.onBatchStarted(batch);
         } catch (Exception e) {
             handleBatchStartException(batch, responder, e);
         }
     }
 
-    private void cancelBatchStart(Batch batch, SigningResponder responder) {
+    private void cancelBatchStart(Batch batch, BatchResponder responder) {
         try {
             Logging.log("Cancelling batch");
             batch.end();
@@ -176,7 +176,7 @@ public class Autogram {
         }
     }
 
-    private void handleBatchStartException(Batch batch, SigningResponder responder, Exception error) {
+    private void handleBatchStartException(Batch batch, BatchResponder responder, Exception error) {
         batch.end();
         if (!(error instanceof AutogramException))
             Logging.log("Batch start failed with exception: " + error);

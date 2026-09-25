@@ -4,15 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.SigningMode;
-import digital.slovensko.autogram.core.SigningResponder;
+import digital.slovensko.autogram.core.BatchResponder;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.dto.BatchStartResponseBody;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
 
 import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.JSON_PARSING_FAILED;
 
-public class BatchServerResponder implements SigningResponder {
+public class BatchServerResponder implements BatchResponder {
     private final HttpExchange exchange;
 
     public BatchServerResponder(HttpExchange exchange) {
@@ -20,7 +19,7 @@ public class BatchServerResponder implements SigningResponder {
     }
 
     @Override
-    public void onBatchStarted(Batch batch, SigningMode mode) {
+    public void onBatchStarted(Batch batch) {
         var gson = new Gson();
 
         try {
