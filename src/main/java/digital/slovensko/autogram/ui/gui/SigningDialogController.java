@@ -481,6 +481,8 @@ public class SigningDialogController extends BaseController implements Suppresse
         refreshSigningKey();
         mainButton.setDisable(false);
         changeKeyButton.setDisable(false);
+        skipButton.setDisable(false);
+        skipRemainingButton.setDisable(false);
     }
 
     public void enableSigningOnAllJobs() {
@@ -504,12 +506,16 @@ public class SigningDialogController extends BaseController implements Suppresse
         mainButton.setText(i18n("signing.keyPicking.btn"));
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
+        skipButton.setDisable(true);
+        skipRemainingButton.setDisable(true);
     }
 
     public void disableSigning() {
         mainButton.setText(i18n("signing.signing.btn"));
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
+        skipButton.setDisable(true);
+        skipRemainingButton.setDisable(true);
     }
 
     public void showPlainTextVisualization(String text) {
