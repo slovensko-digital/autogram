@@ -81,7 +81,7 @@ public class TestAutogramFactory {
 
         @Override
         public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
-            onSelected.accept(SigningMode.AUTOMATED);
+            onSelected.accept(SigningMode.BULK);
         }
 
         @Override

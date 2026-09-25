@@ -82,7 +82,7 @@ public class GUI implements UI {
     @Override
     public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
         if (userSettings.isBulkEnabled()) {
-            onSelected.accept(SigningMode.AUTOMATED);
+            onSelected.accept(SigningMode.BULK);
             return;
         }
 
@@ -356,7 +356,7 @@ public class GUI implements UI {
 
         var batch = job.getBatch();
         var batchPosition = job.getBatchPosition();
-        if (batch != null && batchPosition != null)
+        if (job.isPartOfBatch() && batchPosition != null)
             title += " " + MessageFormat.format(resources.getString("batch.document.position"),
                     batchPosition, batch.getTotalNumberOfDocuments());
 

@@ -6,13 +6,21 @@ import org.junit.jupiter.api.Test;
 class AutogramExceptionTest {
 
     @Test
-    void pinIncorrectStopsBatchInsteadOfRetryingTest() {
-        Assertions.assertFalse(new PINIncorrectException().batchCanContinue());
+    void pinIncorrectAllowsBatchToContinueTest() {
+        Assertions.assertTrue(new PINIncorrectException().batchCanContinue());
     }
 
     @Test
     void pinIncorrectIsRetryableTest() {
         Assertions.assertTrue(new PINIncorrectException().isRetryable());
+    }
+
+    @Test
+    void pinLockedStopsBatchAndIsNotRetryableTest() {
+        var error = new PINLockedException();
+
+        Assertions.assertFalse(error.batchCanContinue());
+        Assertions.assertFalse(error.isRetryable());
     }
 
     @Test

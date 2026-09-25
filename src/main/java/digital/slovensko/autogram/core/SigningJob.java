@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import java.util.List;
+import java.util.Objects;
 
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -89,11 +90,11 @@ public class SigningJob {
     }
 
     public boolean isPartOfBatch() {
-        return batch != null;
+        return batch.isPresent();
     }
 
     public boolean isMultiDocumentBatch() {
-        return batch != null && batch.getTotalNumberOfDocuments() > 1;
+        return batch.hasMultipleDocuments();
     }
 
     public void initializeVisualizations() throws OriginalDocumentNotFoundException, FailedVisualizationException {
@@ -129,7 +130,7 @@ public class SigningJob {
     }
 
     public static SigningJob fromInput(SigningInput input) {
-        return fromInput(input, null, null);
+        return fromInput(input, new NoBatch(), null);
     }
 
     public static SigningJob fromInput(SigningInput input, Batch batch) {
@@ -137,6 +138,7 @@ public class SigningJob {
     }
 
     public static SigningJob fromInput(SigningInput input, Batch batch, Integer batchPosition) {
+        Objects.requireNonNull(batch);
         List<AutogramDocument> documentsToVisualize;
         if (input.getDocuments().size() == 1 && input.getFirstDocument().isAsice()) {
             documentsToVisualize = AsicContainerUtils.getOriginalDocuments(input.getFirstDocument()).stream().toList();

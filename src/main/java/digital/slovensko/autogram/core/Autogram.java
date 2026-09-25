@@ -60,7 +60,7 @@ public class Autogram {
 
     /**
      * Submits a document that belongs to the active batch. In {@link SigningMode#INTERACTIVE}
-     * the document is signed through the interactive flow; in {@link SigningMode#AUTOMATED}
+     * the document is signed through the interactive flow; in {@link SigningMode#BULK}
      * it is signed right away with the batch key.
      */
     public void batchSign(SigningJob job, String batchId, SigningResponder responder) {
@@ -285,9 +285,8 @@ public class Autogram {
         };
 
         try {
-            var jobBatch = job.getBatch();
-            if (jobBatch != null)
-                passwordManager.withCachedPIN(jobBatch, signing);
+            if (job.isPartOfBatch())
+                passwordManager.withCachedPIN(job.getBatch(), signing);
             else
                 passwordManager.withoutCachedPIN(signing);
 
@@ -332,6 +331,9 @@ public class Autogram {
 
         pendingSignings.remove(job);
         batch.onJobFailure();
+        if (job.isPartOfBatch() && !error.batchCanContinue())
+            endActiveBatch();
+
         ui.onUIThreadDo(() -> {
             if (isPending || job.isPartOfBatch())
                 ui.onSigningFailed(error, job);

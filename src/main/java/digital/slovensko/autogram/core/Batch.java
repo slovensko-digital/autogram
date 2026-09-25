@@ -28,7 +28,7 @@ public class Batch {
 
     private BatchState state = BatchState.INITIALIZED;
     private SigningKey signingKey = null;
-    private SigningMode mode = SigningMode.AUTOMATED;
+    private SigningMode mode = SigningMode.BULK;
 
     private Date expirationDate;
     private int addedDocumentsCount = 0;
@@ -57,6 +57,14 @@ public class Batch {
 
     public SigningMode getMode() {
         return mode;
+    }
+
+    public boolean isPresent() {
+        return true;
+    }
+
+    public boolean hasMultipleDocuments() {
+        return totalNumberOfDocuments > 1;
     }
 
     public boolean isInteractive() {

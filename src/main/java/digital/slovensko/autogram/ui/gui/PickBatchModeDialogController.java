@@ -40,7 +40,7 @@ public class PickBatchModeDialogController extends BaseController implements Sup
 
     public void onContinueButtonPressed() {
         close();
-        onSelected.accept(signOneByOneButton.isSelected() ? SigningMode.INTERACTIVE : SigningMode.AUTOMATED);
+        onSelected.accept(signOneByOneButton.isSelected() ? SigningMode.INTERACTIVE : SigningMode.BULK);
     }
 
     public Runnable getOnCancel() {

@@ -34,7 +34,17 @@ final class NoBatch extends Batch {
 
     @Override
     public SigningMode getMode() {
-        return SigningMode.AUTOMATED;
+        return SigningMode.BULK;
+    }
+
+    @Override
+    public boolean isPresent() {
+        return false;
+    }
+
+    @Override
+    public boolean hasMultipleDocuments() {
+        return false;
     }
 
     @Override

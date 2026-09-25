@@ -86,7 +86,7 @@ public class CliUI implements UI {
     @Override
     public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
         // There is no interactive mode selection in CLI, so fall back to automated signing.
-        onSelected.accept(SigningMode.AUTOMATED);
+        onSelected.accept(SigningMode.BULK);
     }
 
     @Override

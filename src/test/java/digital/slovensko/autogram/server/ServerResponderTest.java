@@ -59,7 +59,7 @@ class ServerResponderTest {
         var batch = new Batch(1);
         batch.start(null);
 
-        new BatchServerResponder(exchange).onBatchStarted(batch, SigningMode.AUTOMATED);
+        new BatchServerResponder(exchange).onBatchStarted(batch, SigningMode.BULK);
 
         verify(exchange).sendResponseHeaders(200, 0);
     }

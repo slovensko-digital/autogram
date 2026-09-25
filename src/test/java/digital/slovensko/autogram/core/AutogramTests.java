@@ -17,6 +17,7 @@ import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejected
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.PDFAComplianceException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
+import digital.slovensko.autogram.core.errors.PINLockedException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -537,6 +538,38 @@ class AutogramTests {
     }
 
     @Test
+    void testLockedPinEndsInteractiveBatch() throws InterruptedException {
+        var batchRef = new java.util.concurrent.atomic.AtomicReference<Batch>();
+        var responder = mock(SigningResponder.class);
+        doAnswer(invocation -> {
+            batchRef.set(invocation.getArgument(0));
+            return null;
+        }).when(responder).onBatchStarted(any(), any());
+
+        var ui = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void onSigningFailed(AutogramException error, SigningJob job) {
+            }
+        };
+        var autogram = TestAutogramFactory.create(ui);
+        autogram.startBatch(2, SigningMode.INTERACTIVE, responder);
+
+        var batch = batchRef.get();
+        var job = mock(SigningJob.class);
+        when(job.isPartOfBatch()).thenReturn(true);
+        when(job.getBatch()).thenReturn(batch);
+        when(job.signWithKey(any(), any())).thenThrow(new PINLockedException());
+
+        autogram.batchSign(job, batch.getBatchId(), responder);
+        autogram.sign(job, mock(SigningKey.class));
+
+        Assertions.assertTrue(batch.isEnded());
+        Assertions.assertThrows(BatchEndedException.class,
+                () -> autogram.batchSign(mock(SigningJob.class), batch.getBatchId(), responder));
+        verify(responder).onDocumentFailed(any(PINLockedException.class));
+    }
+
+    @Test
     void testSkipRemainingEndsBatchAndRejectsFurtherSubmissions() throws IOException {
         var batchRef = new java.util.concurrent.atomic.AtomicReference<Batch>();
         var newUI = new TestAutogramFactory.FakeUI() {
@@ -611,7 +644,7 @@ class AutogramTests {
         var autogram = TestAutogramFactory.create(newUI);
         autogram.pickSigningKeyAndThen(keyRef::set);
 
-        autogram.startBatch(1, SigningMode.AUTOMATED, mock(SigningResponder.class));
+        autogram.startBatch(1, SigningMode.BULK, mock(SigningResponder.class));
 
         var signedDocument = mock(SignedDocument.class);
         var signingAttempts = new java.util.concurrent.atomic.AtomicInteger();

@@ -19,7 +19,7 @@ class BatchTests {
     void automatedBatchKeepsOneMinuteDocumentTimeout() {
         var batch = new Batch(10);
 
-        Assertions.assertEquals(SigningMode.AUTOMATED, batch.getMode());
+        Assertions.assertEquals(SigningMode.BULK, batch.getMode());
         Assertions.assertFalse(batch.isInteractive());
         Assertions.assertEquals(60_000L, batch.documentTimeoutMillis());
     }
