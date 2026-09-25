@@ -59,6 +59,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
 
     public void onUploadButtonAction() {
         var chooser = new FileChooser();
+        chooser.setInitialDirectory(userSettings.getLastUsedDirectory().map(File::new).orElse(null));
         var list = chooser.showOpenMultipleDialog(new Stage());
 
         try {
@@ -75,6 +76,8 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         try {
             if (list.size() == 0)
                 throw new NoFilesSelectedException();
+            userSettings.setLastUsedDirectory(list.getFirst().toPath().getParent());
+            userSettings.save();
 
             var dirsList = list.stream().filter(f -> f.isDirectory()).toList();
             var filesList = list.stream().filter(f -> f.isFile()).toList();
