@@ -37,13 +37,12 @@
 
         <TextFlow styleClass="autogram-body-s">
             <Text styleClass="autogram-body-s" text="%batchSigning.success.folder.before.text" />
-            <Hyperlink styleClass="autogram-body-s,autogram-link,autogram-font-weight-bold"
-                fx:id="folderPathText" onAction="#onOpenFolderAction" wrapText="true" />
-            <Text styleClass="autogram-body-s" text="%batchSigning.success.folder.after.text" />
         </TextFlow>
+        <Hyperlink styleClass="autogram-body-s,autogram-link,autogram-font-weight-bold"
+            fx:id="folderPathText" onAction="#onOpenFolderAction" wrapText="true" maxWidth="Infinity" />
 
 
-        <VBox fx:id="errorListBox">
+        <VBox styleClass="autogram-error-list-box">
             <TextFlow styleClass="autogram-heading-s">
                 <Text fx:id="errorListHeading" styleClass="autogram-heading-s" text="%batchSigning.failure.errorList.title" />
             </TextFlow>
