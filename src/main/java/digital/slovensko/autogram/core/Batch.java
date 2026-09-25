@@ -18,8 +18,6 @@ enum BatchState {
 
 /** A signing session that tracks expected and completed documents. */
 public class Batch {
-    /** Interactive signing needs time for the user to review and authorize each document. */
-    private static final long INTERACTIVE_DOCUMENT_TIMEOUT_MILLIS = 1000L * 60 * 5;
     private static final long AUTOMATED_DOCUMENT_TIMEOUT_MILLIS = 1000L * 60;
     private static final long INITIAL_TIMEOUT_MILLIS = 1000L * 60 * 5;
 
@@ -104,7 +102,7 @@ public class Batch {
         if (state == BatchState.ENDED)
             throw new BatchEndedException(ALREADY_ENDED);
 
-        if (isExpired()) {
+        if (!isInteractive() && isExpired()) {
             throw new BatchExpiredException();
         }
     }
@@ -168,11 +166,10 @@ public class Batch {
     }
 
     public void resetExpirationDate() {
-        expirationDate = new Date(System.currentTimeMillis() + documentTimeoutMillis());
-    }
+        if (isInteractive())
+            return;
 
-    long documentTimeoutMillis() {
-        return isInteractive() ? INTERACTIVE_DOCUMENT_TIMEOUT_MILLIS : AUTOMATED_DOCUMENT_TIMEOUT_MILLIS;
+        expirationDate = new Date(System.currentTimeMillis() + AUTOMATED_DOCUMENT_TIMEOUT_MILLIS);
     }
 
     public void log() {
