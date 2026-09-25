@@ -45,6 +45,8 @@ public class BatchSigningFailureDialogController extends BaseController implemen
     private BooleanProperty errorDetailsVisible = new SimpleBooleanProperty(false);
 
     private static final int LIST_CELL_HEIGHT = 24;
+    private static final int LIST_MAX_VISIBLE_ROWS = 4;
+    private static final int LIST_BORDER_HEIGHT = 2;
 
     public BatchSigningFailureDialogController(BatchUiResult result, HostServices hostServices) {
 
@@ -54,14 +56,14 @@ public class BatchSigningFailureDialogController extends BaseController implemen
 
     @Override
     public void initialize() {
-        folderPathText.setText(result.getTargetDirectory().toString());
+        folderPathText.setText(GUIUtils.wrappablePath(result.getTargetDirectory().toString()));
 
         successCount.setText(String.valueOf(result.getTargetFilesSortedList().size()));
 
         var errorFileNamesList = result.getFailedFilesList().map(file -> file.getName()).toList();
         errorList.setItems(FXCollections
                 .observableArrayList(errorFileNamesList));
-        errorList.prefHeightProperty().bind(Bindings.min(4, Bindings.size(errorList.getItems())).multiply(LIST_CELL_HEIGHT).add(2));
+        bindErrorListHeightToContent();
         errorListHeading.setText(i18n("batchSigning.failure.errorList.title", errorFileNamesList.size()));
         failureCount.setText(String.valueOf(errorFileNamesList.size()));
 
@@ -71,6 +73,21 @@ public class BatchSigningFailureDialogController extends BaseController implemen
                 .bind(Bindings.when(errorDetailsVisible).then(i18n("batchSigning.failure.hideDetails.btn"))
                         .otherwise(i18n("batchSigning.failure.showDetails.btn")));
 
+    }
+
+    private void bindErrorListHeightToContent() {
+        errorList.setFixedCellSize(LIST_CELL_HEIGHT);
+
+        var rowsHeight = Bindings.min(LIST_MAX_VISIBLE_ROWS, Bindings.size(errorList.getItems()))
+                .multiply(errorList.fixedCellSizeProperty());
+        var listHeight = Bindings.createDoubleBinding(
+                () -> rowsHeight.doubleValue() + errorList.getInsets().getTop() + errorList.getInsets().getBottom()
+                        + LIST_BORDER_HEIGHT,
+                rowsHeight, errorList.insetsProperty());
+
+        errorList.minHeightProperty().bind(listHeight);
+        errorList.prefHeightProperty().bind(listHeight);
+        errorList.maxHeightProperty().bind(listHeight);
     }
 
     public void onOpenFolderAction(ActionEvent ignored) {
