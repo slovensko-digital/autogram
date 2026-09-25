@@ -1159,11 +1159,12 @@ TextFlow.autogram-body-s {
     -fx-padding: 0.5em 2em 0 2em;
 }
 
+.autogram-error-list-box {
+    -fx-padding: 2em 0;
+}
+
 .autogram-listview {
-  -fx-max-height: 400px;
-  -fx-min-height: 30px;
-  -fx-pref-height: 200px;
-  -fx-padding: 0 0 20px 20px;
+  -fx-padding: 0 0 0 20px;
 }
 
 .autogram-confirmation--success {
