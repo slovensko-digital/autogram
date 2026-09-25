@@ -9,7 +9,7 @@ import static digital.slovensko.autogram.core.errors.XMLValidationException.Erro
 public class OrsrEFormResources extends EFormResources {
     public OrsrEFormResources(String url, String schema, String transformation) {
         // Real url follows the space at the end of this string in orsr eforms
-        super(url.replace("http://www.justice.gov.sk/Forms ", ""), null, null, null);
+        super(url.replace("http://www.justice.gov.sk/Forms ", ""), null, null);
 
         this.embedUsedSchemas = true;
         this.schema = schema;

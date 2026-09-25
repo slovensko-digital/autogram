@@ -41,7 +41,7 @@ public class CliApp {
             var parameters = settings.getSigningParameters();
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
                         .map(f -> SigningJob.fromInput(
-                            SigningInput.fromFile(AutogramDocument.build(new FileDocument(f), EFormAttributes.build(parameters, true)), parameters),
+                            SigningInput.fromFile(AutogramDocument.buildFromFile(new FileDocument(f), EFormAttributes.build(parameters, true)), parameters),
                             new SaveFileResponder(f, finalAutogram, targetPathBuilder)))
                     .toList();
             if (settings.isPdfaCompliance()) {

@@ -77,6 +77,14 @@ public record EFormAttributes(String identifier, String transformation, String s
         return new EFormAttributes(null, null, null, null, null, null, false, null, autoLoadEform, signingParameters.getPropertiesCanonicalization(), signingParameters.getDigestAlgorithm());
     }
 
+    public EFormAttributes withFsFormId(String fsFormId) {
+        if (this.fsFormId != null || fsFormId == null)
+            return this;
+
+        return new EFormAttributes(identifier, transformation, schema, containerXmlns, xsdIdentifier, xsltParams,
+                embedUsedSchemas, fsFormId, autoLoadEform, propertiesCanonicalization, digestAlgorithm);
+    }
+
     public boolean shouldCreateXdc() {
         return containerXmlns != null && containerXmlns.contains("xmldatacontainer");
     }
