@@ -29,18 +29,13 @@ public abstract class XMLUtils {
     }
 
     public static TransformerFactory getSecureTransformerFactory() throws TransformerConfigurationException {
-        var transformerFactory = new TransformerFactoryImpl();
+        var transformerFactory = new TransformerFactoryImpl(new SecureSaxonConfiguration());
         transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 
-        // Stylesheets may come from untrusted requests. The JAXP attributes above only restrict Saxon's resource
-        // resolver, but collection() and uri-collection() bypass it, so deny all protocols globally and disable
-        // collections altogether.
         var configuration = transformerFactory.getConfiguration();
-        configuration.setConfigurationProperty(Feature.ALLOWED_PROTOCOLS, "");
-        // FEATURE_SECURE_PROCESSING already implies this (and with it disables xsl:result-document), set it
-        // explicitly so the protection does not hinge on a single flag
+        configuration.setConfigurationProperty(Feature.ALLOWED_PROTOCOLS, "#none");
         configuration.setConfigurationProperty(Feature.ALLOW_EXTERNAL_FUNCTIONS, false);
         configuration.setConfigurationProperty(Feature.DISABLE_XSL_EVALUATE, true);
         configuration.setCollectionFinder((context, collectionURI) -> {
