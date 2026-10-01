@@ -341,6 +341,22 @@
                                         <TextField fx:id="customPKCS11DriverPathTextField" styleClass="autogram-input" />
                                     </VBox>
                                 </HBox>
+                                <HBox styleClass="autogram-settings-row">
+                                    <VBox styleClass="left">
+                                        <TextFlow>
+                                            <Text styleClass="autogram-heading-s" text="%settings.other.proxy.label"/>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description" text="%settings.other.proxy.text"/>
+                                        </TextFlow>
+                                        <TextFlow>
+                                            <Text styleClass="autogram-description" text="%settings.restartNeeded.text"/>
+                                        </TextFlow>
+                                    </VBox>
+                                    <VBox styleClass="autogram-textfield-container">
+                                        <TextField fx:id="proxyUrlTextField" styleClass="autogram-input" promptText="http://proxy.example.com:8080"/>
+                                    </VBox>
+                                </HBox>
                             </VBox>
                         </ScrollPane>
                     </content>

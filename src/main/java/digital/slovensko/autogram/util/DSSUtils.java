@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.util;
 
+import digital.slovensko.autogram.core.NetworkClients;
 import eu.europa.esig.dss.asic.cades.validation.ASiCContainerWithCAdESValidatorFactory;
 import eu.europa.esig.dss.asic.xades.validation.ASiCContainerWithXAdESValidatorFactory;
 import eu.europa.esig.dss.cades.validation.CMSDocumentValidatorFactory;
@@ -39,19 +40,19 @@ public class DSSUtils {
 
     public static SignedDocumentValidator createDocumentValidator(DSSDocument document) {
         if (new PDFDocumentValidatorFactory().isSupported(document))
-            return new PDFDocumentValidatorFactory().create(document);
+            return NetworkClients.configureDocumentValidator(new PDFDocumentValidatorFactory().create(document));
 
         if (new XMLDocumentValidatorFactory().isSupported(document))
-            return new XMLDocumentValidatorFactory().create(document);
+            return NetworkClients.configureDocumentValidator(new XMLDocumentValidatorFactory().create(document));
 
         if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document))
-            return new ASiCContainerWithXAdESValidatorFactory().create(document);
+            return NetworkClients.configureDocumentValidator(new ASiCContainerWithXAdESValidatorFactory().create(document));
 
         if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document))
-            return new ASiCContainerWithCAdESValidatorFactory().create(document);
+            return NetworkClients.configureDocumentValidator(new ASiCContainerWithCAdESValidatorFactory().create(document));
 
         if (new CMSDocumentValidatorFactory().isSupported(document))
-            return new CMSDocumentValidatorFactory().create(document);
+            return NetworkClients.configureDocumentValidator(new CMSDocumentValidatorFactory().create(document));
 
         return null;
     }

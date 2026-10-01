@@ -9,7 +9,7 @@ import eu.europa.esig.dss.asic.xades.extract.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
+import digital.slovensko.autogram.core.NetworkClients;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -27,12 +27,12 @@ public class AsicContainerUtils {
     public static List<DSSDocument> getOriginalDocuments(DSSDocument asice) throws OriginalDocumentNotFoundException {
         SignedDocumentValidator documentValidator;
         try {
-            documentValidator = SignedDocumentValidator.fromDocument(asice);
+            documentValidator = NetworkClients.configureDocumentValidator(SignedDocumentValidator.fromDocument(asice));
         } catch (UnsupportedOperationException e) {
             throw new OriginalDocumentNotFoundException(FILE_NOT_FOUND);
         }
 
-        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
+        documentValidator.setCertificateVerifier(NetworkClients.certificateVerifier());
         var signatures = documentValidator.getSignatures();
         if (signatures.isEmpty())
             throw new OriginalDocumentNotFoundException(NO_SIGNATURE);
@@ -63,12 +63,12 @@ public class AsicContainerUtils {
 
         SignedDocumentValidator documentValidator;
         try {
-            documentValidator = SignedDocumentValidator.fromDocument(asice);
+            documentValidator = NetworkClients.configureDocumentValidator(SignedDocumentValidator.fromDocument(asice));
         } catch (UnsupportedOperationException e) {
             throw new OriginalDocumentNotFoundException(FILE_NOT_FOUND);
         }
 
-        documentValidator.setCertificateVerifier(new CommonCertificateVerifier());
+        documentValidator.setCertificateVerifier(NetworkClients.certificateVerifier());
         var signatures = documentValidator.getSignatures();
         if (signatures.isEmpty())
             throw new OriginalDocumentNotFoundException(NO_SIGNATURE);

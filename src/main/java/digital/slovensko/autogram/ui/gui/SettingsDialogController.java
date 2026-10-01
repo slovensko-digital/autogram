@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import digital.slovensko.autogram.core.settings.Country;
 import digital.slovensko.autogram.drivers.FakeTokenDriver;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -11,6 +12,7 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.RadioButton;
@@ -73,6 +75,8 @@ public class SettingsDialogController extends BaseController implements Suppress
     @FXML
     private TextField customPKCS11DriverPathTextField;
     @FXML
+    private TextField proxyUrlTextField;
+    @FXML
     private Button saveButton;
     @FXML
     private Button resetButton;
@@ -115,6 +119,7 @@ public class SettingsDialogController extends BaseController implements Suppress
         initializeCustomKeystoreSettings();
         initializeCustomPKCS11DriverPathSettings();
         initializeDriverSlot();
+        initializeProxySettings();
     }
 
     private void initializeSignatureLevelChoiceBox() {
@@ -382,11 +387,24 @@ public class SettingsDialogController extends BaseController implements Suppress
         }
     }
 
-    public void onSaveButtonAction() {
-        if (userSettings.tlCountriesChanged())
-            autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
+    private void initializeProxySettings() {
+        proxyUrlTextField.setText(userSettings.getProxyUrl());
+    }
 
-        userSettings.save();
+    public void onSaveButtonAction() {
+        var tlCountriesChanged = userSettings.tlCountriesChanged();
+        try {
+            userSettings.save(proxyUrlTextField.getText());
+        } catch (InvalidProxyConfigurationException e) {
+            var alert = new Alert(Alert.AlertType.ERROR);
+            alert.initOwner(saveButton.getScene().getWindow());
+            alert.setHeaderText(i18n("settings.other.proxy.invalid"));
+            alert.setContentText(i18n("settings.other.proxy.text"));
+            alert.showAndWait();
+            return;
+        }
+        if (tlCountriesChanged)
+            autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
 
         var stage = (Stage) saveButton.getScene().getWindow();
         stage.close();
