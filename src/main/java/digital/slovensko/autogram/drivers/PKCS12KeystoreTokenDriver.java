@@ -1,11 +1,13 @@
 package digital.slovensko.autogram.drivers;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
 
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
+import digital.slovensko.autogram.core.errors.KeystoreFileNotFoundException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import eu.europa.esig.dss.model.DSSException;
@@ -19,6 +21,9 @@ public class PKCS12KeystoreTokenDriver extends TokenDriver {
 
     @Override
     public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
+        if (getPath() == null || !Files.isRegularFile(getPath()))
+            throw new KeystoreFileNotFoundException(getPath() == null ? "" : getPath().toString());
+
         try {
             var password = pm.getPassword();
             if (password == null)
