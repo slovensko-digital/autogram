@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: packaging/ubuntu22.dockerfile
     volumes:
-      - ./packaging/output:/data
+      - ./packaging/output:/data:z
     environment:
       - VERSION=1.0.0
       - PREFIX=ubuntu22
@@ -16,7 +16,7 @@ services:
       context: .
       dockerfile: packaging/debian13.dockerfile
     volumes:
-      - ./packaging/output:/data
+      - ./packaging/output:/data:z
     environment:
       - VERSION=1.0.0
       - PREFIX=debian13
@@ -26,7 +26,7 @@ services:
       context: .
       dockerfile: packaging/fedora41.dockerfile
     volumes:
-      - ./packaging/output:/data
+      - ./packaging/output:/data:z
     environment:
       - VERSION=1.0.0
       - PREFIX=fedora41
