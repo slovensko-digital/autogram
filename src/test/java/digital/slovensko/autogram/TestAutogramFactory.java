@@ -2,7 +2,6 @@ package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.DriverDetector;
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
@@ -75,11 +74,11 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
+        public void startBatch(Batch batch, Autogram autogram) {
         }
 
         @Override
-        public void cancelBatch(Batch batch) {
+        public void closeBatch() {
         }
 
         @Override

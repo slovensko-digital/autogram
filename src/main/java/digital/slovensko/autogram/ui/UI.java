@@ -13,9 +13,10 @@ import java.util.function.Consumer;
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
 
-    void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
+    void startBatch(Batch batch, Autogram autogram);
 
-    void cancelBatch(Batch batch);
+    /** Close the batch UI without changing the batch state. */
+    void closeBatch();
 
     void showSigningJob(SigningJob job, Autogram autogram);
 

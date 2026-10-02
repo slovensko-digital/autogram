@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
+import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
@@ -30,6 +31,7 @@ public class Autogram {
     private final UserSettings settings;
     /** Current batch, should be null if no batch was started yet */
     private Batch batch = null;
+    private BatchResponder pendingBatchResponder;
     private final PasswordManager passwordManager;
     private Timer tokenSessionTimer = null;
 
@@ -39,7 +41,7 @@ public class Autogram {
         this.passwordManager = new PasswordManager(ui, this.settings);
     }
 
-    public void sign(SigningJob job) {
+    public void startSigning(SigningJob job) {
         ui.onUIThreadDo(()
         -> ui.startSigning(job, this));
     }
@@ -149,16 +151,60 @@ public class Autogram {
      * @param totalNumberOfDocuments - expected number of documents to be signed
      * @param responder              - callback for http response
      */
-    public void batchStart(int totalNumberOfDocuments, BatchResponder responder) {
+    public void startBatchSigning(int totalNumberOfDocuments, BatchResponder responder) {
         if (batch != null && !batch.isEnded())
             throw new BatchConflictException();
         batch = new Batch(totalNumberOfDocuments);
 
-        var startBatchTask = new BatchStartCallback(batch, responder);
+        pendingBatchResponder = responder;
+        ui.onUIThreadDo(() -> ui.startBatch(batch, this));
+    }
 
-        ui.onUIThreadDo(() -> {
-            ui.startBatch(batch, this, startBatchTask);
-        });
+    public void signBatchWithKey(Batch batch, SigningKey key) {
+        if (this.batch != batch || pendingBatchResponder == null)
+            return;
+
+        var responder = pendingBatchResponder;
+        pendingBatchResponder = null;
+        try {
+            batch.start(key);
+            responder.onBatchStartSuccess(batch);
+        } catch (Exception e) {
+            finishBatch(batch);
+            if (e instanceof AutogramException autogramException)
+                responder.onBatchStartFailure(autogramException);
+            else
+                responder.onBatchStartFailure(new AutogramException("BATCH_START_FAILED", e, e));
+        }
+    }
+
+    public void cancelBatch(Batch batch) {
+        if (this.batch != batch || batch.isEnded())
+            return;
+
+        var responder = pendingBatchResponder;
+        pendingBatchResponder = null;
+        finishBatch(batch);
+        if (responder != null)
+            responder.onBatchStartFailure(new BatchCanceledException());
+    }
+
+    public void finishBatch(Batch batch) {
+        if (this.batch != batch || batch.isEnded())
+            return;
+
+        batch.end();
+        passwordManager.reset();
+        ui.onUIThreadDo(ui::closeBatch);
+    }
+
+    public void updateBatch(Batch batch) {
+        if (this.batch != batch || batch.isEnded())
+            return;
+
+        batch.log();
+        if (batch.isAllProcessed())
+            finishBatch(batch);
     }
 
     /**
@@ -180,9 +226,7 @@ public class Autogram {
             } catch (AutogramException e) {
                 job.onDocumentSignFailed(e);
                 if (!e.batchCanContinue()) {
-                    ui.onUIThreadDo(() -> {
-                        ui.cancelBatch(batch);
-                    });
+                    finishBatch(batch);
                     throw e;
                 }
             } catch (Exception e) {
@@ -200,13 +244,11 @@ public class Autogram {
      *
      * @param batchId - current batch ID, used to authenticate the request
      */
-    public boolean batchEnd(String batchId) {
+    public boolean endBatchSigning(String batchId) {
         batch.validate(batchId);
-        batch.end();
-        ui.onUIThreadDo(() -> {
-            ui.cancelBatch(batch);
-        });
-        return batch.isAllProcessed();
+        var currentBatch = batch;
+        finishBatch(currentBatch);
+        return currentBatch.isAllProcessed();
     }
 
     public Batch getBatch(String batchId) {

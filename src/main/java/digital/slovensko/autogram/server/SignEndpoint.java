@@ -36,7 +36,7 @@ public class SignEndpoint implements HttpHandler {
             if (body.getBatchId() != null)
                 autogram.batchSign(job, body.getBatchId());
             else
-                autogram.sign(job);
+                autogram.startSigning(job);
 
         } catch (JsonSyntaxException | IOException e) {
             var response = ErrorResponseBuilder.buildFromException(new MalformedBodyException(JSON_PARSING_FAILED, e));
