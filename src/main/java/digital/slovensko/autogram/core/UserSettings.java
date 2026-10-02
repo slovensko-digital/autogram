@@ -13,7 +13,6 @@ import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,7 +75,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private boolean bulkEnabled;
     private int pdfDpi;
     private long tokenSessionTimeout;
-    private String customPKCS11DriverPath;
+    private String customPKCS11DriverPath = DEFAULT_CUSTOM_PKCS11_DRIVER_PATH;
     private Map<String, Integer> driverSlotIndexMap = new HashMap<>();
 
     public static UserSettings load() {
@@ -448,10 +447,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setCustomPKCS11DriverPath(String driverPath) {
-        Path path = Paths.get(driverPath);
-        if (! Files.exists(path)) {
-            return;
+        if (driverPath.isEmpty() || Files.isRegularFile(Paths.get(driverPath))) {
+            customPKCS11DriverPath = driverPath;
         }
-        customPKCS11DriverPath = driverPath;
     }
 }

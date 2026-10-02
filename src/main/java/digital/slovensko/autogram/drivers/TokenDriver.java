@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public abstract class TokenDriver {
@@ -28,7 +29,8 @@ public abstract class TokenDriver {
     }
 
     public boolean isInstalled() {
-        return path.toFile().exists();
+        // empty path resolves to the working directory, which exists (JDK 22+ for java.io.File)
+        return !path.toString().isEmpty() && Files.isRegularFile(path);
     }
 
 
