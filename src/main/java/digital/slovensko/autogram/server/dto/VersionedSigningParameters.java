@@ -17,6 +17,8 @@ import static digital.slovensko.autogram.server.errors.RequestValidationExceptio
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.SigningParametersResolver;
 
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+
 public class VersionedSigningParameters {
     public enum LocalCanonicalizationMethod {
         INCLUSIVE,
@@ -24,7 +26,18 @@ public class VersionedSigningParameters {
         INCLUSIVE_WITH_COMMENTS,
         EXCLUSIVE_WITH_COMMENTS,
         INCLUSIVE_11,
-        INCLUSIVE_11_WITH_COMMENTS
+        INCLUSIVE_11_WITH_COMMENTS;
+
+        public String toUri() {
+            return switch (this) {
+                case INCLUSIVE -> CanonicalizationMethod.INCLUSIVE;
+                case EXCLUSIVE -> CanonicalizationMethod.EXCLUSIVE;
+                case INCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_WITH_COMMENTS;
+                case EXCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.EXCLUSIVE_WITH_COMMENTS;
+                case INCLUSIVE_11 -> CanonicalizationMethod.INCLUSIVE_11;
+                case INCLUSIVE_11_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_11_WITH_COMMENTS;
+            };
+        }
     }
 
     private SignatureForm form;
@@ -66,9 +79,9 @@ public class VersionedSigningParameters {
                 container,
                 packaging,
                 getBoolean(en319132),
-                infoCanonicalization != null ? infoCanonicalization.name() : null,
-                propertiesCanonicalization != null ? propertiesCanonicalization.name() : null,
-                keyInfoCanonicalization != null ? keyInfoCanonicalization.name() : null,
+                infoCanonicalization != null ? infoCanonicalization.toUri() : null,
+                propertiesCanonicalization != null ? propertiesCanonicalization.toUri() : null,
+                keyInfoCanonicalization != null ? keyInfoCanonicalization.toUri() : null,
                 getBoolean(checkPDFACompliance),
                 presentation != null ? presentation.getVisualizationWidth() : 0,
                 plainXmlEnabled
