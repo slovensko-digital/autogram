@@ -17,7 +17,7 @@ import digital.slovensko.autogram.core.errors.XMLValidationException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
-import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
+import digital.slovensko.autogram.core.NetworkClients;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 
@@ -25,9 +25,7 @@ public class EFormResourceLoader {
     private final FileCacheDataLoader dataLoader;
 
     public EFormResourceLoader() {
-        this.dataLoader = new FileCacheDataLoader();
-        this.dataLoader.setCacheExpirationTime(21600000);  // 6 hours
-        this.dataLoader.setDataLoader(new CommonsDataLoader());
+        this.dataLoader = NetworkClients.fileCacheDataLoader(21600000); // 6 hours
     }
 
     public EFormResourceLoader(FileCacheDataLoader dataLoader) {
@@ -39,6 +37,9 @@ public class EFormResourceLoader {
         try {
             document = dataLoader.getDocument(url);
         } catch (DSSExternalResourceException e) {
+            // Configuration-blocked requests may not have a transport cause.
+            if (e.getCause() == null || e.getCause().getMessage() == null)
+                return null;
             var matcher = Pattern.compile("HTTP status code : (\\d{3})").matcher(e.getCause().getMessage());
             if (!matcher.find())
                 return null;

@@ -7,6 +7,7 @@ import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.core.errors.SourceNotDefinedException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
@@ -21,7 +22,7 @@ public class CliApp {
     public static void start(CommandLine cmd) {
         Autogram autogram = null;
         try {
-            var settings = CliSettings.fromCmd(cmd);
+            var settings = CliSettings.fromCmdForStartup(cmd);
             var ui = new CliUI(settings);
             autogram = new Autogram(ui, settings);
 
@@ -54,6 +55,8 @@ public class CliApp {
             ui.setJobsCount(jobs.size());
             jobs.forEach(autogram::sign);
 
+        } catch (InvalidProxyConfigurationException e) {
+            System.err.println("Configuration error: " + e.getMessage());
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));
 

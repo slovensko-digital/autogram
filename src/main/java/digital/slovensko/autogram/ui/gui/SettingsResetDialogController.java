@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.Autogram;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 
@@ -37,7 +38,15 @@ public class SettingsResetDialogController extends BaseController implements Sup
         if (userSettings == null)
             return;
 
+        var proxyCleared = !userSettings.getProxyUrl().isEmpty();
         userSettings.reset();
+        if (proxyCleared) {
+            var notice = new Alert(Alert.AlertType.INFORMATION);
+            notice.initOwner(confirmResetButton.getScene().getWindow());
+            notice.setHeaderText(i18n("settings.restartNeeded.text"));
+            notice.setContentText(i18n("settings.other.proxy.reset"));
+            notice.showAndWait();
+        }
         autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
 
         ((Stage)confirmResetButton.getScene().getWindow()).close();

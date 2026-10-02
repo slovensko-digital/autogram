@@ -31,8 +31,6 @@ import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
-import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
-import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
@@ -42,7 +40,6 @@ import eu.europa.esig.dss.tsl.function.TLPredicateFactory;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.spi.validation.CertificateVerifier;
-import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.reports.Reports;
 
@@ -70,6 +67,7 @@ public class SignatureValidator {
     }
 
     public synchronized Reports validate(SignedDocumentValidator docValidator) {
+        NetworkClients.configureDocumentValidator(docValidator);
         docValidator.setCertificateVerifier(verifier);
 
         // TODO: do not print stack trace inside DSS
@@ -99,14 +97,10 @@ public class SignatureValidator {
         lotlSource.setPivotSupport(true);
         lotlSource.setTlPredicate(TLPredicateFactory.createEUTLCountryCodePredicate(tlCountries.toArray(new String[0])));
 
-        var offlineFileLoader = new FileCacheDataLoader();
-        offlineFileLoader.setCacheExpirationTime(21600000);
-        offlineFileLoader.setDataLoader(new CommonsDataLoader());
+        var offlineFileLoader = NetworkClients.fileCacheDataLoader(21600000);
         validationJob.setOfflineDataLoader(offlineFileLoader);
 
-        var onlineFileLoader = new FileCacheDataLoader();
-        onlineFileLoader.setCacheExpirationTime(0);
-        onlineFileLoader.setDataLoader(new CommonsDataLoader());
+        var onlineFileLoader = NetworkClients.fileCacheDataLoader(0);
         validationJob.setOnlineDataLoader(onlineFileLoader);
 
         var trustedListCertificateSource = new TrustedListsCertificateSource();
@@ -119,10 +113,10 @@ public class SignatureValidator {
         logger.debug("Starting signature validator offline refresh");
         validationJob.offlineRefresh();
 
-        verifier = new CommonCertificateVerifier();
+        verifier = NetworkClients.certificateVerifier();
         verifier.setTrustedCertSources(trustedListCertificateSource);
-        verifier.setCrlSource(new OnlineCRLSource());
-        verifier.setOcspSource(new OnlineOCSPSource());
+        verifier.setCrlSource(new OnlineCRLSource(NetworkClients.dataLoader()));
+        verifier.setOcspSource(new OnlineOCSPSource(NetworkClients.ocspDataLoader()));
 
         logger.debug("Signature validator initialized at {}", formatter.format(new Date()));
     }
@@ -203,7 +197,7 @@ public class SignatureValidator {
             if (validator == null)
                 continue;
 
-            validator.setCertificateVerifier(new CommonCertificateVerifier());
+            validator.setCertificateVerifier(NetworkClients.certificateVerifier());
             var reports = validator.validateDocument();
             if (hasSignatures(reports))
                 documentReports.add(new ValidationReports.DocumentReport(index, document, reports));
@@ -217,9 +211,9 @@ public class SignatureValidator {
         if (validator == null)
             return null;
 
-        validator.setCertificateVerifier(new CommonCertificateVerifier());
+        validator.setCertificateVerifier(NetworkClients.certificateVerifier());
         var report = validator.validateDocument().getSimpleReport();
-        if (report.getSignatureIdList().size() == 0)
+        if (report.getSignatureIdList().isEmpty())
             return null;
 
         return report;

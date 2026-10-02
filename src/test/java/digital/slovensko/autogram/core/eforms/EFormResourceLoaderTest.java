@@ -23,6 +23,18 @@ public class EFormResourceLoaderTest {
 	private static final String RESOURCE_PATH = SOURCE_URL + FORM_URL + "/Content/";
 
 	@Test
+	void blockedDownloadWithoutTransportCauseRemainsAMissingResource() {
+		var cache = new FileCacheDataLoader() {
+			@Override
+			public DSSDocument getDocument(String url) {
+				throw new eu.europa.esig.dss.spi.exception.DSSExternalResourceException("Networking blocked");
+			}
+		};
+		var loader = new EFormResourceLoader(cache);
+		Assertions.assertNull(Assertions.assertDoesNotThrow(() -> loader.getResource(SOURCE_URL)));
+	}
+
+	@Test
 	void getManifestXsltEntriesParsesXsltWhenDestinationTypeDescriptionIsEmpty() throws Exception {
 		var htmlXsltUrl = RESOURCE_PATH + "form.UDZSRozhodnutie.html.xslt";
 		var signingXsltUrl = RESOURCE_PATH + "form.UDZSRozhodnutie.sb.xslt";

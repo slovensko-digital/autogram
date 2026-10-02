@@ -20,7 +20,6 @@ import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.AbstractSignatureService;
-import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
@@ -129,7 +128,7 @@ public class SigningJob {
 
     @SuppressWarnings("rawtypes")
     private AbstractSignatureService createSignatureService(TSPSource tspSource) {
-        var commonCertificateVerifier = new CommonCertificateVerifier();
+        var commonCertificateVerifier = NetworkClients.certificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
 
         var isContainer = input.getParameters().getContainer() != null;

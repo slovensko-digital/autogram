@@ -12,7 +12,20 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CliSettingsTest {
-    private static final Options OPTIONS = new Options().addOption("s", "source", true, "");
+    private static final Options OPTIONS = new Options().addOption("s", "source", true, "")
+            .addOption(null, "proxy", true, "");
+
+    @Test
+    void proxyOptionIsValidatedBeforeSourceProcessing() throws ParseException {
+        var cmd = parse("--proxy", "http://localhost", "nonexistent.pdf");
+        assertThrows(IllegalArgumentException.class, () -> CliSettings.fromCmd(cmd));
+    }
+
+    @Test
+    void proxyOptionIsIndependentAndOptional() throws ParseException {
+        assertEquals("", CliSettings.fromCmd(parse()).getProxyUrl());
+        assertEquals("http://[::1]:3128", CliSettings.fromCmd(parse("--proxy", "http://[::1]:3128")).getProxyUrl());
+    }
 
     @Test
     void resolveSourcePathUsesNamedOption() throws ParseException {

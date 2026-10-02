@@ -5,6 +5,8 @@ import digital.slovensko.autogram.core.DriverDetector;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.SigningParametersResolver;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.NetworkClients;
+import digital.slovensko.autogram.core.ProxyConfiguration;
 import digital.slovensko.autogram.core.errors.MultipleSourcesException;
 import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
 import digital.slovensko.autogram.core.errors.SlotIndexIsNotANumberException;
@@ -25,7 +27,19 @@ public class CliSettings extends UserSettings {
     private boolean shouldMakeParentDirectories;
 
     public static CliSettings fromCmd(CommandLine cmd) {
+        return fromCmd(cmd, false);
+    }
+
+    public static CliSettings fromCmdForStartup(CommandLine cmd) {
+        return fromCmd(cmd, true);
+    }
+
+    private static CliSettings fromCmd(CommandLine cmd, boolean initializeNetworking) {
+        var proxyConfiguration = ProxyConfiguration.parse(cmd.getOptionValue("proxy"));
+        if (initializeNetworking)
+            NetworkClients.initialize(proxyConfiguration);
         var settings = new CliSettings();
+        settings.setProxyUrl(cmd.getOptionValue("proxy", ""));
         settings.setCorrectDocumentDisplay(false);
         settings.setSource(getValidSource(resolveSourcePath(cmd)));
         settings.setTarget(cmd.getOptionValue("t"));
