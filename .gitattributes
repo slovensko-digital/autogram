@@ -3,6 +3,8 @@
 .mvn/wrapper/maven-wrapper.properties		text eol=lf
 mvnw                                		text eol=lf
 
+# force shell scripts to use LF endings
+*.sh                                    text eol=lf
+
 # skip test resources for language detection
 src/test/resources/** linguist-vendored
-
