@@ -1,141 +1,36 @@
 package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.core.errors.BatchEndedException;
-import digital.slovensko.autogram.core.errors.BatchExpiredException;
-import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
-import digital.slovensko.autogram.util.Logging;
+/** A batch signing session, or the absence of one before signing begins. */
+public interface Batch {
+    void start(SigningKey key);
 
-import java.util.Date;
-import java.util.UUID;
+    void ensureCanStartNewBatch();
 
-import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.ALREADY_ENDED;
-import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.CANNOT_RESTART;
-import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.NOT_STARTED;
+    boolean shouldResetPasswordAfterSigning();
 
-enum BatchState {
-    INITIALIZED, STARTED, ENDED
-}
+    void addJob(String batchId);
 
-/**
- * Batch is a session for signing multiple documents with the same key.
- * 
- * This class is used for checking runtime conditions and tracking progress.
- */
-public class Batch {
-    private final String batchId = generateNewBatchId();
-    private final int totalNumberOfDocuments;
+    void onJobSuccess();
 
-    private BatchState state = BatchState.INITIALIZED;
-    private SigningKey signingKey = null;
+    void onJobFailure();
 
-    private Date expirationDate;
-    private int addedDocumentsCount = 0;
-    private int successfulDocumentsCount = 0;
-    private int failedDocumentsCount = 0;
+    void end();
 
-    public Batch(int totalNumberOfDocuments) {
-        this.totalNumberOfDocuments = totalNumberOfDocuments;
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 5); // 5 minutes
-    }
+    void validate(String batchId);
 
-    public void start(SigningKey key) {
-        if (state != BatchState.INITIALIZED)
-            throw new BatchEndedException(CANNOT_RESTART);
-        state = BatchState.STARTED;
-        signingKey = key;
-    }
+    String getBatchId();
 
-    public void addJob(String batchId) {
-        validate(batchId);
-        resetExpirationDate();
+    boolean isEnded();
 
-        if (this.totalNumberOfDocuments <= this.addedDocumentsCount)
-            throw new IllegalAccessError("Sent more sign requests than declared at start");
+    boolean isAllProcessed();
 
-        addedDocumentsCount++;
-    }
+    boolean isKeyChangeAllowed();
 
-    public void onJobSuccess() {
-        successfulDocumentsCount++;
-        Logging.log("Batch " + batchId + " success");
-        log();
-    }
+    int getTotalNumberOfDocuments();
 
-    public void onJobFailure() {
-        failedDocumentsCount++;
-        Logging.log("Batch " + batchId + " failed");
-        log();
-    }
+    int getProcessedDocumentsCount();
 
-    public void end() {
-        state = BatchState.ENDED;
-    }
+    SigningKey getSigningKey();
 
-    private void validateInternal() {
-        if (state == BatchState.INITIALIZED)
-            throw new BatchEndedException(NOT_STARTED);
-
-        if (state == BatchState.ENDED)
-            throw new BatchEndedException(ALREADY_ENDED);
-
-        if (isExpired()) {
-            throw new BatchExpiredException();
-        }
-    }
-
-    public void validate(String batchId) {
-        validateInternal();
-
-        if (!this.batchId.equals(batchId)) throw new BatchInvalidIdException();
-    }
-
-    // public getters
-
-    public String getBatchId() {
-        validate(batchId);
-
-        return batchId;
-    }
-
-    public boolean isEnded() {
-        return state == BatchState.ENDED;
-    }
-
-    public boolean isAllProcessed() {
-        return getProcessedDocumentsCount() >= totalNumberOfDocuments;
-    }
-
-    public boolean isKeyChangeAllowed() {
-        return state == BatchState.INITIALIZED;
-    }
-
-    public int getTotalNumberOfDocuments() {
-        return totalNumberOfDocuments;
-    }
-
-    public int getProcessedDocumentsCount(){
-        return successfulDocumentsCount + failedDocumentsCount;
-    }
-
-    public SigningKey getSigningKey() {
-        return signingKey;
-    }
-
-    // private
-    private static String generateNewBatchId() {
-        return UUID.randomUUID().toString();
-    }
-
-    private boolean isExpired() {
-        return expirationDate.before(new Date());
-    }
-
-    public void resetExpirationDate() {
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60); // 1 minute
-    }
-
-    public void log() {
-        Logging.log("Batch " + batchId + " state: " + state + " processed: " + addedDocumentsCount + " total: " + totalNumberOfDocuments);
-    }
-
+    void log();
 }

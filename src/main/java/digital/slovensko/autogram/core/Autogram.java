@@ -1,9 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.BatchConflictException;
 import digital.slovensko.autogram.core.errors.BatchCanceledException;
-import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -30,8 +28,8 @@ import java.util.function.Consumer;
 public class Autogram {
     private final UI ui;
     private final UserSettings settings;
-    /** Current batch, should be null if no batch was started yet */
-    private Batch batch = null;
+    /** Current batch, or NoBatch before the first batch starts. */
+    private Batch batch = new NoBatch();
     private BatchResponder pendingBatchResponder;
     private final PasswordManager passwordManager;
     private Timer tokenSessionTimer = null;
@@ -110,7 +108,7 @@ public class Autogram {
     private void signCommonAndThen(SigningJob job, SigningKey signingKey, Consumer<SigningJob> callback) {
         var signedDocument = signWithKey(job, signingKey);
         job.onDocumentSigned(signedDocument);
-        if (batch == null || batch.isEnded() || batch.isAllProcessed())
+        if (batch.shouldResetPasswordAfterSigning())
             passwordManager.reset();
         callback.accept(job);
     }
@@ -157,9 +155,8 @@ public class Autogram {
      * @param responder              - callback for http response
      */
     public void startBatchSigning(int totalNumberOfDocuments, BatchResponder responder) {
-        if (batch != null && !batch.isEnded())
-            throw new BatchConflictException();
-        batch = new Batch(totalNumberOfDocuments);
+        batch.ensureCanStartNewBatch();
+        batch = new SigningBatch(totalNumberOfDocuments);
 
         pendingBatchResponder = responder;
         ui.onUIThreadDo(() -> ui.startBatch(batch, this));
@@ -219,8 +216,6 @@ public class Autogram {
      * @param batchId - current batch ID, used to authenticate the request
      */
     public void batchSign(SigningJob job, String batchId) {
-        if (batch == null) throw new BatchNotStartedException(); // TODO replace with checked exception
-
         var jobBatch = batch;
         jobBatch.addJob(batchId);
         ui.onWorkThreadDo(() -> {
@@ -257,7 +252,6 @@ public class Autogram {
     }
 
     public Batch getBatch(String batchId) {
-        if (batch == null) throw new BatchNotStartedException(); // TODO replace with checked exception
         batch.validate(batchId);
         return batch;
     }

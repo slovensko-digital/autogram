@@ -3,6 +3,8 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.TestAutogramFactory;
 import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchConflictException;
+import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +16,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class BatchCallbackTest {
+    @Test
+    void noBatchAllowsFirstStartButRejectsBatchRequests() {
+        var autogram = TestAutogramFactory.create(new TestAutogramFactory.FakeUI());
+        assertThrows(BatchNotStartedException.class, () -> autogram.getBatch("unknown"));
+        assertThrows(BatchNotStartedException.class, () -> autogram.endBatchSigning("unknown"));
+        assertThrows(BatchNotStartedException.class,
+                () -> autogram.batchSign(mock(SigningJob.class), "unknown"));
+
+        autogram.startBatchSigning(1, mock(BatchResponder.class));
+        assertThrows(BatchConflictException.class,
+                () -> autogram.startBatchSigning(1, mock(BatchResponder.class)));
+    }
+
     @Test
     void cancelBeforeSelectingKeyRespondsAndClosesThroughUiOnce() {
         var batchRef = new AtomicReference<Batch>();

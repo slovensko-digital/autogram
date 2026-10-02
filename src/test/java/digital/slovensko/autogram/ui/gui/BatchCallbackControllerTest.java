@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.SigningBatch;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -10,7 +10,7 @@ import static org.mockito.Mockito.*;
 class BatchCallbackControllerTest {
     @Test
     void cancelButtonOnlyCallsApplicationAction() {
-        var batch = new Batch(2);
+        var batch = new SigningBatch(2);
         var autogram = mock(Autogram.class);
         var gui = mock(GUI.class);
         var controller = new BatchDialogController(batch, autogram, gui);
@@ -24,7 +24,7 @@ class BatchCallbackControllerTest {
 
     @Test
     void closingBatchUiDoesNotChangeDomainState() {
-        var batch = new Batch(2);
+        var batch = new SigningBatch(2);
         batch.start(null);
 
         new GUI(null, null).closeBatch();
