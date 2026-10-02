@@ -122,6 +122,9 @@ paths:
               XAdES (ASiC_E) TXT:
                 $ref: "#/components/examples/legacy-XAdES-ASiC_E-TXT"
 
+              XAdES (ASiC_E) TXT with exclusive canonicalization:
+                $ref: "#/components/examples/legacy-XAdES-ASiC_E-TXT-Canonicalization"
+
               CAdES Level_T (ASiC_E) TXT:
                 $ref: "#/components/examples/legacy-XAdES-ASiC_E_CADES_T-TXT"
 
@@ -584,6 +587,9 @@ paths:
                 $ref: "#/components/examples/Double-Signed-CAdES-ASiC_E-PDF"
               TXT - XAdES (ASiC_E):
                 $ref: "#/components/examples/XAdES-ASiC_E-TXT"
+
+              TXT - XAdES (ASiC_E) with exclusive canonicalization:
+                $ref: "#/components/examples/XAdES-ASiC_E-TXT-Canonicalization"
 
               TXT - CAdES Level_T (ASiC_E):
                 $ref: "#/components/examples/XAdES-ASiC_E_CADES_T-TXT"
@@ -1803,6 +1809,19 @@ components:
           content: "Testovací dokument"
           filename: TextDocument.txt
 
+    XAdES-ASiC_E-TXT-Canonicalization:
+      value:
+        parameters:
+          form: XAdES
+          container: ASiC_E
+          infoCanonicalization: EXCLUSIVE
+          propertiesCanonicalization: EXCLUSIVE
+          keyInfoCanonicalization: EXCLUSIVE
+        documents:
+        - mimeType: "text/plain"
+          content: "Testovací dokument"
+          filename: TextDocument.txt
+
     XAdES-ASiC_E_XADES_T-TXT:
       value:
         parameters:
@@ -2055,6 +2074,19 @@ components:
         parameters:
           level: XAdES_BASELINE_B
           container: ASiC_E
+        payloadMimeType: "text/plain"
+
+    legacy-XAdES-ASiC_E-TXT-Canonicalization:
+      value:
+        document:
+          content: "Testovací dokument"
+          filename: TextDocument.txt
+        parameters:
+          level: XAdES_BASELINE_B
+          container: ASiC_E
+          infoCanonicalization: EXCLUSIVE
+          propertiesCanonicalization: EXCLUSIVE
+          keyInfoCanonicalization: EXCLUSIVE
         payloadMimeType: "text/plain"
 
     legacy-XAdES-ASiC_E_XADES_T-TXT:
