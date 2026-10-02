@@ -16,6 +16,7 @@ import static digital.slovensko.autogram.core.dto.AutogramMimeType.TEXT_WITH_CHA
 import static digital.slovensko.autogram.core.dto.AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_MIME_TYPE;
 import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
+import static digital.slovensko.autogram.util.DSSUtils.sanitizeFilename;
 
 import java.util.List;
 
@@ -140,7 +141,7 @@ public class AutogramDocument {
         var name = dssDocument.getName();
 
         if (name != null) {
-            name = name.replace("?", "_").replace("#", "_");
+            name = sanitizeFilename(name);
             dssDocument.setName(name);
         }
 

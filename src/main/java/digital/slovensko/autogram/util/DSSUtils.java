@@ -68,4 +68,11 @@ public class DSSUtils {
 
         return filename;
     }
+
+    public static String sanitizeFilename(String filename) {
+        if (filename == null)
+            return null;
+            
+        return filename.replace("?", "_").replace("#", "_");
+    }
 }
