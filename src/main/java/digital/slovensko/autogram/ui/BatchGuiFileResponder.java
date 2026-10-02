@@ -9,7 +9,6 @@ import java.util.Map;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchResponder;
-import digital.slovensko.autogram.core.ResponderInBatch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.TargetPath;
@@ -51,7 +50,7 @@ public class BatchGuiFileResponder extends BatchResponder {
             try {
                 targetFiles.put(file, null);
                 errors.put(file, null);
-                var responder = new ResponderInBatch(new SaveFileFromBatchResponder(file, targetPath, (File targetFile) -> {
+                var responder = new SaveFileFromBatchResponder(file, targetPath, (File targetFile) -> {
                     targetFiles.put(file, targetFile);
                     Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments() + " signed " + file.toString());
                     onAllFilesSigned(batch);
@@ -59,7 +58,7 @@ public class BatchGuiFileResponder extends BatchResponder {
                     Logging.log("Signing failed " + file.toString() + " all:" + batch.isAllProcessed());
                     errors.put(file, error);
                     onAllFilesSigned(batch);
-                }), batch);
+                });
 
                 var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes), signingParameters);
                 var job = SigningJob.fromInput(input, responder);

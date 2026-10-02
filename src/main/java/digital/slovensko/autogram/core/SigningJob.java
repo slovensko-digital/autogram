@@ -84,6 +84,11 @@ public class SigningJob {
 
     @SuppressWarnings("unchecked")
     public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
+        onDocumentSigned(signWithKey(key, tspSource));
+    }
+
+    @SuppressWarnings("unchecked")
+    public SignedDocument signWithKey(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
             + (isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
 
@@ -96,7 +101,7 @@ public class SigningJob {
             var dataToSign = castedService.getDataToSign(documents, signatureParameters);
             var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
             var signedDocument = castedService.signDocument(documents, signatureParameters, signatureValue);
-            responder.onDocumentSigned(new SignedDocument(signedDocument, key.getCertificate()));
+            return new SignedDocument(signedDocument, key.getCertificate());
 
         } else {
             var document = getDssDocument();
@@ -104,12 +109,16 @@ public class SigningJob {
             var dataToSign = signatureService.getDataToSign(document, signatureParameters);
             var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
             var signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
-            responder.onDocumentSigned(new SignedDocument(signedDocument, key.getCertificate()));
+            return new SignedDocument(signedDocument, key.getCertificate());
         }
     }
 
     public void onDocumentSignFailed(AutogramException e) {
         responder.onDocumentSignFailed(e);
+    }
+
+    public void onDocumentSigned(SignedDocument signedDocument) {
+        responder.onDocumentSigned(signedDocument);
     }
 
     public static SigningJob fromInput(SigningInput input, Responder responder) {
