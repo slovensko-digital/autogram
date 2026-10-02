@@ -45,6 +45,10 @@ public class Autogram {
         -> ui.startSigning(job, this));
     }
 
+    public void cancelSigning(SigningJob job) {
+        job.onDocumentSignFailed(new SigningCanceledByUserException());
+    }
+
     public void checkAndValidateSignatures(SigningJob job) {
         checkSignatures(job);
 
@@ -94,7 +98,8 @@ public class Autogram {
 
                 if (settings.isCorrectDocumentDisplay()) {
                     ui.onUIThreadDo(
-                            () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+                            () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue,
+                                    () -> cancelSigning(job))));
                 } else {
                     ui.onUIThreadDo(onContinue);
                 }

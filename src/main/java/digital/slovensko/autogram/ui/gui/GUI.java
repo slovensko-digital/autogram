@@ -11,7 +11,6 @@ import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
 import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -49,6 +48,7 @@ public class GUI implements UI {
     private boolean driverWasAlreadySet = false;
     private final HostServices hostServices;
     private final UserSettings userSettings;
+    private Autogram autogram;
     private BatchDialogController batchController;
     private static final boolean DEBUG = false;
     private int nWindows = 0;
@@ -60,6 +60,7 @@ public class GUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
+        this.autogram = autogram;
         autogram.startVisualization(job);
     }
 
@@ -523,8 +524,9 @@ public class GUI implements UI {
     }
 
     public void cancelJob(SigningJob job) {
-        job.onDocumentSignFailed(new SigningCanceledByUserException());
-        jobControllers.get(job).close();
+        var controller = jobControllers.get(job);
+        autogram.cancelSigning(job);
+        controller.close();
     }
 
     public void focusJob(SigningJob job) {
