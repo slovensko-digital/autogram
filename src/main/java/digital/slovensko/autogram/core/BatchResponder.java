@@ -2,8 +2,9 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
 
-public abstract class BatchResponder {
-    abstract public void onBatchStartSuccess(Batch batch);
+/** Receives batch lifecycle outcomes. */
+public interface BatchResponder {
+    void onBatchStarted(Batch batch);
 
-    abstract public void onBatchStartFailure(AutogramException error);
+    void onBatchStartFailed(AutogramException error);
 }

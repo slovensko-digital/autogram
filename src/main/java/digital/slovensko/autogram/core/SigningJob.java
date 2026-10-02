@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import java.util.List;
+import java.util.Objects;
 
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -25,15 +26,18 @@ import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
 public class SigningJob {
-    private final Responder responder;
     private final SigningInput input;
     private final List<AutogramDocument> documentsToVisualize;
+    private final Batch batch;
+    private final Integer batchPosition;
     private List<Visualization> visualizations;
 
-    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Responder responder) {
+    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Batch batch,
+            Integer batchPosition) {
         this.input = input;
         this.documentsToVisualize = documentsToVisualize;
-        this.responder = responder;
+        this.batch = batch;
+        this.batchPosition = batchPosition;
     }
 
     public AutogramDocument getDocument() {
@@ -76,14 +80,32 @@ public class SigningJob {
         return input.getName();
     }
 
+    public Batch getBatch() {
+        return batch;
+    }
+
+    /** 1-based position of this document within its batch, or null when unknown. */
+    public Integer getBatchPosition() {
+        return batchPosition;
+    }
+
+    public boolean isPartOfBatch() {
+        return batch.isPresent();
+    }
+
+    public boolean isMultiDocumentBatch() {
+        return batch.hasMultipleDocuments();
+    }
+
     public void initializeVisualizations() throws OriginalDocumentNotFoundException, FailedVisualizationException {
         visualizations = documentsToVisualize.stream()
             .map(DocumentVisualizationBuilder::fromDocument)
             .toList();
     }
 
-    @SuppressWarnings("unchecked")
-    public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public SignedDocument signWithKey(SigningKey key, TSPSource tspSource)
+            throws InterruptedException, AutogramException {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
             + (isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
 
@@ -96,23 +118,27 @@ public class SigningJob {
             var dataToSign = castedService.getDataToSign(documents, signatureParameters);
             var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
             var signedDocument = castedService.signDocument(documents, signatureParameters, signatureValue);
-            responder.onDocumentSigned(new SignedDocument(signedDocument, key.getCertificate()));
-
-        } else {
-            var document = getDssDocument();
-
-            var dataToSign = signatureService.getDataToSign(document, signatureParameters);
-            var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
-            var signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
-            responder.onDocumentSigned(new SignedDocument(signedDocument, key.getCertificate()));
+            return new SignedDocument(signedDocument, key.getCertificate());
         }
+
+        var document = getDssDocument();
+
+        var dataToSign = signatureService.getDataToSign(document, signatureParameters);
+        var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
+        var signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
+        return new SignedDocument(signedDocument, key.getCertificate());
     }
 
-    public void onDocumentSignFailed(AutogramException e) {
-        responder.onDocumentSignFailed(e);
+    public static SigningJob fromInput(SigningInput input) {
+        return fromInput(input, new NoBatch(), null);
     }
 
-    public static SigningJob fromInput(SigningInput input, Responder responder) {
+    public static SigningJob fromInput(SigningInput input, Batch batch) {
+        return fromInput(input, batch, null);
+    }
+
+    public static SigningJob fromInput(SigningInput input, Batch batch, Integer batchPosition) {
+        Objects.requireNonNull(batch);
         List<AutogramDocument> documentsToVisualize;
         if (input.getDocuments().size() == 1 && input.getFirstDocument().isAsice()) {
             documentsToVisualize = AsicContainerUtils.getOriginalDocuments(input.getFirstDocument()).stream().toList();
@@ -120,7 +146,7 @@ public class SigningJob {
             documentsToVisualize = input.getDocuments();
         }
 
-        return new SigningJob(input, documentsToVisualize, responder);
+        return new SigningJob(input, documentsToVisualize, batch, batchPosition);
     }
 
     public boolean shouldCheckPDFCompliance() {

@@ -1,16 +1,17 @@
 package digital.slovensko.autogram.server;
 
 import com.sun.net.httpserver.HttpExchange;
-import digital.slovensko.autogram.core.Responder;
+import digital.slovensko.autogram.core.SigningResponder;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.server.dto.SignResponse;
 
 import java.io.IOException;
 import java.util.Base64;
 
-public class ServerResponder extends Responder {
+public class ServerResponder implements SigningResponder {
     private final HttpExchange exchange;
 
     public ServerResponder(HttpExchange exchange) {
@@ -18,7 +19,7 @@ public class ServerResponder extends Responder {
     }
 
     @Override
-    public void onDocumentSigned(SignedDocument signedDocument) throws AutogramException {
+    public void onDocumentSigned(SignedDocument signedDocument) {
         var signer = signedDocument.getCertificate().getSubject().getPrincipal().toString();
         var issuer = signedDocument.getCertificate().getIssuer().getPrincipal().toString();
         var document = signedDocument.getDocument();
@@ -35,7 +36,27 @@ public class ServerResponder extends Responder {
     }
 
     @Override
-    public void onDocumentSignFailed(AutogramException error) {
+    public void onDocumentFailed(AutogramException error) {
         EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(error), exchange);
+    }
+
+    @Override
+    public void onDocumentCanceled() {
+        respondCanceled();
+    }
+
+    @Override
+    public void onDocumentSkipped() {
+        respondCanceled();
+    }
+
+    @Override
+    public void onDocumentSkippedRemaining() {
+        respondCanceled();
+    }
+
+    private void respondCanceled() {
+        EndpointUtils.respondWithError(
+                ErrorResponseBuilder.buildFromException(new SigningCanceledByUserException()), exchange);
     }
 }

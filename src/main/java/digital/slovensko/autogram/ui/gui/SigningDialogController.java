@@ -83,6 +83,10 @@ public class SigningDialogController extends BaseController implements Suppresse
     @FXML
     public Button changeKeyButton;
     @FXML
+    public Button skipButton;
+    @FXML
+    public Button skipRemainingButton;
+    @FXML
     VBox unsupportedVisualizationInfoBox;
     @FXML
     VBox signaturesTable;
@@ -118,6 +122,19 @@ public class SigningDialogController extends BaseController implements Suppresse
         });
         setupDocumentTabs();
         refreshSigningKey();
+        var canSkip = job.isPartOfBatch();
+        var isPartOfBatch = job.isPartOfBatch();
+        var isMultiDocumentBatch = job.isMultiDocumentBatch();
+
+        skipButton.setManaged(canSkip && isMultiDocumentBatch);
+        skipButton.setVisible(canSkip && isMultiDocumentBatch);
+        var showCancelButton = canSkip || !isPartOfBatch;
+        skipRemainingButton.setManaged(showCancelButton);
+        skipRemainingButton.setVisible(showCancelButton);
+        skipRemainingButton.setText(i18n(isMultiDocumentBatch
+                ? "batch.endSigning.btn"
+                : "general.cancel.btn"));
+
         autogram.checkPDFACompliance(job);
     }
 
@@ -161,6 +178,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         showSignatureSummaryForDocument(documentIndex);
     }
 
+    @Override
     public int getPdfDpi() {
         return userSettings.getPdfDpi();
     }
@@ -300,7 +318,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         stage.sizeToScene();
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(mainButton.getScene().getWindow());
-        stage.setOnCloseRequest(event -> signaturesInvalidDialogController.close());;
+        stage.setOnCloseRequest(event -> signaturesInvalidDialogController.close());
 
         GUIUtils.suppressDefaultFocus(stage, signaturesInvalidDialogController);
 
@@ -350,8 +368,23 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
+        autogram.clearContextSpecificPasswordError();
         gui.resetSigningKey();
         checkExistingSignatureValidityAndSign();
+    }
+
+    public void onSkipButtonPressed(ActionEvent event) {
+        mainBox.getScene().getWindow().hide();
+        autogram.skipCurrent(job);
+    }
+
+    public void onSkipRemainingButtonPressed(ActionEvent event) {
+        if (job.isPartOfBatch()) {
+            mainBox.getScene().getWindow().hide();
+            autogram.skipRemaining(job);
+        } else {
+            cancel();
+        }
     }
 
     public void onShowSignaturesButtonPressed(ActionEvent event) {
@@ -438,9 +471,11 @@ public class SigningDialogController extends BaseController implements Suppresse
         var key = gui.getActiveSigningKey();
         if (key == null) {
             mainButton.setText(i18n(job.isMultiDocument() ? "general.sign.btn.multi" : "general.sign.btn.single"));
+            changeKeyButton.setManaged(false);
             changeKeyButton.setVisible(false);
         } else {
             mainButton.setText(i18n(job.isMultiDocument() ? "signing.signAs.btn.multi" : "signing.signAs.btn.single", DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253())));
+            changeKeyButton.setManaged(true);
             changeKeyButton.setVisible(true);
         }
     }
@@ -449,6 +484,8 @@ public class SigningDialogController extends BaseController implements Suppresse
         refreshSigningKey();
         mainButton.setDisable(false);
         changeKeyButton.setDisable(false);
+        skipButton.setDisable(false);
+        skipRemainingButton.setDisable(false);
     }
 
     public void enableSigningOnAllJobs() {
@@ -462,24 +499,36 @@ public class SigningDialogController extends BaseController implements Suppresse
         }
     }
 
+    public void cancel() {
+        autogram.cancel(job);
+        close();
+        gui.enableSigningOnAllJobs();
+    }
+
     public void disableKeyPicking() {
         mainButton.setText(i18n("signing.keyPicking.btn"));
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
+        skipButton.setDisable(true);
+        skipRemainingButton.setDisable(true);
     }
 
     public void disableSigning() {
         mainButton.setText(i18n("signing.signing.btn"));
         mainButton.setDisable(true);
         changeKeyButton.setDisable(true);
+        skipButton.setDisable(true);
+        skipRemainingButton.setDisable(true);
     }
 
+    @Override
     public void showPlainTextVisualization(String text) {
         plainTextArea.setText(text);
         plainTextArea.setVisible(true);
         plainTextArea.setManaged(true);
     }
 
+    @Override
     public void showHTMLVisualization(String html) {
         webView.setContextMenuEnabled(false);
         webView.getEngine().setJavaScriptEnabled(false);
@@ -502,6 +551,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         webViewContainer.setManaged(true);
     }
 
+    @Override
     public void showPDFVisualization(ArrayList<byte[]> data) {
         data.forEach(page -> {
             var imgView = new ImageView();
@@ -518,8 +568,8 @@ public class SigningDialogController extends BaseController implements Suppresse
         pdfVisualizationContainer.setManaged(true);
     }
 
+    @Override
     public void showImageVisualization(DSSDocument doc) {
-        // TODO what about visualization
         imageVisualization.fitWidthProperty().unbind();
         imageVisualization.fitWidthProperty().bind(imageVisualizationContainer.widthProperty().subtract(4));
         imageVisualization.setImage(new Image(doc.openStream()));
@@ -532,6 +582,7 @@ public class SigningDialogController extends BaseController implements Suppresse
         imageVisualizationContainer.setManaged(true);
     }
 
+    @Override
     public void showUnsupportedVisualization() {
         unsupportedVisualizationInfoBox.setVisible(true);
         unsupportedVisualizationInfoBox.setManaged(true);

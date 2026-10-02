@@ -1,32 +1,84 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.core.errors.AutogramException;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class PasswordManager implements PasswordInputCallback {
     private final UI ui;
-    private final PasswordManagerSettings settings;
     private char[] cachedPassword;
+    private Batch cachedBatch;
+    private final ThreadLocal<Batch> currentBatch = new ThreadLocal<>();
+    private AutogramException contextSpecificPasswordError;
 
-    public PasswordManager(UI ui, PasswordManagerSettings settings) {
+    public PasswordManager(UI ui) {
         this.ui = ui;
-        this.settings = settings;
     }
 
-    public char[] getContextSpecificPassword() {
-        if (settings.getCacheContextSpecificPasswordEnabled()) {
+    public synchronized char[] getContextSpecificPassword() {
+        var previousError = contextSpecificPasswordError;
+        contextSpecificPasswordError = null;
+        var batch = currentBatch.get();
+        if (batch != null) {
+            if (cachedBatch == null || !cachedBatch.hasBatchId(batch.getId())) {
+                clearCachedPassword();
+                cachedBatch = batch;
+            }
+
             if (cachedPassword == null) {
-                cachedPassword = ui.getContextSpecificPassword();
+                cachedPassword = ui.getContextSpecificPassword(previousError);
             }
             return cachedPassword;
-        } else {
-            return ui.getContextSpecificPassword();
+        }
+
+        return ui.getContextSpecificPassword(previousError);
+    }
+
+    public boolean isCachingPIN() {
+        return currentBatch.get() != null;
+    }
+
+    public void withoutCachedPIN(Runnable operation) {
+        withBatchContext(null, operation);
+    }
+
+    public void withCachedPIN(Batch batch, Runnable operation) {
+        withBatchContext(Objects.requireNonNull(batch), operation);
+    }
+
+    private void withBatchContext(Batch batch, Runnable operation) {
+        var previousBatch = currentBatch.get();
+        currentBatch.set(batch);
+        try {
+            operation.run();
+        } finally {
+            if (previousBatch == null)
+                currentBatch.remove();
+            else
+                currentBatch.set(previousBatch);
         }
     }
 
-    public void reset() {
+    public synchronized void onContextSpecificPasswordRejected(AutogramException error) {
+        clearCachedPassword();
+        cachedBatch = null;
+        contextSpecificPasswordError = Objects.requireNonNull(error);
+    }
+
+    public synchronized void clearContextSpecificPasswordError() {
+        contextSpecificPasswordError = null;
+    }
+
+    public synchronized void reset() {
+        clearCachedPassword();
+        cachedBatch = null;
+        contextSpecificPasswordError = null;
+    }
+
+    private void clearCachedPassword() {
         if (cachedPassword != null)
             Arrays.fill(cachedPassword, '\0');
 

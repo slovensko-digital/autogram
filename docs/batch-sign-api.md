@@ -19,10 +19,9 @@ z pohladu klienta
 
 z pohladu UI
 
-- ukazat dialog o hromadnom podpisovani
-- vybrat token driver (optional - ak nie je vybrany kluc)
-- vybrat podpisovy kluc (optional)
-- potvrdit spustenie hromadneho podpisovania s vybranym podpisom
+- zobrazit dialog na vyber rezimu (one-by-one / hromadne), ak nie je zapnute bulk podpisovanie
+- pri hromadnom rezime: vybrat token driver (optional - ak nie je vybrany kluc), vybrat podpisovy kluc (optional) a potvrdit spustenie
+- pri one-by-one rezime: kazdy `POST /sign` otvori podpisovaci dialog a odpovie az po potvrdeni pouzivatelom
 
 ```mermaid
 sequenceDiagram
@@ -33,8 +32,8 @@ sequenceDiagram
     end
 
     client->>server: POST /batch
-    server->>ui: show batch dialog
-    ui->>ui: show dialogs
+    server->>ui: show mode dialog (one-by-one / all-at-once)
+    ui->>ui: pick mode + signing key
     ui->>server: user accepts batch
     server->>client: batchId
 

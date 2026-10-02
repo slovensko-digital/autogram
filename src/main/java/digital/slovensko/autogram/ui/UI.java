@@ -13,7 +13,9 @@ import java.util.function.Consumer;
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
 
-    void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
+    void startBatch(Batch batch, Autogram autogram, Consumer<SigningKey> onKeySelected, Runnable onCancel);
+
+    void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel);
 
     void cancelBatch(Batch batch);
 
@@ -30,6 +32,9 @@ public interface UI {
     void onSigningFailed(AutogramException e, SigningJob job);
 
     void onSigningFailed(AutogramException e);
+
+    default void onSigningRetryable(AutogramException e, SigningJob job) {
+    }
 
     void onDocumentSaved(File targetFile);
 
@@ -55,7 +60,7 @@ public interface UI {
 
     char[] getKeystorePassword();
 
-    char[] getContextSpecificPassword();
+    char[] getContextSpecificPassword(AutogramException previousError);
 
     public void updateBatch();
 

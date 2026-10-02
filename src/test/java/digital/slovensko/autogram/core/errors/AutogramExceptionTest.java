@@ -6,6 +6,29 @@ import org.junit.jupiter.api.Test;
 class AutogramExceptionTest {
 
     @Test
+    void pinIncorrectAllowsBatchToContinueTest() {
+        Assertions.assertTrue(new PINIncorrectException().batchCanContinue());
+    }
+
+    @Test
+    void pinIncorrectIsRetryableTest() {
+        Assertions.assertTrue(new PINIncorrectException().isRetryable());
+    }
+
+    @Test
+    void pinLockedStopsBatchAndIsNotRetryableTest() {
+        var error = new PINLockedException();
+
+        Assertions.assertFalse(error.batchCanContinue());
+        Assertions.assertFalse(error.isRetryable());
+    }
+
+    @Test
+    void errorsAreNotRetryableByDefaultTest() {
+        Assertions.assertFalse(new AutogramException("SOME_ERROR").isRetryable());
+    }
+
+    @Test
     void createFromIllegalArgumentExceptionNoMessageTest() {
         Assertions.assertSame(UnrecognizedException.class, AutogramException.createFromIllegalArgumentException(new IllegalArgumentException()).getClass());
     }
