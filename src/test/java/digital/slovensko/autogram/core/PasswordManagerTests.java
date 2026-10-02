@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 class PasswordManagerTests {
 
     @Test
-    void rejectedPINIsPassedToTheNextContextPasswordPromptOnlyOnce() {
+    void rejectedPINIsPassedToTheNextContextPasswordPromptOnlyOnce() throws Exception {
         var ui = mock(UI.class);
         when(ui.getContextSpecificPassword(any())).thenReturn("1234".toCharArray());
         var passwordManager = new PasswordManager(ui);
@@ -27,7 +27,7 @@ class PasswordManagerTests {
     }
 
     @Test
-    void resetDiscardsPendingPINError() {
+    void resetDiscardsPendingPINError() throws Exception {
         var ui = mock(UI.class);
         when(ui.getContextSpecificPassword(any())).thenReturn("1234".toCharArray());
         var passwordManager = new PasswordManager(ui);

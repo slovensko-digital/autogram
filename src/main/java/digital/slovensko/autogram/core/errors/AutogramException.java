@@ -98,8 +98,4 @@ public class AutogramException extends RuntimeException {
     public boolean batchCanContinue() {
         return true;
     }
-
-    public boolean isRetryable() {
-        return false;
-    }
 }

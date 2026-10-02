@@ -629,10 +629,9 @@ class AutogramTests {
         var batchRef = new java.util.concurrent.atomic.AtomicReference<Batch>();
         var newUI = new TestAutogramFactory.FakeUI() {
             @Override
-            public void startBatch(Batch batch, Autogram autogram, java.util.function.Consumer<SigningKey> onKeySelected,
-                    Runnable onCancel) {
+            public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
                 batchRef.set(batch);
-                onKeySelected.accept(keyRef.get());
+                callback.accept(keyRef.get());
             }
         };
         var autogram = TestAutogramFactory.create(newUI);

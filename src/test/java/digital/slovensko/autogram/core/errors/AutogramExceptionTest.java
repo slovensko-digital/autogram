@@ -11,21 +11,8 @@ class AutogramExceptionTest {
     }
 
     @Test
-    void pinIncorrectIsRetryableTest() {
-        Assertions.assertTrue(new PINIncorrectException().isRetryable());
-    }
-
-    @Test
-    void pinLockedStopsBatchAndIsNotRetryableTest() {
-        var error = new PINLockedException();
-
-        Assertions.assertFalse(error.batchCanContinue());
-        Assertions.assertFalse(error.isRetryable());
-    }
-
-    @Test
-    void errorsAreNotRetryableByDefaultTest() {
-        Assertions.assertFalse(new AutogramException("SOME_ERROR").isRetryable());
+    void pinLockedStopsBatchTest() {
+        Assertions.assertFalse(new PINLockedException().batchCanContinue());
     }
 
     @Test

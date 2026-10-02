@@ -6,6 +6,7 @@ import eu.europa.esig.dss.token.PasswordInputCallback;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 
 public class PasswordManager implements PasswordInputCallback {
     private final UI ui;
@@ -41,19 +42,19 @@ public class PasswordManager implements PasswordInputCallback {
         return currentBatch.get() != null;
     }
 
-    public void withoutCachedPIN(Runnable operation) {
-        withBatchContext(null, operation);
+    public <T> T withoutCachedPIN(Callable<T> operation) throws Exception {
+        return withBatchContext(null, operation);
     }
 
-    public void withCachedPIN(Batch batch, Runnable operation) {
-        withBatchContext(Objects.requireNonNull(batch), operation);
+    public <T> T withCachedPIN(Batch batch, Callable<T> operation) throws Exception {
+        return withBatchContext(Objects.requireNonNull(batch), operation);
     }
 
-    private void withBatchContext(Batch batch, Runnable operation) {
+    private <T> T withBatchContext(Batch batch, Callable<T> operation) throws Exception {
         var previousBatch = currentBatch.get();
         currentBatch.set(batch);
         try {
-            operation.run();
+            return operation.call();
         } finally {
             if (previousBatch == null)
                 currentBatch.remove();
