@@ -16,7 +16,6 @@ import static digital.slovensko.autogram.core.dto.AutogramMimeType.TEXT_WITH_CHA
 import static digital.slovensko.autogram.core.dto.AutogramMimeType.XML_DATACONTAINER_WITH_CHARSET;
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_MIME_TYPE;
 import static digital.slovensko.autogram.util.DSSUtils.getXdcfFilename;
-import static digital.slovensko.autogram.util.DSSUtils.sanitizeFilename;
 
 import java.util.List;
 
@@ -136,14 +135,17 @@ public class AutogramDocument {
         return AsicContainerUtils.getOriginalDocuments(dssDocument);
     }
 
+    private static void sanitizeDocumentName(DSSDocument dssDocument) {
+        var name = dssDocument.getName();
+        if (name != null) {
+            dssDocument.setName(name.replace("?", "_").replace("#", "_"));
+        }
+    }
+
     private static DSSDocument normalize(DSSDocument dssDocument) {
         var mimeType = dssDocument.getMimeType();
+        sanitizeDocumentName(dssDocument);
         var name = dssDocument.getName();
-
-        if (name != null) {
-            name = sanitizeFilename(name);
-            dssDocument.setName(name);
-        }
 
         if (name != null && name.endsWith(".xdcf")) {
             dssDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
