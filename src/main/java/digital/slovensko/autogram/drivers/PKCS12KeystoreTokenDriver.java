@@ -3,6 +3,7 @@ package digital.slovensko.autogram.drivers;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.KeyStore;
+import java.security.UnrecoverableKeyException;
 
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
@@ -28,8 +29,12 @@ public class PKCS12KeystoreTokenDriver extends TokenDriver {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (DSSException e) {
-            if (e.getCause().getMessage().equals("keystore password was incorrect"))
-                throw new PINIncorrectException();
+            if (e.getCause() instanceof IOException) {
+                var ioExceptionCause = e.getCause();
+                if(ioExceptionCause.getCause() instanceof UnrecoverableKeyException) {
+                    throw new PINIncorrectException();
+                }
+            }
 
             throw e;
         }
