@@ -175,14 +175,16 @@ public class Autogram {
         pendingBatchResponder = null;
         try {
             batch.start(key);
-            responder.onBatchStartSuccess(batch);
         } catch (Exception e) {
             finishBatch(batch);
             if (e instanceof AutogramException autogramException)
                 responder.onBatchStartFailure(autogramException);
             else
                 responder.onBatchStartFailure(new AutogramException("BATCH_START_FAILED", e, e));
+            return;
         }
+
+        responder.onBatchStartSuccess(batch);
     }
 
     public void cancelBatch(Batch batch) {

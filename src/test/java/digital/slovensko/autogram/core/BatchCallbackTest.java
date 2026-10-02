@@ -81,6 +81,28 @@ class BatchCallbackTest {
     }
 
     @Test
+    void failedStartResponseIsNotReportedAsFailedBatchStart() {
+        var batchRef = new AtomicReference<Batch>();
+        var ui = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void startBatch(Batch batch, Autogram autogram) {
+                batchRef.set(batch);
+            }
+        };
+        var autogram = TestAutogramFactory.create(ui);
+        var responder = mock(BatchResponder.class);
+        autogram.startBatchSigning(1, responder);
+        var batch = batchRef.get();
+        doThrow(new IllegalStateException("response failed")).when(responder).onBatchStartSuccess(batch);
+
+        assertThrows(IllegalStateException.class,
+                () -> autogram.signBatchWithKey(batch, mock(SigningKey.class)));
+
+        assertFalse(batch.isEnded());
+        verify(responder, never()).onBatchStartFailure(any());
+    }
+
+    @Test
     void updateEndsCompletedBatchThroughApplication() {
         var batchRef = new AtomicReference<Batch>();
         var closed = new AtomicInteger();
