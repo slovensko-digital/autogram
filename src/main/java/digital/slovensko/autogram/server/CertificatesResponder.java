@@ -3,7 +3,6 @@ package digital.slovensko.autogram.server;
 
 import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.server.dto.CertificatesResponse;
-import digital.slovensko.autogram.server.dto.ErrorResponse;
 
 import java.security.cert.X509Certificate;
 import java.util.List;

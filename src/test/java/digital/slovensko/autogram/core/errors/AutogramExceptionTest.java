@@ -6,6 +6,16 @@ import org.junit.jupiter.api.Test;
 class AutogramExceptionTest {
 
     @Test
+    void pinIncorrectAllowsBatchToContinueTest() {
+        Assertions.assertTrue(new PINIncorrectException().batchCanContinue());
+    }
+
+    @Test
+    void pinLockedStopsBatchTest() {
+        Assertions.assertFalse(new PINLockedException().batchCanContinue());
+    }
+
+    @Test
     void createFromIllegalArgumentExceptionNoMessageTest() {
         Assertions.assertSame(UnrecognizedException.class, AutogramException.createFromIllegalArgumentException(new IllegalArgumentException()).getClass());
     }

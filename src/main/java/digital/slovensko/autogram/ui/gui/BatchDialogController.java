@@ -14,7 +14,6 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 
 public class BatchDialogController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
@@ -111,8 +110,8 @@ public class BatchDialogController extends BaseController implements SuppressedF
     }
 
     public void onCancelBatchButtonPressed(ActionEvent event) {
-        batch.end();
-        close();
+        autogram.endBatch(batch);
+        gui.cancelBatch(batch);
     }
 
     public void refreshSigningKey() {
@@ -121,10 +120,12 @@ public class BatchDialogController extends BaseController implements SuppressedF
 
             if (key == null) {
                 mainButton.setText(i18n("general.sign.btn.multi"));
+                changeKeyButton.setManaged(false);
                 changeKeyButton.setVisible(false);
 
             } else {
                 mainButton.setText(i18n("batch.signAs.btn") + DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253()));
+                changeKeyButton.setManaged(true);
                 changeKeyButton.setVisible(true);
             }
         }
@@ -192,9 +193,5 @@ public class BatchDialogController extends BaseController implements SuppressedF
     @Override
     public Node getNodeForLoosingFocus() {
         return mainBox;
-    }
-
-    public Window getMainWindow() {
-        return mainBox.getScene().getWindow();
     }
 }

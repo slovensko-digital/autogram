@@ -1,26 +1,28 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
-import digital.slovensko.autogram.core.errors.BatchNotStartedException;
+import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
-import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
-import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
@@ -28,18 +30,21 @@ import java.util.function.Consumer;
 public class Autogram {
     private final UI ui;
     private final UserSettings settings;
-    /** Current batch, should be null if no batch was started yet */
-    private Batch batch = null;
+    /** Current batch, {@link NoBatch} if no batch was started yet */
+    private Batch batch = new NoBatch();
     private final PasswordManager passwordManager;
+    /** Jobs waiting for the user to sign them, with the responder to deliver the outcome to */
+    private final Map<SigningJob, SigningResponder> pendingSignings = new IdentityHashMap<>();
     private Timer tokenSessionTimer = null;
 
     public Autogram(UI ui, UserSettings settings) {
         this.ui = ui;
         this.settings = settings;
-        this.passwordManager = new PasswordManager(ui, this.settings);
+        this.passwordManager = new PasswordManager(ui);
     }
 
-    public void sign(SigningJob job) {
+    public void startSigning(SigningJob job, SigningResponder responder) {
+        pendingSignings.put(job, responder);
         ui.onUIThreadDo(()
         -> ui.startSigning(job, this));
     }
@@ -78,8 +83,10 @@ public class Autogram {
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
             if (job.getDocuments().stream().anyMatch(d -> d.isPDFAndPasswordProtected())) {
+                var e = new AutogramException("LOCKED_PDF");
+                onVisualizationFailed(e, job);
                 ui.onUIThreadDo(() -> {
-                    ui.showError(new AutogramException("LOCKED_PDF"));
+                    ui.showError(e);
                 });
                 return;
             }
@@ -90,32 +97,40 @@ public class Autogram {
 
             } catch (FailedVisualizationException e) {
                 Runnable onContinue = () -> ui.showSigningJob(job, this);
+                Runnable onCancel = () -> cancel(job);
 
                 if (settings.isCorrectDocumentDisplay()) {
                     ui.onUIThreadDo(
-                            () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue)));
+                            () -> ui.showIgnorableExceptionDialog(new FailedVisualizationException(e, job, onContinue, onCancel)));
                 } else {
                     ui.onUIThreadDo(onContinue);
                 }
 
             } catch (AutogramException e) {
+                onVisualizationFailed(e, job);
                 ui.onUIThreadDo(() -> ui.showError(e));
             }
         });
     }
 
-    private void signCommonAndThen(SigningJob job, SigningKey signingKey, Consumer<SigningJob> callback) {
+    private void onVisualizationFailed(AutogramException e, SigningJob job) {
+        var responder = pendingSignings.remove(job);
+        if (responder == null)
+            return;
+
+        batch.onJobFailure();
+        responder.onDocumentFailed(e);
+    }
+
+    private SignedDocument signCommon(SigningJob job, SigningKey signingKey) {
         try {
-            job.signWithKeyAndRespond(signingKey, settings.getTspSource());
+            var signedDocument = signWithKeyRetryingPIN(job, signingKey);
             resetTokenSessionTimer();
 
-            if (batch == null || batch.isEnded() || batch.isAllProcessed())
+            if (!batch.isActive() || batch.isAllProcessed())
                 passwordManager.reset();
 
-            callback.accept(job);
-        } catch (PINIncorrectException e) {
-            passwordManager.reset();
-            throw e;
+            return signedDocument;
         } catch (AutogramException e) {
             throw e;
         } catch (DSSException e) {
@@ -127,34 +142,101 @@ public class Autogram {
         }
     }
 
-    public void sign(SigningJob job, SigningKey signingKey) {
-        ui.onWorkThreadDo(() -> {
+    /** Signs the job, asking for the PIN again (with the error shown) while it is rejected. */
+    private SignedDocument signWithKeyRetryingPIN(SigningJob job, SigningKey signingKey) throws Exception {
+        Callable<SignedDocument> signing = () -> job.signWithKey(signingKey, settings.getTspSource());
+        while (true) {
             try {
-                signCommonAndThen(job, signingKey, (jobNew) -> {
-                    ui.onUIThreadDo(() -> ui.onSigningSuccess(jobNew));
-                });
-            } catch (ResponseNetworkErrorException e) {
-                onSigningFailed(e, job);
-            } catch (AutogramException e) {
-                onSigningFailed(e);
-            } catch (Exception e) {
-                onSigningFailed(new UnrecognizedException(e));
+                if (job.isPartOfBatch())
+                    return passwordManager.withCachedPIN(job.getBatch(), signing);
+
+                return passwordManager.withoutCachedPIN(signing);
+            } catch (PINIncorrectException e) {
+                passwordManager.onContextSpecificPasswordRejected(e);
             }
+        }
+    }
+
+    public void sign(SigningJob job, SigningKey signingKey) {
+        var responder = pendingSignings.get(job);
+        if (responder == null)
+            throw new IllegalStateException("Signing job was not submitted for interactive signing");
+
+        ui.onWorkThreadDo(() -> {
+            SignedDocument signedDocument;
+            try {
+                signedDocument = signCommon(job, signingKey);
+            } catch (AutogramException e) {
+                onSigningFailed(e, job, responder);
+                return;
+            }
+
+            // The responder is called outside the signing try/catch: its failure is not a signing failure.
+            pendingSignings.remove(job);
+            passwordManager.clearContextSpecificPasswordError();
+            batch.onJobSuccess();
+            responder.onDocumentSigned(signedDocument);
+            ui.onUIThreadDo(() -> ui.onSigningSuccess(job));
         });
     }
 
+    private void onSigningFailed(AutogramException e, SigningJob job, SigningResponder responder) {
+        pendingSignings.remove(job);
+        passwordManager.clearContextSpecificPasswordError();
+        batch.onJobFailure();
+        if (job.isPartOfBatch() && !e.batchCanContinue())
+            endActiveBatch();
+
+        ui.onUIThreadDo(() -> ui.onSigningFailed(e, job));
+        responder.onDocumentFailed(e);
+    }
+
     /**
-     * Starts a batch - ask user - get signing key - start batch - return batch ID
+     * Starts a batch - ask user for signing mode - (get signing key) - start batch - return batch ID
      *
      * @param totalNumberOfDocuments - expected number of documents to be signed
      * @param responder              - callback for http response
      */
-    public void batchStart(int totalNumberOfDocuments, BatchResponder responder) {
-        if (batch != null && !batch.isEnded())
+    public void startBatchWithModeSelection(int totalNumberOfDocuments, BatchResponder responder) {
+        var newBatch = createBatch(totalNumberOfDocuments);
+        var startBatchTask = new BatchStartCallback(newBatch, responder);
+
+        ui.onUIThreadDo(() -> {
+            ui.selectBatchMode(newBatch, mode -> {
+                newBatch.setMode(mode);
+                startBatch(newBatch, startBatchTask);
+            }, startBatchTask::cancel);
+        });
+    }
+
+    /**
+     * Starts a batch in the given mode - (get signing key) - start batch - return batch ID
+     *
+     * @param totalNumberOfDocuments - expected number of documents to be signed
+     * @param mode                   - bulk (one key for all) or interactive (per document)
+     * @param responder              - callback for http response
+     */
+    public void startBatch(int totalNumberOfDocuments, SigningMode mode, BatchResponder responder) {
+        var newBatch = createBatch(totalNumberOfDocuments);
+        newBatch.setMode(mode);
+        startBatch(newBatch, new BatchStartCallback(newBatch, responder));
+    }
+
+    private Batch createBatch(int totalNumberOfDocuments) {
+        if (batch.isActive())
             throw new BatchConflictException();
         batch = new Batch(totalNumberOfDocuments);
+        return batch;
+    }
 
-        var startBatchTask = new BatchStartCallback(batch, responder);
+    private void startBatch(Batch batch, BatchStartCallback startBatchTask) {
+        if (this.batch != batch || batch.isEnded())
+            throw new BatchConflictException();
+
+        if (batch.isInteractive()) {
+            startBatchTask.accept(null);
+            return;
+        }
 
         ui.onUIThreadDo(() -> {
             ui.startBatch(batch, this, startBatchTask);
@@ -165,30 +247,39 @@ public class Autogram {
      * Sign a single document
      *
      * @param job
-     * @param batchId - current batch ID, used to authenticate the request
+     * @param batchId   - current batch ID, used to authenticate the request
+     * @param responder - callback for the result, in interactive mode called once the user signs the document
      */
-    public void batchSign(SigningJob job, String batchId) {
-        if (batch == null) throw new BatchNotStartedException(); // TODO replace with checked exception
-
+    public void batchSign(SigningJob job, String batchId, SigningResponder responder) {
         batch.addJob(batchId);
 
+        if (batch.isInteractive()) {
+            startSigning(job, responder);
+            return;
+        }
+
         ui.onWorkThreadDo(() -> {
+            SignedDocument signedDocument;
             try {
-                signCommonAndThen(job, batch.getSigningKey(), (jobNew) -> {
-                    Logging.log("GUI: Signing batch job: " + job.hashCode() + " file " + job.getName());
-                });
+                signedDocument = signCommon(job, batch.getSigningKey());
             } catch (AutogramException e) {
-                job.onDocumentSignFailed(e);
+                passwordManager.clearContextSpecificPasswordError();
+                batch.onJobFailure();
+                responder.onDocumentFailed(e);
                 if (!e.batchCanContinue()) {
                     ui.onUIThreadDo(() -> {
                         ui.cancelBatch(batch);
                     });
-                    throw e;
                 }
-            } catch (Exception e) {
-                AutogramException autogramException = new AutogramException("SIGNING_FAILED", e);
-                job.onDocumentSignFailed(autogramException);
+                ui.onUIThreadDo(() -> {
+                    ui.updateBatch();
+                });
+                return;
             }
+
+            passwordManager.clearContextSpecificPasswordError();
+            batch.onJobSuccess();
+            responder.onDocumentSigned(signedDocument);
             ui.onUIThreadDo(() -> {
                 ui.updateBatch();
             });
@@ -200,19 +291,81 @@ public class Autogram {
      *
      * @param batchId - current batch ID, used to authenticate the request
      */
-    public boolean batchEnd(String batchId) {
+    public boolean endBatch(String batchId) {
+        if (batch.isEnded()) {
+            if (!batch.hasBatchId(batchId))
+                throw new BatchInvalidIdException();
+            return false;
+        }
+
         batch.validate(batchId);
         batch.end();
+        passwordManager.reset();
         ui.onUIThreadDo(() -> {
             ui.cancelBatch(batch);
         });
         return batch.isAllProcessed();
     }
 
+    /** Ends the batch from the GUI batch dialog. */
+    public void endBatch(Batch batch) {
+        if (this.batch == batch)
+            batch.end();
+        passwordManager.reset();
+    }
+
+    private void endActiveBatch() {
+        batch.end();
+        passwordManager.reset();
+    }
+
     public Batch getBatch(String batchId) {
-        if (batch == null) throw new BatchNotStartedException(); // TODO replace with checked exception
         batch.validate(batchId);
         return batch;
+    }
+
+    /** The user skipped the current document; the batch continues with the next one. */
+    public void skipCurrent(SigningJob job) {
+        var responder = pendingSignings.remove(job);
+        if (responder == null)
+            return;
+
+        passwordManager.clearContextSpecificPasswordError();
+        batch.onJobFailure();
+        responder.onDocumentSkipped();
+    }
+
+    /** The user skipped the current and all remaining documents; the batch ends. */
+    public void skipRemaining(SigningJob job) {
+        var responder = pendingSignings.remove(job);
+        if (responder == null)
+            return;
+
+        batch.onJobFailure();
+        endActiveBatch();
+        responder.onDocumentSkippedRemaining();
+    }
+
+    /** The user cancelled a submitted document; the whole batch is aborted. */
+    public void cancel(SigningJob job) {
+        var responder = pendingSignings.remove(job);
+        if (responder == null)
+            return;
+
+        batch.onJobFailure();
+        endActiveBatch();
+        responder.onDocumentCanceled();
+    }
+
+    /** A batch document failed before it could be submitted for signing. */
+    public void recordPreSubmissionFailure() {
+        batch.onJobFailure();
+    }
+
+    /** The given number of batch documents will never be submitted for signing. */
+    public void recordAborted(int count) {
+        for (var i = 0; i < count; i++)
+            batch.onJobFailure();
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
@@ -261,15 +414,16 @@ public class Autogram {
     }
 
     public void onDocumentBatchSaved(BatchUiResult result) {
+        endActiveBatch();
         ui.onUIThreadDo(() -> ui.onDocumentBatchSaved(result));
-    }
-
-    public void onSigningFailed(AutogramException e, SigningJob job) {
-        ui.onUIThreadDo(() -> ui.onSigningFailed(e, job));
     }
 
     public void onSigningFailed(AutogramException e) {
         ui.onUIThreadDo(() -> ui.onSigningFailed(e));
+    }
+
+    public void clearContextSpecificPasswordError() {
+        passwordManager.clearContextSpecificPasswordError();
     }
 
     public void initializeSignatureValidator(ScheduledExecutorService scheduledExecutorService, ExecutorService cachedExecutorService, List<String> tlCountries) {

@@ -4,6 +4,7 @@ import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.BatchStartCallback;
+import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.Updater;
@@ -81,12 +82,16 @@ public class CliUI implements UI {
 
     @Override
     public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
-        // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+        // There is no interactive mode selection in CLI, so fall back to automated signing.
+        onSelected.accept(SigningMode.BULK);
     }
 
     @Override
     public void cancelBatch(Batch batch) {
-        // TODO Auto-generated method stub
     }
 
     @Override
@@ -229,6 +234,7 @@ public class CliUI implements UI {
 
     }
 
+    @Override
     public void showIgnorableExceptionDialog(IgnorableException exception) {
         throw exception;
     }
@@ -298,13 +304,15 @@ public class CliUI implements UI {
         return System.console().readPassword("Enter keystore password (hidden): ");
     }
 
-    public char[] getContextSpecificPassword() {
+    @Override
+    public char[] getContextSpecificPassword(AutogramException previousError) {
+        if (previousError != null)
+            showError(previousError);
         return System.console().readPassword("Enter key password (hidden): ");
     }
 
     @Override
     public void updateBatch() {
-        // TODO: no usage for this in CLI UI
     }
 
     @Override

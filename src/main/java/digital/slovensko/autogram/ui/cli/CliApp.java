@@ -36,23 +36,21 @@ public class CliApp {
 
             var source = settings.getSource();
             var sourceList = source.isDirectory() ? source.listFiles() : new File[] { source };
+            var files = Arrays.stream(sourceList).filter(File::isFile).toList();
 
-            var finalAutogram = autogram;
+            ui.setJobsCount(files.size());
             var parameters = settings.getSigningParameters();
-            var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
-                        .map(f -> SigningJob.fromInput(
-                            SigningInput.fromFile(AutogramDocument.build(new FileDocument(f), EFormAttributes.build(parameters, true)), parameters),
-                            new SaveFileResponder(f, finalAutogram, targetPathBuilder)))
-                    .toList();
-            if (settings.isPdfaCompliance()) {
-                jobs.forEach(job -> {
+            var eFormAttributes = EFormAttributes.build(parameters, true);
+            for (var file : files) {
+                var input = SigningInput.fromFile(
+                        AutogramDocument.build(new FileDocument(file), eFormAttributes), parameters);
+                var job = SigningJob.fromInput(input);
+                if (settings.isPdfaCompliance()) {
                     System.out.println("Checking PDF/A file compatibility for " + job.getName());
-                    finalAutogram.checkPDFACompliance(job);
-                });
+                    autogram.checkPDFACompliance(job);
+                }
+                autogram.startSigning(job, new SaveFileResponder(file, autogram, targetPathBuilder));
             }
-
-            ui.setJobsCount(jobs.size());
-            jobs.forEach(autogram::sign);
 
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));

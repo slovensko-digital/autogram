@@ -19,7 +19,7 @@ public class BatchStartCallback {
         try {
             Logging.log("Starting batch");
             batch.start(key);
-            responder.onBatchStartSuccess(batch);
+            responder.onBatchStarted(batch);
         } catch (Exception e) {
             handleException(e);
         }
@@ -29,7 +29,7 @@ public class BatchStartCallback {
         try {
             Logging.log("Cancelling batch");
             batch.end();
-            responder.onBatchStartFailure(new BatchCanceledException());
+            responder.onBatchStartFailed(new BatchCanceledException());
         }catch (ResponseNetworkErrorException ex){
             Logging.log("ResponseNetworkErrorException: " + ex.getMessage());
         } catch (Exception e) {
@@ -38,11 +38,12 @@ public class BatchStartCallback {
     }
 
     private void handleException(Exception e) {
+        batch.end();
         if (e instanceof AutogramException)
-            responder.onBatchStartFailure((AutogramException) e);
+            responder.onBatchStartFailed((AutogramException) e);
         else {
             Logging.log("Batch start failed with exception: " + e);
-            responder.onBatchStartFailure(new AutogramException("BATCH_START_FAILED", e, e));
+            responder.onBatchStartFailed(new AutogramException("BATCH_START_FAILED", e, e));
         }
     }
 }

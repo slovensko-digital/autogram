@@ -7,6 +7,6 @@ public class PINIncorrectException extends AutogramException {
 
     @Override
     public boolean batchCanContinue() {
-        return false;
+        return true;
     }
 }

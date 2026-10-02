@@ -33,17 +33,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class DocumentVisualizationBuilderTests {
 
-    Responder dummyResponder = new Responder() {
-        @Override
-        public void onDocumentSigned(SignedDocument signedDocument) {
-        }
-
-        @Override
-        public void onDocumentSignFailed(AutogramException error) {
-            fail("Should not have thrown any exception", error);
-        }
-    };
-
     @Test
     void testSigningJobTransformToHtml() throws IOException, ParserConfigurationException, SAXException {
         var transformation = new String(TestMethodSources.loadContent("crystal_test_data/PovolenieZdravotnictvo.html.xslt"), StandardCharsets.UTF_8);
@@ -137,7 +126,7 @@ public class DocumentVisualizationBuilderTests {
                 DigestAlgorithm.SHA256, ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false,
                 null, null, null, false, 640, false);
         var input = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(document, EFormAttributes.build(parameters, true)), parameters);
-        var job = SigningJob.fromInput(input, dummyResponder);
+        var job = SigningJob.fromInput(input);
 
         job.initializeVisualizations();
         var visualization = job.getVisualizations().get(0);
@@ -158,7 +147,7 @@ public class DocumentVisualizationBuilderTests {
                     "generalAgendaInlineXdcfBinary.xdcf", MimeTypeEnum.BINARY),
         EFormAttributes.build(preparedFirstDocument.getParameters(), true));
         var job = SigningJob.fromInput(
-                SigningInput.of(List.of(firstDocument, secondDocument), preparedFirstDocument.getParameters()), dummyResponder);
+                SigningInput.of(List.of(firstDocument, secondDocument), preparedFirstDocument.getParameters()));
 
         job.initializeVisualizations();
         Visualization visualization = job.getVisualizations().get(1);

@@ -16,17 +16,17 @@ enum BatchState {
     INITIALIZED, STARTED, ENDED
 }
 
-/**
- * Batch is a session for signing multiple documents with the same key.
- * 
- * This class is used for checking runtime conditions and tracking progress.
- */
+/** A signing session that tracks expected and completed documents. */
 public class Batch {
+    private static final long AUTOMATED_DOCUMENT_TIMEOUT_MILLIS = 1000L * 60;
+    private static final long INITIAL_TIMEOUT_MILLIS = 1000L * 60 * 5;
+
     private final String batchId = generateNewBatchId();
     private final int totalNumberOfDocuments;
 
     private BatchState state = BatchState.INITIALIZED;
     private SigningKey signingKey = null;
+    private SigningMode mode = SigningMode.BULK;
 
     private Date expirationDate;
     private int addedDocumentsCount = 0;
@@ -35,7 +35,7 @@ public class Batch {
 
     public Batch(int totalNumberOfDocuments) {
         this.totalNumberOfDocuments = totalNumberOfDocuments;
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 5); // 5 minutes
+        expirationDate = new Date(System.currentTimeMillis() + INITIAL_TIMEOUT_MILLIS);
     }
 
     public void start(SigningKey key) {
@@ -43,6 +43,30 @@ public class Batch {
             throw new BatchEndedException(CANNOT_RESTART);
         state = BatchState.STARTED;
         signingKey = key;
+    }
+
+    /** The signing mode of this batch; must be set before it is started. */
+    public void setMode(SigningMode mode) {
+        if (state != BatchState.INITIALIZED)
+            throw new IllegalStateException("Signing mode must be set before the batch is started");
+
+        this.mode = mode;
+    }
+
+    public SigningMode getMode() {
+        return mode;
+    }
+
+    public boolean isPresent() {
+        return true;
+    }
+
+    public boolean hasMultipleDocuments() {
+        return totalNumberOfDocuments > 1;
+    }
+
+    public boolean isInteractive() {
+        return mode == SigningMode.INTERACTIVE;
     }
 
     public void addJob(String batchId) {
@@ -78,7 +102,7 @@ public class Batch {
         if (state == BatchState.ENDED)
             throw new BatchEndedException(ALREADY_ENDED);
 
-        if (isExpired()) {
+        if (!isInteractive() && isExpired()) {
             throw new BatchExpiredException();
         }
     }
@@ -89,7 +113,9 @@ public class Batch {
         if (!this.batchId.equals(batchId)) throw new BatchInvalidIdException();
     }
 
-    // public getters
+    public boolean hasBatchId(String batchId) {
+        return this.batchId.equals(batchId);
+    }
 
     public String getBatchId() {
         validate(batchId);
@@ -97,8 +123,18 @@ public class Batch {
         return batchId;
     }
 
+    /** Returns the batch id without validating the batch state (e.g. for cache lookups). */
+    public String getId() {
+        return batchId;
+    }
+
     public boolean isEnded() {
         return state == BatchState.ENDED;
+    }
+
+    /** True while the batch may still accept documents (initialized or started). */
+    public boolean isActive() {
+        return state != BatchState.ENDED;
     }
 
     public boolean isAllProcessed() {
@@ -121,7 +157,6 @@ public class Batch {
         return signingKey;
     }
 
-    // private
     private static String generateNewBatchId() {
         return UUID.randomUUID().toString();
     }
@@ -131,7 +166,10 @@ public class Batch {
     }
 
     public void resetExpirationDate() {
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60); // 1 minute
+        if (isInteractive())
+            return;
+
+        expirationDate = new Date(System.currentTimeMillis() + AUTOMATED_DOCUMENT_TIMEOUT_MILLIS);
     }
 
     public void log() {

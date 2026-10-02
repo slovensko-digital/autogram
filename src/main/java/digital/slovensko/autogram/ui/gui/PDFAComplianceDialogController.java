@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 public class PDFAComplianceDialogController extends BaseController implements SuppressedFocusController {
     private final SigningJob job;
     private final GUI gui;
+    private final Runnable onCancel;
 
     @FXML
     Button continueButton;
@@ -17,9 +18,10 @@ public class PDFAComplianceDialogController extends BaseController implements Su
     @FXML
     Button cancelButton;
 
-    public PDFAComplianceDialogController(SigningJob job, GUI gui) {
+    public PDFAComplianceDialogController(SigningJob job, GUI gui, Runnable onCancel) {
         this.job = job;
         this.gui = gui;
+        this.onCancel = onCancel;
     }
 
     @Override
@@ -27,7 +29,7 @@ public class PDFAComplianceDialogController extends BaseController implements Su
 
     public void onCancelAction(ActionEvent ignored) {
         GUIUtils.closeWindow(mainBox);
-        gui.cancelJob(job);
+        onCancel.run();
     }
 
     public void onContinueAction(ActionEvent ignored) {

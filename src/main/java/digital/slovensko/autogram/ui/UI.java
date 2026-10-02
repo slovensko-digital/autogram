@@ -15,6 +15,8 @@ public interface UI {
 
     void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
 
+    void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel);
+
     void cancelBatch(Batch batch);
 
     void showSigningJob(SigningJob job, Autogram autogram);
@@ -55,7 +57,7 @@ public interface UI {
 
     char[] getKeystorePassword();
 
-    char[] getContextSpecificPassword();
+    char[] getContextSpecificPassword(AutogramException previousError);
 
     public void updateBatch();
 
