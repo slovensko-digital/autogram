@@ -12,7 +12,7 @@ public class MalformedBodyException extends AutogramException {
     }
 
     public enum Error {
-        JSON_PARSING_FAILED, INVALID_XSD, INVALID_XSLT, BASE64_DECODING_FAILED;
+        JSON_PARSING_FAILED, BASE64_DECODING_FAILED;
 
         private String toErrorCode() {
             return "MalformedBodyException." + this.name();

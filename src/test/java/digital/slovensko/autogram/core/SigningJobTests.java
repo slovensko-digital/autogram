@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
 import digital.slovensko.autogram.server.dto.Document;
+import digital.slovensko.autogram.server.dto.LegacyDocument;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.dto.VersionedSignRequestBody;
@@ -65,8 +66,9 @@ public class SigningJobTests {
                 null
         );
 
-        var signRequestBody = new SignRequestBody(new Document("document.xml", content), ssParams, "application/xml;base64");
-        var input = signRequestBody.getSigningInput(true);
+        var signRequestBody = new SignRequestBody(new LegacyDocument("document.xml", content), ssParams, "application/xml;base64");
+        var newSignRequestBody = signRequestBody.toVersionedBody();
+        var input = newSignRequestBody.getSigningInput(true);
         var job = SigningJob.fromInput(input, null);
         try {
             job.initializeVisualizations();

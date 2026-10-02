@@ -5,10 +5,11 @@ import java.util.Base64;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.eforms.dto.XsltParams;
-import digital.slovensko.autogram.server.errors.MalformedBodyException;
+import digital.slovensko.autogram.core.errors.EFormException;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 
-import static digital.slovensko.autogram.server.errors.MalformedBodyException.Error.BASE64_DECODING_FAILED;
+import static digital.slovensko.autogram.core.errors.EFormException.Error.INVALID_XSD;
+import static digital.slovensko.autogram.core.errors.EFormException.Error.INVALID_XSLT;
 
 public record XDCParameters (
         String fsFormIdentifier, Boolean autoLoadEform, String identifier, String containerXmlns,
@@ -17,7 +18,7 @@ public record XDCParameters (
         TransformationOutputMimeType transformationMediaDestinationTypeDescription,
         String transformationTargetEnvironment) {
 
-    private enum TransformationOutputMimeType {
+    public enum TransformationOutputMimeType {
         TXT,
         HTML,
         XHTML
@@ -76,7 +77,7 @@ public record XDCParameters (
 
         if ((schemaMimeType != null && schemaMimeType.toLowerCase().contains("base64"))
                 || (schemaMimeType == null && isDocumentBase64))
-            return decodeBase64(schema);
+            return decodeBase64(schema, INVALID_XSD);
 
         return schema;
     }
@@ -91,16 +92,16 @@ public record XDCParameters (
 
         if ((schemaMimeType != null && schemaMimeType.toLowerCase().contains("base64"))
                 || (schemaMimeType == null && isDocumentBase64))
-            return decodeBase64(transformation);
+            return decodeBase64(transformation, INVALID_XSLT);
 
         return transformation;
     }
 
-    private static String decodeBase64(String value) {
+    private static String decodeBase64(String value, EFormException.Error error) {
         try {
             return new String(Base64.getDecoder().decode(value));
         } catch (IllegalArgumentException e) {
-            throw new MalformedBodyException(BASE64_DECODING_FAILED);
+            throw new EFormException(error);
         }
     }
 

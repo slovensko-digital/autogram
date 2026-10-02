@@ -28,17 +28,17 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.platform.commons.util.ReflectionUtils;
 import org.yaml.snakeyaml.Yaml;
 
-import digital.slovensko.autogram.server.dto.Document;
 import digital.slovensko.autogram.server.dto.ErrorResponseBody;
+import digital.slovensko.autogram.server.dto.LegacyDocument;
+import digital.slovensko.autogram.server.dto.PresentationParameters;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
-import digital.slovensko.autogram.server.dto.ServerSigningParameters.LocalCanonicalizationMethod;
-import digital.slovensko.autogram.server.dto.ServerSigningParameters.VisualizationWidthEnum;
-import digital.slovensko.autogram.server.dto.ServerSigningParameters.TransformationOutputMimeType;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.dto.SignResponse;
+import digital.slovensko.autogram.server.dto.VersionedSigningParameters;
+import digital.slovensko.autogram.server.dto.XDCParameters;
 
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -146,7 +146,7 @@ public class SignHttpSmokeTest {
         var parameters = getNested(example, "parameters");
         var payloadMimeType = getNested(example, "payloadMimeType");
 
-        var rDocument = new Document(document.get("filename"), document.get("content"));
+        var rDocument = new LegacyDocument(document.get("filename"), document.get("content"));
         var rParameters = fromMap((Map<String, Object>) parameters);
         var rPayloadMimeType = (String) payloadMimeType;
 
@@ -193,22 +193,22 @@ public class SignHttpSmokeTest {
         var packaging = fromMapToEnum(SignaturePackaging.class, map.get("packaging"));
         var digestAlgorithm = fromMapToEnum(DigestAlgorithm.class, map.get("digestAlgorithm"));
         var en319132 = (boolean) map.getOrDefault("en319132", false);
-        var infoCanonicalization = fromMapToEnum(LocalCanonicalizationMethod.class, map.get("infoCanonicalization"));
-        var propertiesCanonicalization = fromMapToEnum(LocalCanonicalizationMethod.class,
+        var infoCanonicalization = fromMapToEnum(VersionedSigningParameters.LocalCanonicalizationMethod.class, map.get("infoCanonicalization"));
+        var propertiesCanonicalization = fromMapToEnum(VersionedSigningParameters.LocalCanonicalizationMethod.class,
                 map.get("propertiesCanonicalization"));
-        var keyInfoCanonicalization = fromMapToEnum(LocalCanonicalizationMethod.class,
+        var keyInfoCanonicalization = fromMapToEnum(VersionedSigningParameters.LocalCanonicalizationMethod.class,
                 map.get("keyInfoCanonicalization"));
         var schema = (String) map.get("schema");
         var transformation = (String) map.get("transformation");
         var identifier = (String) map.get("identifier");
         var checkPDFACompliance = (boolean) map.getOrDefault("checkPDFACompliance", false);
-        var visualizationWidth = fromMapToEnum(VisualizationWidthEnum.class, map.get("visualizationWidth"));
+        var visualizationWidth = fromMapToEnum(PresentationParameters.VisualizationWidthEnum.class, map.get("visualizationWidth"));
         var autoLoadEform = (Boolean) map.get("autoLoadEform");
         var embedUsedSchemas = (boolean) map.getOrDefault("embedUsedSchemas", false);
         var schemaIdentifier = (String) map.get("schemaIdentifier");
         var transformationIdentifier = (String) map.get("transformationIdentifier");
         var transformationLanguage = (String) map.get("transformationLanguage");
-        var transformationMediaDestinationTypeDescription = fromMapToEnum(TransformationOutputMimeType.class, map.get("transformationMediaDestinationTypeDescription"));
+        var transformationMediaDestinationTypeDescription = fromMapToEnum(XDCParameters.TransformationOutputMimeType.class, map.get("transformationMediaDestinationTypeDescription"));
         var transformationTargetEnvironment = (String) map.get("transformationTargetEnvironment");
         var fsFormId = (String) map.get("fsFormId");
 
