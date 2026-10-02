@@ -41,6 +41,13 @@ public class AutogramDocument {
         return build(document, eFormAttributes, false);
     }
 
+    public static AutogramDocument buildFromFile(DSSDocument document, EFormAttributes eFormAttributes) {
+        if (eFormAttributes == null || document.getName() == null)
+            return build(document, eFormAttributes);
+
+        return build(document, eFormAttributes.withFsFormId(EFormUtils.getFsFormIdFromFilename(document.getName())));
+    }
+
     public static AutogramDocument build(DSSDocument document, EFormAttributes eFormAttributes, boolean preserveFileName) {
         if (document.getMimeType() == null)
             throw new SigningParametersException(NO_MIME_TYPE);

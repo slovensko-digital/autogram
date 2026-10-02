@@ -9,7 +9,6 @@ import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
-import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
@@ -73,9 +72,9 @@ class AutogramTests {
         var autogram = TestAutogramFactory.create();
 
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, null,
-            null, null, false, null, null, null, false, 640, true);
+            null, null, false, null, null, null, false, 640, false);
         var input = SigningInput.prepareForASiCWithXAdES(
-            AutogramDocument.build(document, EFormAttributes.build(parameters, false)), parameters);
+            AutogramDocument.buildFromFile(document, EFormAttributes.build(parameters, true)), parameters);
         var responder = mock(Responder.class);
 
         autogram.pickSigningKeyAndThen(
@@ -339,6 +338,8 @@ class AutogramTests {
             "digital.slovensko.autogram.TestMethodSources#validXadesDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#validCadesDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#pdfForPadesProvider",
+            "digital.slovensko.autogram.TestMethodSources#unsetXdcfMimetypeProvider",
+            "digital.slovensko.autogram.TestMethodSources#orsrDocumentsProvider",
             "digital.slovensko.autogram.TestMethodSources#fsDPFOProvider"})
     void testSignBuildFromFileHappyScenario(InMemoryDocument document) throws IOException {
         var autogram = TestAutogramFactory.create();
@@ -353,10 +354,8 @@ class AutogramTests {
         var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
             ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
         var fileDocument = new FileDocument(file);
-        var eFormAttributes = new EFormAttributes(null, null, null, null, null, null, false,
-            EFormUtils.getFsFormIdFromFilename(fileDocument.getName()), true,
-            parameters.getPropertiesCanonicalization(), parameters.getDigestAlgorithm());
-        var input = SigningInput.fromFile(AutogramDocument.build(fileDocument, eFormAttributes), parameters);
+        var input = SigningInput.fromFile(
+            AutogramDocument.buildFromFile(fileDocument, EFormAttributes.build(parameters, true)), parameters);
         autogram.pickSigningKeyAndThen(key -> autogram.sign(SigningJob.fromInput(input, responder), key));
 
         verify(responder).onDocumentSigned(any());
