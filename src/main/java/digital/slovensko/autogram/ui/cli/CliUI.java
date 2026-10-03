@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
+import eu.europa.esig.dss.model.DSSDocument;
 
 public class CliUI implements UI {
     private final CliSettings settings;
@@ -291,6 +292,11 @@ public class CliUI implements UI {
     @Override
     public void showError(AutogramException e) {
         System.err.println(parseError(e));
+    }
+
+    @Override
+    public char[] getDocumentPassword(DSSDocument document) {
+        return System.console().readPassword("Enter document (" + document.getName() + ") password (hidden): ");
     }
 
     @Override

@@ -58,7 +58,7 @@ public class DocumentVisualizationBuilder {
             return new PlainTextVisualization(new String(documentToDisplay.openStream().readAllBytes(), StandardCharsets.UTF_8), documentToDisplay.getName());
 
         if (isPDF(documentToDisplay.getMimeType()))
-            return new PDFVisualization(documentToDisplay);
+            return new PDFVisualization(document);
 
         if (isImage(documentToDisplay.getMimeType()))
             return new ImageVisualization(documentToDisplay);

@@ -19,7 +19,6 @@ import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import java.nio.charset.StandardCharsets;
@@ -290,7 +289,7 @@ public class ServerSigningParameters {
         return container;
     }
 
-    public void resolveSignatureLevel(InMemoryDocument document) throws RequestValidationException {
+    public void resolveSignatureLevel(AutogramDocument document) throws RequestValidationException {
         if (level != null && level != LocalSignatureLevel.BASELINE_B && level != LocalSignatureLevel.BASELINE_T)
             return;
 

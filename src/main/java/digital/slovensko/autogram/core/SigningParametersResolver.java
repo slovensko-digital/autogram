@@ -67,7 +67,7 @@ public class SigningParametersResolver {
     public static SigningParameters resolveLenientFromFile(SigningParameters requested, AutogramDocument document) {
         var documents = List.of(document);
 
-        var signedDocumentSignature = SignatureValidator.getSignedDocumentSignature(document.toDssDocument());
+        var signedDocumentSignature = SignatureValidator.getSignedDocumentSignature(document);
         if (signedDocumentSignature != null)
             return resolveLenient(withSignedDocumentSignature(requested, signedDocumentSignature), documents);
 
