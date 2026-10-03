@@ -307,7 +307,8 @@ public class CliUI implements UI {
         return System.console().readPassword("Enter keystore password (hidden): ");
     }
 
-    public char[] getContextSpecificPassword() {
+    public char[] getContextSpecificPassword(boolean incorrectPIN) {
+        if (incorrectPIN) System.err.println("Incorrect signing PIN. Try again.");
         return System.console().readPassword("Enter key password (hidden): ");
     }
 

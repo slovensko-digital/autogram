@@ -134,14 +134,19 @@ public class Autogram {
     private void signCommonAndThen(SigningJob job, SigningKey signingKey,
             Consumer<SigningJob> onSuccess, Consumer<AutogramException> onFailure) {
         SignedDocument signedDocument;
-        try {
-            signedDocument = signWithKey(job, signingKey);
-        } catch (AutogramException e) {
-            onFailure.accept(e);
-            return;
-        } catch (Exception e) {
-            onFailure.accept(new UnrecognizedException(e));
-            return;
+        while (true) {
+            try {
+                signedDocument = signWithKey(job, signingKey);
+                break;
+            } catch (PINIncorrectException e) {
+                passwordManager.preparePINRetry();
+            } catch (AutogramException e) {
+                onFailure.accept(e);
+                return;
+            } catch (Exception e) {
+                onFailure.accept(new UnrecognizedException(e));
+                return;
+            }
         }
 
         job.onJobSigned(signedDocument);

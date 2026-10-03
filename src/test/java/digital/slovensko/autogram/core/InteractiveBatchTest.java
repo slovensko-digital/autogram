@@ -5,6 +5,9 @@ import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.TestAutogramFactory;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.errors.PINIncorrectException;
+import digital.slovensko.autogram.core.errors.PINLockedException;
+import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.server.ErrorResponseBuilder;
 import digital.slovensko.autogram.server.ServerResponder;
@@ -13,8 +16,11 @@ import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.gui.BatchGuiFileResponder;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
+import eu.europa.esig.dss.model.DSSException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
@@ -57,7 +63,7 @@ class InteractiveBatchTest {
         var prompts = new AtomicInteger();
         var ui = new TestAutogramFactory.FakeUI() {
             @Override
-            public char[] getContextSpecificPassword() {
+            public char[] getContextSpecificPassword(boolean incorrectPIN) {
                 prompts.incrementAndGet();
                 return "1234".toCharArray();
             }
@@ -202,11 +208,84 @@ class InteractiveBatchTest {
     }
 
     @Test
+    void incorrectInteractivePinAutomaticallyReopensPromptWithErrorAndClearsCache() throws Exception {
+        var prompts = new AtomicInteger();
+        var errors = new ArrayList<Boolean>();
+        var ui = spy(new InteractiveUI() {
+            @Override
+            public char[] getContextSpecificPassword(boolean incorrectPIN) {
+                prompts.incrementAndGet();
+                errors.add(incorrectPIN);
+                return "1234".toCharArray();
+            }
+        });
+        var autogram = TestAutogramFactory.create(ui);
+        var field = Autogram.class.getDeclaredField("passwordManager");
+        field.setAccessible(true);
+        var manager = (PasswordManager) field.get(autogram);
+        var batchResponder = mock(BatchResponder.class);
+        autogram.startBatchSigning(2, batchResponder);
+        var captor = org.mockito.ArgumentCaptor.forClass(Batch.class);
+        verify(batchResponder).onBatchStartSuccess(captor.capture());
+        var batch = captor.getValue();
+        var responder = mock(Responder.class);
+        var job = spy(TestSigningJobFactory.create(batch, responder));
+        var attempts = new AtomicInteger();
+        var pin = new AtomicReference<char[]>();
+        var signed = mock(SignedDocument.class);
+        doAnswer(invocation -> {
+            if (pin.get() != null) assertArrayEquals(new char[4], pin.get());
+            assertFalse(batch.isEnded());
+            assertEquals(0, batch.getProcessedDocumentsCount());
+            verifyNoInteractions(responder);
+            pin.set(manager.getContextSpecificPassword());
+            assertArrayEquals("1234".toCharArray(), pin.get());
+            switch (attempts.incrementAndGet()) {
+                case 1 -> throw new PINIncorrectException();
+                case 2 -> throw new DSSException(new java.security.GeneralSecurityException("CKR_PIN_INCORRECT"));
+                default -> { return signed; }
+            }
+        }).when(job).signWithKey(any(), any());
+        autogram.batchSign(job, batch.getBatchId());
+
+        try {
+            autogram.sign(job, mock(SigningKey.class));
+
+            assertEquals(List.of(false, true, true), errors);
+            verify(ui, never()).onSigningFailed(any());
+            verify(ui, never()).onSigningFailed(any(), any());
+            verify(ui, never()).closeSigningJob(any());
+            verify(ui, never()).closeBatch();
+            verify(responder).onDocumentSigned(signed);
+            verify(responder, never()).onDocumentSignFailed(any());
+            assertEquals(1, batch.getProcessedDocumentsCount());
+            assertEquals(3, prompts.get());
+            assertFalse(batch.isEnded());
+
+            var nextResponder = mock(Responder.class);
+            var nextJob = spy(TestSigningJobFactory.create(batch, nextResponder));
+            doAnswer(invocation -> {
+                assertSame(pin.get(), manager.getContextSpecificPassword());
+                return signed;
+            }).when(nextJob).signWithKey(any(), any());
+            autogram.batchSign(nextJob, batch.getBatchId());
+            autogram.sign(nextJob, mock(SigningKey.class));
+
+            assertEquals(3, prompts.get());
+            assertEquals(2, batch.getProcessedDocumentsCount());
+            assertTrue(batch.isEnded());
+            verify(nextResponder).onDocumentSigned(signed);
+        } finally {
+            autogram.shutdown();
+        }
+    }
+
+    @Test
     void interactiveSigningCachesPinAcrossWorkerThreadsUntilBatchEnds() throws Exception {
         var prompts = new AtomicInteger();
         var ui = new InteractiveUI() {
             @Override
-            public char[] getContextSpecificPassword() {
+            public char[] getContextSpecificPassword(boolean incorrectPIN) {
                 prompts.incrementAndGet();
                 return "1234".toCharArray();
             }
@@ -255,5 +334,33 @@ class InteractiveBatchTest {
         } finally {
             autogram.shutdown();
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void pinRetryStopsOnCancelOrLockedPin(boolean locked) {
+        var ui = spy(new InteractiveUI());
+        doNothing().when(ui).onSigningFailed(any(), any());
+        var autogram = TestAutogramFactory.create(ui);
+        var batchResponder = mock(BatchResponder.class);
+        autogram.startBatchSigning(2, batchResponder);
+        var captor = org.mockito.ArgumentCaptor.forClass(Batch.class);
+        verify(batchResponder).onBatchStartSuccess(captor.capture());
+        var batch = captor.getValue();
+        var responder = mock(Responder.class);
+        var job = spy(TestSigningJobFactory.create(batch, responder));
+        var terminal = locked ? new PINLockedException() : new PasswordNotProvidedException();
+        doThrow(new PINIncorrectException()).doThrow(terminal).when(job).signWithKey(any(), any());
+        autogram.batchSign(job, batch.getBatchId());
+
+        autogram.sign(job, mock(SigningKey.class));
+
+        verify(job, times(2)).signWithKey(any(), any());
+        verify(responder).onDocumentSignFailed(terminal);
+        verify(responder, never()).onDocumentSigned(any());
+        verify(ui).onSigningFailed(terminal, job);
+        verify(ui, never()).onSigningFailed(any());
+        assertEquals(1, batch.getProcessedDocumentsCount());
+        autogram.finishBatch(batch);
     }
 }

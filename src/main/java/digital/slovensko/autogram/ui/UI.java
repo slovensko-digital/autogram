@@ -60,7 +60,7 @@ public interface UI {
 
     char[] getKeystorePassword();
 
-    char[] getContextSpecificPassword();
+    char[] getContextSpecificPassword(boolean incorrectPIN);
 
     public void updateBatch();
 

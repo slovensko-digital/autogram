@@ -9,6 +9,7 @@ public class PasswordManager implements PasswordInputCallback {
     private final UI ui;
     private final PasswordManagerSettings settings;
     private char[] cachedPassword;
+    private boolean incorrectPIN;
     private Batch cachedBatch = new NoBatch();
     private final ThreadLocal<Batch> currentBatch = ThreadLocal.withInitial(NoBatch::new);
 
@@ -25,7 +26,8 @@ public class PasswordManager implements PasswordInputCallback {
                 cachedBatch = batch;
             }
             if (cachedPassword == null)
-                cachedPassword = ui.getContextSpecificPassword();
+                cachedPassword = ui.getContextSpecificPassword(incorrectPIN);
+            incorrectPIN = false;
             return cachedPassword;
         }
 
@@ -35,17 +37,26 @@ public class PasswordManager implements PasswordInputCallback {
         }
         if (settings.getCacheContextSpecificPasswordEnabled()) {
             if (cachedPassword == null) {
-                cachedPassword = ui.getContextSpecificPassword();
+                cachedPassword = ui.getContextSpecificPassword(incorrectPIN);
             }
+            incorrectPIN = false;
             return cachedPassword;
         } else {
-            return ui.getContextSpecificPassword();
+            var password = ui.getContextSpecificPassword(incorrectPIN);
+            incorrectPIN = false;
+            return password;
         }
     }
 
     public synchronized void reset() {
         clearCachedPassword();
         cachedBatch = new NoBatch();
+        incorrectPIN = false;
+    }
+
+    public synchronized void preparePINRetry() {
+        reset();
+        incorrectPIN = true;
     }
 
     public Batch setBatchContext(Batch batch) {

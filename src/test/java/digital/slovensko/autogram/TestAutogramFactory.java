@@ -176,7 +176,7 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public char[] getContextSpecificPassword() {
+        public char[] getContextSpecificPassword(boolean incorrectPIN) {
             return null;
         }
 

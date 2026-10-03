@@ -274,13 +274,14 @@ public class GUI implements UI {
     }
 
 
-    public char[] getContextSpecificPassword() {
+    public char[] getContextSpecificPassword(boolean incorrectPIN) {
         var futurePassword = new FutureTask<>(() -> {
             var controller = new PasswordController("password.context.text", "password.context.error.text", null, true, false);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();
             stage.setTitle(controller.i18n("password.context.title"));
+            if (incorrectPIN) controller.showIncorrectPIN();
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
