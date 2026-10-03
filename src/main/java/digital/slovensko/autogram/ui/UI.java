@@ -32,6 +32,8 @@ public interface UI {
 
     void onSigningSuccess(SigningJob job);
 
+    void enableSigningOnAllJobs();
+
     void onSigningFailed(AutogramException e, SigningJob job);
 
     void onSigningFailed(AutogramException e);
@@ -60,7 +62,7 @@ public interface UI {
 
     char[] getKeystorePassword();
 
-    char[] getContextSpecificPassword(boolean incorrectPIN);
+    char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning);
 
     public void updateBatch();
 

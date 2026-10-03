@@ -217,6 +217,7 @@ public class GUI implements UI {
         }
     }
 
+    @Override
     public void enableSigningOnAllJobs() {
         jobControllers.values().forEach(SigningDialogController::enableSigning);
         if (batchController != null)
@@ -274,10 +275,13 @@ public class GUI implements UI {
     }
 
 
-    public char[] getContextSpecificPassword(boolean incorrectPIN) {
+    public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
         var futurePassword = new FutureTask<>(() -> {
             var controller = new PasswordController("password.context.text", "password.context.error.text", null, true, false);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
+            if (canReturnToSigning) {
+                controller.cancelButton.setText(controller.i18n("general.close.btn"));
+            }
 
             var stage = new Stage();
             stage.setTitle(controller.i18n("password.context.title"));

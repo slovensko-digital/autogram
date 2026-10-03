@@ -197,6 +197,11 @@ public class Autogram {
     }
 
     private void handleSigningFailure(SigningJob job, AutogramException error) {
+        if (error.shouldReturnToSigning() && (!job.isPartOfBatch() || job.getBatch().isInteractive())) {
+            passwordManager.reset();
+            ui.onUIThreadDo(ui::enableSigningOnAllJobs);
+            return;
+        }
         if (error instanceof ResponseNetworkErrorException) {
             onSigningFailed(error, job);
             return;

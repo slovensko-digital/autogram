@@ -307,7 +307,7 @@ public class CliUI implements UI {
         return System.console().readPassword("Enter keystore password (hidden): ");
     }
 
-    public char[] getContextSpecificPassword(boolean incorrectPIN) {
+    public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
         if (incorrectPIN) System.err.println("Incorrect signing PIN. Try again.");
         return System.console().readPassword("Enter key password (hidden): ");
     }
@@ -315,6 +315,10 @@ public class CliUI implements UI {
     @Override
     public void updateBatch() {
         // TODO: no usage for this in CLI UI
+    }
+
+    @Override
+    public void enableSigningOnAllJobs() {
     }
 
     @Override

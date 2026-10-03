@@ -20,13 +20,14 @@ public class PasswordManager implements PasswordInputCallback {
 
     public synchronized char[] getContextSpecificPassword() {
         var batch = currentBatch.get();
+        var canReturnToSigning = !batch.isPresent() || batch.isInteractive();
         if (batch.isPresent()) {
             if (cachedBatch != batch) {
                 clearCachedPassword();
                 cachedBatch = batch;
             }
             if (cachedPassword == null)
-                cachedPassword = ui.getContextSpecificPassword(incorrectPIN);
+                cachedPassword = ui.getContextSpecificPassword(incorrectPIN, canReturnToSigning);
             incorrectPIN = false;
             return cachedPassword;
         }
@@ -37,12 +38,12 @@ public class PasswordManager implements PasswordInputCallback {
         }
         if (settings.getCacheContextSpecificPasswordEnabled()) {
             if (cachedPassword == null) {
-                cachedPassword = ui.getContextSpecificPassword(incorrectPIN);
+                cachedPassword = ui.getContextSpecificPassword(incorrectPIN, canReturnToSigning);
             }
             incorrectPIN = false;
             return cachedPassword;
         } else {
-            var password = ui.getContextSpecificPassword(incorrectPIN);
+            var password = ui.getContextSpecificPassword(incorrectPIN, canReturnToSigning);
             incorrectPIN = false;
             return password;
         }

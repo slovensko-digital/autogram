@@ -63,7 +63,7 @@ class InteractiveBatchTest {
         var prompts = new AtomicInteger();
         var ui = new TestAutogramFactory.FakeUI() {
             @Override
-            public char[] getContextSpecificPassword(boolean incorrectPIN) {
+            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
                 prompts.incrementAndGet();
                 return "1234".toCharArray();
             }
@@ -224,9 +224,10 @@ class InteractiveBatchTest {
             }
 
             @Override
-            public char[] getContextSpecificPassword(boolean incorrectPIN) {
+            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
                 prompts.incrementAndGet();
                 errors.add(incorrectPIN);
+                assertEquals(!bulk, canReturnToSigning);
                 return "1234".toCharArray();
             }
         });
@@ -296,7 +297,7 @@ class InteractiveBatchTest {
         var prompts = new AtomicInteger();
         var ui = new InteractiveUI() {
             @Override
-            public char[] getContextSpecificPassword(boolean incorrectPIN) {
+            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
                 prompts.incrementAndGet();
                 return "1234".toCharArray();
             }
@@ -367,11 +368,64 @@ class InteractiveBatchTest {
         autogram.sign(job, mock(SigningKey.class));
 
         verify(job, times(2)).signWithKey(any(), any());
-        verify(responder).onDocumentSignFailed(terminal);
+        if (locked) {
+            verify(responder).onDocumentSignFailed(terminal);
+            verify(ui).onSigningFailed(terminal, job);
+            assertEquals(1, batch.getProcessedDocumentsCount());
+        } else {
+            verifyNoInteractions(responder);
+            verify(ui, never()).onSigningFailed(any(), any());
+            verify(ui, never()).closeSigningJob(job);
+            verify(ui).enableSigningOnAllJobs();
+            assertFalse(batch.isEnded());
+            assertEquals(0, batch.getProcessedDocumentsCount());
+        }
         verify(responder, never()).onDocumentSigned(any());
-        verify(ui).onSigningFailed(terminal, job);
         verify(ui, never()).onSigningFailed(any());
-        assertEquals(1, batch.getProcessedDocumentsCount());
         autogram.finishBatch(batch);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void closingPinDialogKeepsSingleOrInteractiveDocumentOpenForRetry(boolean interactive) {
+        var ui = spy(new InteractiveUI());
+        var autogram = TestAutogramFactory.create(ui);
+        Batch batch = new NoBatch();
+        if (interactive) {
+            var batchResponder = mock(BatchResponder.class);
+            autogram.startBatchSigning(2, batchResponder);
+            var captor = org.mockito.ArgumentCaptor.forClass(Batch.class);
+            verify(batchResponder).onBatchStartSuccess(captor.capture());
+            batch = captor.getValue();
+        }
+        var responder = mock(Responder.class);
+        var job = spy(TestSigningJobFactory.create(batch, responder));
+        var signed = mock(SignedDocument.class);
+        doThrow(new PasswordNotProvidedException()).doReturn(signed).when(job).signWithKey(any(), any());
+        if (interactive) autogram.batchSign(job, batch.getBatchId());
+        else autogram.startSigning(job);
+
+        try {
+            autogram.sign(job, mock(SigningKey.class));
+
+            verify(ui).enableSigningOnAllJobs();
+            verify(ui, never()).closeSigningJob(any());
+            verify(ui, never()).closeBatch();
+            verify(ui, never()).onSigningFailed(any());
+            verify(ui, never()).onSigningFailed(any(), any());
+            verifyNoInteractions(responder);
+            if (interactive) {
+                assertFalse(batch.isEnded());
+                assertEquals(0, batch.getProcessedDocumentsCount());
+            }
+
+            autogram.sign(job, mock(SigningKey.class));
+
+            verify(responder).onDocumentSigned(signed);
+            verify(responder, never()).onDocumentSignFailed(any());
+            if (interactive) assertEquals(1, batch.getProcessedDocumentsCount());
+        } finally {
+            autogram.shutdown();
+        }
     }
 }

@@ -115,6 +115,10 @@ public class TestAutogramFactory {
         }
 
         @Override
+        public void enableSigningOnAllJobs() {
+        }
+
+        @Override
         public void onSigningFailed(AutogramException e, SigningJob job) {
             throw e;
         }
@@ -176,7 +180,7 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public char[] getContextSpecificPassword(boolean incorrectPIN) {
+        public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
             return null;
         }
 
