@@ -37,11 +37,16 @@ public class SettingsResetDialogController extends BaseController implements Sup
         if (userSettings == null)
             return;
 
+        var restartNeeded = userSettings.restartRequiredSettingsChangedByReset();
+
         userSettings.reset();
         autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
 
         ((Stage)confirmResetButton.getScene().getWindow()).close();
         ((Stage) resetButton.getScene().getWindow()).close();
+
+        if (restartNeeded)
+            SettingsRestartDialogController.show();
     }
 
     public void onRejectResetButtonAction() {
