@@ -16,6 +16,8 @@ import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.drivers.TokenOption;
+import digital.slovensko.autogram.drivers.TokenOptions;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.UI;
@@ -36,7 +38,6 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -47,7 +48,6 @@ public class GUI implements UI {
 
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
-    private boolean driverWasAlreadySet = false;
     private final HostServices hostServices;
     private final UserSettings userSettings;
     private BatchDialogController batchController;
@@ -100,48 +100,37 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel) {
+    public void onTokenSearchStarted() {
         disableKeyPicking();
+    }
 
-        if (drivers.isEmpty()) {
+    @Override
+    public void pickTokenAndThen(TokenOptions options, Consumer<TokenOption> callback, Runnable onCancel) {
+        if (options.isEmpty()) {
             showError(new NoDriversDetectedException());
             refreshKeyOnAllJobs();
             enableSigningOnAllJobs();
-        } else if (drivers.size() == 1) {
-            // short-circuit if only one driver present
-            callback.accept(drivers.get(0));
-        } else {
-            if (!driverWasAlreadySet && userSettings.getDefaultDriver() != null) {
-                try {
-                    driverWasAlreadySet = true;
-                    var defaultDriver = drivers.stream().filter(d -> d.getShortname().equals(userSettings.getDefaultDriver()))
-                            .findFirst().get();
-
-                    if (defaultDriver != null) {
-                        callback.accept(defaultDriver);
-                        return;
-                    }
-                } catch (NoSuchElementException e) {
-                }
-            }
-
-            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
-            var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
-
-            var stage = new Stage();
-            stage.setTitle(controller.i18n("pickDriver.title"));
-            stage.setScene(new Scene(root));
-            stage.setOnCloseRequest(e -> {
-                refreshKeyOnAllJobs();
-                enableSigningOnAllJobs();
-                if (onCancel != null)
-                    onCancel.run();
-            });
-            stage.sizeToScene();
-            stage.setResizable(false);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.show();
+            return;
         }
+
+        var lastUsedOption = userSettings.getLastUsedToken().flatMap((token) -> token.findIn(options)).orElse(null);
+        var controller = new PickTokenDialogController(options, lastUsedOption, callback);
+        var root = GUIUtils.loadFXML(controller, "pick-token-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("pickDriver.title"));
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> {
+            refreshKeyOnAllJobs();
+            enableSigningOnAllJobs();
+            if (onCancel != null)
+                onCancel.run();
+        });
+        stage.sizeToScene();
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.show();
+        controller.onShown();
     }
 
     @Override
@@ -493,7 +482,6 @@ public class GUI implements UI {
             activeKey.close();
 
         activeKey = newKey;
-        driverWasAlreadySet = true;
         refreshKeyOnAllJobs();
 
         if (callback != null)
