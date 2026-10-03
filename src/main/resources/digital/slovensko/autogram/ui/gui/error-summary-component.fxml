@@ -18,9 +18,7 @@
     <TextFlow styleClass="autogram-error-summary__error">
         <Text fx:id="subheading">Miesto pre nazov informacie</Text>
     </TextFlow>
-    <TextFlow styleClass="autogram-error-summary__description,autogram-body-s">
-        <Text fx:id="description">description</Text>
-    </TextFlow>
+    <TextFlow fx:id="description" styleClass="autogram-error-summary__description,autogram-body-s" />
 
 
     <TextFlow styleClass="autogram-body-s">

@@ -58,7 +58,7 @@ public class GUIApp extends Application {
 
                 } catch (PortIsUsedException e) {
                     Platform.runLater(() -> {
-                        GUIUtils.showError(e, "error.restrictedMode.btn", true, true);
+                        GUIUtils.showError(e, "error.restrictedMode.btn", true, true, getHostServices());
                     });
 
                     server = null;
@@ -98,7 +98,7 @@ public class GUIApp extends Application {
             var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
             var finalAutogram = autogram;
             Platform.runLater(() -> {
-                GUIUtils.showError(new UnrecognizedException(e), "error.quit.btn",true);
+                GUIUtils.showError(new UnrecognizedException(e), "error.quit.btn", true, getHostServices());
                 if (serverFinal != null)
                     new Thread(serverFinal::stop).start();
 
