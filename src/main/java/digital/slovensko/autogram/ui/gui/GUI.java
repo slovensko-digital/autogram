@@ -15,6 +15,7 @@ import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import eu.europa.esig.dss.model.DSSDocument;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.SupportedLanguage;
@@ -219,6 +220,34 @@ public class GUI implements UI {
         GUIUtils.suppressDefaultFocus(stage, controller);
 
         stage.show();
+    }
+
+    public char[] getDocumentPassword(DSSDocument document) {
+        var futurePassword = new FutureTask<>(() -> {
+            var controller = new PDFPasswordController("Aké je heslo k dokumentu?", document.getName() != null ? "Odomikáte " + document.getName() : null, "Zadajte heslo k dokumentu.");
+            var root = GUIUtils.loadFXML(controller, "pdf-password-dialog.fxml");
+
+            var stage = new Stage();
+            stage.setTitle("Odomknutie dokumentu");
+            stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(e -> {
+                refreshKeyOnAllJobs();
+                enableSigningOnAllJobs();
+            });
+            stage.setResizable(false);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            return controller.getPassword();
+        });
+
+        Platform.runLater(futurePassword);
+
+        try {
+            return futurePassword.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public char[] getKeystorePassword() {

@@ -79,6 +79,10 @@ public abstract class DssSigningParametersFactory {
         signatureParameters.setDigestAlgorithm(parameters.getDigestAlgorithm());
         signatureParameters.setEn319122(parameters.isEn319132());
 
+        var document = input.getFirstDocument();
+        if (document.hasSigningPassword())
+            signatureParameters.setPasswordProtection(document.getSigningPassword());
+
         if (input.getParameters().getSignatureProfile().equals(SignatureProfile.BASELINE_T))
             signatureParameters.setContentSize(9472*2);
 

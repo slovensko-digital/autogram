@@ -162,6 +162,11 @@ public class TestAutogramFactory {
         }
 
         @Override
+        public char[] getDocumentPassword(eu.europa.esig.dss.model.DSSDocument document) {
+            return null;
+        }
+
+        @Override
         public char[] getKeystorePassword() {
             return null;
         }

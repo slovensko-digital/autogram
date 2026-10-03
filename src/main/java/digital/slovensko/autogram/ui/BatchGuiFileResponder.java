@@ -19,6 +19,7 @@ import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.FileDocument;
+import eu.europa.esig.dss.model.DSSException;
 
 public class BatchGuiFileResponder extends BatchResponder {
     private final Autogram autogram;
@@ -61,9 +62,15 @@ public class BatchGuiFileResponder extends BatchResponder {
                     onAllFilesSigned(batch);
                 }), batch);
 
-                var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes), signingParameters);
+                var document = AutogramDocument.build(new FileDocument(file), eFormAttributes);
+                autogram.handleProtectedPdfDocument(document);
+                var input = SigningInput.fromFile(document, signingParameters);
                 var job = SigningJob.fromInput(input, responder);
                 autogram.batchSign(job, batch.getBatchId());
+            } catch (DSSException e) {
+                autogram.onSigningFailed(AutogramException.createFromDSSException(e));
+
+                break;
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);
 

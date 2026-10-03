@@ -18,6 +18,7 @@ import static digital.slovensko.autogram.server.errors.RequestValidationExceptio
 
 public class SignRequestBody {
     private final Document document;
+    private AutogramDocument autogramDocument;
     private ServerSigningParameters parameters;
     private final String payloadMimeType;
     private final String batchId;
@@ -52,11 +53,14 @@ public class SignRequestBody {
         if (parameters == null)
             parameters = new ServerSigningParameters();
 
-        parameters.resolveSignatureLevel(getRequestDocument());
+        parameters.resolveSignatureLevel(getDocument());
     }
 
     public AutogramDocument getDocument() {
-        return AutogramDocument.build(getRequestDocument(), parameters.getEFormAttributes(isBase64(), getMimetype()));
+        if (autogramDocument == null)
+            autogramDocument = AutogramDocument.build(getRequestDocument(), parameters.getEFormAttributes(isBase64(), getMimetype()));
+
+        return autogramDocument;
     }
 
     private InMemoryDocument getRequestDocument() {

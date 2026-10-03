@@ -17,6 +17,8 @@ import org.apache.commons.cli.CommandLine;
 import java.io.File;
 import java.util.Arrays;
 
+import eu.europa.esig.dss.model.DSSException;
+
 public class CliApp {
     public static void start(CommandLine cmd) {
         Autogram autogram = null;
@@ -40,9 +42,13 @@ public class CliApp {
             var finalAutogram = autogram;
             var parameters = settings.getSigningParameters();
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
-                        .map(f -> SigningJob.fromInput(
-                            SigningInput.fromFile(AutogramDocument.build(new FileDocument(f), EFormAttributes.build(parameters, true)), parameters),
-                            new SaveFileResponder(f, finalAutogram, targetPathBuilder)))
+                    .map(f -> {
+                        var document = AutogramDocument.build(new FileDocument(f), EFormAttributes.build(parameters, true));
+                        finalAutogram.handleProtectedPdfDocument(document);
+                        return SigningJob.fromInput(
+                            SigningInput.fromFile(document, parameters),
+                            new SaveFileResponder(f, finalAutogram, targetPathBuilder));
+                    })
                     .toList();
             if (settings.isPdfaCompliance()) {
                 jobs.forEach(job -> {
@@ -54,6 +60,8 @@ public class CliApp {
             ui.setJobsCount(jobs.size());
             jobs.forEach(autogram::sign);
 
+        } catch (DSSException e) {
+            System.err.println(CliUI.parseError(AutogramException.createFromDSSException(e)));
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));
 

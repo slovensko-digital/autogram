@@ -1,9 +1,11 @@
 package digital.slovensko.autogram.util;
 
+import digital.slovensko.autogram.core.dto.AutogramDocument;
 import eu.europa.esig.dss.asic.cades.validation.ASiCContainerWithCAdESValidatorFactory;
 import eu.europa.esig.dss.asic.xades.validation.ASiCContainerWithXAdESValidatorFactory;
 import eu.europa.esig.dss.cades.validation.CMSDocumentValidatorFactory;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.pades.validation.PDFDocumentValidator;
 import eu.europa.esig.dss.pades.validation.PDFDocumentValidatorFactory;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
@@ -54,6 +56,14 @@ public class DSSUtils {
             return new CMSDocumentValidatorFactory().create(document);
 
         return null;
+    }
+
+    public static SignedDocumentValidator createDocumentValidator(AutogramDocument document) {
+        var validator = createDocumentValidator(document.toDssDocument());
+        if (validator instanceof PDFDocumentValidator pdfValidator && document.hasOpenDocumentPassword())
+            pdfValidator.setPasswordProtection(document.getOpenDocumentPassword());
+
+        return validator;
     }
 
     public static String getXdcfFilename(String filename) {

@@ -8,12 +8,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public class PasswordController extends BaseController {
-    private final String questionKey;
-    private final String errorKey;
-    private final String subtitleKey;
-    private final boolean isSigningStep;
-    private final boolean allowEmpty;
+public class PDFPasswordController {
+    private final String questionText;
+    private final String descriptionText;
+    private final String errorText;
 
     private char[] password;
 
@@ -22,7 +20,7 @@ public class PasswordController extends BaseController {
     @FXML
     Text question;
     @FXML
-    Text subtitle;
+    Text description;
     @FXML
     Text error;
     @FXML
@@ -34,33 +32,26 @@ public class PasswordController extends BaseController {
     @FXML
     VBox mainBox;
 
-    public PasswordController(String questionKey, String blankPasswordErrorKey, String subtitleKey, boolean isSigningStep, boolean allowEmpty) {
-        this.questionKey = questionKey;
-        this.errorKey = blankPasswordErrorKey;
-        this.subtitleKey = subtitleKey;
-        this.isSigningStep = isSigningStep;
-        this.allowEmpty = allowEmpty;
+    public PDFPasswordController(String questionText, String description, String blankPasswordErrorText) {
+        this.questionText = questionText;
+        this.descriptionText = description;
+        this.errorText = blankPasswordErrorText;
     }
 
-    @Override
     public void initialize() {
-        question.setText(i18n(questionKey));
-        error.setText(i18n(errorKey));
-        if(subtitleKey != null) {
-            subtitle.setText(i18n(subtitleKey));
-            subtitle.setManaged(true);
-            subtitle.setVisible(true);
+        question.setText(questionText);
+
+        if (descriptionText != null) {
+            description.setText(descriptionText);
+            description.setManaged(true);
+            description.setVisible(true);
         }
 
-        if(isSigningStep) {
-            mainButton.setText(i18n("general.sign.btn.single"));
-            cancelButton.setManaged(true);
-            cancelButton.setVisible(true);
-        }
+        error.setText(errorText);
     }
 
     public void onPasswordAction() {
-        if (passwordField.getText().isEmpty() && !allowEmpty) {
+        if (passwordField.getText().isEmpty()) {
             error.setManaged(true);
             error.setVisible(true);
             formGroup.getStyleClass().add("autogram-form-group--error");
