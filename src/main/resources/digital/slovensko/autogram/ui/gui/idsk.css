@@ -944,6 +944,41 @@ TextFlow.autogram-body-s {
   -fx-alignment: center-left;
 }
 
+/* long list of options in a dialog */
+.autogram-options-scroll-pane,
+.autogram-options-scroll-pane > .viewport {
+  -fx-background-color: transparent;
+  -fx-background-insets: 0;
+  -fx-padding: 0;
+}
+
+.autogram-options {
+  -fx-spacing: 15px;
+  /* room for the focus ring of radio buttons */
+  -fx-padding: 5px;
+}
+
+/* hint under a radio button, aligned with its label, like govuk-radios__hint */
+.autogram-radio-hint {
+  -fx-padding: 0 0 0 52px;
+}
+
+.autogram-radio-hint Text {
+  -fx-fill: -autogram-secondary-text-colour;
+  -fx-font-size: 1.1875em;
+}
+
+/* "or" between groups of radio buttons, like govuk-radios__divider */
+.autogram-radios-divider {
+  /* centered on the 40px radio circle, a bit wider to fit "alebo" */
+  -fx-min-width: 50px;
+  -fx-max-width: 50px;
+  -fx-translate-x: -5px;
+  -fx-alignment: center;
+  -fx-text-fill: -autogram-text-colour;
+  -fx-font-size: 1.1875em;
+}
+
 .autogram-actions {
   -fx-spacing: 15px;
   -fx-alignment: center-left;

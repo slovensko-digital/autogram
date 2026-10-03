@@ -3,6 +3,8 @@ package digital.slovensko.autogram.ui;
 import digital.slovensko.autogram.core.*;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.drivers.TokenOption;
+import digital.slovensko.autogram.drivers.TokenOptions;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
@@ -19,7 +21,15 @@ public interface UI {
 
     void showSigningJob(SigningJob job, Autogram autogram);
 
-    void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel);
+    /**
+     * Called before searching for tokens (cards) of all drivers, which may take a while.
+     */
+    void onTokenSearchStarted();
+
+    /**
+     * Lets the user pick a token (card) or a driver to sign with.
+     */
+    void pickTokenAndThen(TokenOptions options, Consumer<TokenOption> callback, Runnable onCancel);
 
     void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback);
 

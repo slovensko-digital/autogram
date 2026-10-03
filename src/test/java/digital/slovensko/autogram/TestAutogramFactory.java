@@ -11,6 +11,8 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.drivers.TokenOption;
+import digital.slovensko.autogram.drivers.TokenOptions;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
@@ -87,8 +89,15 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel) {
-            callback.accept(drivers.get(0));
+        public void onTokenSearchStarted() {
+        }
+
+        @Override
+        public void pickTokenAndThen(TokenOptions options, Consumer<TokenOption> callback, Runnable onCancel) {
+            if (!options.found().isEmpty())
+                callback.accept(options.found().get(0));
+            else
+                callback.accept(new TokenOption(options.otherDrivers().get(0), null));
         }
 
         @Override
