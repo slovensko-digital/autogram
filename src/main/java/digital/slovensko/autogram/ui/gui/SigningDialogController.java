@@ -455,6 +455,10 @@ public class SigningDialogController extends BaseController implements Suppresse
         gui.enableSigningOnAllJobs();
     }
 
+    public void cancel() {
+        gui.cancelJob(job);
+    }
+
     public void close() {
         var window = mainButton.getScene().getRoot().getScene().getWindow();
         if (window instanceof Stage) {
