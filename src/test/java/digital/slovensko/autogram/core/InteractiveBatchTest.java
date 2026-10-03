@@ -207,11 +207,22 @@ class InteractiveBatchTest {
         assertEquals(1, batch.getProcessedDocumentsCount());
     }
 
-    @Test
-    void incorrectInteractivePinAutomaticallyReopensPromptWithErrorAndClearsCache() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void incorrectPinAutomaticallyReopensPromptInBothBatchModes(boolean bulk) throws Exception {
         var prompts = new AtomicInteger();
         var errors = new ArrayList<Boolean>();
         var ui = spy(new InteractiveUI() {
+            @Override
+            public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+                onSelected.accept(bulk ? SigningMode.BULK : SigningMode.INTERACTIVE);
+            }
+
+            @Override
+            public void startBatch(Batch batch, Autogram autogram) {
+                autogram.signBatchWithKey(batch, mock(SigningKey.class));
+            }
+
             @Override
             public char[] getContextSpecificPassword(boolean incorrectPIN) {
                 prompts.incrementAndGet();
@@ -246,10 +257,9 @@ class InteractiveBatchTest {
                 default -> { return signed; }
             }
         }).when(job).signWithKey(any(), any());
-        autogram.batchSign(job, batch.getBatchId());
-
         try {
-            autogram.sign(job, mock(SigningKey.class));
+            autogram.batchSign(job, batch.getBatchId());
+            if (!bulk) autogram.sign(job, mock(SigningKey.class));
 
             assertEquals(List.of(false, true, true), errors);
             verify(ui, never()).onSigningFailed(any());
@@ -269,7 +279,8 @@ class InteractiveBatchTest {
                 return signed;
             }).when(nextJob).signWithKey(any(), any());
             autogram.batchSign(nextJob, batch.getBatchId());
-            autogram.sign(nextJob, mock(SigningKey.class));
+            if (!bulk) autogram.sign(nextJob, mock(SigningKey.class));
+            autogram.updateBatch(batch);
 
             assertEquals(3, prompts.get());
             assertEquals(2, batch.getProcessedDocumentsCount());

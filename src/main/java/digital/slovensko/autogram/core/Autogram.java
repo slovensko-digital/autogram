@@ -303,23 +303,14 @@ public class Autogram {
             startSigning(job);
             return;
         }
-        ui.onWorkThreadDo(() -> {
-            SignedDocument signedDocument;
-            try {
-                signedDocument = signWithKey(job, job.getBatch().getSigningKey());
-            } catch (AutogramException e) {
-                if (!e.batchCanContinue())
-                    finishBatch(job.getBatch());
-                job.onJobSignFailed(e);
-                ui.onUIThreadDo(ui::updateBatch);
-                return;
-            }
-
-            job.onJobSigned(signedDocument);
-            if (job.getBatch().isAllProcessed())
-                passwordManager.reset();
-            ui.onUIThreadDo(ui::updateBatch);
-        });
+        ui.onWorkThreadDo(() -> signCommonAndThen(job, job.getBatch().getSigningKey(),
+                signedJob -> ui.onUIThreadDo(ui::updateBatch),
+                error -> {
+                    if (!error.batchCanContinue())
+                        finishBatch(job.getBatch());
+                    job.onJobSignFailed(error);
+                    ui.onUIThreadDo(ui::updateBatch);
+                }));
     }
 
     /**
