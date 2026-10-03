@@ -85,10 +85,10 @@ public abstract class SignatureBadgeFactory {
             case INDETERMINATE_QESIG, INDETERMINATE_QESEAL, INDETERMINATE_ADESIG_QC:
             case INDETERMINATE_ADESIG, INDETERMINATE_ADESEAL, INDETERMINATE_ADESEAL_QC:
             case INDETERMINATE_UNKNOWN_QC, INDETERMINATE_UNKNOWN_QC_QSCD:
-                return createInProgressBadge(translate(resources, key));
+                return createUnknownBadge(translate(resources, key));
             default:
                 if (qualification.name().contains("INDETERMINATE"))
-                    return createInProgressBadge(translate(resources, "signature.qualification.indeterminate.unknown.label"));
+                    return createUnknownBadge(translate(resources, "signature.qualification.indeterminate.unknown.label"));
                 else
                     return createInvalidBadge(translate(resources, "signature.unknown.label"));
         }
@@ -197,7 +197,7 @@ public abstract class SignatureBadgeFactory {
                 return createUnknownBadge(translate(resources, "signature.unknown.label"));
             default:
                 if (qualification.name().contains("INDETERMINATE"))
-                    return createInProgressBadge(qualification.getReadable());
+                    return createUnknownBadge(qualification.getReadable());
                 else
                     return createInvalidBadge(translate(resources, "signature.unknown.label"));
         }

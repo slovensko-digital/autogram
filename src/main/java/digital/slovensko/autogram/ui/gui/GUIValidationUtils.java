@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.ValidationReports;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.enumerations.Indication;
@@ -38,6 +39,11 @@ public class GUIValidationUtils {
         return styled(new TextFlow(text), "autogram-warning-textflow");
     }
 
+    public static Node createTrustedListScopeWarning(ResourceBundle resources) {
+        var selected = SignatureValidator.getInstance().getTrustedListStatus().selectedCountries();
+        return createWarningText(translate(resources, "signing.tlsCoverage.warning", String.join(", ", selected)));
+    }
+
     public static GridPane createSignatureTableRows(ResourceBundle resources, ValidationReports validationReports, boolean isValidated, Consumer<String> callback, int maxRows) {
         return createSignatureTableRows(resources, validationReports.getSignatures(),
                 validationReports.shouldShowDocumentContext(), isValidated, callback, maxRows);
@@ -60,7 +66,8 @@ public class GUIValidationUtils {
         for (var signature : signatures) {
             var doc = signature.documentReport();
             var subject = styled(new HBox(new VBox(new TextFlow(new Text(doc.reports().getSimpleReport().getSignedBy(signature.signatureId()))))), "autogram-signatures-table-cell--left");
-            var type = styled(new HBox(createSignatureQualificationBadge(resources, doc, isValidated, signature.signatureId(), 0)), "autogram-signature-badges");
+            var type = styled(new HBox(createSignatureQualificationBadge(resources, doc, isValidated, signature.signatureId(), 0,
+                    SignatureValidator.getInstance().areTLsLoaded())), "autogram-signature-badges");
             table.addRow(rowIndex++, subject, type);
         }
 
@@ -89,7 +96,7 @@ public class GUIValidationUtils {
         return button;
     }
 
-        public static VBox createSignatureBox(ResourceBundle resources, ValidationReports.DocumentReport documentReport,
+    public static VBox createSignatureBox(ResourceBundle resources, ValidationReports.DocumentReport documentReport,
             boolean isValidated, String signatureId, Consumer<String> callback, boolean areTLsLoaded) {
         var reports = documentReport.reports();
         var simple = reports.getSimpleReport();
@@ -110,7 +117,7 @@ public class GUIValidationUtils {
 
         var nameBox = new HBox(
                 new TextFlow(new Text(simple.getSignedBy(signatureId))),
-                new VBox(createSignatureQualificationBadge(resources, documentReport, isValidated, signatureId, 300)));
+                new VBox(createSignatureQualificationBadge(resources, documentReport, isValidated, signatureId, 300, areTLsLoaded)));
 
         var signatureDetailsBox = new VBox(createTableRow(
                 translate(resources, "signature.details.validation.label"),
@@ -127,7 +134,9 @@ public class GUIValidationUtils {
         var timestampsBox = createTimestampsBox(isValidated, timestamps, simple, diagnostic, resources, e -> callback.accept(null));
         var hasTimestamps = !timestampsBox.getChildren().isEmpty();
         signatureDetailsBox.getChildren().add(createTableRow(translate(resources, "signature.details.type.label"),
-            new HBox(SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm, resources)), !hasTimestamps));
+            new HBox(isValidated && areTLsLoaded && isValid && signatureQualification != null
+                    ? SignatureBadgeFactory.createBadgeFromQualification(signatureQualification, signatureForm, resources)
+                    : SignatureBadgeFactory.createUnknownBadge(translate(resources, "signature.qualification.notVerified.label"))), !hasTimestamps));
         if (hasTimestamps)
             signatureDetailsBox.getChildren().add(createTableRow(translate(resources, "signature.details.timestamps.label"), timestampsBox, true));
 
@@ -142,14 +151,18 @@ public class GUIValidationUtils {
         return translate(resources, "signing.multiDocument.unnamedDocument", documentReport.documentIndex() + 1);
     }
 
-    private static Node createSignatureQualificationBadge(ResourceBundle resources, ValidationReports.DocumentReport documentReport,
-            boolean isValidated, String signatureId, double prefWrapLength) {
+    static Node createSignatureQualificationBadge(ResourceBundle resources, ValidationReports.DocumentReport documentReport,
+            boolean isValidated, String signatureId, double prefWrapLength, boolean areTLsLoaded) {
         var reports = documentReport.reports();
         if (!isValidated)
             return SignatureBadgeFactory.createInProgressBadge(resources);
 
         if (reports.getDetailedReport().getBasicValidationIndication(signatureId).equals(Indication.FAILED))
             return SignatureBadgeFactory.createInvalidBadge(translate(resources, "signature.invalid.label"));
+
+        if (!areTLsLoaded || !reports.getSimpleReport().isValid(signatureId)
+                || reports.getDetailedReport().getSignatureQualification(signatureId) == null)
+            return SignatureBadgeFactory.createUnknownBadge(translate(resources, "signature.qualification.notVerified.label"));
 
         return SignatureBadgeFactory.createCombinedBadgeFromQualification(resources,
                 reports.getDetailedReport().getSignatureQualification(signatureId), reports, signatureId, prefWrapLength);
@@ -171,7 +184,7 @@ public class GUIValidationUtils {
         if (!isRevocationValidated)
             return translate(resources, "signature.details.validation.revocationInvalid.label");
 
-        if (signatureQualification.getReadable().contains("Indeterminate") || isTimestampIndeterminate)
+        if ((signatureQualification != null && signatureQualification.name().contains("INDETERMINATE")) || isTimestampIndeterminate)
             return translate(resources, "signature.details.validation.indeterminate.label");
 
         if (isValid)

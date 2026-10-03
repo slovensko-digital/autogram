@@ -88,6 +88,8 @@ public class SignaturesController extends BaseController implements SuppressedFo
     public void renderSignatures(ValidationReports reports, boolean isValidated) {
         signaturesContainer.getChildren().clear();
         var areTLsLoaded = SignatureValidator.getInstance().areTLsLoaded();
+        if (isValidated)
+            signaturesContainer.getChildren().add(GUIValidationUtils.createTrustedListScopeWarning(resources));
         if (isValidated && !areTLsLoaded)
             signaturesContainer.getChildren().add(
                     GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));
@@ -104,10 +106,18 @@ public class SignaturesController extends BaseController implements SuppressedFo
     }
 
     private String buildSignatureValidationReportsHTML(ValidationReports reports) {
-        if (!reports.isMultiDocumentJob())
-            return SignatureValidator.getSignatureValidationReportHTML(reports.getReports());
+        var status = SignatureValidator.getInstance().getTrustedListStatus();
+        var scope = new StringBuilder("<p>")
+                .append(escapeHtml(i18n("signing.tlsCoverage.warning", String.join(", ", status.selectedCountries()))));
+        if (!status.isComplete())
+            scope.append(" ").append(escapeHtml(i18n("signing.tlsLoading.error")));
+        scope.append("</p>");
 
-        var content = new StringBuilder();
+        if (!reports.isMultiDocumentJob())
+            return SignatureValidator.wrapSignatureValidationReportHTML(
+                    scope + SignatureValidator.getSignatureValidationReportBodyHTML(reports.getReports()));
+
+        var content = new StringBuilder(scope);
         for (var documentReport : reports.getDocumentReports()) {
             if (content.length() > 0)
                 content.append("<hr/>");

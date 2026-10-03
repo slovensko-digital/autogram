@@ -27,6 +27,7 @@ public class SignaturesInvalidDialogController extends BaseController implements
     }
 
     public void initialize() {
+        signaturesTable.getChildren().add(GUIValidationUtils.createTrustedListScopeWarning(resources));
         if (!SignatureValidator.getInstance().areTLsLoaded())
             signaturesTable.getChildren().add(
                 GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));

@@ -401,6 +401,8 @@ public class SigningDialogController extends BaseController implements Suppresse
         var summaries = new ArrayList<Node>();
         for (int index = 0; index < job.getVisualizations().size(); index++) {
             var summary = new VBox(8);
+            if (isValidated)
+                summary.getChildren().add(GUIValidationUtils.createTrustedListScopeWarning(resources));
             if (!areTLsLoaded)
                 summary.getChildren().add(GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));
             if (reports.hasIncompleteContainerCoverage())
