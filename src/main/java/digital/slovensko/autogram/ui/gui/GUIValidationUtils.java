@@ -74,7 +74,7 @@ public class GUIValidationUtils {
             var moreTextKey = showDocumentContext ? "signature.table.more.documents.txt" : "signature.table.more.txt";
             var button = styled(new Button(translate(resources, "signature.table.more.btn")), "autogram-link");
             button.setWrapText(true);
-            button.setOnMouseClicked(event -> callback.accept(null));
+            button.setOnAction(event -> callback.accept(null));
             var flow = styled(new TextFlow(new Text(translate(resources, moreTextKey, totalSignatures - maxRows + 1)), button), "autogram-body", "autogram-font-weight-bold");
             table.add(flow, 0, rowIndex, 2, 1);
         }
@@ -85,7 +85,7 @@ public class GUIValidationUtils {
     public static Button createSignatureTableLink(Consumer<String> callback, ResourceBundle resources) {
         var button = styled(new Button(translate(resources, "signature.table.show.btn")), "autogram-link");
         button.wrapTextProperty().setValue(true);
-        button.setOnMouseClicked(event -> callback.accept(null));
+        button.setOnAction(event -> callback.accept(null));
         return button;
     }
 
