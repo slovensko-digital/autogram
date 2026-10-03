@@ -4,15 +4,21 @@ package digital.slovensko.autogram.core;
 public interface Batch {
     void start(SigningKey key);
 
+    void setMode(SigningMode mode);
+
+    boolean isInteractive();
+
+    boolean isPresent();
+
     void ensureCanStartNewBatch();
 
     boolean shouldResetPasswordAfterSigning();
 
     void addJob(String batchId);
 
-    void onJobSuccess();
+    void success();
 
-    void onJobFailure();
+    void failure();
 
     void end();
 

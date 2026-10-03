@@ -18,7 +18,7 @@ enum BatchState {
 }
 
 /**
- * Batch is a session for signing multiple documents with the same key.
+ * A session for signing multiple documents with one key or interactively.
  * 
  * This class is used for checking runtime conditions and tracking progress.
  */
@@ -28,6 +28,7 @@ public class SigningBatch implements Batch {
 
     private BatchState state = BatchState.INITIALIZED;
     private SigningKey signingKey = null;
+    private SigningMode mode = SigningMode.BULK;
 
     private Date expirationDate;
     private int addedDocumentsCount = 0;
@@ -44,6 +45,21 @@ public class SigningBatch implements Batch {
             throw new BatchEndedException(CANNOT_RESTART);
         state = BatchState.STARTED;
         signingKey = key;
+    }
+
+    public void setMode(SigningMode mode) {
+        if (state != BatchState.INITIALIZED)
+            throw new IllegalStateException("Signing mode must be selected before batch start");
+        this.mode = mode;
+        if (isInteractive()) expirationDate = null;
+    }
+
+    public boolean isInteractive() {
+        return mode == SigningMode.INTERACTIVE;
+    }
+
+    public boolean isPresent() {
+        return true;
     }
 
     public void ensureCanStartNewBatch() {
@@ -65,13 +81,13 @@ public class SigningBatch implements Batch {
         addedDocumentsCount++;
     }
 
-    public void onJobSuccess() {
+    public void success() {
         successfulDocumentsCount++;
         Logging.log("Batch " + batchId + " success");
         log();
     }
 
-    public void onJobFailure() {
+    public void failure() {
         failedDocumentsCount++;
         Logging.log("Batch " + batchId + " failed");
         log();
@@ -136,12 +152,14 @@ public class SigningBatch implements Batch {
         return UUID.randomUUID().toString();
     }
 
-    private boolean isExpired() {
+    boolean isExpired() {
+        if (isInteractive()) return false;
         return expirationDate.before(new Date());
     }
 
     private void resetExpirationDate() {
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60); // 1 minute
+        if (!isInteractive())
+            expirationDate = new Date(System.currentTimeMillis() + 1000 * 60); // 1 minute
     }
 
     public void log() {

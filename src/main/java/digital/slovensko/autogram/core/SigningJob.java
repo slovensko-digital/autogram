@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.Visualization;
@@ -26,14 +27,16 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 
 public class SigningJob {
     private final Responder responder;
+    private final Batch batch;
     private final SigningInput input;
     private final List<AutogramDocument> documentsToVisualize;
     private List<Visualization> visualizations;
 
-    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Responder responder) {
+    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Responder responder, Batch batch) {
         this.input = input;
         this.documentsToVisualize = documentsToVisualize;
         this.responder = responder;
+        this.batch = batch;
     }
 
     public AutogramDocument getDocument() {
@@ -83,12 +86,12 @@ public class SigningJob {
     }
 
     @SuppressWarnings("unchecked")
-    public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
-        onDocumentSigned(signWithKey(key, tspSource));
+    public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws AutogramException {
+        onJobSigned(signWithKey(key, tspSource));
     }
 
     @SuppressWarnings("unchecked")
-    public SignedDocument signWithKey(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
+    public SignedDocument signWithKey(SigningKey key, TSPSource tspSource) throws AutogramException {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
             + (isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
 
@@ -113,15 +116,45 @@ public class SigningJob {
         }
     }
 
-    public void onDocumentSignFailed(AutogramException e) {
-        responder.onDocumentSignFailed(e);
-    }
-
-    public void onDocumentSigned(SignedDocument signedDocument) {
+    public void onJobSigned(SignedDocument signedDocument) {
+        if (batch.isPresent())
+            batch.success();
         responder.onDocumentSigned(signedDocument);
     }
 
+    public void onJobSignFailed(AutogramException error) {
+        if (batch.isPresent())
+            batch.failure();
+        responder.onDocumentSignFailed(error);
+    }
+
+    public void onJobCanceled() {
+        if (batch.isPresent())
+            batch.failure();
+        responder.onDocumentSignFailed(new SigningCanceledByUserException());
+    }
+
+    public void onSkipCurrentDocument() {
+        onJobSignFailed(new SigningCanceledByUserException());
+    }
+
+    public void onJobSkipRemainingDocuments() {
+        onJobSignFailed(new SigningCanceledByUserException());
+    }
+
+    public Batch getBatch() {
+        return batch;
+    }
+
+    public boolean isPartOfBatch() {
+        return batch.isPresent();
+    }
+
     public static SigningJob fromInput(SigningInput input, Responder responder) {
+        return fromInput(input, responder, new NoBatch());
+    }
+
+    public static SigningJob fromInput(SigningInput input, Responder responder, Batch batch) {
         List<AutogramDocument> documentsToVisualize;
         if (input.getDocuments().size() == 1 && input.getFirstDocument().isAsice()) {
             documentsToVisualize = AsicContainerUtils.getOriginalDocuments(input.getFirstDocument()).stream().toList();
@@ -129,7 +162,7 @@ public class SigningJob {
             documentsToVisualize = input.getDocuments();
         }
 
-        return new SigningJob(input, documentsToVisualize, responder);
+        return new SigningJob(input, documentsToVisualize, responder, batch);
     }
 
     public boolean shouldCheckPDFCompliance() {

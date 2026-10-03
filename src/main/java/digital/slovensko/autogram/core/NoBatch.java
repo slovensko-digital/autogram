@@ -5,6 +5,21 @@ import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 /** The state before the first batch has been created. */
 public final class NoBatch implements Batch {
     @Override
+    public void setMode(SigningMode mode) {
+        throw new BatchNotStartedException();
+    }
+
+    @Override
+    public boolean isInteractive() {
+        return false;
+    }
+
+    @Override
+    public boolean isPresent() {
+        return false;
+    }
+
+    @Override
     public void start(SigningKey key) {
         throw new BatchNotStartedException();
     }
@@ -24,12 +39,12 @@ public final class NoBatch implements Batch {
     }
 
     @Override
-    public void onJobSuccess() {
+    public void success() {
         throw new BatchNotStartedException();
     }
 
     @Override
-    public void onJobFailure() {
+    public void failure() {
         throw new BatchNotStartedException();
     }
 

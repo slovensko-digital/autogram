@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.Updater;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -81,6 +82,15 @@ public class CliUI implements UI {
     @Override
     public void startBatch(Batch batch, Autogram autogram) {
         // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+        onSelected.accept(SigningMode.BULK);
+    }
+
+    @Override
+    public void closeSigningJob(SigningJob job) {
     }
 
     @Override

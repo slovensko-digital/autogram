@@ -404,10 +404,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     @Override
-    public boolean getForceContextSpecificLoginEnabled() {
-        return bulkEnabled; // faux settings
-    }
-    @Override
     public int getDriverSlotIndex(String tokenDriverShortname) {
         return driverSlotIndexMap.getOrDefault(tokenDriverShortname, driverSlotIndexMap.getOrDefault("default", -1));
     }

@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -62,6 +63,26 @@ public class GUI implements UI {
     public void startSigning(SigningJob job, Autogram autogram) {
         this.autogram = autogram;
         autogram.startVisualization(job);
+    }
+
+    @Override
+    public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+        if (userSettings.isBulkEnabled()) {
+            onSelected.accept(SigningMode.BULK);
+            return;
+        }
+        var controller = new PickBatchModeDialogController(onSelected, onCancel);
+        var root = GUIUtils.loadFXML(controller, "pick-batch-mode-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("pickBatchMode.window.title"));
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> controller.getOnCancel().run());
+        stage.setResizable(false);
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        GUIUtils.showOnTop(stage);
+        setUserFriendlyPositionAndLimits(stage);
     }
 
     @Override
@@ -371,6 +392,12 @@ public class GUI implements UI {
     }
 
     @Override
+    public void closeSigningJob(SigningJob job) {
+        var controller = jobControllers.remove(job);
+        if (controller != null) controller.close();
+    }
+
+    @Override
     public void showIgnorableExceptionDialog(IgnorableException e) {
         var controller = new IgnorableExceptionDialogController(e);
         var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");
@@ -524,6 +551,11 @@ public class GUI implements UI {
     }
 
     public void cancelJob(SigningJob job) {
+        if (job.isPartOfBatch() && job.getBatch().isInteractive()) {
+            autogram.skipRemainingDocuments(job);
+            return;
+        }
+
         var controller = jobControllers.get(job);
         autogram.cancelSigning(job);
         controller.close();

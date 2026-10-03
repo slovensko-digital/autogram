@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface UI {
+    void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel);
+
     void startSigning(SigningJob job, Autogram autogram);
 
     void startBatch(Batch batch, Autogram autogram);
@@ -19,6 +21,8 @@ public interface UI {
     void closeBatch();
 
     void showSigningJob(SigningJob job, Autogram autogram);
+
+    void closeSigningJob(SigningJob job);
 
     void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel);
 

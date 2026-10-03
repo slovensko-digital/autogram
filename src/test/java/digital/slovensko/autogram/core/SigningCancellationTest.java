@@ -19,7 +19,7 @@ class SigningCancellationTest {
 
         autogram.cancelSigning(job);
 
-        verify(job).onDocumentSignFailed(any(SigningCanceledByUserException.class));
+        verify(job).onJobCanceled();
     }
 
     @Test
@@ -44,6 +44,6 @@ class SigningCancellationTest {
 
         dialog.get().getOnCancelCallback().run();
 
-        verify(job).onDocumentSignFailed(any(SigningCanceledByUserException.class));
+        verify(job).onJobCanceled();
     }
 }

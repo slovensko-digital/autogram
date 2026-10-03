@@ -124,7 +124,7 @@ class BatchCallbackTest {
 
         autogram.updateBatch(batch);
         assertFalse(batch.isEnded());
-        batch.onJobSuccess();
+        batch.success();
         autogram.updateBatch(batch);
         autogram.updateBatch(batch);
 
@@ -133,7 +133,7 @@ class BatchCallbackTest {
     }
 
     @Test
-    void resultCallbacksCountBeforeNotifyingAdapterAndEndOnFatalFailure() throws InterruptedException {
+    void resultCallbacksCountBeforeNotifyingAdapterAndEndOnFatalFailure() {
         var batchRef = new AtomicReference<Batch>();
         var closed = new AtomicInteger();
         var ui = new TestAutogramFactory.FakeUI() {
@@ -152,32 +152,34 @@ class BatchCallbackTest {
         var batch = batchRef.get();
         autogram.signBatchWithKey(batch, mock(SigningKey.class));
 
-        var first = mock(SigningJob.class);
+        var successResponder = mock(Responder.class);
+        var first = spy(TestSigningJobFactory.create(batch, successResponder));
         doAnswer(call -> {
             assertEquals(1, batch.getProcessedDocumentsCount());
             return null;
-        }).when(first).onDocumentSigned(any());
-        when(first.signWithKey(any(), any())).thenReturn(mock(SignedDocument.class));
+        }).when(successResponder).onDocumentSigned(any());
+        doReturn(mock(SignedDocument.class)).when(first).signWithKey(any(), any());
         autogram.batchSign(first, batch.getBatchId());
 
         var fatal = mock(AutogramException.class);
         when(fatal.batchCanContinue()).thenReturn(false);
-        var second = mock(SigningJob.class);
+        var failureResponder = mock(Responder.class);
+        var second = spy(TestSigningJobFactory.create(batch, failureResponder));
         doAnswer(call -> {
             assertEquals(2, batch.getProcessedDocumentsCount());
             assertTrue(batch.isEnded());
             return null;
-        }).when(second).onDocumentSignFailed(fatal);
-        when(second.signWithKey(any(), any())).thenThrow(fatal);
+        }).when(failureResponder).onDocumentSignFailed(fatal);
+        doThrow(fatal).when(second).signWithKey(any(), any());
         autogram.batchSign(second, batch.getBatchId());
 
-        verify(second).onDocumentSignFailed(fatal);
+        verify(failureResponder).onDocumentSignFailed(fatal);
         assertEquals(1, closed.get());
         assertEquals(2, batch.getProcessedDocumentsCount());
     }
 
     @Test
-    void responderFailureIsNotCountedAsSigningFailure() throws InterruptedException {
+    void responderFailureIsNotCountedAsSigningFailure() {
         var batchRef = new AtomicReference<Batch>();
         var ui = new TestAutogramFactory.FakeUI() {
             @Override
@@ -190,12 +192,13 @@ class BatchCallbackTest {
         var batch = batchRef.get();
         autogram.signBatchWithKey(batch, mock(SigningKey.class));
 
-        var job = mock(SigningJob.class);
-        when(job.signWithKey(any(), any())).thenReturn(mock(SignedDocument.class));
-        doThrow(new IllegalStateException("response failed")).when(job).onDocumentSigned(any());
+        var responder = mock(Responder.class);
+        doThrow(new IllegalStateException("response failed")).when(responder).onDocumentSigned(any());
+        var job = spy(TestSigningJobFactory.create(batch, responder));
+        doReturn(mock(SignedDocument.class)).when(job).signWithKey(any(), any());
 
         assertThrows(IllegalStateException.class, () -> autogram.batchSign(job, batch.getBatchId()));
         assertEquals(1, batch.getProcessedDocumentsCount());
-        verify(job, never()).onDocumentSignFailed(any());
+        verify(responder, never()).onDocumentSignFailed(any());
     }
 }

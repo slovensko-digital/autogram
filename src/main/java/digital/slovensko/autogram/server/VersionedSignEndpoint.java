@@ -26,12 +26,13 @@ public class VersionedSignEndpoint implements HttpHandler {
             var body = EndpointUtils.loadFromJsonExchange(exchange, VersionedSignRequestBody.class);
 
             var responder = new ServerResponder(exchange);
-            var job = SigningJob.fromInput(body.getSigningInput(autogram.isPlainXmlEnabled()), responder);
-
-            if (body.batchId() != null)
-                autogram.batchSign(job, body.batchId());
-            else
+            var input = body.getSigningInput(autogram.isPlainXmlEnabled());
+            if (body.batchId() != null) {
+                autogram.batchSign(input, responder, body.batchId());
+            } else {
+                var job = SigningJob.fromInput(input, responder);
                 autogram.startSigning(job);
+            }
 
         } catch (JsonSyntaxException | IOException e) {
             var response = ErrorResponseBuilder.buildFromException(new MalformedBodyException(JSON_PARSING_FAILED, e));

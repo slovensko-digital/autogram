@@ -28,12 +28,13 @@ public class SignEndpoint implements HttpHandler {
             body.validateSigningParameters();
 
             var responder = new ServerResponder(exchange);
-            var job = SigningJob.fromInput(body.getSigningInput(autogram.isPlainXmlEnabled()), responder);
-
-            if (body.getBatchId() != null)
-                autogram.batchSign(job, body.getBatchId());
-            else
+            var input = body.getSigningInput(autogram.isPlainXmlEnabled());
+            if (body.getBatchId() != null) {
+                autogram.batchSign(input, responder, body.getBatchId());
+            } else {
+                var job = SigningJob.fromInput(input, responder);
                 autogram.startSigning(job);
+            }
 
         } catch (JsonSyntaxException | IOException e) {
             var response = ErrorResponseBuilder.buildFromException(new MalformedBodyException(JSON_PARSING_FAILED, e));

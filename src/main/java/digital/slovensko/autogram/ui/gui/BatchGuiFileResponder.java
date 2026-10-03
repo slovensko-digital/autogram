@@ -1,4 +1,4 @@
-package digital.slovensko.autogram.ui;
+package digital.slovensko.autogram.ui.gui;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -16,6 +16,9 @@ import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.ui.BatchUiResult;
+import digital.slovensko.autogram.ui.SaveFileFromBatchResponder;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.FileDocument;
 
@@ -46,6 +49,12 @@ public class BatchGuiFileResponder extends BatchResponder {
             throw e;
         }
 
+        if (batch.isInteractive()) {
+            submitNextInteractive(autogram, batch, list, 0, targetPath, signingParameters, eFormAttributes,
+                    targetFiles, errors, () -> onAllFilesSigned(batch));
+            return;
+        }
+
         for (File file : list) {
             try {
                 targetFiles.put(file, null);
@@ -61,13 +70,59 @@ public class BatchGuiFileResponder extends BatchResponder {
                 });
 
                 var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes), signingParameters);
-                var job = SigningJob.fromInput(input, responder);
+                var job = SigningJob.fromInput(input, responder, batch);
                 autogram.batchSign(job, batch.getBatchId());
             } catch (AutogramException e) {
                 autogram.onSigningFailed(e);
 
                 break;
             }
+        }
+    }
+
+    private static void submitNextInteractive(Autogram autogram, Batch batch, List<File> files, int index,
+            TargetPath targetPath, SigningParameters signingParameters, EFormAttributes eFormAttributes,
+            Map<File, File> targetFiles, Map<File, AutogramException> errors, Runnable onCompleted) {
+        if (batch.isEnded()) {
+            for (var remaining = index; remaining < files.size(); remaining++) {
+                var file = files.get(remaining);
+                targetFiles.put(file, null);
+                errors.put(file, new SigningCanceledByUserException());
+                autogram.recordBatchSubmissionFailure(batch);
+            }
+            onCompleted.run();
+            return;
+        }
+        if (index == files.size()) {
+            onCompleted.run();
+            return;
+        }
+
+        var file = files.get(index);
+        targetFiles.put(file, null);
+        errors.put(file, null);
+        try {
+            var responder = new SaveFileFromBatchResponder(file, targetPath,
+                    target -> {
+                        targetFiles.put(file, target);
+                        submitNextInteractive(autogram, batch, files, index + 1, targetPath, signingParameters,
+                                eFormAttributes, targetFiles, errors, onCompleted);
+                    }, error -> {
+                        errors.put(file, error);
+                        submitNextInteractive(autogram, batch, files, index + 1, targetPath, signingParameters,
+                                eFormAttributes, targetFiles, errors, onCompleted);
+                    });
+            var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes),
+                    signingParameters);
+            autogram.batchSign(SigningJob.fromInput(input, responder, batch), batch.getBatchId());
+        } catch (AutogramException e) {
+            if (errors.get(file) != null || targetFiles.get(file) != null)
+                throw e;
+            errors.put(file, e);
+            autogram.recordBatchSubmissionFailure(batch);
+            if (!e.batchCanContinue()) autogram.finishBatch(batch);
+            submitNextInteractive(autogram, batch, files, index + 1, targetPath, signingParameters,
+                    eFormAttributes, targetFiles, errors, onCompleted);
         }
     }
 
