@@ -32,7 +32,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Run with -Dautogram.guiTests=true on a desktop or under xvfb-run. */
+/**
+ * Desktop-only tests, intentionally opt-in for builds without a display.
+ * Run with -Dautogram.guiTests=true; see DEVELOPER.md for the Xvfb command.
+ */
 @EnabledIfSystemProperty(named = "autogram.guiTests", matches = "true")
 class SettingsDialogAccessibilityTest {
     @BeforeAll
@@ -42,7 +45,11 @@ class SettingsDialogAccessibilityTest {
             javafx.application.Application.setUserAgentStylesheet(SettingsDialogController.class.getResource("idsk.css").toExternalForm());
             return null;
         });
-        Platform.startup(ready);
+        try {
+            Platform.startup(ready);
+        } catch (IllegalStateException alreadyStarted) {
+            Platform.runLater(ready);
+        }
         ready.get(10, TimeUnit.SECONDS);
     }
 
