@@ -27,8 +27,10 @@
             </padding>
             <HBox styleClass="autogram-actions" alignment="CENTER_LEFT">
                 <HBox styleClass="autogram-actions">
-                    <Button fx:id="closeButton" onAction="#onCloseButtonAction" text="%general.close.btn"
+                    <Button fx:id="restartButton" onAction="#onRestartButtonAction" text="%settings.restart.restart"
                             styleClass="autogram-button,autogram-button--primary"/>
+                    <Button fx:id="closeButton" onAction="#onCloseButtonAction" text="%general.close.btn"
+                            styleClass="autogram-button,autogram-button--secondary"/>
                 </HBox>
             </HBox>
         </VBox>

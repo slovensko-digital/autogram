@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.util.ApplicationRestarter;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -12,11 +13,14 @@ public class SettingsRestartDialogController extends BaseController implements S
     private Node mainBox;
 
     @FXML
+    private Button restartButton;
+
+    @FXML
     private Button closeButton;
 
     /**
      * Shows a modal dialog informing the user that the application needs to be
-     * restarted for the changed settings to take effect.
+     * restarted for the changed settings to take effect, offering to restart it.
      */
     public static void show() {
         var controller = new SettingsRestartDialogController();
@@ -32,6 +36,16 @@ public class SettingsRestartDialogController extends BaseController implements S
 
     @Override
     public void initialize() { }
+
+    public void onRestartButtonAction() {
+        try {
+            ApplicationRestarter.restart();
+        } catch (Exception e) {
+            // fall back to letting the user restart manually, as the dialog text says
+            e.printStackTrace();
+            onCloseButtonAction();
+        }
+    }
 
     public void onCloseButtonAction() {
         ((Stage) closeButton.getScene().getWindow()).close();
