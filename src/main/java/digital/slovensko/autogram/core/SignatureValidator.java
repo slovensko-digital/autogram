@@ -8,7 +8,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -35,6 +37,7 @@ import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
+import eu.europa.esig.dss.model.tsl.TLValidationJobSummary;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
@@ -54,6 +57,7 @@ public class SignatureValidator {
     private CertificateVerifier verifier;
     private TLValidationJob validationJob;
     private ExecutorService executorService;
+    private List<String> selectedCountries = List.of();
     private static Logger logger = LoggerFactory.getLogger(SignatureValidator.class);
 
     // Singleton
@@ -86,6 +90,7 @@ public class SignatureValidator {
 
     public synchronized void initialize(ExecutorService executorService, List<String> tlCountries) {
         this.executorService = executorService;
+        this.selectedCountries = List.copyOf(tlCountries);
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         logger.debug("Initializing signature validator at {}", formatter.format(new Date()));
@@ -266,8 +271,34 @@ public class SignatureValidator {
     }
 
     public synchronized boolean areTLsLoaded() {
-        // TODO: consider validation turned off as well
-        return validationJob.getSummary().getNumberOfProcessedTLs() > 0;
+        return getTrustedListStatus().isComplete();
+    }
+
+    public record TrustedListStatus(List<String> selectedCountries, Set<String> validatedCountries, boolean lotlValid) {
+        public boolean isComplete() {
+            return lotlValid && !selectedCountries.isEmpty() && validatedCountries.containsAll(selectedCountries);
+        }
+    }
+
+    public synchronized TrustedListStatus getTrustedListStatus() {
+        return getTrustedListStatus(selectedCountries, validationJob == null ? null : validationJob.getSummary());
+    }
+
+    static TrustedListStatus getTrustedListStatus(List<String> selectedCountries, TLValidationJobSummary summary) {
+        if (summary == null)
+            return new TrustedListStatus(List.copyOf(selectedCountries), Set.of(), false);
+
+        var lotlValid = summary.getLOTLInfos().stream().anyMatch(lotl -> lotl.getValidationCacheInfo().isValid());
+        var validatedCountries = summary.getLOTLInfos().stream()
+                .filter(lotl -> lotl.getValidationCacheInfo().isValid())
+                .flatMap(lotl -> lotl.getTLInfos().stream())
+                .filter(tl -> tl.getValidationCacheInfo() != null && tl.getValidationCacheInfo().isValid()
+                        && tl.getParsingCacheInfo() != null)
+                .map(tl -> tl.getParsingCacheInfo().getTerritory())
+                .filter(country -> country != null && !country.isBlank())
+                .collect(Collectors.toUnmodifiableSet());
+
+        return new TrustedListStatus(List.copyOf(selectedCountries), validatedCountries, lotlValid);
     }
 
     private static boolean hasSignatures(Reports reports) {
