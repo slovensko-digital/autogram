@@ -4,11 +4,14 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.util.OperatingSystem;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -99,6 +102,12 @@ public class GUIUtils {
         return writer.toString();
     }
 
+    public static void copyToClipboard(String text) {
+        var content = new ClipboardContent();
+        content.putString(text);
+        Clipboard.getSystemClipboard().setContent(content);
+    }
+
     public static void hackToForceRelayout(Stage stage) {
         // this MUST be run after stage was shown to work on all platforms
         var w = stage.getScene().getWindow();
@@ -106,13 +115,13 @@ public class GUIUtils {
         w.setHeight(w.getHeight() - 1);
     }
 
-    public static void showError(AutogramException e, String buttonI18nKey, boolean wait) {
-        showError(e, buttonI18nKey, wait, false);
+    public static void showError(AutogramException e, String buttonI18nKey, boolean wait, HostServices hostServices) {
+        showError(e, buttonI18nKey, wait, false, hostServices);
     }
 
-    public static void showError(AutogramException e, String buttonI18nKey, boolean wait, boolean errorDetailsDisabled) {
+    public static void showError(AutogramException e, String buttonI18nKey, boolean wait, boolean errorDetailsDisabled, HostServices hostServices) {
         logger.debug("GUI showing error", e);
-        var controller = new ErrorController(e, errorDetailsDisabled);
+        var controller = new ErrorController(e, errorDetailsDisabled, hostServices);
         var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
         controller.setMainButtonText(buttonI18nKey);
 

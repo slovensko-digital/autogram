@@ -970,6 +970,11 @@ TextFlow.autogram-body-s {
   -fx-padding: 0.5em 2em 0 2em;
 }
 
+.autogram-error-summary__email {
+  -fx-padding: 0;
+  -fx-font-size: 1em;
+}
+
 .autogram-error-summary__more {
   -fx-padding: 0 0 0 5px;
   -fx-border-insets: 2em;
