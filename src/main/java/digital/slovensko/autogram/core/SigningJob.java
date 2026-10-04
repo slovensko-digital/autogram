@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -30,6 +31,7 @@ public class SigningJob {
     private final Batch batch;
     private final SigningInput input;
     private final List<AutogramDocument> documentsToVisualize;
+    private final AtomicBoolean resultDelivered = new AtomicBoolean();
     private List<Visualization> visualizations;
 
     private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Responder responder, Batch batch) {
@@ -116,30 +118,38 @@ public class SigningJob {
         }
     }
 
-    public void onJobSigned(SignedDocument signedDocument) {
+    /**
+     * Each result is delivered at most once, the first one wins. A later result, e.g. a signature finished after
+     * the user closed the window, returns false and is neither counted nor sent to the responder.
+     */
+    public boolean onJobSigned(SignedDocument signedDocument) {
+        if (!resultDelivered.compareAndSet(false, true))
+            return false;
         if (batch.isPresent())
             batch.success();
         responder.onDocumentSigned(signedDocument);
+        return true;
     }
 
-    public void onJobSignFailed(AutogramException error) {
+    public boolean onJobSignFailed(AutogramException error) {
+        if (!resultDelivered.compareAndSet(false, true))
+            return false;
         if (batch.isPresent())
             batch.failure();
         responder.onDocumentSignFailed(error);
+        return true;
     }
 
-    public void onJobCanceled() {
-        if (batch.isPresent())
-            batch.failure();
-        responder.onDocumentSignFailed(new SigningCanceledByUserException());
+    public boolean onJobCanceled() {
+        return onJobSignFailed(new SigningCanceledByUserException());
     }
 
-    public void onSkipCurrentDocument() {
-        onJobSignFailed(new SigningCanceledByUserException());
+    public boolean onSkipCurrentDocument() {
+        return onJobSignFailed(new SigningCanceledByUserException());
     }
 
-    public void onJobSkipRemainingDocuments() {
-        onJobSignFailed(new SigningCanceledByUserException());
+    public boolean onJobSkipRemainingDocuments() {
+        return onJobSignFailed(new SigningCanceledByUserException());
     }
 
     public Batch getBatch() {

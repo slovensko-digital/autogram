@@ -12,6 +12,7 @@ public class PasswordManager implements PasswordInputCallback {
     private boolean incorrectPIN;
     private Batch cachedBatch = new NoBatch();
     private final ThreadLocal<Batch> currentBatch = ThreadLocal.withInitial(NoBatch::new);
+    private final ThreadLocal<Boolean> contextSpecificPasswordRequested = ThreadLocal.withInitial(() -> false);
 
     public PasswordManager(UI ui, PasswordManagerSettings settings) {
         this.ui = ui;
@@ -19,6 +20,7 @@ public class PasswordManager implements PasswordInputCallback {
     }
 
     public synchronized char[] getContextSpecificPassword() {
+        contextSpecificPasswordRequested.set(true);
         var batch = currentBatch.get();
         var canReturnToSigning = !batch.isPresent() || batch.isInteractive();
         if (batch.isPresent()) {
@@ -58,6 +60,15 @@ public class PasswordManager implements PasswordInputCallback {
     public synchronized void preparePINRetry() {
         reset();
         incorrectPIN = true;
+    }
+
+    /** Starts tracking whether the current thread's signing attempt asks for the context-specific PIN. */
+    public void startSigningAttempt() {
+        contextSpecificPasswordRequested.set(false);
+    }
+
+    public boolean wasContextSpecificPasswordRequested() {
+        return contextSpecificPasswordRequested.get();
     }
 
     public Batch setBatchContext(Batch batch) {

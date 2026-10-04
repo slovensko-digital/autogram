@@ -5,17 +5,24 @@ import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.TestAutogramFactory;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
+import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchConflictException;
+import digital.slovensko.autogram.core.errors.BatchTooManyDocumentsException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PINLockedException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
+import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.server.ErrorResponseBuilder;
 import digital.slovensko.autogram.server.ServerResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
+import digital.slovensko.autogram.ui.SaveFileFromBatchResponder;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.gui.BatchGuiFileResponder;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
+import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,6 +40,7 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class InteractiveBatchTest {
@@ -350,7 +358,7 @@ class InteractiveBatchTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
-    void pinRetryStopsOnCancelOrLockedPin(boolean locked) {
+    void pinRetryStopsOnCancelOrLockedPin(boolean locked) throws Exception {
         var ui = spy(new InteractiveUI());
         doNothing().when(ui).onSigningFailed(any(), any());
         var autogram = TestAutogramFactory.create(ui);
@@ -362,7 +370,12 @@ class InteractiveBatchTest {
         var responder = mock(Responder.class);
         var job = spy(TestSigningJobFactory.create(batch, responder));
         var terminal = locked ? new PINLockedException() : new PasswordNotProvidedException();
-        doThrow(new PINIncorrectException()).doThrow(terminal).when(job).signWithKey(any(), any());
+        var manager = passwordManager(autogram);
+        var attempts = new AtomicInteger();
+        doAnswer(invocation -> {
+            manager.getContextSpecificPassword();
+            throw attempts.incrementAndGet() == 1 ? new PINIncorrectException() : terminal;
+        }).when(job).signWithKey(any(), any());
         autogram.batchSign(job, batch.getBatchId());
 
         autogram.sign(job, mock(SigningKey.class));
@@ -427,5 +440,194 @@ class InteractiveBatchTest {
         } finally {
             autogram.shutdown();
         }
+    }
+
+    @Test
+    void incorrectPinIsNotRetriedWhenAutogramDidNotAskForIt() {
+        var ui = spy(new TestAutogramFactory.FakeUI());
+        doNothing().when(ui).onSigningFailed(any());
+        var autogram = TestAutogramFactory.create(ui);
+        var responder = mock(Responder.class);
+        var job = spy(TestSigningJobFactory.create(new NoBatch(), responder));
+        // Succeeds on a second attempt, so a regression fails the test instead of looping forever.
+        doThrow(new DSSException(new java.security.GeneralSecurityException("CKR_FUNCTION_FAILED")))
+                .doReturn(mock(SignedDocument.class))
+                .when(job).signWithKey(any(), any());
+
+        autogram.sign(job, mock(SigningKey.class));
+
+        verify(job, times(1)).signWithKey(any(), any());
+        verify(ui).onSigningFailed(any(PINIncorrectException.class));
+        verifyNoInteractions(responder);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void closingWindowWhileSigningDropsTheSignature(boolean interactive) {
+        var ui = spy(new InteractiveUI());
+        var autogram = TestAutogramFactory.create(ui);
+        Batch batch = interactive ? startedBatch(autogram, 2) : new NoBatch();
+        var responder = mock(Responder.class);
+        var job = spy(TestSigningJobFactory.create(batch, responder));
+        doAnswer(invocation -> {
+            if (interactive) autogram.skipRemainingDocuments(job);
+            else autogram.cancelSigning(job);
+            return mock(SignedDocument.class);
+        }).when(job).signWithKey(any(), any());
+        if (interactive) autogram.batchSign(job, batch.getBatchId());
+
+        autogram.sign(job, mock(SigningKey.class));
+
+        verify(responder).onDocumentSignFailed(any(SigningCanceledByUserException.class));
+        verify(responder, never()).onDocumentSigned(any());
+        verify(ui, never()).onSigningSuccess(any());
+        verify(ui).enableSigningOnAllJobs();
+        if (interactive) {
+            assertTrue(batch.isEnded());
+            assertEquals(1, batch.getProcessedDocumentsCount());
+        }
+    }
+
+    @Test
+    void interactiveBatchEndsAfterLastDocumentEvenWhenResponseFails() {
+        var ui = spy(new InteractiveUI());
+        doNothing().when(ui).onSigningFailed(any(), any());
+        var autogram = TestAutogramFactory.create(ui);
+        var batch = startedBatch(autogram, 1);
+        var responder = mock(Responder.class);
+        var failure = new ResponseNetworkErrorException(new java.io.IOException("client is gone"));
+        doThrow(failure).when(responder).onDocumentSigned(any());
+        var job = spy(TestSigningJobFactory.create(batch, responder));
+        doReturn(mock(SignedDocument.class)).when(job).signWithKey(any(), any());
+        autogram.batchSign(job, batch.getBatchId());
+
+        autogram.sign(job, mock(SigningKey.class));
+
+        verify(ui).onSigningFailed(failure, job);
+        assertEquals(1, batch.getProcessedDocumentsCount());
+        assertTrue(batch.isEnded());
+        assertDoesNotThrow(() -> autogram.startBatchSigning(1, mock(BatchResponder.class)));
+    }
+
+    @Test
+    void failedSubmissionOfLastDocumentEndsInteractiveBatch() {
+        var autogram = TestAutogramFactory.create(new InteractiveUI());
+        var batch = startedBatch(autogram, 1);
+
+        autogram.recordBatchSubmissionFailure(batch);
+
+        assertTrue(batch.isEnded());
+    }
+
+    @Test
+    void saveFailureIsReportedAsDocumentError(@TempDir Path directory) throws Exception {
+        var source = Files.writeString(directory.resolve("source.txt"), "source").toFile();
+        var errors = new ArrayList<AutogramException>();
+        var responder = new SaveFileFromBatchResponder(source,
+                TargetPath.fromTargetDirectory(directory.resolve("signed"), false),
+                target -> fail("Document was not saved"), errors::add);
+        var document = mock(DSSDocument.class);
+        when(document.getMimeType()).thenReturn(MimeTypeEnum.XML);
+        doThrow(new java.io.IOException("disk full")).when(document).save(anyString());
+        var signed = mock(SignedDocument.class);
+        when(signed.getDocument()).thenReturn(document);
+
+        assertDoesNotThrow(() -> responder.onDocumentSigned(signed));
+
+        assertEquals(1, errors.size());
+    }
+
+    @Test
+    void moreDocumentsThanAnnouncedAreRejectedWithClientError() {
+        ErrorResponseBuilder.init(SupportedLanguage.ENGLISH.loadResources());
+        var autogram = TestAutogramFactory.create(new InteractiveUI());
+        var batch = startedBatch(autogram, 1);
+        autogram.batchSign(TestSigningJobFactory.create(batch, mock(Responder.class)), batch.getBatchId());
+
+        var error = assertThrows(BatchTooManyDocumentsException.class, () -> autogram
+                .batchSign(TestSigningJobFactory.create(batch, mock(Responder.class)), batch.getBatchId()));
+
+        var response = ErrorResponseBuilder.buildFromException(error);
+        assertEquals(400, response.getStatusCode());
+        assertTrue(new com.google.gson.Gson().toJson(response.getBody()).contains("\"BATCH_TOO_MANY_DOCUMENTS\""));
+    }
+
+    @Test
+    void changingKeyClearsPinCachedForTheBatch() throws Exception {
+        var prompts = new AtomicInteger();
+        var ui = new InteractiveUI() {
+            @Override
+            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+                prompts.incrementAndGet();
+                return "1234".toCharArray();
+            }
+        };
+        var autogram = TestAutogramFactory.create(ui);
+        var manager = passwordManager(autogram);
+        var batch = startedBatch(autogram, 3);
+        Runnable signDocument = () -> {
+            var job = spy(TestSigningJobFactory.create(batch, mock(Responder.class)));
+            doAnswer(invocation -> {
+                manager.getContextSpecificPassword();
+                return mock(SignedDocument.class);
+            }).when(job).signWithKey(any(), any());
+            autogram.batchSign(job, batch.getBatchId());
+            autogram.sign(job, mock(SigningKey.class));
+        };
+
+        try {
+            signDocument.run();
+            signDocument.run();
+            assertEquals(1, prompts.get());
+
+            autogram.pickSigningKeyAndThen(key -> {});
+            signDocument.run();
+
+            assertEquals(2, prompts.get());
+        } finally {
+            autogram.shutdown();
+        }
+    }
+
+    @Test
+    void individualDocumentCannotBeSignedUntilBatchEnds() {
+        var batchRef = new AtomicReference<Batch>();
+        var ui = spy(new TestAutogramFactory.FakeUI() {
+            @Override
+            public void startBatch(Batch batch, Autogram autogram) {
+                batchRef.set(batch);
+            }
+        });
+        doNothing().when(ui).onSigningFailed(any());
+        var autogram = TestAutogramFactory.create(ui);
+        autogram.startBatchSigning(2, mock(BatchResponder.class));
+        var responder = mock(Responder.class);
+        var job = spy(TestSigningJobFactory.create(new NoBatch(), responder));
+        doReturn(mock(SignedDocument.class)).when(job).signWithKey(any(), any());
+
+        autogram.sign(job, mock(SigningKey.class));
+
+        verify(job, never()).signWithKey(any(), any());
+        verify(ui).onSigningFailed(any(BatchConflictException.class));
+        verifyNoInteractions(responder);
+
+        autogram.cancelBatch(batchRef.get());
+        autogram.sign(job, mock(SigningKey.class));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    private static Batch startedBatch(Autogram autogram, int totalNumberOfDocuments) {
+        var batchResponder = mock(BatchResponder.class);
+        autogram.startBatchSigning(totalNumberOfDocuments, batchResponder);
+        var captor = org.mockito.ArgumentCaptor.forClass(Batch.class);
+        verify(batchResponder).onBatchStartSuccess(captor.capture());
+        return captor.getValue();
+    }
+
+    static PasswordManager passwordManager(Autogram autogram) throws ReflectiveOperationException {
+        var field = Autogram.class.getDeclaredField("passwordManager");
+        field.setAccessible(true);
+        return (PasswordManager) field.get(autogram);
     }
 }

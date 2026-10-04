@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.NoBatch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningMode;
@@ -51,6 +52,8 @@ public class GUI implements UI {
     private final UserSettings userSettings;
     private Autogram autogram;
     private BatchDialogController batchController;
+    /** The latest batch; documents outside it cannot be signed until it ends. */
+    private Batch activeBatch = new NoBatch();
     private static final boolean DEBUG = false;
     private int nWindows = 0;
 
@@ -67,6 +70,9 @@ public class GUI implements UI {
 
     @Override
     public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+        activeBatch = batch;
+        refreshKeyOnAllJobs(); // blocks windows of documents outside the batch
+
         if (userSettings.isBulkEnabled()) {
             onSelected.accept(SigningMode.BULK);
             return;
@@ -337,6 +343,9 @@ public class GUI implements UI {
 
     @Override
     public void onPDFAComplianceCheckFailed(SigningJob job) {
+        if (!jobControllers.containsKey(job))
+            return; // the signing window was closed before the check finished
+
         var controller = new PDFAComplianceDialogController(job, this);
         var root = GUIUtils.loadFXML(controller, "pdfa-compliance-dialog.fxml");
 
@@ -353,13 +362,15 @@ public class GUI implements UI {
     @Override
     public void onSignatureValidationCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureValidationCompleted(reports);
+        if (controller != null) // the signing window may be closed before the validation finishes
+            controller.onSignatureValidationCompleted(reports);
     }
 
     @Override
     public void onSignatureCheckCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureCheckCompleted(reports);
+        if (controller != null)
+            controller.onSignatureCheckCompleted(reports);
     }
 
     public void showSigningJob(SigningJob job, Autogram autogram) {
@@ -437,7 +448,8 @@ public class GUI implements UI {
 
     @Override
     public void onSigningSuccess(SigningJob job) {
-        jobControllers.get(job).close();
+        var controller = jobControllers.remove(job);
+        if (controller != null) controller.close();
         refreshKeyOnAllJobs();
         enableSigningOnAllJobs();
         updateBatch();
@@ -445,9 +457,8 @@ public class GUI implements UI {
 
     @Override
     public void onSigningFailed(AutogramException e, SigningJob job) {
-        var controller = jobControllers.get(job);
-        controller.close();
-        jobControllers.remove(job);
+        var controller = jobControllers.remove(job);
+        if (controller != null) controller.close();
         onSigningFailed(e);
     }
 
@@ -537,6 +548,10 @@ public class GUI implements UI {
             enableSigningOnAllJobs();
     }
 
+    public boolean isSigningBlockedByBatch(SigningJob job) {
+        return !job.isPartOfBatch() && !activeBatch.isEnded();
+    }
+
     public boolean isActiveSigningKeyChangeAllowed() {
         return true;
     }
@@ -561,9 +576,9 @@ public class GUI implements UI {
             return;
         }
 
-        var controller = jobControllers.get(job);
+        var controller = jobControllers.remove(job);
         autogram.cancelSigning(job);
-        controller.close();
+        if (controller != null) controller.close();
     }
 
     public void focusJob(SigningJob job) {

@@ -443,6 +443,13 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     public void refreshSigningKey() {
+        if (gui.isSigningBlockedByBatch(job)) {
+            mainButton.setText(i18n("signing.batchInProgress.btn"));
+            mainButton.setDisable(true);
+            changeKeyButton.setVisible(false);
+            return;
+        }
+
         var key = gui.getActiveSigningKey();
         if (key == null) {
             mainButton.setText(i18n(job.isMultiDocument() ? "general.sign.btn.multi" : "general.sign.btn.single"));
@@ -455,6 +462,9 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     public void enableSigning() {
         refreshSigningKey();
+        if (gui.isSigningBlockedByBatch(job))
+            return;
+
         mainButton.setDisable(false);
         changeKeyButton.setDisable(false);
     }

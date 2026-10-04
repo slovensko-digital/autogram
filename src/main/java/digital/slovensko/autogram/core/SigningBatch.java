@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.errors.BatchEndedException;
 import digital.slovensko.autogram.core.errors.BatchExpiredException;
 import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
+import digital.slovensko.autogram.core.errors.BatchTooManyDocumentsException;
 import digital.slovensko.autogram.util.Logging;
 
 import java.util.Date;
@@ -21,6 +22,7 @@ enum BatchState {
  * A session for signing multiple documents with one key or interactively.
  * 
  * This class is used for checking runtime conditions and tracking progress.
+ * Documents of one batch can be signed and counted from several threads (HTTP, FX and workers).
  */
 public class SigningBatch implements Batch {
     private final String batchId = generateNewBatchId();
@@ -40,21 +42,21 @@ public class SigningBatch implements Batch {
         expirationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 5); // 5 minutes
     }
 
-    public void start(SigningKey key) {
+    public synchronized void start(SigningKey key) {
         if (state != BatchState.INITIALIZED)
             throw new BatchEndedException(CANNOT_RESTART);
         state = BatchState.STARTED;
         signingKey = key;
     }
 
-    public void setMode(SigningMode mode) {
+    public synchronized void setMode(SigningMode mode) {
         if (state != BatchState.INITIALIZED)
             throw new IllegalStateException("Signing mode must be selected before batch start");
         this.mode = mode;
         if (isInteractive()) expirationDate = null;
     }
 
-    public boolean isInteractive() {
+    public synchronized boolean isInteractive() {
         return mode == SigningMode.INTERACTIVE;
     }
 
@@ -62,38 +64,37 @@ public class SigningBatch implements Batch {
         return true;
     }
 
-    public void ensureCanStartNewBatch() {
+    public synchronized void ensureCanStartNewBatch() {
         if (!isEnded())
             throw new BatchConflictException();
     }
 
-    public boolean shouldResetPasswordAfterSigning() {
+    public synchronized boolean shouldResetPasswordAfterSigning() {
         return isEnded() || isAllProcessed();
     }
 
-    public void addJob(String batchId) {
+    public synchronized void addJob(String batchId) {
         validate(batchId);
-        resetExpirationDate();
-
         if (this.totalNumberOfDocuments <= this.addedDocumentsCount)
-            throw new IllegalAccessError("Sent more sign requests than declared at start");
+            throw new BatchTooManyDocumentsException();
 
+        resetExpirationDate();
         addedDocumentsCount++;
     }
 
-    public void success() {
+    public synchronized void success() {
         successfulDocumentsCount++;
         Logging.log("Batch " + batchId + " success");
         log();
     }
 
-    public void failure() {
+    public synchronized void failure() {
         failedDocumentsCount++;
         Logging.log("Batch " + batchId + " failed");
         log();
     }
 
-    public void end() {
+    public synchronized void end() {
         state = BatchState.ENDED;
     }
 
@@ -109,7 +110,7 @@ public class SigningBatch implements Batch {
         }
     }
 
-    public void validate(String batchId) {
+    public synchronized void validate(String batchId) {
         validateInternal();
 
         if (!this.batchId.equals(batchId)) throw new BatchInvalidIdException();
@@ -117,21 +118,21 @@ public class SigningBatch implements Batch {
 
     // public getters
 
-    public String getBatchId() {
+    public synchronized String getBatchId() {
         validate(batchId);
 
         return batchId;
     }
 
-    public boolean isEnded() {
+    public synchronized boolean isEnded() {
         return state == BatchState.ENDED;
     }
 
-    public boolean isAllProcessed() {
+    public synchronized boolean isAllProcessed() {
         return getProcessedDocumentsCount() >= totalNumberOfDocuments;
     }
 
-    public boolean isKeyChangeAllowed() {
+    public synchronized boolean isKeyChangeAllowed() {
         return state == BatchState.INITIALIZED;
     }
 
@@ -139,11 +140,11 @@ public class SigningBatch implements Batch {
         return totalNumberOfDocuments;
     }
 
-    public int getProcessedDocumentsCount(){
+    public synchronized int getProcessedDocumentsCount(){
         return successfulDocumentsCount + failedDocumentsCount;
     }
 
-    public SigningKey getSigningKey() {
+    public synchronized SigningKey getSigningKey() {
         return signingKey;
     }
 
@@ -152,7 +153,7 @@ public class SigningBatch implements Batch {
         return UUID.randomUUID().toString();
     }
 
-    boolean isExpired() {
+    synchronized boolean isExpired() {
         if (isInteractive()) return false;
         return expirationDate.before(new Date());
     }
@@ -162,7 +163,7 @@ public class SigningBatch implements Batch {
             expirationDate = new Date(System.currentTimeMillis() + 1000 * 60); // 1 minute
     }
 
-    public void log() {
+    public synchronized void log() {
         Logging.log("Batch " + batchId + " state: " + state + " processed: " + addedDocumentsCount + " total: " + totalNumberOfDocuments);
     }
 

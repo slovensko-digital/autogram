@@ -200,5 +200,6 @@ class BatchCallbackTest {
         assertThrows(IllegalStateException.class, () -> autogram.batchSign(job, batch.getBatchId()));
         assertEquals(1, batch.getProcessedDocumentsCount());
         verify(responder, never()).onDocumentSignFailed(any());
+        assertTrue(batch.isEnded());
     }
 }
