@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ContextMenu?>
 <?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -25,6 +27,15 @@
         </TextFlow>
         <TextFlow styleClass="autogram-error-summary__description,autogram-body-s">
             <Text text="%pkcsEidWindowsDllError.support.text"/>
+            <Hyperlink styleClass="autogram-link,autogram-error-summary__email" text="podpora@slovensko.digital" onAction="#supportEmailAction">
+                <contextMenu>
+                    <ContextMenu>
+                        <items>
+                            <MenuItem text="%error.email.copy" onAction="#copySupportEmailAction"/>
+                        </items>
+                    </ContextMenu>
+                </contextMenu>
+            </Hyperlink>
         </TextFlow>
     </VBox>
 

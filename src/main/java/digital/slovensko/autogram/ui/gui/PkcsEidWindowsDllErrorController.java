@@ -8,6 +8,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class PkcsEidWindowsDllErrorController extends BaseController implements SuppressedFocusController {
+    private static final String SUPPORT_EMAIL = "podpora@slovensko.digital";
+
     private final HostServices hostServices;
 
     @FXML
@@ -22,6 +24,14 @@ public class PkcsEidWindowsDllErrorController extends BaseController implements 
 
     public void downloadAction(ActionEvent ignored) {
         hostServices.showDocument("https://sluzby.slovensko.digital/autogram/vc-redist-redirect");
+    }
+
+    public void supportEmailAction(ActionEvent ignored) {
+        hostServices.showDocument("mailto:" + SUPPORT_EMAIL);
+    }
+
+    public void copySupportEmailAction(ActionEvent ignored) {
+        GUIUtils.copyToClipboard(SUPPORT_EMAIL);
     }
 
     public void onMainButtonAction() {
