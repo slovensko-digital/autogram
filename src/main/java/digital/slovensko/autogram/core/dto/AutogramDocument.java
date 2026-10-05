@@ -135,8 +135,16 @@ public class AutogramDocument {
         return AsicContainerUtils.getOriginalDocuments(dssDocument);
     }
 
+    private static void sanitizeDocumentName(DSSDocument dssDocument) {
+        var name = dssDocument.getName();
+        if (name != null) {
+            dssDocument.setName(name.replace("?", "_").replace("#", "_"));
+        }
+    }
+
     private static DSSDocument normalize(DSSDocument dssDocument) {
         var mimeType = dssDocument.getMimeType();
+        sanitizeDocumentName(dssDocument);
         var name = dssDocument.getName();
 
         if (name != null && name.endsWith(".xdcf")) {
