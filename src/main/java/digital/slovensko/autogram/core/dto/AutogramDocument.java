@@ -23,6 +23,9 @@ public class AutogramDocument {
     private final DSSDocument dssDocument;
     private final EFormAttributes eFormAttributes;
 
+    private char[] openDocumentPassword = new char[0];
+    private char[] masterPassword = new char[0];
+
     private AutogramDocument(DSSDocument dssDocument) {
         this(dssDocument, null);
     }
@@ -125,7 +128,35 @@ public class AutogramDocument {
     }
 
     public boolean isPDFAndPasswordProtected() {
-        return isPDF() && PDFUtils.isPdfAndPasswordProtected(dssDocument);
+        return isPDF() && PDFUtils.determinePDFProtection(dssDocument) != PDFUtils.PDFProtection.NONE;
+    }
+
+    public boolean hasOpenDocumentPassword() {
+        return openDocumentPassword.length > 0;
+    }
+
+    public char[] getOpenDocumentPassword() {
+        return openDocumentPassword;
+    }
+
+    public void setOpenDocumentPassword(char[] openDocumentPassword) {
+        this.openDocumentPassword = openDocumentPassword != null ? openDocumentPassword : new char[0];
+    }
+
+    public char[] getMasterPassword() {
+        return masterPassword;
+    }
+
+    public void setMasterPassword(char[] masterPassword) {
+        this.masterPassword = masterPassword != null ? masterPassword : new char[0];
+    }
+
+    public char[] getSigningPassword() {
+        return hasOpenDocumentPassword() ? openDocumentPassword : masterPassword;
+    }
+
+    public boolean hasSigningPassword() {
+        return getSigningPassword().length > 0;
     }
 
     public List<DSSDocument> getOriginalDocuments() {

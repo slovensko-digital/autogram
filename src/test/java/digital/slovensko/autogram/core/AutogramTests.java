@@ -242,11 +242,12 @@ class AutogramTests {
     }
 
     @Test
-    void testStartVisualizationThrowsWhenLaterBundleDocumentIsLockedPdf() throws IOException {
+    void testStartVisualizationStartsWhenLockedPdfPasswordIsProvided() throws IOException {
+        var shownJobs = new ArrayList<SigningJob>();
         var newUI = new TestAutogramFactory.FakeUI() {
             @Override
             public void showSigningJob(SigningJob job, Autogram autogram) {
-                Assertions.fail("Visualization should not start for a bundle containing a locked PDF");
+                shownJobs.add(job);
             }
 
             @Override
@@ -255,14 +256,18 @@ class AutogramTests {
             }
         };
         var autogram = TestAutogramFactory.create(newUI);
+
+        var lockedPdf = AutogramDocument.build(
+            new InMemoryDocument(createPasswordProtectedPdf(), "locked.pdf", MimeTypeEnum.PDF), null);
+        lockedPdf.setOpenDocumentPassword("user-password".toCharArray());
+
         var job = createMultiDocumentJob(false,
-                createTextDocument("first.txt", "first"),
-            AutogramDocument.build(new InMemoryDocument(createPasswordProtectedPdf(), "locked.pdf", MimeTypeEnum.PDF), null));
+            createTextDocument("first.txt", "first"),
+            lockedPdf);
 
-        var exception = Assertions.assertThrows(AutogramException.class, () -> autogram.startVisualization(job));
+        autogram.startVisualization(job);
 
-        Assertions.assertEquals("The document is password protected",
-                exception.getSubheading(SupportedLanguage.ENGLISH.loadResources()));
+        Assertions.assertEquals(1, shownJobs.size());
     }
 
     @Test

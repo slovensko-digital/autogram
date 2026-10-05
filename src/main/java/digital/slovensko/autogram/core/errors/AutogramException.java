@@ -82,6 +82,8 @@ public class AutogramException extends RuntimeException {
                     return new TsaServerMisconfiguredException(MISSING_HOST_NAME, cause);
                 } else if (cause instanceof IOException && (cause.getMessage().contains("The specified module could not be found") || cause.getMessage().contains("Zadaný modul sa nepodarilo"))) {
                     return new PkcsEidWindowsDllException(e);
+                } else if (cause instanceof eu.europa.esig.dss.pades.exception.InvalidPasswordException) {
+                    return new InvalidPasswordException("Zadali ste nesprávne heslo");
                 }
             }
         }

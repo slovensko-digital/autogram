@@ -10,10 +10,12 @@ import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
+import digital.slovensko.autogram.util.PDFUtils;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
@@ -66,6 +68,12 @@ public class Autogram {
         var documentsToCheck = job.getDocuments().stream().filter(d -> d.isPDF()).toList();
         ui.onWorkThreadDo(() -> {
             for (var document : documentsToCheck) {
+                // PDF/A doesn't support encryption
+                if (document.hasOpenDocumentPassword()) {
+                    ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
+                    return;
+                }
+
                 var result = new PDFAStructureValidator().validate(document.toDssDocument());
                 if (!result.isCompliant()) {
                     ui.onUIThreadDo(() -> ui.onPDFAComplianceCheckFailed(job));
@@ -75,15 +83,24 @@ public class Autogram {
         });
     }
 
+    public void handleProtectedPdfDocument(AutogramDocument document) {
+        var protection = PDFUtils.determinePDFProtection(document.toDssDocument());
+        if (protection == PDFUtils.PDFProtection.NONE)
+            return;
+
+        var password = ui.getDocumentPassword(document.toDssDocument());
+        switch (protection) {
+            case OPEN_DOCUMENT_PASSWORD -> document.setOpenDocumentPassword(password);
+            case MASTER_PASSWORD -> document.setMasterPassword(password);
+        }
+    }
+
+    public void wrapInWorkThread(Runnable callback) {
+        ui.onWorkThreadDo(callback);
+    }
+
     public void startVisualization(SigningJob job) {
         ui.onWorkThreadDo(() -> {
-            if (job.getDocuments().stream().anyMatch(d -> d.isPDFAndPasswordProtected())) {
-                ui.onUIThreadDo(() -> {
-                    ui.showError(new AutogramException("LOCKED_PDF"));
-                });
-                return;
-            }
-
             try {
                 job.initializeVisualizations();
                 ui.onUIThreadDo(() -> ui.showSigningJob(job, this));

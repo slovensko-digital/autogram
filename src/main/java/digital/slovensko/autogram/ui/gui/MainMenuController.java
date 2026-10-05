@@ -114,10 +114,19 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         var filesList = getFilesList(list);
         if (filesList.size() == 1) {
             var file = filesList.get(0);
-                var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), defaultEFormAttributes), defaultSigningParameters);
-                var job = SigningJob.fromInput(input,
-                    new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
-            autogram.sign(job);
+
+            autogram.wrapInWorkThread(() -> {
+                try {
+                    var document = AutogramDocument.build(new FileDocument(file), defaultEFormAttributes);
+                    autogram.handleProtectedPdfDocument(document);
+                    var input = SigningInput.fromFile(document, defaultSigningParameters);
+                    var job = SigningJob.fromInput(input,
+                        new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
+                    autogram.sign(job);
+                } catch (AutogramException e) {
+                    autogram.onSigningFailed(e);
+                }
+            });
         } else {
             autogram.batchStart(filesList.size(),
                     new BatchGuiFileResponder(autogram, filesList, filesList.get(0).toPath().getParent().resolve("signed"),

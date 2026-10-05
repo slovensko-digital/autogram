@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocumentSignature;
 import digital.slovensko.autogram.util.XMLUtils;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
@@ -142,7 +143,7 @@ public class SignatureValidator {
         var documents = job.getDocuments();
 
         for (int index = 0; index < documents.size(); index++) {
-            var document = documents.get(index).toDssDocument();
+            var document = documents.get(index);
             var documentValidator = createDocumentValidator(document);
             if (documentValidator == null)
                 continue;
@@ -151,7 +152,7 @@ public class SignatureValidator {
             if (!hasSignatures(reports))
                 continue;
 
-            documentReports.add(new ValidationReports.DocumentReport(index, document, reports));
+            documentReports.add(new ValidationReports.DocumentReport(index, document.toDssDocument(), reports));
         }
 
         return new ValidationReports(documentReports, job);
@@ -198,7 +199,7 @@ public class SignatureValidator {
         var documents = job.getDocuments();
 
         for (int index = 0; index < documents.size(); index++) {
-            var document = documents.get(index).toDssDocument();
+            var document = documents.get(index);
             var validator = createDocumentValidator(document);
             if (validator == null)
                 continue;
@@ -206,14 +207,21 @@ public class SignatureValidator {
             validator.setCertificateVerifier(new CommonCertificateVerifier());
             var reports = validator.validateDocument();
             if (hasSignatures(reports))
-                documentReports.add(new ValidationReports.DocumentReport(index, document, reports));
+                documentReports.add(new ValidationReports.DocumentReport(index, document.toDssDocument(), reports));
         }
 
         return new ValidationReports(documentReports, job);
     }
 
     public static SimpleReport getSignedDocumentSimpleReport(DSSDocument document) {
-        var validator = createDocumentValidator(document);
+        return getSignedDocumentSimpleReport(createDocumentValidator(document));
+    }
+
+    public static SimpleReport getSignedDocumentSimpleReport(AutogramDocument document) {
+        return getSignedDocumentSimpleReport(createDocumentValidator(document));
+    }
+
+    private static SimpleReport getSignedDocumentSimpleReport(SignedDocumentValidator validator) {
         if (validator == null)
             return null;
 
@@ -240,6 +248,16 @@ public class SignatureValidator {
 
         return new SignedDocumentSignature(level.getSignatureForm(), report.getContainerType(),
                 getSignaturePackaging(document, level, report.getContainerType()));
+    }
+
+    public static SignedDocumentSignature getSignedDocumentSignature(AutogramDocument document) {
+        var report = getSignedDocumentSimpleReport(document);
+        var level = getSignedDocumentSignatureLevel(report);
+        if (level == null)
+            return null;
+
+        return new SignedDocumentSignature(level.getSignatureForm(), report.getContainerType(),
+                getSignaturePackaging(document.toDssDocument(), level, report.getContainerType()));
     }
 
     private static SignaturePackaging getSignaturePackaging(DSSDocument document, SignatureLevel level,
