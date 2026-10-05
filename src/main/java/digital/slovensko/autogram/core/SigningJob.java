@@ -1,11 +1,13 @@
 package digital.slovensko.autogram.core;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundException;
 import digital.slovensko.autogram.core.visualization.DocumentVisualizationBuilder;
 import digital.slovensko.autogram.core.visualization.Visualization;
@@ -26,14 +28,17 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 
 public class SigningJob {
     private final Responder responder;
+    private final Batch batch;
     private final SigningInput input;
     private final List<AutogramDocument> documentsToVisualize;
+    private final AtomicBoolean resultDelivered = new AtomicBoolean();
     private List<Visualization> visualizations;
 
-    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Responder responder) {
+    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Responder responder, Batch batch) {
         this.input = input;
         this.documentsToVisualize = documentsToVisualize;
         this.responder = responder;
+        this.batch = batch;
     }
 
     public AutogramDocument getDocument() {
@@ -83,7 +88,12 @@ public class SigningJob {
     }
 
     @SuppressWarnings("unchecked")
-    public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws InterruptedException, AutogramException {
+    public void signWithKeyAndRespond(SigningKey key, TSPSource tspSource) throws AutogramException {
+        onJobSigned(signWithKey(key, tspSource));
+    }
+
+    @SuppressWarnings("unchecked")
+    public SignedDocument signWithKey(SigningKey key, TSPSource tspSource) throws AutogramException {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
             + (isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
 
@@ -96,7 +106,7 @@ public class SigningJob {
             var dataToSign = castedService.getDataToSign(documents, signatureParameters);
             var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
             var signedDocument = castedService.signDocument(documents, signatureParameters, signatureValue);
-            responder.onDocumentSigned(new SignedDocument(signedDocument, key.getCertificate()));
+            return new SignedDocument(signedDocument, key.getCertificate());
 
         } else {
             var document = getDssDocument();
@@ -104,15 +114,57 @@ public class SigningJob {
             var dataToSign = signatureService.getDataToSign(document, signatureParameters);
             var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
             var signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
-            responder.onDocumentSigned(new SignedDocument(signedDocument, key.getCertificate()));
+            return new SignedDocument(signedDocument, key.getCertificate());
         }
     }
 
-    public void onDocumentSignFailed(AutogramException e) {
-        responder.onDocumentSignFailed(e);
+    /**
+     * Each result is delivered at most once, the first one wins. A later result, e.g. a signature finished after
+     * the user closed the window, returns false and is neither counted nor sent to the responder.
+     */
+    public boolean onJobSigned(SignedDocument signedDocument) {
+        if (!resultDelivered.compareAndSet(false, true))
+            return false;
+        if (batch.isPresent())
+            batch.success();
+        responder.onDocumentSigned(signedDocument);
+        return true;
+    }
+
+    public boolean onJobSignFailed(AutogramException error) {
+        if (!resultDelivered.compareAndSet(false, true))
+            return false;
+        if (batch.isPresent())
+            batch.failure();
+        responder.onDocumentSignFailed(error);
+        return true;
+    }
+
+    public boolean onJobCanceled() {
+        return onJobSignFailed(new SigningCanceledByUserException());
+    }
+
+    public boolean onSkipCurrentDocument() {
+        return onJobSignFailed(new SigningCanceledByUserException());
+    }
+
+    public boolean onJobSkipRemainingDocuments() {
+        return onJobSignFailed(new SigningCanceledByUserException());
+    }
+
+    public Batch getBatch() {
+        return batch;
+    }
+
+    public boolean isPartOfBatch() {
+        return batch.isPresent();
     }
 
     public static SigningJob fromInput(SigningInput input, Responder responder) {
+        return fromInput(input, responder, new NoBatch());
+    }
+
+    public static SigningJob fromInput(SigningInput input, Responder responder, Batch batch) {
         List<AutogramDocument> documentsToVisualize;
         if (input.getDocuments().size() == 1 && input.getFirstDocument().isAsice()) {
             documentsToVisualize = AsicContainerUtils.getOriginalDocuments(input.getFirstDocument()).stream().toList();
@@ -120,7 +172,7 @@ public class SigningJob {
             documentsToVisualize = input.getDocuments();
         }
 
-        return new SigningJob(input, documentsToVisualize, responder);
+        return new SigningJob(input, documentsToVisualize, responder, batch);
     }
 
     public boolean shouldCheckPDFCompliance() {

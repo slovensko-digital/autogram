@@ -28,13 +28,13 @@ public class BatchEndpoint implements HttpHandler {
                 // Start batch
                 var body = EndpointUtils.loadFromJsonExchange(exchange,
                         BatchStartRequestBody.class);
-                autogram.batchStart(body.getTotalNumberOfDocuments(),
+                autogram.startBatchSigning(body.getTotalNumberOfDocuments(),
                         new BatchServerResponder(exchange));
             } else if (requestMethod.equalsIgnoreCase("DELETE")) {
                 // End batch
                 var body = EndpointUtils.loadFromJsonExchange(exchange,
                         BatchEndRequestBody.class);
-                var finished = autogram.batchEnd(body.batchId());
+                var finished = autogram.endBatchSigning(body.batchId());
                 EndpointUtils.respondWith(finished ? new Object() {
                     public String status = "FINISHED";
                 } : new Object() {

@@ -2,11 +2,11 @@ package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.DriverDetector;
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -71,19 +71,28 @@ public class TestAutogramFactory {
 
     public static class FakeUI implements UI {
         @Override
+        public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+            onSelected.accept(SigningMode.BULK);
+        }
+
+        @Override
         public void startSigning(SigningJob job, Autogram autogram) {
         }
 
         @Override
-        public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
+        public void startBatch(Batch batch, Autogram autogram) {
         }
 
         @Override
-        public void cancelBatch(Batch batch) {
+        public void closeBatch() {
         }
 
         @Override
         public void showSigningJob(SigningJob job, Autogram autogram) {
+        }
+
+        @Override
+        public void closeSigningJob(SigningJob job) {
         }
 
         @Override
@@ -103,6 +112,10 @@ public class TestAutogramFactory {
 
         @Override
         public void onSigningSuccess(SigningJob job) {
+        }
+
+        @Override
+        public void enableSigningOnAllJobs() {
         }
 
         @Override
@@ -167,7 +180,7 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public char[] getContextSpecificPassword() {
+        public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
             return null;
         }
 

@@ -74,6 +74,14 @@ public class PasswordController extends BaseController {
         }
     }
 
+    public void showIncorrectPIN() {
+        error.setText(i18n("password.context.incorrect.text"));
+        error.setManaged(true);
+        error.setVisible(true);
+        formGroup.getStyleClass().add("autogram-form-group--error");
+        passwordField.getStyleClass().add("autogram-input--error");
+    }
+
     public void onCancelButtonPressed(ActionEvent event) {
         var window = mainBox.getScene().getRoot().getScene().getWindow();
         if (window instanceof Stage) {

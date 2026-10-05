@@ -178,6 +178,7 @@ paths:
                       - BATCH_ENDED
                       - BATCH_EXPIRED
                       - BATCH_NOT_STARTED
+                      - BATCH_TOO_MANY_DOCUMENTS
                       - EMPTY_BODY
                       - MALFORMED_INPUT
                       - ORIGINAL_DOCUMENT_NOT_FOUND
@@ -626,6 +627,7 @@ paths:
                       - BATCH_ENDED
                       - BATCH_EXPIRED
                       - BATCH_NOT_STARTED
+                      - BATCH_TOO_MANY_DOCUMENTS
                       - EMPTY_BODY
                       - MALFORMED_INPUT
                       - ORIGINAL_DOCUMENT_NOT_FOUND
