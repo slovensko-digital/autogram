@@ -15,8 +15,9 @@ import java.util.stream.Collectors;
  * @param driverName name of the driver, e.g. "Občiansky preukaz"
  * @param readerName card reader, only if the driver found cards in more readers, otherwise null
  * @param slotNumber 1-based number of the slot on the card, only if the card has more slots, otherwise null
+ * @param qualified instead of slot number for eID card slots: true for the qualified certificate, false for the other
  */
-public record TokenOptionDescription(String driverName, String readerName, Integer slotNumber) {
+public record TokenOptionDescription(String driverName, String readerName, Integer slotNumber, Boolean qualified) {
     /**
      * Describes the options, the result is in the same order.
      */
@@ -26,17 +27,23 @@ public record TokenOptionDescription(String driverName, String readerName, Integ
 
         return options.stream().map((option) -> {
             if (!option.isToken())
-                return new TokenOptionDescription(option.driver().getName(), null, null);
+                return new TokenOptionDescription(option.driver().getName(), null, null, null);
 
             var card = Card.of(option);
             var cardSlots = cards.get(card);
             var readerName = getCardReaderName(cardSlots);
             var driverCardCount = cards.keySet().stream().filter((c) -> c.driver() == card.driver()).count();
 
-            var slotNumber = cardSlots.size() > 1 ? cardSlots.indexOf(option) + 1 : null;
+            Integer slotNumber = null;
+            Boolean qualified = null;
+            if (cardSlots.size() > 1) {
+                qualified = isEidQualifiedSlot(option.slot());
+                if (qualified == null)
+                    slotNumber = cardSlots.indexOf(option) + 1;
+            }
 
             return new TokenOptionDescription(option.driver().getName(), driverCardCount > 1 ? readerName : null,
-                    slotNumber);
+                    slotNumber, qualified);
         }).toList();
     }
 
@@ -68,6 +75,17 @@ public record TokenOptionDescription(String driverName, String readerName, Integ
             return readerName.substring(0, readerName.length() - slot.label().length() - 2);
 
         return readerName;
+    }
+
+    // eID card has a slot with the qualified certificate (Sig_ZEP) and one with the non-qualified (Sig_EP)
+    private static Boolean isEidQualifiedSlot(TokenSlot slot) {
+        if (slot.label().equalsIgnoreCase("Sig_ZEP"))
+            return true;
+
+        if (slot.label().equalsIgnoreCase("Sig_EP"))
+            return false;
+
+        return null;
     }
 
     // some drivers report placeholders like "ffffffff" instead of the serial number

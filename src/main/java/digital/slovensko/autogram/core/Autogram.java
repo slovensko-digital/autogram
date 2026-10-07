@@ -48,8 +48,8 @@ public class Autogram {
     private static final String EID_EP_SLOT_LABEL = "Sig_EP";
 
     /**
-     * Drivers left out of the search for tokens, they are offered only among other drivers and loaded only when the
-     * user picks them.
+     * Drivers left out of the search for tokens, they are offered every time (unless card readers don't respond) and
+     * loaded only when the user picks them.
      * <p>
      * eObčanka (Czech eID) driver: we've seen it hang in C_Initialize, waiting for its own thread talking to readers.
      * SunPKCS11 initializes drivers one at a time (PKCS11.getInstance is synchronized), so a hanging driver blocks
@@ -57,13 +57,13 @@ public class Autogram {
      * waits for the hanging thread. It also crashes the JVM on exit unless finalized. Searching it would expose all
      * users who just have it installed, while it's rarely used here.
      * <p>
-     * MONET+ ProID+Q driver: talking to cards of other drivers breaks eID klient once the user logged in to the eID
-     * card - every later login fails with CKR_FUNCTION_FAILED until eID klient is initialized again. As the search runs
-     * every time the user picks a certificate, they couldn't use their eID card again after signing with it.
+     * MONET+ ProID+Q driver is searched, though initializing it after the user logged in to an eID card breaks eID
+     * klient - every later login fails with CKR_FUNCTION_FAILED. It's initialized only once, in the first search with
+     * a card inserted, which comes before any login, later searches just list its slots. Should it break eID klient
+     * anyway, connecting to the eID card recovers, see PKCS11TokenDriver#recoverToken.
      */
     private static final Set<String> DRIVERS_SKIPPED_IN_TOKEN_SEARCH = Set.of(
-            DefaultDriverDetector.TokenDriverShortnames.CZ_EID,
-            DefaultDriverDetector.TokenDriverShortnames.MONET);
+            DefaultDriverDetector.TokenDriverShortnames.CZ_EID);
 
     private final UI ui;
     private final long tokenSearchTimeoutMillis;
@@ -290,6 +290,7 @@ public class Autogram {
             }
 
             ui.onUIThreadDo(() -> ui.pickTokenAndThen(options,
+                    () -> findTokenOptions(drivers),
                     (option) -> ui.onWorkThreadDo(() -> callback.accept(option)),
                     onCancel));
         });
@@ -303,12 +304,22 @@ public class Autogram {
         if (cardReaders == CardReaders.State.NOT_RESPONDING) {
             // card drivers would hang in PC/SC as well, and might hang the app on exit - don't load any
             Logging.log("Card readers not responding, tokens are not searched");
-            return allDriversOptions(drivers);
+            return notRespondingOptions(drivers);
         }
 
-        // nothing for card drivers to find, no need to load them
-        Predicate<TokenDriver> isSkipped = (driver) -> DRIVERS_SKIPPED_IN_TOKEN_SEARCH.contains(driver.getShortname())
-                || (cardReaders == CardReaders.State.NO_CARD && driver.needsInsertedCard());
+        var found = new ArrayList<TokenOption>();
+        var otherDrivers = new ArrayList<TokenDriver>();
+        var unavailableDrivers = new ArrayList<TokenDriver>();
+        var searchedDrivers = new ArrayList<TokenDriver>();
+        for (var driver : drivers) {
+            if (DRIVERS_SKIPPED_IN_TOKEN_SEARCH.contains(driver.getShortname()))
+                otherDrivers.add(driver);
+            // nothing for card drivers to find, no need to load them
+            else if (cardReaders == CardReaders.State.NO_CARD && driver.needsInsertedCard())
+                unavailableDrivers.add(driver);
+            else
+                searchedDrivers.add(driver);
+        }
 
         // drivers are asked in parallel, so that a hanging one (e.g. eID klient waiting for a card) doesn't hold up others
         var executor = Executors.newCachedThreadPool((runnable) -> {
@@ -318,11 +329,9 @@ public class Autogram {
         });
 
         try {
-            var searchedDrivers = drivers.stream().filter(isSkipped.negate()).toList();
             var futures = searchedDrivers.stream().map((driver) -> executor.submit(() -> driver.getSlotsWithToken(settings))).toList();
             var deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(tokenSearchTimeoutMillis);
-            var found = new ArrayList<TokenOption>();
-            var otherDrivers = new ArrayList<TokenDriver>();
+            var notResponding = false;
 
             for (int i = 0; i < searchedDrivers.size(); i++) {
                 var driver = searchedDrivers.get(i);
@@ -330,9 +339,11 @@ public class Autogram {
                 try {
                     slots = futures.get(i).get(Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS);
                 } catch (TimeoutException e) {
-                    // results would be incomplete, a hanging driver may also block others - offer all drivers instead
+                    // it may be stuck in PC/SC and would hang when used too, the user can search again later
                     Logging.log("Search for tokens timed out on " + driver.getName());
-                    return allDriversOptions(drivers);
+                    notResponding = true;
+                    unavailableDrivers.add(driver);
+                    continue;
                 } catch (ExecutionException e) {
                     Logging.log("Unable to find tokens of " + driver.getName() + ": " + e);
                     otherDrivers.add(driver);
@@ -352,22 +363,26 @@ public class Autogram {
                         .filter((slot) -> settings.isEidEpSlotsEnabled() || !isEidEpSlot(driver, slot))
                         .toList();
                 if (visibleSlots.isEmpty())
-                    otherDrivers.add(driver);
+                    unavailableDrivers.add(driver);
                 else
                     visibleSlots.forEach((slot) -> found.add(new TokenOption(driver, slot)));
             }
 
-            drivers.stream().filter(isSkipped).forEach(otherDrivers::add);
             otherDrivers.sort(Comparator.comparingInt(drivers::indexOf));
-            return new TokenOptions(found, otherDrivers);
+            unavailableDrivers.sort(Comparator.comparingInt(drivers::indexOf));
+            return new TokenOptions(found, otherDrivers, unavailableDrivers, notResponding);
         } finally {
             executor.shutdownNow();
         }
     }
 
-    // when tokens can't be searched, the user picks the driver as before
-    private static TokenOptions allDriversOptions(List<TokenDriver> drivers) {
-        return new TokenOptions(drivers.stream().map((driver) -> new TokenOption(driver, null)).toList(), List.of());
+    // drivers without cards don't need PC/SC, the user can still use them - not card drivers, not even eObčanka that
+    // isn't searched, it would hang in PC/SC
+    private static TokenOptions notRespondingOptions(List<TokenDriver> drivers) {
+        var found = drivers.stream().filter(Predicate.not(TokenDriver::needsInsertedCard))
+                .map((driver) -> new TokenOption(driver, null)).toList();
+        var unavailableDrivers = drivers.stream().filter(TokenDriver::needsInsertedCard).toList();
+        return new TokenOptions(found, List.of(), unavailableDrivers, true);
     }
 
     private void onTokenUsed(TokenOption option) {

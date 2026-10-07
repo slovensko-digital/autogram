@@ -8,7 +8,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToggleGroup;
@@ -21,15 +20,18 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class PickTokenDialogController extends BaseController {
     private static final double MAX_OPTIONS_HEIGHT = 420;
     // room for the focus ring around a radio button when scrolling to it
     private static final double FOCUS_MARGIN = 8;
 
-    private final TokenOptions options;
-    private final TokenOption preferredOption;
+    private final Function<TokenOptions, TokenOption> findPreferredOption;
+    private final Consumer<Consumer<TokenOptions>> searchAgain;
     private final Consumer<TokenOption> callback;
+    private final TokenOptions options;
+    private TokenOption preferredOption;
     private RadioButton preferredRadioButton;
 
     @FXML
@@ -37,37 +39,72 @@ public class PickTokenDialogController extends BaseController {
     @FXML
     VBox formGroup;
     @FXML
-    Text error;
+    Text heading;
     @FXML
-    TextFlow noTokensFound;
+    VBox noTokenFound;
+    @FXML
+    TextFlow noTokenFoundTitle;
+    @FXML
+    VBox notResponding;
+    @FXML
+    TextFlow notRespondingTitle;
+    @FXML
+    Text error;
     @FXML
     ScrollPane optionsScrollPane;
     @FXML
     VBox radios;
     @FXML
-    Label divider;
-    @FXML
     VBox otherDriverRadios;
     @FXML
     VBox driverRadios;
     @FXML
-    Button showOtherDriversButton;
+    VBox help;
+    @FXML
+    Button helpButton;
+    @FXML
+    VBox helpText;
+    @FXML
+    Button mainButton;
+    @FXML
+    Button searchAgainButton;
     private ToggleGroup toggleGroup;
     private static final String OPTION_NODE_KEY = "optionNode";
     private final List<RadioButton> hintedRadioButtons = new ArrayList<>();
 
     /**
-     * @param preferredOption option to preselect, e.g. the last used one, null to preselect the first one
+     * @param findPreferredOption finds the option to preselect, e.g. the last used one, null to preselect the first one
+     * @param searchAgain searches for tokens again and passes the new options on, on UI thread
      */
-    public PickTokenDialogController(TokenOptions options, TokenOption preferredOption, Consumer<TokenOption> callback) {
+    public PickTokenDialogController(TokenOptions options, Function<TokenOptions, TokenOption> findPreferredOption,
+                                     Consumer<Consumer<TokenOptions>> searchAgain, Consumer<TokenOption> callback) {
         this.options = options;
-        this.preferredOption = preferredOption;
+        this.findPreferredOption = findPreferredOption;
+        this.searchAgain = searchAgain;
         this.callback = callback;
     }
 
     @Override
     public void initialize() {
+        showOptions(options);
+
+        // focused option is always the selected one, e.g. moving through options with arrow keys
+        mainBox.sceneProperty().addListener((observable, oldScene, scene) -> {
+            if (scene != null)
+                scene.focusOwnerProperty().addListener((o, oldOwner, owner) -> onFocusOwnerChanged(owner));
+        });
+    }
+
+    private void showOptions(TokenOptions options) {
+        preferredOption = findPreferredOption.apply(options);
+        preferredRadioButton = null;
         toggleGroup = new ToggleGroup();
+        hintedRadioButtons.clear();
+        radios.getChildren().clear();
+        otherDriverRadios.getChildren().clear();
+        driverRadios.getChildren().clear();
+        hideError();
+
         // radio buttons are created in the order they are shown, arrow keys move through them in this order
         var tokens = options.found().stream().filter(TokenOption::isToken).toList();
         var descriptions = TokenOptionDescription.describeAll(tokens);
@@ -83,29 +120,22 @@ public class PickTokenDialogController extends BaseController {
                 .sorted(Comparator.comparing(PickTokenDialogController::isKeystore))
                 .forEach((option) -> driverRadios.getChildren().add(createRadioButton(option.driver().getName(), option)));
 
-        // without any card found, the user has to pick from other drivers anyway
-        var noTokens = !options.hasTokens() && !options.otherDrivers().isEmpty();
-        setShown(noTokensFound, noTokens);
+        // with nothing to pick, the dialog is about the problem, its heading says what went wrong
+        var showsProblem = options.noTokenFound();
+        var nothingToPick = options.found().isEmpty() && options.otherDrivers().isEmpty();
+        var problemTitle = options.notResponding() ? "pickDriver.notResponding.title" : "pickDriver.noToken.title";
+        heading.setText(i18n(nothingToPick ? problemTitle : "pickDriver.select.title"));
+        setShown(noTokenFound, showsProblem && !options.notResponding());
+        setShown(notResponding, showsProblem && options.notResponding());
+        setShown(noTokenFoundTitle, !nothingToPick);
+        setShown(notRespondingTitle, !nothingToPick);
+        // the problem tells what to check already
+        setShown(help, !showsProblem);
+
         setShown(radios, !tokens.isEmpty());
+        setShown(otherDriverRadios, !otherDriverRadios.getChildren().isEmpty());
         setShown(driverRadios, !driverRadios.getChildren().isEmpty());
-        setShown(otherDriverRadios, noTokens);
-        // hidden radio buttons are still in the toggle group, arrow keys would select them unless disabled
-        otherDriverRadios.setDisable(!noTokens);
-        setShown(showOtherDriversButton, !noTokens && !options.otherDrivers().isEmpty());
-
-        // the preferred option may be among other drivers, show them then
-        if (preferredRadioButton != null && otherDriverRadios.getChildren().contains(preferredRadioButton)) {
-            setShown(showOtherDriversButton, false);
-            setShown(otherDriverRadios, true);
-            otherDriverRadios.setDisable(false);
-        }
-        updateDivider();
-
-        // focused option is always the selected one, e.g. moving through options with arrow keys
-        mainBox.sceneProperty().addListener((observable, oldScene, scene) -> {
-            if (scene != null)
-                scene.focusOwnerProperty().addListener((o, oldOwner, owner) -> onFocusOwnerChanged(owner));
-        });
+        updateLayout();
     }
 
     private void onFocusOwnerChanged(Node owner) {
@@ -132,7 +162,9 @@ public class PickTokenDialogController extends BaseController {
     private String getLabel(TokenOptionDescription description) {
         var parts = new ArrayList<String>();
         parts.add(description.driverName());
-        if (description.slotNumber() != null)
+        if (description.qualified() != null)
+            parts.add(i18n(description.qualified() ? "pickDriver.token.qualified" : "pickDriver.token.nonQualified"));
+        else if (description.slotNumber() != null)
             parts.add(i18n("pickDriver.token.slot", description.slotNumber()));
 
         return String.join(", ", parts);
@@ -142,9 +174,14 @@ public class PickTokenDialogController extends BaseController {
         return option.driver().getShortname().equals(TokenDriverShortnames.KEYSTORE);
     }
 
-    // GOV.UK radios divider between detected cards and other choices
-    private void updateDivider() {
-        setShown(divider, radios.isVisible() && (driverRadios.isVisible() || otherDriverRadios.isVisible()));
+    private void updateLayout() {
+        var canPick = radios.isVisible() || driverRadios.isVisible() || otherDriverRadios.isVisible();
+        setShown(optionsScrollPane, canPick);
+        setShown(mainButton, canPick);
+        // with nothing to pick, searching again is what the user can do
+        searchAgainButton.getStyleClass().remove("autogram-button--secondary");
+        if (canPick)
+            searchAgainButton.getStyleClass().add("autogram-button--secondary");
     }
 
     private RadioButton createRadioButton(String text, TokenOption option) {
@@ -173,6 +210,8 @@ public class PickTokenDialogController extends BaseController {
         var focused = preferredRadioButton != null ? preferredRadioButton : getFirstShownRadioButton();
         if (focused != null)
             focused.requestFocus();
+        else
+            mainBox.requestFocus(); // no button should look focused before the user moves to it
     }
 
     private RadioButton getFirstShownRadioButton() {
@@ -216,17 +255,6 @@ public class PickTokenDialogController extends BaseController {
             optionsScrollPane.setVvalue(Math.min(1, (bottom - viewportHeight) / scrollableHeight));
     }
 
-    // shows as much of the node as fits, starting from its top
-    private void scrollToTop(Node node) {
-        var content = optionsScrollPane.getContent();
-        var scrollableHeight = content.getLayoutBounds().getHeight() - optionsScrollPane.getViewportBounds().getHeight();
-        if (scrollableHeight <= 0)
-            return;
-
-        var bounds = content.sceneToLocal(node.localToScene(node.getLayoutBounds()));
-        optionsScrollPane.setVvalue(Math.clamp((bounds.getMinY() - FOCUS_MARGIN) / scrollableHeight, 0, 1));
-    }
-
     // hints start where the radio button label text does, which depends on the skin and font size
     private void alignHints() {
         for (var radioButton : hintedRadioButtons) {
@@ -243,15 +271,39 @@ public class PickTokenDialogController extends BaseController {
         mainBox.layout();
     }
 
-    public void onShowOtherDriversButtonAction() {
-        setShown(showOtherDriversButton, false);
-        setShown(otherDriverRadios, true);
-        otherDriverRadios.setDisable(false);
-        updateDivider();
-        fitOptionsToContent();
-        // the user wants to see the other drivers, they may be below the fold
-        optionsScrollPane.layout();
-        scrollToTop(otherDriverRadios);
+    public void onHelpButtonAction() {
+        var open = !helpText.isVisible();
+        setShown(helpText, open);
+        helpButton.getStyleClass().remove("autogram-details-summary--open");
+        if (open)
+            helpButton.getStyleClass().add("autogram-details-summary--open");
+
+        mainBox.getScene().getWindow().sizeToScene();
+    }
+
+    public void onSearchAgainButtonAction() {
+        setSearching(true);
+        searchAgain.accept((newOptions) -> {
+            // the user closed the dialog meanwhile
+            if (!mainBox.getScene().getWindow().isShowing())
+                return;
+
+            setSearching(false);
+            showOptions(newOptions);
+            onShown();
+        });
+    }
+
+    private void setSearching(boolean searching) {
+        formGroup.setDisable(searching);
+        mainButton.setDisable(searching);
+        searchAgainButton.setDisable(searching);
+        searchAgainButton.setText(i18n(searching ? "pickDriver.searching.btn" : "pickDriver.searchAgain.btn"));
+    }
+
+    private void hideError() {
+        error.setManaged(false);
+        formGroup.getStyleClass().remove("autogram-form-group--error");
     }
 
     public void onPickButtonAction() {

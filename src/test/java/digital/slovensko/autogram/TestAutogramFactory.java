@@ -27,6 +27,7 @@ import java.security.KeyStore;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Wires up an {@link Autogram} instance backed by the test PKCS12 keystore
@@ -93,7 +94,7 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public void pickTokenAndThen(TokenOptions options, Consumer<TokenOption> callback, Runnable onCancel) {
+        public void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel) {
             if (!options.found().isEmpty())
                 callback.accept(options.found().get(0));
             else

@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
@@ -97,7 +98,7 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void pickTokenAndThen(TokenOptions options, Consumer<TokenOption> callback, Runnable onCancel) {
+    public void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel) {
         if (options.isEmpty()) {
             showError(new NoDriversDetectedException());
             return;
@@ -111,21 +112,32 @@ public class CliUI implements UI {
             options = defaultDriverOptions.get();
         }
 
+        var choices = new ArrayList<>(options.found());
+        options.otherDrivers().forEach(driver -> choices.add(new TokenOption(driver, null)));
+        // drivers found no card
+        if (choices.isEmpty())
+            throw new InitializationFailedException();
+
+        // the user asked for the driver, even one that can't tell whether there's a card is used then, e.g. eObčanka
+        if (settings.getDefaultDriver() != null && choices.size() == 1) {
+            callback.accept(choices.get(0));
+            return;
+        }
+
         var automaticOption = options.getAutomaticOption();
         if (automaticOption.isPresent()) {
             callback.accept(automaticOption.get());
             return;
         }
 
-        var choices = new ArrayList<>(options.found());
-        options.otherDrivers().forEach(driver -> choices.add(new TokenOption(driver, null)));
-
         System.out.println("Pick card or driver:");
         var descriptions = TokenOptionDescription.describeAll(choices);
         for (int i = 0; i < choices.size(); i++) {
             var description = descriptions.get(i);
             var text = description.driverName();
-            if (description.slotNumber() != null)
+            if (description.qualified() != null)
+                text += description.qualified() ? ", qualified" : ", non-qualified";
+            else if (description.slotNumber() != null)
                 text += ", slot " + description.slotNumber();
 
             if (description.readerName() != null)

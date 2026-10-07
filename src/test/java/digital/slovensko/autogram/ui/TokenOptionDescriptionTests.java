@@ -28,8 +28,8 @@ class TokenOptionDescriptionTests {
                 new TokenOption(KEYSTORE, null)));
 
         assertEquals(List.of(
-                new TokenOptionDescription("Občiansky preukaz", null, null),
-                new TokenOptionDescription("Zo súboru", null, null)), descriptions);
+                new TokenOptionDescription("Občiansky preukaz", null, null, null),
+                new TokenOptionDescription("Zo súboru", null, null, null)), descriptions);
     }
 
     @Test
@@ -39,8 +39,8 @@ class TokenOptionDescriptionTests {
                 new TokenOption(EID, ACS_ZEP)));
 
         assertEquals(List.of(
-                new TokenOptionDescription("Občiansky preukaz", "HID Global OMNIKEY 5422 Smartcard Reader", null),
-                new TokenOptionDescription("Občiansky preukaz", "ACS ACR38U-CCID", null)), descriptions);
+                new TokenOptionDescription("Občiansky preukaz", "HID Global OMNIKEY 5422 Smartcard Reader", null, null),
+                new TokenOptionDescription("Občiansky preukaz", "ACS ACR38U-CCID", null, null)), descriptions);
     }
 
     @Test
@@ -51,9 +51,9 @@ class TokenOptionDescriptionTests {
                 new TokenOption(GEMALTO, GEMALTO_2)));
 
         assertEquals(List.of(
-                new TokenOptionDescription("Občiansky preukaz", null, null),
-                new TokenOptionDescription("Gemalto IDPrime 940", null, 1),
-                new TokenOptionDescription("Gemalto IDPrime 940", null, 2)), descriptions);
+                new TokenOptionDescription("Občiansky preukaz", null, null, null),
+                new TokenOptionDescription("Gemalto IDPrime 940", null, 1, null),
+                new TokenOptionDescription("Gemalto IDPrime 940", null, 2, null)), descriptions);
     }
 
     @Test
@@ -64,9 +64,20 @@ class TokenOptionDescriptionTests {
                 new TokenOption(EID, ACS_ZEP)));
 
         assertEquals(List.of(
-                new TokenOptionDescription("Občiansky preukaz", "HID Global OMNIKEY 5422 Smartcard Reader", 1),
-                new TokenOptionDescription("Občiansky preukaz", "HID Global OMNIKEY 5422 Smartcard Reader", 2),
-                new TokenOptionDescription("Občiansky preukaz", "ACS ACR38U-CCID", null)), descriptions);
+                new TokenOptionDescription("Občiansky preukaz", "HID Global OMNIKEY 5422 Smartcard Reader", null, true),
+                new TokenOptionDescription("Občiansky preukaz", "HID Global OMNIKEY 5422 Smartcard Reader", null, false),
+                new TokenOptionDescription("Občiansky preukaz", "ACS ACR38U-CCID", null, null)), descriptions);
+    }
+
+    @Test
+    void testEidSlotsAreQualifiedAndNonQualified() {
+        var descriptions = TokenOptionDescription.describeAll(List.of(
+                new TokenOption(EID, OMNIKEY_ZEP),
+                new TokenOption(EID, OMNIKEY_EP)));
+
+        assertEquals(List.of(
+                new TokenOptionDescription("Občiansky preukaz", null, null, true),
+                new TokenOptionDescription("Občiansky preukaz", null, null, false)), descriptions);
     }
 
     private static PKCS11TokenDriver driver(String name) {

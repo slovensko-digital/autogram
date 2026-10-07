@@ -7,6 +7,8 @@ import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +44,10 @@ public class PKCS11TokenDriver extends TokenDriver {
 
         try {
             return Optional.of(Pkcs11TokenSlots.listSlotsWithToken(getPath().toString()));
+        } catch (IOException e) {
+            // the library itself can't be loaded, e.g. eID klient on Windows without Visual C++ runtime - unlike no card,
+            // using the driver tells the user why
+            throw new UncheckedIOException(e);
         } catch (Exception e) {
             Logging.log("Unable to list slots of " + getPath() + ": " + e);
             return Optional.of(List.of());
@@ -50,8 +56,9 @@ public class PKCS11TokenDriver extends TokenDriver {
 
     /**
      * eID klient fails every login with CKR_FUNCTION_FAILED once another driver talked to the card after it, e.g.
-     * MONET+ ProID+Q looking for its cards. It works again only after the module is initialized again. The login fails
-     * before eID klient asks for the PIN, and when retried, eID klient asks for it itself, so no PIN is sent twice.
+     * MONET+ ProID+Q initialized after the user logged in to the eID card. It works again only after the module is
+     * initialized again. The login fails before eID klient asks for the PIN, and when retried, eID klient asks for it
+     * itself, so no PIN is sent twice.
      */
     @Override
     public Optional<AbstractKeyStoreTokenConnection> recoverToken(PasswordManager pm, SignatureTokenSettings settings, TokenSlot slot, DSSException error) {

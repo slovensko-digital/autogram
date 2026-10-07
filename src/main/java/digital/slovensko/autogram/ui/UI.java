@@ -11,6 +11,7 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public interface UI {
     void startSigning(SigningJob job, Autogram autogram);
@@ -28,8 +29,10 @@ public interface UI {
 
     /**
      * Lets the user pick a token (card) or a driver to sign with.
+     *
+     * @param searchAgain searches for tokens again, e.g. after the user inserted a card - call it on work thread
      */
-    void pickTokenAndThen(TokenOptions options, Consumer<TokenOption> callback, Runnable onCancel);
+    void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel);
 
     void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback);
 

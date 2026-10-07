@@ -31,6 +31,13 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private static final String PKCS11_EXCEPTION_CLASS_NAME = "sun.security.pkcs11.wrapper.PKCS11Exception";
     private static final String PKCS11_CONSTANTS_CLASS_NAME = "sun.security.pkcs11.wrapper.PKCS11Constants";
     private static final String CK_ATTRIBUTE_CLASS_NAME = "sun.security.pkcs11.wrapper.CK_ATTRIBUTE";
+    /**
+     * SunPKCS11 polls the slot of a removed card in the background (C_GetSlotInfo), to use the card once it's inserted
+     * again. Autogram connects again instead, and the polling outlives the closed connection - eID klient aborts the
+     * whole process when it comes while the user is entering BOK for another connection. Polling once in ~25 days
+     * means never.
+     */
+    static final String NO_TOKEN_POLLING_CONFIG = "insertionCheckInterval = " + Integer.MAX_VALUE;
 
     private final PasswordManager passwordManager;
     private final SignatureTokenSettings settings;
@@ -46,7 +53,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
      * @param slotListIndex index into the list of all slots, ignored if negative or if slotId is set
      */
     public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings, int slotId, int slotListIndex) {
-        super(pkcsPath, pm, slotId, slotId >= 0 ? -1 : slotListIndex, null);
+        super(pkcsPath, pm, slotId, slotId >= 0 ? -1 : slotListIndex, NO_TOKEN_POLLING_CONFIG);
         this.passwordManager = pm;
         this.settings = settings;
         this.slotId = slotId;

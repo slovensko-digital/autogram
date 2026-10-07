@@ -29,7 +29,7 @@ class LastUsedTokenTests {
             new TokenOption(EID, EID_OMNIKEY),
             new TokenOption(GEMALTO, GEMALTO_1),
             new TokenOption(GEMALTO, GEMALTO_2),
-            new TokenOption(KEYSTORE, null)), List.of(MONET));
+            new TokenOption(KEYSTORE, null)), List.of(MONET), List.of(), false);
 
     @Test
     void testSameCardInSameReaderIsFound() {
@@ -69,7 +69,7 @@ class LastUsedTokenTests {
 
     @Test
     void testDriverIsFoundWhenCardsCouldNotBeSearched() {
-        var allDrivers = new TokenOptions(List.of(new TokenOption(EID, null), new TokenOption(GEMALTO, null)), List.of());
+        var allDrivers = new TokenOptions(List.of(new TokenOption(EID, null), new TokenOption(GEMALTO, null)), List.of(), List.of(), false);
         var last = LastUsedToken.of(new TokenOption(GEMALTO, GEMALTO_2));
 
         assertEquals(Optional.of(new TokenOption(GEMALTO, null)), last.findIn(allDrivers));
@@ -77,7 +77,7 @@ class LastUsedTokenTests {
 
     @Test
     void testCardNotInsertedIsNotFound() {
-        var withoutGemaltoCard = new TokenOptions(List.of(new TokenOption(EID, EID_ACS)), List.of(GEMALTO));
+        var withoutGemaltoCard = new TokenOptions(List.of(new TokenOption(EID, EID_ACS)), List.of(), List.of(GEMALTO), false);
 
         assertEquals(Optional.empty(), LastUsedToken.of(new TokenOption(GEMALTO, GEMALTO_2)).findIn(withoutGemaltoCard));
     }

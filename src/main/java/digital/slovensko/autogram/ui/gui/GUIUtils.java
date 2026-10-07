@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Desktop;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -34,11 +35,31 @@ public class GUIUtils {
         }
     }
 
+    /**
+     * Brings the app to the foreground with the shown stage, e.g. a dialog shown after the user entered PIN in a
+     * driver's own window, or a window opened for a website. On macOS, JavaFX can't activate the app, the stage would
+     * stay without focus behind the app that's active.
+     */
+    static void bringToForeground(Stage stage) {
+        if (OperatingSystem.current() == OperatingSystem.MAC && Desktop.isDesktopSupported()
+                && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND))
+            Desktop.getDesktop().requestForeground(true);
+
+        stage.toFront();
+        stage.requestFocus();
+    }
+
+    static void showInForeground(Stage stage) {
+        stage.show();
+        bringToForeground(stage);
+    }
+
     static void showOnTop(Stage stage) {
         stage.requestFocus();
         stage.setAlwaysOnTop(true);
         stage.toFront();
         stage.show();
+        bringToForeground(stage);
 
         new Thread(() -> {
             try {
@@ -125,6 +146,8 @@ public class GUIUtils {
         stage.initModality(Modality.APPLICATION_MODAL);
 
         GUIUtils.suppressDefaultFocus(stage, controller);
+        // e.g. the PIN the user entered in a driver's own window was wrong
+        stage.setOnShown((event) -> bringToForeground(stage));
 
         if (wait) {
             stage.showAndWait();

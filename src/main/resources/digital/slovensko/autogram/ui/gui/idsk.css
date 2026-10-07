@@ -953,7 +953,8 @@ TextFlow.autogram-body-s {
 }
 
 .autogram-options {
-  -fx-spacing: 15px;
+  /* groups of radios read as one list */
+  -fx-spacing: 10px;
   /* room for the focus ring of radio buttons */
   -fx-padding: 5px;
 }
@@ -968,15 +969,32 @@ TextFlow.autogram-body-s {
   -fx-font-size: 1.1875em;
 }
 
-/* "or" between groups of radio buttons, like govuk-radios__divider */
-.autogram-radios-divider {
-  /* centered on the 40px radio circle, a bit wider to fit "alebo" */
-  -fx-min-width: 50px;
-  -fx-max-width: 50px;
-  -fx-translate-x: -5px;
-  -fx-alignment: center;
-  -fx-text-fill: -autogram-text-colour;
-  -fx-font-size: 1.1875em;
+/* what went wrong and how to fix it, plain text like GOV.UK pages about a problem */
+.autogram-problem {
+  -fx-spacing: 15px;
+}
+
+/* like govuk-list--bullet, wrapped lines start under the text, not the bullet */
+.autogram-list-bullet {
+  -fx-spacing: 5px;
+}
+
+.autogram-list-bullet > HBox {
+  -fx-spacing: 10px;
+}
+
+/* summary of help revealed below it, like govuk-details__summary */
+.autogram-details-summary {
+  /* the arrow rotated when open is wider than its layout bounds */
+  -fx-graphic-text-gap: 8px;
+}
+
+.autogram-details-summary Polygon {
+  -fx-fill: -fx-text-fill;
+}
+
+.autogram-details-summary.autogram-details-summary--open Polygon {
+  -fx-rotate: 90;
 }
 
 .autogram-actions {

@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import digital.slovensko.autogram.ui.UI;
 import eu.europa.esig.dss.token.PasswordInputCallback;
 
@@ -33,8 +34,16 @@ public class PasswordManager implements PasswordInputCallback {
         cachedPassword = null;
     }
 
+    /**
+     * @throws PasswordNotProvidedException if the user canceled entering it - PKCS#11 drivers would log in without PIN
+     * otherwise, and some ask for it themselves then, e.g. MONET+ ProID+Q
+     */
     @Override
     public char[] getPassword() {
-        return ui.getKeystorePassword();
+        var password = ui.getKeystorePassword();
+        if (password == null)
+            throw new PasswordNotProvidedException();
+
+        return password;
     }
 }

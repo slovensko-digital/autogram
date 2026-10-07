@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -59,7 +60,8 @@ class TokenPickingTests {
                 new TokenOption(eid, EID2_ZEP),
                 new TokenOption(ica, ICA_SLOT),
                 new TokenOption(keystore, null)), ui.offered.found());
-        assertEquals(List.of(gemalto), ui.offered.otherDrivers());
+        assertEquals(List.of(), ui.offered.otherDrivers());
+        assertEquals(List.of(gemalto), ui.offered.unavailableDrivers());
         assertEquals(List.of(ICA_SLOT), ica.usedSlots);
         assertTrue(eid.usedSlots.isEmpty());
         assertEquals(1, signingKeys.size());
@@ -82,14 +84,14 @@ class TokenPickingTests {
     @Test
     void testOtherDriverCanBePicked() {
         var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP, EID2_ZEP)));
-        var gemalto = new FakeDriver("gemalto", Optional.of(List.of()));
+        var eobcanka = new FakeDriver("cz_eid", Optional.of(List.of(ICA_SLOT)));
         var ui = new PickingUI((options) -> new TokenOption(options.otherDrivers().get(0), null));
-        var autogram = new Autogram(ui, new FakeSettings(eid, gemalto));
+        var autogram = new Autogram(ui, new FakeSettings(eid, eobcanka));
 
         autogram.pickSigningKeyAndThen(key -> {});
 
-        assertEquals(1, gemalto.usedSlots.size());
-        assertEquals(null, gemalto.usedSlots.get(0));
+        assertEquals(1, eobcanka.usedSlots.size());
+        assertEquals(null, eobcanka.usedSlots.get(0));
     }
 
     @Test
@@ -124,7 +126,7 @@ class TokenPickingTests {
         autogram.pickSigningKeyAndThen(signingKeys::add);
         assertEquals(1, ui.pickTokenCalls);
         assertEquals(List.of(new TokenOption(eid, EID_ZEP), new TokenOption(keystore, null)), ui.offered.found());
-        assertEquals(List.of(gemalto), ui.offered.otherDrivers());
+        assertEquals(List.of(gemalto), ui.offered.unavailableDrivers());
         assertEquals(1, signingKeys.size());
 
         // having finished with a key, the card is used automatically again
@@ -135,7 +137,7 @@ class TokenPickingTests {
     }
 
     @Test
-    void testAllDriversAreOfferedWhenSearchTimesOut() {
+    void testDriverNotRespondingInTimeIsUnavailable() {
         var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP, EID2_ZEP)));
         var hanging = new FakeDriver("hanging", Optional.of(List.of(ICA_SLOT)));
         hanging.delayMillis = 2000;
@@ -145,15 +147,32 @@ class TokenPickingTests {
 
         autogram.pickSigningKeyAndThen(key -> {});
 
-        assertEquals(List.of(new TokenOption(eid, null), new TokenOption(hanging, null), new TokenOption(keystore, null)),
+        assertEquals(List.of(new TokenOption(eid, EID_ZEP), new TokenOption(eid, EID2_ZEP), new TokenOption(keystore, null)),
                 ui.offered.found());
         assertEquals(List.of(), ui.offered.otherDrivers());
-        assertEquals(1, eid.usedSlots.size());
-        assertEquals(null, eid.usedSlots.get(0));
+        assertEquals(List.of(hanging), ui.offered.unavailableDrivers());
+        assertTrue(ui.offered.notResponding());
+        assertEquals(List.of(EID_ZEP), eid.usedSlots);
+        assertTrue(hanging.usedSlots.isEmpty());
     }
 
     @Test
-    void testEobcankaAndMonetAreNotSearched() {
+    void testNothingIsUsedWithoutAskingWhenDriverDoesNotRespond() {
+        var hanging = cardDriver("eid", Optional.of(List.of(EID_ZEP)));
+        hanging.delayMillis = 2000;
+        var ui = new PickingUI((options) -> null);
+        var autogram = new Autogram(ui, new FakeSettings(hanging), 200, () -> CardReaders.State.CARD_PRESENT);
+
+        autogram.pickSigningKeyAndThen(key -> {});
+
+        assertEquals(1, ui.pickTokenCalls);
+        assertTrue(ui.offered.noTokenFound());
+        assertTrue(ui.offered.notResponding());
+        assertTrue(hanging.usedSlots.isEmpty());
+    }
+
+    @Test
+    void testEobcankaIsNotSearched() {
         var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP, EID2_ZEP)));
         var eobcanka = new FakeDriver("cz_eid", Optional.of(List.of(ICA_SLOT)));
         var monet = new FakeDriver("monet", Optional.of(List.of(ICA_SLOT)));
@@ -164,9 +183,11 @@ class TokenPickingTests {
         autogram.pickSigningKeyAndThen(key -> {});
 
         assertFalse(eobcanka.searched);
-        assertFalse(monet.searched);
-        assertEquals(List.of(new TokenOption(eid, EID_ZEP), new TokenOption(eid, EID2_ZEP)), ui.offered.found());
-        assertEquals(List.of(eobcanka, monet, gemalto), ui.offered.otherDrivers());
+        assertTrue(monet.searched);
+        assertEquals(List.of(new TokenOption(eid, EID_ZEP), new TokenOption(eid, EID2_ZEP), new TokenOption(monet, ICA_SLOT)),
+                ui.offered.found());
+        assertEquals(List.of(eobcanka), ui.offered.otherDrivers());
+        assertEquals(List.of(gemalto), ui.offered.unavailableDrivers());
     }
 
     @Test
@@ -222,25 +243,31 @@ class TokenPickingTests {
         assertFalse(gemalto.searched);
         assertTrue(keystore.searched);
         assertEquals(List.of(new TokenOption(keystore, null)), ui.offered.found());
-        assertEquals(List.of(eid, gemalto), ui.offered.otherDrivers());
+        assertEquals(List.of(), ui.offered.otherDrivers());
+        assertEquals(List.of(eid, gemalto), ui.offered.unavailableDrivers());
+        assertTrue(ui.offered.noTokenFound());
+        assertFalse(ui.offered.notResponding());
     }
 
     @Test
     void testNoDriverIsSearchedWhenCardReadersDoNotRespond() {
         var eid = cardDriver("eid", Optional.of(List.of(EID_ZEP)));
         var gemalto = cardDriver("gemalto", Optional.of(List.of()));
+        var eobcanka = cardDriver("cz_eid", Optional.of(List.of(ICA_SLOT)));
         var keystore = new FakeDriver("keystore", Optional.empty());
         var ui = new PickingUI((options) -> options.found().get(0));
-        var autogram = new Autogram(ui, new FakeSettings(eid, gemalto, keystore), 10_000, () -> CardReaders.State.NOT_RESPONDING);
+        var autogram = new Autogram(ui, new FakeSettings(eid, gemalto, eobcanka, keystore), 10_000, () -> CardReaders.State.NOT_RESPONDING);
 
         autogram.pickSigningKeyAndThen(key -> {});
 
         assertFalse(eid.searched);
         assertFalse(gemalto.searched);
         assertFalse(keystore.searched);
-        assertEquals(List.of(new TokenOption(eid, null), new TokenOption(gemalto, null), new TokenOption(keystore, null)),
-                ui.offered.found());
+        assertEquals(List.of(new TokenOption(keystore, null)), ui.offered.found());
+        // not even eObčanka, it would hang in PC/SC
         assertEquals(List.of(), ui.offered.otherDrivers());
+        assertEquals(List.of(eid, gemalto, eobcanka), ui.offered.unavailableDrivers());
+        assertTrue(ui.offered.notResponding());
     }
 
     @Test
@@ -294,14 +321,86 @@ class TokenPickingTests {
     }
 
     @Test
-    void testOnlyDriverWithoutTokensIsUsedWithoutAsking() {
-        var eid = new FakeDriver("eid", Optional.of(List.of()));
-        var autogram = new Autogram(new NoPickingUI(), new FakeSettings(eid));
+    void testDriverWithoutTokensIsNotUsed() {
+        for (var cardReaders : List.of(CardReaders.State.NO_CARD, CardReaders.State.UNKNOWN)) {
+            var eid = cardDriver("eid", Optional.of(List.of()));
+            var ui = new PickingUI((options) -> null);
+            var autogram = new Autogram(ui, new FakeSettings(eid), 10_000, () -> cardReaders);
+
+            autogram.pickSigningKeyAndThen(key -> {});
+
+            // the user learns no card was found, instead of an error reading the card
+            assertEquals(1, ui.pickTokenCalls, cardReaders.name());
+            assertEquals(List.of(), ui.offered.found(), cardReaders.name());
+            assertEquals(List.of(eid), ui.offered.unavailableDrivers(), cardReaders.name());
+            assertTrue(ui.offered.noTokenFound(), cardReaders.name());
+            assertTrue(eid.usedSlots.isEmpty(), cardReaders.name());
+        }
+    }
+
+    @Test
+    void testInsertedCardIsFoundWhenSearchingAgain() {
+        var eid = cardDriver("eid", Optional.of(List.of(EID_ZEP)));
+        var cardReaders = new CardReaders.State[]{CardReaders.State.NO_CARD};
+        var ui = new PickingUI((options) -> null);
+        var autogram = new Autogram(ui, new FakeSettings(eid), 10_000, () -> cardReaders[0]);
+
+        autogram.pickSigningKeyAndThen(key -> {});
+        assertFalse(ui.offered.hasTokens());
+
+        cardReaders[0] = CardReaders.State.CARD_PRESENT;
+        var options = ui.searchAgain.get();
+
+        assertEquals(List.of(new TokenOption(eid, EID_ZEP)), options.found());
+        assertEquals(List.of(), options.unavailableDrivers());
+    }
+
+    @Test
+    void testOnlyFailingDriverIsOfferedNotUsedWithoutAsking() {
+        // it can't tell whether there's a card, picking it tells the user what's wrong with it
+        var broken = new FakeDriver("broken", null);
+        var ui = new PickingUI((options) -> null);
+        var autogram = new Autogram(ui, new FakeSettings(broken));
 
         autogram.pickSigningKeyAndThen(key -> {});
 
-        assertEquals(1, eid.usedSlots.size());
-        assertEquals(null, eid.usedSlots.get(0));
+        assertEquals(1, ui.pickTokenCalls);
+        assertEquals(List.of(broken), ui.offered.otherDrivers());
+        assertTrue(broken.usedSlots.isEmpty());
+    }
+
+    @Test
+    void testEobcankaIsOfferedEveryTime() {
+        var eid = cardDriver("eid", Optional.of(List.of(EID_ZEP)));
+        var eobcanka = cardDriver("cz_eid", Optional.of(List.of(ICA_SLOT)));
+        for (var cardReaders : List.of(CardReaders.State.CARD_PRESENT, CardReaders.State.NO_CARD, CardReaders.State.UNKNOWN)) {
+            var ui = new PickingUI((options) -> null);
+            var autogram = new Autogram(ui, new FakeSettings(eid, eobcanka), 10_000, () -> cardReaders);
+
+            autogram.pickSigningKeyAndThen(key -> {});
+
+            // even the only card found isn't used without asking, the user may want eObčanka
+            assertEquals(1, ui.pickTokenCalls, cardReaders.name());
+            assertEquals(List.of(eobcanka), ui.offered.otherDrivers(), cardReaders.name());
+            assertFalse(ui.offered.noTokenFound(), cardReaders.name());
+        }
+
+        assertFalse(eobcanka.searched);
+        assertTrue(eobcanka.usedSlots.isEmpty());
+    }
+
+    @Test
+    void testOnlyEobcankaIsOfferedNotUsedWithoutAsking() {
+        var eobcanka = cardDriver("cz_eid", Optional.of(List.of(ICA_SLOT)));
+        var ui = new PickingUI((options) -> new TokenOption(options.otherDrivers().get(0), null));
+        var autogram = new Autogram(ui, new FakeSettings(eobcanka));
+
+        autogram.pickSigningKeyAndThen(key -> {});
+
+        assertEquals(1, ui.pickTokenCalls);
+        assertFalse(eobcanka.searched);
+        assertEquals(1, eobcanka.usedSlots.size());
+        assertEquals(null, eobcanka.usedSlots.get(0));
     }
 
     @Test
@@ -335,7 +434,7 @@ class TokenPickingTests {
         var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP, EID2_ZEP)));
         var ui = new TestAutogramFactory.FakeUI() {
             @Override
-            public void pickTokenAndThen(TokenOptions options, Consumer<TokenOption> callback, Runnable onCancel) {
+            public void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel) {
                 onCancel.run();
             }
         };
@@ -355,10 +454,13 @@ class TokenPickingTests {
     void testOptionsForDriver() {
         var eid = new FakeDriver("eid", Optional.empty());
         var gemalto = new FakeDriver("gemalto", Optional.empty());
-        var options = new TokenOptions(List.of(new TokenOption(eid, EID_ZEP), new TokenOption(eid, EID2_ZEP)), List.of(gemalto));
+        var monet = new FakeDriver("monet", Optional.empty());
+        var options = new TokenOptions(List.of(new TokenOption(eid, EID_ZEP), new TokenOption(eid, EID2_ZEP)), List.of(gemalto),
+                List.of(monet), true);
 
-        assertEquals(new TokenOptions(List.of(), List.of(gemalto)), options.forDriver("gemalto").orElseThrow());
-        assertEquals(Optional.empty(), options.forDriver("monet"));
+        assertEquals(new TokenOptions(List.of(), List.of(gemalto), List.of(), true), options.forDriver("gemalto").orElseThrow());
+        assertEquals(new TokenOptions(List.of(), List.of(), List.of(monet), true), options.forDriver("monet").orElseThrow());
+        assertEquals(Optional.empty(), options.forDriver("keystore"));
     }
 
     @Test
@@ -370,11 +472,32 @@ class TokenPickingTests {
         var zep2 = new TokenOption(eid, EID2_ZEP);
         var keystoreOption = new TokenOption(keystore, null);
 
-        assertEquals(Optional.of(zep), new TokenOptions(List.of(zep, keystoreOption), List.of(gemalto)).getAutomaticOption());
-        assertEquals(Optional.empty(), new TokenOptions(List.of(zep, zep2), List.of()).getAutomaticOption());
-        assertEquals(Optional.of(keystoreOption), new TokenOptions(List.of(keystoreOption), List.of()).getAutomaticOption());
-        assertEquals(Optional.empty(), new TokenOptions(List.of(keystoreOption), List.of(gemalto)).getAutomaticOption());
-        assertEquals(Optional.of(new TokenOption(gemalto, null)), new TokenOptions(List.of(), List.of(gemalto)).getAutomaticOption());
+        assertEquals(Optional.of(zep), new TokenOptions(List.of(zep, keystoreOption), List.of(), List.of(), false).getAutomaticOption());
+        assertEquals(Optional.of(zep), new TokenOptions(List.of(zep), List.of(), List.of(gemalto), true).getAutomaticOption());
+        assertEquals(Optional.empty(), new TokenOptions(List.of(zep, zep2), List.of(), List.of(), false).getAutomaticOption());
+        assertEquals(Optional.of(keystoreOption), new TokenOptions(List.of(keystoreOption), List.of(), List.of(), false).getAutomaticOption());
+        // a driver that can't tell whether it has a card is offered every time
+        assertEquals(Optional.empty(), new TokenOptions(List.of(zep), List.of(gemalto), List.of(), false).getAutomaticOption());
+        assertEquals(Optional.empty(), new TokenOptions(List.of(keystoreOption), List.of(gemalto), List.of(), false).getAutomaticOption());
+        assertEquals(Optional.empty(), new TokenOptions(List.of(), List.of(gemalto), List.of(), false).getAutomaticOption());
+        // a driver that found no card is never used, nor anything else instead of it
+        assertEquals(Optional.empty(), new TokenOptions(List.of(), List.of(), List.of(gemalto), false).getAutomaticOption());
+        assertEquals(Optional.empty(), new TokenOptions(List.of(keystoreOption), List.of(), List.of(gemalto), false).getAutomaticOption());
+        assertEquals(Optional.empty(), new TokenOptions(List.of(), List.of(eid), List.of(gemalto), false).getAutomaticOption());
+    }
+
+    @Test
+    void testNoTokenFound() {
+        var eid = new FakeDriver("eid", Optional.empty());
+        var keystoreOption = new TokenOption(new FakeDriver("keystore", Optional.empty()), null);
+
+        assertFalse(new TokenOptions(List.of(new TokenOption(eid, EID_ZEP)), List.of(), List.of(eid), true).noTokenFound());
+        assertTrue(new TokenOptions(List.of(keystoreOption), List.of(), List.of(eid), false).noTokenFound());
+        // no driver could have found a card
+        assertFalse(new TokenOptions(List.of(keystoreOption), List.of(), List.of(), false).noTokenFound());
+        // the card of a driver that can't tell may be there
+        assertFalse(new TokenOptions(List.of(), List.of(eid), List.of(), false).noTokenFound());
+        assertFalse(new TokenOptions(List.of(), List.of(eid), List.of(eid), false).noTokenFound());
     }
 
     @Test
@@ -387,7 +510,8 @@ class TokenPickingTests {
     }
 
     @Test
-    void testPkcs11DriverFindsNoTokensWhenLibraryCannotBeLoaded() {
+    void testPkcs11DriverFindsNoTokensWhenSlotsCannotBeListed() {
+        // PKCS#11 wrapper isn't exported to tests, listing fails before the library is loaded
         var settings = new UserSettings();
         var driver = new PKCS11TokenDriver("custom", Path.of("/nonexistent/libpkcs11.so"), "custom", "");
 
@@ -403,18 +527,25 @@ class TokenPickingTests {
     private static class PickingUI extends TestAutogramFactory.FakeUI {
         private final Function<TokenOptions, TokenOption> pick;
         TokenOptions offered;
+        Supplier<TokenOptions> searchAgain;
         int pickTokenCalls = 0;
         boolean pickKeys = true;
 
+        /**
+         * @param pick picks one of the options, or returns null to leave the dialog open
+         */
         PickingUI(Function<TokenOptions, TokenOption> pick) {
             this.pick = pick;
         }
 
         @Override
-        public void pickTokenAndThen(TokenOptions options, Consumer<TokenOption> callback, Runnable onCancel) {
+        public void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel) {
             offered = options;
+            this.searchAgain = searchAgain;
             pickTokenCalls++;
-            callback.accept(pick.apply(options));
+            var option = pick.apply(options);
+            if (option != null)
+                callback.accept(option);
         }
 
         @Override
@@ -426,7 +557,7 @@ class TokenPickingTests {
 
     private static class NoPickingUI extends TestAutogramFactory.FakeUI {
         @Override
-        public void pickTokenAndThen(TokenOptions options, Consumer<TokenOption> callback, Runnable onCancel) {
+        public void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel) {
             throw new AssertionError("User should not be asked to pick a token");
         }
     }
