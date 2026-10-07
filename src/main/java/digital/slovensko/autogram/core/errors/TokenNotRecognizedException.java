@@ -5,4 +5,8 @@ public class TokenNotRecognizedException extends AutogramException {
         super();
     }
 
+    public TokenNotRecognizedException(Throwable e) {
+        super(e);
+    }
+
 }

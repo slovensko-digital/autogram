@@ -1,5 +1,10 @@
 # Info for developers
 
+# Cards, drivers and tokens
+
+How card search, certificate picking and PKCS#11 drivers work, what to watch out for and how to test with real cards:
+[docs/cards-and-tokens.md](docs/cards-and-tokens.md) (in Slovak).
+
 # How to use FakeTokenDriver
 
 create empty file `fakeTokenDriver` in cwd - so in project root when developing, to enable "Fake token driver"

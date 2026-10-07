@@ -32,7 +32,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private static final String DEFAULT_LANGUAGE = null; // system language
     private static final String DEFAULT_SIGNATURE_LEVEL = SignatureLevelStringConverter.PADES;
     private static final String DEFAULT_DRIVER = "";
-    private static final String DEFAULT_DRIVER_SLOT_INDEX_MAP = "";
+    /** Preferences of removed settings - default driver and custom slot indexes, removed on save */
+    private static final List<String> OBSOLETE_PREFERENCES = List.of("DRIVER", "DRIVER_SLOT_INDEX_MAP", "SLOT_INDEX");
     private static final boolean DEFAULT_EN319132 = false;
     private static final boolean DEFAULT_BULK_ENABLED = false;
     private static final boolean DEFAULT_PLAIN_XML_ENABLED = false;
@@ -42,6 +43,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private static final boolean DEFAULT_PDFA_COMPLIANCE = true;
     private static final boolean DEFAULT_SERVER_ENABLED = true;
     private static final boolean DEFAULT_EXPIRED_CERTS_ENABLED = false;
+    private static final boolean DEFAULT_EID_EP_SLOTS_ENABLED = false;
     private static final String DEFAULT_TRUSTED_LIST = "SK,CZ,AT,PL,HU,BE,NL,ES";
     private static final String DEFAULT_CUSTOM_KEYSTORE_PATH = "";
     private static final String DEFAULT_CUSTOM_TSA_SERVER = "";
@@ -70,6 +72,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private boolean pdfaCompliance;
     private boolean serverEnabled;
     private boolean expiredCertsEnabled;
+    private boolean eidEpSlotsEnabled;
     private List<String> trustedList;
     private String customKeystorePath;
     private String tsaServer;
@@ -79,16 +82,18 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private boolean bulkEnabled;
     private int pdfDpi;
     private long tokenSessionTimeout;
-    private String customPKCS11DriverPath;
+    private String customPKCS11DriverPath = DEFAULT_CUSTOM_PKCS11_DRIVER_PATH;
     private Map<String, Integer> driverSlotIndexMap = new HashMap<>();
     private String lastUsedDirectory;
+    private LastUsedToken lastUsedToken;
+    /** True if loaded from preferences, otherwise (CLI, tests) nothing is written there outside of save() */
+    private boolean persistent = false;
 
     public static UserSettings load() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
         var settings = new UserSettings();
         settings.setLanguage(SupportedLanguage.getByLanguage(prefs.get("LANGUAGE", DEFAULT_LANGUAGE)));
         settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", DEFAULT_SIGNATURE_LEVEL));
-        settings.setDriver(prefs.get("DRIVER", DEFAULT_DRIVER));
         settings.setEn319132(prefs.getBoolean("EN319132", DEFAULT_EN319132));
         settings.setBulkEnabled(prefs.getBoolean("BULK_ENABLED", DEFAULT_BULK_ENABLED));
         settings.setPlainXmlEnabled(prefs.getBoolean("PLAIN_XML_ENABLED", DEFAULT_PLAIN_XML_ENABLED));
@@ -98,6 +103,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setPdfaCompliance(prefs.getBoolean("PDFA_COMPLIANCE", DEFAULT_PDFA_COMPLIANCE));
         settings.setServerEnabled(prefs.getBoolean("SERVER_ENABLED", DEFAULT_SERVER_ENABLED));
         settings.setExpiredCertsEnabled(prefs.getBoolean("EXPIRED_CERTS_ENABLED", DEFAULT_EXPIRED_CERTS_ENABLED));
+        settings.setEidEpSlotsEnabled(prefs.getBoolean("EID_EP_SLOTS_ENABLED", DEFAULT_EID_EP_SLOTS_ENABLED));
         settings.setTrustedList(prefs.get("TRUSTED_LIST", DEFAULT_TRUSTED_LIST));
         settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", DEFAULT_CUSTOM_KEYSTORE_PATH));
         settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", DEFAULT_CUSTOM_TSA_SERVER));
@@ -107,29 +113,9 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", DEFAULT_CUSTOM_PKCS11_DRIVER_PATH));
         settings.setLastUsedDirectory(prefs.get("LAST_USED_DIRECTORY", DEFAULT_LAST_USED_DIRECTORY));
 
-        String mapString = prefs.get("DRIVER_SLOT_INDEX_MAP", DEFAULT_DRIVER_SLOT_INDEX_MAP);
-        if (!mapString.isEmpty()) {
-            String[] entries = mapString.split(";");
-            for (String entry : entries) {
-                String[] parts = entry.split(":");
-                if (parts.length == 2) {
-                    String key = parts[0];
-                    try {
-                        int value = Integer.parseInt(parts[1]);
-                        settings.setDriverSlotIndex(key, value);
-                    } catch (NumberFormatException e) {
-                    }
-                }
-            }
-        } else {
-            // Legacy support for single slot index
-            var slotIndex = prefs.getInt("SLOT_INDEX", -1);
-            if (slotIndex != -1) {
-                settings.setDriverSlotIndex("gemalto", slotIndex);
-                settings.setDriverSlotIndex("monet", slotIndex);
-                settings.setDriverSlotIndex("secure_store", slotIndex);
-            }
-        }
+        // custom slot indexes (DRIVER_SLOT_INDEX_MAP, SLOT_INDEX) aren't loaded anymore, cards are picked in a dialog
+        settings.setLastUsedToken(loadLastUsedToken(prefs));
+        settings.persistent = true;
 
         var tsaServerPref = prefs.get("TSA_SERVER", DEFAULT_TSA_SERVER);
         if (settings.PROBLEMATIC_DEFAULT_TSA_SERVERS.contains(tsaServerPref))
@@ -146,7 +132,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
         prefs.put("LANGUAGE", (language == null) ? "" : language.getLocale().getLanguage());
         prefs.put("SIGNATURE_LEVEL", new SignatureLevelStringConverter().toString(signatureLevel));
-        prefs.put("DRIVER", driver == null ? "" : driver);
         prefs.putBoolean("EN319132", en319132);
         prefs.putBoolean("BULK_ENABLED", bulkEnabled);
         prefs.putBoolean("PLAIN_XML_ENABLED", plainXmlEnabled);
@@ -156,6 +141,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putBoolean("PDFA_COMPLIANCE", pdfaCompliance);
         prefs.putBoolean("SERVER_ENABLED", serverEnabled);
         prefs.putBoolean("EXPIRED_CERTS_ENABLED", expiredCertsEnabled);
+        prefs.putBoolean("EID_EP_SLOTS_ENABLED", eidEpSlotsEnabled);
         prefs.put("TRUSTED_LIST", String.join(",", trustedList));
         prefs.put("CUSTOM_KEYSTORE_PATH", customKeystorePath);
         prefs.put("TSA_SERVER", tsaServer);
@@ -165,11 +151,9 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putLong("TOKEN_SESSION_TIMEOUT", tokenSessionTimeout);
         prefs.put("CUSTOM_PKCS11_DRIVER_PATH", customPKCS11DriverPath);
 
-        StringBuilder builder = new StringBuilder();
-        for (var entry : driverSlotIndexMap.entrySet()) {
-            builder.append(entry.getKey()).append(":").append(entry.getValue()).append(";");
-        }
-        prefs.put("DRIVER_SLOT_INDEX_MAP", builder.toString());
+        saveLastUsedToken(prefs);
+        for (var obsoleteKey : OBSOLETE_PREFERENCES)
+            prefs.remove(obsoleteKey);
 
         prefs.put("LAST_USED_DIRECTORY", (lastUsedDirectory == null) ? "" : lastUsedDirectory);
     }
@@ -187,6 +171,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         setPdfaCompliance(DEFAULT_PDFA_COMPLIANCE);
         setServerEnabled(DEFAULT_SERVER_ENABLED);
         setExpiredCertsEnabled(DEFAULT_EXPIRED_CERTS_ENABLED);
+        setEidEpSlotsEnabled(DEFAULT_EID_EP_SLOTS_ENABLED);
         setTrustedList(DEFAULT_TRUSTED_LIST);
         setCustomKeystorePath(DEFAULT_CUSTOM_KEYSTORE_PATH);
         setTsaServer(DEFAULT_TSA_SERVER);
@@ -198,8 +183,40 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         driverSlotIndexMap.clear();
         driverSlotIndexMap.put("default", -1); // default slot index
         setLastUsedDirectory(DEFAULT_LAST_USED_DIRECTORY);
+        lastUsedToken = null;
 
         save();
+    }
+
+    private static LastUsedToken loadLastUsedToken(Preferences prefs) {
+        var lastUsedToken = new LastUsedToken(prefs.get("LAST_TOKEN_DRIVER", ""), prefs.get("LAST_TOKEN_LABEL", ""),
+                prefs.get("LAST_TOKEN_SERIAL_NUMBER", ""), prefs.get("LAST_TOKEN_READER", ""));
+        if (!lastUsedToken.isEmpty())
+            return lastUsedToken;
+
+        // the default driver setting was replaced by remembering the last used one
+        return new LastUsedToken(prefs.get("DRIVER", ""), null, null, null);
+    }
+
+    private void saveLastUsedToken(Preferences prefs) {
+        var token = lastUsedToken == null ? new LastUsedToken(null, null, null, null) : lastUsedToken;
+        prefs.put("LAST_TOKEN_DRIVER", token.driverShortname());
+        prefs.put("LAST_TOKEN_LABEL", token.label());
+        prefs.put("LAST_TOKEN_SERIAL_NUMBER", token.serialNumber());
+        prefs.put("LAST_TOKEN_READER", token.readerName());
+    }
+
+    public Optional<LastUsedToken> getLastUsedToken() {
+        return Optional.ofNullable(lastUsedToken).filter((token) -> !token.isEmpty());
+    }
+
+    /**
+     * Remembers the token (card) or driver the user signed with, written to preferences right away.
+     */
+    public void setLastUsedToken(LastUsedToken lastUsedToken) {
+        this.lastUsedToken = lastUsedToken;
+        if (persistent)
+            saveLastUsedToken(Preferences.userNodeForPackage(UserSettings.class));
     }
 
     public SigningParameters getDefaultSigningParameters() {
@@ -324,6 +341,14 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public void setServerEnabled(boolean serverEnabled) {
         this.serverEnabled = serverEnabled;
+    }
+
+    public boolean isEidEpSlotsEnabled() {
+        return eidEpSlotsEnabled;
+    }
+
+    public void setEidEpSlotsEnabled(boolean eidEpSlotsEnabled) {
+        this.eidEpSlotsEnabled = eidEpSlotsEnabled;
     }
 
     public boolean isExpiredCertsEnabled() {
@@ -456,11 +481,9 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void setCustomPKCS11DriverPath(String driverPath) {
-        Path path = Paths.get(driverPath);
-        if (! Files.exists(path)) {
-            return;
+        if (driverPath.isEmpty() || Files.isRegularFile(Paths.get(driverPath))) {
+            customPKCS11DriverPath = driverPath;
         }
-        customPKCS11DriverPath = driverPath;
     }
 
     public Optional<String> getLastUsedDirectory() {

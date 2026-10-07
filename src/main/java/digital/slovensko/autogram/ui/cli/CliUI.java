@@ -34,15 +34,19 @@ import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.TsaServerMisconfiguredException;
 import digital.slovensko.autogram.core.errors.UnableToCreateDirectoryException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.drivers.TokenOption;
+import digital.slovensko.autogram.drivers.TokenOptions;
 import digital.slovensko.autogram.ui.BatchUiResult;
+import digital.slovensko.autogram.ui.TokenOptionDescription;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
@@ -90,33 +94,59 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel) {
-        TokenDriver pickedDriver;
-        if (drivers.isEmpty()) {
+    public void onTokenSearchStarted() {
+    }
+
+    @Override
+    public void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel) {
+        if (options.isEmpty()) {
             showError(new NoDriversDetectedException());
             return;
+        }
 
-        } else if (drivers.size() == 1) {
-            pickedDriver = drivers.get(0);
-
-        } else if (settings.getDefaultDriver() != null) {
-            var driver = drivers.stream().filter(d -> d.getShortname().equals(settings.getDefaultDriver())).findFirst();
-            if (driver.isEmpty())
+        if (settings.getDefaultDriver() != null) {
+            var defaultDriverOptions = options.forDriver(settings.getDefaultDriver());
+            if (defaultDriverOptions.isEmpty())
                 throw new NoDriversDetectedException();
 
-            pickedDriver = driver.get();
-
-        } else {
-            var i = new AtomicInteger(1);
-            System.out.println("Pick driver:");
-            drivers.forEach(driver -> {
-                System.out.print("[" + i + "] ");
-                System.out.println(driver.getName());
-                i.addAndGet(1);
-            });
-            pickedDriver = drivers.get(CliUtils.readInteger() - 1);
+            options = defaultDriverOptions.get();
         }
-        callback.accept(pickedDriver);
+
+        var choices = new ArrayList<>(options.found());
+        options.otherDrivers().forEach(driver -> choices.add(new TokenOption(driver, null)));
+        // drivers found no card
+        if (choices.isEmpty())
+            throw new InitializationFailedException();
+
+        // the user asked for the driver, even one that can't tell whether there's a card is used then, e.g. eObčanka
+        if (settings.getDefaultDriver() != null && choices.size() == 1) {
+            callback.accept(choices.get(0));
+            return;
+        }
+
+        var automaticOption = options.getAutomaticOption();
+        if (automaticOption.isPresent()) {
+            callback.accept(automaticOption.get());
+            return;
+        }
+
+        System.out.println("Pick card or driver:");
+        var descriptions = TokenOptionDescription.describeAll(choices);
+        for (int i = 0; i < choices.size(); i++) {
+            var description = descriptions.get(i);
+            var text = description.driverName();
+            if (description.qualified() != null)
+                text += description.qualified() ? ", qualified" : ", non-qualified";
+            else if (description.slotNumber() != null)
+                text += ", slot " + description.slotNumber();
+
+            if (description.readerName() != null)
+                text += " (reader: " + description.readerName() + ")";
+
+            System.out.println("[" + (i + 1) + "] " + text);
+        }
+
+        callback.accept(choices.get(CliUtils.readInteger() - 1));
     }
 
     @Override

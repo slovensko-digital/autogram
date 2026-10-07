@@ -13,9 +13,12 @@ import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
 import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.TokenNotRecognizedException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.drivers.TokenOption;
+import digital.slovensko.autogram.drivers.TokenOptions;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.UI;
@@ -36,18 +39,18 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class GUI implements UI {
     private static final Logger LOGGER = LoggerFactory.getLogger(GUI.class);
 
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
-    private boolean driverWasAlreadySet = false;
     private final HostServices hostServices;
     private final UserSettings userSettings;
     private BatchDialogController batchController;
@@ -100,48 +103,42 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel) {
+    public void onTokenSearchStarted() {
         disableKeyPicking();
+    }
 
-        if (drivers.isEmpty()) {
+    @Override
+    public void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel) {
+        if (options.isEmpty()) {
             showError(new NoDriversDetectedException());
             refreshKeyOnAllJobs();
             enableSigningOnAllJobs();
-        } else if (drivers.size() == 1) {
-            // short-circuit if only one driver present
-            callback.accept(drivers.get(0));
-        } else {
-            if (!driverWasAlreadySet && userSettings.getDefaultDriver() != null) {
-                try {
-                    driverWasAlreadySet = true;
-                    var defaultDriver = drivers.stream().filter(d -> d.getShortname().equals(userSettings.getDefaultDriver()))
-                            .findFirst().get();
-
-                    if (defaultDriver != null) {
-                        callback.accept(defaultDriver);
-                        return;
-                    }
-                } catch (NoSuchElementException e) {
-                }
-            }
-
-            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
-            var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
-
-            var stage = new Stage();
-            stage.setTitle(controller.i18n("pickDriver.title"));
-            stage.setScene(new Scene(root));
-            stage.setOnCloseRequest(e -> {
-                refreshKeyOnAllJobs();
-                enableSigningOnAllJobs();
-                if (onCancel != null)
-                    onCancel.run();
-            });
-            stage.sizeToScene();
-            stage.setResizable(false);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.show();
+            return;
         }
+
+        Function<TokenOptions, TokenOption> findLastUsedOption = (o) -> userSettings.getLastUsedToken()
+                .flatMap((token) -> token.findIn(o)).orElse(null);
+        Consumer<Consumer<TokenOptions>> searchAgainAndThen = (onFound) -> onWorkThreadDo(() -> {
+            var newOptions = searchAgain.get();
+            onUIThreadDo(() -> onFound.accept(newOptions));
+        });
+        var controller = new PickTokenDialogController(options, findLastUsedOption, searchAgainAndThen, callback);
+        var root = GUIUtils.loadFXML(controller, "pick-token-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("pickDriver.title"));
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> {
+            refreshKeyOnAllJobs();
+            enableSigningOnAllJobs();
+            if (onCancel != null)
+                onCancel.run();
+        });
+        stage.sizeToScene();
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.showInForeground(stage);
+        controller.onShown();
     }
 
     @Override
@@ -183,7 +180,8 @@ public class GUI implements UI {
         });
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
+        // shown after the user entered PIN in the driver's window, e.g. BOK in eID klient
+        GUIUtils.showInForeground(stage);
     }
 
     public void refreshKeyOnAllJobs() {
@@ -218,7 +216,7 @@ public class GUI implements UI {
 
         GUIUtils.suppressDefaultFocus(stage, controller);
 
-        stage.show();
+        GUIUtils.showInForeground(stage);
     }
 
     public char[] getKeystorePassword() {
@@ -318,7 +316,7 @@ public class GUI implements UI {
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(getJobWindow(job));
         GUIUtils.suppressDefaultFocus(stage, controller);
-        stage.show();
+        GUIUtils.showInForeground(stage);
     }
 
     @Override
@@ -419,7 +417,8 @@ public class GUI implements UI {
     @Override
     public void onSigningFailed(AutogramException e) {
         showError(e);
-        if (e instanceof TokenRemovedException) {
+        // the connection can't sign anymore, the next signing connects again
+        if (e instanceof TokenRemovedException || e instanceof TokenNotRecognizedException) {
             resetSigningKey();
         } else {
             refreshKeyOnAllJobs();
@@ -437,7 +436,7 @@ public class GUI implements UI {
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         GUIUtils.suppressDefaultFocus(stage, controller);
-        stage.show();
+        GUIUtils.showInForeground(stage);
     }
 
     @Override
@@ -458,7 +457,7 @@ public class GUI implements UI {
         stage.setResizable(false);
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, controller);
-        stage.show();
+        GUIUtils.showInForeground(stage);
 
         enableSigningOnAllJobs();
     }
@@ -493,7 +492,6 @@ public class GUI implements UI {
             activeKey.close();
 
         activeKey = newKey;
-        driverWasAlreadySet = true;
         refreshKeyOnAllJobs();
 
         if (callback != null)
@@ -575,6 +573,6 @@ public class GUI implements UI {
 
         GUIUtils.suppressDefaultFocus(stage, controller);
 
-        stage.show();
+        GUIUtils.showInForeground(stage);
     }
 }

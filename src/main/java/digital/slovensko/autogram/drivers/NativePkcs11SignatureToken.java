@@ -19,6 +19,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.ProviderException;
+import java.security.Security;
 import java.security.Signature;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Objects;
@@ -28,14 +31,33 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     private static final String PKCS11_EXCEPTION_CLASS_NAME = "sun.security.pkcs11.wrapper.PKCS11Exception";
     private static final String PKCS11_CONSTANTS_CLASS_NAME = "sun.security.pkcs11.wrapper.PKCS11Constants";
     private static final String CK_ATTRIBUTE_CLASS_NAME = "sun.security.pkcs11.wrapper.CK_ATTRIBUTE";
+    /**
+     * SunPKCS11 polls the slot of a removed card in the background (C_GetSlotInfo), to use the card once it's inserted
+     * again. Autogram connects again instead, and the polling outlives the closed connection - eID klient aborts the
+     * whole process when it comes while the user is entering BOK for another connection. Polling once in ~25 days
+     * means never.
+     */
+    static final String NO_TOKEN_POLLING_CONFIG = "insertionCheckInterval = " + Integer.MAX_VALUE;
 
     private final PasswordManager passwordManager;
     private final SignatureTokenSettings settings;
+    private final int slotId;
+    private final int moduleGeneration;
 
     public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex) {
-        super(pkcsPath, pm, -1, driverSlotIndex, null);
+        this(pkcsPath, pm, settings, -1, driverSlotIndex);
+    }
+
+    /**
+     * @param slotId PKCS#11 slot ID to use, ignored if negative
+     * @param slotListIndex index into the list of all slots, ignored if negative or if slotId is set
+     */
+    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings, int slotId, int slotListIndex) {
+        super(pkcsPath, pm, slotId, slotId >= 0 ? -1 : slotListIndex, NO_TOKEN_POLLING_CONFIG);
         this.passwordManager = pm;
         this.settings = settings;
+        this.slotId = slotId;
+        this.moduleGeneration = Pkcs11TokenSlots.getModuleGeneration(pkcsPath);
     }
 
     private byte[] sign(final byte[] bytes, final String javaSignatureAlgorithm, final AlgorithmParameterSpec param, final DSSPrivateKeyEntry keyEntry) throws GeneralSecurityException {
@@ -61,7 +83,7 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
 
-            if (isAlwaysAuthenticate(p11, sessionId, pk) && (settings.getForceContextSpecificLoginEnabled() || !isProtectedAuthenticationPath(p11, getSlotListIndex()))) {
+            if (isAlwaysAuthenticate(p11, sessionId, pk) && (settings.getForceContextSpecificLoginEnabled() || !isProtectedAuthenticationPath(p11, slotId, getSlotListIndex()))) {
                 var password = passwordManager.getContextSpecificPassword();
                 if (password == null) throw new PasswordNotProvidedException();
                 invokeCLogin(p11, sessionId, CKU_CONTEXT_SPECIFIC, password);
@@ -94,17 +116,24 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         return false;
     }
 
-    private static boolean isProtectedAuthenticationPath(Object p11, int slotIndex) throws Exception {
-        var slotList = invokeCGetSlotList(p11, false);
-        if (slotList.length <= slotIndex || slotList.length < 1) {
-            return false;
+    private static boolean isProtectedAuthenticationPath(Object p11, int slotId, int slotIndex) throws Exception {
+        if (slotId < 0) {
+            var slotList = invokeCGetSlotList(p11, false);
+            if (slotList.length <= slotIndex || slotList.length < 1) {
+                return false;
+            }
+
+            if (slotIndex < 0) {
+                slotIndex = 0;
+            }
+
+            return isProtectedAuthenticationPath(p11, slotList[slotIndex]);
         }
 
-        if (slotIndex < 0) {
-            slotIndex = 0;
-        }
+        return isProtectedAuthenticationPath(p11, (long) slotId);
+    }
 
-        var slotId = slotList[slotIndex];
+    private static boolean isProtectedAuthenticationPath(Object p11, long slotId) throws Exception {
         var tokenInfo = invokeCGetTokenInfo(p11, slotId);
         var flags = (long) getPublicField(tokenInfo, "flags");
         return (flags & getPkcs11Constant("CKF_PROTECTED_AUTHENTICATION_PATH")) != 0;
@@ -232,6 +261,47 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
     private static boolean isPkcs11Exception(Throwable throwable) {
         return throwable != null && PKCS11_EXCEPTION_CLASS_NAME.equals(throwable.getClass().getName());
+    }
+
+    @Override
+    public void close() {
+        var provider = getProviderIfCreated();
+        if (provider != null && Pkcs11TokenSlots.getModuleGeneration(getPkcs11Path()) != moduleGeneration) {
+            // the module was initialized again, logging out of its former session crashes eID klient
+            Security.removeProvider(provider.getName());
+            setProvider(null);
+            return;
+        }
+
+        try {
+            super.close();
+        } catch (ProviderException e) {
+            // logout fails if the card was removed, DSS then skips removing the provider
+            if (provider != null)
+                Security.removeProvider(provider.getName());
+        }
+    }
+
+    private Provider getProviderIfCreated() {
+        try {
+            return (Provider) getProviderField().get(this);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setProvider(Provider provider) {
+        try {
+            getProviderField().set(this, provider);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Field getProviderField() throws NoSuchFieldException {
+        Field f = Pkcs11SignatureToken.class.getDeclaredField("provider");
+        f.setAccessible(true);
+        return f;
     }
 
     // mostly copy & paste just to call overridden private sign method

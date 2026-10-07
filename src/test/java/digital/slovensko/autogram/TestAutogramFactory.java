@@ -11,6 +11,8 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.drivers.TokenOption;
+import digital.slovensko.autogram.drivers.TokenOptions;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
@@ -25,6 +27,7 @@ import java.security.KeyStore;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Wires up an {@link Autogram} instance backed by the test PKCS12 keystore
@@ -87,8 +90,15 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel) {
-            callback.accept(drivers.get(0));
+        public void onTokenSearchStarted() {
+        }
+
+        @Override
+        public void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel) {
+            if (!options.found().isEmpty())
+                callback.accept(options.found().get(0));
+            else
+                callback.accept(new TokenOption(options.otherDrivers().get(0), null));
         }
 
         @Override

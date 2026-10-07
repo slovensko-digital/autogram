@@ -30,7 +30,7 @@ Momentálne sú texty v kóde "natvrdo", je plánovaná možnosť ich meniť cez
 ## Podporované karty
 
 Momentálne podporujeme na Slovensku bežne používané karty a ich ovládače:
-- Slovenský občiansky preukaz (eID klient)
+- Slovenský občiansky preukaz
 - Český občiansky preukaz (eObčanka)
 - I.CA SecureStore
 - MONET+ ProID+Q
