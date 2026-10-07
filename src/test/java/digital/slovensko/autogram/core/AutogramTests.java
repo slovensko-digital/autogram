@@ -8,6 +8,7 @@ import digital.slovensko.autogram.TestMethodSources;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.dto.SignedDocument;
+import digital.slovensko.autogram.core.dto.SignedDocumentSignature;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
@@ -21,6 +22,7 @@ import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.server.dto.CertificatesResponse;
 import digital.slovensko.autogram.ui.SupportedLanguage;
+import digital.slovensko.autogram.ui.SaveFileResponder;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.AsicContainerUtils;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
@@ -42,6 +44,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
@@ -50,6 +54,7 @@ import java.util.ArrayList;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.List;
@@ -360,6 +365,34 @@ class AutogramTests {
         autogram.pickSigningKeyAndThen(key -> autogram.sign(SigningJob.fromInput(input, responder), key));
 
         verify(responder).onDocumentSigned(any());
+    }
+
+    /**
+     * Re-signing a CAdES enveloped PDF (a CMS named .pdf) from a file, as GUI and CLI do, must add
+     * a parallel CAdES signature into the same CMS instead of wrapping it into ASiC-E (issue #772).
+     */
+    @ParameterizedTest
+    @EnumSource(value = SignatureForm.class, names = {"XAdES", "PAdES", "CAdES"})
+    void testResignCadesEnvelopedPdfFromFileKeepsEnvelopingCades(SignatureForm defaultForm, @TempDir Path tempDir) throws IOException {
+        var autogram = TestAutogramFactory.create();
+
+        var file = tempDir.resolve("sample_pdf_cades_enveloping.pdf").toFile();
+        Files.write(file.toPath(), TestMethodSources.loadContent("sample_pdf_cades_enveloping.pdf"));
+
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, defaultForm, DigestAlgorithm.SHA256,
+            ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
+        var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), EFormAttributes.build(parameters, true)), parameters);
+        var responder = new SaveFileResponder(file, autogram, TargetPath.fromSource(file.toPath(), defaultForm == SignatureForm.PAdES));
+
+        autogram.pickSigningKeyAndThen(key -> autogram.sign(SigningJob.fromInput(input, responder), key));
+
+        var signedFile = tempDir.resolve("sample_pdf_cades_enveloping_signed.pdf");
+        Assertions.assertTrue(Files.exists(signedFile), "re-signed CMS must keep the source extension, not become .asice");
+
+        var signedDocument = new FileDocument(signedFile.toFile());
+        Assertions.assertEquals(new SignedDocumentSignature(SignatureForm.CAdES, null, SignaturePackaging.ENVELOPING),
+            SignatureValidator.getSignedDocumentSignature(signedDocument));
+        Assertions.assertEquals(2, SignatureValidator.getSignedDocumentSimpleReport(signedDocument).getSignaturesCount());
     }
 
     @Test

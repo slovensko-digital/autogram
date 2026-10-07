@@ -321,6 +321,21 @@ public class SigningParametersResolverTests {
         assertEquals(ASiCContainerType.ASiC_E, resolved.getContainer());
     }
 
+    @Test
+    void resolveLenientFromFileKeepsEnvelopingCadesWithoutContainerForCadesEnvelopedPdf() throws IOException {
+        // A CMS (CAdES enveloping) wrapping a PDF but still named .pdf, see issue #772
+        var document = AutogramDocument.build(new InMemoryDocument(
+                TestMethodSources.loadContent("sample_pdf_cades_enveloping.pdf"), "sample_pdf_cades_enveloping.pdf", MimeTypeEnum.PDF), null);
+        var parameters = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.CAdES, DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
+
+        var resolved = SigningParametersResolver.resolveLenientFromFile(parameters, document);
+
+        assertEquals(SignatureForm.CAdES, resolved.getSignatureForm());
+        assertNull(resolved.getContainer());
+        assertEquals(SignaturePackaging.ENVELOPING, resolved.getSignaturePackaging());
+    }
+
     // --- resolveLenientFromFile: independent results from a shared input across a batch ---
 
     @Test

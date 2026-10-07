@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 public class VersionedSignRequestBodyTests {
     private final Gson gson = new Gson();
 
@@ -145,6 +146,46 @@ public class VersionedSignRequestBodyTests {
         var request = body.getSigningInput(false);
 
         assertEquals(SignatureLevel.PAdES_BASELINE_T, request.getParameters().getLevel());
+    }
+
+    @Test
+    void cadesEnvelopedPdfKeepsEnvelopingCadesWithoutContainer() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample_pdf_cades_enveloping.pdf")));
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "mimeType": "application/pdf; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertEquals(SignatureLevel.CAdES_BASELINE_B, request.getParameters().getLevel());
+        assertNull(request.getParameters().getContainer());
+        assertEquals(SignaturePackaging.ENVELOPING, request.getParameters().getSignaturePackaging());
+    }
+
+    @Test
+    void rejectsAsiceContainerForCadesEnvelopedPdf() throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                Files.readAllBytes(Path.of("src/test/resources/digital/slovensko/autogram/sample_pdf_cades_enveloping.pdf")));
+        var body = gson.fromJson("""
+                {
+                  "parameters": {
+                    "form": "CAdES",
+                    "container": "ASiC_E"
+                  },
+                  "document": {
+                    "mimeType": "application/pdf; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(content), VersionedSignRequestBody.class);
+
+        assertThrows(RequestValidationException.class, () -> body.getSigningInput(false));
     }
 
     @Test

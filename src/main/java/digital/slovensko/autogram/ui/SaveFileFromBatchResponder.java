@@ -5,7 +5,6 @@ import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.util.Logging;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +26,7 @@ public class SaveFileFromBatchResponder extends Responder {
 
     public void onDocumentSigned(SignedDocument signedDocument) {
         try {
-            var targetFile = targetPath.getSaveFilePath(file.toPath(), MimeTypeEnum.PDF.equals(signedDocument.getDocument().getMimeType()));
+            var targetFile = targetPath.getSaveFilePath(file.toPath(), signedDocument.getDocument());
             signedDocument.getDocument().save(targetFile.toString());
             Logging.log("Saved file " + targetFile.toString());
             callbackSuccess.accept(targetFile.toFile());

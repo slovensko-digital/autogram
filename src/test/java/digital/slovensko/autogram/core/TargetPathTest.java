@@ -14,6 +14,11 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.jimfs.Jimfs;
 
+import eu.europa.esig.dss.enumerations.MimeType;
+import eu.europa.esig.dss.enumerations.MimeTypeEnum;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
+
 public class TargetPathTest {
     // @Rule
     // public MockitoRule rule =
@@ -89,9 +94,65 @@ public class TargetPathTest {
         Files.createFile(sourceFile);
 
         var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, false);
-        var target = targetPath.getSaveFilePath(sourceFile, true);
+        var target = targetPath.getSaveFilePath(sourceFile, signedDocument(MimeTypeEnum.PDF));
 
         assertEqualPath("/test/virtual/source_signed.pdf", target);
+    }
+
+    @Test
+    public void testSingleFileNoTargetUsesAsiceForSignedContainer() throws IOException {
+        FileSystem fs = Jimfs.newFileSystem(com.google.common.jimfs.Configuration.unix());
+        var sourceFile = fs.getPath("/test/virtual/source.pdf");
+        Files.createDirectories(sourceFile.getParent());
+        Files.createFile(sourceFile);
+
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, true);
+        var target = targetPath.getSaveFilePath(sourceFile, signedDocument(MimeTypeEnum.ASICE));
+
+        assertEqualPath("/test/virtual/source_signed.asice", target);
+    }
+
+    /**
+     * Re-signing an enveloping CAdES (CMS) document keeps it a CMS, so it must not be saved
+     * with the ASiC-E extension (issue #772).
+     */
+    @Test
+    public void testSingleFileNoTargetKeepsSourceExtensionForSignedCms() throws IOException {
+        FileSystem fs = Jimfs.newFileSystem(com.google.common.jimfs.Configuration.unix());
+        var sourceFile = fs.getPath("/test/virtual/source.pdf");
+        Files.createDirectories(sourceFile.getParent());
+        Files.createFile(sourceFile);
+
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, true);
+        var target = targetPath.getSaveFilePath(sourceFile, signedDocument(MimeTypeEnum.PKCS7));
+
+        assertEqualPath("/test/virtual/source_signed.pdf", target);
+    }
+
+    @Test
+    public void testSingleFileNoTargetUsesP7mForSignedCmsWithoutSourceExtension() throws IOException {
+        FileSystem fs = Jimfs.newFileSystem(com.google.common.jimfs.Configuration.unix());
+        var sourceFile = fs.getPath("/test/virtual/source");
+        Files.createDirectories(sourceFile.getParent());
+        Files.createFile(sourceFile);
+
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, true);
+        var target = targetPath.getSaveFilePath(sourceFile, signedDocument(MimeTypeEnum.PKCS7));
+
+        assertEqualPath("/test/virtual/source_signed.p7m", target);
+    }
+
+    @Test
+    public void testSingleFileNoTargetKeepsSourceExtensionForSignedXml() throws IOException {
+        FileSystem fs = Jimfs.newFileSystem(com.google.common.jimfs.Configuration.unix());
+        var sourceFile = fs.getPath("/test/virtual/source.xml");
+        Files.createDirectories(sourceFile.getParent());
+        Files.createFile(sourceFile);
+
+        var targetPath = new TargetPath(null, sourceFile, false, false, Files.isDirectory(sourceFile), fs, true);
+        var target = targetPath.getSaveFilePath(sourceFile, signedDocument(MimeTypeEnum.XML));
+
+        assertEqualPath("/test/virtual/source_signed.xml", target);
     }
 
     /**
@@ -306,6 +367,10 @@ public class TargetPathTest {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private static DSSDocument signedDocument(MimeType mimeType) {
+        return new InMemoryDocument(new byte[0], "signed", mimeType);
     }
 
     /* Assert helpers */

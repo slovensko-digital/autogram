@@ -3,10 +3,15 @@ package digital.slovensko.autogram.server.dto;
 import digital.slovensko.autogram.core.errors.TransformationParsingErrorException;
 import digital.slovensko.autogram.core.errors.XMLValidationException;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.io.*;
 import java.util.Base64;
@@ -1511,5 +1516,22 @@ class SignRequestBodyTest {
 
         Assertions.assertFalse(eFormAttributes.autoLoadEform());
         Assertions.assertNull(eFormAttributes.transformation());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ServerSigningParameters.LocalSignatureLevel.class, names = {"BASELINE_B", "CAdES_BASELINE_B", "PAdES_BASELINE_B"})
+    void testCadesEnvelopedPdfKeepsEnvelopingCadesWithoutContainer(ServerSigningParameters.LocalSignatureLevel level) throws IOException {
+        var content = Base64.getEncoder().encodeToString(
+                this.getClass().getResourceAsStream("../../sample_pdf_cades_enveloping.pdf").readAllBytes());
+        var parameters = ServerSigningParametersTestFactory.create(level, ASiCContainerType.ASiC_E, null, null, null, null,
+                null, null, null, null, null, null, null, false, null, null, false, null, null, null, null, null, null);
+        var signRequestBody = new SignRequestBody(new Document("document.pdf", content), parameters, "application/pdf;base64");
+        signRequestBody.validateDocument();
+
+        var signingParameters = signRequestBody.getParameters(false);
+
+        Assertions.assertEquals(SignatureLevel.CAdES_BASELINE_B, signingParameters.getLevel());
+        Assertions.assertNull(signingParameters.getContainer());
+        Assertions.assertEquals(SignaturePackaging.ENVELOPING, signingParameters.getSignaturePackaging());
     }
 }
