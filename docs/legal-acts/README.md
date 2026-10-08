@@ -4,7 +4,7 @@
 
 Assessment date: **8 October 2026**. Repository baseline: **5ca91d5c**. Scope: Autogram desktop application, local API and CLI, not the browser extension or a hosted service. This is a traceable engineering/legal reading aid, **not legal advice, certification or a released-binary audit**.
 
-**Start here:** [OVERVIEW.md](OVERVIEW.md) is a one-page consolidated report across all acts (relevance tiers, headline findings, per-act index).
+**Start here:** [OVERVIEW.md](OVERVIEW.md) is a one-page consolidated report across all acts (relevance tiers, headline findings, per-act index). [VERIFICATION.md](VERIFICATION.md) is the act-by-act work list of what is done and what still needs external verification.
 
 Each act receives an English Markdown document with an executive summary, official complete-text links, version/date information and a provision-by-provision assessment. Complete legal text is **linked, not reproduced**. Consolidations are reading aids; the published acts and corrigenda remain authoritative. Amending acts receive their own documents, cross-linked to the base acts. Historical/repealed acts are retained and labelled.
 

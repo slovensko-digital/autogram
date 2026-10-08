@@ -10,22 +10,22 @@ This report summarises the register as it stands. **All 56 acts are documented**
 
 ## 1. Executive summary
 
-The register covers **56 distinct acts** linked from the [compliance report](../eidas-2-compliance-report.md). **All 56 are documented** at provision level (recital/article/paragraph/annex), producing **9 188 assessed rows**.
+The register covers **56 distinct acts** linked from the [compliance report](../eidas-2-compliance-report.md). **All 56 are documented** at provision level (recital/article/paragraph/annex), producing **9 220 assessed rows**.
 
 Across those rows:
 
 | Relevance | Rows | Meaning |
 | --- | --- | --- |
-| **Direct** | 6 | Addresses the app/process or the publisher under established facts |
-| **Conditional** | 1 240 | Turns on an unresolved role, deployment or triggering event |
-| **Indirect** | 3 101 | Interoperability/input criteria or interpretative context |
+| **Direct** | 33 | Addresses the app/process or the publisher under established facts |
+| **Conditional** | 1 241 | Turns on an unresolved role, deployment or triggering event |
+| **Indirect** | 3 105 | Interoperability/input criteria or interpretative context |
 | **None** | 4 841 | Addresses other actors (Member States, QTSPs, wallets, browsers) |
 
 | Status | Rows | Meaning |
 | --- | --- | --- |
 | **Done** | 6 | A narrowly described applicable measure is evidenced |
 | **Not done** | 0 | No applicable requirement with a demonstrable unfulfilled measure was established |
-| **Unknown** | 2 074 | Applicability or fulfilment cannot be established from the evidence |
+| **Unknown** | 2 075 | Applicability or fulfilment cannot be established from the evidence |
 | **Ignored** | 7 139 | Deliberately scoped out with a reason (context / other actors) |
 
 **Headline conclusion.** The overwhelming majority of the acts impose **no duty on an independent signing/validation publisher** — they bind Member States, supervisory bodies, qualified trust-service providers, wallet actors, browsers or public bodies. Those rows are **None / Ignored**. The compliance question for Autogram reduces to a small number of **Direct** and **Conditional** matters, all currently **Unknown** for lack of independent evidence:
@@ -69,18 +69,18 @@ Each entry links to the full provision-by-provision document. "Direct/Cond" and 
 
 | Act | Rows | Direct/Cond | Unk | One-line finding |
 | --- | --- | --- | --- | --- |
-| [EU 2013/662](eu-dec-2013-662.md) | 244 | 0/0 | 0 | Amends Decision 2009/767/EC annex; historical public-sector list. |
-| [EU 2014/148](eu-dec-2014-148.md) | 22 | 0/0 | 0 | Amends Decision 2011/130/EU (Services Directive documents). |
-| [EU 2015/1505](eu-dec_impl-2015-1505.md) | 48 | 0/0 | 24 | Trusted-list template; the validator must read its qualifiers correctly. |
-| [EU 2015/1506](eu-dec_impl-2015-1506.md) | 52 | 0/0 | 0 | Legacy public-sector format recognition; repealed by 2026/248. |
+| [EU 2013/662](eu-dec-2013-662.md) | 244 | 0/0 | 80 | Amends Decision 2009/767/EC annex; historical public-sector list. |
+| [EU 2014/148](eu-dec-2014-148.md) | 22 | 0/0 | 7 | Amends Decision 2011/130/EU (Services Directive documents). |
+| [EU 2015/1505](eu-dec_impl-2015-1505.md) | 52 | 3/0 | 15 | Trusted-list template; the validator must read its qualifiers correctly. |
+| [EU 2015/1506](eu-dec_impl-2015-1506.md) | 52 | 0/0 | 12 | Legacy public-sector format recognition; repealed by 2026/248. |
 | [EU 2015/296](eu-dec_impl-2015-296.md) | 92 | 0/4 | 0 | Member-State eID cooperation/peer review; replaced by 2025/1568. |
-| [EU 2016/650](eu-dec_impl-2016-650.md) | 28 | 0/0 | 0 | QSCD certification standards; not app certification. |
+| [EU 2016/650](eu-dec_impl-2016-650.md) | 28 | 0/0 | 12 | QSCD certification standards; not app certification. |
 | [EU 2025/2164](eu-dec_impl-2025-2164.md) | 92 | 0/1 | 60 | Amends 2015/1505 (TLv6 / ETSI TS 119 612 update). |
 | [EU 2016/2102](eu-dir-2016-2102.md) | 148 | 0/5 | 32 | Public-sector web/mobile accessibility; not a blanket app duty. |
 | [EU 2019/882](eu-dir-2019-882.md) | 602 | 0/92 | 169 | EAA enumerated products/services; conditional on scope. |
 | [EU 2022/2555](eu-dir-2022-2555.md) | 804 | 0/230 | 230 | NIS2 covered entities; conditional on entity designation. |
 | [EU 2024/2853](eu-dir-2024-2853.md) | 257 | 0/89 | 91 | Product Liability Directive; commercial-supply risk. |
-| [EU 2014/910 (eIDAS)](eu-reg-2014-910.md) | 484 | 1/16 | 94 | Founding act; Art. 32/32a validation duties and conditional Art. 15. |
+| [EU 2014/910 (eIDAS)](eu-reg-2014-910.md) | 512 | 25/17 | 95 | Founding act; Art. 32/32a validation duties and conditional Art. 15. |
 | [EU 2016/679 (GDPR)](eu-reg-2016-679.md) | 401 | 1/162 | 163 | Controller/processor roles and data flows unknown. |
 | [EU 2024/1183](eu-reg-2024-1183.md) | 196 | 4/9 | 22 | eIDAS 2.0 amendment; validation and conditional accessibility. |
 | [EU 2024/2847 (CRA)](eu-reg-2024-2847.md) | 779 | 0/287 | 291 | Manufacturer vs steward; reporting since 11 Sep 2026. |
@@ -94,9 +94,9 @@ Each entry links to the full provision-by-provision document. "Direct/Cond" and 
 | [EU 2024/2981](eu-reg_impl-2024-2981.md) | 551 | 0/54 | 0 | Wallet certification. |
 | [EU 2024/2982](eu-reg_impl-2024-2982.md) | 190 | 0/0 | 0 | Wallet protocols and interfaces. |
 | [EU 2025/1566](eu-reg_impl-2025-1566.md) | 23 | 0/1 | 1 | Identity/attribute verification standard for issuance. |
-| [EU 2025/1567](eu-reg_impl-2025-1567.md) | 28 | 0/0 | 0 | Remote QSCD management standards. |
-| [EU 2025/1568](eu-reg_impl-2025-1568.md) | 87 | 0/0 | 0 | eID cooperation/peer review procedure. |
-| [EU 2025/1569](eu-reg_impl-2025-1569.md) | 125 | 0/0 | 0 | Qualified attribute attestations. |
+| [EU 2025/1567](eu-reg_impl-2025-1567.md) | 28 | 0/0 | 1 | Remote QSCD management standards. |
+| [EU 2025/1568](eu-reg_impl-2025-1568.md) | 87 | 0/0 | 1 | eID cooperation/peer review procedure. |
+| [EU 2025/1569](eu-reg_impl-2025-1569.md) | 125 | 0/0 | 1 | Qualified attribute attestations. |
 | [EU 2025/1570](eu-reg_impl-2025-1570.md) | 36 | 0/1 | 24 | Member-State QSCD notifications. |
 | [EU 2025/1571](eu-reg_impl-2025-1571.md) | 61 | 0/0 | 0 | Supervisory-body annual reports. |
 | [EU 2025/1572](eu-reg_impl-2025-1572.md) | 42 | 0/1 | 1 | QTSP notification of intention to provide a qualified service. |
@@ -111,20 +111,20 @@ Each entry links to the full provision-by-provision document. "Direct/Cond" and 
 | [EU 2025/2392](eu-reg_impl-2025-2392.md) | 54 | 0/5 | 10 | CRA important/critical product descriptions. |
 | [EU 2025/2527](eu-reg_impl-2025-2527.md) | 21 | 0/1 | 1 | Qualified website-authentication certificate standards. |
 | [EU 2025/2530](eu-reg_impl-2025-2530.md) | 75 | 0/1 | 9 | QTSP requirements. |
-| [EU 2025/2531](eu-reg_impl-2025-2531.md) | 85 | 0/0 | 0 | Qualified electronic ledger standards. |
+| [EU 2025/2531](eu-reg_impl-2025-2531.md) | 85 | 0/0 | 30 | Qualified electronic ledger standards. |
 | [EU 2025/2532](eu-reg_impl-2025-2532.md) | 58 | 0/6 | 7 | Qualified electronic archiving standards. |
 | [EU 2025/846](eu-reg_impl-2025-846.md) | 58 | 0/1 | 0 | Cross-border identity matching. |
 | [EU 2025/847](eu-reg_impl-2025-847.md) | 115 | 0/0 | 0 | Wallet security-breach reactions. |
-| [EU 2025/848](eu-reg_impl-2025-848.md) | 194 | 0/0 | 0 | Registration of wallet-relying parties. |
+| [EU 2025/848](eu-reg_impl-2025-848.md) | 194 | 0/0 | 1 | Registration of wallet-relying parties. |
 | [EU 2025/849](eu-reg_impl-2025-849.md) | 64 | 0/0 | 0 | Submission of certified-wallet list information. |
 | [EU 2026/248](eu-reg_impl-2026-248.md) | 72 | 0/1 | 55 | Public-sector format recognition; JAdES gap. |
 | [EU 2026/798](eu-reg_impl-2026-798.md) | 49 | 0/0 | 0 | Wallet remote-onboarding standards. |
-| [EU 2026/1730](eu-reg_impl-2026-1730.md) | 8 | 0/0 | 0 | Amends 2025/848 (standards). |
-| [EU 2026/1731](eu-reg_impl-2026-1731.md) | 14 | 0/0 | 0 | Amends wallet regulations (portrait, gatekeepers). |
-| [EU 2026/1735](eu-reg_impl-2026-1735.md) | 10 | 0/0 | 0 | Amends 2025/1569 (attribute standards). |
+| [EU 2026/1730](eu-reg_impl-2026-1730.md) | 8 | 0/0 | 1 | Amends 2025/848 (standards). |
+| [EU 2026/1731](eu-reg_impl-2026-1731.md) | 14 | 0/0 | 1 | Amends wallet regulations (portrait, gatekeepers). |
+| [EU 2026/1735](eu-reg_impl-2026-1735.md) | 10 | 0/0 | 1 | Amends 2025/1569 (attribute standards). |
 | [SK 2016/272](sk-2016-272.md) | 200 | 0/57 | 88 | Slovak trust-services act; provider supervision. |
 | [SK 2020/78](sk-2020-78.md) | 504 | 0/10 | 252 | Slovak public-administration IT standards; e-form profiles. |
-| [SK 2013/305](sk-2013-305.md) | 400 | 0/0 | 0 | Slovak e-Government act; filer/authority duties, e-form interoperability. |
+| [SK 2013/305](sk-2013-305.md) | 400 | 0/4 | 43 | Slovak e-Government act; filer/authority duties, e-form interoperability. |
 
 ---
 
