@@ -35,7 +35,7 @@ def check_file(path, expected_names=()):
         errors.append("missing Executive summary")
     if not re.search(r"coverage", text, re.I):
         errors.append("missing coverage statement")
-    if not re.search(r"https://(?:eur-lex\.europa\.eu|www\.slov-lex\.sk|static\.slov-lex\.sk|eur-lex\.europa\.eu|op\.europa\.eu|publications\.europa\.eu)", text):
+    if not re.search(r"https://(?:eur-lex\.europa\.eu|www\.slov-lex\.sk|static\.slov-lex\.sk|eur-lex\.europa\.eu|op\.europa\.eu|publications\.europa\.eu|www\.etsi\.org|www\.iso\.org|www\.itu\.int)", text):
         errors.append("missing official legal-text link")
 
     for link in re.findall(r"\]\(([^\s)]+)(?:\s+\"[^\"]*\")?\)", text):

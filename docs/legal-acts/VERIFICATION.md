@@ -49,7 +49,7 @@ The only open item is the GDPR cross-reference. No act-specific duty; close when
 - [ ] [EU 2025/1945 — validation application standards](eu-reg_impl-2025-1945.md) · Cond 38, Unk 38
   - [ ] **24-hour signing-certificate revocation freshness** (and no value for other certificates) with 23/24/25-hour fixtures.
   - [ ] Failed applicability → stop, **indeterminate**, intermediate findings in the report.
-  - [ ] Application-level **ETSI TS 119 101** conformity; schema-valid TS 119 102-2 report.
+  - [ ] Application-level **ETSI TS 119 101** conformity ([separate standard analysis](etsi-ts-119101.md)); schema-valid TS 119 102-2 report.
 - [ ] [EU 2025/1942 — qualified validation service standards](eu-reg_impl-2025-1942.md) · Cond 23, Unk 23
   - [ ] Confirm the local DSS report is **not** offered as a qualified validation service; policy mapping only if the presumption route is claimed.
 - [ ] [EU 2015/1505 — trusted lists](eu-dec_impl-2015-1505.md) · Direct 3, Unk 15

@@ -90,7 +90,7 @@ All evidence below was inspected on 8 October 2026. Source inspection is not a r
 
 | Provision | Requirement / addressee | Relevance | Status | Evidence / source needed | Dates / notes |
 | --- | --- | --- | --- | --- | --- |
-| [I.1(3), REQ-4.3-02](https://eur-lex.europa.eu/eli/reg_impl/2025/1945/oj#anx_I) | Signature validation applications must comply with ETSI TS 119 101 [13]. | Conditional | Unknown | Need application-level security/policy assessment, operating assumptions and conformity evidence for desktop/API/CLI; DSS delegation and no-QTSP status do not discharge this requirement. | Express validation-application requirement within the presumption route. |
+| [I.1(3), REQ-4.3-02](https://eur-lex.europa.eu/eli/reg_impl/2025/1945/oj#anx_I) | Signature validation applications must comply with ETSI TS 119 101 [13]. | Conditional | Unknown | Application-level security/policy assessment, operating assumptions and conformity evidence for desktop/API/CLI; DSS delegation and no-QTSP status do not discharge this requirement. Clause analysis in the [ETSI TS 119 101 document](etsi-ts-119101.md). | Express validation-application requirement within the presumption route. |
 
 #### Point 1(4) — clause 4.4, technical applicability rules checking
 
@@ -137,7 +137,7 @@ This annex has its own assessments even where its wording duplicates Annex I. It
 
 | Provision | Requirement / addressee | Relevance | Status | Evidence / source needed | Dates / notes |
 | --- | --- | --- | --- | --- | --- |
-| [II.1(3), REQ-4.3-02](https://eur-lex.europa.eu/eli/reg_impl/2025/1945/oj#anx_II) | Signature validation applications must comply with ETSI TS 119 101 [13]. | Conditional | Unknown | Need application-level policy/security conformity evidence covering the Annex II validation route and desktop/API/CLI use; no-QTSP status is not an exemption. | Effective; separate from creation-only analysis. |
+| [II.1(3), REQ-4.3-02](https://eur-lex.europa.eu/eli/reg_impl/2025/1945/oj#anx_II) | Signature validation applications must comply with ETSI TS 119 101 [13]. | Conditional | Unknown | Application-level policy/security conformity evidence covering the Annex II validation route and desktop/API/CLI use; no-QTSP status is not an exemption. Clause analysis in the [ETSI TS 119 101 document](etsi-ts-119101.md). | Effective; separate from creation-only analysis. |
 
 #### Point 1(4) — clause 4.4, technical applicability rules checking
 
