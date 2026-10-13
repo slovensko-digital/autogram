@@ -52,7 +52,7 @@ public class CliApp {
             }
 
             ui.setJobsCount(jobs.size());
-            jobs.forEach(autogram::sign);
+            jobs.forEach(autogram::startSigning);
 
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));

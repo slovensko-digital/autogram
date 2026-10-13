@@ -3,6 +3,7 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocumentSignature;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
+import digital.slovensko.autogram.core.errors.PdfPasswordProtectedException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -34,6 +35,7 @@ public class SigningParametersResolver {
     }
 
     public static SigningParameters resolveStrict(SigningParameters requested, List<AutogramDocument> documents) {
+        rejectPasswordProtectedPdf(documents);
         rejectUnknownPlainXml(requested, documents);
 
         if (requiresAsicContainer(documents) && requested.getContainer() != ASiCContainerType.ASiC_E)
@@ -46,6 +48,7 @@ public class SigningParametersResolver {
     }
 
     public static SigningParameters resolveLenient(SigningParameters requested, List<AutogramDocument> documents) {
+        rejectPasswordProtectedPdf(documents);
         rejectUnknownPlainXml(requested, documents);
 
         if (requiresAsicContainer(documents) && requested.getContainer() != ASiCContainerType.ASiC_E)
@@ -66,6 +69,8 @@ public class SigningParametersResolver {
      */
     public static SigningParameters resolveLenientFromFile(SigningParameters requested, AutogramDocument document) {
         var documents = List.of(document);
+        // reading its signatures below would fail on it with an unexpected error
+        rejectPasswordProtectedPdf(documents);
 
         var signedDocumentSignature = SignatureValidator.getSignedDocumentSignature(document.toDssDocument());
         if (signedDocumentSignature != null)
@@ -96,6 +101,11 @@ public class SigningParametersResolver {
     /** Forces a specific form/container, e.g. when wrapping a document into an ASiC-E container. */
     public static SigningParameters withFormAndContainer(SigningParameters requested, SignatureForm form, ASiCContainerType container) {
         return copyWith(requested, form, container, requested.getSignaturePackaging());
+    }
+
+    private static void rejectPasswordProtectedPdf(List<AutogramDocument> documents) {
+        if (documents.stream().anyMatch(AutogramDocument::isPDFAndPasswordProtected))
+            throw new PdfPasswordProtectedException();
     }
 
     private static void rejectUnknownPlainXml(SigningParameters parameters, List<AutogramDocument> documents) {

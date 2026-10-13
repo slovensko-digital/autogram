@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.drivers;
 
-import digital.slovensko.autogram.core.UserSettings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -17,7 +16,7 @@ class NativePkcs11SignatureTokenTests {
     void testRemovedCardIsNotPolledForInBackground(@TempDir Path tempDir) {
         // SunPKCS11 requires an absolute library path, which differs between platforms
         var library = tempDir.resolve("libpkcs11.so").toString();
-        var config = new NativePkcs11SignatureToken(library, null, new UserSettings(), -1, 0) {
+        var config = new NativePkcs11SignatureToken(library, null, -1, 0) {
             String config() {
                 return buildConfig();
             }

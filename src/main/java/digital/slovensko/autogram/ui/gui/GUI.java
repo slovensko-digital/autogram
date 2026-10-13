@@ -2,9 +2,10 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchStartCallback;
+import digital.slovensko.autogram.core.NoBatch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -12,7 +13,6 @@ import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
 import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.TokenNotRecognizedException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
@@ -53,7 +53,10 @@ public class GUI implements UI {
     private SigningKey activeKey;
     private final HostServices hostServices;
     private final UserSettings userSettings;
+    private Autogram autogram;
     private BatchDialogController batchController;
+    /** The latest batch; documents outside it cannot be signed until it ends. */
+    private Batch activeBatch = new NoBatch();
     private static final boolean DEBUG = false;
     private int nWindows = 0;
 
@@ -64,20 +67,45 @@ public class GUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
+        this.autogram = autogram;
         autogram.startVisualization(job);
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
-        batchController = new BatchDialogController(batch, callback, autogram, this);
+    public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+        activeBatch = batch;
+        refreshKeyOnAllJobs(); // blocks windows of documents outside the batch
+
+        if (userSettings.isBulkEnabled()) {
+            onSelected.accept(SigningMode.BULK);
+            return;
+        }
+        var controller = new PickBatchModeDialogController(onSelected, onCancel);
+        var root = GUIUtils.loadFXML(controller, "pick-batch-mode-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("pickBatchMode.window.title"));
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> controller.getOnCancel().run());
+        stage.setResizable(false);
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        GUIUtils.showOnTop(stage);
+        setUserFriendlyPositionAndLimits(stage);
+    }
+
+    @Override
+    public void startBatch(Batch batch, Autogram autogram) {
+        batchController = new BatchDialogController(batch, autogram, this);
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
         var stage = new Stage();
         stage.setTitle(batchController.i18n("batch.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
-            cancelBatch(batch);
-            callback.cancel();
+            // Let Autogram decide how the batch ends; its UI callback closes the window.
+            e.consume();
+            autogram.cancelBatch(batch);
         });
 
         stage.setResizable(false);
@@ -88,9 +116,11 @@ public class GUI implements UI {
     }
 
     @Override
-    public void cancelBatch(Batch batch) {
-        batchController.close();
-        batch.end();
+    public void closeBatch() {
+        if (batchController != null) {
+            batchController.close();
+            batchController = null;
+        }
         refreshKeyOnAllJobs();
         enableSigningOnAllJobs();
     }
@@ -191,6 +221,7 @@ public class GUI implements UI {
         }
     }
 
+    @Override
     public void enableSigningOnAllJobs() {
         jobControllers.values().forEach(SigningDialogController::enableSigning);
         if (batchController != null)
@@ -248,13 +279,17 @@ public class GUI implements UI {
     }
 
 
-    public char[] getContextSpecificPassword() {
+    public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
         var futurePassword = new FutureTask<>(() -> {
             var controller = new PasswordController("password.context.text", "password.context.error.text", null, true, false);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
+            if (canReturnToSigning) {
+                controller.cancelButton.setText(controller.i18n("general.close.btn"));
+            }
 
             var stage = new Stage();
             stage.setTitle(controller.i18n("password.context.title"));
+            if (incorrectPIN) controller.showIncorrectPIN();
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
@@ -306,6 +341,9 @@ public class GUI implements UI {
 
     @Override
     public void onPDFAComplianceCheckFailed(SigningJob job) {
+        if (!jobControllers.containsKey(job))
+            return; // the signing window was closed before the check finished
+
         var controller = new PDFAComplianceDialogController(job, this);
         var root = GUIUtils.loadFXML(controller, "pdfa-compliance-dialog.fxml");
 
@@ -322,13 +360,15 @@ public class GUI implements UI {
     @Override
     public void onSignatureValidationCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureValidationCompleted(reports);
+        if (controller != null) // the signing window may be closed before the validation finishes
+            controller.onSignatureValidationCompleted(reports);
     }
 
     @Override
     public void onSignatureCheckCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureCheckCompleted(reports);
+        if (controller != null)
+            controller.onSignatureCheckCompleted(reports);
     }
 
     public void showSigningJob(SigningJob job, Autogram autogram) {
@@ -366,6 +406,12 @@ public class GUI implements UI {
     }
 
     @Override
+    public void closeSigningJob(SigningJob job) {
+        var controller = jobControllers.remove(job);
+        if (controller != null) controller.close();
+    }
+
+    @Override
     public void showIgnorableExceptionDialog(IgnorableException e) {
         var controller = new IgnorableExceptionDialogController(e);
         var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");
@@ -400,7 +446,8 @@ public class GUI implements UI {
 
     @Override
     public void onSigningSuccess(SigningJob job) {
-        jobControllers.get(job).close();
+        var controller = jobControllers.remove(job);
+        if (controller != null) controller.close();
         refreshKeyOnAllJobs();
         enableSigningOnAllJobs();
         updateBatch();
@@ -408,9 +455,8 @@ public class GUI implements UI {
 
     @Override
     public void onSigningFailed(AutogramException e, SigningJob job) {
-        var controller = jobControllers.get(job);
-        controller.close();
-        jobControllers.remove(job);
+        var controller = jobControllers.remove(job);
+        if (controller != null) controller.close();
         onSigningFailed(e);
     }
 
@@ -451,7 +497,8 @@ public class GUI implements UI {
         } else {
             controller = new BatchSigningSuccessDialogController(result, hostServices);
             root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
-            stage.setTitle(((BatchSigningSuccessDialogController) controller).i18n("batchSigning.success.title"));
+            var title = result.getSkippedCount() > 0 ? "batchSigning.finished.title" : "batchSigning.success.title";
+            stage.setTitle(((BatchSigningSuccessDialogController) controller).i18n(title));
         }
         stage.setScene(new Scene(root));
         stage.setResizable(false);
@@ -500,6 +547,10 @@ public class GUI implements UI {
             enableSigningOnAllJobs();
     }
 
+    public boolean isSigningBlockedByBatch(SigningJob job) {
+        return !job.isPartOfBatch() && !activeBatch.isEnded();
+    }
+
     public boolean isActiveSigningKeyChangeAllowed() {
         return true;
     }
@@ -519,8 +570,14 @@ public class GUI implements UI {
     }
 
     public void cancelJob(SigningJob job) {
-        job.onDocumentSignFailed(new SigningCanceledByUserException());
-        jobControllers.get(job).close();
+        if (job.isPartOfBatch() && job.getBatch().isInteractive()) {
+            autogram.skipRemainingDocuments(job);
+            return;
+        }
+
+        var controller = jobControllers.remove(job);
+        autogram.cancelSigning(job);
+        if (controller != null) controller.close();
     }
 
     public void focusJob(SigningJob job) {

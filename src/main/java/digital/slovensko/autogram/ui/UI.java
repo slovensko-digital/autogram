@@ -14,13 +14,18 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface UI {
+    void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel);
+
     void startSigning(SigningJob job, Autogram autogram);
 
-    void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback);
+    void startBatch(Batch batch, Autogram autogram);
 
-    void cancelBatch(Batch batch);
+    /** Close the batch UI without changing the batch state. */
+    void closeBatch();
 
     void showSigningJob(SigningJob job, Autogram autogram);
+
+    void closeSigningJob(SigningJob job);
 
     /**
      * Called before searching for tokens (cards) of all drivers, which may take a while.
@@ -39,6 +44,8 @@ public interface UI {
     void onPickSigningKeyFailed(AutogramException e);
 
     void onSigningSuccess(SigningJob job);
+
+    void enableSigningOnAllJobs();
 
     void onSigningFailed(AutogramException e, SigningJob job);
 
@@ -68,7 +75,7 @@ public interface UI {
 
     char[] getKeystorePassword();
 
-    char[] getContextSpecificPassword();
+    char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning);
 
     public void updateBatch();
 

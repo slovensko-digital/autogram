@@ -6,11 +6,13 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 public class IgnorableException extends AutogramException {
     private final SigningJob job;
     private final Runnable onContinueCallback;
+    private final Runnable onCancelCallback;
 
-    public IgnorableException(Throwable e, SigningJob job, Runnable onContinueCallback) {
+    public IgnorableException(Throwable e, SigningJob job, Runnable onContinueCallback, Runnable onCancelCallback) {
         super(e);
         this.job = job;
         this.onContinueCallback = onContinueCallback;
+        this.onCancelCallback = onCancelCallback;
     }
 
     public SigningJob getJob() {
@@ -19,5 +21,9 @@ public class IgnorableException extends AutogramException {
 
     public Runnable getOnContinueCallback() {
         return onContinueCallback;
+    }
+
+    public Runnable getOnCancelCallback() {
+        return onCancelCallback;
     }
 }

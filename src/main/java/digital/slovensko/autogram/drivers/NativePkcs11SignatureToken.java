@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.drivers;
 
 import digital.slovensko.autogram.core.PasswordManager;
-import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
@@ -40,22 +39,20 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     static final String NO_TOKEN_POLLING_CONFIG = "insertionCheckInterval = " + Integer.MAX_VALUE;
 
     private final PasswordManager passwordManager;
-    private final SignatureTokenSettings settings;
     private final int slotId;
     private final int moduleGeneration;
 
-    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings, int driverSlotIndex) {
-        this(pkcsPath, pm, settings, -1, driverSlotIndex);
+    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, int driverSlotIndex) {
+        this(pkcsPath, pm, -1, driverSlotIndex);
     }
 
     /**
      * @param slotId PKCS#11 slot ID to use, ignored if negative
      * @param slotListIndex index into the list of all slots, ignored if negative or if slotId is set
      */
-    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, SignatureTokenSettings settings, int slotId, int slotListIndex) {
+    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, int slotId, int slotListIndex) {
         super(pkcsPath, pm, slotId, slotId >= 0 ? -1 : slotListIndex, NO_TOKEN_POLLING_CONFIG);
         this.passwordManager = pm;
-        this.settings = settings;
         this.slotId = slotId;
         this.moduleGeneration = Pkcs11TokenSlots.getModuleGeneration(pkcsPath);
     }
@@ -79,11 +76,13 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
 
     private void runContextSpecificLoginIfNeeded(Signature signature, PrivateKey pk) throws GeneralSecurityException {
         try {
-            // TODO cache & short-circuit
+            // PasswordManager supplies a flow-scoped PIN when appropriate.
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
 
-            if (isAlwaysAuthenticate(p11, sessionId, pk) && (settings.getForceContextSpecificLoginEnabled() || !isProtectedAuthenticationPath(p11, slotId, getSlotListIndex()))) {
+            if (isAlwaysAuthenticate(p11, sessionId, pk)
+                    && (passwordManager.isCachingPIN()
+                    || !isProtectedAuthenticationPath(p11, slotId, getSlotListIndex()))) {
                 var password = passwordManager.getContextSpecificPassword();
                 if (password == null) throw new PasswordNotProvidedException();
                 invokeCLogin(p11, sessionId, CKU_CONTEXT_SPECIFIC, password);

@@ -20,7 +20,7 @@ public class PKCS11TokenDriver extends TokenDriver {
 
     public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
         Pkcs11TokenSlots.finalizeOnExit(getPath().toString());
-        return new NativePkcs11SignatureToken(getPath().toString(), pm, settings, settings.getDriverSlotIndex(getShortname()));
+        return new NativePkcs11SignatureToken(getPath().toString(), pm, settings.getDriverSlotIndex(getShortname()));
     }
 
     @Override
@@ -31,9 +31,9 @@ public class PKCS11TokenDriver extends TokenDriver {
         Logging.log("Using " + slot + " of " + getPath());
         Pkcs11TokenSlots.finalizeOnExit(getPath().toString());
         if (slot.slotId() <= Integer.MAX_VALUE)
-            return new NativePkcs11SignatureToken(getPath().toString(), pm, settings, (int) slot.slotId(), -1);
+            return new NativePkcs11SignatureToken(getPath().toString(), pm, (int) slot.slotId(), -1);
 
-        return new NativePkcs11SignatureToken(getPath().toString(), pm, settings, -1, slot.slotListIndex());
+        return new NativePkcs11SignatureToken(getPath().toString(), pm, -1, slot.slotListIndex());
     }
 
     @Override
