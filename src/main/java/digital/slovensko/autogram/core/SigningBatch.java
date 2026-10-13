@@ -7,7 +7,13 @@ import digital.slovensko.autogram.core.errors.BatchConflictException;
 import digital.slovensko.autogram.core.errors.BatchTooManyDocumentsException;
 import digital.slovensko.autogram.util.Logging;
 
-import java.util.Date;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.ALREADY_ENDED;
@@ -20,26 +26,43 @@ enum BatchState {
 
 /**
  * A session for signing multiple documents with one key or interactively.
- * 
+ *
  * This class is used for checking runtime conditions and tracking progress.
  * Documents of one batch can be signed and counted from several threads (HTTP, FX and workers).
  */
 public class SigningBatch implements Batch {
+    /** Bulk: the client sends the first document right after it gets the batch ID. */
+    static final Duration BULK_FIRST_DOCUMENT_TIMEOUT = Duration.ofMinutes(5);
+    /** Bulk: nobody looks at the documents, so a long pause between them means the client is gone. */
+    static final Duration BULK_IDLE_TIMEOUT = Duration.ofMinutes(1);
+    /** Interactive: a client that went away (e.g. a closed browser tab) must not block Autogram forever. */
+    static final Duration INTERACTIVE_IDLE_TIMEOUT = Duration.ofMinutes(10);
+
     private final String batchId = generateNewBatchId();
     private final int totalNumberOfDocuments;
+    private final Clock clock;
 
     private BatchState state = BatchState.INITIALIZED;
+    /** Ended because it expired, so the client keeps getting BATCH_EXPIRED. */
+    private boolean expired = false;
     private SigningKey signingKey = null;
     private SigningMode mode = SigningMode.BULK;
 
-    private Date expirationDate;
+    /** Documents added to the batch that didn't get a result yet. */
+    private final Set<SigningJob> pendingJobs = new LinkedHashSet<>();
+    /** Start of the batch or the last added or finished document, null before start. */
+    private Instant lastActivity;
     private int addedDocumentsCount = 0;
     private int successfulDocumentsCount = 0;
     private int failedDocumentsCount = 0;
 
     public SigningBatch(int totalNumberOfDocuments) {
+        this(totalNumberOfDocuments, Clock.systemUTC());
+    }
+
+    SigningBatch(int totalNumberOfDocuments, Clock clock) {
         this.totalNumberOfDocuments = totalNumberOfDocuments;
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 5); // 5 minutes
+        this.clock = clock;
     }
 
     public synchronized void start(SigningKey key) {
@@ -47,13 +70,13 @@ public class SigningBatch implements Batch {
             throw new BatchEndedException(CANNOT_RESTART);
         state = BatchState.STARTED;
         signingKey = key;
+        lastActivity = clock.instant();
     }
 
     public synchronized void setMode(SigningMode mode) {
         if (state != BatchState.INITIALIZED)
             throw new IllegalStateException("Signing mode must be selected before batch start");
         this.mode = mode;
-        if (isInteractive()) expirationDate = null;
     }
 
     public synchronized boolean isInteractive() {
@@ -73,34 +96,64 @@ public class SigningBatch implements Batch {
         return isEnded() || isAllProcessed();
     }
 
-    public synchronized void addJob(String batchId) {
+    public synchronized void addJob(String batchId, SigningJob job) {
         validate(batchId);
         if (this.totalNumberOfDocuments <= this.addedDocumentsCount)
             throw new BatchTooManyDocumentsException();
 
-        resetExpirationDate();
         addedDocumentsCount++;
+        pendingJobs.add(job);
+        lastActivity = clock.instant();
     }
 
-    public synchronized void success() {
+    public synchronized void success(SigningJob job) {
         successfulDocumentsCount++;
+        jobFinished(job);
         Logging.log("Batch " + batchId + " success");
         log();
     }
 
-    public synchronized void failure() {
+    public synchronized void failure(SigningJob job) {
         failedDocumentsCount++;
+        jobFinished(job);
         Logging.log("Batch " + batchId + " failed");
         log();
     }
 
-    public synchronized void end() {
+    public synchronized void failure() {
+        failure(null);
+    }
+
+    private void jobFinished(SigningJob job) {
+        if (job != null)
+            pendingJobs.remove(job);
+        if (lastActivity != null)
+            lastActivity = clock.instant();
+    }
+
+    public synchronized List<SigningJob> end() {
+        return end(false);
+    }
+
+    public synchronized List<SigningJob> expire() {
+        return end(true);
+    }
+
+    private List<SigningJob> end(boolean expired) {
+        if (state != BatchState.ENDED)
+            this.expired = expired;
         state = BatchState.ENDED;
+        var unfinished = new ArrayList<>(pendingJobs);
+        pendingJobs.clear();
+        return unfinished;
     }
 
     private void validateInternal() {
         if (state == BatchState.INITIALIZED)
             throw new BatchEndedException(NOT_STARTED);
+
+        if (state == BatchState.ENDED && expired)
+            throw new BatchExpiredException();
 
         if (state == BatchState.ENDED)
             throw new BatchEndedException(ALREADY_ENDED);
@@ -114,6 +167,14 @@ public class SigningBatch implements Batch {
         validateInternal();
 
         if (!this.batchId.equals(batchId)) throw new BatchInvalidIdException();
+    }
+
+    public synchronized void validateId(String batchId) {
+        // the ID of a batch that hasn't started wasn't given to anyone yet
+        if (!this.batchId.equals(batchId)) throw new BatchInvalidIdException();
+
+        if (state == BatchState.INITIALIZED)
+            throw new BatchEndedException(NOT_STARTED);
     }
 
     // public getters
@@ -148,19 +209,27 @@ public class SigningBatch implements Batch {
         return signingKey;
     }
 
+    /**
+     * A started batch expires after a pause with no document in progress, e.g. when the client went away. It never
+     * expires while a document waits for the user (a signing window, a PIN dialog).
+     */
+    public synchronized boolean isExpired() {
+        if (state != BatchState.STARTED || !pendingJobs.isEmpty())
+            return false;
+
+        return clock.instant().isAfter(lastActivity.plus(getIdleTimeout()));
+    }
+
+    private Duration getIdleTimeout() {
+        if (isInteractive())
+            return INTERACTIVE_IDLE_TIMEOUT;
+
+        return addedDocumentsCount == 0 ? BULK_FIRST_DOCUMENT_TIMEOUT : BULK_IDLE_TIMEOUT;
+    }
+
     // private
     private static String generateNewBatchId() {
         return UUID.randomUUID().toString();
-    }
-
-    synchronized boolean isExpired() {
-        if (isInteractive()) return false;
-        return expirationDate.before(new Date());
-    }
-
-    private void resetExpirationDate() {
-        if (!isInteractive())
-            expirationDate = new Date(System.currentTimeMillis() + 1000 * 60); // 1 minute
     }
 
     public synchronized void log() {

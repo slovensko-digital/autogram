@@ -52,15 +52,11 @@ class InteractiveBatchTest {
     }
 
     @Test
-    void modeIsSelectedBeforeStartingAndInteractiveDoesNotExpire() throws Exception {
+    void modeIsSelectedBeforeStarting() {
         var batch = new SigningBatch(2);
         assertFalse(batch.isInteractive());
         batch.setMode(SigningMode.INTERACTIVE);
         batch.start(null);
-        var expiration = SigningBatch.class.getDeclaredField("expirationDate");
-        expiration.setAccessible(true);
-        expiration.set(batch, new java.util.Date(0));
-        assertFalse(batch.isExpired());
         batch.validate(batch.getBatchId());
         assertThrows(IllegalStateException.class, () -> batch.setMode(SigningMode.BULK));
         assertFalse(new NoBatch().isPresent());

@@ -2,6 +2,8 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 
+import java.util.List;
+
 /** The state before the first batch has been created. */
 public final class NoBatch implements Batch {
     @Override
@@ -34,12 +36,17 @@ public final class NoBatch implements Batch {
     }
 
     @Override
-    public void addJob(String batchId) {
+    public void addJob(String batchId, SigningJob job) {
         throw new BatchNotStartedException();
     }
 
     @Override
-    public void success() {
+    public void success(SigningJob job) {
+        throw new BatchNotStartedException();
+    }
+
+    @Override
+    public void failure(SigningJob job) {
         throw new BatchNotStartedException();
     }
 
@@ -49,7 +56,12 @@ public final class NoBatch implements Batch {
     }
 
     @Override
-    public void end() {
+    public List<SigningJob> end() {
+        throw new BatchNotStartedException();
+    }
+
+    @Override
+    public List<SigningJob> expire() {
         throw new BatchNotStartedException();
     }
 
@@ -61,6 +73,16 @@ public final class NoBatch implements Batch {
     @Override
     public void validate(String batchId) {
         throw new BatchNotStartedException();
+    }
+
+    @Override
+    public void validateId(String batchId) {
+        throw new BatchNotStartedException();
+    }
+
+    @Override
+    public boolean isExpired() {
+        return false;
     }
 
     @Override

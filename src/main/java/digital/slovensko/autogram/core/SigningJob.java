@@ -126,7 +126,7 @@ public class SigningJob {
         if (!resultDelivered.compareAndSet(false, true))
             return false;
         if (batch.isPresent())
-            batch.success();
+            batch.success(this);
         responder.onDocumentSigned(signedDocument);
         return true;
     }
@@ -135,7 +135,7 @@ public class SigningJob {
         if (!resultDelivered.compareAndSet(false, true))
             return false;
         if (batch.isPresent())
-            batch.failure();
+            batch.failure(this);
         responder.onDocumentSignFailed(error);
         return true;
     }

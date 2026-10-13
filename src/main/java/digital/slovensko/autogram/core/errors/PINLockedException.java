@@ -5,5 +5,9 @@ public class PINLockedException extends AutogramException {
         super();
     }
 
-
+    /** Nothing more can be signed with the card, the rest of the batch would only fail on it again. */
+    @Override
+    public boolean batchCanContinue() {
+        return false;
+    }
 }

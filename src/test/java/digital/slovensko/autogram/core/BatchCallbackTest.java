@@ -124,7 +124,7 @@ class BatchCallbackTest {
 
         autogram.updateBatch(batch);
         assertFalse(batch.isEnded());
-        batch.success();
+        batch.success(null);
         autogram.updateBatch(batch);
         autogram.updateBatch(batch);
 

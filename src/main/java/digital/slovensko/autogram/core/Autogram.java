@@ -3,6 +3,8 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
+import digital.slovensko.autogram.core.errors.BatchEndedException;
+import digital.slovensko.autogram.core.errors.BatchExpiredException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -20,6 +22,8 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
 
 import java.io.File;
+import java.time.Clock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,7 +31,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 
+import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.ALREADY_ENDED;
+
 public class Autogram {
+    private static final long BATCH_EXPIRY_CHECK_MILLIS = 5_000;
+
     private final UI ui;
     private final UserSettings settings;
     /** Current batch, or NoBatch before the first batch starts. Replaced only under the Autogram lock. */
@@ -38,6 +46,7 @@ public class Autogram {
     private final Object signingLock = new Object();
     private final PasswordManager passwordManager;
     private Timer tokenSessionTimer = null;
+    private Clock clock = Clock.systemUTC();
 
     public Autogram(UI ui, UserSettings settings) {
         this.ui = ui;
@@ -52,7 +61,7 @@ public class Autogram {
 
     public void cancelSigning(SigningJob job) {
         if (job.isPartOfBatch()) {
-            finishBatch(job.getBatch());
+            finishBatch(job.getBatch(), new SigningCanceledByUserException());
         }
         job.onJobCanceled();
     }
@@ -67,7 +76,7 @@ public class Autogram {
     }
 
     public void skipRemainingDocuments(SigningJob job) {
-        finishBatch(job.getBatch());
+        finishBatch(job.getBatch(), new SigningCanceledByUserException());
         job.onJobSkipRemainingDocuments();
         ui.onUIThreadDo(() -> ui.closeSigningJob(job));
     }
@@ -179,6 +188,10 @@ public class Autogram {
     }
 
     private SignedDocument signWithKey(SigningJob job, SigningKey signingKey) {
+        // The batch may have ended while this document waited, e.g. for another one's PIN.
+        if (job.isPartOfBatch() && job.getBatch().isEnded())
+            throw new BatchEndedException(ALREADY_ENDED);
+
         var previousBatch = passwordManager.setBatchContext(job.getBatch());
         passwordManager.startSigningAttempt();
         try {
@@ -205,6 +218,7 @@ public class Autogram {
 
     public void sign(SigningJob job, SigningKey signingKey) {
         // Documents outside a running batch wait until it ends; the UI keeps them disabled meanwhile.
+        expireBatchIfNeeded();
         if (!job.isPartOfBatch() && hasActiveBatch()) {
             onSigningFailed(new BatchConflictException());
             return;
@@ -242,8 +256,11 @@ public class Autogram {
             return;
         }
 
-        if (!error.batchCanContinue()) finishBatch(job.getBatch());
-        if (job.onJobSignFailed(error))
+        var delivered = error.batchCanContinue()
+                ? job.onJobSignFailed(error)
+                // other documents of the batch end with the same error, this one included
+                : endBatch(job.getBatch(), error).contains(job) || job.onJobSignFailed(error);
+        if (delivered)
             ui.onUIThreadDo(() -> ui.onSigningFailed(error, job));
         else
             ui.onUIThreadDo(ui::enableSigningOnAllJobs);
@@ -256,7 +273,8 @@ public class Autogram {
      * @param responder              - callback for http response
      */
     public void startBatchSigning(int totalNumberOfDocuments, BatchResponder responder) {
-        var selectedBatch = new SigningBatch(totalNumberOfDocuments);
+        var selectedBatch = new SigningBatch(totalNumberOfDocuments, clock);
+        expireBatchIfNeeded();
         synchronized (this) {
             batch.ensureCanStartNewBatch();
             batch = selectedBatch;
@@ -271,10 +289,12 @@ public class Autogram {
                     selectedBatch.start(null);
                 }
             }
-            if (selectedBatch.isInteractive())
+            if (selectedBatch.isInteractive()) {
+                watchBatchExpiry(selectedBatch);
                 responder.onBatchStartSuccess(selectedBatch);
-            else
+            } else {
                 ui.startBatch(selectedBatch, this);
+            }
         }, () -> cancelBatch(selectedBatch)));
     }
 
@@ -304,6 +324,7 @@ public class Autogram {
             return;
         }
 
+        watchBatchExpiry(batch);
         responder.onBatchStartSuccess(batch);
     }
 
@@ -312,7 +333,7 @@ public class Autogram {
             return;
 
         var responder = takePendingBatchResponder(batch);
-        finishBatch(batch);
+        finishBatch(batch, new SigningCanceledByUserException());
         if (responder != null)
             responder.onBatchStartFailure(new BatchCanceledException());
     }
@@ -324,14 +345,68 @@ public class Autogram {
     }
 
     public void finishBatch(Batch batch) {
+        finishBatch(batch, new BatchEndedException(ALREADY_ENDED));
+    }
+
+    /**
+     * Ends the batch. Its documents without a result yet get this one and their windows close, so nothing more is
+     * signed in it.
+     */
+    public void finishBatch(Batch batch, AutogramException resultOfUnfinishedDocuments) {
+        endBatch(batch, resultOfUnfinishedDocuments);
+    }
+
+    /** @return documents that got the result from here */
+    private List<SigningJob> endBatch(Batch batch, AutogramException resultOfUnfinishedDocuments) {
+        List<SigningJob> unfinished;
         synchronized (this) {
             if (this.batch != batch || batch.isEnded())
-                return;
+                return List.of();
 
-            batch.end();
+            unfinished = resultOfUnfinishedDocuments instanceof BatchExpiredException ? batch.expire() : batch.end();
+        }
+
+        var delivered = new ArrayList<SigningJob>();
+        for (var job : unfinished) {
+            try {
+                if (job.onJobSignFailed(resultOfUnfinishedDocuments))
+                    delivered.add(job);
+            } catch (Exception e) {
+                // counted already, e.g. the client went away; the rest still gets its result
+                delivered.add(job);
+                Logging.log("Unable to deliver the end of batch for " + job.getName() + ": " + e);
+            }
+            ui.onUIThreadDo(() -> ui.closeSigningJob(job));
         }
         passwordManager.reset();
         ui.onUIThreadDo(ui::closeBatch);
+        return delivered;
+    }
+
+    /** Ends the current batch when it's expired, e.g. the client went away. */
+    void expireBatchIfNeeded() {
+        var currentBatch = batch;
+        if (currentBatch.isExpired())
+            finishBatch(currentBatch, new BatchExpiredException());
+    }
+
+    /** Ends the batch once it expires, so its window closes and other signing isn't blocked. */
+    private void watchBatchExpiry(Batch watchedBatch) {
+        var timer = new Timer("batch-expiry", true);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (batch != watchedBatch || watchedBatch.isEnded()) {
+                    timer.cancel();
+                    return;
+                }
+                expireBatchIfNeeded();
+            }
+        }, BATCH_EXPIRY_CHECK_MILLIS, BATCH_EXPIRY_CHECK_MILLIS);
+    }
+
+    void setClock(Clock clock) {
+        this.clock = clock;
     }
 
     public void updateBatch(Batch batch) {
@@ -357,7 +432,12 @@ public class Autogram {
         var currentBatch = batch;
         if (currentBatch.isPresent() && job.getBatch() != currentBatch)
             throw new BatchConflictException();
-        currentBatch.addJob(batchId);
+        try {
+            currentBatch.addJob(batchId, job);
+        } catch (BatchExpiredException e) {
+            finishBatch(currentBatch, e);
+            throw e;
+        }
         if (job.getBatch().isInteractive()) {
             startSigning(job);
             return;
@@ -365,9 +445,10 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 signCommonAndThen(job, job.getBatch().getSigningKey(), signedJob -> {}, error -> {
-                    if (!error.batchCanContinue())
-                        finishBatch(job.getBatch());
-                    job.onJobSignFailed(error);
+                    // e.g. a locked PIN or the PIN dialog closed by the user: the batch ends before the client
+                    // learns about it, and the rest gets the same error
+                    if (error.batchCanContinue() || !endBatch(job.getBatch(), error).contains(job))
+                        job.onJobSignFailed(error);
                 });
             } finally {
                 // Runs even when the responder fails, so a fully processed batch always ends.
@@ -384,7 +465,8 @@ public class Autogram {
      */
     public boolean endBatchSigning(String batchId) {
         var currentBatch = batch;
-        currentBatch.validate(batchId);
+        // also a batch that ended on its own (all documents processed, expired), so the client learns how it went
+        currentBatch.validateId(batchId);
         finishBatch(currentBatch);
         return currentBatch.isAllProcessed();
     }
