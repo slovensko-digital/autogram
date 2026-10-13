@@ -11,6 +11,7 @@ import digital.slovensko.autogram.core.errors.BatchTooManyDocumentsException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PINLockedException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
+import digital.slovensko.autogram.core.errors.PdfPasswordProtectedException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.server.ErrorResponseBuilder;
@@ -120,6 +121,72 @@ class InteractiveBatchTest {
         verify(responder).onBatchStartSuccess(captured.capture());
         assertTrue(captured.getValue().isInteractive());
         assertNull(captured.getValue().getSigningKey());
+    }
+
+    @Test
+    void interactiveGuiBatchRecordsAnUnreadableFileAndGoesOn(@TempDir Path directory) throws Exception {
+        var first = Files.writeString(directory.resolve("first.txt"), "first").toFile();
+        var locked = Files.write(directory.resolve("locked.pdf"), AutogramTests.createPasswordProtectedPdf()).toFile();
+        var third = Files.writeString(directory.resolve("third.txt"), "third").toFile();
+        var shown = new ArrayList<SigningJob>();
+        var result = new AtomicReference<BatchUiResult>();
+        var ui = new InteractiveUI() {
+            @Override
+            public void startSigning(SigningJob job, Autogram autogram) {
+                shown.add(job);
+            }
+
+            @Override
+            public void onDocumentBatchSaved(BatchUiResult saved) {
+                result.set(saved);
+            }
+        };
+        var autogram = TestAutogramFactory.create(ui);
+        var params = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
+                null, null, null, false, null, null, null, false, 640, true);
+        autogram.startBatchSigning(3, new BatchGuiFileResponder(autogram, List.of(first, locked, third),
+                directory.resolve("signed"), params, EFormAttributes.build(params, true), false));
+
+        autogram.skipCurrentDocument(shown.get(0));
+        assertEquals(2, shown.size(), "the locked file is skipped over, the next one is shown");
+        assertEquals("third.txt", shown.get(1).getName());
+        autogram.skipCurrentDocument(shown.get(1));
+
+        assertTrue(shown.get(1).getBatch().isEnded());
+        assertNotNull(result.get());
+        assertInstanceOf(PdfPasswordProtectedException.class, result.get().getErrorsMap().get(locked));
+    }
+
+    @Test
+    void bulkGuiBatchRecordsAnUnreadableFileAndGoesOn(@TempDir Path directory) throws Exception {
+        var first = Files.writeString(directory.resolve("first.txt"), "first").toFile();
+        var locked = Files.write(directory.resolve("locked.pdf"), AutogramTests.createPasswordProtectedPdf()).toFile();
+        var third = Files.writeString(directory.resolve("third.txt"), "third").toFile();
+        var batchRef = new AtomicReference<Batch>();
+        var result = new AtomicReference<BatchUiResult>();
+        var ui = new TestAutogramFactory.FakeUI() {
+            @Override
+            public void startBatch(Batch batch, Autogram autogram) {
+                batchRef.set(batch);
+            }
+
+            @Override
+            public void onDocumentBatchSaved(BatchUiResult saved) {
+                result.set(saved);
+            }
+        };
+        var autogram = TestAutogramFactory.create(ui);
+        var params = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
+                null, null, null, false, null, null, null, false, 640, true);
+        autogram.startBatchSigning(3, new BatchGuiFileResponder(autogram, List.of(first, locked, third),
+                directory.resolve("signed"), params, EFormAttributes.build(params, true), false));
+        // the key can't sign, so every other file fails too - each still gets its result
+        autogram.signBatchWithKey(batchRef.get(), mock(SigningKey.class));
+
+        assertTrue(batchRef.get().isEnded());
+        assertNotNull(result.get());
+        assertInstanceOf(PdfPasswordProtectedException.class, result.get().getErrorsMap().get(locked));
+        assertEquals(3, result.get().getErrorsMap().size());
     }
 
     @Test

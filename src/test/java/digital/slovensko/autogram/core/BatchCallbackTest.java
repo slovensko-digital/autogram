@@ -1,8 +1,8 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.TestAutogramFactory;
-import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
 import digital.slovensko.autogram.core.errors.BatchNotStartedException;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -81,12 +81,18 @@ class BatchCallbackTest {
     }
 
     @Test
-    void failedStartResponseIsNotReportedAsFailedBatchStart() {
+    void failedStartResponseEndsTheBatchWithoutReportingFailedStart() {
         var batchRef = new AtomicReference<Batch>();
+        var shownError = new AtomicReference<AutogramException>();
         var ui = new TestAutogramFactory.FakeUI() {
             @Override
             public void startBatch(Batch batch, Autogram autogram) {
                 batchRef.set(batch);
+            }
+
+            @Override
+            public void onSigningFailed(AutogramException e) {
+                shownError.set(e);
             }
         };
         var autogram = TestAutogramFactory.create(ui);
@@ -95,10 +101,11 @@ class BatchCallbackTest {
         var batch = batchRef.get();
         doThrow(new IllegalStateException("response failed")).when(responder).onBatchStartSuccess(batch);
 
-        assertThrows(IllegalStateException.class,
-                () -> autogram.signBatchWithKey(batch, mock(SigningKey.class)));
+        // nobody would use the batch, so it ends instead of blocking other signing
+        assertDoesNotThrow(() -> autogram.signBatchWithKey(batch, mock(SigningKey.class)));
 
-        assertFalse(batch.isEnded());
+        assertTrue(batch.isEnded());
+        assertNotNull(shownError.get());
         verify(responder, never()).onBatchStartFailure(any());
     }
 

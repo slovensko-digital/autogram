@@ -2,9 +2,12 @@ package digital.slovensko.autogram.ui.gui;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
@@ -16,21 +19,30 @@ import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.SaveFileFromBatchResponder;
 import digital.slovensko.autogram.util.Logging;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.FileDocument;
 
+/**
+ * Signs files picked in the GUI as a batch. Every file gets exactly one result, a signed file or an error, also when
+ * it can't be read or the batch ends before it - the result dialog shows once all files have one.
+ */
 public class BatchGuiFileResponder extends BatchResponder {
     private final Autogram autogram;
     private final List<File> list;
-    private final Map<File, File> targetFiles = new HashMap<>();
-    private final Map<File, AutogramException> errors = new HashMap<>();
-    private boolean uiNotifiedOnAllFilesSigned = false;
     private final TargetPath targetPath;
     private final SigningParameters signingParameters;
     private final EFormAttributes eFormAttributes;
+    // results come from several threads (FX, signing workers)
+    private final Map<File, File> targetFiles = Collections.synchronizedMap(new HashMap<>());
+    private final Map<File, AutogramException> errors = Collections.synchronizedMap(new HashMap<>());
+    private final Set<File> filesWithResult = new HashSet<>(); // guarded by this
+    private boolean uiNotifiedOnAllFilesSigned = false; // guarded by this
 
     public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, SigningParameters signingParameters, EFormAttributes eFormAttributes, boolean signPDFAsPades) {
         this.autogram = autogram;
@@ -42,102 +54,124 @@ public class BatchGuiFileResponder extends BatchResponder {
 
     @Override
     public void onBatchStartSuccess(Batch batch) {
+        for (var file : list) {
+            targetFiles.put(file, null);
+            errors.put(file, null);
+        }
+
         try {
             targetPath.mkdirIfDir();
         } catch (AutogramException e) {
+            // nothing could be saved, so nothing is signed
+            autogram.finishBatch(batch, e);
             autogram.onSigningFailed(e);
-            throw e;
+            return;
         }
 
         if (batch.isInteractive()) {
-            submitNextInteractive(autogram, batch, list, 0, targetPath, signingParameters, eFormAttributes,
-                    targetFiles, errors, () -> onAllFilesSigned(batch));
+            submitInteractive(batch, 0);
             return;
         }
 
-        for (File file : list) {
-            try {
-                targetFiles.put(file, null);
-                errors.put(file, null);
-                var responder = new SaveFileFromBatchResponder(file, targetPath, (File targetFile) -> {
-                    targetFiles.put(file, targetFile);
-                    Logging.log(batch.getProcessedDocumentsCount() + " / " + batch.getTotalNumberOfDocuments() + " signed " + file.toString());
-                    onAllFilesSigned(batch);
-                }, (AutogramException error) -> {
-                    Logging.log("Signing failed " + file.toString() + " all:" + batch.isAllProcessed());
-                    errors.put(file, error);
-                    onAllFilesSigned(batch);
-                });
+        for (var file : list)
+            submit(batch, file, null);
+    }
 
-                var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes), signingParameters);
-                var job = SigningJob.fromInput(input, responder, batch);
-                autogram.batchSign(job, batch.getBatchId());
-            } catch (AutogramException e) {
-                autogram.onSigningFailed(e);
-
-                break;
+    /** Shows the files one at a time, the next one once the previous got its result. */
+    private void submitInteractive(Batch batch, int index) {
+        for (var i = index; i < list.size(); i++) {
+            var file = list.get(i);
+            if (batch.isEnded()) {
+                // skipped or canceled by the user, or a fatal error ended the batch
+                autogram.recordBatchSubmissionFailure(batch);
+                onFileResult(file, null, new SigningCanceledByUserException(), null);
+                continue;
             }
+
+            var next = i + 1;
+            if (submit(batch, file, () -> submitInteractive(batch, next)))
+                return;
         }
     }
 
-    private static void submitNextInteractive(Autogram autogram, Batch batch, List<File> files, int index,
-            TargetPath targetPath, SigningParameters signingParameters, EFormAttributes eFormAttributes,
-            Map<File, File> targetFiles, Map<File, AutogramException> errors, Runnable onCompleted) {
-        if (batch.isEnded()) {
-            for (var remaining = index; remaining < files.size(); remaining++) {
-                var file = files.get(remaining);
-                targetFiles.put(file, null);
-                errors.put(file, new SigningCanceledByUserException());
-                autogram.recordBatchSubmissionFailure(batch);
-            }
-            onCompleted.run();
-            return;
-        }
-        if (index == files.size()) {
-            onCompleted.run();
-            return;
-        }
-
-        var file = files.get(index);
-        targetFiles.put(file, null);
-        errors.put(file, null);
+    /**
+     * @param afterResult runs once the file got its result
+     * @return true if the file was handed to the batch, false if it failed right away
+     */
+    private boolean submit(Batch batch, File file, Runnable afterResult) {
+        SigningJob job;
         try {
             var responder = new SaveFileFromBatchResponder(file, targetPath,
-                    target -> {
-                        targetFiles.put(file, target);
-                        submitNextInteractive(autogram, batch, files, index + 1, targetPath, signingParameters,
-                                eFormAttributes, targetFiles, errors, onCompleted);
-                    }, error -> {
-                        errors.put(file, error);
-                        submitNextInteractive(autogram, batch, files, index + 1, targetPath, signingParameters,
-                                eFormAttributes, targetFiles, errors, onCompleted);
-                    });
-            var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes),
-                    signingParameters);
-            autogram.batchSign(SigningJob.fromInput(input, responder, batch), batch.getBatchId());
-        } catch (AutogramException e) {
-            if (errors.get(file) != null || targetFiles.get(file) != null)
-                throw e;
-            errors.put(file, e);
+                    target -> onFileResult(file, target, null, afterResult),
+                    error -> onFileResult(file, null, error, afterResult));
+            var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), eFormAttributes), signingParameters);
+            job = SigningJob.fromInput(input, responder, batch);
+        } catch (Exception e) {
+            // e.g. a password protected PDF or a broken container
+            var error = toAutogramException(e);
+            Logging.log("Unable to prepare " + file + " for signing: " + error);
             autogram.recordBatchSubmissionFailure(batch);
-            if (!e.batchCanContinue()) autogram.finishBatch(batch);
-            submitNextInteractive(autogram, batch, files, index + 1, targetPath, signingParameters,
-                    eFormAttributes, targetFiles, errors, onCompleted);
+            if (!error.batchCanContinue())
+                autogram.finishBatch(batch, error);
+            onFileResult(file, null, error, null);
+            return false;
+        }
+
+        try {
+            autogram.batchSign(job, batch.getBatchId());
+            return true;
+        } catch (Exception e) {
+            // e.g. the batch ended or expired meanwhile; the result goes through the responder above
+            if (!job.onJobSignFailed(toAutogramException(e)))
+                Logging.log("Signing " + file + " failed after its result: " + e);
+            return afterResult != null;
         }
     }
 
-    private void onAllFilesSigned(Batch batch) { // synchronized
-        Logging.log("onAllFilesSigned " + batch.isAllProcessed() + " " + uiNotifiedOnAllFilesSigned);
-        if (batch.isAllProcessed() && !uiNotifiedOnAllFilesSigned) {
-            uiNotifiedOnAllFilesSigned = true;
-            Logging.log(errors.values().stream().map(e -> e == null ? "" : e.toString()).toList());
-            var result = new BatchUiResult(targetPath, targetFiles, errors);
-            autogram.onDocumentBatchSaved(result);
+    private void onFileResult(File file, File target, AutogramException error, Runnable afterResult) {
+        targetFiles.put(file, target);
+        errors.put(file, error);
+        Logging.log(error == null ? "Signed " + file : "Signing failed " + file + ": " + error);
+        synchronized (this) {
+            filesWithResult.add(file);
         }
+
+        if (afterResult != null)
+            afterResult.run();
+
+        notifyUiOnceAllFilesHaveResult();
+    }
+
+    private void notifyUiOnceAllFilesHaveResult() {
+        BatchUiResult result;
+        synchronized (this) {
+            if (uiNotifiedOnAllFilesSigned || filesWithResult.size() < list.size())
+                return;
+
+            uiNotifiedOnAllFilesSigned = true;
+            synchronized (targetFiles) {
+                synchronized (errors) {
+                    result = new BatchUiResult(targetPath, new HashMap<>(targetFiles), new HashMap<>(errors));
+                }
+            }
+        }
+        autogram.onDocumentBatchSaved(result);
+    }
+
+    private static AutogramException toAutogramException(Exception e) {
+        if (e instanceof AutogramException autogramException)
+            return autogramException;
+        if (e instanceof DSSException dssException)
+            return AutogramException.createFromDSSException(dssException);
+        return new UnrecognizedException(e);
     }
 
     @Override
     public void onBatchStartFailure(AutogramException error) {
+        // the user closed the mode picker or the batch window, nothing to tell them
+        if (error instanceof BatchCanceledException)
+            return;
+
         autogram.onSigningFailed(error);
     }
 }

@@ -12,6 +12,7 @@ import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.EFormUtils;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.PdfPasswordProtectedException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.PDFAComplianceException;
@@ -242,24 +243,13 @@ class AutogramTests {
     }
 
     @Test
-    void testStartVisualizationThrowsWhenLaterBundleDocumentIsLockedPdf() throws IOException {
-        var newUI = new TestAutogramFactory.FakeUI() {
-            @Override
-            public void showSigningJob(SigningJob job, Autogram autogram) {
-                Assertions.fail("Visualization should not start for a bundle containing a locked PDF");
-            }
+    void testBundleWithLaterLockedPdfIsRejected() throws IOException {
+        var first = createTextDocument("first.txt", "first");
+        var locked = AutogramDocument.build(new InMemoryDocument(createPasswordProtectedPdf(), "locked.pdf", MimeTypeEnum.PDF), null);
 
-            @Override
-            public void showError(AutogramException exception) {
-                throw exception;
-            }
-        };
-        var autogram = TestAutogramFactory.create(newUI);
-        var job = createMultiDocumentJob(false,
-                createTextDocument("first.txt", "first"),
-            AutogramDocument.build(new InMemoryDocument(createPasswordProtectedPdf(), "locked.pdf", MimeTypeEnum.PDF), null));
-
-        var exception = Assertions.assertThrows(AutogramException.class, () -> autogram.startVisualization(job));
+        // rejected already when preparing the input, before it gets to visualization or signing
+        var exception = Assertions.assertThrows(PdfPasswordProtectedException.class,
+                () -> createMultiDocumentJob(false, first, locked));
 
         Assertions.assertEquals("The document is password protected",
                 exception.getSubheading(SupportedLanguage.ENGLISH.loadResources()));
@@ -513,7 +503,7 @@ class AutogramTests {
             new InMemoryDocument(TestMethodSources.loadContent(resourceName), resourceName, mimeType), null);
     }
 
-    private static byte[] createPasswordProtectedPdf() throws IOException {
+    static byte[] createPasswordProtectedPdf() throws IOException {
         try (var document = new PDDocument(); var outputStream = new ByteArrayOutputStream()) {
             document.addPage(new PDPage());
 

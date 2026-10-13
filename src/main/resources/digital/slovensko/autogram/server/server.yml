@@ -225,6 +225,7 @@ paths:
                     enum:
                       - UNPROCESSABLE_INPUT
                       - UNSUPPORTED_SIGNATURE_LEVEL
+                      - LOCKED_PDF
                     example: UNPROCESSABLE_INPUT
                     description: Code that can be used to identify the error.
                   message:
@@ -674,6 +675,7 @@ paths:
                     enum:
                       - UNPROCESSABLE_INPUT
                       - UNSUPPORTED_SIGNATURE_LEVEL
+                      - LOCKED_PDF
                     example: UNPROCESSABLE_INPUT
                     description: Code that can be used to identify the error.
                   message:

@@ -10,6 +10,7 @@ import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
+import digital.slovensko.autogram.core.errors.PdfPasswordProtectedException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
@@ -124,7 +125,7 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             if (job.getDocuments().stream().anyMatch(d -> d.isPDFAndPasswordProtected())) {
                 ui.onUIThreadDo(() -> {
-                    ui.showError(new AutogramException("LOCKED_PDF"));
+                    ui.showError(new PdfPasswordProtectedException());
                 });
                 return;
             }
@@ -291,7 +292,7 @@ public class Autogram {
             }
             if (selectedBatch.isInteractive()) {
                 watchBatchExpiry(selectedBatch);
-                responder.onBatchStartSuccess(selectedBatch);
+                notifyBatchStarted(selectedBatch, responder);
             } else {
                 ui.startBatch(selectedBatch, this);
             }
@@ -325,7 +326,19 @@ public class Autogram {
         }
 
         watchBatchExpiry(batch);
-        responder.onBatchStartSuccess(batch);
+        notifyBatchStarted(batch, responder);
+    }
+
+    /** A failure there would leave the batch running with nobody to use it, so it ends the batch. */
+    private void notifyBatchStarted(Batch batch, BatchResponder responder) {
+        try {
+            responder.onBatchStartSuccess(batch);
+        } catch (Exception e) {
+            var error = e instanceof AutogramException autogramException ? autogramException
+                    : new AutogramException("BATCH_START_FAILED", e, e);
+            finishBatch(batch, error);
+            onSigningFailed(error);
+        }
     }
 
     public void cancelBatch(Batch batch) {
