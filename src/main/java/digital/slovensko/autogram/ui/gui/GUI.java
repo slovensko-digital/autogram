@@ -498,7 +498,8 @@ public class GUI implements UI {
         } else {
             controller = new BatchSigningSuccessDialogController(result, hostServices);
             root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
-            stage.setTitle(((BatchSigningSuccessDialogController) controller).i18n("batchSigning.success.title"));
+            var title = result.getSkippedCount() > 0 ? "batchSigning.finished.title" : "batchSigning.success.title";
+            stage.setTitle(((BatchSigningSuccessDialogController) controller).i18n(title));
         }
         stage.setScene(new Scene(root));
         stage.setResizable(false);

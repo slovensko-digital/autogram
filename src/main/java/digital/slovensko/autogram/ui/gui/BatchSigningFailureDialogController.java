@@ -14,6 +14,7 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 public class BatchSigningFailureDialogController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
@@ -42,6 +43,15 @@ public class BatchSigningFailureDialogController extends BaseController implemen
     @FXML
     Text failureCount;
 
+    @FXML
+    TextFlow skippedCountFlow;
+
+    @FXML
+    Text skippedCount;
+
+    @FXML
+    TextFlow folderFlow;
+
     private BooleanProperty errorDetailsVisible = new SimpleBooleanProperty(false);
 
     private static final int LIST_CELL_HEIGHT = 24;
@@ -66,6 +76,12 @@ public class BatchSigningFailureDialogController extends BaseController implemen
         bindErrorListHeightToContent();
         errorListHeading.setText(i18n("batchSigning.failure.errorList.title", errorFileNamesList.size()));
         failureCount.setText(String.valueOf(errorFileNamesList.size()));
+
+        var skipped = result.getSkippedCount();
+        skippedCount.setText(String.valueOf(skipped));
+        show(skippedCountFlow, skipped > 0);
+        show(folderFlow, result.getSignedCount() > 0);
+        show(folderPathText, result.getSignedCount() > 0);
 
         errorDetails.visibleProperty().bind(errorDetailsVisible);
         errorDetails.managedProperty().bind(errorDetailsVisible);
@@ -102,8 +118,12 @@ public class BatchSigningFailureDialogController extends BaseController implemen
         errorDetailsVisible.setValue(!errorDetailsVisible.getValue());
 
         if (errorDetailsVisible.getValue()) {
-            String wholeErrors = result.getErrorsMap().entrySet().stream().filter(e -> e.getValue() != null)
-                    .map(e -> "%s\n\nError:\n%s".formatted(e.getKey(), GUIUtils.exceptionToString(e.getValue())))
+            // what went wrong first, the technical details for support after it; skipped files aren't errors
+            String wholeErrors = result.getErrorsMap().entrySet().stream()
+                    .filter(e -> e.getValue() != null && !BatchUiResult.isSkipped(e.getValue()))
+                    .sorted((a, b) -> a.getKey().getName().compareTo(b.getKey().getName()))
+                    .map(e -> "%s\n\n%s\n%s\n\nError:\n%s".formatted(e.getKey(), e.getValue().getSubheading(resources),
+                            e.getValue().getDescription(resources), GUIUtils.exceptionToString(e.getValue())))
                     .reduce("", (a, b) -> a + "\n==============\n\n" + b);
             errorDetails.setText(wholeErrors);
             showErrorDetailsButton.getStyleClass().add("autogram-error-summary__more-open");
@@ -117,5 +137,10 @@ public class BatchSigningFailureDialogController extends BaseController implemen
     @Override
     public Node getNodeForLoosingFocus() {
         return mainBox;
+    }
+
+    private static void show(Node node, boolean visible) {
+        node.setVisible(visible);
+        node.setManaged(visible);
     }
 }

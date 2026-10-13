@@ -1,6 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +45,7 @@ public class BatchGuiFileResponder extends BatchResponder {
     private final Map<File, AutogramException> errors = Collections.synchronizedMap(new HashMap<>());
     private final Set<File> filesWithResult = new HashSet<>(); // guarded by this
     private boolean uiNotifiedOnAllFilesSigned = false; // guarded by this
+    private boolean createdTargetDirectory = false;
 
     public BatchGuiFileResponder(Autogram autogram, List<File> list, Path targetDirectory, SigningParameters signingParameters, EFormAttributes eFormAttributes, boolean signPDFAsPades) {
         this.autogram = autogram;
@@ -60,6 +63,8 @@ public class BatchGuiFileResponder extends BatchResponder {
         }
 
         try {
+            var targetDirectory = targetPath.getTargetDirectory();
+            createdTargetDirectory = targetDirectory != null && !Files.exists(targetDirectory);
             targetPath.mkdirIfDir();
         } catch (AutogramException e) {
             // nothing could be saved, so nothing is signed
@@ -155,7 +160,19 @@ public class BatchGuiFileResponder extends BatchResponder {
                 }
             }
         }
+        if (result.getSignedCount() == 0 && createdTargetDirectory)
+            deleteEmptyTargetDirectory();
         autogram.onDocumentBatchSaved(result);
+    }
+
+    /** Nothing was signed, so the directory created for the signed files isn't needed. */
+    private void deleteEmptyTargetDirectory() {
+        try {
+            Files.deleteIfExists(targetPath.getTargetDirectory());
+        } catch (IOException e) {
+            // e.g. the user put something in it meanwhile
+            Logging.log("Unable to delete " + targetPath.getTargetDirectory() + ": " + e);
+        }
     }
 
     private static AutogramException toAutogramException(Exception e) {

@@ -305,6 +305,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BatchStartResponseBody"
+        400:
+          description: Another batch is in progress (only one batch at a time), or the batch expired before it started.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_CONFLICT
+                      - BATCH_EXPIRED
+                    example: BATCH_CONFLICT
+                  message:
+                    type: string
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
+        422:
+          description: The request body is valid JSON but `totalNumberOfDocuments` is missing or lower than 1.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - UNPROCESSABLE_INPUT
+                    example: UNPROCESSABLE_INPUT
+                  message:
+                    type: string
+                    example: "\"totalNumberOfDocuments\" must be at least 1"
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
         502:
           description: Batch canceled
           content:
@@ -333,6 +371,8 @@ paths:
       summary: End a batch session
       description: |
         End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+
+        It works also for a batch that already ended on its own - after its last document, or when it expired (bulk: 1 minute without a document, 5 minutes for the first one; one-by-one: 10 minutes with no document open). Documents of the batch still waiting for the user get `BATCH_ENDED`.
       requestBody:
         content:
           "application/json":
@@ -755,6 +795,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BatchStartResponseBody"
+        400:
+          description: Another batch is in progress (only one batch at a time), or the batch expired before it started.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_CONFLICT
+                      - BATCH_EXPIRED
+                    example: BATCH_CONFLICT
+                  message:
+                    type: string
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
+        422:
+          description: The request body is valid JSON but `totalNumberOfDocuments` is missing or lower than 1.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - UNPROCESSABLE_INPUT
+                    example: UNPROCESSABLE_INPUT
+                  message:
+                    type: string
+                    example: "\"totalNumberOfDocuments\" must be at least 1"
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
         502:
           description: Batch canceled
           content:
@@ -783,6 +861,8 @@ paths:
       summary: End a batch session
       description: |
         End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+
+        It works also for a batch that already ended on its own - after its last document, or when it expired (bulk: 1 minute without a document, 5 minutes for the first one; one-by-one: 10 minutes with no document open). Documents of the batch still waiting for the user get `BATCH_ENDED`.
       requestBody:
         content:
           "application/json":

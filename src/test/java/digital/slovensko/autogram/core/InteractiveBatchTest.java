@@ -224,6 +224,7 @@ class InteractiveBatchTest {
         assertInstanceOf(SigningCanceledByUserException.class, result.get().getErrorsMap().get(first));
         assertInstanceOf(SigningCanceledByUserException.class, result.get().getErrorsMap().get(second));
         assertInstanceOf(SigningCanceledByUserException.class, result.get().getErrorsMap().get(third));
+        assertFalse(Files.exists(directory.resolve("signed")), "nothing was signed, the created directory is gone");
     }
 
     @Test

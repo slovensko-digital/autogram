@@ -35,7 +35,13 @@
             <Text text="%batchSigning.failure.count.after.text"/>
         </TextFlow>
 
-        <TextFlow styleClass="autogram-body-s">
+        <TextFlow fx:id="skippedCountFlow" styleClass="autogram-error-summary__description,autogram-body-s" visible="false" managed="false">
+            <Text text="%batchSigning.skipped.count.before.text"/>
+            <Text fx:id="skippedCount" styleClass="autogram-font-weight-bold">X</Text>
+            <Text text="%batchSigning.skipped.count.after.text"/>
+        </TextFlow>
+
+        <TextFlow fx:id="folderFlow" styleClass="autogram-body-s">
             <Text styleClass="autogram-body-s" text="%batchSigning.success.folder.before.text" />
         </TextFlow>
         <Hyperlink styleClass="autogram-body-s,autogram-link,autogram-font-weight-bold"
