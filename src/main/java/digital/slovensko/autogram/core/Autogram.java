@@ -13,6 +13,8 @@ import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PdfPasswordProtectedException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.TokenRemovedException;
+import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
@@ -243,6 +245,12 @@ public class Autogram {
     }
 
     private void handleSigningFailure(SigningJob job, AutogramException error) {
+        if (error instanceof TokenRemovedException && job.isPartOfBatch() && job.getBatch().isInteractive()) {
+            // the user sees the document and can sign it once the card is back, with a new connection
+            passwordManager.reset();
+            ui.onUIThreadDo(() -> ui.onSigningFailed(error));
+            return;
+        }
         if (error.shouldReturnToSigning() && (!job.isPartOfBatch() || job.getBatch().isInteractive())) {
             passwordManager.reset();
             ui.onUIThreadDo(ui::enableSigningOnAllJobs);
@@ -458,10 +466,13 @@ public class Autogram {
         ui.onWorkThreadDo(() -> {
             try {
                 signCommonAndThen(job, job.getBatch().getSigningKey(), signedJob -> {}, error -> {
-                    // e.g. a locked PIN or the PIN dialog closed by the user: the batch ends before the client
-                    // learns about it, and the rest gets the same error
+                    // e.g. a locked PIN, a removed card or the PIN dialog closed by the user: the batch ends before
+                    // the client learns about it, and the rest gets the same error
                     if (error.batchCanContinue() || !endBatch(job.getBatch(), error).contains(job))
                         job.onJobSignFailed(error);
+                    // the batch window closes, the user should learn why (a removed card also drops the key)
+                    if (!error.batchCanContinue() && !(error instanceof PasswordNotProvidedException))
+                        onSigningFailed(error);
                 });
             } finally {
                 // Runs even when the responder fails, so a fully processed batch always ends.

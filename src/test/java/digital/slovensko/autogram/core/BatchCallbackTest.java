@@ -143,6 +143,7 @@ class BatchCallbackTest {
     void resultCallbacksCountBeforeNotifyingAdapterAndEndOnFatalFailure() {
         var batchRef = new AtomicReference<Batch>();
         var closed = new AtomicInteger();
+        var shownError = new AtomicReference<AutogramException>();
         var ui = new TestAutogramFactory.FakeUI() {
             @Override
             public void startBatch(Batch batch, Autogram autogram) {
@@ -152,6 +153,11 @@ class BatchCallbackTest {
             @Override
             public void closeBatch() {
                 closed.incrementAndGet();
+            }
+
+            @Override
+            public void onSigningFailed(AutogramException e) {
+                shownError.set(e);
             }
         };
         var autogram = TestAutogramFactory.create(ui);
@@ -181,6 +187,7 @@ class BatchCallbackTest {
         autogram.batchSign(second, batch.getBatchId());
 
         verify(failureResponder).onDocumentSignFailed(fatal);
+        assertSame(fatal, shownError.get(), "the batch window closes, the user learns why");
         assertEquals(1, closed.get());
         assertEquals(2, batch.getProcessedDocumentsCount());
     }

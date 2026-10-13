@@ -9,6 +9,7 @@ import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
 import digital.slovensko.autogram.core.errors.PINLockedException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
@@ -252,6 +253,57 @@ class BatchEndTest {
 
         verify(responder).onDocumentSignFailed(any(PasswordNotProvidedException.class));
         assertEquals(1, ui.closedBatches.get());
+        assertThrows(BatchEndedException.class,
+                () -> autogram.batchSign(TestSigningJobFactory.create(batch, mock(Responder.class)), batchId));
+    }
+
+    @Test
+    void removedCardInInteractiveBatchReturnsToTheDocument() {
+        var shown = new ArrayList<AutogramException>();
+        var ui = new RecordingUI(SigningMode.INTERACTIVE) {
+            @Override
+            public void onSigningFailed(AutogramException e) {
+                shown.add(e);
+            }
+        };
+        var autogram = TestAutogramFactory.create(ui);
+        var batch = startBatch(autogram, ui, 2);
+        var responder = mock(Responder.class);
+        var job = spy(TestSigningJobFactory.create(batch, responder));
+        var removed = new TokenRemovedException();
+        doThrow(removed).when(job).signWithKey(any(), any());
+        autogram.batchSign(job, batch.getBatchId());
+
+        autogram.sign(job, mock(SigningKey.class));
+
+        assertEquals(List.of(removed), shown, "the error is shown and the key dropped");
+        assertFalse(batch.isEnded());
+        assertFalse(ui.closedJobs.contains(job), "the document stays open to sign it again");
+        verifyNoInteractions(responder);
+    }
+
+    @Test
+    void removedCardInBulkEndsTheBatchAndTellsTheUser() {
+        var shown = new ArrayList<AutogramException>();
+        var ui = new RecordingUI(SigningMode.BULK) {
+            @Override
+            public void onSigningFailed(AutogramException e) {
+                shown.add(e);
+            }
+        };
+        var autogram = TestAutogramFactory.create(ui);
+        var batch = startBatch(autogram, ui, 3);
+        var batchId = batch.getBatchId();
+        var responder = mock(Responder.class);
+        var job = spy(TestSigningJobFactory.create(batch, responder));
+        var removed = new TokenRemovedException();
+        doThrow(removed).when(job).signWithKey(any(), any());
+
+        autogram.batchSign(job, batchId);
+
+        assertTrue(batch.isEnded());
+        verify(responder).onDocumentSignFailed(removed);
+        assertEquals(List.of(removed), shown);
         assertThrows(BatchEndedException.class,
                 () -> autogram.batchSign(TestSigningJobFactory.create(batch, mock(Responder.class)), batchId));
     }
