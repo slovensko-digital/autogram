@@ -92,6 +92,8 @@ public class Autogram {
     private Clock clock = Clock.systemUTC();
     /** True if a token was used without asking, and the user didn't get to its keys yet */
     private final AtomicBoolean automaticTokenPickUnfinished = new AtomicBoolean(false);
+    /** True if the user asked for another certificate, the next token pick lets them choose */
+    private final AtomicBoolean anotherTokenRequested = new AtomicBoolean(false);
 
     public Autogram(UI ui, UserSettings settings) {
         this(ui, settings, TOKEN_SEARCH_TIMEOUT_MILLIS, () -> CardReaders.check(CARD_READERS_CHECK_TIMEOUT_MILLIS));
@@ -558,9 +560,17 @@ public class Autogram {
     }
 
     /**
+     * The next token pick lets the user choose, even if the only card would be used without asking - e.g. they want to
+     * sign with another certificate, which may be in a keystore file. With nothing else to choose, the card is used.
+     */
+    public void requestAnotherToken() {
+        anotherTokenRequested.set(true);
+    }
+
+    /**
      * Finds tokens (cards) of all drivers and lets the user pick one. The only card found is used without asking,
-     * unless the user didn't finish with it last time (e.g. canceled entering PIN) - then they get to choose.
-     * Callback is called on work thread.
+     * unless the user didn't finish with it last time (e.g. canceled entering PIN) or asked for another certificate
+     * and there is something else to pick - then they get to choose. Callback is called on work thread.
      */
     private void pickTokenAndThen(List<TokenDriver> drivers, Consumer<TokenOption> callback, Runnable onCancel) {
         ui.onUIThreadDo(ui::onTokenSearchStarted);
@@ -568,7 +578,8 @@ public class Autogram {
             var options = findTokenOptions(drivers);
             var automaticOption = options.getAutomaticOption();
             var previousUnfinished = automaticTokenPickUnfinished.getAndSet(false);
-            if (automaticOption.isPresent() && !previousUnfinished) {
+            var anotherRequested = anotherTokenRequested.getAndSet(false) && options.found().size() > 1;
+            if (automaticOption.isPresent() && !previousUnfinished && !anotherRequested) {
                 automaticTokenPickUnfinished.set(true);
                 callback.accept(automaticOption.get());
                 return;

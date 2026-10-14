@@ -32,7 +32,9 @@ Pojmy:
      - výnimka (napr. knižnica sa nedá načítať) → `otherDrivers`,
      - nestihol do 10 s → `unavailableDrivers` a `notResponding`.
 3. `TokenOptions.getAutomaticOption` rozhodne, či sa dá pokračovať bez pýtania (pravidlá nižšie). Ak sa automaticky
-   použitá karta nedotiahla do konca (používateľ zavrel výber certifikátu), nabudúce sa dialóg zobrazí.
+   použitá karta nedotiahla do konca (používateľ zavrel výber certifikátu), nabudúce sa dialóg zobrazí. Dialóg sa
+   zobrazí aj po „Podpísať iným certifikátom“, ak je okrem jedinej karty z čoho vybrať (napr. súbor s certifikátom,
+   `Autogram.requestAnotherToken`).
 4. Inak sa zobrazí dialóg výberu (`PickTokenDialogController`, `pick-token-dialog.fxml`).
 5. `connectToToken` vytvorí spojenie a načíta kľúče (prihlásenie, PIN). Ak ovládač zlyhá spôsobom, z ktorého sa dá
    zotaviť, pripojí sa raz znova (`TokenDriver.recoverToken`, zatiaľ len eID).

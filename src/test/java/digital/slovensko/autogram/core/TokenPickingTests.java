@@ -137,6 +137,39 @@ class TokenPickingTests {
     }
 
     @Test
+    void testUserAskingForAnotherCertificateChoosesEvenWithOnlyCard() {
+        var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP, EID_EP)));
+        var keystore = new FakeDriver("keystore", Optional.empty());
+        var ui = new PickingUI((options) -> options.found().get(1));
+        var autogram = new Autogram(ui, new FakeSettings(eid, keystore));
+
+        autogram.requestAnotherToken();
+        autogram.pickSigningKeyAndThen(key -> {});
+
+        assertEquals(1, ui.pickTokenCalls);
+        assertEquals(List.of(new TokenOption(eid, EID_ZEP), new TokenOption(keystore, null)), ui.offered.found());
+        assertEquals(1, keystore.usedSlots.size());
+        assertEquals(null, keystore.usedSlots.get(0));
+
+        // only that one time, then the only card is used without asking again
+        autogram.pickSigningKeyAndThen(key -> {});
+        assertEquals(1, ui.pickTokenCalls);
+        assertEquals(List.of(EID_ZEP), eid.usedSlots);
+    }
+
+    @Test
+    void testOnlyCardIsUsedWhenUserAsksForAnotherCertificateAndThereIsNothingElse() {
+        var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP, EID_EP)));
+        var gemalto = new FakeDriver("gemalto", Optional.of(List.of()));
+        var autogram = new Autogram(new NoPickingUI(), new FakeSettings(eid, gemalto));
+
+        autogram.requestAnotherToken();
+        autogram.pickSigningKeyAndThen(key -> {});
+
+        assertEquals(List.of(EID_ZEP), eid.usedSlots);
+    }
+
+    @Test
     void testDriverNotRespondingInTimeIsUnavailable() {
         var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP, EID2_ZEP)));
         var hanging = new FakeDriver("hanging", Optional.of(List.of(ICA_SLOT)));

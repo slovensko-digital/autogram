@@ -88,6 +88,7 @@ public class BatchDialogController extends BaseController implements SuppressedF
     public void onChangeKeyButtonPressed(ActionEvent event) {
         if (batch.isKeyChangeAllowed()) {
             gui.resetSigningKey();
+            autogram.requestAnotherToken();
             autogram.pickSigningKeyAndThen(key -> {
                 gui.setActiveSigningKeyAndThen(key, k -> {
                     hideVisualization();
