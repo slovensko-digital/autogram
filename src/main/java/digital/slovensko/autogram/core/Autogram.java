@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
 import digital.slovensko.autogram.core.errors.BatchEndedException;
 import digital.slovensko.autogram.core.errors.BatchExpiredException;
+import digital.slovensko.autogram.core.errors.BatchInProgressException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -807,6 +808,13 @@ public class Autogram {
     }
 
     public void consentCertificateReadingAndThen(CertificatesResponder responder, List<String> drivers) {
+        // reading certificates connects to the card again, closing that connection logs the batch key out
+        expireBatchIfNeeded();
+        if (hasActiveBatch()) {
+            responder.onError(new BatchInProgressException());
+            return;
+        }
+
         var availableDrivers = settings.getDriverDetector().getAvailableDrivers();
         if (drivers != null && !drivers.isEmpty())
             availableDrivers = availableDrivers.stream().filter(driver -> drivers.contains(driver.getShortname())).toList();
@@ -845,6 +853,13 @@ public class Autogram {
     }
 
     private void getCertificatesFromToken(CertificatesResponder responder, TokenOption option, Runnable consentDialogCloseCallback) {
+        // a batch may have started while the user was consenting or picking the card
+        if (hasActiveBatch()) {
+            ui.onUIThreadDo(consentDialogCloseCallback);
+            responder.onError(new BatchInProgressException());
+            return;
+        }
+
         try (var connected = connectToToken(option)) {
             var keys = connected.keys();
             resetTokenSessionTimer();

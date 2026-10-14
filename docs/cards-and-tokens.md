@@ -154,6 +154,10 @@ Automatické použitie (`getAutomaticOption`):
 - Vytiahnutá karta: SunPKCS11 hodí `ProviderException("Token has been removed")`, Autogram z toho spraví
   `TokenRemovedException` a GUI zahodí aktívny kľúč. Staré spojenie už nefunguje ani po vrátení karty, ďalší podpis
   vyhľadá karty znova.
+- Prihlásenie platí pre celú kartu v rámci procesu, nie pre jedno spojenie. Druhé spojenie na tú istú kartu sa
+  neprihlasuje znova (I.CA nepýta PIN) a jeho zatvorenie (`C_Logout`) odhlási aj aktívny kľúč – ďalší podpis zlyhá s
+  `CKR_USER_NOT_LOGGED_IN` (overené s I.CA, aj na `main`). Stáva sa to pri `GET /certificates`, preto ho počas batchu
+  Autogram odmieta (`503 BATCH_IN_PROGRESS`); mimo batchu kľúč v cache zatiaľ takto zlyhá.
 - Prázdny PIN z callbacku znamená `C_Login(NULL)`, na čo niektoré ovládače reagujú vlastným oknom (MONET).
 - Prístup k `sun.security.pkcs11.wrapper` vyžaduje `--add-exports` a `--add-opens` (sú v `.vscode/launch.json` a
   `src/main/scripts/package.sh`). Testy ich nemajú, preto v testoch reflexia na wrapper zlyhá skôr, než sa knižnica načíta.
