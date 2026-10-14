@@ -10,13 +10,16 @@ import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
+import javafx.scene.TraversalDirection;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -26,6 +29,7 @@ import javafx.scene.Node;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -55,6 +59,8 @@ public class SettingsDialogController extends BaseController implements Suppress
     @FXML
     private VBox trustedCountriesList;
     @FXML
+    private ScrollPane trustedCountriesScrollPane;
+    @FXML
     private HBox correctDocumentDisplayRadios;
     @FXML
     private HBox signatureValidationRadios;
@@ -83,6 +89,7 @@ public class SettingsDialogController extends BaseController implements Suppress
 
     private final Autogram autogram;
     private final UserSettings userSettings;
+    private CheckBox activeCountryCheckBox;
     private final List<String> preDefinedTsaServers = List.of(
             UserSettings.DEFAULT_TSA_SERVER,
             "http://timestamp.sectigo.com/qualified",
@@ -271,15 +278,82 @@ public class SettingsDialogController extends BaseController implements Suppress
                 new Country("IT"));
 
         var trustedList = userSettings.getTrustedList();
-        trustedCountriesList.getChildren().addAll(europeanCountries.stream()
-                .map(country -> createCountryElement(country, trustedList.contains(country.getShortname()))).toList());
+        var checkBoxes = new ArrayList<CheckBox>();
+        for (var country : europeanCountries) {
+            var checkBox = createCountryCheckBox(country, trustedList.contains(country.getShortname()));
+            var countryBox = new VBox(new TextFlow(new Text(country.getName(resources.getLocale()))));
+            countryBox.getStyleClass().add("left");
+            trustedCountriesList.getChildren().add(new HBox(countryBox, new VBox(checkBox)));
+            checkBoxes.add(checkBox);
+        }
+
+        activeCountryCheckBox = checkBoxes.getFirst();
+        for (var checkBox : checkBoxes) {
+            checkBox.focusedProperty().addListener((observable, oldValue, focused) -> {
+                if (focused) {
+                    activeCountryCheckBox = checkBox;
+                    scrollCountryIntoView(checkBox);
+                }
+            });
+        }
+
+        // Keep native mouse and accessibility focus available on every checkbox.
+        // Only Tab traversal treats the country list as a single group.
+        mainBox.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() != javafx.scene.input.KeyCode.TAB
+                    || event.isAltDown() || event.isControlDown() || event.isMetaDown())
+                return;
+
+            var scene = mainBox.getScene();
+            var focused = scene.getFocusOwner();
+            if (focused == null)
+                return;
+
+            var rememberedCountry = activeCountryCheckBox;
+            var leavingCountries = checkBoxes.contains(focused);
+            var reference = leavingCountries
+                    ? (event.isShiftDown() ? checkBoxes.getFirst() : checkBoxes.getLast())
+                    : focused;
+            var direction = event.isShiftDown() ? TraversalDirection.PREVIOUS : TraversalDirection.NEXT;
+            if (reference.requestFocusTraversal(direction)) {
+                if (!leavingCountries && checkBoxes.contains(scene.getFocusOwner()))
+                    rememberedCountry.requestFocus();
+                event.consume();
+            }
+        });
+
+        trustedCountriesList.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.isAltDown() || event.isControlDown() || event.isMetaDown() || event.isShiftDown())
+                return;
+
+            var focusedIndex = -1;
+            for (var i = 0; i < checkBoxes.size(); i++) {
+                if (checkBoxes.get(i).isFocused()) {
+                    focusedIndex = i;
+                    break;
+                }
+            }
+            if (focusedIndex < 0)
+                return;
+
+            var targetIndex = switch (event.getCode()) {
+                case UP -> Math.max(0, focusedIndex - 1);
+                case DOWN -> Math.min(checkBoxes.size() - 1, focusedIndex + 1);
+                case HOME -> 0;
+                case END -> checkBoxes.size() - 1;
+                default -> -1;
+            };
+            if (targetIndex >= 0) {
+                checkBoxes.get(targetIndex).requestFocus();
+                event.consume();
+            }
+        });
     }
 
-    private HBox createCountryElement(Country country, boolean isCountryInTrustedList) {
-        var countryBox = new VBox(new TextFlow(new Text(country.getName(resources.getLocale()))));
-        countryBox.getStyleClass().add("left");
-
+    private CheckBox createCountryCheckBox(Country country, boolean isCountryInTrustedList) {
         var checkBox = new CheckBox(isCountryInTrustedList ? i18n("general.on.label") : i18n("general.off.label"));
+        checkBox.setAccessibleText(country.getName(resources.getLocale()));
+        checkBox.setAccessibleHelp(i18n("settings.attestation.trustedCountries.keyboard.text"));
         checkBox.setSelected(isCountryInTrustedList);
         checkBox.setOnAction(event -> {
             if (checkBox.isSelected()) {
@@ -291,7 +365,32 @@ public class SettingsDialogController extends BaseController implements Suppress
             }
         });
 
-        return new HBox(countryBox, new VBox(checkBox));
+        return checkBox;
+    }
+
+    private void scrollCountryIntoView(CheckBox checkBox) {
+        var content = trustedCountriesScrollPane.getContent();
+        var viewportHeight = trustedCountriesScrollPane.getViewportBounds().getHeight();
+        var scrollableHeight = content.getLayoutBounds().getHeight() - viewportHeight;
+        if (viewportHeight <= 0 || scrollableHeight <= 0)
+            return;
+
+        var row = checkBox.getParent().getParent();
+        var rowBounds = content.sceneToLocal(row.localToScene(row.getBoundsInLocal()));
+        var min = trustedCountriesScrollPane.getVmin();
+        var range = trustedCountriesScrollPane.getVmax() - min;
+        if (range <= 0)
+            return;
+
+        var top = (trustedCountriesScrollPane.getVvalue() - min) / range * scrollableHeight;
+        if (rowBounds.getMinY() < top)
+            top = rowBounds.getMinY();
+        else if (rowBounds.getMaxY() > top + viewportHeight)
+            top = rowBounds.getMaxY() - viewportHeight;
+        else
+            return;
+
+        trustedCountriesScrollPane.setVvalue(min + Math.clamp(top / scrollableHeight, 0, 1) * range);
     }
 
 

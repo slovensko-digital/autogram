@@ -163,13 +163,16 @@
                 </Tab>
                 <Tab text="%settings.attestation.title">
                     <content>
-                        <ScrollPane>
+                        <ScrollPane fx:id="trustedCountriesScrollPane" focusTraversable="false">
                             <VBox styleClass="container">
                                 <TextFlow>
                                     <Text styleClass="autogram-heading-m" text="%settings.attestation.title"/>
                                 </TextFlow>
                                 <TextFlow styleClass="autogram-settings-tab-header-text">
                                     <Text styleClass="autogram-body" text="%settings.attestation.trustedCountries.text"/>
+                                </TextFlow>
+                                <TextFlow styleClass="autogram-settings-tab-header-text">
+                                    <Text styleClass="autogram-description" text="%settings.attestation.trustedCountries.keyboard.text"/>
                                 </TextFlow>
 
                                 <VBox alignment="center" fx:id="trustedCountriesList"
