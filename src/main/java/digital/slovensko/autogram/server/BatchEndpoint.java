@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.server.dto.BatchEndRequestBody;
+import digital.slovensko.autogram.server.dto.BatchEndResponseBody;
 import digital.slovensko.autogram.server.dto.BatchStartRequestBody;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.MalformedBodyException;
@@ -28,18 +29,14 @@ public class BatchEndpoint implements HttpHandler {
                 // Start batch
                 var body = EndpointUtils.loadFromJsonExchange(exchange,
                         BatchStartRequestBody.class);
-                autogram.batchStart(body.getTotalNumberOfDocuments(),
+                autogram.startBatchSigning(body.getTotalNumberOfDocuments(),
                         new BatchServerResponder(exchange));
             } else if (requestMethod.equalsIgnoreCase("DELETE")) {
                 // End batch
                 var body = EndpointUtils.loadFromJsonExchange(exchange,
                         BatchEndRequestBody.class);
-                var finished = autogram.batchEnd(body.batchId());
-                EndpointUtils.respondWith(finished ? new Object() {
-                    public String status = "FINISHED";
-                } : new Object() {
-                    public String status = "NOT_FINISHED";
-                }, exchange);
+                var finished = autogram.endBatchSigning(body.batchId());
+                EndpointUtils.respondWith(BatchEndResponseBody.of(finished), exchange);
             } else {
                 exchange.sendResponseHeaders(405, -1);
             }

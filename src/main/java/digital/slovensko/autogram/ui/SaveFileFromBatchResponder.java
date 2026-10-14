@@ -4,11 +4,13 @@ import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 public class SaveFileFromBatchResponder extends Responder {
@@ -26,14 +28,20 @@ public class SaveFileFromBatchResponder extends Responder {
     }
 
     public void onDocumentSigned(SignedDocument signedDocument) {
+        Path targetFile;
         try {
-            var targetFile = targetPath.getSaveFilePath(file.toPath(), MimeTypeEnum.PDF.equals(signedDocument.getDocument().getMimeType()));
+            targetFile = targetPath.getSaveFilePath(file.toPath(), MimeTypeEnum.PDF.equals(signedDocument.getDocument().getMimeType()));
             signedDocument.getDocument().save(targetFile.toString());
             Logging.log("Saved file " + targetFile.toString());
-            callbackSuccess.accept(targetFile.toFile());
+        } catch (AutogramException e) {
+            onDocumentSignFailed(e);
+            return;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            onDocumentSignFailed(new UnrecognizedException(e));
+            return;
         }
+
+        callbackSuccess.accept(targetFile.toFile());
     }
 
     public void onDocumentSignFailed(AutogramException error) {

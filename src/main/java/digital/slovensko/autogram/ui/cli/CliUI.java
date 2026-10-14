@@ -3,9 +3,9 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchStartCallback;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.Updater;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -80,12 +80,21 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
+    public void startBatch(Batch batch, Autogram autogram) {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void cancelBatch(Batch batch) {
+    public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+        onSelected.accept(SigningMode.BULK);
+    }
+
+    @Override
+    public void closeSigningJob(SigningJob job) {
+    }
+
+    @Override
+    public void closeBatch() {
         // TODO Auto-generated method stub
     }
 
@@ -298,13 +307,18 @@ public class CliUI implements UI {
         return System.console().readPassword("Enter keystore password (hidden): ");
     }
 
-    public char[] getContextSpecificPassword() {
+    public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+        if (incorrectPIN) System.err.println("Incorrect signing PIN. Try again.");
         return System.console().readPassword("Enter key password (hidden): ");
     }
 
     @Override
     public void updateBatch() {
         // TODO: no usage for this in CLI UI
+    }
+
+    @Override
+    public void enableSigningOnAllJobs() {
     }
 
     @Override

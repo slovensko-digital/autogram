@@ -10,7 +10,6 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.model.FileDocument;
 import javafx.fxml.FXML;
@@ -117,9 +116,9 @@ public class MainMenuController extends BaseController implements SuppressedFocu
                 var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), defaultEFormAttributes), defaultSigningParameters);
                 var job = SigningJob.fromInput(input,
                     new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
-            autogram.sign(job);
+            autogram.startSigning(job);
         } else {
-            autogram.batchStart(filesList.size(),
+            autogram.startBatchSigning(filesList.size(),
                     new BatchGuiFileResponder(autogram, filesList, filesList.get(0).toPath().getParent().resolve("signed"),
                         defaultSigningParameters, defaultEFormAttributes, userSettings.shouldSignPDFAsPades()));
         }
@@ -137,7 +136,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         var defaultSigningParameters = userSettings.getDefaultSigningParameters();
         var defaultEFormAttributes = EFormAttributes.build(defaultSigningParameters, true);
 
-        autogram.batchStart(filesList.size(),
+        autogram.startBatchSigning(filesList.size(),
                 new BatchGuiFileResponder(autogram, filesList, targetDirectory, defaultSigningParameters, defaultEFormAttributes,
                     userSettings.shouldSignPDFAsPades()));
     }
