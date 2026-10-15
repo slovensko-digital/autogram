@@ -48,7 +48,7 @@ public class SignaturesInvalidDialogController extends BaseController implements
 
     public void onCancelAction() {
         close();
-        signingDialogController.close();
+        signingDialogController.cancel();
     }
 
     public void onContinueAction() {
