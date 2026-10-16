@@ -58,7 +58,15 @@ public class AutogramException extends RuntimeException {
 
     public static AutogramException createFromDSSException(DSSException e) {
         for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
+            // e.g. the user canceled entering the PIN when the driver asked for it
+            if (cause instanceof AutogramException autogramException)
+                return autogramException;
+
             if (cause.getMessage() != null) {
+                // SunPKCS11 throws it as ProviderException once the card was removed, even if inserted again since
+                if (cause.getMessage().equals("Token has been removed"))
+                    return new TokenRemovedException();
+
                 if (cause instanceof java.security.ProviderException) {
                     if (cause.getMessage().contains("slotListIndex is 0 but token only has 0 slots"))
                         return new InitializationFailedException();
@@ -69,13 +77,11 @@ public class AutogramException extends RuntimeException {
                 } else if (cause.getMessage().equals("CKR_FUNCTION_CANCELED")) {
                     return new FunctionCanceledException();
                 } else if (cause.getMessage().equals("CKR_TOKEN_NOT_RECOGNIZED") || cause.getMessage().contains("no such algorithm: PKCS11 for provider")) {
-                    return new TokenNotRecognizedException();
+                    return new TokenNotRecognizedException(e);
                 } else if (cause.getMessage().equals("CKR_PIN_INCORRECT") || cause.getMessage().equals("CKR_FUNCTION_FAILED")) {
                     return new PINIncorrectException();
                 } else if (cause.getMessage().equals("CKR_PIN_LOCKED")) {
                     return new PINLockedException();
-                } else if (cause.getMessage().equals("Token has been removed")) {
-                    return new TokenRemovedException();
                 } else if (cause instanceof DSSExternalResourceException) {
                     return new TsaServerMisconfiguredException(REFUSED, cause);
                 } else if (cause instanceof NullPointerException && cause.getMessage().contains("Host name")) {
