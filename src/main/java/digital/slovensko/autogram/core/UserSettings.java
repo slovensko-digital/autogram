@@ -342,6 +342,28 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         return !savedTrustedList.equals(currentTrustedList);
     }
 
+    /**
+     * Tells whether any setting that requires an application restart to take
+     * effect was changed since the settings were last saved.
+     *
+     * @return true if the application should be restarted after saving the settings
+     */
+    public boolean restartRequiredSettingsChanged() {
+        var prefs = Preferences.userNodeForPackage(UserSettings.class);
+        return prefs.getBoolean("SERVER_ENABLED", DEFAULT_SERVER_ENABLED) != serverEnabled;
+    }
+
+    /**
+     * Tells whether resetting the settings to their defaults would change any
+     * setting that requires an application restart to take effect.
+     *
+     * @return true if the application should be restarted after resetting the settings
+     */
+    public boolean restartRequiredSettingsChangedByReset() {
+        var prefs = Preferences.userNodeForPackage(UserSettings.class);
+        return prefs.getBoolean("SERVER_ENABLED", DEFAULT_SERVER_ENABLED) != DEFAULT_SERVER_ENABLED;
+    }
+
     public List<String> getTrustedList() {
         return trustedList;
     }
