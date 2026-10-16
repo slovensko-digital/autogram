@@ -4,7 +4,6 @@ import digital.slovensko.autogram.drivers.TokenOption;
 import digital.slovensko.autogram.drivers.TokenOptions;
 
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * The token (card) or driver the user last signed with, to preselect it next time. Stored in user preferences, so any
@@ -48,24 +47,52 @@ public record LastUsedToken(String driverShortname, String label, String serialN
         if (isEmpty())
             return Optional.empty();
 
-        var tokens = options.found().stream().filter(TokenOption::isToken).filter(this::isSameDriver).toList();
         if (isToken()) {
-            var sameCard = tokens.stream().filter(this::isSameCard);
-            var sameCardInSameReader = tokens.stream().filter(this::isSameCard).filter((o) -> o.slot().readerName().equals(readerName));
-            var found = sameCardInSameReader.findFirst().or(sameCard::findFirst);
-            if (found.isPresent())
-                return found;
+            var sameCard = findSameCard(options);
+            if (sameCard != null)
+                return Optional.of(sameCard);
         }
 
-        var driverOption = options.found().stream().filter((o) -> !o.isToken()).filter(this::isSameDriver).findFirst();
-        if (driverOption.isPresent() || isToken())
-            return driverOption;
+        for (var option : options.found()) {
+            if (!option.isToken() && isSameDriver(option))
+                return Optional.of(option);
+        }
 
-        // the driver was used without a card, e.g. its card can't be detected - it may be among other drivers
-        return Stream.concat(tokens.stream(), options.otherDrivers().stream()
-                        .filter((driver) -> driver.getShortname().equals(driverShortname))
-                        .map((driver) -> new TokenOption(driver, null)))
-                .findFirst();
+        if (isToken())
+            return Optional.empty();
+
+        // the driver was used without a card, e.g. its card can't be detected - it may have found one now, or it may be
+        // among other drivers
+        for (var option : options.found()) {
+            if (isSameDriver(option))
+                return Optional.of(option);
+        }
+
+        for (var driver : options.otherDrivers()) {
+            if (driver.getShortname().equals(driverShortname))
+                return Optional.of(new TokenOption(driver, null));
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * The same card in the same reader, or in another reader. Null if it isn't inserted.
+     */
+    private TokenOption findSameCard(TokenOptions options) {
+        TokenOption inOtherReader = null;
+        for (var option : options.found()) {
+            if (!option.isToken() || !isSameDriver(option) || !isSameCard(option))
+                continue;
+
+            if (option.slot().readerName().equals(readerName))
+                return option;
+
+            if (inOtherReader == null)
+                inOtherReader = option;
+        }
+
+        return inOtherReader;
     }
 
     private boolean isSameDriver(TokenOption option) {
