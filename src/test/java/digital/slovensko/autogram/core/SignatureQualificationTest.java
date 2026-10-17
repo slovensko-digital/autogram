@@ -1,22 +1,11 @@
 package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.TestMethodSources;
 import digital.slovensko.autogram.TestPki;
-import digital.slovensko.autogram.core.dto.AutogramDocument;
-import digital.slovensko.autogram.core.dto.SignedDocument;
-import digital.slovensko.autogram.core.dto.SigningInput;
-import digital.slovensko.autogram.core.errors.AutogramException;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.Indication;
-import eu.europa.esig.dss.enumerations.MimeTypeEnum;
-import eu.europa.esig.dss.enumerations.SignatureForm;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.junit.jupiter.api.AfterAll;
@@ -99,41 +88,17 @@ class SignatureQualificationTest {
         assertTrue(SignatureValidator.getInstance().areTLsLoaded());
     }
 
-    private static DSSDocument sign(TestPki.Signer signer, SignatureProfile profile, TSPSource tspSource) throws Exception {
-        var pdf = AutogramDocument.build(new InMemoryDocument(TestMethodSources.loadContent("sample.pdf"), "zmluva.pdf", MimeTypeEnum.PDF), null);
-        var input = SigningInput.prepareForASiCWithXAdES(pdf, parameters(profile));
-        return SigningJob.fromInput(input, responder()).signWithKey(signer.signingKey(), tspSource).getDocument();
+    private static DSSDocument sign(TestPki.Signer signer, SignatureProfile profile, TSPSource tspSource) {
+        return TestSignedDocuments.sign(signer, profile, tspSource);
     }
 
-    private static Reports validate(DSSDocument signed) throws Exception {
-        var container = new InMemoryDocument(signed.openStream().readAllBytes(), "zmluva.asice", MimeTypeEnum.ASICE);
-        var input = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(container, null), parameters(SignatureProfile.BASELINE_B));
-        var reports = SignatureValidator.getInstance().getSignatureValidationReport(SigningJob.fromInput(input, responder()));
-        assertEquals(1, reports.getDocumentReports().size());
-        return reports.getDocumentReports().get(0).reports();
+    private static Reports validate(DSSDocument signed) {
+        return TestSignedDocuments.validate(signed).reports();
     }
 
     private static String signatureId(Reports reports) {
         var ids = reports.getSimpleReport().getSignatureIdList();
         assertEquals(1, ids.size());
         return ids.get(0);
-    }
-
-    private static SigningParameters parameters(SignatureProfile profile) throws AutogramException {
-        return SigningParameters.buildParameters(profile, SignatureForm.XAdES, DigestAlgorithm.SHA256, ASiCContainerType.ASiC_E,
-                SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true);
-    }
-
-    private static Responder responder() {
-        return new Responder() {
-            @Override
-            public void onDocumentSigned(SignedDocument signedDocument) {
-            }
-
-            @Override
-            public void onDocumentSignFailed(AutogramException error) {
-                fail(error);
-            }
-        };
     }
 }

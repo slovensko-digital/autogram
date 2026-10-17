@@ -119,6 +119,8 @@ public class TestPki {
     private final Map<String, Signer> signers = new LinkedHashMap<>();
     private final Set<BigInteger> revoked = new HashSet<>();
     private long serial = 1000;
+    private KeyPair otherTsaKeys;
+    private X509Certificate otherTsa;
 
     private TestPki(KeyPair caKeys, X509Certificate ca, KeyPair tsaKeys, X509Certificate tsa) {
         this.caKeys = caKeys;
@@ -142,13 +144,7 @@ public class TestPki {
                     .addExtension(Extension.subjectKeyIdentifier, false, ext.createSubjectKeyIdentifier(caKeys.getPublic())), caKeys.getPrivate());
 
             var tsaKeys = rsa();
-            var tsa = sign(new JcaX509v3CertificateBuilder(ca, BigInteger.TWO, new Date(now - 30 * DAY), new Date(now + 3650 * DAY),
-                    new X500Name("CN=Autogram Test Qualified TSA, O=Autogram test PKI, C=SK"), tsaKeys.getPublic())
-                    .addExtension(Extension.basicConstraints, true, new BasicConstraints(false))
-                    .addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.nonRepudiation))
-                    .addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping))
-                    .addExtension(Extension.subjectKeyIdentifier, false, ext.createSubjectKeyIdentifier(tsaKeys.getPublic()))
-                    .addExtension(Extension.authorityKeyIdentifier, false, ext.createAuthorityKeyIdentifier(ca)), caKeys.getPrivate());
+            var tsa = tsaCertificate("Autogram Test Qualified TSA", BigInteger.TWO, tsaKeys, ca, caKeys.getPrivate());
 
             var pki = new TestPki(caKeys, ca, tsaKeys, tsa);
             pki.issue(JANA, Kind.QESIG);
@@ -316,12 +312,34 @@ public class TestPki {
 
     /** In-process qualified timestamps, e.g. for SigningJob.signWithKey with BASELINE_T. */
     public TSPSource tspSource() {
+        return tspSource(tsaKeys, tsa);
+    }
+
+    /** Timestamps from a TSA of the same CA that is not listed as a qualified service (TSA/QTST). */
+    public synchronized TSPSource nonQualifiedTspSource() {
+        if (otherTsa == null) {
+            try {
+                otherTsaKeys = rsa();
+                otherTsa = tsaCertificate("Autogram Test TSA", BigInteger.valueOf(3), otherTsaKeys, ca, caKeys.getPrivate());
+            } catch (Exception e) {
+                throw new IllegalStateException("cannot create the non-qualified test TSA", e);
+            }
+        }
+        return tspSource(otherTsaKeys, otherTsa);
+    }
+
+    /** RFC 3161 reply from the qualified test TSA (the harness serves it over HTTP for Autogram's TSA setting). */
+    public byte[] timestampReply(byte[] encodedRequest) throws Exception {
+        return timestampReply(encodedRequest, tsaKeys, tsa);
+    }
+
+    private TSPSource tspSource(KeyPair keys, X509Certificate certificate) {
         return (digestAlgorithm, digest) -> {
             try {
                 var request = new org.bouncycastle.tsp.TimeStampRequestGenerator();
                 request.setCertReq(true);
                 var reply = new org.bouncycastle.tsp.TimeStampResponse(timestampReply(
-                        request.generate(new ASN1ObjectIdentifier(digestAlgorithm.getOid()), digest).getEncoded()));
+                        request.generate(new ASN1ObjectIdentifier(digestAlgorithm.getOid()), digest).getEncoded(), keys, certificate));
                 return new eu.europa.esig.dss.model.TimestampBinary(reply.getTimeStampToken().getEncoded());
             } catch (Exception e) {
                 throw new IllegalStateException("test timestamp failed", e);
@@ -329,15 +347,27 @@ public class TestPki {
         };
     }
 
-    /** RFC 3161 reply from the qualified test TSA (the harness serves it over HTTP for Autogram's TSA setting). */
-    public byte[] timestampReply(byte[] encodedRequest) throws Exception {
+    private byte[] timestampReply(byte[] encodedRequest, KeyPair keys, X509Certificate certificate) throws Exception {
         var request = new TimeStampRequest(encodedRequest);
         var digest = new JcaDigestCalculatorProviderBuilder().build().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256));
-        var signer = new JcaSimpleSignerInfoGeneratorBuilder().build("SHA256withRSA", tsaKeys.getPrivate(), tsa);
+        var signer = new JcaSimpleSignerInfoGeneratorBuilder().build("SHA256withRSA", keys.getPrivate(), certificate);
         var generator = new TimeStampTokenGenerator(signer, digest, new ASN1ObjectIdentifier("1.3.6.1.4.1.99999.1"));
-        generator.addCertificates(new JcaCertStore(List.of(tsa, ca)));
+        generator.addCertificates(new JcaCertStore(List.of(certificate, ca)));
         return new TimeStampResponseGenerator(generator, TSPAlgorithms.ALLOWED)
                 .generate(request, BigInteger.valueOf(System.nanoTime()), new Date()).getEncoded();
+    }
+
+    private static X509Certificate tsaCertificate(String name, BigInteger serialNumber, KeyPair keys, X509Certificate ca,
+            PrivateKey caKey) throws Exception {
+        var now = System.currentTimeMillis();
+        var ext = new JcaX509ExtensionUtils();
+        return sign(new JcaX509v3CertificateBuilder(ca, serialNumber, new Date(now - 30 * DAY), new Date(now + 3650 * DAY),
+                new X500Name("CN=" + name + ", O=Autogram test PKI, C=SK"), keys.getPublic())
+                .addExtension(Extension.basicConstraints, true, new BasicConstraints(false))
+                .addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.nonRepudiation))
+                .addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping))
+                .addExtension(Extension.subjectKeyIdentifier, false, ext.createSubjectKeyIdentifier(keys.getPublic()))
+                .addExtension(Extension.authorityKeyIdentifier, false, ext.createAuthorityKeyIdentifier(ca)), caKey);
     }
 
     private byte[] crl() {
