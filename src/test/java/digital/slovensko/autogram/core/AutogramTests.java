@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import digital.slovensko.autogram.TestAutogramFactory;
 import digital.slovensko.autogram.TestMethodSources;
+import digital.slovensko.autogram.TestPki;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -20,6 +21,7 @@ import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.server.CertificatesResponder;
+import digital.slovensko.autogram.server.dto.CertificateResponse;
 import digital.slovensko.autogram.server.dto.CertificatesResponse;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.UI;
@@ -33,7 +35,6 @@ import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
-import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
@@ -48,13 +49,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.File;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.security.KeyStore;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -418,8 +418,7 @@ class AutogramTests {
 
         verify(exchange).sendResponseHeaders(200, 0);
 
-        var expected = new Gson().fromJson("{\"certificates\":[{\"subject\":\"CN\u003dJano Suchal, O\u003dSolver IT\",\"issuedBy\":\"CN\u003dJano Suchal, O\u003dSolver IT\"}]}", CertificatesResponse.class);
-        verify(responseBody).write(new Gson().toJson(expected).getBytes());
+        verify(responseBody).write(new Gson().toJson(expectedCertificates()).getBytes());
     }
 
     @Test
@@ -439,8 +438,13 @@ class AutogramTests {
 
         verify(exchange).sendResponseHeaders(200, 0);
 
-        var expected = new Gson().fromJson("{\"certificates\":[{\"subject\":\"CN\u003dJano Suchal, O\u003dSolver IT\",\"issuedBy\":\"CN\u003dJano Suchal, O\u003dSolver IT\"}]}", CertificatesResponse.class);
-        verify(responseBody).write(new Gson().toJson(expected).getBytes());
+        verify(responseBody).write(new Gson().toJson(expectedCertificates()).getBytes());
+    }
+
+    private static CertificatesResponse expectedCertificates() {
+        var certificate = TestPki.shared().signer(TestPki.JANA).certificate();
+        return new CertificatesResponse(List.of(new CertificateResponse(
+                certificate.getSubjectX500Principal().toString(), certificate.getIssuerX500Principal().toString())));
     }
 
     private record FakeDriverDetector(List<TokenDriver> drivers) implements DriverDetector {
@@ -457,31 +461,26 @@ class AutogramTests {
 
         @Override
         public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
-            try {
-                var keystore = Objects.requireNonNull(this.getClass().getResource("test.keystore")).getFile();
-                return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            return TestPki.shared().signer(TestPki.JANA).token();
         }
     }
 
     @SuppressWarnings("unused")
     private static class FakeTokenDriverWithExpiredCertificate extends TokenDriver {
+        private static TestPki.Signer expired;
 
         public FakeTokenDriverWithExpiredCertificate() {
             super("fake-token-driver-with-expired-certificate", Path.of(""), "fake", "");
         }
 
         @Override
-        public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
-            try {
-                var keystore = Objects.requireNonNull(this.getClass().getResource("expired_certificate.keystore"))
-                        .getFile();
-                return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("test123".toCharArray()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        public synchronized AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
+            if (expired == null) {
+                var now = System.currentTimeMillis();
+                expired = TestPki.shared().issue("Expirovaný Podpisovateľ", TestPki.Kind.QESIG,
+                        new Date(now - 400 * 86_400_000L), new Date(now - 30 * 86_400_000L));
             }
+            return expired.token();
         }
     }
 
