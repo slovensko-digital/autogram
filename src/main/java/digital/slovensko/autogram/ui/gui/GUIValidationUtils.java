@@ -35,7 +35,9 @@ public class GUIValidationUtils {
 
     public static Node createWarningText(String message) {
         var text = styled(new Text(message), "autogram-heading-s");
-        return styled(new TextFlow(text), "autogram-warning-textflow");
+        var textFlow = styled(new TextFlow(text), "autogram-warning-textflow");
+        textFlow.setMaxWidth(Region.USE_PREF_SIZE);
+        return textFlow;
     }
 
     public static GridPane createSignatureTableRows(ResourceBundle resources, ValidationReports validationReports, boolean isValidated, Consumer<String> callback, int maxRows) {
