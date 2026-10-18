@@ -1,0 +1,90 @@
+[
+  {
+    "title": "Úvod",
+    "path": "/"
+  },
+  {
+    "title": "Začíname",
+    "children": [
+      {
+        "title": "Inštalácia",
+        "path": "/installation"
+      },
+      {
+        "title": "Karty a certifikáty",
+        "path": "/cards"
+      },
+      {
+        "title": "Prvý podpis krok za krokom",
+        "path": "/first-signature"
+      }
+    ]
+  },
+  {
+    "title": "Podpisovanie",
+    "children": [
+      {
+        "title": "Podpisovanie na webových stránkach",
+        "path": "/websites"
+      },
+      {
+        "title": "Podpísanie súboru z počítača",
+        "path": "/signing"
+      },
+      {
+        "title": "Výber karty a zadanie PIN-u",
+        "path": "/card-and-pin"
+      },
+      {
+        "title": "Viac dokumentov naraz",
+        "path": "/batch"
+      },
+      {
+        "title": "Podpis s časovou pečiatkou",
+        "path": "/timestamps"
+      },
+      {
+        "title": "Viac dokumentov v jednom kontajneri",
+        "path": "/multi-document"
+      }
+    ]
+  },
+  {
+    "title": "Overovanie",
+    "children": [
+      {
+        "title": "Overenie podpisov",
+        "path": "/verification"
+      },
+      {
+        "title": "Upozornenia pred podpisom",
+        "path": "/warnings"
+      }
+    ]
+  },
+  {
+    "title": "Nastavenia",
+    "path": "/settings"
+  },
+  {
+    "title": "Pre pokročilých",
+    "children": [
+      {
+        "title": "Formáty a typy podpisov",
+        "path": "/formats"
+      },
+      {
+        "title": "Príkazový riadok (CLI)",
+        "path": "/cli"
+      },
+      {
+        "title": "Integrácia cez HTTP API",
+        "path": "/api"
+      }
+    ]
+  },
+  {
+    "title": "Riešenie problémov",
+    "path": "/troubleshooting"
+  }
+]
