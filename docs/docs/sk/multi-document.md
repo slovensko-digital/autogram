@@ -1,3 +1,7 @@
+---
+description: "Ako v Autograme otvoriť kontajner s viacerými dokumentmi, prezrieť si ich, overiť ich podpisy a pridať vlastný podpis."
+---
+
 # Viac dokumentov v jednom kontajneri
 
 Kontajner ASiC-E (prípona `.asice`) môže obsahovať niekoľko dokumentov, ktoré sú podpísané spoločne. Na Slovensku sa to nazýva aj *spoločná autorizácia dokumentov*. Autogram takýto kontajner zobrazí, overí v ňom podpisy a pridá k nemu váš podpis.

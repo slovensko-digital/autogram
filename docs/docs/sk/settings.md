@@ -1,3 +1,7 @@
+---
+description: "Prehľad nastavení Autogramu: typ podpisu, časové pečiatky, overovanie podpisov, bezpečnosť a ďalšie možnosti."
+---
+
 # Nastavenia
 
 Nastavenia otvoríte odkazom **Nastavenia** v spodnej časti hlavného okna. Sú rozdelené do štyroch záložiek. Zmeny uložíte tlačidlom **Uložiť nastavenia**. Tlačidlo **Resetovať nastavenia** vráti všetky nastavenia na pôvodné hodnoty.

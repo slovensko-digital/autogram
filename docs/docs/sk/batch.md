@@ -1,3 +1,7 @@
+---
+description: "Ako podpísať viac dokumentov naraz, po jednom alebo hromadne. PIN zadáte iba raz, nech je dokumentov koľkokoľvek."
+---
+
 # Viac dokumentov naraz
 
 Ak potrebujete podpísať viac dokumentov, nemusíte ich otvárať po jednom. V hlavnom okne kliknite na **Vyberte súbor** a označte viac súborov, alebo do okna presuňte celý priečinok.

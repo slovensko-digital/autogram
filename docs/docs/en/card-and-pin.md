@@ -1,3 +1,7 @@
+---
+description: "What happens after you click Sign: choosing the card, the keystore password, choosing the certificate and entering the signing PIN."
+---
+
 # Choosing a card and entering the PIN
 
 After you click **Sign**, Autogram finds out where your signing certificate is and asks for the PIN. Depending on your card, you go through some of these steps:

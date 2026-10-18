@@ -1,3 +1,7 @@
+---
+description: "How to sign with Autogram directly on websites and in web applications of authorities and companies, and on government websites with the browser extension."
+---
+
 # Signing on websites
 
 Autogram is most often used for signing directly from websites and web applications. The website sends the document to Autogram, you check and sign it in Autogram, and the signed document goes back to the website. You do not have to download, save or upload anything, and Autogram does not save the signed document anywhere.

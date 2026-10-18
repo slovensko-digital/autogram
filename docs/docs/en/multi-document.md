@@ -1,3 +1,7 @@
+---
+description: "How to open a container with several documents in Autogram, look through them, verify their signatures and add your own signature."
+---
+
 # Several documents in one container
 
 An ASiC-E container (`.asice` extension) can hold several documents that are signed together. In Slovakia this is also called *shared authorization of documents* (spoločná autorizácia). Autogram displays such a container, validates its signatures and adds your signature to it.

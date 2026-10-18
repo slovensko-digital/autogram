@@ -1,3 +1,7 @@
+---
+description: "Pre vývojárov: ako prepojiť webovú stránku alebo aplikáciu s Autogramom cez Autogram SDK alebo HTTP API."
+---
+
 # Integrácia cez HTTP API
 
 Táto stránka je pre vývojárov webových stránok a aplikácií, ktoré chcú podpisovať cez Autogram. Používateľ musí mať Autogram nainštalovaný vo svojom počítači.

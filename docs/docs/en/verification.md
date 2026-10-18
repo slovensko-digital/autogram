@@ -1,3 +1,7 @@
+---
+description: "How to verify the signatures on a document with Autogram, what the validation results mean and where to find the signature details."
+---
+
 # Verifying signatures
 
 Autogram validates the signatures on every document you open. You need no card or certificate for that, only an internet connection.

@@ -1,3 +1,7 @@
+---
+description: "Riešenie častých problémov s Autogramom: podpisovanie na webových stránkach, karty a PIN, dokumenty a podpisy."
+---
+
 # Riešenie problémov
 
 ## Podpisovanie na webových stránkach

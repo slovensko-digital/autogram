@@ -1,3 +1,8 @@
+---
+description: "How to sign and verify electronic documents with Autogram, a free application for Windows, macOS and Linux, on websites and on your computer."
+titleAppend: false
+---
+
 # Autogram user guide
 
 Autogram is a free application for Windows, macOS and Linux for signing and verifying electronic documents. Its signatures follow the European eIDAS regulation and Slovak standards, so they are accepted by public authorities and private companies alike. Autogram is developed by Slovensko.Digital and its source code is public.

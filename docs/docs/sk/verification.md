@@ -1,3 +1,7 @@
+---
+description: "Ako Autogramom overiť podpisy na dokumente, čo znamenajú výsledky overenia a kde nájdete detail podpisov."
+---
+
 # Overenie podpisov
 
 Autogram overí podpisy na každom dokumente, ktorý otvoríte. Na overenie nepotrebujete kartu ani certifikát, stačí pripojenie na internet.

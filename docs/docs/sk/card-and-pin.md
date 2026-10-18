@@ -1,3 +1,7 @@
+---
+description: "Čo nasleduje po kliknutí na Podpísať: výber karty, kód k úložisku kľúčov, výber certifikátu a zadanie podpisového PIN-u."
+---
+
 # Výber karty a zadanie PIN-u
 
 Po kliknutí na **Podpísať** Autogram zistí, kde máte podpisový certifikát, a vypýta si PIN. Podľa toho, akú kartu máte, prejdete niektorými z týchto krokov:

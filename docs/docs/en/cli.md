@@ -1,3 +1,7 @@
+---
+description: "How to sign with Autogram from the command line and in scripts, the list of options and where the signed files are saved."
+---
+
 # Command line (CLI)
 
 Autogram can sign without its graphical interface, which is useful for signing many files at once or in scripts. Use `autogram-cli` on Windows and `autogram` on macOS and Linux.

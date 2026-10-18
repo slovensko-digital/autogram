@@ -1,3 +1,7 @@
+---
+description: "How to sign several documents at once, one by one or in bulk. You enter the PIN only once, however many documents there are."
+---
+
 # Several documents at once
 
 To sign several documents, you do not have to open them one at a time. In the main window click **Select file** and select several files, or drag a whole folder into the window.

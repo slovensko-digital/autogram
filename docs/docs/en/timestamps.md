@@ -1,3 +1,7 @@
+---
+description: "How to add a free qualified timestamp to your signature. A qualified signature with a timestamp does not have to be certified."
+---
+
 # Signature with a timestamp
 
 Autogram can add a qualified timestamp to your signature. A timestamp from a trusted provider confirms when you signed the document. With it, the signature stays verifiable even after your certificate expires.

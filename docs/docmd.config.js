@@ -1,7 +1,7 @@
 import { defineConfig } from "@docmd/core";
 
 export default defineConfig({
-  title: 'Autogram - Dokumentácia / User guide',
+  title: 'Autogram', // appended to page titles in <title> and og:title, so it has to fit both languages
   url: process.env.DOCMD_SITE_URL || 'http://localhost:3000',
 
   // --- Branding ---
@@ -134,7 +134,6 @@ export default defineConfig({
   plugins: {
     seo: {
       defaultDescription: 'Autogram - používateľská príručka na podpisovanie a overovanie dokumentov / User guide for signing and verifying documents.',
-      openGraph: { defaultImage: '' },
       twitter: { cardType: 'summary_large_image' }
     },
     sitemap: { defaultChangefreq: 'weekly' },
@@ -145,6 +144,7 @@ export default defineConfig({
     ai: false,
     okf: false,
     './plugins/font-preload.js': {},
+    './plugins/open-graph.js': {}, // og:site_name, og:locale and the share image per language
   },
   
   // --- Edit Link ---

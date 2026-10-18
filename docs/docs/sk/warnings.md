@@ -1,3 +1,7 @@
+---
+description: "Čo znamenajú upozornenia, ktoré Autogram zobrazí pred podpisom, napríklad pri dokumente bez náhľadu alebo s nedôveryhodnými podpismi."
+---
+
 # Upozornenia pred podpisom
 
 Autogram pred podpisom kontroluje dokument aj podpisy, ktoré už obsahuje. Keď niečo nie je v poriadku, upozorní vás a rozhodnutie nechá na vás. Upozornenie neznamená chybu, ale vec, ktorú si treba všimnúť.

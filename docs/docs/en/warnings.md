@@ -1,3 +1,7 @@
+---
+description: "What the warnings Autogram shows before signing mean, for example for a document without a preview or with untrusted signatures."
+---
+
 # Warnings before signing
 
 Before signing, Autogram checks the document and the signatures it already has. When something is not right, it warns you and leaves the decision to you. A warning is not an error, but something you should notice.

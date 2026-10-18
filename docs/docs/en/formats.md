@@ -1,3 +1,7 @@
+---
+description: "Which files Autogram displays and signs, which signature types it creates (PAdES, XAdES, CAdES) and how it handles government forms and PDF/A."
+---
+
 # Formats and signature types
 
 This page explains which files Autogram can sign and display, and which signature it creates. You do not need it for everyday signing: Autogram picks a suitable format by itself.

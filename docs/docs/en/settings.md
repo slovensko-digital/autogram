@@ -1,3 +1,7 @@
+---
+description: "An overview of Autogram settings: signature type, timestamps, signature validation, security and other options."
+---
+
 # Settings
 
 Open the settings with the **Settings** link at the bottom of the main window. They are divided into four tabs. Save your changes with **Save settings**. **Reset settings** returns all settings to their default values.

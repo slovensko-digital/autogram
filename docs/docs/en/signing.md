@@ -1,3 +1,7 @@
+---
+description: "How to sign a file stored on your computer with Autogram: opening it, checking the document, signing and where the signed file is saved."
+---
+
 # Signing a file from your computer
 
 This is how you sign a file stored on your computer. If you are signing for the first time, rather follow [Your first signature step by step](first-signature.md), which has a picture for every step. If you are signing on a website, do not open the file in Autogram, the website sends it to Autogram by itself. See [Signing on websites](websites.md).

@@ -1,3 +1,7 @@
+---
+description: "A guide for beginners: your first signature in Autogram step by step, with a picture for every step."
+---
+
 # Your first signature step by step
 
 This guide takes you through your first signature in Autogram. You need no experience, just follow the steps. Some steps appear only with some cards. If a step does not appear for you, go on to the next one.

@@ -1,3 +1,7 @@
+---
+description: "Ako nainštalovať Autogram na Windows, macOS a Linux spolu so softvérom ku karte a rozšírením do prehliadača a ako ho aktualizovať."
+---
+
 # Inštalácia
 
 Autogram je zdarma pre Windows, macOS a Linux.

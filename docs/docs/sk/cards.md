@@ -1,3 +1,7 @@
+---
+description: "Ktoré karty Autogram podporuje (občiansky preukaz, Gemalto IDPrime 940, MONET+ ProID+Q, I.CA SecureStore, česká eObčanka) a aký softvér k nim potrebujete."
+---
+
 # Karty a certifikáty
 
 Na podpisovanie potrebujete podpisový certifikát a k nemu súkromný kľúč. Väčšinou sú uložené na čipovej karte, ktorú vložíte do čítačky, alebo na USB kľúči. Aby Autogram vedel s kartou pracovať, musí byť v počítači nainštalovaný jej obslužný softvér (ovládač).

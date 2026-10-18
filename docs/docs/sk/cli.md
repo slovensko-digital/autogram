@@ -1,3 +1,7 @@
+---
+description: "Ako podpisovať Autogramom z príkazového riadka a v skriptoch, prehľad prepínačov a kam sa podpísané súbory uložia."
+---
+
 # Príkazový riadok (CLI)
 
 Autogram vie podpisovať aj bez grafického rozhrania, čo sa hodí na podpisovanie veľkého počtu súborov naraz alebo v skriptoch. Na Windows použite `autogram-cli`, na macOS a Linuxe `autogram`.

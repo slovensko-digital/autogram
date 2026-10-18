@@ -108,6 +108,20 @@ Custom JavaScript (`customJs` in `docmd.config.js`):
 `<link rel="preload">` for both webfonts. Together with `font-display: fallback` in
 `branding.css`, the text is laid out in Source Sans Pro from the first paint instead of
 switching from the fallback font, which made the headings jump on every page load.
+
+`plugins/open-graph.js` adds the Open Graph tags docmd's seo plugin leaves out: `og:site_name`,
+`og:locale` with the other language as `og:locale:alternate`, and the share image for the
+page's language, `assets/images/og-image-sk.png` or `og-image-en.png` (1200×630 PNG, with its
+size and alt text, also as `twitter:image`). The image URL is absolute, so links shared from a
+build without `DOCMD_SITE_URL` point to `localhost`. Leave `openGraph.defaultImage` in the seo
+plugin and `image` in page frontmatter unset, otherwise the image tags appear twice.
+
+Every page has a `description` in its frontmatter, in the page's language. docmd uses it for
+`<meta name="description">`, `og:description` and `llms.txt`; a page without one falls back to
+the bilingual `defaultDescription`, so give new pages their own. `title` in the configuration is
+just `Autogram`, because docmd appends it to every page title in both languages
+("Viac dokumentov naraz - Autogram"). The home pages set `titleAppend: false`, as their heading
+already names Autogram.
 There is no additional UI framework. Dark mode is a
 contrasting adaptation, not an official ID-SK dark theme. This is visual alignment,
 not a claim of certified compliance or an official public-administration website.
@@ -129,7 +143,7 @@ underline, which sits behind the bottom of the `g`, as in the original logo.
 The dark logo uses white lettering and a white underline. The matching favicon
 uses the same outlined `A`, always with light-logo colors regardless of the theme.
 
-Only the Autogram wordmarks, favicon and shared Autogram screenshots are kept as
+Only the Autogram wordmarks, favicon, share images and shared Autogram screenshots are kept as
 project image assets. `node_modules/` contains required docmd dependencies and
 `dist/` is generated output, not documentation source.
 

@@ -1,3 +1,7 @@
+---
+description: "Solutions to common problems with Autogram: signing on websites, cards and PIN, documents and signatures."
+---
+
 # Troubleshooting
 
 ## Signing on websites

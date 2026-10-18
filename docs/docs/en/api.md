@@ -1,3 +1,7 @@
+---
+description: "For developers: how to connect a website or application to Autogram through the Autogram SDK or the HTTP API."
+---
+
 # Integration through the HTTP API
 
 This page is for developers of websites and applications that want to sign through Autogram. The user must have Autogram installed on their computer.

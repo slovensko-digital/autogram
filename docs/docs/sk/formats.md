@@ -1,3 +1,7 @@
+---
+description: "Aké súbory Autogram zobrazí a podpíše, aké typy podpisov vytvára (PAdES, XAdES, CAdES) a ako pracuje s formulármi verejnej správy a PDF/A."
+---
+
 # Formáty a typy podpisov
 
 Táto stránka vysvetľuje, aké súbory Autogram vie podpísať a zobraziť a aký podpis z nich vznikne. Pri bežnom podpisovaní ju nepotrebujete, Autogram vyberie vhodný formát sám.

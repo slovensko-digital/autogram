@@ -1,3 +1,7 @@
+---
+description: "Návod pre začiatočníkov: prvý podpis dokumentu v Autograme krok za krokom, s obrázkom ku každému kroku."
+---
+
 # Prvý podpis krok za krokom
 
 Tento návod vás prevedie prvým podpisom v Autograme. Nepotrebujete žiadne skúsenosti, stačí postupovať po krokoch. Niektoré kroky sa zobrazia iba pri niektorých kartách. Ak sa vám krok nezobrazí, pokračujte ďalším.

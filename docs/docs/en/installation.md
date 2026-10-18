@@ -1,3 +1,7 @@
+---
+description: "How to install Autogram on Windows, macOS and Linux together with the card software and the browser extension, and how to update it."
+---
+
 # Installation
 
 Autogram is free for Windows, macOS and Linux.

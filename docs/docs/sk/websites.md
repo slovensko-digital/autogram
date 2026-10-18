@@ -1,3 +1,7 @@
+---
+description: "Ako podpisovať Autogramom priamo na webových stránkach a v aplikáciách úradov a firiem aj na štátnych weboch s rozšírením do prehliadača."
+---
+
 # Podpisovanie na webových stránkach
 
 Najčastejšie sa Autogram používa na podpisovanie priamo z webových stránok a aplikácií. Stránka pošle dokument Autogramu, vy ho v Autograme skontrolujete a podpíšete a podpísaný dokument sa vráti späť na stránku. Nemusíte nič sťahovať, ukladať ani nahrávať a Autogram podpísaný dokument nikam neukladá.

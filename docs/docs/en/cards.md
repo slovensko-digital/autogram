@@ -1,3 +1,7 @@
+---
+description: "Which cards Autogram supports (Slovak ID card, Gemalto IDPrime 940, MONET+ ProID+Q, I.CA SecureStore, Czech eObčanka) and which software they need."
+---
+
 # Cards and certificates
 
 To sign, you need a signing certificate and its private key. They are usually stored on a smart card that you insert into a reader, or on a USB key. For Autogram to work with the card, the card's software (driver) must be installed on your computer.

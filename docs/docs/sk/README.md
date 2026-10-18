@@ -1,3 +1,8 @@
+---
+description: "Ako podpisovať a overovať elektronické dokumenty bezplatnou aplikáciou Autogram pre Windows, macOS a Linux, na webových stránkach aj v počítači."
+titleAppend: false
+---
+
 # Používateľská príručka Autogramu
 
 Autogram je bezplatná aplikácia pre Windows, macOS a Linux na podpisovanie a overovanie elektronických dokumentov. Podpisy vytvára podľa európskeho nariadenia eIDAS a slovenských štandardov, takže ich prijímajú úrady aj súkromné firmy. Autogram vyvíja Slovensko.Digital a jeho zdrojové kódy sú verejné.

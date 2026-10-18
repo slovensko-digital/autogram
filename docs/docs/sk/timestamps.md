@@ -1,3 +1,7 @@
+---
+description: "Ako pridať k podpisu bezplatnú kvalifikovanú časovú pečiatku. Pri kvalifikovanom podpise s ňou sa nevyžaduje osvedčenie pravosti podpisu."
+---
+
 # Podpis s časovou pečiatkou
 
 Autogram môže k vášmu podpisu pridať kvalifikovanú časovú pečiatku. Pečiatka od dôveryhodného poskytovateľa potvrdzuje, kedy ste dokument podpísali. Podpis s ňou ostane overiteľný aj po skončení platnosti vášho certifikátu.

@@ -1,3 +1,7 @@
+---
+description: "Ako v Autograme podpísať súbor uložený v počítači: otvorenie, kontrola dokumentu, podpísanie a kam sa podpísaný súbor uloží."
+---
+
 # Podpísanie súboru z počítača
 
 Takto podpíšete súbor, ktorý máte uložený v počítači. Ak podpisujete prvýkrát, prejdite si radšej [Prvý podpis krok za krokom](first-signature.md), kde je ku každému kroku obrázok. Ak podpisujete na webovej stránke, súbor v Autograme neotvárajte, stránka ho Autogramu pošle sama. Pozrite si [Podpisovanie na webových stránkach](websites.md).
