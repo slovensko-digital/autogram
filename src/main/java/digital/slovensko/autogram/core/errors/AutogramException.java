@@ -56,6 +56,14 @@ public class AutogramException extends RuntimeException {
         return HasI18n.translate(resources, "error.%s.description".formatted(errorCode), i18nArgs);
     }
 
+    /**
+     * Page of the user guide that helps with this error, relative to {@code docs.url}, or null if there is none.
+     */
+    public String getHelpPage(ResourceBundle resources) {
+        var key = "error.%s.help".formatted(errorCode);
+        return resources != null && resources.containsKey(key) ? resources.getString(key) : null;
+    }
+
     public static AutogramException createFromDSSException(DSSException e) {
         for (Throwable cause = e; cause != null && cause.getCause() != cause; cause = cause.getCause()) {
             if (cause.getMessage() != null) {

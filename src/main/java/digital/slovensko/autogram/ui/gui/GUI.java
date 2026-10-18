@@ -232,7 +232,7 @@ public class GUI implements UI {
 
     @Override
     public void showError(AutogramException e) {
-        GUIUtils.showError(e, "general.continue.btn", false);
+        GUIUtils.showError(e, "general.continue.btn", false, hostServices);
     }
 
     public void showPkcsEidWindowsDllError(AutogramException e) {
@@ -346,7 +346,7 @@ public class GUI implements UI {
         if (!jobControllers.containsKey(job))
             return; // the signing window was closed before the check finished
 
-        var controller = new PDFAComplianceDialogController(job, this);
+        var controller = new PDFAComplianceDialogController(job, this, hostServices);
         var root = GUIUtils.loadFXML(controller, "pdfa-compliance-dialog.fxml");
 
         var stage = new Stage();
@@ -415,7 +415,7 @@ public class GUI implements UI {
 
     @Override
     public void showIgnorableExceptionDialog(IgnorableException e) {
-        var controller = new IgnorableExceptionDialogController(e);
+        var controller = new IgnorableExceptionDialogController(e, hostServices);
         var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");
 
         var stage = new Stage();

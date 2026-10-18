@@ -1009,6 +1009,11 @@ TextFlow.autogram-body-s {
   -fx-rotate: 90;
 }
 
+.autogram-error-summary__help {
+  -fx-padding: 0;
+  -fx-font-size: 1em;
+}
+
 .autogram-loading {
   -fx-padding: 4em;
   -fx-alignment: center;
