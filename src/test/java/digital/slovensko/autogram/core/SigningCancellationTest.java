@@ -1,14 +1,12 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.TestAutogramFactory;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class SigningCancellationTest {

@@ -12,6 +12,7 @@ import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.model.FileDocument;
+import javafx.application.HostServices;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -27,13 +28,15 @@ import java.util.List;
 public class MainMenuController extends BaseController implements SuppressedFocusController {
     private final Autogram autogram;
     private final UserSettings userSettings;
+    private final HostServices hostServices;
 
     @FXML
     VBox dropZone;
 
-    public MainMenuController(Autogram autogram, UserSettings userSettings) {
+    public MainMenuController(Autogram autogram, UserSettings userSettings, HostServices hostServices) {
         this.autogram = autogram;
         this.userSettings = userSettings;
+        this.hostServices = hostServices;
     }
 
     @Override
@@ -143,6 +146,10 @@ public class MainMenuController extends BaseController implements SuppressedFocu
 
     public void onAboutButtonAction() {
         autogram.onAboutInfo();
+    }
+
+    public void onDocsButtonAction() {
+        GUIUtils.openDocs(hostServices, resources, "");
     }
 
     public void onSettingButtonAction() {

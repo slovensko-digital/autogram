@@ -16,30 +16,21 @@ import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.ui.gui.IgnorableException;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.security.KeyStore;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * Wires up an {@link Autogram} instance backed by the test PKCS12 keystore
- * (src/test/resources/digital/slovensko/autogram/core/test.keystore) so that
- * tests outside the core package can drive real signing without any UI or
- * hardware token.
+ * Wires up an {@link Autogram} instance that signs as {@link TestPki#JANA} with timestamps from the test TSA
+ * ({@link TestPki#shared()}), so that tests outside the core package can drive real signing without any UI,
+ * hardware token or network.
  */
 public class TestAutogramFactory {
-    private static final String TEST_KEYSTORE_RESOURCE = "/digital/slovensko/autogram/core/test.keystore";
-    private static final String TEST_TSA_URL = "https://freetsa.org/tsr";
-
     public static Autogram create(UI ui) {
-        var settings = new FakeSettings();
-        settings.setTsaServer(TEST_TSA_URL);
-        return new Autogram(ui, settings);
+        return new Autogram(ui, new FakeSettings());
     }
 
     public static Autogram create() {
@@ -51,6 +42,11 @@ public class TestAutogramFactory {
         public DriverDetector getDriverDetector() {
             return () -> List.of(new FakeTokenDriver());
         }
+
+        @Override
+        public TSPSource getTspSource() {
+            return TestPki.shared().tspSource();
+        }
     }
 
     private static class FakeTokenDriver extends TokenDriver {
@@ -60,12 +56,7 @@ public class TestAutogramFactory {
 
         @Override
         public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
-            try {
-                var keystore = Objects.requireNonNull(getClass().getResource(TEST_KEYSTORE_RESOURCE)).getFile();
-                return new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection("".toCharArray()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            return TestPki.shared().signer(TestPki.JANA).token();
         }
     }
 

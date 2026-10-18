@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.util.OperatingSystem;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ResourceBundle;
 
 public class GUIUtils {
 
@@ -106,13 +108,22 @@ public class GUIUtils {
         w.setHeight(w.getHeight() - 1);
     }
 
-    public static void showError(AutogramException e, String buttonI18nKey, boolean wait) {
-        showError(e, buttonI18nKey, wait, false);
+    /**
+     * Opens a page of the user guide in the language of the app.
+     *
+     * @param page path relative to {@code docs.url}, e.g. {@code troubleshooting/#obmedzeny-rezim}
+     */
+    public static void openDocs(HostServices hostServices, ResourceBundle resources, String page) {
+        hostServices.showDocument(HasI18n.translate(resources, "docs.url") + page);
     }
 
-    public static void showError(AutogramException e, String buttonI18nKey, boolean wait, boolean errorDetailsDisabled) {
+    public static void showError(AutogramException e, String buttonI18nKey, boolean wait, HostServices hostServices) {
+        showError(e, buttonI18nKey, wait, false, hostServices);
+    }
+
+    public static void showError(AutogramException e, String buttonI18nKey, boolean wait, boolean errorDetailsDisabled, HostServices hostServices) {
         logger.debug("GUI showing error", e);
-        var controller = new ErrorController(e, errorDetailsDisabled);
+        var controller = new ErrorController(e, errorDetailsDisabled, hostServices);
         var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
         controller.setMainButtonText(buttonI18nKey);
 

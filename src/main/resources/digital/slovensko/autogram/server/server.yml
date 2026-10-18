@@ -25,9 +25,6 @@ tags:
     description: Information and status of the server
   - name: Batch
     description: Signing multiple documents in batch, with same signature. Process is [start batch](#/Batch/startBatch), [sign document](#/Batch/signDocument),... , sign document, [end batch](#/Batch/endBatch).
-    externalDocs:
-      description: More info
-      url: https://github.com/slovensko-digital/autogram/tree/main/docs/batch-sign-api.md
   - name: Legacy
     description: Legacy endpoints with simplified request body for signing one document. These endpoints are still supported but for new integrations prefer the more flexible `/api/v1/sign` endpoint.
 paths:

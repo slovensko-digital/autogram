@@ -24,6 +24,10 @@ public class PkcsEidWindowsDllErrorController extends BaseController implements 
         hostServices.showDocument("https://sluzby.slovensko.digital/autogram/vc-redist-redirect");
     }
 
+    public void onHelpLinkAction(ActionEvent ignored) {
+        GUIUtils.openDocs(hostServices, resources, i18n("error.PkcsEidWindowsDllException.help"));
+    }
+
     public void onMainButtonAction() {
         ((Stage) mainBox.getScene().getWindow()).close();
     }
