@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.server;
 
-import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.server.errors.*;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
@@ -35,18 +34,18 @@ public class ErrorResponseBuilder {
             case InitializationFailedException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("INITIALIZATION_FAILED", ex));
             case PINIncorrectException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("PIN_INCORRECT", ex));
             case FunctionCanceledException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("FUNCTION_CANCELED", ex));
-            case UnsupportedSignatureLevelException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNSUPPORTED_SIGNATURE_LEVEL", ex));
+            case PdfPasswordProtectedException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("LOCKED_PDF", ex));
             case RequestValidationException _,
                  XMLValidationException _,
                  SigningParametersException _,
                  EFormException _,
                  TransformationException _,
-                 TransformationParsingErrorException _ ->
+                 TransformationParsingErrorException _,
+                 MalformedBodyException _ ->
                     new ErrorResponse(422, instance.buildResponseWithTranslations("UNPROCESSABLE_INPUT", (AutogramException) e));
             case MultipleOriginalDocumentsFoundException ex ->
                     new ErrorResponse(422, instance.buildResponseWithTranslations("MULTIPLE_ORIGINAL_DOCUMENTS", ex));
             case OriginalDocumentNotFoundException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("ORIGINAL_DOCUMENT_NOT_FOUND", ex));
-            case MalformedBodyException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("MALFORMED_INPUT", ex));
             case UnknownEformException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("UNKNOWN_EFORM", ex));
             case BatchCanceledException ex -> new ErrorResponse(502, instance.buildResponseWithTranslations("BATCH_CANCELED", ex));
             case EmptyBodyException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("EMPTY_BODY", ex));
@@ -56,6 +55,8 @@ public class ErrorResponseBuilder {
             case BatchInvalidIdException ex -> new ErrorResponse(404, instance.buildResponseWithTranslations("BATCH_NOT_FOUND", ex));
             case NoDriversDetectedException ex -> new ErrorResponse(404, instance.buildResponseWithTranslations("DRIVER_NOT_FOUND", ex));
             case BatchConflictException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("BATCH_CONFLICT", ex));
+            case BatchInProgressException ex -> new ErrorResponse(503, instance.buildResponseWithTranslations("BATCH_IN_PROGRESS", ex));
+            case BatchTooManyDocumentsException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("BATCH_TOO_MANY_DOCUMENTS", ex));
             case InvalidUrlParamException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("INVALID_URL_PARAM", ex));
             case CertificatesReadingConsentRejectedException ex ->
                     new ErrorResponse(403, instance.buildResponseWithTranslations("CERTIFICATES_READING_CONSENT_REJECTED", ex));

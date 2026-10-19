@@ -1,13 +1,19 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.server.errors.RequestValidationException;
+import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.dto.SignedDocumentSignature;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 
+import java.util.List;
+
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.CONTAINER_UNSUPPORTED;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MIME_TYPE_MISMATCH;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_CONTAINER_UNSUPPORTED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_FORMAT_UNSUPPORTED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SIGNED_DOCUMENT_CONTAINER_MISMATCH;
@@ -88,6 +94,10 @@ public class VersionedSigningParameters {
         );
     }
 
+    SignatureForm getForm() {
+        return form;
+    }
+
     public void resolveSignatureFormatAndContainer(boolean isMultiDocument) {
         if (profile == null)
             profile = SignatureProfile.BASELINE_B;
@@ -103,6 +113,19 @@ public class VersionedSigningParameters {
 
         if (container != null && container != ASiCContainerType.ASiC_E)
             throw new RequestValidationException(MULTI_DOCUMENT_CONTAINER_UNSUPPORTED);
+    }
+
+    // PAdES signs the PDF itself, so it accepts neither another document type nor a container
+    public void validatePadesCompatibility(List<MimeType> documentMimeTypes) {
+        if (form != SignatureForm.PAdES)
+            return;
+
+        for (var mimeType : documentMimeTypes)
+            if (!AutogramMimeType.isPDF(mimeType))
+                throw new RequestValidationException(MIME_TYPE_MISMATCH, mimeType.getMimeTypeString());
+
+        if (container != null)
+            throw new RequestValidationException(CONTAINER_UNSUPPORTED);
     }
 
     public void applySignedDocumentSignature(SignedDocumentSignature signedDocumentSignature) {

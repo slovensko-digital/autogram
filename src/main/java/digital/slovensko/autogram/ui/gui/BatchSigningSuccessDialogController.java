@@ -7,6 +7,8 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import javafx.scene.layout.VBox;
 
 public class BatchSigningSuccessDialogController extends BaseController implements SuppressedFocusController {
     private final HostServices hostServices;
@@ -19,6 +21,18 @@ public class BatchSigningSuccessDialogController extends BaseController implemen
 
     @FXML
     Text successCount;
+    @FXML
+    VBox confirmationBox;
+    @FXML
+    Text heading;
+    @FXML
+    TextFlow successCountFlow;
+    @FXML
+    TextFlow skippedCountFlow;
+    @FXML
+    Text skippedCount;
+    @FXML
+    TextFlow folderFlow;
 
 
     public BatchSigningSuccessDialogController(BatchUiResult result, HostServices hostServices)  {
@@ -34,6 +48,25 @@ public class BatchSigningSuccessDialogController extends BaseController implemen
                 .map(file -> file.getName())
                 .toList();
         successCount.setText(String.valueOf(signedFileNamesList.size()));
+
+        var signed = result.getSignedCount();
+        var skipped = result.getSkippedCount();
+        skippedCount.setText(String.valueOf(skipped));
+        show(skippedCountFlow, skipped > 0);
+        show(successCountFlow, signed > 0);
+        show(folderFlow, signed > 0);
+        show(folderPathText, signed > 0);
+        if (signed == 0)
+            heading.setText(i18n("batchSigning.nothingSigned.title"));
+        if (skipped > 0) {
+            confirmationBox.getStyleClass().remove("autogram-confirmation--success");
+            confirmationBox.getStyleClass().add("autogram-confirmation--warning");
+        }
+    }
+
+    private static void show(Node node, boolean visible) {
+        node.setVisible(visible);
+        node.setManaged(visible);
     }
 
     public void onOpenFolderAction(ActionEvent ignored) {

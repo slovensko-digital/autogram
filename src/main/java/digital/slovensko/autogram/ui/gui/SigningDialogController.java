@@ -83,6 +83,10 @@ public class SigningDialogController extends BaseController implements Suppresse
     @FXML
     public Button changeKeyButton;
     @FXML
+    Button skipButton;
+    @FXML
+    Button skipRemainingButton;
+    @FXML
     VBox unsupportedVisualizationInfoBox;
     @FXML
     VBox signaturesTable;
@@ -118,6 +122,10 @@ public class SigningDialogController extends BaseController implements Suppresse
         });
         setupDocumentTabs();
         refreshSigningKey();
+        skipButton.setManaged(job.isPartOfBatch() && job.getBatch().isInteractive());
+        skipButton.setVisible(skipButton.isManaged());
+        skipRemainingButton.setManaged(skipButton.isManaged());
+        skipRemainingButton.setVisible(skipButton.isManaged());
         autogram.checkPDFACompliance(job);
     }
 
@@ -351,6 +359,7 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
         gui.resetSigningKey();
+        autogram.requestAnotherToken();
         checkExistingSignatureValidityAndSign();
     }
 
@@ -435,6 +444,13 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     public void refreshSigningKey() {
+        if (gui.isSigningBlockedByBatch(job)) {
+            mainButton.setText(i18n("signing.batchInProgress.btn"));
+            mainButton.setDisable(true);
+            changeKeyButton.setVisible(false);
+            return;
+        }
+
         var key = gui.getActiveSigningKey();
         if (key == null) {
             mainButton.setText(i18n(job.isMultiDocument() ? "general.sign.btn.multi" : "general.sign.btn.single"));
@@ -447,6 +463,9 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     public void enableSigning() {
         refreshSigningKey();
+        if (gui.isSigningBlockedByBatch(job))
+            return;
+
         mainButton.setDisable(false);
         changeKeyButton.setDisable(false);
     }
@@ -464,6 +483,14 @@ public class SigningDialogController extends BaseController implements Suppresse
         if (window instanceof Stage) {
             ((Stage) window).close();
         }
+    }
+
+    public void onSkipButtonPressed(ActionEvent ignored) {
+        autogram.skipCurrentDocument(job);
+    }
+
+    public void onSkipRemainingButtonPressed(ActionEvent ignored) {
+        autogram.skipRemainingDocuments(job);
     }
 
     public void disableKeyPicking() {

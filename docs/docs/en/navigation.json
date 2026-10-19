@@ -1,0 +1,90 @@
+[
+  {
+    "title": "Introduction",
+    "path": "/"
+  },
+  {
+    "title": "Getting started",
+    "children": [
+      {
+        "title": "Installation",
+        "path": "/installation"
+      },
+      {
+        "title": "Cards and certificates",
+        "path": "/cards"
+      },
+      {
+        "title": "Your first signature step by step",
+        "path": "/first-signature"
+      }
+    ]
+  },
+  {
+    "title": "Signing",
+    "children": [
+      {
+        "title": "Signing on websites",
+        "path": "/websites"
+      },
+      {
+        "title": "Signing a file from your computer",
+        "path": "/signing"
+      },
+      {
+        "title": "Choosing a card and entering the PIN",
+        "path": "/card-and-pin"
+      },
+      {
+        "title": "Several documents at once",
+        "path": "/batch"
+      },
+      {
+        "title": "Signature with a timestamp",
+        "path": "/timestamps"
+      },
+      {
+        "title": "Several documents in one container",
+        "path": "/multi-document"
+      }
+    ]
+  },
+  {
+    "title": "Verification",
+    "children": [
+      {
+        "title": "Verifying signatures",
+        "path": "/verification"
+      },
+      {
+        "title": "Warnings before signing",
+        "path": "/warnings"
+      }
+    ]
+  },
+  {
+    "title": "Settings",
+    "path": "/settings"
+  },
+  {
+    "title": "Advanced",
+    "children": [
+      {
+        "title": "Formats and signature types",
+        "path": "/formats"
+      },
+      {
+        "title": "Command line (CLI)",
+        "path": "/cli"
+      },
+      {
+        "title": "Integration through the HTTP API",
+        "path": "/api"
+      }
+    ]
+  },
+  {
+    "title": "Troubleshooting",
+    "path": "/troubleshooting"
+  }
+]

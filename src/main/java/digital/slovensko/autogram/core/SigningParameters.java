@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
@@ -49,7 +48,7 @@ public class SigningParameters {
     static SigningParameters buildParameters(
             SignatureProfile profile, SignatureForm form, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled) throws AutogramException {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled) throws SigningParametersException {
 
         if (profile == null)
             throw new SigningParametersException(NO_LEVEL);
