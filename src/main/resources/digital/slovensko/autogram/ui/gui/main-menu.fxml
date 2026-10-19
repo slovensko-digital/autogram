@@ -33,6 +33,7 @@
         <HBox styleClass="autogram-footer">
             <Button styleClass="autogram-link" onAction="#onAboutButtonAction" text="%main.about.btn"/>
             <Button styleClass="autogram-link" onAction="#onSettingButtonAction" text="%general.settings"/>
+            <Button styleClass="autogram-link" onAction="#onDocsButtonAction" text="%main.docs.btn"/>
         </HBox>
     </bottom>
 </BorderPane>

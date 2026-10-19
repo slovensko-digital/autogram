@@ -42,7 +42,7 @@ public class CliApp {
             var parameters = settings.getSigningParameters();
             var jobs = Arrays.stream(sourceList).filter(f -> f.isFile())
                         .map(f -> SigningJob.fromInput(
-                            SigningInput.fromFile(AutogramDocument.build(new FileDocument(f), EFormAttributes.build(parameters, true)), parameters),
+                            SigningInput.fromFile(AutogramDocument.buildFromFile(new FileDocument(f), EFormAttributes.build(parameters, true)), parameters),
                             new SaveFileResponder(f, finalAutogram, targetPathBuilder)))
                     .toList();
             if (settings.isPdfaCompliance()) {
@@ -53,7 +53,7 @@ public class CliApp {
             }
 
             ui.setJobsCount(jobs.size());
-            jobs.forEach(autogram::sign);
+            jobs.forEach(autogram::startSigning);
 
         } catch (InvalidProxyConfigurationException e) {
             System.err.println("Configuration error: " + e.getMessage());

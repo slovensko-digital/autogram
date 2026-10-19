@@ -1,0 +1,13 @@
+{
+  "name": "autogram-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "docmd dev",
+    "build": "docmd build",
+    "validate": "docmd validate"
+  },
+  "devDependencies": {
+    "@docmd/core": "^0.9.8"
+  }
+}

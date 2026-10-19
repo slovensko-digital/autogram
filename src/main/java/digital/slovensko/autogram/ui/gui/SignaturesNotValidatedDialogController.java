@@ -29,7 +29,7 @@ public class SignaturesNotValidatedDialogController implements SuppressedFocusCo
 
     public void onCancelAction() {
         close();
-        signigDialogController.close();
+        signigDialogController.cancel();
     }
 
     public void onContinueAction() {

@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
+import javafx.application.HostServices;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -10,6 +11,7 @@ import javafx.stage.Stage;
 public class ErrorController extends BaseController implements SuppressedFocusController {
     private final AutogramException exception;
     private final boolean errorDetailsDisabled;
+    private final HostServices hostServices;
 
     @FXML
     VBox mainBox;
@@ -20,18 +22,19 @@ public class ErrorController extends BaseController implements SuppressedFocusCo
     @FXML
     ErrorSummaryComponentController errorSummaryComponentController; // this is {include fx:id} + "Controller"
 
-    public ErrorController(AutogramException e) {
-        this.exception = e;
-        this.errorDetailsDisabled = false;
+    public ErrorController(AutogramException e, HostServices hostServices) {
+        this(e, false, hostServices);
     }
 
-    public ErrorController(AutogramException e, boolean errorDetailsDisabled) {
+    public ErrorController(AutogramException e, boolean errorDetailsDisabled, HostServices hostServices) {
         this.exception = e;
         this.errorDetailsDisabled = errorDetailsDisabled;
+        this.hostServices = hostServices;
     }
 
     @Override
     public void initialize() {
+        errorSummaryComponentController.setHostServices(hostServices);
         errorSummaryComponentController.setException(exception);
 
         if (errorDetailsDisabled)

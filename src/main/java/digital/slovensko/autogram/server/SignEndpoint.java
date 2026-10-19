@@ -4,7 +4,6 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.ResponderInBatch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
@@ -24,19 +23,17 @@ public class SignEndpoint implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         try {
-            var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
-            body.validateDocument();
-            body.validateSigningParameters();
+            var legacyBody = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
+            var body = legacyBody.toVersionedBody();
 
-            var responder = body.getBatchId() == null ? new ServerResponder(exchange)
-                    : new ResponderInBatch(new ServerResponder(exchange), autogram.getBatch(body.getBatchId()));
-                var job = SigningJob.fromInput(
-                    body.getSigningInput(autogram.isPlainXmlEnabled()), responder);
-
-            if (body.getBatchId() != null)
-                autogram.batchSign(job, body.getBatchId());
-            else
-                autogram.sign(job);
+            var responder = new ServerResponder(exchange);
+            var input = body.getSigningInput(autogram.isPlainXmlEnabled());
+            if (body.batchId() != null) {
+                autogram.batchSign(input, responder, body.batchId());
+            } else {
+                var job = SigningJob.fromInput(input, responder);
+                autogram.startSigning(job);
+            }
 
         } catch (JsonSyntaxException | IOException e) {
             var response = ErrorResponseBuilder.buildFromException(new MalformedBodyException(JSON_PARSING_FAILED, e));
