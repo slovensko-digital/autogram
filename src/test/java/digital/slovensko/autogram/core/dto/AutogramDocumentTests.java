@@ -29,4 +29,12 @@ class AutogramDocumentTests {
 
         assertEquals(expectedName.strip(), autogramDocument.getName());
     }
+
+    @Test
+    void buildsDocumentWithoutName() {
+        var document = new InMemoryDocument("test".getBytes(), null, MimeTypeEnum.PDF);
+        var autogramDocument = AutogramDocument.build(document, null);
+
+        assertEquals(MimeTypeEnum.PDF, autogramDocument.getMimeType());
+    }
 }

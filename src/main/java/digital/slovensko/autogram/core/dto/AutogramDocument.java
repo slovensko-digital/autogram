@@ -148,7 +148,7 @@ public class AutogramDocument {
         var name = dssDocument.getName();
 
         if (mimeType != null && (AutogramMimeType.isXDC(mimeType)
-                || (AutogramMimeType.isXML(mimeType) || name.endsWith(".xdcf"))
+                || (AutogramMimeType.isXML(mimeType) || name != null && name.endsWith(".xdcf"))
                         && XDCValidator.isXDCContent(dssDocument))) {
             dssDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
         } else if (mimeType != null && AutogramMimeType.isTxt(mimeType)) {
