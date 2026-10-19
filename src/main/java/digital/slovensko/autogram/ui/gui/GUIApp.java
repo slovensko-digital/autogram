@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
+import digital.slovensko.autogram.core.SingleInstanceManager;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
@@ -37,7 +38,7 @@ public class GUIApp extends Application {
             autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService, userSettings.getTrustedList());
 
             final var params = LaunchParameters.fromParameters(getParameters());
-            final var controller = new MainMenuController(autogram, userSettings);
+            final var controller = new MainMenuController(autogram, userSettings, getHostServices());
 
             if (!params.isStandaloneMode())
                 GUIUtils.startIconified(windowStage);
@@ -57,7 +58,7 @@ public class GUIApp extends Application {
 
                 } catch (PortIsUsedException e) {
                     Platform.runLater(() -> {
-                        GUIUtils.showError(e, "error.restrictedMode.btn", true, true);
+                        GUIUtils.showError(e, "error.restrictedMode.btn", true, true, getHostServices());
                     });
 
                     server = null;
@@ -78,12 +79,26 @@ public class GUIApp extends Application {
             windowStage.setResizable(false);
             windowStage.show();
 
+            var singleInstanceManager = SingleInstanceManager.getInstance();
+            if (singleInstanceManager != null) {
+                // Forwarded args may also carry an autogram:// URL; the server is
+                // already running here, so only actual files trigger anything.
+                singleInstanceManager.onArgsReceived(args -> {
+                    var files = LaunchParameters.filesFrom(args);
+                    if (files.isEmpty())
+                        return;
+                    Platform.runLater(() -> controller.onFilesSelected(files));
+                });
+            } else if (!params.getFiles().isEmpty()) {
+                Platform.runLater(() -> controller.onFilesSelected(params.getFiles()));
+            }
+
         } catch (Exception e) {
             //ak nastane chyba, zobrazíme chybové okno a ukončíme aplikáciu
             var serverFinal = server; //pomocná premenná, do lambda výrazu nižšie musí vstupovať finalna premenná
             var finalAutogram = autogram;
             Platform.runLater(() -> {
-                GUIUtils.showError(new UnrecognizedException(e), "error.quit.btn",true);
+                GUIUtils.showError(new UnrecognizedException(e), "error.quit.btn", true, getHostServices());
                 if (serverFinal != null)
                     new Thread(serverFinal::stop).start();
 
@@ -97,6 +112,10 @@ public class GUIApp extends Application {
 
     @Override
     public void stop() throws Exception {
+        var singleInstanceManager = SingleInstanceManager.getInstance();
+        if (singleInstanceManager != null)
+            singleInstanceManager.shutdown();
+
         if (!scheduledExecutorService.awaitTermination(2, java.util.concurrent.TimeUnit.SECONDS))
             scheduledExecutorService.shutdownNow();
 

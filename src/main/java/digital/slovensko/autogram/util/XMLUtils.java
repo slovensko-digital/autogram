@@ -8,6 +8,9 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.validation.SchemaFactory;
 
+import net.sf.saxon.TransformerFactoryImpl;
+import net.sf.saxon.lib.Feature;
+import net.sf.saxon.trans.XPathException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
@@ -26,10 +29,18 @@ public abstract class XMLUtils {
     }
 
     public static TransformerFactory getSecureTransformerFactory() throws TransformerConfigurationException {
-        var transformerFactory = TransformerFactory.newInstance();
+        var transformerFactory = new TransformerFactoryImpl(new SecureSaxonConfiguration());
         transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
         transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
+        var configuration = transformerFactory.getConfiguration();
+        configuration.setConfigurationProperty(Feature.ALLOWED_PROTOCOLS, "#none");
+        configuration.setConfigurationProperty(Feature.ALLOW_EXTERNAL_FUNCTIONS, false);
+        configuration.setConfigurationProperty(Feature.DISABLE_XSL_EVALUATE, true);
+        configuration.setCollectionFinder((context, collectionURI) -> {
+            throw new XPathException("Access to collection " + collectionURI + " is not allowed", "FODC0002");
+        });
 
         return transformerFactory;
     }

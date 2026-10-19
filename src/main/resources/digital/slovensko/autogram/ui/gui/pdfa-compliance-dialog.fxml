@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
@@ -29,6 +30,10 @@
             <Text>&#160;->&#160;</Text>
             <Text style="-fx-font-weight: bold;" text="%settings.security.checkPDFACompliance.label"/>
             <Text>.</Text>
+        </TextFlow>
+        <TextFlow styleClass="autogram-warning-summary__description"><Text/></TextFlow>
+        <TextFlow styleClass="autogram-warning-summary__description">
+            <Hyperlink styleClass="autogram-link" text="%docs.more.btn" onAction="#onDocsAction"/>
         </TextFlow>
     </VBox>
 
