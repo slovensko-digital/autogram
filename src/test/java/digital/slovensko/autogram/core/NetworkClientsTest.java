@@ -41,6 +41,20 @@ class NetworkClientsTest {
     }
 
     @Test
+    void urlsThatAreNotValidUrisAreBlockedWithoutBreakingTheRemainingUrls() throws Exception {
+        try (var fixture = new LocalProxyFixture(directory)) {
+            var loader = NetworkClients.configure(new CommonsDataLoader(), ProxyConfiguration.parse(fixture.proxyUrl()));
+            var ldapUrl = "ldap://ldap.example.com/CN=Example CA,O=Example?certificateRevocationList";
+            assertThrows(DSSExternalResourceException.class, () -> loader.get(ldapUrl));
+            var result = loader.get(List.of(ldapUrl, fixture.httpUrl("/crl-fallback")));
+            assertEquals(fixture.httpUrl("/crl-fallback"), result.getUrlString());
+            assertEquals("fixture-resource", new String(result.getData()));
+            assertEquals(1, fixture.destinationRequests.get());
+            assertEquals(0, fixture.forbiddenConnections.get());
+        }
+    }
+
+    @Test
     void redirectsStayProxiedAndContentTypesArePreserved() throws Exception {
         try (var fixture = new LocalProxyFixture(directory)) {
             var configuration = ProxyConfiguration.parse(fixture.proxyUrl());
