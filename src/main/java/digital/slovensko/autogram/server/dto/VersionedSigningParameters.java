@@ -94,6 +94,10 @@ public class VersionedSigningParameters {
         );
     }
 
+    SignatureForm getForm() {
+        return form;
+    }
+
     public void resolveSignatureFormatAndContainer(boolean isMultiDocument) {
         if (profile == null)
             profile = SignatureProfile.BASELINE_B;
