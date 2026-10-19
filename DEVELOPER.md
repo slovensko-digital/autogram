@@ -5,6 +5,22 @@
 How card search, certificate picking and PKCS#11 drivers work, what to watch out for and how to test with real cards:
 [docs/cards-and-tokens.md](docs/cards-and-tokens.md) (in Slovak).
 
+# GUI accessibility tests
+
+The settings accessibility tests require a graphical display and are opt-in.
+They are skipped by the normal test command, including CI. With `JAVA_HOME`
+pointing to a JDK 25 distribution that includes JavaFX, run them on a desktop:
+
+```sh
+./mvnw test -P system-jdk -Dtest=SettingsDialogAccessibilityTest -Dautogram.guiTests=true
+```
+
+On Linux without a desktop display, install Xvfb and xauth, then run:
+
+```sh
+xvfb-run -a env -u WAYLAND_DISPLAY XDG_SESSION_TYPE=x11 GDK_BACKEND=x11 ./mvnw test -P system-jdk -Dtest=SettingsDialogAccessibilityTest -Dautogram.guiTests=true
+```
+
 # How to use FakeTokenDriver
 
 create empty file `fakeTokenDriver` in cwd - so in project root when developing, to enable "Fake token driver"

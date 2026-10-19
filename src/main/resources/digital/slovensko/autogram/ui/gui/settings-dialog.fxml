@@ -149,7 +149,7 @@
                 </Tab>
                 <Tab text="%settings.attestation.title">
                     <content>
-                        <ScrollPane>
+                        <ScrollPane fx:id="trustedCountriesScrollPane" focusTraversable="false">
                             <VBox styleClass="container">
                                 <TextFlow>
                                     <Text styleClass="autogram-heading-m" text="%settings.attestation.title"/>
