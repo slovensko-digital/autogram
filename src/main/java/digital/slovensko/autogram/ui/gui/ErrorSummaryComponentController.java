@@ -31,8 +31,12 @@ public class ErrorSummaryComponentController extends BaseController {
     @FXML
     Button showErrorDetailsButton;
 
+    @FXML
+    TextFlow helpFlow;
+
     private AutogramException exception;
     private HostServices hostServices;
+    private String helpPage;
 
     public ErrorSummaryComponentController() {
     }
@@ -52,6 +56,11 @@ public class ErrorSummaryComponentController extends BaseController {
             this.subheading.setVisible(false);
         }
         setDescription(exception.getDescription(resources));
+        helpPage = exception.getHelpPage(resources);
+        if (helpPage != null && hostServices != null) {
+            helpFlow.setManaged(true);
+            helpFlow.setVisible(true);
+        }
         if (exception.getCause() != null) {
             errorDetails.setText(GUIUtils.exceptionToString(exception));
             showErrorDetailsButton.setVisible(true);
@@ -98,6 +107,10 @@ public class ErrorSummaryComponentController extends BaseController {
     }
 
     public void initialize() {
+    }
+
+    public void onHelpLinkAction() {
+        GUIUtils.openDocs(hostServices, resources, helpPage);
     }
 
     public void onShowErrorDetailsButtonAction() {

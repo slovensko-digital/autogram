@@ -1,10 +1,12 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.TestMethodSources;
+import digital.slovensko.autogram.TestPki;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.visualization.HTMLVisualization;
 import digital.slovensko.autogram.server.dto.Document;
+import digital.slovensko.autogram.server.dto.LegacyDocument;
 import digital.slovensko.autogram.server.dto.ServerSigningParameters;
 import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.dto.VersionedSignRequestBody;
@@ -18,13 +20,11 @@ import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyStore;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -65,8 +65,9 @@ public class SigningJobTests {
                 null
         );
 
-        var signRequestBody = new SignRequestBody(new Document("document.xml", content), ssParams, "application/xml;base64");
-        var input = signRequestBody.getSigningInput(true);
+        var signRequestBody = new SignRequestBody(new LegacyDocument("document.xml", content), ssParams, "application/xml;base64");
+        var newSignRequestBody = signRequestBody.toVersionedBody();
+        var input = newSignRequestBody.getSigningInput(true);
         var job = SigningJob.fromInput(input, null);
         try {
             job.initializeVisualizations();
@@ -170,9 +171,7 @@ public class SigningJobTests {
         // A real certificate is required because DSS computes the encryption algorithm from it;
         // the signature itself stays mocked so no real signing happens.
         var key = mock(SigningKey.class);
-        var keystore = SigningJobTests.class
-                .getResource("/digital/slovensko/autogram/core/test.keystore").getFile();
-        try (var token = new Pkcs12SignatureToken(keystore, new KeyStore.PasswordProtection(new char[0]))) {
+        try (var token = TestPki.shared().signer(TestPki.JANA).token()) {
             var testKey = token.getKeys().get(0);
             when(key.getCertificate()).thenReturn(testKey.getCertificate());
             when(key.getCertificateChain()).thenReturn(testKey.getCertificateChain());

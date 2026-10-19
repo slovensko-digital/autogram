@@ -12,16 +12,21 @@
       fx:id="mainBox">
     <VBox>
 
-        <VBox styleClass="autogram-prose,autogram-confirmation,autogram-confirmation--success">
+        <VBox fx:id="confirmationBox" styleClass="autogram-prose,autogram-confirmation,autogram-confirmation--success">
             <TextFlow styleClass="autogram-heading-m">
-                <Text styleClass="autogram-heading-m" text="%batchSigning.success.summary.title" />
+                <Text fx:id="heading" styleClass="autogram-heading-m" text="%batchSigning.success.summary.title" />
             </TextFlow>
-            <TextFlow styleClass="autogram-body">
+            <TextFlow fx:id="successCountFlow" styleClass="autogram-body">
                 <Text styleClass="autogram-body" text="%batchSigning.success.count.before.text"/>
                 <Text fx:id="successCount" styleClass="autogram-font-weight-bold,autogram-body">X</Text>
                 <Text styleClass="autogram-body" text="%batchSigning.success.count.after.text"/>
             </TextFlow>
-            <TextFlow styleClass="autogram-body">
+            <TextFlow fx:id="skippedCountFlow" styleClass="autogram-body" visible="false" managed="false">
+                <Text styleClass="autogram-body" text="%batchSigning.skipped.count.before.text"/>
+                <Text fx:id="skippedCount" styleClass="autogram-font-weight-bold,autogram-body">X</Text>
+                <Text styleClass="autogram-body" text="%batchSigning.skipped.count.after.text"/>
+            </TextFlow>
+            <TextFlow fx:id="folderFlow" styleClass="autogram-body">
                 <Text styleClass="autogram-body" text="%batchSigning.success.folder.before.text" />
             </TextFlow>
             <Hyperlink styleClass="autogram-body,autogram-link,autogram-font-weight-bold"

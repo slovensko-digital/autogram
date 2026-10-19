@@ -37,6 +37,9 @@
                 </contextMenu>
             </Hyperlink>
         </TextFlow>
+        <TextFlow styleClass="autogram-body-s">
+            <Hyperlink styleClass="autogram-link,autogram-error-summary__help" text="%error.help.btn" onAction="#onHelpLinkAction"/>
+        </TextFlow>
     </VBox>
 
 

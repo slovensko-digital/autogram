@@ -38,7 +38,7 @@ public class GUIApp extends Application {
             autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService, userSettings.getTrustedList());
 
             final var params = LaunchParameters.fromParameters(getParameters());
-            final var controller = new MainMenuController(autogram, userSettings);
+            final var controller = new MainMenuController(autogram, userSettings, getHostServices());
 
             if (!params.isStandaloneMode())
                 GUIUtils.startIconified(windowStage);

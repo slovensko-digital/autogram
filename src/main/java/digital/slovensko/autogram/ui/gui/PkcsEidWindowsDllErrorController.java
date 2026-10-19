@@ -34,6 +34,10 @@ public class PkcsEidWindowsDllErrorController extends BaseController implements 
         GUIUtils.copyToClipboard(SUPPORT_EMAIL);
     }
 
+    public void onHelpLinkAction(ActionEvent ignored) {
+        GUIUtils.openDocs(hostServices, resources, i18n("error.PkcsEidWindowsDllException.help"));
+    }
+
     public void onMainButtonAction() {
         ((Stage) mainBox.getScene().getWindow()).close();
     }
