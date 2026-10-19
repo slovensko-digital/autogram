@@ -10,9 +10,9 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.EmptyDirectorySelectedException;
 import digital.slovensko.autogram.core.errors.NoFilesSelectedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
-import digital.slovensko.autogram.ui.BatchGuiFileResponder;
 import digital.slovensko.autogram.ui.SaveFileResponder;
 import eu.europa.esig.dss.model.FileDocument;
+import javafx.application.HostServices;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -28,13 +28,15 @@ import java.util.List;
 public class MainMenuController extends BaseController implements SuppressedFocusController {
     private final Autogram autogram;
     private final UserSettings userSettings;
+    private final HostServices hostServices;
 
     @FXML
     VBox dropZone;
 
-    public MainMenuController(Autogram autogram, UserSettings userSettings) {
+    public MainMenuController(Autogram autogram, UserSettings userSettings, HostServices hostServices) {
         this.autogram = autogram;
         this.userSettings = userSettings;
+        this.hostServices = hostServices;
     }
 
     @Override
@@ -59,6 +61,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
 
     public void onUploadButtonAction() {
         var chooser = new FileChooser();
+        chooser.setInitialDirectory(userSettings.getLastUsedDirectory().map(File::new).orElse(null));
         var list = chooser.showOpenMultipleDialog(new Stage());
 
         try {
@@ -75,6 +78,8 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         try {
             if (list.size() == 0)
                 throw new NoFilesSelectedException();
+            userSettings.setLastUsedDirectory(list.getFirst().toPath().getParent());
+            userSettings.save();
 
             var dirsList = list.stream().filter(f -> f.isDirectory()).toList();
             var filesList = list.stream().filter(f -> f.isFile()).toList();
@@ -114,9 +119,9 @@ public class MainMenuController extends BaseController implements SuppressedFocu
                 var input = SigningInput.fromFile(AutogramDocument.build(new FileDocument(file), defaultEFormAttributes), defaultSigningParameters);
                 var job = SigningJob.fromInput(input,
                     new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
-            autogram.sign(job);
+            autogram.startSigning(job);
         } else {
-            autogram.batchStart(filesList.size(),
+            autogram.startBatchSigning(filesList.size(),
                     new BatchGuiFileResponder(autogram, filesList, filesList.get(0).toPath().getParent().resolve("signed"),
                         defaultSigningParameters, defaultEFormAttributes, userSettings.shouldSignPDFAsPades()));
         }
@@ -134,13 +139,17 @@ public class MainMenuController extends BaseController implements SuppressedFocu
         var defaultSigningParameters = userSettings.getDefaultSigningParameters();
         var defaultEFormAttributes = EFormAttributes.build(defaultSigningParameters, true);
 
-        autogram.batchStart(filesList.size(),
+        autogram.startBatchSigning(filesList.size(),
                 new BatchGuiFileResponder(autogram, filesList, targetDirectory, defaultSigningParameters, defaultEFormAttributes,
                     userSettings.shouldSignPDFAsPades()));
     }
 
     public void onAboutButtonAction() {
         autogram.onAboutInfo();
+    }
+
+    public void onDocsButtonAction() {
+        GUIUtils.openDocs(hostServices, resources, "");
     }
 
     public void onSettingButtonAction() {

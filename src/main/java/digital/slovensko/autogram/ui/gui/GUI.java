@@ -2,9 +2,10 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
-import digital.slovensko.autogram.core.BatchStartCallback;
+import digital.slovensko.autogram.core.NoBatch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
+import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -12,10 +13,12 @@ import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
 import digital.slovensko.autogram.core.errors.NoValidKeysDetectedException;
 import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
-import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.TokenNotRecognizedException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.drivers.TokenOption;
+import digital.slovensko.autogram.drivers.TokenOptions;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.UI;
@@ -36,21 +39,24 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class GUI implements UI {
     private static final Logger LOGGER = LoggerFactory.getLogger(GUI.class);
 
     private final Map<SigningJob, SigningDialogController> jobControllers = new WeakHashMap<>();
     private SigningKey activeKey;
-    private boolean driverWasAlreadySet = false;
     private final HostServices hostServices;
     private final UserSettings userSettings;
+    private Autogram autogram;
     private BatchDialogController batchController;
+    /** The latest batch; documents outside it cannot be signed until it ends. */
+    private Batch activeBatch = new NoBatch();
     private static final boolean DEBUG = false;
     private int nWindows = 0;
 
@@ -61,20 +67,45 @@ public class GUI implements UI {
 
     @Override
     public void startSigning(SigningJob job, Autogram autogram) {
+        this.autogram = autogram;
         autogram.startVisualization(job);
     }
 
     @Override
-    public void startBatch(Batch batch, Autogram autogram, BatchStartCallback callback) {
-        batchController = new BatchDialogController(batch, callback, autogram, this);
+    public void selectBatchMode(Batch batch, Consumer<SigningMode> onSelected, Runnable onCancel) {
+        activeBatch = batch;
+        refreshKeyOnAllJobs(); // blocks windows of documents outside the batch
+
+        if (userSettings.isBulkEnabled()) {
+            onSelected.accept(SigningMode.BULK);
+            return;
+        }
+        var controller = new PickBatchModeDialogController(onSelected, onCancel);
+        var root = GUIUtils.loadFXML(controller, "pick-batch-mode-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("pickBatchMode.window.title"));
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> controller.getOnCancel().run());
+        stage.setResizable(false);
+        stage.sizeToScene();
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        GUIUtils.showOnTop(stage);
+        setUserFriendlyPositionAndLimits(stage);
+    }
+
+    @Override
+    public void startBatch(Batch batch, Autogram autogram) {
+        batchController = new BatchDialogController(batch, autogram, this);
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
         var stage = new Stage();
         stage.setTitle(batchController.i18n("batch.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
-            cancelBatch(batch);
-            callback.cancel();
+            // Let Autogram decide how the batch ends; its UI callback closes the window.
+            e.consume();
+            autogram.cancelBatch(batch);
         });
 
         stage.setResizable(false);
@@ -85,9 +116,11 @@ public class GUI implements UI {
     }
 
     @Override
-    public void cancelBatch(Batch batch) {
-        batchController.close();
-        batch.end();
+    public void closeBatch() {
+        if (batchController != null) {
+            batchController.close();
+            batchController = null;
+        }
         refreshKeyOnAllJobs();
         enableSigningOnAllJobs();
     }
@@ -100,48 +133,42 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickTokenDriverAndThen(List<TokenDriver> drivers, Consumer<TokenDriver> callback, Runnable onCancel) {
+    public void onTokenSearchStarted() {
         disableKeyPicking();
+    }
 
-        if (drivers.isEmpty()) {
+    @Override
+    public void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel) {
+        if (options.isEmpty()) {
             showError(new NoDriversDetectedException());
             refreshKeyOnAllJobs();
             enableSigningOnAllJobs();
-        } else if (drivers.size() == 1) {
-            // short-circuit if only one driver present
-            callback.accept(drivers.get(0));
-        } else {
-            if (!driverWasAlreadySet && userSettings.getDefaultDriver() != null) {
-                try {
-                    driverWasAlreadySet = true;
-                    var defaultDriver = drivers.stream().filter(d -> d.getShortname().equals(userSettings.getDefaultDriver()))
-                            .findFirst().get();
-
-                    if (defaultDriver != null) {
-                        callback.accept(defaultDriver);
-                        return;
-                    }
-                } catch (NoSuchElementException e) {
-                }
-            }
-
-            PickDriverDialogController controller = new PickDriverDialogController(drivers, callback);
-            var root = GUIUtils.loadFXML(controller, "pick-driver-dialog.fxml");
-
-            var stage = new Stage();
-            stage.setTitle(controller.i18n("pickDriver.title"));
-            stage.setScene(new Scene(root));
-            stage.setOnCloseRequest(e -> {
-                refreshKeyOnAllJobs();
-                enableSigningOnAllJobs();
-                if (onCancel != null)
-                    onCancel.run();
-            });
-            stage.sizeToScene();
-            stage.setResizable(false);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.show();
+            return;
         }
+
+        Function<TokenOptions, TokenOption> findLastUsedOption = (o) -> userSettings.getLastUsedToken()
+                .flatMap((token) -> token.findIn(o)).orElse(null);
+        Consumer<Consumer<TokenOptions>> searchAgainAndThen = (onFound) -> onWorkThreadDo(() -> {
+            var newOptions = searchAgain.get();
+            onUIThreadDo(() -> onFound.accept(newOptions));
+        });
+        var controller = new PickTokenDialogController(options, findLastUsedOption, searchAgainAndThen, callback);
+        var root = GUIUtils.loadFXML(controller, "pick-token-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("pickDriver.title"));
+        stage.setScene(new Scene(root));
+        stage.setOnCloseRequest(e -> {
+            refreshKeyOnAllJobs();
+            enableSigningOnAllJobs();
+            if (onCancel != null)
+                onCancel.run();
+        });
+        stage.sizeToScene();
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.showInForeground(stage);
+        controller.onShown();
     }
 
     @Override
@@ -183,7 +210,8 @@ public class GUI implements UI {
         });
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);
-        stage.show();
+        // shown after the user entered PIN in the driver's window, e.g. BOK in eID klient
+        GUIUtils.showInForeground(stage);
     }
 
     public void refreshKeyOnAllJobs() {
@@ -193,6 +221,7 @@ public class GUI implements UI {
         }
     }
 
+    @Override
     public void enableSigningOnAllJobs() {
         jobControllers.values().forEach(SigningDialogController::enableSigning);
         if (batchController != null)
@@ -201,7 +230,7 @@ public class GUI implements UI {
 
     @Override
     public void showError(AutogramException e) {
-        GUIUtils.showError(e, "general.continue.btn", false);
+        GUIUtils.showError(e, "general.continue.btn", false, hostServices);
     }
 
     public void showPkcsEidWindowsDllError(AutogramException e) {
@@ -218,7 +247,7 @@ public class GUI implements UI {
 
         GUIUtils.suppressDefaultFocus(stage, controller);
 
-        stage.show();
+        GUIUtils.showInForeground(stage);
     }
 
     public char[] getKeystorePassword() {
@@ -250,13 +279,17 @@ public class GUI implements UI {
     }
 
 
-    public char[] getContextSpecificPassword() {
+    public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
         var futurePassword = new FutureTask<>(() -> {
             var controller = new PasswordController("password.context.text", "password.context.error.text", null, true, false);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
+            if (canReturnToSigning) {
+                controller.cancelButton.setText(controller.i18n("general.close.btn"));
+            }
 
             var stage = new Stage();
             stage.setTitle(controller.i18n("password.context.title"));
+            if (incorrectPIN) controller.showIncorrectPIN();
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
@@ -308,7 +341,10 @@ public class GUI implements UI {
 
     @Override
     public void onPDFAComplianceCheckFailed(SigningJob job) {
-        var controller = new PDFAComplianceDialogController(job, this);
+        if (!jobControllers.containsKey(job))
+            return; // the signing window was closed before the check finished
+
+        var controller = new PDFAComplianceDialogController(job, this, hostServices);
         var root = GUIUtils.loadFXML(controller, "pdfa-compliance-dialog.fxml");
 
         var stage = new Stage();
@@ -318,19 +354,21 @@ public class GUI implements UI {
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(getJobWindow(job));
         GUIUtils.suppressDefaultFocus(stage, controller);
-        stage.show();
+        GUIUtils.showInForeground(stage);
     }
 
     @Override
     public void onSignatureValidationCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureValidationCompleted(reports);
+        if (controller != null) // the signing window may be closed before the validation finishes
+            controller.onSignatureValidationCompleted(reports);
     }
 
     @Override
     public void onSignatureCheckCompleted(ValidationReports reports) {
         var controller = jobControllers.get(reports.getSigningJob());
-        controller.onSignatureCheckCompleted(reports);
+        if (controller != null)
+            controller.onSignatureCheckCompleted(reports);
     }
 
     public void showSigningJob(SigningJob job, Autogram autogram) {
@@ -368,8 +406,14 @@ public class GUI implements UI {
     }
 
     @Override
+    public void closeSigningJob(SigningJob job) {
+        var controller = jobControllers.remove(job);
+        if (controller != null) controller.close();
+    }
+
+    @Override
     public void showIgnorableExceptionDialog(IgnorableException e) {
-        var controller = new IgnorableExceptionDialogController(e);
+        var controller = new IgnorableExceptionDialogController(e, hostServices);
         var root = GUIUtils.loadFXML(controller, "ignorable-exception-dialog.fxml");
 
         var stage = new Stage();
@@ -402,7 +446,8 @@ public class GUI implements UI {
 
     @Override
     public void onSigningSuccess(SigningJob job) {
-        jobControllers.get(job).close();
+        var controller = jobControllers.remove(job);
+        if (controller != null) controller.close();
         refreshKeyOnAllJobs();
         enableSigningOnAllJobs();
         updateBatch();
@@ -410,16 +455,16 @@ public class GUI implements UI {
 
     @Override
     public void onSigningFailed(AutogramException e, SigningJob job) {
-        var controller = jobControllers.get(job);
-        controller.close();
-        jobControllers.remove(job);
+        var controller = jobControllers.remove(job);
+        if (controller != null) controller.close();
         onSigningFailed(e);
     }
 
     @Override
     public void onSigningFailed(AutogramException e) {
         showError(e);
-        if (e instanceof TokenRemovedException) {
+        // the connection can't sign anymore, the next signing connects again
+        if (e instanceof TokenRemovedException || e instanceof TokenNotRecognizedException) {
             resetSigningKey();
         } else {
             refreshKeyOnAllJobs();
@@ -437,7 +482,7 @@ public class GUI implements UI {
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         GUIUtils.suppressDefaultFocus(stage, controller);
-        stage.show();
+        GUIUtils.showInForeground(stage);
     }
 
     @Override
@@ -452,13 +497,14 @@ public class GUI implements UI {
         } else {
             controller = new BatchSigningSuccessDialogController(result, hostServices);
             root = GUIUtils.loadFXML(controller, "batch-signing-success-dialog.fxml");
-            stage.setTitle(((BatchSigningSuccessDialogController) controller).i18n("batchSigning.success.title"));
+            var title = result.getSkippedCount() > 0 ? "batchSigning.finished.title" : "batchSigning.success.title";
+            stage.setTitle(((BatchSigningSuccessDialogController) controller).i18n(title));
         }
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.sizeToScene();
         GUIUtils.suppressDefaultFocus(stage, controller);
-        stage.show();
+        GUIUtils.showInForeground(stage);
 
         enableSigningOnAllJobs();
     }
@@ -493,13 +539,16 @@ public class GUI implements UI {
             activeKey.close();
 
         activeKey = newKey;
-        driverWasAlreadySet = true;
         refreshKeyOnAllJobs();
 
         if (callback != null)
             callback.accept(newKey);
         else
             enableSigningOnAllJobs();
+    }
+
+    public boolean isSigningBlockedByBatch(SigningJob job) {
+        return !job.isPartOfBatch() && !activeBatch.isEnded();
     }
 
     public boolean isActiveSigningKeyChangeAllowed() {
@@ -521,8 +570,14 @@ public class GUI implements UI {
     }
 
     public void cancelJob(SigningJob job) {
-        job.onDocumentSignFailed(new SigningCanceledByUserException());
-        jobControllers.get(job).close();
+        if (job.isPartOfBatch() && job.getBatch().isInteractive()) {
+            autogram.skipRemainingDocuments(job);
+            return;
+        }
+
+        var controller = jobControllers.remove(job);
+        autogram.cancelSigning(job);
+        if (controller != null) controller.close();
     }
 
     public void focusJob(SigningJob job) {
@@ -575,6 +630,6 @@ public class GUI implements UI {
 
         GUIUtils.suppressDefaultFocus(stage, controller);
 
-        stage.show();
+        GUIUtils.showInForeground(stage);
     }
 }

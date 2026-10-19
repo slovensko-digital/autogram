@@ -26,6 +26,9 @@
         <TextFlow styleClass="autogram-error-summary__description,autogram-body-s">
             <Text text="%pkcsEidWindowsDllError.support.text"/>
         </TextFlow>
+        <TextFlow styleClass="autogram-body-s">
+            <Hyperlink styleClass="autogram-link,autogram-error-summary__help" text="%error.help.btn" onAction="#onHelpLinkAction"/>
+        </TextFlow>
     </VBox>
 
 

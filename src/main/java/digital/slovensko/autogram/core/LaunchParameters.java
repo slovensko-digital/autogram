@@ -13,9 +13,15 @@ import static digital.slovensko.autogram.core.Configuration.getProperty;
 import static digital.slovensko.autogram.core.LaunchParameters.Validations.*;
 import static java.util.Optional.ofNullable;
 
+import java.io.File;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 public class LaunchParameters {
+    private static final String AUTOGRAM_URL_PREFIX = Configuration.getBuildProperty("protocol") + "://";
+    private static final String FILE_URI_PREFIX = "file://";
+
     protected Map<String, String> parameters;
     private String protocol;
     private String host;
@@ -25,9 +31,11 @@ public class LaunchParameters {
     private int initialNonce;
     private String language;
     private boolean standaloneMode;
+    private final List<File> files;
 
-    private LaunchParameters(Map<String, String> params, boolean standaloneMode) {
+    private LaunchParameters(Map<String, String> params, boolean standaloneMode, List<File> files) {
         this.parameters = params;
+        this.files = files;
 
         this.standaloneMode = standaloneMode;
 
@@ -54,7 +62,10 @@ public class LaunchParameters {
 
     public static LaunchParameters fromParameters(Parameters parameters) {
         var named = parameters.getNamed();
+        var unnamed = parameters.getUnnamed();
         var urlParam = named.get("url");
+        if (urlParam == null)
+            urlParam = unnamed.stream().filter(LaunchParameters::isAutogramUrl).findFirst().orElse(null);
 
         try {
             Map<String, String> params;
@@ -65,13 +76,44 @@ public class LaunchParameters {
                 params = named;
             }
 
-            return new LaunchParameters(params, urlParam == null || urlParam.isBlank());
+            return new LaunchParameters(params, urlParam == null || urlParam.isBlank(), filesFrom(unnamed));
 
         } catch (URISyntaxException e) {
             throw new RuntimeException(e); // TODO: handle exception
         } catch (Exception e) {
             throw new RuntimeException(e); // TODO: handle exception
         }
+    }
+
+    public static boolean isAutogramUrl(String arg) {
+        return arg.startsWith(AUTOGRAM_URL_PREFIX);
+    }
+
+    /**
+     * Picks the existing files out of unnamed launch arguments, which may also
+     * contain an autogram:// URL or stray flags that JavaFX does not treat as named.
+     */
+    public static List<File> filesFrom(List<String> args) {
+        return args.stream()
+                .filter(arg -> !isAutogramUrl(arg))
+                .map(LaunchParameters::toFile)
+                .filter(File::isFile)
+                .toList();
+    }
+
+    private static File toFile(String arg) {
+        if (!arg.startsWith(FILE_URI_PREFIX))
+            return new File(arg);
+
+        try {
+            return Path.of(URI.create(arg)).toFile();
+        } catch (IllegalArgumentException e) {
+            return new File(arg.substring(FILE_URI_PREFIX.length()));
+        }
+    }
+
+    public List<File> getFiles() {
+        return files;
     }
 
     private static Map<String, String> getUrlQueryParameters(List<NameValuePair> queryParams) {

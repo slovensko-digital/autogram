@@ -2,6 +2,7 @@ package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.server.errors.RequestValidationException;
 
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.INVALID_DOCUMENTS_COUNT;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
 
 public class BatchStartRequestBody {
@@ -15,6 +16,10 @@ public class BatchStartRequestBody {
     public int getTotalNumberOfDocuments() {
         if (totalNumberOfDocuments == null)
             throw new RequestValidationException(MISSING_FIELD, "\"totalNumberOfDocuments\"");
+
+        if (totalNumberOfDocuments < 1)
+            throw new RequestValidationException(INVALID_DOCUMENTS_COUNT, "\"totalNumberOfDocuments\"");
+
         return totalNumberOfDocuments;
     }
 

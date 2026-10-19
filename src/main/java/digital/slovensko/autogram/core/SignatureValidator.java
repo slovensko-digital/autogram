@@ -53,6 +53,7 @@ public class SignatureValidator {
     private static final String LOTL_URL = "https://ec.europa.eu/tools/lotl/eu-lotl.xml";
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
     private CertificateVerifier verifier;
+    private CertificateVerifier customVerifier;
     private TLValidationJob validationJob;
     private ExecutorService executorService;
     private static Logger logger = LoggerFactory.getLogger(SignatureValidator.class);
@@ -77,16 +78,35 @@ public class SignatureValidator {
         return docValidator.validateDocument();
     }
 
+    /**
+     * Validates with the given verifier (its trusted sources and revocation sources) instead of the EU trusted lists,
+     * which are then never downloaded. For tests and the test harness only, deliberately not exposed as a setting.
+     * Pass null to go back to the trusted lists with the next {@link #initialize}.
+     */
+    public synchronized void useCustomVerifier(CertificateVerifier verifier) {
+        customVerifier = verifier;
+        this.verifier = verifier;
+        validationJob = null;
+    }
+
     public synchronized void updateLotl(List<String> tlCountries) {
         initialize(executorService, tlCountries);
     }
 
     public synchronized void refresh() {
+        if (customVerifier != null)
+            return;
+
         validationJob.offlineRefresh();
     }
 
     public synchronized void initialize(ExecutorService executorService, List<String> tlCountries) {
         this.executorService = executorService;
+        if (customVerifier != null) {
+            verifier = customVerifier;
+            logger.debug("Signature validator uses a custom verifier, trusted lists are not loaded");
+            return;
+        }
 
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         logger.debug("Initializing signature validator at {}", formatter.format(new Date()));
@@ -269,6 +289,12 @@ public class SignatureValidator {
     }
 
     public synchronized boolean areTLsLoaded() {
+        if (customVerifier != null)
+            return true;
+
+        if (validationJob == null)
+            return false;
+
         // TODO: consider validation turned off as well
         return validationJob.getSummary().getNumberOfProcessedTLs() > 0;
     }

@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.server.dto;
 
 import digital.slovensko.autogram.server.errors.RequestValidationException;
-import javax.xml.crypto.dsig.CanonicalizationMethod;
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.dto.SignedDocumentSignature;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
@@ -24,6 +23,8 @@ import static digital.slovensko.autogram.server.errors.RequestValidationExceptio
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.SigningParametersResolver;
 
+import javax.xml.crypto.dsig.CanonicalizationMethod;
+
 public class VersionedSigningParameters {
     public enum LocalCanonicalizationMethod {
         INCLUSIVE,
@@ -31,7 +32,18 @@ public class VersionedSigningParameters {
         INCLUSIVE_WITH_COMMENTS,
         EXCLUSIVE_WITH_COMMENTS,
         INCLUSIVE_11,
-        INCLUSIVE_11_WITH_COMMENTS
+        INCLUSIVE_11_WITH_COMMENTS;
+
+        public String toUri() {
+            return switch (this) {
+                case INCLUSIVE -> CanonicalizationMethod.INCLUSIVE;
+                case EXCLUSIVE -> CanonicalizationMethod.EXCLUSIVE;
+                case INCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_WITH_COMMENTS;
+                case EXCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.EXCLUSIVE_WITH_COMMENTS;
+                case INCLUSIVE_11 -> CanonicalizationMethod.INCLUSIVE_11;
+                case INCLUSIVE_11_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_11_WITH_COMMENTS;
+            };
+        }
     }
 
     private SignatureForm form;
@@ -73,9 +85,9 @@ public class VersionedSigningParameters {
                 container,
                 packaging,
                 getBoolean(en319132),
-                getCanonicalizationMethodString(infoCanonicalization),
-                getCanonicalizationMethodString(propertiesCanonicalization),
-                getCanonicalizationMethodString(keyInfoCanonicalization),
+                infoCanonicalization != null ? infoCanonicalization.toUri() : null,
+                propertiesCanonicalization != null ? propertiesCanonicalization.toUri() : null,
+                keyInfoCanonicalization != null ? keyInfoCanonicalization.toUri() : null,
                 getBoolean(checkPDFACompliance),
                 presentation != null ? presentation.getVisualizationWidth() : 0,
                 plainXmlEnabled
@@ -125,20 +137,6 @@ public class VersionedSigningParameters {
         form = signedDocumentSignature.form();
         container = signedDocumentSignature.container();
         packaging = signedDocumentSignature.packaging();
-    }
-
-    private static String getCanonicalizationMethodString(LocalCanonicalizationMethod method) {
-        if (method == null)
-            return null;
-
-        return switch (method) {
-            case INCLUSIVE -> CanonicalizationMethod.INCLUSIVE;
-            case EXCLUSIVE -> CanonicalizationMethod.EXCLUSIVE;
-            case INCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_WITH_COMMENTS;
-            case EXCLUSIVE_WITH_COMMENTS -> CanonicalizationMethod.EXCLUSIVE_WITH_COMMENTS;
-            case INCLUSIVE_11 -> CanonicalizationMethod.INCLUSIVE_11;
-            case INCLUSIVE_11_WITH_COMMENTS -> CanonicalizationMethod.INCLUSIVE_11_WITH_COMMENTS;
-        };
     }
 
     private static boolean getBoolean(Boolean variable) {
