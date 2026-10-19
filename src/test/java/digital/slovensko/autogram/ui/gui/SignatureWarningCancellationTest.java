@@ -47,8 +47,8 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/** Run separately with -Dautogram.signatureWarningTests=true on a desktop or under xvfb-run. */
-@EnabledIfSystemProperty(named = "autogram.signatureWarningTests", matches = "true")
+/** Run with -Dautogram.guiTests=true; see DEVELOPER.md for the Xvfb command. */
+@EnabledIfSystemProperty(named = "autogram.guiTests", matches = "true")
 class SignatureWarningCancellationTest {
     enum Warning { NOT_VALIDATED, INVALID }
 
@@ -141,6 +141,7 @@ class SignatureWarningCancellationTest {
         settings.setSignaturesValidity(true);
         var gui = new GUI(null, settings);
         var autogram = mock(Autogram.class);
+        doCallRealMethod().when(autogram).cancelSigning(any());
         var document = AutogramDocument.build(new InMemoryDocument("test".getBytes(StandardCharsets.UTF_8),
                 "test.txt", MimeTypeEnum.TEXT), null);
         var parameters = SigningParametersResolver.buildRequested(SignatureProfile.BASELINE_B, SignatureForm.XAdES,
@@ -148,6 +149,7 @@ class SignatureWarningCancellationTest {
                 false, null, null, null, false, 640, false);
         var job = SigningJob.fromInput(SigningInput.fromDocument(document, parameters), responder);
         job.initializeVisualizations();
+        gui.startSigning(job, autogram);
         gui.showSigningJob(job, autogram);
         var controllers = GUI.class.getDeclaredField("jobControllers");
         controllers.setAccessible(true);
