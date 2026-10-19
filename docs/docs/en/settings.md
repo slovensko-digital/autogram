@@ -54,3 +54,4 @@ The list of EU countries whose trusted lists Autogram uses to validate signature
 | **Show EP certificate of the ID card** | Also offers the second, non-qualified certificate of the Slovak ID card. See [Several certificates on one card](card-and-pin.md#several-certificates-on-one-card). | No |
 | **Path to custom keystore** | A file with a certificate and key (JKS) for the **From file** option. | empty |
 | **Path to custom driver for PKCS11 token** | The driver of a card Autogram does not know. | empty |
+| **HTTP proxy** | A proxy server in the form `http://host:port` that Autogram uses for all internet communication: downloading trusted lists, checking certificate revocation (CRL, OCSP), timestamps, form resources and update checks. Proxy authentication is not supported. If the saved address is invalid, Autogram does not access the internet at all. The change takes effect after restarting Autogram. | empty (no proxy) |

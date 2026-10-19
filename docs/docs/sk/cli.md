@@ -30,6 +30,7 @@ autogram --cli -s dokument.pdf -d eid --tsa-server http://timestamp.sectigo.com/
 | `--pkcs11-driver-path` | Cesta k ovládaču karty pre `-d custom_pkcs11`. |
 | `--pdf-level` | Typ podpisu pre PDF: `PAdES_BASELINE_B` (predvolený), `XAdES_BASELINE_B` alebo `CAdES_BASELINE_B`. |
 | `--tsa-server` | Adresa servera časových pečiatok. Ak je zadaná, k podpisom sa pridá časová pečiatka. Viac adries oddeľte čiarkou. |
+| `--proxy` | HTTP proxy vo formáte `http://host:port`, cez ktoré pôjde všetka komunikácia do internetu (dôveryhodné zoznamy, CRL, OCSP, časové pečiatky, formuláre). Prihlasovanie do proxy nie je podporované. Proxy nastavené v grafickom rozhraní sa v príkazovom riadku nepoužije. |
 | `--pdfa` | Pred podpisom skontroluje súlad PDF s formátom PDF/A. |
 | `--plain-xml` | Povolí podpisovanie XML súborov, ktoré nie sú formulárom verejnej správy. |
 | `--en319132` | Podpisuje podľa noriem ETSI EN 319 132 a EN 319 122. |
