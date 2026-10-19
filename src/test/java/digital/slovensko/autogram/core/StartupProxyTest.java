@@ -134,6 +134,11 @@ public class StartupProxyTest {
                 assertNotNull(settings.getTspSource());
                 assertThrows(DSSExternalResourceException.class, () -> NetworkClients.dataLoader().get("http://127.0.0.1:1/test"));
                 assertNull(new EFormResourceLoader().getResource("http://127.0.0.1:1/not-cached"));
+                // Saving unrelated settings (e.g. last used directory) must keep working.
+                settings.setLastUsedDirectory(Path.of(args[1]));
+                assertDoesNotThrow(() -> settings.save());
+                assertEquals("invalid", UserSettings.savedProxyUrl());
+                assertEquals(args[1], UserSettings.load().getLastUsedDirectory().orElseThrow());
                 settings.setProxyUrl("http://localhost:8080");
                 settings.save();
                 assertEquals("http://localhost:8080", UserSettings.load().getProxyUrl());
