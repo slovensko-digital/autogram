@@ -36,6 +36,7 @@ public class ErrorResponseBuilder {
             case PINIncorrectException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("PIN_INCORRECT", ex));
             case FunctionCanceledException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("FUNCTION_CANCELED", ex));
             case UnsupportedSignatureLevelException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNSUPPORTED_SIGNATURE_LEVEL", ex));
+            case PdfPasswordProtectedException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("LOCKED_PDF", ex));
             case RequestValidationException _,
                  XMLValidationException _,
                  SigningParametersException _,
@@ -56,6 +57,8 @@ public class ErrorResponseBuilder {
             case BatchInvalidIdException ex -> new ErrorResponse(404, instance.buildResponseWithTranslations("BATCH_NOT_FOUND", ex));
             case NoDriversDetectedException ex -> new ErrorResponse(404, instance.buildResponseWithTranslations("DRIVER_NOT_FOUND", ex));
             case BatchConflictException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("BATCH_CONFLICT", ex));
+            case BatchInProgressException ex -> new ErrorResponse(503, instance.buildResponseWithTranslations("BATCH_IN_PROGRESS", ex));
+            case BatchTooManyDocumentsException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("BATCH_TOO_MANY_DOCUMENTS", ex));
             case InvalidUrlParamException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("INVALID_URL_PARAM", ex));
             case CertificatesReadingConsentRejectedException ex ->
                     new ErrorResponse(403, instance.buildResponseWithTranslations("CERTIFICATES_READING_CONSENT_REJECTED", ex));

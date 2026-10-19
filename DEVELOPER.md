@@ -1,5 +1,10 @@
 # Info for developers
 
+# Cards, drivers and tokens
+
+How card search, certificate picking and PKCS#11 drivers work, what to watch out for and how to test with real cards:
+[docs/cards-and-tokens.md](docs/cards-and-tokens.md) (in Slovak).
+
 # GUI accessibility tests
 
 The settings accessibility tests require a graphical display and are opt-in.
@@ -26,6 +31,24 @@ Useful command how to run project from CLI.
 ```bash
 ./mvnw exec:java -Dexec.mainClass="digital.slovensko.autogram.Main" -Dexec.args="--cli ..."
 ```
+
+# Testing qualified signatures without the EU trusted lists
+
+`src/test/java/digital/slovensko/autogram/TestPki.java` is an offline test PKI: a CA listed as a qualified service
+under a stub SK trusted list, a qualified TSA and signers Jana Vzorová, Peter Ukážka (QESig) and Vzorový úrad (QESeal).
+Signatures made with it validate as QESig / QESeal and its timestamps as QTSA, with no network access.
+
+```java
+var pki = TestPki.create();
+SignatureValidator.getInstance().useCustomVerifier(pki.verifier()); // trusted lists are not downloaded
+var key = pki.signer(TestPki.JANA).signingKey();                     // use with SigningJob.signWithKey(key, pki.tspSource())
+// ...
+SignatureValidator.getInstance().useCustomVerifier(null);             // back to the EU trusted lists
+```
+
+`pki.issue(name, kind)` adds signers (also without QC statements or expired), `pki.revoke(signer)` puts one on the CRL.
+`TestPki.shared()` is one PKI for the whole run, used by the fake token drivers and `TestAutogramFactory`.
+See `SignatureQualificationTest` for examples. `useCustomVerifier` is meant only for tests and tooling, it is not a setting.
 
 # More info about inner workings of builds for MacOS
 

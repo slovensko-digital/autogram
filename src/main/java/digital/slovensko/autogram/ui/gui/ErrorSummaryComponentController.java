@@ -1,10 +1,12 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.errors.AutogramException;
+import javafx.application.HostServices;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 public class ErrorSummaryComponentController extends BaseController {
 
@@ -23,9 +25,18 @@ public class ErrorSummaryComponentController extends BaseController {
     @FXML
     Button showErrorDetailsButton;
 
+    @FXML
+    TextFlow helpFlow;
+
     private AutogramException exception;
+    private HostServices hostServices;
+    private String helpPage;
 
     public ErrorSummaryComponentController() {
+    }
+
+    public void setHostServices(HostServices hostServices) {
+        this.hostServices = hostServices;
     }
 
     public void setException(AutogramException e) {
@@ -39,6 +50,11 @@ public class ErrorSummaryComponentController extends BaseController {
             this.subheading.setVisible(false);
         }
         description.setText(exception.getDescription(resources));
+        helpPage = exception.getHelpPage(resources);
+        if (helpPage != null && hostServices != null) {
+            helpFlow.setManaged(true);
+            helpFlow.setVisible(true);
+        }
         if (exception.getCause() != null) {
             errorDetails.setText(GUIUtils.exceptionToString(exception));
             showErrorDetailsButton.setVisible(true);
@@ -51,6 +67,10 @@ public class ErrorSummaryComponentController extends BaseController {
     }
 
     public void initialize() {
+    }
+
+    public void onHelpLinkAction() {
+        GUIUtils.openDocs(hostServices, resources, helpPage);
     }
 
     public void onShowErrorDetailsButtonAction() {
