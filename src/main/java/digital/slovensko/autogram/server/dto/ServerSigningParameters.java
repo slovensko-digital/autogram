@@ -83,7 +83,7 @@ public record ServerSigningParameters (
     }
 
     public VersionedSigningParameters toVersionedParameters() {
-        return new VersionedSigningParameters(
+        return new LegacySigningParameters(
             level != null ? level.getSignatureForm() : null,
             level != null ? level.getSignatureProfile() : null,
             container,
