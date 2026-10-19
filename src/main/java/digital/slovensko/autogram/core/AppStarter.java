@@ -15,20 +15,19 @@ public class AppStarter {
         ).
         addOption("h", "help", false, "Print this command line help.").
         addOption("u", "usage", false, "Print usage examples.").
-        addOption("s", "source", true, "Source file or directory of files to sign.").
+        addOption("s", "source", true, "Source file or directory of files to sign. Can also be given as a single positional argument.").
         addOption("t", "target", true, "Target file or directory for signed files. Type (file/directory) must match the source.").
         addOption("f", "force", false, "Overwrite existing file(s).").
         addOption(null, "pdfa", false, "Check PDF/A compliance before signing.").
         addOption(null, "parents", false, "Create all parent directories for target if needed.").
         addOption("d", "driver", true, "PCKS driver name for signing. Supported values: eid, cz_eid, secure_store, monet, gemalto, keystore, custom_pkcs11 (requires valid path within pkcs11-driver-path option).").
         addOption(null, "keystore", true, "Absolute path to a keystore file that can be used for signing.").
-        addOption(null, "slot-id", true, "Slot ID for PKCS11 driver. If not specified, first available slot is used.").
+        addOption(null, "slot-id", true, "Slot index for PKCS11 driver, i.e. position in the list of all slots the driver reports. If not specified, cards of all drivers are searched and you are asked to pick one if there are more.").
         addOption(null, "pdf-level", true, "PDF signature level. Supported values: PAdES_BASELINE_B (default), XAdES_BASELINE_B, CAdES_BASELINE_B.").
         addOption(null, "en319132", false, "Sign according to EN 319 132 or EN 319 122.").
         addOption(null, "tsa-server", true, "Url of TimeStamp Authority server that should be used for timestamping in signature level BASELINE_T. If provided, BASELINE_T signatures are made.").
         addOption(null, "plain-xml", false, "Enable signing plain (non-slovak-eform) XML files.").
         addOption(null, "pkcs11-driver-path", true, "Absolute path to a file with custom PKCS11 driver.");
-
 
     public static void start(String[] args) {
         try {
@@ -41,6 +40,8 @@ public class AppStarter {
             } else if (cmd.hasOption("c")) {
                 CliApp.start(cmd);
             } else {
+                if (!SingleInstanceManager.start(cmd.getArgList()))
+                    return;
                 Application.launch(GUIApp.class, args);
             }
         } catch (ParseException e) {
@@ -73,6 +74,7 @@ public class AppStarter {
                 autogram --url=autogram://go
                 autogram --url=autogram://go?protocol=https&port=37200
                 autogram --cli [options]
+                autogram --cli target/directory-example/file-example.pdf
                 autogram --cli -s target/directory-example/file-example.pdf -t target/output-example/out-example.pdf
                 autogram --cli -s target/directory-example -t target/output-example -f
                 autogram --cli -s target/directory-example -t target/non-existent-dir/output-example --parents
