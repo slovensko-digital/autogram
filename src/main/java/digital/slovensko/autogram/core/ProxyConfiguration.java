@@ -17,7 +17,7 @@ public record ProxyConfiguration(State state, String host, int port) implements 
         try {
             var uri = new URI(value);
             if (!"http".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null
-                    || uri.getRawUserInfo() != null || !uri.getRawPath().isEmpty()
+                    || uri.getRawUserInfo() != null || !(uri.getRawPath().isEmpty() || uri.getRawPath().equals("/"))
                     || uri.getRawQuery() != null || uri.getRawFragment() != null
                     || uri.getPort() < 1 || uri.getPort() > 65535
                     || !uri.getRawAuthority().matches("(?:\\[[^]]+]|[^:]+):[0-9]+"))
