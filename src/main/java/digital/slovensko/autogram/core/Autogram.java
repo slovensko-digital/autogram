@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.errors.BatchCanceledException;
 import digital.slovensko.autogram.core.errors.BatchConflictException;
 import digital.slovensko.autogram.core.errors.BatchEndedException;
 import digital.slovensko.autogram.core.errors.BatchExpiredException;
+import digital.slovensko.autogram.core.errors.BatchInProgressException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.dto.SignedDocument;
@@ -16,30 +17,69 @@ import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.drivers.CardReaders;
 import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.drivers.TokenOption;
+import digital.slovensko.autogram.drivers.TokenOptions;
+import digital.slovensko.autogram.drivers.TokenSlot;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
+import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.ALREADY_ENDED;
 
 public class Autogram {
+    private static final long TOKEN_SEARCH_TIMEOUT_MILLIS = 10_000;
+    private static final long CARD_READERS_CHECK_TIMEOUT_MILLIS = 3_000;
+    private static final String EID_EP_SLOT_LABEL = "Sig_EP";
     private static final long BATCH_EXPIRY_CHECK_MILLIS = 5_000;
 
+    /**
+     * Drivers left out of the search for tokens, they are offered every time (unless card readers don't respond) and
+     * loaded only when the user picks them.
+     * <p>
+     * eObčanka (Czech eID) driver: we've seen it hang in C_Initialize, waiting for its own thread talking to readers.
+     * SunPKCS11 initializes drivers one at a time (PKCS11.getInstance is synchronized), so a hanging driver blocks
+     * every other PKCS#11 driver until Autogram is restarted, and the app can't quit since the driver's destructor
+     * waits for the hanging thread. It also crashes the JVM on exit unless finalized. Searching it would expose all
+     * users who just have it installed, while it's rarely used here.
+     * <p>
+     * MONET+ ProID+Q driver is searched, though initializing it after the user logged in to an eID card breaks eID
+     * klient - every later login fails with CKR_FUNCTION_FAILED. It's initialized only once, in the first search with
+     * a card inserted, which comes before any login, later searches just list its slots. Should it break eID klient
+     * anyway, connecting to the eID card recovers, see PKCS11TokenDriver#recoverToken.
+     */
+    private static final Set<String> DRIVERS_SKIPPED_IN_TOKEN_SEARCH = Set.of(
+            DefaultDriverDetector.TokenDriverShortnames.CZ_EID);
+
     private final UI ui;
+    private final long tokenSearchTimeoutMillis;
+    private final Supplier<CardReaders.State> cardReadersCheck;
     private final UserSettings settings;
     /** Current batch, or NoBatch before the first batch starts. Replaced only under the Autogram lock. */
     private volatile Batch batch = new NoBatch();
@@ -50,8 +90,18 @@ public class Autogram {
     private final PasswordManager passwordManager;
     private Timer tokenSessionTimer = null;
     private Clock clock = Clock.systemUTC();
+    /** True if a token was used without asking, and the user didn't get to its keys yet */
+    private final AtomicBoolean automaticTokenPickUnfinished = new AtomicBoolean(false);
+    /** True if the user asked for another certificate, the next token pick lets them choose */
+    private final AtomicBoolean anotherTokenRequested = new AtomicBoolean(false);
 
     public Autogram(UI ui, UserSettings settings) {
+        this(ui, settings, TOKEN_SEARCH_TIMEOUT_MILLIS, () -> CardReaders.check(CARD_READERS_CHECK_TIMEOUT_MILLIS));
+    }
+
+    Autogram(UI ui, UserSettings settings, long tokenSearchTimeoutMillis, Supplier<CardReaders.State> cardReadersCheck) {
+        this.tokenSearchTimeoutMillis = tokenSearchTimeoutMillis;
+        this.cardReadersCheck = cardReadersCheck;
         this.ui = ui;
         this.settings = settings;
         this.passwordManager = new PasswordManager(ui, this.settings);
@@ -503,20 +553,151 @@ public class Autogram {
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
         var drivers = settings.getDriverDetector().getAvailableDrivers();
-        ui.pickTokenDriverAndThen(drivers,
-                (driver) -> {
-                    ui.onWorkThreadDo(() -> {
-                        fetchKeysAndThen(driver, callback);
-                    });
-                },
-                null
-        );
+        pickTokenAndThen(drivers, (option) -> fetchKeysAndThen(option, (key) -> {
+            onTokenUsed(option);
+            callback.accept(key);
+        }), null);
     }
 
-    private void fetchKeysAndThen(TokenDriver driver, Consumer<SigningKey> callback) {
+    /**
+     * The next token pick lets the user choose, even if the only card would be used without asking - e.g. they want to
+     * sign with another certificate, which may be in a keystore file. With nothing else to choose, the card is used.
+     */
+    public void requestAnotherToken() {
+        anotherTokenRequested.set(true);
+    }
+
+    /**
+     * Finds tokens (cards) of all drivers and lets the user pick one. The only card found is used without asking,
+     * unless the user didn't finish with it last time (e.g. canceled entering PIN) or asked for another certificate
+     * and there is something else to pick - then they get to choose. Callback is called on work thread.
+     */
+    private void pickTokenAndThen(List<TokenDriver> drivers, Consumer<TokenOption> callback, Runnable onCancel) {
+        ui.onUIThreadDo(ui::onTokenSearchStarted);
+        ui.onWorkThreadDo(() -> {
+            var options = findTokenOptions(drivers);
+            var automaticOption = options.getAutomaticOption();
+            var previousUnfinished = automaticTokenPickUnfinished.getAndSet(false);
+            var anotherRequested = anotherTokenRequested.getAndSet(false) && options.found().size() > 1;
+            if (automaticOption.isPresent() && !previousUnfinished && !anotherRequested) {
+                automaticTokenPickUnfinished.set(true);
+                callback.accept(automaticOption.get());
+                return;
+            }
+
+            ui.onUIThreadDo(() -> ui.pickTokenAndThen(options,
+                    () -> findTokenOptions(drivers),
+                    (option) -> ui.onWorkThreadDo(() -> callback.accept(option)),
+                    onCancel));
+        });
+    }
+
+    private TokenOptions findTokenOptions(List<TokenDriver> drivers) {
+        var searchesCards = drivers.stream()
+                .filter((driver) -> !DRIVERS_SKIPPED_IN_TOKEN_SEARCH.contains(driver.getShortname()))
+                .anyMatch(TokenDriver::needsInsertedCard);
+        var cardReaders = searchesCards ? cardReadersCheck.get() : CardReaders.State.UNKNOWN;
+        if (cardReaders == CardReaders.State.NOT_RESPONDING) {
+            // card drivers would hang in PC/SC as well, and might hang the app on exit - don't load any
+            Logging.log("Card readers not responding, tokens are not searched");
+            return notRespondingOptions(drivers);
+        }
+
+        var found = new ArrayList<TokenOption>();
+        var otherDrivers = new ArrayList<TokenDriver>();
+        var unavailableDrivers = new ArrayList<TokenDriver>();
+        var searchedDrivers = new ArrayList<TokenDriver>();
+        for (var driver : drivers) {
+            if (DRIVERS_SKIPPED_IN_TOKEN_SEARCH.contains(driver.getShortname()))
+                otherDrivers.add(driver);
+            // nothing for card drivers to find, no need to load them
+            else if (cardReaders == CardReaders.State.NO_CARD && driver.needsInsertedCard())
+                unavailableDrivers.add(driver);
+            else
+                searchedDrivers.add(driver);
+        }
+
+        // drivers are asked in parallel, so that a hanging one (e.g. eID klient waiting for a card) doesn't hold up others
+        var executor = Executors.newCachedThreadPool((runnable) -> {
+            var thread = new Thread(runnable, "token-search");
+            thread.setDaemon(true);
+            return thread;
+        });
+
         try {
-            var token = driver.createToken(passwordManager, settings);
-            var keys = token.getKeys();
+            var futures = searchedDrivers.stream().map((driver) -> executor.submit(() -> driver.getSlotsWithToken(settings))).toList();
+            var deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(tokenSearchTimeoutMillis);
+            var notResponding = false;
+
+            for (int i = 0; i < searchedDrivers.size(); i++) {
+                var driver = searchedDrivers.get(i);
+                Optional<List<TokenSlot>> slots;
+                try {
+                    slots = futures.get(i).get(Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS);
+                } catch (TimeoutException e) {
+                    // it may be stuck in PC/SC and would hang when used too, the user can search again later
+                    Logging.log("Search for tokens timed out on " + driver.getName());
+                    notResponding = true;
+                    unavailableDrivers.add(driver);
+                    continue;
+                } catch (ExecutionException e) {
+                    Logging.log("Unable to find tokens of " + driver.getName() + ": " + e);
+                    otherDrivers.add(driver);
+                    continue;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    otherDrivers.add(driver);
+                    continue;
+                }
+
+                if (slots.isEmpty()) {
+                    found.add(new TokenOption(driver, null));
+                    continue;
+                }
+
+                var visibleSlots = slots.get().stream()
+                        .filter((slot) -> settings.isEidEpSlotsEnabled() || !isEidEpSlot(driver, slot))
+                        .toList();
+                if (visibleSlots.isEmpty())
+                    unavailableDrivers.add(driver);
+                else
+                    visibleSlots.forEach((slot) -> found.add(new TokenOption(driver, slot)));
+            }
+
+            otherDrivers.sort(Comparator.comparingInt(drivers::indexOf));
+            unavailableDrivers.sort(Comparator.comparingInt(drivers::indexOf));
+            return new TokenOptions(found, otherDrivers, unavailableDrivers, notResponding);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    // drivers without cards don't need PC/SC, the user can still use them - not card drivers, not even eObčanka that
+    // isn't searched, it would hang in PC/SC
+    private static TokenOptions notRespondingOptions(List<TokenDriver> drivers) {
+        var found = drivers.stream().filter(Predicate.not(TokenDriver::needsInsertedCard))
+                .map((driver) -> new TokenOption(driver, null)).toList();
+        var unavailableDrivers = drivers.stream().filter(TokenDriver::needsInsertedCard).toList();
+        return new TokenOptions(found, List.of(), unavailableDrivers, true);
+    }
+
+    private void onTokenUsed(TokenOption option) {
+        automaticTokenPickUnfinished.set(false);
+        settings.setLastUsedToken(LastUsedToken.of(option));
+    }
+
+    // eID card has two tokens, Sig_ZEP with the qualified certificate and Sig_EP which is practically never used
+    private static boolean isEidEpSlot(TokenDriver driver, TokenSlot slot) {
+        return driver.getShortname().equals(DefaultDriverDetector.TokenDriverShortnames.EID)
+                && slot.label().equalsIgnoreCase(EID_EP_SLOT_LABEL);
+    }
+
+    private void fetchKeysAndThen(TokenOption option, Consumer<SigningKey> callback) {
+        var driver = option.driver();
+        try {
+            var connected = connectToToken(option);
+            var token = connected.token();
+            var keys = connected.keys();
             resetTokenSessionTimer();
 
             ui.onUIThreadDo(() -> ui.pickKeyAndThen(keys, driver, (privateKey) -> {
@@ -530,6 +711,33 @@ public class Autogram {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(e));
         } catch (Exception e) {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(new UnrecognizedException(e)));
+        }
+    }
+
+    private record ConnectedToken(AbstractKeyStoreTokenConnection token, List<DSSPrivateKeyEntry> keys) implements AutoCloseable {
+        @Override
+        public void close() {
+            token.close();
+        }
+    }
+
+    /**
+     * Connects to the token and reads its keys. If the driver fails in a way it can recover from, connects once again.
+     */
+    private ConnectedToken connectToToken(TokenOption option) {
+        var driver = option.driver();
+        var token = driver.createToken(passwordManager, settings, option.slot());
+        try {
+            return new ConnectedToken(token, token.getKeys());
+        } catch (DSSException e) {
+            // before recovering, the driver may not handle the connection afterwards
+            token.close();
+            var recovered = driver.recoverToken(passwordManager, settings, option.slot(), e);
+            if (recovered.isEmpty())
+                throw e;
+
+            Logging.log("Connecting again to " + driver.getName() + " after: " + e);
+            return new ConnectedToken(recovered.get(), recovered.get().getKeys());
         }
     }
 
@@ -611,6 +819,13 @@ public class Autogram {
     }
 
     public void consentCertificateReadingAndThen(CertificatesResponder responder, List<String> drivers) {
+        // reading certificates connects to the card again, closing that connection logs the batch key out
+        expireBatchIfNeeded();
+        if (hasActiveBatch()) {
+            responder.onError(new BatchInProgressException());
+            return;
+        }
+
         var availableDrivers = settings.getDriverDetector().getAvailableDrivers();
         if (drivers != null && !drivers.isEmpty())
             availableDrivers = availableDrivers.stream().filter(driver -> drivers.contains(driver.getShortname())).toList();
@@ -640,35 +855,39 @@ public class Autogram {
     }
 
     public void getCertificates(CertificatesResponder responder, List<TokenDriver> drivers, Runnable consentDialogCloseCallback) {
-        final var availableDrivers = drivers;
-        ui.onUIThreadDo(() -> {
-            ui.pickTokenDriverAndThen(availableDrivers,
-                (driver) -> {
-                    ui.onWorkThreadDo(() -> {
-                        try (var token = driver.createToken(passwordManager, settings)) {
-                            var keys = token.getKeys();
-                            resetTokenSessionTimer();
-                            ui.onUIThreadDo(consentDialogCloseCallback);
-                            responder.onSuccess(keys.stream().map(key -> key.getCertificate().getCertificate()).toList());
-                        } catch (DSSException e) {
-                            var autogramException = AutogramException.createFromDSSException(e);
-                            ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(autogramException));
-                            ui.onUIThreadDo(consentDialogCloseCallback);
-                            responder.onError(autogramException);
-                        } catch (AutogramException e) {
-                            ui.onUIThreadDo(consentDialogCloseCallback);
-                            responder.onError(e);
-                        } catch (Exception e) {
-                            ui.onUIThreadDo(consentDialogCloseCallback);
-                            responder.onError(new UnrecognizedException(e));
-                        }
-                    });
-                },
-                () -> {
-                    consentDialogCloseCallback.run();
-                    responder.onError(new SigningCanceledByUserException());
-                }
-            );
-        });
+        Runnable onCancel = () -> {
+            consentDialogCloseCallback.run();
+            responder.onError(new SigningCanceledByUserException());
+        };
+
+        pickTokenAndThen(drivers, (option) -> getCertificatesFromToken(responder, option, consentDialogCloseCallback), onCancel);
+    }
+
+    private void getCertificatesFromToken(CertificatesResponder responder, TokenOption option, Runnable consentDialogCloseCallback) {
+        // a batch may have started while the user was consenting or picking the card
+        if (hasActiveBatch()) {
+            ui.onUIThreadDo(consentDialogCloseCallback);
+            responder.onError(new BatchInProgressException());
+            return;
+        }
+
+        try (var connected = connectToToken(option)) {
+            var keys = connected.keys();
+            resetTokenSessionTimer();
+            onTokenUsed(option);
+            ui.onUIThreadDo(consentDialogCloseCallback);
+            responder.onSuccess(keys.stream().map(key -> key.getCertificate().getCertificate()).toList());
+        } catch (DSSException e) {
+            var autogramException = AutogramException.createFromDSSException(e);
+            ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(autogramException));
+            ui.onUIThreadDo(consentDialogCloseCallback);
+            responder.onError(autogramException);
+        } catch (AutogramException e) {
+            ui.onUIThreadDo(consentDialogCloseCallback);
+            responder.onError(e);
+        } catch (Exception e) {
+            ui.onUIThreadDo(consentDialogCloseCallback);
+            responder.onError(new UnrecognizedException(e));
+        }
     }
 }

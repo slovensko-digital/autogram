@@ -29,20 +29,6 @@
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
-                                            <Text styleClass="autogram-heading-s" text="%settings.signing.defaultDriver.label"/>
-                                        </TextFlow>
-                                        <TextFlow>
-                                            <Text styleClass="autogram-description" text="%settings.signing.defaultDriver.text"/>
-                                        </TextFlow>
-                                    </VBox>
-                                    <VBox styleClass="autogram-dropdown">
-                                        <ChoiceBox fx:id="driverChoiceBox"
-                                                   styleClass="autogram-choicebox" />
-                                    </VBox>
-                                </HBox>
-                                <HBox styleClass="autogram-settings-row">
-                                    <VBox styleClass="left">
-                                        <TextFlow>
                                             <Text styleClass="autogram-heading-s" text="%settings.signing.signatureLevel.label"/>
                                         </TextFlow>
                                         <TextFlow>
@@ -304,16 +290,16 @@
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
-                                            <Text styleClass="autogram-heading-s" text="%settings.other.slotIndex.label"/>
+                                            <Text styleClass="autogram-heading-s" text="%settings.other.eidEpSlots.label"/>
                                         </TextFlow>
                                         <TextFlow>
-                                            <Text styleClass="autogram-description" text="%settings.other.slotIndex.text"/>
-                                        </TextFlow>
-                                        <TextFlow>
-                                            <Text styleClass="autogram-description" text="%settings.other.slotIndex.example.text"/>
+                                            <Text styleClass="autogram-description" text="%settings.other.eidEpSlots.text"/>
                                         </TextFlow>
                                     </VBox>
-                                    <VBox styleClass="autogram-dropdown" fx:id="driverSlot"/>
+                                    <VBox styleClass="autogram-checkbox-container">
+                                        <HBox fx:id="eidEpSlotsRadios"
+                                            styleClass="autogram-smaller-radio-buttons" />
+                                    </VBox>
                                 </HBox>
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">

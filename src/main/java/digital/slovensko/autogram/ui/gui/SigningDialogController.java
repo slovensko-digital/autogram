@@ -359,6 +359,7 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
         gui.resetSigningKey();
+        autogram.requestAnotherToken();
         checkExistingSignatureValidityAndSign();
     }
 

@@ -5,11 +5,15 @@ import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.BatchEndedException;
 import digital.slovensko.autogram.core.errors.BatchExpiredException;
+import digital.slovensko.autogram.core.errors.BatchInProgressException;
 import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
 import digital.slovensko.autogram.core.errors.PINLockedException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
+import digital.slovensko.autogram.drivers.TokenDriver;
+import digital.slovensko.autogram.server.CertificatesResponder;
+import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
@@ -19,6 +23,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -348,5 +354,66 @@ class BatchEndTest {
         assertNotSame(abandoned, ui.batch.get());
         assertThrows(BatchInvalidIdException.class, () -> autogram.endBatchSigning(abandonedId),
                 "the ID of the old batch doesn't belong to the new one");
+    }
+
+    // a driver without cards to search, used without asking
+    private static TokenDriver driverWithoutCards(AbstractKeyStoreTokenConnection token) {
+        var driver = mock(TokenDriver.class);
+        when(driver.getShortname()).thenReturn("keystore");
+        when(driver.getSlotsWithToken(any())).thenReturn(Optional.empty());
+        when(driver.createToken(any(), any(), any())).thenReturn(token);
+        return driver;
+    }
+
+    @Test
+    void certificatesAreNotReadDuringBatch() {
+        var consentAsked = new AtomicBoolean();
+        var ui = new RecordingUI(SigningMode.BULK) {
+            @Override
+            public void consentCertificateReadingAndThen(Consumer<Runnable> callback, Runnable onCancel) {
+                consentAsked.set(true);
+            }
+        };
+        var autogram = TestAutogramFactory.create(ui);
+        startBatch(autogram, ui, 2);
+        var responder = mock(CertificatesResponder.class);
+
+        autogram.consentCertificateReadingAndThen(responder, null);
+
+        verify(responder).onError(any(BatchInProgressException.class));
+        assertFalse(consentAsked.get());
+    }
+
+    @Test
+    void certificatesAreNotReadWhenBatchStartedWhileUserPickedCard() {
+        var ui = new RecordingUI(SigningMode.INTERACTIVE);
+        var autogram = TestAutogramFactory.create(ui);
+        var token = mock(AbstractKeyStoreTokenConnection.class);
+        var driver = driverWithoutCards(token);
+        startBatch(autogram, ui, 2);
+        var responder = mock(CertificatesResponder.class);
+        var consentClosed = new AtomicBoolean();
+
+        autogram.getCertificates(responder, List.of(driver), () -> consentClosed.set(true));
+
+        verify(responder).onError(any(BatchInProgressException.class));
+        verify(driver, never()).createToken(any(), any(), any());
+        assertTrue(consentClosed.get());
+    }
+
+    @Test
+    void certificatesAreReadOnceBatchEnded() {
+        var ui = new RecordingUI(SigningMode.BULK);
+        var autogram = TestAutogramFactory.create(ui);
+        var token = mock(AbstractKeyStoreTokenConnection.class);
+        var driver = driverWithoutCards(token);
+        var batch = startBatch(autogram, ui, 2);
+        autogram.endBatchSigning(batch.getBatchId());
+        var responder = mock(CertificatesResponder.class);
+
+        autogram.getCertificates(responder, List.of(driver), () -> {});
+
+        verify(responder).onSuccess(List.of());
+        verify(token).close();
     }
 }

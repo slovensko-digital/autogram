@@ -1,11 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.DefaultDriverDetector;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
-import digital.slovensko.autogram.drivers.FakeTokenDriver;
-import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import javafx.fxml.FXML;
@@ -51,8 +48,6 @@ public class SettingsDialogController extends BaseController implements Suppress
     @FXML
     private TextField tokenSessionTimeoutTextField;
     @FXML
-    private ChoiceBox<TokenDriver> driverChoiceBox;
-    @FXML
     private VBox trustedCountriesList;
     @FXML
     private HBox correctDocumentDisplayRadios;
@@ -64,6 +59,8 @@ public class SettingsDialogController extends BaseController implements Suppress
     private HBox expiredCertsRadios;
     @FXML
     private HBox localServerEnabledRadios;
+    @FXML
+    private HBox eidEpSlotsRadios;
     @FXML
     private ChoiceBox<SupportedLanguage> languageChoiceBox;
     @FXML
@@ -78,8 +75,6 @@ public class SettingsDialogController extends BaseController implements Suppress
     private Button resetButton;
     @FXML
     private Button closeButton;
-    @FXML
-    private VBox driverSlot;
 
     private final Autogram autogram;
     private final UserSettings userSettings;
@@ -97,7 +92,6 @@ public class SettingsDialogController extends BaseController implements Suppress
     @Override
     public void initialize() {
         initializeSignatureLevelChoiceBox();
-        initializeDriverChoiceBox();
         initializeTsaEnabled();
         initializeTsaServer();
         initializeBulkEnabledCheckbox();
@@ -109,12 +103,12 @@ public class SettingsDialogController extends BaseController implements Suppress
         initializeCheckPDFAComplianceCheckBox();
         initializeExpiredCertsEnabledCheckBox();
         initializeLocalServerEnabledCheckBox();
+        initializeBooleanRadios(eidEpSlotsRadios, userSettings::setEidEpSlotsEnabled, userSettings.isEidEpSlotsEnabled());
         initializeTrustedCountriesList();
         initializeLanguageSettings();
         initializePdfDpiSettings();
         initializeCustomKeystoreSettings();
         initializeCustomPKCS11DriverPathSettings();
-        initializeDriverSlot();
     }
 
     private void initializeSignatureLevelChoiceBox() {
@@ -128,19 +122,6 @@ public class SettingsDialogController extends BaseController implements Suppress
                 .addListener((observable, oldValue, newValue) -> {
                     userSettings.setSignatureLevel(newValue);
                 });
-    }
-
-    private void initializeDriverChoiceBox() {
-        var driverDetector = new DefaultDriverDetector(userSettings);
-        driverChoiceBox.setConverter(new TokenDriverStringConverter(driverDetector));
-        driverChoiceBox.getItems().add(new FakeTokenDriver(i18n("settings.signing.defaultDriver.none.label"), null, "none", ""));
-        driverChoiceBox.getItems().addAll(driverDetector.getAvailableDrivers());
-        var defaultDriver = driverChoiceBox.getItems().stream()
-                .filter(d -> d != null && d.getShortname().equals(userSettings.getDefaultDriver())).findFirst();
-        driverChoiceBox.setValue(defaultDriver.orElse(null));
-        driverChoiceBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            userSettings.setDriver(newValue.getShortname());
-        });
     }
 
     private void initializeTsaEnabled() {
@@ -350,36 +331,6 @@ public class SettingsDialogController extends BaseController implements Suppress
         customPKCS11DriverPathTextField.setOnKeyTyped((e) -> {
             userSettings.setCustomPKCS11DriverPath(customPKCS11DriverPathTextField.getText());
         });
-    }
-
-    private void initializeDriverSlot(){
-        var driverDetector = new DefaultDriverDetector(userSettings);
-        var drivers = driverDetector.getAvailableDrivers();
-        if (drivers.isEmpty()) {
-            Text info = new Text(i18n("settings.other.slotIndex.noSourceDetected.text"));
-            info.getStyleClass().add("autogram-description");
-            driverSlot.getChildren().add(info);
-            driverSlot.getStyleClass().add("autogram-description");
-        } else {
-            for (TokenDriver tokenDriver : drivers) {
-                Text driverName = new Text(tokenDriver.getName());
-                driverName.getStyleClass().add("autogram-label");
-                driverSlot.getChildren().add(driverName);
-
-                final var DEFAULT_LABEL = i18n("settings.other.slotIndex.defaultSlot.label");
-                ChoiceBox<String> slotIndex = new ChoiceBox<>();
-                slotIndex.getItems().addAll(DEFAULT_LABEL, "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
-                slotIndex.setValue(userSettings.getDriverSlotIndex(tokenDriver.getShortname()) == -1 ? DEFAULT_LABEL : String.valueOf(userSettings.getDriverSlotIndex(tokenDriver.getShortname())));
-                slotIndex.getSelectionModel().selectedItemProperty()
-                        .addListener((observable, oldValue, newValue) -> {
-                            if (newValue.equals(DEFAULT_LABEL))
-                                newValue = "-1";
-
-                            userSettings.setDriverSlotIndex(tokenDriver.getShortname(), Integer.parseInt(newValue));
-                        });
-                driverSlot.getChildren().add(slotIndex);
-            }
-        }
     }
 
     public void onSaveButtonAction() {

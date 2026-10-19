@@ -11,6 +11,7 @@ import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import org.slf4j.LoggerFactory;
 
 public class SigningKey {
     final AbstractKeyStoreTokenConnection token;
@@ -47,6 +48,11 @@ public class SigningKey {
     }
 
     public void close() {
-        token.close();
+        try {
+            token.close();
+        } catch (RuntimeException e) {
+            // e.g. the card was removed meanwhile, there's nothing to close then
+            LoggerFactory.getLogger(SigningKey.class).warn("Unable to close signing token: {}", e.toString());
+        }
     }
 }

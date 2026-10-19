@@ -533,6 +533,25 @@ paths:
                     type: string
                     example: "no such algorithm: PKCS11 for provider"
                     description: Optional details.
+        503:
+          description: A batch is in progress, certificates can be read only after it ends.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: BATCH_IN_PROGRESS
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Počas hromadného podpisovania nie je možné načítať certifikáty
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Počkajte, kým hromadné podpisovanie skončí, a skúste to znova.
+                    description: Optional details.
 
   /api/v1/info:
     get:
@@ -1022,6 +1041,25 @@ paths:
                   details:
                     type: string
                     example: "no such algorithm: PKCS11 for provider"
+                    description: Optional details.
+        503:
+          description: A batch is in progress, certificates can be read only after it ends.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: BATCH_IN_PROGRESS
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Počas hromadného podpisovania nie je možné načítať certifikáty
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Počkajte, kým hromadné podpisovanie skončí, a skúste to znova.
                     description: Optional details.
 
 
