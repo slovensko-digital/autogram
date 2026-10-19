@@ -4,19 +4,24 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.util.OperatingSystem;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Desktop;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ResourceBundle;
 
 public class GUIUtils {
 
@@ -34,11 +39,31 @@ public class GUIUtils {
         }
     }
 
+    /**
+     * Brings the app to the foreground with the shown stage, e.g. a dialog shown after the user entered PIN in a
+     * driver's own window, or a window opened for a website. On macOS, JavaFX can't activate the app, the stage would
+     * stay without focus behind the app that's active.
+     */
+    static void bringToForeground(Stage stage) {
+        if (OperatingSystem.current() == OperatingSystem.MAC && Desktop.isDesktopSupported()
+                && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND))
+            Desktop.getDesktop().requestForeground(true);
+
+        stage.toFront();
+        stage.requestFocus();
+    }
+
+    static void showInForeground(Stage stage) {
+        stage.show();
+        bringToForeground(stage);
+    }
+
     static void showOnTop(Stage stage) {
         stage.requestFocus();
         stage.setAlwaysOnTop(true);
         stage.toFront();
         stage.show();
+        bringToForeground(stage);
 
         new Thread(() -> {
             try {
@@ -99,6 +124,12 @@ public class GUIUtils {
         return writer.toString();
     }
 
+    public static void copyToClipboard(String text) {
+        var content = new ClipboardContent();
+        content.putString(text);
+        Clipboard.getSystemClipboard().setContent(content);
+    }
+
     public static void hackToForceRelayout(Stage stage) {
         // this MUST be run after stage was shown to work on all platforms
         var w = stage.getScene().getWindow();
@@ -106,13 +137,22 @@ public class GUIUtils {
         w.setHeight(w.getHeight() - 1);
     }
 
-    public static void showError(AutogramException e, String buttonI18nKey, boolean wait) {
-        showError(e, buttonI18nKey, wait, false);
+    /**
+     * Opens a page of the user guide in the language of the app.
+     *
+     * @param page path relative to {@code docs.url}, e.g. {@code troubleshooting/#obmedzeny-rezim}
+     */
+    public static void openDocs(HostServices hostServices, ResourceBundle resources, String page) {
+        hostServices.showDocument(HasI18n.translate(resources, "docs.url") + page);
     }
 
-    public static void showError(AutogramException e, String buttonI18nKey, boolean wait, boolean errorDetailsDisabled) {
+    public static void showError(AutogramException e, String buttonI18nKey, boolean wait, HostServices hostServices) {
+        showError(e, buttonI18nKey, wait, false, hostServices);
+    }
+
+    public static void showError(AutogramException e, String buttonI18nKey, boolean wait, boolean errorDetailsDisabled, HostServices hostServices) {
         logger.debug("GUI showing error", e);
-        var controller = new ErrorController(e, errorDetailsDisabled);
+        var controller = new ErrorController(e, errorDetailsDisabled, hostServices);
         var root = GUIUtils.loadFXML(controller, "error-dialog.fxml");
         controller.setMainButtonText(buttonI18nKey);
 
@@ -125,6 +165,8 @@ public class GUIUtils {
         stage.initModality(Modality.APPLICATION_MODAL);
 
         GUIUtils.suppressDefaultFocus(stage, controller);
+        // e.g. the PIN the user entered in a driver's own window was wrong
+        stage.setOnShown((event) -> bringToForeground(stage));
 
         if (wait) {
             stage.showAndWait();

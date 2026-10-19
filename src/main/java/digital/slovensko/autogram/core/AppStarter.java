@@ -22,7 +22,7 @@ public class AppStarter {
         addOption(null, "parents", false, "Create all parent directories for target if needed.").
         addOption("d", "driver", true, "PCKS driver name for signing. Supported values: eid, cz_eid, secure_store, monet, gemalto, keystore, custom_pkcs11 (requires valid path within pkcs11-driver-path option).").
         addOption(null, "keystore", true, "Absolute path to a keystore file that can be used for signing.").
-        addOption(null, "slot-id", true, "Slot ID for PKCS11 driver. If not specified, first available slot is used.").
+        addOption(null, "slot-id", true, "Slot index for PKCS11 driver, i.e. position in the list of all slots the driver reports. If not specified, cards of all drivers are searched and you are asked to pick one if there are more.").
         addOption(null, "pdf-level", true, "PDF signature level. Supported values: PAdES_BASELINE_B (default), XAdES_BASELINE_B, CAdES_BASELINE_B.").
         addOption(null, "en319132", false, "Sign according to EN 319 132 or EN 319 122.").
         addOption(null, "tsa-server", true, "Url of TimeStamp Authority server that should be used for timestamping in signature level BASELINE_T. If provided, BASELINE_T signatures are made.").

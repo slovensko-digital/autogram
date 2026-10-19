@@ -5,4 +5,9 @@ public class TokenRemovedException extends AutogramException {
         super();
     }
 
+    /** The connection can't sign anymore, the rest of a bulk batch would fail on it too. */
+    @Override
+    public boolean batchCanContinue() {
+        return false;
+    }
 }

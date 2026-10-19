@@ -25,9 +25,6 @@ tags:
     description: Information and status of the server
   - name: Batch
     description: Signing multiple documents in batch, with same signature. Process is [start batch](#/Batch/startBatch), [sign document](#/Batch/signDocument),... , sign document, [end batch](#/Batch/endBatch).
-    externalDocs:
-      description: More info
-      url: https://github.com/slovensko-digital/autogram/tree/main/docs/batch-sign-api.md
   - name: Legacy
     description: Legacy endpoints with simplified request body for signing one document. These endpoints are still supported but for new integrations prefer the more flexible `/api/v1/sign` endpoint.
 paths:
@@ -122,6 +119,9 @@ paths:
               XAdES (ASiC_E) TXT:
                 $ref: "#/components/examples/legacy-XAdES-ASiC_E-TXT"
 
+              XAdES (ASiC_E) TXT with exclusive canonicalization:
+                $ref: "#/components/examples/legacy-XAdES-ASiC_E-TXT-Canonicalization"
+
               CAdES Level_T (ASiC_E) TXT:
                 $ref: "#/components/examples/legacy-XAdES-ASiC_E_CADES_T-TXT"
 
@@ -175,10 +175,10 @@ paths:
                       - BATCH_ENDED
                       - BATCH_EXPIRED
                       - BATCH_NOT_STARTED
+                      - BATCH_TOO_MANY_DOCUMENTS
                       - EMPTY_BODY
-                      - MALFORMED_INPUT
                       - ORIGINAL_DOCUMENT_NOT_FOUND
-                    example: MALFORMED_INPUT
+                    example: EMPTY_BODY
                     description: Code that can be used to identify the error.
                   message:
                     type: string
@@ -186,7 +186,7 @@ paths:
                     description: Human readable error message.
                   details:
                     type: string
-                    example: "JsonSyntaxException: Unexpected token END OF FILE at position 0."
+                    example: Empty body
                     description: Optional details.
         404:
           description: Batch with the given `batchId` was not found or the batch session has ended.
@@ -210,7 +210,7 @@ paths:
                     example: Batch signing attempt failed. Batch with the given `batchId` was not found or the batch session has ended.
                     description: More detailed human readable error message.
         422:
-          description: The request body is valid but the document cannot be signed.
+          description: The request body is not valid JSON, or it is valid but the document cannot be signed.
           content:
             application/json:
               schema:
@@ -220,7 +220,7 @@ paths:
                     type: string
                     enum:
                       - UNPROCESSABLE_INPUT
-                      - UNSUPPORTED_SIGNATURE_LEVEL
+                      - LOCKED_PDF
                     example: UNPROCESSABLE_INPUT
                     description: Code that can be used to identify the error.
                   message:
@@ -300,6 +300,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BatchStartResponseBody"
+        400:
+          description: Another batch is in progress (only one batch at a time), or the batch expired before it started.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_CONFLICT
+                      - BATCH_EXPIRED
+                    example: BATCH_CONFLICT
+                  message:
+                    type: string
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
+        422:
+          description: The request body is not valid JSON, or `totalNumberOfDocuments` is missing or lower than 1.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - UNPROCESSABLE_INPUT
+                    example: UNPROCESSABLE_INPUT
+                  message:
+                    type: string
+                    example: "\"totalNumberOfDocuments\" must be at least 1"
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
         502:
           description: Batch canceled
           content:
@@ -328,6 +366,8 @@ paths:
       summary: End a batch session
       description: |
         End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+
+        It works also for a batch that already ended on its own - after its last document, or when it expired (bulk: 1 minute without a document, 5 minutes for the first one; one-by-one: 10 minutes with no document open). Documents of the batch still waiting for the user get `BATCH_ENDED`.
       requestBody:
         content:
           "application/json":
@@ -491,6 +531,25 @@ paths:
                     type: string
                     example: "no such algorithm: PKCS11 for provider"
                     description: Optional details.
+        503:
+          description: A batch is in progress, certificates can be read only after it ends.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: BATCH_IN_PROGRESS
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Počas hromadného podpisovania nie je možné načítať certifikáty
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Počkajte, kým hromadné podpisovanie skončí, a skúste to znova.
+                    description: Optional details.
 
   /api/v1/info:
     get:
@@ -585,6 +644,9 @@ paths:
               TXT - XAdES (ASiC_E):
                 $ref: "#/components/examples/XAdES-ASiC_E-TXT"
 
+              TXT - XAdES (ASiC_E) with exclusive canonicalization:
+                $ref: "#/components/examples/XAdES-ASiC_E-TXT-Canonicalization"
+
               TXT - CAdES Level_T (ASiC_E):
                 $ref: "#/components/examples/XAdES-ASiC_E_CADES_T-TXT"
 
@@ -620,10 +682,10 @@ paths:
                       - BATCH_ENDED
                       - BATCH_EXPIRED
                       - BATCH_NOT_STARTED
+                      - BATCH_TOO_MANY_DOCUMENTS
                       - EMPTY_BODY
-                      - MALFORMED_INPUT
                       - ORIGINAL_DOCUMENT_NOT_FOUND
-                    example: MALFORMED_INPUT
+                    example: EMPTY_BODY
                     description: Code that can be used to identify the error.
                   message:
                     type: string
@@ -631,7 +693,7 @@ paths:
                     description: Human readable error message.
                   details:
                     type: string
-                    example: "JsonSyntaxException: Unexpected token END OF FILE at position 0."
+                    example: Empty body
                     description: Optional details.
         404:
           description: Batch with the given `batchId` was not found or the batch session has ended.
@@ -655,7 +717,7 @@ paths:
                     example: Batch signing attempt failed. Batch with the given `batchId` was not found or the batch session has ended.
                     description: More detailed human readable error message.
         422:
-          description: The request body is valid but the document cannot be signed.
+          description: The request body is not valid JSON, or it is valid but the document cannot be signed.
           content:
             application/json:
               schema:
@@ -665,7 +727,7 @@ paths:
                     type: string
                     enum:
                       - UNPROCESSABLE_INPUT
-                      - UNSUPPORTED_SIGNATURE_LEVEL
+                      - LOCKED_PDF
                     example: UNPROCESSABLE_INPUT
                     description: Code that can be used to identify the error.
                   message:
@@ -745,6 +807,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BatchStartResponseBody"
+        400:
+          description: Another batch is in progress (only one batch at a time), or the batch expired before it started.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - BATCH_CONFLICT
+                      - BATCH_EXPIRED
+                    example: BATCH_CONFLICT
+                  message:
+                    type: string
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
+        422:
+          description: The request body is not valid JSON, or `totalNumberOfDocuments` is missing or lower than 1.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                      - UNPROCESSABLE_INPUT
+                    example: UNPROCESSABLE_INPUT
+                  message:
+                    type: string
+                    example: "\"totalNumberOfDocuments\" must be at least 1"
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    description: Optional details.
         502:
           description: Batch canceled
           content:
@@ -773,6 +873,8 @@ paths:
       summary: End a batch session
       description: |
         End a batch session, either prematurely or after all documents have been signed. Returns status of batch session - if number of signed documents is equal to total number of documents in batch, the status is `FINISHED`, otherwise `NOT_FINISHED`.
+
+        It works also for a batch that already ended on its own - after its last document, or when it expired (bulk: 1 minute without a document, 5 minutes for the first one; one-by-one: 10 minutes with no document open). Documents of the batch still waiting for the user get `BATCH_ENDED`.
       requestBody:
         content:
           "application/json":
@@ -935,6 +1037,25 @@ paths:
                   details:
                     type: string
                     example: "no such algorithm: PKCS11 for provider"
+                    description: Optional details.
+        503:
+          description: A batch is in progress, certificates can be read only after it ends.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: BATCH_IN_PROGRESS
+                    description: Code that can be used to identify the error.
+                  message:
+                    type: string
+                    example: Počas hromadného podpisovania nie je možné načítať certifikáty
+                    description: Human readable error message.
+                  details:
+                    type: string
+                    example: Počkajte, kým hromadné podpisovanie skončí, a skúste to znova.
                     description: Optional details.
 
 
@@ -1803,6 +1924,19 @@ components:
           content: "Testovací dokument"
           filename: TextDocument.txt
 
+    XAdES-ASiC_E-TXT-Canonicalization:
+      value:
+        parameters:
+          form: XAdES
+          container: ASiC_E
+          infoCanonicalization: EXCLUSIVE
+          propertiesCanonicalization: EXCLUSIVE
+          keyInfoCanonicalization: EXCLUSIVE
+        documents:
+        - mimeType: "text/plain"
+          content: "Testovací dokument"
+          filename: TextDocument.txt
+
     XAdES-ASiC_E_XADES_T-TXT:
       value:
         parameters:
@@ -2055,6 +2189,19 @@ components:
         parameters:
           level: XAdES_BASELINE_B
           container: ASiC_E
+        payloadMimeType: "text/plain"
+
+    legacy-XAdES-ASiC_E-TXT-Canonicalization:
+      value:
+        document:
+          content: "Testovací dokument"
+          filename: TextDocument.txt
+        parameters:
+          level: XAdES_BASELINE_B
+          container: ASiC_E
+          infoCanonicalization: EXCLUSIVE
+          propertiesCanonicalization: EXCLUSIVE
+          keyInfoCanonicalization: EXCLUSIVE
         payloadMimeType: "text/plain"
 
     legacy-XAdES-ASiC_E_XADES_T-TXT:

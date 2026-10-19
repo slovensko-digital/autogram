@@ -1,141 +1,58 @@
 package digital.slovensko.autogram.core;
 
-import digital.slovensko.autogram.core.errors.BatchEndedException;
-import digital.slovensko.autogram.core.errors.BatchExpiredException;
-import digital.slovensko.autogram.core.errors.BatchInvalidIdException;
-import digital.slovensko.autogram.util.Logging;
+import java.util.List;
 
-import java.util.Date;
-import java.util.UUID;
+/** A batch signing session, or the absence of one before signing begins. */
+public interface Batch {
+    void start(SigningKey key);
 
-import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.ALREADY_ENDED;
-import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.CANNOT_RESTART;
-import static digital.slovensko.autogram.core.errors.BatchEndedException.Error.NOT_STARTED;
+    void setMode(SigningMode mode);
 
-enum BatchState {
-    INITIALIZED, STARTED, ENDED
-}
+    boolean isInteractive();
 
-/**
- * Batch is a session for signing multiple documents with the same key.
- * 
- * This class is used for checking runtime conditions and tracking progress.
- */
-public class Batch {
-    private final String batchId = generateNewBatchId();
-    private final int totalNumberOfDocuments;
+    boolean isPresent();
 
-    private BatchState state = BatchState.INITIALIZED;
-    private SigningKey signingKey = null;
+    void ensureCanStartNewBatch();
 
-    private Date expirationDate;
-    private int addedDocumentsCount = 0;
-    private int successfulDocumentsCount = 0;
-    private int failedDocumentsCount = 0;
+    boolean shouldResetPasswordAfterSigning();
 
-    public Batch(int totalNumberOfDocuments) {
-        this.totalNumberOfDocuments = totalNumberOfDocuments;
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 5); // 5 minutes
-    }
+    /** Adds a document; until it gets a result, the batch doesn't expire and ending the batch gives it a result. */
+    void addJob(String batchId, SigningJob job);
 
-    public void start(SigningKey key) {
-        if (state != BatchState.INITIALIZED)
-            throw new BatchEndedException(CANNOT_RESTART);
-        state = BatchState.STARTED;
-        signingKey = key;
-    }
+    void success(SigningJob job);
 
-    public void addJob(String batchId) {
-        validate(batchId);
-        resetExpirationDate();
+    void failure(SigningJob job);
 
-        if (this.totalNumberOfDocuments <= this.addedDocumentsCount)
-            throw new IllegalAccessError("Sent more sign requests than declared at start");
+    /** A document that couldn't even be added, e.g. a file that can't be read. */
+    void failure();
 
-        addedDocumentsCount++;
-    }
+    /** Ends the batch and returns its documents that didn't get a result yet. */
+    List<SigningJob> end();
 
-    public void onJobSuccess() {
-        successfulDocumentsCount++;
-        Logging.log("Batch " + batchId + " success");
-        log();
-    }
+    /** Like {@link #end()}, but later requests learn the batch expired. */
+    List<SigningJob> expire();
 
-    public void onJobFailure() {
-        failedDocumentsCount++;
-        Logging.log("Batch " + batchId + " failed");
-        log();
-    }
+    /** Checks the batch accepts documents under this ID: started, not ended, not expired. */
+    void validate(String batchId);
 
-    public void end() {
-        state = BatchState.ENDED;
-    }
+    /** Checks only that the ID belongs to this batch, also when it ended or expired. */
+    void validateId(String batchId);
 
-    private void validateInternal() {
-        if (state == BatchState.INITIALIZED)
-            throw new BatchEndedException(NOT_STARTED);
+    boolean isExpired();
 
-        if (state == BatchState.ENDED)
-            throw new BatchEndedException(ALREADY_ENDED);
+    String getBatchId();
 
-        if (isExpired()) {
-            throw new BatchExpiredException();
-        }
-    }
+    boolean isEnded();
 
-    public void validate(String batchId) {
-        validateInternal();
+    boolean isAllProcessed();
 
-        if (!this.batchId.equals(batchId)) throw new BatchInvalidIdException();
-    }
+    boolean isKeyChangeAllowed();
 
-    // public getters
+    int getTotalNumberOfDocuments();
 
-    public String getBatchId() {
-        validate(batchId);
+    int getProcessedDocumentsCount();
 
-        return batchId;
-    }
+    SigningKey getSigningKey();
 
-    public boolean isEnded() {
-        return state == BatchState.ENDED;
-    }
-
-    public boolean isAllProcessed() {
-        return getProcessedDocumentsCount() >= totalNumberOfDocuments;
-    }
-
-    public boolean isKeyChangeAllowed() {
-        return state == BatchState.INITIALIZED;
-    }
-
-    public int getTotalNumberOfDocuments() {
-        return totalNumberOfDocuments;
-    }
-
-    public int getProcessedDocumentsCount(){
-        return successfulDocumentsCount + failedDocumentsCount;
-    }
-
-    public SigningKey getSigningKey() {
-        return signingKey;
-    }
-
-    // private
-    private static String generateNewBatchId() {
-        return UUID.randomUUID().toString();
-    }
-
-    private boolean isExpired() {
-        return expirationDate.before(new Date());
-    }
-
-    public void resetExpirationDate() {
-        expirationDate = new Date(System.currentTimeMillis() + 1000 * 60); // 1 minute
-    }
-
-    public void log() {
-        Logging.log("Batch " + batchId + " state: " + state + " processed: " + addedDocumentsCount + " total: " + totalNumberOfDocuments);
-    }
-
+    void log();
 }

@@ -41,6 +41,13 @@ public class AutogramDocument {
         return build(document, eFormAttributes, false);
     }
 
+    public static AutogramDocument buildFromFile(DSSDocument document, EFormAttributes eFormAttributes) {
+        if (eFormAttributes == null || document.getName() == null)
+            return build(document, eFormAttributes);
+
+        return build(document, eFormAttributes.withFsFormId(EFormUtils.getFsFormIdFromFilename(document.getName())));
+    }
+
     public static AutogramDocument build(DSSDocument document, EFormAttributes eFormAttributes, boolean preserveFileName) {
         if (document.getMimeType() == null)
             throw new SigningParametersException(NO_MIME_TYPE);
@@ -135,14 +142,21 @@ public class AutogramDocument {
         return AsicContainerUtils.getOriginalDocuments(dssDocument);
     }
 
+    private static void sanitizeDocumentName(DSSDocument dssDocument) {
+        var name = dssDocument.getName();
+        if (name != null) {
+            dssDocument.setName(name.replace("?", "_").replace("#", "_"));
+        }
+    }
+
     private static DSSDocument normalize(DSSDocument dssDocument) {
         var mimeType = dssDocument.getMimeType();
+        sanitizeDocumentName(dssDocument);
         var name = dssDocument.getName();
 
-        if (name != null && name.endsWith(".xdcf")) {
-            dssDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
-        } else if (mimeType != null && (AutogramMimeType.isXDC(mimeType)
-                || AutogramMimeType.isXML(mimeType) && XDCValidator.isXDCContent(dssDocument))) {
+        if (mimeType != null && (AutogramMimeType.isXDC(mimeType)
+                || (AutogramMimeType.isXML(mimeType) || name != null && name.endsWith(".xdcf"))
+                        && XDCValidator.isXDCContent(dssDocument))) {
             dssDocument.setMimeType(XML_DATACONTAINER_WITH_CHARSET);
         } else if (mimeType != null && AutogramMimeType.isTxt(mimeType)) {
             dssDocument.setMimeType(TEXT_WITH_CHARSET);
