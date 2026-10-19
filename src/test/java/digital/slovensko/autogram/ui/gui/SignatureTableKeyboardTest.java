@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.ui.SupportedLanguage;
+import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.scene.Scene;
@@ -42,7 +43,11 @@ class SignatureTableKeyboardTest {
     }
 
     @Test
-    void signatureDetailsAndShowMoreRespondToEnterAndSpace() throws Exception {
+    void signatureDetailsAndShowMoreRespondToKeyboard() throws Exception {
+        // JavaFX buttons react to Enter everywhere except macOS, where only Space activates them.
+        var keys = OperatingSystem.current() == OperatingSystem.MAC
+                ? new KeyCode[]{KeyCode.SPACE}
+                : new KeyCode[]{KeyCode.ENTER, KeyCode.SPACE};
         onFxThread(() -> {
             var count = new AtomicInteger();
             var resources = SupportedLanguage.SLOVAK.loadResources();
@@ -60,10 +65,10 @@ class SignatureTableKeyboardTest {
                 for (var button : new Button[]{details, more}) {
                     button.requestFocus();
                     assertSame(button, stage.getScene().getFocusOwner());
-                    press(button, KeyCode.ENTER);
-                    assertEquals(1, count.getAndSet(0), button.getText() + " with Enter");
-                    press(button, KeyCode.SPACE);
-                    assertEquals(1, count.getAndSet(0), button.getText() + " with Space");
+                    for (var key : keys) {
+                        press(button, key);
+                        assertEquals(1, count.getAndSet(0), button.getText() + " with " + key.getName());
+                    }
                 }
             } finally {
                 stage.close();
