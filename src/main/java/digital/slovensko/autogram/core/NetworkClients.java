@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /** Autogram-only factories; never change JVM-wide networking settings. */
@@ -118,12 +119,13 @@ public final class NetworkClients {
     }
 
     private record RestrictedDataLoader(DataLoader delegate, ProxyConfiguration configuration) implements DataLoader {
+        // Prefix check only: URLs from certificates (e.g. LDAP DNs with spaces) need not be valid URIs.
         private void check(String url) {
-            var scheme = URI.create(url).getScheme();
-            if ("file".equalsIgnoreCase(scheme))
+            var lowerCaseUrl = url.toLowerCase(Locale.ROOT);
+            if (lowerCaseUrl.startsWith("file:"))
                 return;
             if (configuration.state() == ProxyConfiguration.State.BLOCKED
-                    || !("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)))
+                    || !(lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")))
                 throw new DSSExternalResourceException("Outbound request blocked by proxy configuration: " + url);
         }
 
