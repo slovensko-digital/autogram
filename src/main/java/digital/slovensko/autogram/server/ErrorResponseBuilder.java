@@ -34,7 +34,6 @@ public class ErrorResponseBuilder {
             case InitializationFailedException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("INITIALIZATION_FAILED", ex));
             case PINIncorrectException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("PIN_INCORRECT", ex));
             case FunctionCanceledException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("FUNCTION_CANCELED", ex));
-            case UnsupportedSignatureLevelException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNSUPPORTED_SIGNATURE_LEVEL", ex));
             case PdfPasswordProtectedException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("LOCKED_PDF", ex));
             case RequestValidationException _,
                  XMLValidationException _,
