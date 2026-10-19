@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.TestAutogramFactory;
+import digital.slovensko.autogram.TestPki;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
 import digital.slovensko.autogram.drivers.CardReaders;
@@ -13,15 +14,13 @@ import digital.slovensko.autogram.server.CertificatesResponder;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
-import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import eu.europa.esig.dss.token.KeyStoreSignatureTokenConnection;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -654,29 +653,24 @@ class TokenPickingTests {
 
         @Override
         public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
-            try {
-                var keystore = Objects.requireNonNull(getClass().getResource("test.keystore")).getFile();
-                var password = new KeyStore.PasswordProtection("".toCharArray());
-                if (failingConnections > 0) {
-                    failingConnections--;
-                    return new Pkcs12SignatureToken(keystore, password) {
-                        @Override
-                        public List<DSSPrivateKeyEntry> getKeys() {
-                            throw new DSSException("load failed", new IllegalStateException("CKR_FUNCTION_FAILED"));
-                        }
+            var signer = TestPki.shared().signer(TestPki.JANA);
+            if (failingConnections > 0) {
+                failingConnections--;
+                return new KeyStoreSignatureTokenConnection(signer.keystore(), "JKS", new KeyStore.PasswordProtection(new char[0])) {
+                    @Override
+                    public List<DSSPrivateKeyEntry> getKeys() {
+                        throw new DSSException("load failed", new IllegalStateException("CKR_FUNCTION_FAILED"));
+                    }
 
-                        @Override
-                        public void close() {
-                            closedFailingConnections++;
-                            super.close();
-                        }
-                    };
-                }
-
-                return new Pkcs12SignatureToken(keystore, password);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                    @Override
+                    public void close() {
+                        closedFailingConnections++;
+                        super.close();
+                    }
+                };
             }
+
+            return signer.token();
         }
     }
 
