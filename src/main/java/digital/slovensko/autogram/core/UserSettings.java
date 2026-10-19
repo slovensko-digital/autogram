@@ -128,13 +128,14 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         return settings;
     }
 
-    public void save() {
-        save(proxyUrl);
-    }
-
     public void save(String proxyUrl) {
         ProxyConfiguration.parse(proxyUrl);
         setProxyUrl(proxyUrl);
+        save();
+    }
+
+    // Does not validate the proxy: an invalid saved value must not block saving unrelated settings.
+    public void save() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
         prefs.put("LANGUAGE", (language == null) ? "" : language.getLocale().getLanguage());
