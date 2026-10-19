@@ -29,9 +29,12 @@ import javafx.scene.Node;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static javafx.collections.FXCollections.observableArrayList;
 
@@ -248,7 +251,8 @@ public class SettingsDialogController extends BaseController implements Suppress
     }
 
     private void initializeTrustedCountriesList() {
-        var europeanCountries = List.of(
+        var locale = resources.getLocale();
+        var europeanCountries = Stream.of(
                 new Country("BE"),
                 new Country("BG"),
                 new Country("CZ"),
@@ -275,18 +279,22 @@ public class SettingsDialogController extends BaseController implements Suppress
                 new Country("SI"),
                 new Country("ES"),
                 new Country("SE"),
-                new Country("IT"));
+                new Country("IT"))
+                .sorted(Comparator.comparing(country -> country.getName(locale), Collator.getInstance(locale)))
+                .toList();
 
         var trustedList = userSettings.getTrustedList();
         var checkBoxes = new ArrayList<CheckBox>();
         for (var country : europeanCountries) {
             var checkBox = createCountryCheckBox(country, trustedList.contains(country.getShortname()));
-            var countryBox = new VBox(new TextFlow(new Text(country.getName(resources.getLocale()))));
+            var countryBox = new VBox(new TextFlow(new Text(country.getName(locale))));
             countryBox.getStyleClass().add("left");
             trustedCountriesList.getChildren().add(new HBox(countryBox, new VBox(checkBox)));
             checkBoxes.add(checkBox);
         }
 
+        // Tab enters the list on the first country, so screen readers announce the keyboard help only once.
+        checkBoxes.getFirst().setAccessibleHelp(i18n("settings.attestation.trustedCountries.keyboard.text"));
         activeCountryCheckBox = checkBoxes.getFirst();
         for (var checkBox : checkBoxes) {
             checkBox.focusedProperty().addListener((observable, oldValue, focused) -> {
@@ -353,7 +361,6 @@ public class SettingsDialogController extends BaseController implements Suppress
     private CheckBox createCountryCheckBox(Country country, boolean isCountryInTrustedList) {
         var checkBox = new CheckBox(isCountryInTrustedList ? i18n("general.on.label") : i18n("general.off.label"));
         checkBox.setAccessibleText(country.getName(resources.getLocale()));
-        checkBox.setAccessibleHelp(i18n("settings.attestation.trustedCountries.keyboard.text"));
         checkBox.setSelected(isCountryInTrustedList);
         checkBox.setOnAction(event -> {
             if (checkBox.isSelected()) {
