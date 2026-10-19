@@ -177,9 +177,8 @@ paths:
                       - BATCH_NOT_STARTED
                       - BATCH_TOO_MANY_DOCUMENTS
                       - EMPTY_BODY
-                      - MALFORMED_INPUT
                       - ORIGINAL_DOCUMENT_NOT_FOUND
-                    example: MALFORMED_INPUT
+                    example: EMPTY_BODY
                     description: Code that can be used to identify the error.
                   message:
                     type: string
@@ -187,7 +186,7 @@ paths:
                     description: Human readable error message.
                   details:
                     type: string
-                    example: "JsonSyntaxException: Unexpected token END OF FILE at position 0."
+                    example: Empty body
                     description: Optional details.
         404:
           description: Batch with the given `batchId` was not found or the batch session has ended.
@@ -211,7 +210,7 @@ paths:
                     example: Batch signing attempt failed. Batch with the given `batchId` was not found or the batch session has ended.
                     description: More detailed human readable error message.
         422:
-          description: The request body is valid but the document cannot be signed.
+          description: The request body is not valid JSON, or it is valid but the document cannot be signed.
           content:
             application/json:
               schema:
@@ -321,7 +320,7 @@ paths:
                     type: string
                     description: Optional details.
         422:
-          description: The request body is valid JSON but `totalNumberOfDocuments` is missing or lower than 1.
+          description: The request body is not valid JSON, or `totalNumberOfDocuments` is missing or lower than 1.
           content:
             application/json:
               schema:
@@ -685,9 +684,8 @@ paths:
                       - BATCH_NOT_STARTED
                       - BATCH_TOO_MANY_DOCUMENTS
                       - EMPTY_BODY
-                      - MALFORMED_INPUT
                       - ORIGINAL_DOCUMENT_NOT_FOUND
-                    example: MALFORMED_INPUT
+                    example: EMPTY_BODY
                     description: Code that can be used to identify the error.
                   message:
                     type: string
@@ -695,7 +693,7 @@ paths:
                     description: Human readable error message.
                   details:
                     type: string
-                    example: "JsonSyntaxException: Unexpected token END OF FILE at position 0."
+                    example: Empty body
                     description: Optional details.
         404:
           description: Batch with the given `batchId` was not found or the batch session has ended.
@@ -719,7 +717,7 @@ paths:
                     example: Batch signing attempt failed. Batch with the given `batchId` was not found or the batch session has ended.
                     description: More detailed human readable error message.
         422:
-          description: The request body is valid but the document cannot be signed.
+          description: The request body is not valid JSON, or it is valid but the document cannot be signed.
           content:
             application/json:
               schema:
@@ -829,7 +827,7 @@ paths:
                     type: string
                     description: Optional details.
         422:
-          description: The request body is valid JSON but `totalNumberOfDocuments` is missing or lower than 1.
+          description: The request body is not valid JSON, or `totalNumberOfDocuments` is missing or lower than 1.
           content:
             application/json:
               schema:
