@@ -440,6 +440,8 @@ public class SettingsDialogController extends BaseController implements Suppress
     }
 
     public void onSaveButtonAction() {
+        var restartNeeded = userSettings.restartRequiredSettingsChanged();
+
         if (userSettings.tlCountriesChanged())
             autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
 
@@ -447,6 +449,9 @@ public class SettingsDialogController extends BaseController implements Suppress
 
         var stage = (Stage) saveButton.getScene().getWindow();
         stage.close();
+
+        if (restartNeeded)
+            SettingsRestartDialogController.show();
     }
 
     public void onResetButtonAction() {

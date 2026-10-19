@@ -6,8 +6,16 @@ import digital.slovensko.autogram.util.Version;
 import static java.util.Objects.requireNonNullElse;
 
 public class Main {
+    private static String[] args = new String[0];
+
     public static void main(String[] args) {
+        Main.args = args;
         AppStarter.start(args);
+    }
+
+    /** Program arguments the application was started with. */
+    public static String[] getArgs() {
+        return args.clone();
     }
 
     public static Version getVersion() {
