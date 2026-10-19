@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.server;
 
-import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.*;
 import digital.slovensko.autogram.server.errors.*;
 import digital.slovensko.autogram.server.dto.ErrorResponse;
@@ -35,19 +34,18 @@ public class ErrorResponseBuilder {
             case InitializationFailedException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("INITIALIZATION_FAILED", ex));
             case PINIncorrectException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("PIN_INCORRECT", ex));
             case FunctionCanceledException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("FUNCTION_CANCELED", ex));
-            case UnsupportedSignatureLevelException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("UNSUPPORTED_SIGNATURE_LEVEL", ex));
             case PdfPasswordProtectedException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("LOCKED_PDF", ex));
             case RequestValidationException _,
                  XMLValidationException _,
                  SigningParametersException _,
                  EFormException _,
                  TransformationException _,
-                 TransformationParsingErrorException _ ->
+                 TransformationParsingErrorException _,
+                 MalformedBodyException _ ->
                     new ErrorResponse(422, instance.buildResponseWithTranslations("UNPROCESSABLE_INPUT", (AutogramException) e));
             case MultipleOriginalDocumentsFoundException ex ->
                     new ErrorResponse(422, instance.buildResponseWithTranslations("MULTIPLE_ORIGINAL_DOCUMENTS", ex));
             case OriginalDocumentNotFoundException ex -> new ErrorResponse(422, instance.buildResponseWithTranslations("ORIGINAL_DOCUMENT_NOT_FOUND", ex));
-            case MalformedBodyException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("MALFORMED_INPUT", ex));
             case UnknownEformException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("UNKNOWN_EFORM", ex));
             case BatchCanceledException ex -> new ErrorResponse(502, instance.buildResponseWithTranslations("BATCH_CANCELED", ex));
             case EmptyBodyException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("EMPTY_BODY", ex));

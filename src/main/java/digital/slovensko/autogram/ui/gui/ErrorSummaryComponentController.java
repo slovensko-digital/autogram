@@ -4,11 +4,17 @@ import digital.slovensko.autogram.core.errors.AutogramException;
 import javafx.application.HostServices;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
+import java.util.regex.Pattern;
+
 public class ErrorSummaryComponentController extends BaseController {
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("[\\w.+-]+@[\\w-]+(\\.[\\w-]+)*\\.[A-Za-z]{2,}");
 
     @FXML
     Text heading;
@@ -17,7 +23,7 @@ public class ErrorSummaryComponentController extends BaseController {
     Text subheading;
 
     @FXML
-    Text description;
+    TextFlow description;
 
     @FXML
     TextArea errorDetails;
@@ -49,7 +55,7 @@ public class ErrorSummaryComponentController extends BaseController {
             this.subheading.setManaged(false);
             this.subheading.setVisible(false);
         }
-        description.setText(exception.getDescription(resources));
+        setDescription(exception.getDescription(resources));
         helpPage = exception.getHelpPage(resources);
         if (helpPage != null && hostServices != null) {
             helpFlow.setManaged(true);
@@ -59,6 +65,40 @@ public class ErrorSummaryComponentController extends BaseController {
             errorDetails.setText(GUIUtils.exceptionToString(exception));
             showErrorDetailsButton.setVisible(true);
         }
+    }
+
+    private void setDescription(String text) {
+        description.getChildren().clear();
+        if (text == null)
+            return;
+
+        var matcher = EMAIL_PATTERN.matcher(text);
+        var lastEnd = 0;
+        while (matcher.find()) {
+            if (matcher.start() > lastEnd)
+                description.getChildren().add(new Text(text.substring(lastEnd, matcher.start())));
+
+            description.getChildren().add(createEmailLink(matcher.group()));
+            lastEnd = matcher.end();
+        }
+
+        if (lastEnd < text.length())
+            description.getChildren().add(new Text(text.substring(lastEnd)));
+    }
+
+    private Hyperlink createEmailLink(String email) {
+        var link = new Hyperlink(email);
+        link.getStyleClass().addAll("autogram-link", "autogram-error-summary__email");
+        link.setOnAction(e -> {
+            if (hostServices != null)
+                hostServices.showDocument("mailto:" + email);
+        });
+
+        var copyItem = new MenuItem(i18n("error.email.copy"));
+        copyItem.setOnAction(e -> GUIUtils.copyToClipboard(email));
+        link.setContextMenu(new ContextMenu(copyItem));
+
+        return link;
     }
 
     public void disableErrorDetails() {

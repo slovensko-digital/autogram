@@ -147,11 +147,11 @@ public class ServerYmlExamplesTest {
                 var json = gson.toJson(value);
                 var body = gson.fromJson(json, SignRequestBody.class);
 
-                body.validateDocument();
-                body.validateSigningParameters();
-                var input = body.getSigningInput(true);
+                var versionedBody = body.toVersionedBody();
+                var signingInput = versionedBody.getSigningInput(true);
+
                 var responder = new RecordingResponder();
-                var job = SigningJob.fromInput(input, responder);
+                var job = SigningJob.fromInput(signingInput, responder);
                 job.initializeVisualizations();
 
                 assertVisualizationsAreSupported(name, job);

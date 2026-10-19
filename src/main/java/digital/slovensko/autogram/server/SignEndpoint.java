@@ -23,14 +23,13 @@ public class SignEndpoint implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         try {
-            var body = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
-            body.validateDocument();
-            body.validateSigningParameters();
+            var legacyBody = EndpointUtils.loadFromJsonExchange(exchange, SignRequestBody.class);
+            var body = legacyBody.toVersionedBody();
 
             var responder = new ServerResponder(exchange);
             var input = body.getSigningInput(autogram.isPlainXmlEnabled());
-            if (body.getBatchId() != null) {
-                autogram.batchSign(input, responder, body.getBatchId());
+            if (body.batchId() != null) {
+                autogram.batchSign(input, responder, body.batchId());
             } else {
                 var job = SigningJob.fromInput(input, responder);
                 autogram.startSigning(job);
