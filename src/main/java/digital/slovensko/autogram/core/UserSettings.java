@@ -3,7 +3,6 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.ui.gui.SignatureLevelStringConverter;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
-import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.CompositeTSPSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
@@ -76,7 +75,9 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private List<String> trustedList;
     private String customKeystorePath;
     private String tsaServer;
-    private CompositeTSPSource tspSource;
+    /** Servers used for timestamps, null after an empty value was set (tsaServer keeps the last non-empty one) */
+    private String tspSourceServers;
+    private String proxyUrl = "";
     private boolean tsaEnabled;
     private String customTsaServer;
     private boolean bulkEnabled;
@@ -92,6 +93,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     public static UserSettings load() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
         var settings = new UserSettings();
+        settings.setProxyUrl(prefs.get("PROXY_URL", ""));
         settings.setLanguage(SupportedLanguage.getByLanguage(prefs.get("LANGUAGE", DEFAULT_LANGUAGE)));
         settings.setSignatureType(prefs.get("SIGNATURE_LEVEL", DEFAULT_SIGNATURE_LEVEL));
         settings.setEn319132(prefs.getBoolean("EN319132", DEFAULT_EN319132));
@@ -150,6 +152,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putInt("PDF_DPI", pdfDpi);
         prefs.putLong("TOKEN_SESSION_TIMEOUT", tokenSessionTimeout);
         prefs.put("CUSTOM_PKCS11_DRIVER_PATH", customPKCS11DriverPath);
+        prefs.put("PROXY_URL", proxyUrl);
 
         saveLastUsedToken(prefs);
         for (var obsoleteKey : OBSOLETE_PREFERENCES)
@@ -159,6 +162,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     }
 
     public void reset() {
+        setProxyUrl("");
         setLanguage(SupportedLanguage.SYSTEM);
         setSignatureType(DEFAULT_SIGNATURE_LEVEL);
         setDriver(DEFAULT_DRIVER);
@@ -393,18 +397,12 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public void setTsaServer(String value) {
         if (value == null || value.isEmpty()) {
-            tspSource = null;
+            tspSourceServers = null;
             return;
         }
 
         tsaServer = value;
-        tspSource = new CompositeTSPSource();
-        var timestampDataLoader = new TimestampDataLoader();
-        var tspSources = new LinkedHashMap<String, TSPSource>();
-        for (var tsaServer : tsaServer.split(","))
-            tspSources.put(tsaServer, new OnlineTSPSource(tsaServer, timestampDataLoader));
-
-        tspSource.setTspSources(tspSources);
+        tspSourceServers = value;
     }
 
     public String getCustomTsaServer() {
@@ -415,8 +413,27 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         customTsaServer = value;
     }
 
+    // Built on use, not when set: networking (proxy) is initialized only after settings are loaded.
     public TSPSource getTspSource() {
+        if (tspSourceServers == null)
+            return null;
+
+        var timestampDataLoader = NetworkClients.timestampDataLoader();
+        var tspSources = new LinkedHashMap<String, TSPSource>();
+        for (var server : tspSourceServers.split(","))
+            tspSources.put(server, new OnlineTSPSource(server, timestampDataLoader));
+
+        var tspSource = new CompositeTSPSource();
+        tspSource.setTspSources(tspSources);
         return tspSource;
+    }
+
+    public String getProxyUrl() {
+        return proxyUrl;
+    }
+
+    public void setProxyUrl(String value) {
+        proxyUrl = value;
     }
 
     public boolean getTsaEnabled() {

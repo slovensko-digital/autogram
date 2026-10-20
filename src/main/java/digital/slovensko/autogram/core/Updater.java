@@ -5,7 +5,6 @@ import digital.slovensko.autogram.util.Version;
 
 import java.io.IOException;
 import java.net.*;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
@@ -29,7 +28,7 @@ public class Updater {
         try {
             var request = HttpRequest.newBuilder().uri(new URI(LATEST_RELEASE_API_URL)).header("Accept", "application/vnd.github.v3+json").GET().build();
 
-            var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            var client = NetworkClients.httpClientBuilder().connectTimeout(Duration.ofSeconds(10)).build();
             var response = client.send(request, HttpResponse.BodyHandlers.ofString());
             var gson = new Gson();
             var json = gson.fromJson(response.body(), JsonObject.class);

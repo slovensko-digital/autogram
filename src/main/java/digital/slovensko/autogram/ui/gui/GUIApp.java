@@ -4,6 +4,8 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.LaunchParameters;
 import digital.slovensko.autogram.core.SingleInstanceManager;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.NetworkClients;
+import digital.slovensko.autogram.core.ProxyConfiguration;
 import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.server.AutogramServer;
@@ -27,6 +29,7 @@ public class GUIApp extends Application {
         Autogram autogram = null;
         try {
             var userSettings = UserSettings.load();
+            NetworkClients.initialize(ProxyConfiguration.fromSaved(userSettings.getProxyUrl()));
 
             Platform.setImplicitExit(false);
             setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());

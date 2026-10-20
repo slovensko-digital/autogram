@@ -1,6 +1,8 @@
 package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.NetworkClients;
+import digital.slovensko.autogram.core.ProxyConfiguration;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
@@ -22,6 +24,7 @@ public class CliApp {
         Autogram autogram = null;
         try {
             var settings = CliSettings.fromCmd(cmd);
+            NetworkClients.initialize(ProxyConfiguration.parse(settings.getProxyUrl()));
             var ui = new CliUI(settings);
             autogram = new Autogram(ui, settings);
 

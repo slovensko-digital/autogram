@@ -27,6 +27,7 @@ public class AppStarter {
         addOption(null, "en319132", false, "Sign according to EN 319 132 or EN 319 122.").
         addOption(null, "tsa-server", true, "Url of TimeStamp Authority server that should be used for timestamping in signature level BASELINE_T. If provided, BASELINE_T signatures are made.").
         addOption(null, "plain-xml", false, "Enable signing plain (non-slovak-eform) XML files.").
+        addOption(null, "proxy", true, "HTTP proxy http://host:port (no authentication).").
         addOption(null, "pkcs11-driver-path", true, "Absolute path to a file with custom PKCS11 driver.");
 
     public static void start(String[] args) {

@@ -1,7 +1,9 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.ProxyConfiguration;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import digital.slovensko.autogram.core.settings.Country;
 import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
@@ -9,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.TraversalDirection;
 import javafx.scene.control.Button;
+import javafx.scene.control.Alert;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.RadioButton;
@@ -79,6 +82,8 @@ public class SettingsDialogController extends BaseController implements Suppress
     @FXML
     private TextField customPKCS11DriverPathTextField;
     @FXML
+    private TextField proxyUrlTextField;
+    @FXML
     private Button saveButton;
     @FXML
     private Button resetButton;
@@ -119,6 +124,7 @@ public class SettingsDialogController extends BaseController implements Suppress
         initializePdfDpiSettings();
         initializeCustomKeystoreSettings();
         initializeCustomPKCS11DriverPathSettings();
+        initializeProxySettings();
     }
 
     private void initializeSignatureLevelChoiceBox() {
@@ -439,7 +445,25 @@ public class SettingsDialogController extends BaseController implements Suppress
         });
     }
 
+    private void initializeProxySettings() {
+        proxyUrlTextField.setText(userSettings.getProxyUrl());
+    }
+
     public void onSaveButtonAction() {
+        // The proxy is applied only here, so an invalid value never gets into settings saved from elsewhere.
+        var proxyUrl = proxyUrlTextField.getText();
+        try {
+            ProxyConfiguration.parse(proxyUrl);
+        } catch (InvalidProxyConfigurationException e) {
+            var alert = new Alert(Alert.AlertType.ERROR);
+            alert.initOwner(saveButton.getScene().getWindow());
+            alert.setHeaderText(e.getSubheading(resources));
+            alert.setContentText(e.getDescription(resources));
+            alert.showAndWait();
+            return;
+        }
+        userSettings.setProxyUrl(proxyUrl);
+
         if (userSettings.tlCountriesChanged())
             autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
 

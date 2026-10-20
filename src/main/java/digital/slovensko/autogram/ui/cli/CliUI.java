@@ -11,6 +11,7 @@ import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.FunctionCanceledException;
 import digital.slovensko.autogram.core.errors.InitializationFailedException;
+import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import digital.slovensko.autogram.core.errors.MultipleSourcesException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.NoKeysDetectedException;
@@ -321,6 +322,8 @@ public class CliUI implements UI {
             return "Provided slot index is out of range for chosen driver.";
         } else if (e instanceof PkcsEidWindowsDllException) {
             return "PKCS library problem. Microsoft Visual C++ 2015 Redistributable probably needs to be installed.";
+        } else if (e instanceof InvalidProxyConfigurationException) {
+            return "Invalid proxy URL. Use http://host:port without credentials, path or query.";
         } else {
             e.printStackTrace();
             return "Unknown error occurred";

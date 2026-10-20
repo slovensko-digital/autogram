@@ -30,6 +30,7 @@ autogram --cli -s document.pdf -d eid --tsa-server http://timestamp.sectigo.com/
 | `--pkcs11-driver-path` | Path to the card driver for `-d custom_pkcs11`. |
 | `--pdf-level` | Signature type for PDFs: `PAdES_BASELINE_B` (default), `XAdES_BASELINE_B` or `CAdES_BASELINE_B`. |
 | `--tsa-server` | Address of a timestamp server. When given, signatures get a timestamp. Separate several addresses with commas. |
+| `--proxy` | HTTP proxy in the form `http://host:port` used for all internet communication (trusted lists, CRL, OCSP, timestamps, form resources). Proxy authentication is not supported. The proxy set in the graphical interface is not used in the command line. |
 | `--pdfa` | Checks PDF/A compliance before signing. |
 | `--plain-xml` | Allows signing XML files that are not government forms. |
 | `--en319132` | Signs according to ETSI EN 319 132 and EN 319 122. |
