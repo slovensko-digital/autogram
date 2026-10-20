@@ -25,6 +25,8 @@ public class GUIApp extends Application {
 
     @Override
     public void start(Stage windowStage) throws Exception {
+        GUIUtils.setAppIconOnAllStages();
+
         AutogramServer server = null;
         Autogram autogram = null;
         try {
