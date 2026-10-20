@@ -66,19 +66,10 @@ class LocalProxyFixture implements AutoCloseable {
                 destinationRequests.incrementAndGet();
                 contentTypes.add(String.valueOf(exchange.getRequestHeaders().getFirst("Content-Type")));
                 exchange.getRequestBody().readAllBytes();
-                if (exchange.getRequestURI().getPath().startsWith("/redirect")) {
-                    exchange.getResponseHeaders().set("Location", exchange.getRequestURI().getPath().equals("/redirect-https")
-                            ? httpsUrl("/resource") : "/resource");
-                    exchange.sendResponseHeaders(302, -1);
-                } else {
-                    var body = switch (exchange.getRequestURI().getPath()) {
-                        case "/issuer" -> issuerBytes;
-                        case "/update-json" -> "{\"tag_name\":\"v999.0.0\"}".getBytes(StandardCharsets.UTF_8);
-                        default -> "fixture-resource".getBytes(StandardCharsets.UTF_8);
-                    };
-                    exchange.sendResponseHeaders(200, body.length);
-                    exchange.getResponseBody().write(body);
-                }
+                var body = exchange.getRequestURI().getPath().equals("/issuer")
+                        ? issuerBytes : "fixture-resource".getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(200, body.length);
+                exchange.getResponseBody().write(body);
                 exchange.close();
             });
             server.start();

@@ -69,7 +69,6 @@ public class SignatureValidator {
     }
 
     public synchronized Reports validate(SignedDocumentValidator docValidator) {
-        NetworkClients.configureDocumentValidator(docValidator);
         docValidator.setCertificateVerifier(verifier);
 
         // TODO: do not print stack trace inside DSS
@@ -234,7 +233,7 @@ public class SignatureValidator {
 
         validator.setCertificateVerifier(NetworkClients.certificateVerifier());
         var report = validator.validateDocument().getSimpleReport();
-        if (report.getSignatureIdList().isEmpty())
+        if (report.getSignatureIdList().size() == 0)
             return null;
 
         return report;

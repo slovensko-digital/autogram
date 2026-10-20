@@ -13,7 +13,6 @@ import digital.slovensko.autogram.ui.SupportedLanguage;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.util.concurrent.ExecutorService;
@@ -82,14 +81,6 @@ public class GUIApp extends Application {
             windowStage.setScene(new Scene(GUIUtils.loadFXML(controller, "main-menu.fxml")));
             windowStage.setResizable(false);
             windowStage.show();
-            if (NetworkClients.configuration().state() == ProxyConfiguration.State.BLOCKED) {
-                var resources = SupportedLanguage.loadResources(userSettings);
-                var warning = new Alert(Alert.AlertType.WARNING);
-                warning.initOwner(windowStage);
-                warning.setHeaderText(resources.getString("settings.other.proxy.invalidSaved"));
-                warning.setContentText(resources.getString("settings.other.proxy.recovery"));
-                warning.show();
-            }
 
             var singleInstanceManager = SingleInstanceManager.getInstance();
             if (singleInstanceManager != null) {

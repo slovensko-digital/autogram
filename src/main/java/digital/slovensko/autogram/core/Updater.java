@@ -19,21 +19,16 @@ public class Updater {
     public static final String LATEST_RELEASE_API_URL = "https://api.github.com/repos/slovensko-digital/autogram/releases/latest";
 
     public static boolean newVersionAvailable() {
-        return newVersionAvailable(LATEST_RELEASE_API_URL);
-    }
-
-    static boolean newVersionAvailable(String apiUrl) {
-        if (NetworkClients.configuration().state() == ProxyConfiguration.State.BLOCKED)
-            return false;
         Version vCurrent = Main.getVersion();
         if (vCurrent.isDev()) {
             return false;
         }
 
         String latestVersionTag = "";
-        try (var client = NetworkClients.httpClientBuilder().connectTimeout(Duration.ofSeconds(10)).build()) {
-            var request = HttpRequest.newBuilder().uri(new URI(apiUrl)).header("Accept", "application/vnd.github.v3+json").GET().build();
+        try {
+            var request = HttpRequest.newBuilder().uri(new URI(LATEST_RELEASE_API_URL)).header("Accept", "application/vnd.github.v3+json").GET().build();
 
+            var client = NetworkClients.httpClientBuilder().connectTimeout(Duration.ofSeconds(10)).build();
             var response = client.send(request, HttpResponse.BodyHandlers.ofString());
             var gson = new Gson();
             var json = gson.fromJson(response.body(), JsonObject.class);

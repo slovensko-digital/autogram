@@ -450,7 +450,6 @@ public class SettingsDialogController extends BaseController implements Suppress
     }
 
     public void onSaveButtonAction() {
-        var tlCountriesChanged = userSettings.tlCountriesChanged();
         // The proxy is applied only here, so an invalid value never gets into settings saved from elsewhere.
         var proxyUrl = proxyUrlTextField.getText();
         try {
@@ -464,9 +463,11 @@ public class SettingsDialogController extends BaseController implements Suppress
             return;
         }
         userSettings.setProxyUrl(proxyUrl);
-        userSettings.save();
-        if (tlCountriesChanged)
+
+        if (userSettings.tlCountriesChanged())
             autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
+
+        userSettings.save();
 
         var stage = (Stage) saveButton.getScene().getWindow();
         stage.close();

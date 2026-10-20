@@ -129,7 +129,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         return settings;
     }
 
-    // Does not validate the proxy: an invalid saved value must not block saving unrelated settings.
     public void save() {
         var prefs = Preferences.userNodeForPackage(UserSettings.class);
 
@@ -153,7 +152,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putInt("PDF_DPI", pdfDpi);
         prefs.putLong("TOKEN_SESSION_TIMEOUT", tokenSessionTimeout);
         prefs.put("CUSTOM_PKCS11_DRIVER_PATH", customPKCS11DriverPath);
-        prefs.put("PROXY_URL", getProxyUrl());
+        prefs.put("PROXY_URL", proxyUrl);
 
         saveLastUsedToken(prefs);
         for (var obsoleteKey : OBSOLETE_PREFERENCES)
@@ -433,9 +432,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         return proxyUrl;
     }
 
-    // Keep saved values editable even when invalid; validate before saving.
     public void setProxyUrl(String value) {
-        proxyUrl = value == null ? "" : value;
+        proxyUrl = value;
     }
 
     public boolean getTsaEnabled() {

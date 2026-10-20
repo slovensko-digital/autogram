@@ -2,17 +2,20 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-/** Immutable startup routing policy. Invalid saved settings fail closed. */
-public record ProxyConfiguration(State state, String host, int port) implements Serializable {
-    public enum State { UNCONFIGURED, CONFIGURED, BLOCKED }
+/** Immutable startup routing policy. */
+public record ProxyConfiguration(String host, int port) {
+    public static final ProxyConfiguration NONE = new ProxyConfiguration(null, -1);
+
+    public boolean isConfigured() {
+        return host != null;
+    }
 
     public static ProxyConfiguration parse(String value) {
         if (value == null || value.isEmpty())
-            return new ProxyConfiguration(State.UNCONFIGURED, null, -1);
+            return NONE;
 
         try {
             var uri = new URI(value);
@@ -26,17 +29,18 @@ public record ProxyConfiguration(State state, String host, int port) implements 
             var host = uri.getHost();
             if (host.startsWith("["))
                 host = host.substring(1, host.length() - 1);
-            return new ProxyConfiguration(State.CONFIGURED, host, uri.getPort());
+            return new ProxyConfiguration(host, uri.getPort());
         } catch (URISyntaxException | IllegalArgumentException e) {
             throw new InvalidProxyConfigurationException();
         }
     }
 
+    // The settings dialog saves only valid values, an invalid one must have been edited outside of Autogram.
     public static ProxyConfiguration fromSaved(String value) {
         try {
             return parse(value);
         } catch (InvalidProxyConfigurationException e) {
-            return new ProxyConfiguration(State.BLOCKED, null, -1);
+            return NONE;
         }
     }
 }
