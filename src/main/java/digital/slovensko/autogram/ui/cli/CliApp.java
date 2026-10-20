@@ -23,9 +23,8 @@ public class CliApp {
     public static void start(CommandLine cmd) {
         Autogram autogram = null;
         try {
-            // Before settings: the TSA source built there takes the proxy from NetworkClients.
-            NetworkClients.initialize(ProxyConfiguration.parse(cmd.getOptionValue("proxy")));
             var settings = CliSettings.fromCmd(cmd);
+            NetworkClients.initialize(ProxyConfiguration.parse(settings.getProxyUrl()));
             var ui = new CliUI(settings);
             autogram = new Autogram(ui, settings);
 

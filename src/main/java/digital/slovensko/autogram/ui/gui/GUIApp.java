@@ -29,8 +29,8 @@ public class GUIApp extends Application {
         AutogramServer server = null;
         Autogram autogram = null;
         try {
-            NetworkClients.initialize(ProxyConfiguration.fromSaved(UserSettings.savedProxyUrl()));
             var userSettings = UserSettings.load();
+            NetworkClients.initialize(ProxyConfiguration.fromSaved(userSettings.getProxyUrl()));
 
             Platform.setImplicitExit(false);
             setUserAgentStylesheet(getClass().getResource("idsk.css").toExternalForm());

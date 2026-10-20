@@ -75,7 +75,8 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private List<String> trustedList;
     private String customKeystorePath;
     private String tsaServer;
-    private CompositeTSPSource tspSource;
+    /** Servers used for timestamps, null after an empty value was set (tsaServer keeps the last non-empty one) */
+    private String tspSourceServers;
     private String proxyUrl = "";
     private boolean tsaEnabled;
     private String customTsaServer;
@@ -397,18 +398,12 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public void setTsaServer(String value) {
         if (value == null || value.isEmpty()) {
-            tspSource = null;
+            tspSourceServers = null;
             return;
         }
 
         tsaServer = value;
-        tspSource = new CompositeTSPSource();
-        var timestampDataLoader = NetworkClients.timestampDataLoader();
-        var tspSources = new LinkedHashMap<String, TSPSource>();
-        for (var tsaServer : tsaServer.split(","))
-            tspSources.put(tsaServer, new OnlineTSPSource(tsaServer, timestampDataLoader));
-
-        tspSource.setTspSources(tspSources);
+        tspSourceServers = value;
     }
 
     public String getCustomTsaServer() {
@@ -419,12 +414,19 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         customTsaServer = value;
     }
 
+    // Built on use, not when set: networking (proxy) is initialized only after settings are loaded.
     public TSPSource getTspSource() {
-        return tspSource;
-    }
+        if (tspSourceServers == null)
+            return null;
 
-    public static String savedProxyUrl() {
-        return Preferences.userNodeForPackage(UserSettings.class).get("PROXY_URL", "");
+        var timestampDataLoader = NetworkClients.timestampDataLoader();
+        var tspSources = new LinkedHashMap<String, TSPSource>();
+        for (var server : tspSourceServers.split(","))
+            tspSources.put(server, new OnlineTSPSource(server, timestampDataLoader));
+
+        var tspSource = new CompositeTSPSource();
+        tspSource.setTspSources(tspSources);
+        return tspSource;
     }
 
     public String getProxyUrl() {

@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.cli;
 
+import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import digital.slovensko.autogram.core.errors.MultipleSourcesException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -14,6 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class CliSettingsTest {
     private static final Options OPTIONS = new Options().addOption("s", "source", true, "")
             .addOption(null, "proxy", true, "");
+
+    @Test
+    void proxyOptionIsValidatedBeforeSourceProcessing() throws ParseException {
+        var cmd = parse("--proxy", "http://localhost", "nonexistent.pdf");
+        assertThrows(InvalidProxyConfigurationException.class, () -> CliSettings.fromCmd(cmd));
+    }
 
     @Test
     void proxyOptionIsIndependentAndOptional() throws ParseException {

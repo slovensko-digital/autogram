@@ -105,17 +105,17 @@ public class StartupProxyTest {
             case "desktop" -> {
                 try (var fixture = new LocalProxyFixture(Path.of(args[1]))) {
                     prefs.put("PROXY_URL", fixture.proxyUrl());
-                    NetworkClients.initialize(ProxyConfiguration.fromSaved(UserSettings.savedProxyUrl()));
                     var settings = UserSettings.load();
+                    NetworkClients.initialize(ProxyConfiguration.fromSaved(settings.getProxyUrl()));
                     assertEquals(fixture.proxyUrl(), settings.getProxyUrl());
                     settings.setProxyUrl("");
-                    assertEquals(fixture.proxyUrl(), UserSettings.savedProxyUrl()); // staged, not saved
+                    assertEquals(fixture.proxyUrl(), savedProxyUrl()); // staged, not saved
                     settings.save();
                     assertEquals("", UserSettings.load().getProxyUrl());
                     assertEquals(ProxyConfiguration.State.CONFIGURED, NetworkClients.configuration().state());
                     assertEquals("fixture-resource", new String(NetworkClients.dataLoader().get(fixture.httpUrl("/resource"))));
                     settings.reset();
-                    assertEquals("", UserSettings.savedProxyUrl());
+                    assertEquals("", savedProxyUrl());
                     assertEquals(ProxyConfiguration.State.CONFIGURED, NetworkClients.configuration().state());
                     assertThrows(IllegalStateException.class, () -> NetworkClients.initialize(ProxyConfiguration.parse("")));
                     assertEquals("fixture-resource", new String(NetworkClients.dataLoader().get(fixture.httpUrl("/resource"))));
@@ -125,8 +125,8 @@ public class StartupProxyTest {
             }
             case "invalid-saved" -> {
                 prefs.put("PROXY_URL", "invalid");
-                NetworkClients.initialize(ProxyConfiguration.fromSaved(UserSettings.savedProxyUrl()));
                 var settings = assertDoesNotThrow(UserSettings::load);
+                NetworkClients.initialize(ProxyConfiguration.fromSaved(settings.getProxyUrl()));
                 assertEquals("invalid", settings.getProxyUrl());
                 assertNotNull(settings.getTspSource());
                 assertThrows(DSSExternalResourceException.class, () -> NetworkClients.dataLoader().get("http://127.0.0.1:1/test"));
@@ -134,35 +134,36 @@ public class StartupProxyTest {
                 // Saving unrelated settings (e.g. last used directory) must keep working.
                 settings.setLastUsedDirectory(Path.of(args[1]));
                 assertDoesNotThrow(() -> settings.save());
-                assertEquals("invalid", UserSettings.savedProxyUrl());
+                assertEquals("invalid", savedProxyUrl());
                 assertEquals(args[1], UserSettings.load().getLastUsedDirectory().orElseThrow());
                 settings.setProxyUrl("http://localhost:8080");
                 settings.save();
                 assertEquals("http://localhost:8080", UserSettings.load().getProxyUrl());
                 assertEquals(ProxyConfiguration.State.BLOCKED, NetworkClients.configuration().state());
                 settings.reset();
-                assertEquals("", UserSettings.savedProxyUrl());
+                assertEquals("", savedProxyUrl());
                 assertEquals(ProxyConfiguration.State.BLOCKED, NetworkClients.configuration().state());
                 assertFalse(Updater.newVersionAvailable());
                 assertNull(NetworkClients.signaturePolicyProvider().getSignaturePolicyByUrl("http://127.0.0.1:1/policy"));
             }
             case "desktop-restarted" -> {
-                assertEquals("", UserSettings.savedProxyUrl());
-                NetworkClients.initialize(ProxyConfiguration.fromSaved(UserSettings.savedProxyUrl()));
+                assertEquals("", savedProxyUrl());
+                var settings = UserSettings.load();
+                NetworkClients.initialize(ProxyConfiguration.fromSaved(settings.getProxyUrl()));
                 assertEquals(ProxyConfiguration.State.UNCONFIGURED, NetworkClients.configuration().state());
-                assertEquals("", UserSettings.load().getProxyUrl());
+                assertEquals("", settings.getProxyUrl());
             }
             case "cli-configured" -> {
                 try (var fixture = new LocalProxyFixture(Path.of(args[1]))) {
                     prefs.put("PROXY_URL", "invalid-desktop-setting");
                     var cmd = new DefaultParser().parse(options, new String[]{"--proxy", fixture.proxyUrl(),
                             "--tsa-server", fixture.httpUrl("/timestamp")});
-                    CliApp.start(cmd); // no source: config and TSA construction still precede source processing
+                    CliApp.start(cmd); // no source: networking is still initialized before the source is checked
                     assertEquals(ProxyConfiguration.State.CONFIGURED, NetworkClients.configuration().state());
                     var settings = CliSettings.fromCmd(cmd);
                     assertThrows(eu.europa.esig.dss.model.DSSException.class, () -> settings.getTspSource()
                             .getTimeStampResponse(eu.europa.esig.dss.enumerations.DigestAlgorithm.SHA256, new byte[32]));
-                    assertEquals("invalid-desktop-setting", UserSettings.savedProxyUrl());
+                    assertEquals("invalid-desktop-setting", savedProxyUrl());
                     assertEquals(1, fixture.requests.size());
                     assertEquals(1, fixture.destinationRequests.get());
                 }
@@ -176,7 +177,7 @@ public class StartupProxyTest {
                 settings = CliSettings.fromCmd(new DefaultParser().parse(options,
                         new String[]{"--proxy", "http://localhost:3128"}));
                 assertEquals("http://localhost:3128", settings.getProxyUrl());
-                assertEquals("invalid-desktop-setting", UserSettings.savedProxyUrl());
+                assertEquals("invalid-desktop-setting", savedProxyUrl());
                 // Language-related repeated loads must not activate desktop routing.
                 UserSettings.load();
                 assertEquals(ProxyConfiguration.State.UNCONFIGURED, NetworkClients.configuration().state());
@@ -192,12 +193,16 @@ public class StartupProxyTest {
                 CliApp.start(new DefaultParser().parse(options, new String[]{"--proxy", "https://invalid:80", "nonexistent.pdf"}));
                 assertTrue(output.toString().contains("Invalid proxy URL"));
                 assertEquals(ProxyConfiguration.State.UNCONFIGURED, NetworkClients.configuration().state());
-                assertEquals("http://desktop:8080", UserSettings.savedProxyUrl());
+                assertEquals("http://desktop:8080", savedProxyUrl());
                 // An invalid argument is rejected before even initializing the process networking.
                 NetworkClients.initialize(ProxyConfiguration.parse(null));
             }
             default -> throw new IllegalArgumentException(args[0]);
         }
+    }
+
+    private static String savedProxyUrl() {
+        return Preferences.userNodeForPackage(UserSettings.class).get("PROXY_URL", "");
     }
 
     private static class RecordingDocumentValidator extends eu.europa.esig.dss.xades.validation.XMLDocumentValidator {

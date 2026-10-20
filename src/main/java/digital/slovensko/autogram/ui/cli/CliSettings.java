@@ -5,6 +5,8 @@ import digital.slovensko.autogram.core.DriverDetector;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.SigningParametersResolver;
 import digital.slovensko.autogram.core.UserSettings;
+import digital.slovensko.autogram.core.ProxyConfiguration;
+import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import digital.slovensko.autogram.core.errors.MultipleSourcesException;
 import digital.slovensko.autogram.core.errors.PDFSignatureLevelIsNotValidException;
 import digital.slovensko.autogram.core.errors.SlotIndexIsNotANumberException;
@@ -26,7 +28,7 @@ public class CliSettings extends UserSettings {
 
     public static CliSettings fromCmd(CommandLine cmd) {
         var settings = new CliSettings();
-        settings.setProxyUrl(cmd.getOptionValue("proxy", ""));
+        settings.setProxyUrl(getValidProxyUrl(cmd.getOptionValue("proxy", "")));
         settings.setCorrectDocumentDisplay(false);
         settings.setSource(getValidSource(resolveSourcePath(cmd)));
         settings.setTarget(cmd.getOptionValue("t"));
@@ -111,6 +113,11 @@ public class CliSettings extends UserSettings {
             return positional.get(0);
 
         throw new MultipleSourcesException();
+    }
+
+    private static String getValidProxyUrl(String proxyUrl) throws InvalidProxyConfigurationException {
+        ProxyConfiguration.parse(proxyUrl);
+        return proxyUrl;
     }
 
     private static File getValidSource(String sourcePath) throws SourceDoesNotExistException {
