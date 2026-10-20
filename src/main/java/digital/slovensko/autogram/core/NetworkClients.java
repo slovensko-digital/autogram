@@ -37,15 +37,20 @@ public final class NetworkClients {
     }
 
     public static DataLoader dataLoader() {
-        return configure(new CommonsDataLoader(), configuration());
+        return configure(trustingSystem(new CommonsDataLoader()), configuration());
     }
 
     public static DataLoader timestampDataLoader() {
-        return configure(new TimestampDataLoader(), configuration());
+        return configure(trustingSystem(new TimestampDataLoader()), configuration());
     }
 
     public static DataLoader ocspDataLoader() {
-        return configure(new OCSPDataLoader(), configuration());
+        return configure(trustingSystem(new OCSPDataLoader()), configuration());
+    }
+
+    private static CommonsDataLoader trustingSystem(CommonsDataLoader loader) {
+        loader.setTrustStrategy(SystemTrust.trustStrategy());
+        return loader;
     }
 
     public static FileCacheDataLoader fileCacheDataLoader(long expirationTime) {
@@ -73,18 +78,15 @@ public final class NetworkClients {
     public static CommonCertificateVerifier certificateVerifier() {
         var verifier = new CommonCertificateVerifier();
         // DSS's default AIA loader is NativeHTTPDataLoader, not CommonsDataLoader.
-        if (configuration().isConfigured())
-            verifier.setAIASource(new DefaultAIASource(dataLoader()));
+        verifier.setAIASource(new DefaultAIASource(dataLoader()));
         return verifier;
     }
 
     public static SignedDocumentValidator configureDocumentValidator(SignedDocumentValidator validator) {
         // DSS's analyzer also lazily creates a native loader for signature policies.
-        if (configuration().isConfigured()) {
-            var provider = new SignaturePolicyProvider();
-            provider.setDataLoader(dataLoader());
-            validator.setSignaturePolicyProvider(provider);
-        }
+        var provider = new SignaturePolicyProvider();
+        provider.setDataLoader(dataLoader());
+        validator.setSignaturePolicyProvider(provider);
         return validator;
     }
 
@@ -93,7 +95,7 @@ public final class NetworkClients {
     }
 
     static HttpClient.Builder httpClientBuilder(ProxyConfiguration configuration) {
-        var builder = HttpClient.newBuilder();
+        var builder = HttpClient.newBuilder().sslContext(SystemTrust.sslContext());
         if (configuration.isConfigured())
             builder.proxy(ProxySelector.of(new InetSocketAddress(configuration.host(), configuration.port())));
         return builder;

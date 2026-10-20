@@ -16,7 +16,7 @@ import java.util.prefs.Preferences;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Each scenario gets a fresh process and isolated Preferences: no real user settings are changed. */
+/** Each scenario gets a fresh process with in-memory Preferences: no real user settings are changed. */
 public class StartupProxyTest {
     @TempDir Path directory;
 
@@ -25,7 +25,7 @@ public class StartupProxyTest {
     void startupScenarios(String scenario) throws Exception {
         var log = directory.resolve("process.log");
         var process = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "java").toString(),
-                "-Djava.util.prefs.userRoot=" + directory.resolve("prefs"),
+                "-Djava.util.prefs.PreferencesFactory=" + InMemoryPreferencesFactory.class.getName(),
                 "-Djava.io.tmpdir=" + directory,
                 "-cp", System.getProperty("java.class.path"), StartupProxyTest.class.getName(), scenario,
                 directory.toString()).redirectErrorStream(true).redirectOutput(log.toFile()).start();
@@ -40,6 +40,9 @@ public class StartupProxyTest {
     }
 
     static void main(String[] args) throws Exception {
+        // Never touch the real user settings, fail before anything is saved.
+        assertEquals(InMemoryPreferencesFactory.class.getName() + "$InMemoryPreferences",
+                Preferences.userRoot().getClass().getName());
         switch (args[0]) {
             case "dss-sources" -> {
                 try (var fixture = new LocalProxyFixture(Path.of(args[1]))) {
