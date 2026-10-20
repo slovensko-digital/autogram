@@ -108,9 +108,6 @@ public class StartupProxyTest {
                     NetworkClients.initialize(ProxyConfiguration.fromSaved(UserSettings.savedProxyUrl()));
                     var settings = UserSettings.load();
                     assertEquals(fixture.proxyUrl(), settings.getProxyUrl());
-                    assertThrows(IllegalArgumentException.class, () -> settings.save("https://bad:80"));
-                    assertEquals(fixture.proxyUrl(), settings.getProxyUrl());
-                    assertEquals(fixture.proxyUrl(), UserSettings.savedProxyUrl());
                     settings.setProxyUrl("");
                     assertEquals(fixture.proxyUrl(), UserSettings.savedProxyUrl()); // staged, not saved
                     settings.save();
@@ -191,8 +188,9 @@ public class StartupProxyTest {
                 prefs.put("PROXY_URL", "http://desktop:8080");
                 var output = new ByteArrayOutputStream();
                 System.setErr(new PrintStream(output));
-                CliApp.start(new DefaultParser().parse(options, new String[]{"--proxy", "https://invalid:80"}));
-                assertTrue(output.toString().contains("Configuration error:"));
+                // The proxy is rejected before the (nonexistent) source is processed.
+                CliApp.start(new DefaultParser().parse(options, new String[]{"--proxy", "https://invalid:80", "nonexistent.pdf"}));
+                assertTrue(output.toString().contains("Invalid proxy URL"));
                 assertEquals(ProxyConfiguration.State.UNCONFIGURED, NetworkClients.configuration().state());
                 assertEquals("http://desktop:8080", UserSettings.savedProxyUrl());
                 // An invalid argument is rejected before even initializing the process networking.

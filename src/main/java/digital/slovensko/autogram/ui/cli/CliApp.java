@@ -1,13 +1,14 @@
 package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.NetworkClients;
+import digital.slovensko.autogram.core.ProxyConfiguration;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.TargetPath;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.eforms.dto.EFormAttributes;
 import digital.slovensko.autogram.core.errors.AutogramException;
-import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import digital.slovensko.autogram.core.errors.SourceDoesNotExistException;
 import digital.slovensko.autogram.core.errors.SourceNotDefinedException;
 import digital.slovensko.autogram.ui.SaveFileResponder;
@@ -22,7 +23,9 @@ public class CliApp {
     public static void start(CommandLine cmd) {
         Autogram autogram = null;
         try {
-            var settings = CliSettings.fromCmdForStartup(cmd);
+            // Before settings: the TSA source built there takes the proxy from NetworkClients.
+            NetworkClients.initialize(ProxyConfiguration.parse(cmd.getOptionValue("proxy")));
+            var settings = CliSettings.fromCmd(cmd);
             var ui = new CliUI(settings);
             autogram = new Autogram(ui, settings);
 
@@ -55,8 +58,6 @@ public class CliApp {
             ui.setJobsCount(jobs.size());
             jobs.forEach(autogram::startSigning);
 
-        } catch (InvalidProxyConfigurationException e) {
-            System.err.println("Configuration error: " + e.getMessage());
         } catch (AutogramException e) {
             System.err.println(CliUI.parseError(e));
 

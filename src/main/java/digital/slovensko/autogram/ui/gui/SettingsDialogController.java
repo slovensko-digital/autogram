@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.ProxyConfiguration;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import digital.slovensko.autogram.core.settings.Country;
@@ -450,16 +451,20 @@ public class SettingsDialogController extends BaseController implements Suppress
 
     public void onSaveButtonAction() {
         var tlCountriesChanged = userSettings.tlCountriesChanged();
+        // The proxy is applied only here, so an invalid value never gets into settings saved from elsewhere.
+        var proxyUrl = proxyUrlTextField.getText();
         try {
-            userSettings.save(proxyUrlTextField.getText());
+            ProxyConfiguration.parse(proxyUrl);
         } catch (InvalidProxyConfigurationException e) {
             var alert = new Alert(Alert.AlertType.ERROR);
             alert.initOwner(saveButton.getScene().getWindow());
-            alert.setHeaderText(i18n("settings.other.proxy.invalid"));
-            alert.setContentText(i18n("settings.other.proxy.text"));
+            alert.setHeaderText(e.getSubheading(resources));
+            alert.setContentText(e.getDescription(resources));
             alert.showAndWait();
             return;
         }
+        userSettings.setProxyUrl(proxyUrl);
+        userSettings.save();
         if (tlCountriesChanged)
             autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
 

@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -21,7 +22,7 @@ class ProxyConfigurationTest {
             "http://localhost:80//", "http://localhost:80/path", "http://localhost:80?x", "http://localhost:80#x",
             "http://::1:80", "http://:80", "http://bad host:80", " http://localhost:80", " ", "localhost:80"})
     void rejectsInvalidInputAndBlocksInvalidSavedSettings(String url) {
-        assertThrows(IllegalArgumentException.class, () -> ProxyConfiguration.parse(url));
+        assertThrows(InvalidProxyConfigurationException.class, () -> ProxyConfiguration.parse(url));
         assertEquals(ProxyConfiguration.State.BLOCKED, ProxyConfiguration.fromSaved(url).state());
     }
 

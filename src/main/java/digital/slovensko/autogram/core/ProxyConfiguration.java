@@ -35,7 +35,7 @@ public record ProxyConfiguration(State state, String host, int port) implements 
     public static ProxyConfiguration fromSaved(String value) {
         try {
             return parse(value);
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidProxyConfigurationException e) {
             return new ProxyConfiguration(State.BLOCKED, null, -1);
         }
     }
