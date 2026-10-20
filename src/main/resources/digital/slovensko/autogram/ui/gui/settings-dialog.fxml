@@ -340,7 +340,7 @@
                                         </TextFlow>
                                     </VBox>
                                     <VBox styleClass="autogram-textfield-container">
-                                        <TextField fx:id="proxyUrlTextField" styleClass="autogram-input" promptText="http://proxy.example.com:8080"/>
+                                        <TextField fx:id="proxyUrlTextField" styleClass="autogram-input"/>
                                     </VBox>
                                 </HBox>
                             </VBox>
