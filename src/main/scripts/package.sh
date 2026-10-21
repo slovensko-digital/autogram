@@ -126,6 +126,9 @@ if [[ "${platform}" == "win" ]]; then
         # Already signed files (e.g. from the JDK vendor) keep their original signature
         find "${appImage}" -type f \( -iname "*.exe" -o -iname "*.dll" \) > "${output}/files-to-sign.txt"
 
+        # jpackage creates the launchers read-only
+        chmod u+w "${appImage}"/*.exe
+
         AzureSignTool sign --description "${properties_name}" \
             -kvu "${AZURE_KEY_VAULT_URI}" -kvi "${AZURE_CLIENT_ID}" -kvt "${AZURE_TENANT_ID}" \
             -kvs "${AZURE_CLIENT_SECRET}" -kvc "${AZURE_CERT_NAME}" \
