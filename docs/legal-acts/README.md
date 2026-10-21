@@ -117,3 +117,16 @@ An act-by-act index and consistency-review findings are maintained below. Unavai
 | [`sk-2013-305.md`](sk-2013-305.md) | SK 2013/305 | Act No 305/2013 Coll. on the electronic form of exercising public authority (e-Government Act) | **Done** |
 | [`sk-2016-272.md`](sk-2016-272.md) | SK 2016/272 | Act No 272/2016 Coll. on trust services | **Done** |
 | [`sk-2020-78.md`](sk-2020-78.md) | SK 2020/78 | Decree 78/2020 Coll. on public-administration IT standards | **Done** |
+
+## Spreadsheet export
+
+[`scripts/export-legal-register-xlsx.py`](../../scripts/export-legal-register-xlsx.py) builds an Excel workbook from the register with **one sheet per act** (`legal-register-export.xlsx`), for review in Google Sheets or Excel. It needs `openpyxl` and `beautifulsoup4`:
+
+```bash
+python3 -m pip install openpyxl beautifulsoup4
+python3 scripts/export-legal-register-xlsx.py
+```
+
+Each sheet holds one row per register provision unit (article, paragraph, letter, annex point, recital, standard requirement) with the register's own assessment (`Relevance`, `Assessment`, `Ignored?`, `Reason / evidence needed`, `Dates / notes`), the **verbatim text of the provision** taken from the official publication, the official URL, and empty columns for `Owner`, `Review state`, `Priority`, `Evidence URL`, `Notes` and `Last reviewed`.
+
+Official texts are fetched from the Publications Office Cellar API (EUR-Lex) and from the static Slov-Lex version pages, and cached in `.cache/legal-texts/` (not committed). The `Text source` column states what was matched: the row's own unit, a parent unit, the whole article or annex, or nothing — the last case means the row still needs a source review. The workbook is a **working copy**: spreadsheet edits are not written back to the Markdown register, so close an item in the register document and re-export.
