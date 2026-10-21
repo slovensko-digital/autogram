@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export the legal-act register to one Excel workbook per act.
+"""Export the legal-act register to one Excel workbook per act and to Markdown tables.
 
 Each register row becomes one workbook row: one provision-level unit, the
 register's own assessment, and - where it can be resolved deterministically -
@@ -8,7 +8,9 @@ the verbatim text of that provision taken from the official publication
 version pages).
 
 The workbooks are working copies for online review. They are generated from
-the Markdown register; edits made in a spreadsheet are not written back.
+the Markdown register; edits made in a spreadsheet are not written back. The
+Markdown export carries the same rows as plain tables, so the data stays
+greppable and diffable in the repository.
 
 Usage:
     python3 scripts/export-legal-register-xlsx.py                 # one file per act
@@ -117,11 +119,15 @@ ROW_TYPES = [
 ]
 
 
-def row_type(label):
+def row_type(label, kind=""):
     low = label.lower()
     for pattern, name in ROW_TYPES:
         if re.search(pattern, low):
             return name
+    if kind == "Technical standard":
+        return "Requirement"
+    if re.match(r"^\d+[a-z]?(\.\d+)*\b", label.strip()):
+        return "Point" if kind == "Slovak act" else "Article"
     return "Other"
 
 
@@ -866,6 +872,66 @@ def style_header(sheet, columns):
         sheet.column_dimensions[get_column_letter(index)].width = width
 
 
+COL_INDEX = {name: index for index, (name, _) in enumerate(COLUMNS)}
+
+MD_COLUMNS = [    "Provision",
+    "Row type",
+    "Parent",
+    "Official provision text",
+    "Text source",
+    "Requirement / assessment",
+    "Relevance",
+    "Assessment",
+    "Ignored?",
+    "Reason / evidence needed",
+    "Dates / notes",
+    "Official URL",
+    "Register document",
+    "Owner",
+    "Review state",
+    "Priority",
+    "Evidence URL",
+    "Notes",
+    "Last reviewed",
+]
+
+
+def md_cell(value):
+    """Escape a value for a Markdown table cell."""
+    text = "" if value is None else str(value)
+    text = text.replace("\\", "\\\\").replace("|", "\\|")
+    text = re.sub(r"\s*\n\s*", " ", text)
+    return re.sub(r"[ \t]+", " ", text).strip()
+
+
+def write_markdown(out_dir, sheet_name, label, kind, act_name, rows, path):
+    """Write one register document as a Markdown table."""
+    lines = [
+        f"# {label} — {act_name}",
+        "",
+        f"**Register:** [Autogram legal-act register](../README.md) · **Act type:** {kind} · "
+        f"**Register document:** [`{path.name}`](../{path.name}) · **Rows:** {len(rows)} · "
+        f"**Generated from:** `scripts/export-legal-register-xlsx.py`",
+        "",
+        "One row per provision unit. `Official provision text` is the verbatim text from the official "
+        "publication (EUR-Lex or Slov-Lex); `Text source` states what was matched. The last six columns "
+        "are empty and meant for editing.",
+        "",
+        "| " + " | ".join(MD_COLUMNS) + " |",
+        "| " + " | ".join("---" for _ in MD_COLUMNS) + " |",
+    ]
+    previous_text = None
+    for row in rows:
+        cells = [row[COL_INDEX[name]] for name in MD_COLUMNS]
+        text = cells[MD_COLUMNS.index("Official provision text")]
+        if text == previous_text and len(text) > 200:
+            cells[MD_COLUMNS.index("Official provision text")] = "↳ same text as the previous row"
+        previous_text = text
+        lines.append("| " + " | ".join(md_cell(cell) for cell in cells) + " |")
+    lines.append("")
+    (out_dir / f"{sheet_name}.md").write_text("\n".join(lines), encoding="utf-8")
+
+
 def add_instruction_sheet(workbook):
     sheet = workbook.create_sheet("00 How to use")
     sheet.append(["Item", "Value"])
@@ -898,6 +964,11 @@ def main():
         "--out-dir",
         default=str(ROOT / "docs" / "legal-acts" / "export"),
         help="directory for the per-act workbooks",
+    )
+    parser.add_argument(
+        "--md-dir",
+        default=str(ROOT / "docs" / "legal-acts" / "export-md"),
+        help="directory for the Markdown tables",
     )
     parser.add_argument(
         "--combined",
@@ -941,6 +1012,8 @@ def main():
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    md_dir = Path(args.md_dir)
+    md_dir.mkdir(parents=True, exist_ok=True)
     stats = {"exact": 0, "parent": 0, "container": 0, "unresolved": 0, "excerpt": 0}
     summary = []
 
@@ -988,7 +1061,7 @@ def main():
                     act_name,
                     row["section"],
                     row["provision"],
-                    row_type(row["provision"]),
+                    row_type(row["provision"], kind),
                     parent_of(tokens),
                     text,
                     source,
@@ -1018,6 +1091,7 @@ def main():
         add_data_sheet(workbook, sheet_name, rows)
         file_path = out_dir / f"{sheet_name}.xlsx"
         workbook.save(file_path)
+        write_markdown(md_dir, sheet_name, label, kind, act_name, rows, path)
         print(f"  {file_path.name}: {len(rows)} rows ({file_path.stat().st_size // 1024} kB)")
 
         if args.combined:
@@ -1049,6 +1123,28 @@ def main():
         index.append(f"| {label} | {count} | {resolved} | [`{sheet_name}.xlsx`]({sheet_name}.xlsx) |")
     index.append("")
     (out_dir / "README.md").write_text("\n".join(index), encoding="utf-8")
+
+    md_index = [
+        "# Markdown export of the legal-act register",
+        "",
+        "The same rows as the [Excel export](../export/README.md), as plain Markdown tables, one file per "
+        "register document. Generated by "
+        "[`scripts/export-legal-register-xlsx.py`](../../scripts/export-legal-register-xlsx.py).",
+        "",
+        "**Columns.** Provision · Row type · Parent · Official provision text · Text source · Requirement / "
+        "assessment · Relevance · Assessment · Ignored? · Reason / evidence needed · Dates / notes · Official URL · "
+        "Register document, plus the empty columns Owner, Review state, Priority, Evidence URL, Notes, Last reviewed.",
+        "",
+        "**Text source.** The official text URL and what was matched: the row's own unit, a parent unit, the "
+        "whole article or annex, or nothing - the row then still needs a source review.",
+        "",
+        "| Act | Rows | Text resolved | File |",
+        "| --- | --- | --- | --- |",
+    ]
+    for label, kind, act_name, count, resolved, sheet_name in summary:
+        md_index.append(f"| {label} | {count} | {resolved} | [`{sheet_name}.md`]({sheet_name}.md) |")
+    md_index.append("")
+    (md_dir / "README.md").write_text("\n".join(md_index), encoding="utf-8")
 
     if args.combined:
         style_header(
