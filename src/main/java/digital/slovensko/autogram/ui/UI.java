@@ -61,6 +61,8 @@ public interface UI {
 
     void onUpdateAvailable();
 
+    void onLegacyInstallationFound(List<LegacyInstallation> installations);
+
     void onAboutInfo();
 
     void onPDFAComplianceCheckFailed(SigningJob job);

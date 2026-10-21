@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.LegacyInstallation;
 import digital.slovensko.autogram.core.NoBatch;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
@@ -318,6 +319,20 @@ public class GUI implements UI {
 
         var stage = new Stage();
         stage.setTitle(controller.i18n("update.title"));
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.show();
+    }
+
+    @Override
+    public void onLegacyInstallationFound(List<LegacyInstallation> installations) {
+        var controller = new LegacyInstallationController(installations, this);
+        var root = GUIUtils.loadFXML(controller, "legacy-installation-dialog.fxml");
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("legacyInstallation.title"));
         stage.setScene(new Scene(root));
         stage.setResizable(false);
         stage.initModality(Modality.APPLICATION_MODAL);

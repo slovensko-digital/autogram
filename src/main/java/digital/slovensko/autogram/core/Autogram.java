@@ -749,6 +749,15 @@ public class Autogram {
         });
     }
 
+    public void checkForLegacyInstallation() {
+        ui.onWorkThreadDo(() -> {
+            var installations = LegacyInstallation.findWhenRunningFromMsix();
+            if (installations.isEmpty())
+                return;
+            ui.onUIThreadDo(() -> ui.onLegacyInstallationFound(installations));
+        });
+    }
+
     public void onAboutInfo() {
         ui.onAboutInfo();
     }

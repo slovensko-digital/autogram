@@ -40,6 +40,7 @@ public class GUIApp extends Application {
             autogram = new Autogram(new GUI(getHostServices(), userSettings), userSettings);
             var finalAutogram = autogram;
             autogram.checkForUpdate();
+            autogram.checkForLegacyInstallation();
             autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService, userSettings.getTrustedList());
 
             final var params = LaunchParameters.fromParameters(getParameters());

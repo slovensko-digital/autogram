@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.LegacyInstallation;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningMode;
@@ -233,6 +234,12 @@ public class CliUI implements UI {
         System.out.println(String.format(
                 "Je dostupná nová verzia a odporúčame stiahnuť aktualizáciu. Najnovšiu verziu si možete vždy stiahnuť na %s.",
                 Updater.LATEST_RELEASE_URL));
+    }
+
+    @Override
+    public void onLegacyInstallationFound(List<LegacyInstallation> installations) {
+        System.out.println(
+                "Na tomto počítači je nainštalovaná aj staršia verzia Autogramu, ktorá sa už nebude aktualizovať. Odporúčame ju odinštalovať v nastaveniach Windows v časti Aplikácie.");
     }
 
     @Override

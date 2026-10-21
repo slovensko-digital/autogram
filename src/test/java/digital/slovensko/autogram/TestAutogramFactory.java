@@ -3,6 +3,7 @@ package digital.slovensko.autogram;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.DriverDetector;
+import digital.slovensko.autogram.core.LegacyInstallation;
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.SigningJob;
@@ -149,6 +150,10 @@ public class TestAutogramFactory {
 
         @Override
         public void onUpdateAvailable() {
+        }
+
+        @Override
+        public void onLegacyInstallationFound(List<LegacyInstallation> installations) {
         }
 
         @Override

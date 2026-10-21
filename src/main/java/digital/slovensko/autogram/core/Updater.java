@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.Main;
+import digital.slovensko.autogram.util.MsixPackage;
 import digital.slovensko.autogram.util.Version;
 
 import java.io.IOException;
@@ -21,6 +22,11 @@ public class Updater {
     public static boolean newVersionAvailable() {
         Version vCurrent = Main.getVersion();
         if (vCurrent.isDev()) {
+            return false;
+        }
+
+        // Microsoft Store updates it, a downloaded MSI would be installed next to it
+        if (MsixPackage.isCurrent()) {
             return false;
         }
 

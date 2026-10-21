@@ -107,7 +107,9 @@
       present, and after the reboot they are gone. Terminate the application before
       RemoveExistingProducts. It can't be closed gracefully: WM_CLOSE sent to all its windows
       (util:CloseApplication) also destroys the hidden JavaFX toolkit window and it hangs.
+      Not when the version from Microsoft Store (MSIX) uninstalls this one, taskkill would end it as well.
     -->
+    <Property Id="MSIX_MIGRATION" Secure="yes" />
     <SetProperty Id="WixQuietExec64CmdLine" Before="JpTerminateApp" Sequence="execute"
                  Value="&quot;[System64Folder]taskkill.exe&quot; /F /T /IM &quot;$(var.JpAppName).exe&quot; /IM &quot;autogram-cli.exe&quot;" />
     <CustomAction Id="JpTerminateApp" BinaryKey="WixCA" DllEntry="WixQuietExec64" Execute="immediate" Return="ignore" />
@@ -161,7 +163,7 @@
       <Custom Action="JpDisallowDowngrade" After="JpFindRelatedProducts">JP_DOWNGRADABLE_FOUND</Custom>
       <?endif?>
       <LaunchConditions Before="AppSearch"/>
-      <Custom Action="JpTerminateApp" Before="RemoveExistingProducts"/>
+      <Custom Action="JpTerminateApp" Before="RemoveExistingProducts">NOT MSIX_MIGRATION</Custom>
       <RemoveExistingProducts Before="CostInitialize"/>
       <Custom Action="JpFindRelatedProducts" After="FindRelatedProducts"/>
     </InstallExecuteSequence>
