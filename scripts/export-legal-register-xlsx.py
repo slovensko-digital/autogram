@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export the legal-act register to an Excel workbook with one sheet per act.
+"""Export the legal-act register to one Excel workbook per act.
 
 Each register row becomes one workbook row: one provision-level unit, the
 register's own assessment, and - where it can be resolved deterministically -
@@ -7,13 +7,14 @@ the verbatim text of that provision taken from the official publication
 (EUR-Lex via the Publications Office Cellar API, or the static Slov-Lex
 version pages).
 
-The workbook is a working copy for online review. It is generated from the
-Markdown register; edits made in the spreadsheet are not written back.
+The workbooks are working copies for online review. They are generated from
+the Markdown register; edits made in a spreadsheet are not written back.
 
 Usage:
-    python3 scripts/export-legal-register-xlsx.py                 # build the workbook
+    python3 scripts/export-legal-register-xlsx.py                 # one file per act
     python3 scripts/export-legal-register-xlsx.py --offline       # use the cache only
     python3 scripts/export-legal-register-xlsx.py --only "EU 2014/910"
+    python3 scripts/export-legal-register-xlsx.py --combined FILE # one workbook, one sheet per act
 """
 
 import argparse
@@ -325,6 +326,14 @@ MARKER_RES = [
     ("dash", re.compile(r"^([—–-])$")),
 ]
 RANK = {"num": 0, "paren_digit": 1, "letter": 2, "roman": 3, "dash": 4}
+INLINE_TAGS = {"a", "span", "i", "b", "em", "strong", "u", "sub", "sup", "small", "font", "br"}
+MARKER_CLASSES = {
+    "no-parag",
+    "grid-list-column-1",
+    "oj-note",
+    "oj-super",
+    "oj-note-tag",
+}
 
 
 def marker_type(text):
@@ -413,8 +422,21 @@ class EuDocument(OfficialText):
 
     @staticmethod
     def own_text(element):
-        """Text that sits directly in the element, without its children."""
-        return SPACE_RE.sub(" ", " ".join(str(child) for child in element.children if isinstance(child, NavigableString))).strip()
+        """Text of the element itself, including inline markup such as spans and links."""
+        parts = []
+        for child in element.children:
+            if isinstance(child, NavigableString):
+                parts.append(str(child))
+                continue
+            if getattr(child, "name", None) not in INLINE_TAGS:
+                continue
+            classes = child.get("class") or []
+            if any(name in MARKER_CLASSES for name in classes):
+                continue
+            if child.find(["p", "td", "div"]) is not None:
+                continue
+            parts.append(child.get_text(" ", strip=True))
+        return SPACE_RE.sub(" ", " ".join(parts)).strip()
 
     def render_structured(self, container):
         """Walk the provision structure; return {token path: text} and the full text."""
@@ -844,9 +866,43 @@ def style_header(sheet, columns):
         sheet.column_dimensions[get_column_letter(index)].width = width
 
 
+def add_instruction_sheet(workbook):
+    sheet = workbook.create_sheet("00 How to use")
+    sheet.append(["Item", "Value"])
+    for row in instruction_rows()[1:]:
+        sheet.append(row)
+    style_header(sheet, [("Item", 32), ("Value", 120)])
+    for row in sheet.iter_rows(min_row=2):
+        for cell in row:
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+    return sheet
+
+
+def add_data_sheet(workbook, name, rows):
+    sheet = workbook.create_sheet(name[:31])
+    sheet.append([column for column, _ in COLUMNS])
+    for row in rows:
+        sheet.append(row)
+    style_header(sheet, COLUMNS)
+    sheet.freeze_panes = "A2"
+    sheet.auto_filter.ref = f"A1:{get_column_letter(len(COLUMNS))}{max(sheet.max_row, 1)}"
+    for row in sheet.iter_rows(min_row=2):
+        for cell in row:
+            cell.alignment = Alignment(vertical="top", wrap_text=cell.column in (3, 4, 8, 10, 14, 15, 16, 22))
+    return sheet
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", default=str(ROOT / "docs" / "legal-acts" / "legal-register-export.xlsx"))
+    parser.add_argument(
+        "--out-dir",
+        default=str(ROOT / "docs" / "legal-acts" / "export"),
+        help="directory for the per-act workbooks",
+    )
+    parser.add_argument(
+        "--combined",
+        help="also write one workbook with every act as a sheet, e.g. docs/legal-acts/legal-register-export.xlsx",
+    )
     parser.add_argument("--offline", action="store_true", help="use only cached official texts")
     parser.add_argument("--only", help="limit the export to a single act, e.g. 'EU 2014/910'")
     args = parser.parse_args()
@@ -883,23 +939,17 @@ def main():
         print("fetching Slovak official texts ...")
         documents.update(load_sk_documents(sk_rows, args.offline))
 
-    workbook = openpyxl.Workbook()
-    workbook.remove(workbook.active)
-
-    sheet = workbook.create_sheet("00 How to use")
-    sheet.append(["Item", "Value"])
-    for row in instruction_rows()[1:]:
-        sheet.append(row)
-    style_header(sheet, [("Item", 32), ("Value", 120)])
-    for row in sheet.iter_rows(min_row=2):
-        for cell in row:
-            cell.alignment = Alignment(vertical="top", wrap_text=True)
-
-    summary = [["Act", "Act type", "Act name", "Rows", "Text resolved", "Sheet"]]
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
     stats = {"exact": 0, "parent": 0, "container": 0, "unresolved": 0, "excerpt": 0}
-    summary_sheet = workbook.create_sheet("01 Summary")
-    for row in summary:
-        summary_sheet.append(row)
+    summary = []
+
+    combined = openpyxl.Workbook()
+    combined.remove(combined.active)
+    if args.combined:
+        add_instruction_sheet(combined)
+        combined_summary = combined.create_sheet("01 Summary")
+        combined_summary.append(["Act", "Act type", "Act name", "Rows", "Text resolved", "Sheet"])
 
     for label, (path, kind, data) in parsed.items():
         act_name = strip_md(re.sub(r"^#\s*\S+\s*[—–-]\s*", "", data["title"]))
@@ -959,29 +1009,61 @@ def main():
                 ]
             )
         sheet_name = label.replace("/", "-")
-        sheet = workbook.create_sheet(sheet_name[:31])
-        sheet.append([column for column, _ in COLUMNS])
-        for row in rows:
-            sheet.append(row)
-        style_header(sheet, COLUMNS)
-        sheet.freeze_panes = "A2"
-        sheet.auto_filter.ref = f"A1:{get_column_letter(len(COLUMNS))}{max(sheet.max_row, 1)}"
-        for row in sheet.iter_rows(min_row=2):
-            for cell in row:
-                cell.alignment = Alignment(vertical="top", wrap_text=cell.column in (3, 4, 8, 10, 14, 15, 16, 22))
         resolved = sum(1 for r in rows if r[8] and "needs source review" not in r[8])
         summary.append([label, kind, act_name, len(rows), resolved, sheet_name])
-        summary_sheet.append(summary[-1])
 
-    style_header(summary_sheet, [("Act", 16), ("Act type", 22), ("Act name", 44), ("Rows", 10), ("Text resolved", 14), ("Sheet", 18)])
-    for row in summary_sheet.iter_rows(min_row=2):
-        for cell in row:
-            cell.alignment = Alignment(vertical="top", wrap_text=True)
-    summary_sheet.freeze_panes = "A2"
+        workbook = openpyxl.Workbook()
+        workbook.remove(workbook.active)
+        add_instruction_sheet(workbook)
+        add_data_sheet(workbook, sheet_name, rows)
+        file_path = out_dir / f"{sheet_name}.xlsx"
+        workbook.save(file_path)
+        print(f"  {file_path.name}: {len(rows)} rows ({file_path.stat().st_size // 1024} kB)")
 
-    out_path = Path(args.out)
-    workbook.save(out_path)
-    print(f"wrote {out_path} ({out_path.stat().st_size // 1024} kB)")
+        if args.combined:
+            add_data_sheet(combined, sheet_name, rows)
+            combined_summary.append(summary[-1])
+
+    index = [
+        "# Spreadsheet export of the legal-act register",
+        "",
+        "One workbook per register document, generated by "
+        "[`scripts/export-legal-register-xlsx.py`](../../scripts/export-legal-register-xlsx.py).",
+        "Each file holds the provisions of that act, the register's assessment and the verbatim text of "
+        "each provision taken from the official publication.",
+        "",
+        "**Columns.** Provision, Row type, Parent, Official provision text, Text source, Requirement / assessment, "
+        "Relevance, Assessment, Ignored?, Reason / evidence needed, Dates / notes, Official URL, Register document, "
+        "plus the empty columns Owner, Review state, Priority, Evidence URL, Notes and Last reviewed.",
+        "",
+        "**Text source.** The official text URL and what was matched: the row's own unit, a parent unit, the whole "
+        "article or annex, or nothing - the row then still needs a source review.",
+        "",
+        "**Working copy.** The spreadsheets are generated from the Markdown register; edits here are not written "
+        "back. Close an item in the register document and re-export.",
+        "",
+        "| Act | Rows | Text resolved | File |",
+        "| --- | --- | --- | --- |",
+    ]
+    for label, kind, act_name, count, resolved, sheet_name in summary:
+        index.append(f"| {label} | {count} | {resolved} | [`{sheet_name}.xlsx`]({sheet_name}.xlsx) |")
+    index.append("")
+    (out_dir / "README.md").write_text("\n".join(index), encoding="utf-8")
+
+    if args.combined:
+        style_header(
+            combined_summary,
+            [("Act", 16), ("Act type", 22), ("Act name", 44), ("Rows", 10), ("Text resolved", 14), ("Sheet", 18)],
+        )
+        for row in combined_summary.iter_rows(min_row=2):
+            for cell in row:
+                cell.alignment = Alignment(vertical="top", wrap_text=True)
+        combined_summary.freeze_panes = "A2"
+        out_path = Path(args.combined)
+        combined.save(out_path)
+        print(f"wrote {out_path} ({out_path.stat().st_size // 1024} kB)")
+
+    print(f"wrote {len(summary)} workbooks to {out_dir}")
     print("text resolution:", stats)
 
 
