@@ -44,6 +44,9 @@ public class AppStarter {
                 if (!SingleInstanceManager.start(cmd.getArgList()))
                     return;
                 Application.launch(GUIApp.class, args);
+                // Background work (e.g. trusted list download) must not keep the process running
+                // after the window is closed, it would still lock the application files
+                System.exit(0);
             }
         } catch (ParseException e) {
             System.err.println("Unable to parse program args");
