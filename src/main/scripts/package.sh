@@ -39,17 +39,25 @@ jvmOptions="-Dfile.encoding=UTF-8 \
     --enable-native-access=javafx.graphics,javafx.web,ALL-UNNAMED"
     
 arguments=(
-    "--input" "${appDirectory}"
-    "--runtime-image" "${jdkDirectory}"
-    "--main-jar" "autogram.jar"
     "--app-version" "${properties_version:-$version}"
     "--copyright" "${properties_copyright}"
     "--vendor" "${properties_vendor}"
-    "--icon" "./Autogram.png"
-    "--license-file" "${appDirectory}/LICENSE"
     "--resource-dir" "./"
     "--dest" "${output}"
     "--description" "${properties_description}"
+)
+
+# Options of the application image (launchers and bundled runtime)
+appImageArguments=(
+    "--input" "${appDirectory}"
+    "--runtime-image" "${jdkDirectory}"
+    "--main-jar" "autogram.jar"
+    "--icon" "./Autogram.png"
+)
+
+# Options of the installer package
+installerArguments=(
+    "--license-file" "${appDirectory}/LICENSE"
     "--file-associations" "${resourcesDir}/FApdf.properties"
     "--file-associations" "${resourcesDir}/FAasice.properties"
 )
@@ -61,43 +69,78 @@ if [[ "${platform}" == "win" ]]; then
     arguments+=(
         "--name" "${properties_name}"
         "--description" "${properties_name}"
-        "--type" "msi"
+    )
+
+    appImageArguments+=(
         "--icon" "./Autogram.ico"
         "--java-options" "${jvmOptions} --add-opens jdk.crypto.mscapi/sun.security.mscapi=ALL-UNNAMED"
-        "--win-menu"
         "--add-launcher" "autogram-cli=$resourcesDir/windows-cli-build.properties"
     )
 
+    installerArguments+=(
+        "--type" "msi"
+        "--win-menu"
+    )
+
     if [[ -n "${properties_win_upgradeUUID}" ]]; then
-        arguments+=(
+        installerArguments+=(
             "--win-upgrade-uuid" "${properties_win_upgradeUUID}"
         )
     fi
 
     if [[ -z "${properties_win_menu}" ]] || [[ "${properties_win_menu}" -ne "0" ]]; then
-        arguments+=(
+        installerArguments+=(
             "--win-menu"
             "--win-menu-group" "${properties_win_menuGroup:-$properties_vendor}"
         )
     fi
 
     if [[ "${properties_win_perUserInstall}" == "1" ]]; then
-        arguments+=(
+        installerArguments+=(
             "--win-per-user-install"
         )
     fi
 
     if [[ "${properties_win_shortcut}" == "1" ]]; then
-        arguments+=(
+        installerArguments+=(
             "--win-shortcut"
         )
     fi
 
-    $jpackage "${arguments[@]}"
+    # Build the application image first so that its executables can be signed
+    # before they are packed into the MSI
+    appImage="${output}/${properties_name}"
+    rm -rf "${appImage}"
+
+    $jpackage "${arguments[@]}" "${appImageArguments[@]}" "--type" "app-image"
+    checkExitCode $?
+
+    # When packaging an app image, jpackage gives every additional launcher the same
+    # shortcuts as the main launcher, so the CLI launcher is removed from the app image
+    # metadata to be packaged as a plain executable without shortcuts
+    sed -i -e 's|<add-launcher name="autogram-cli"[^>]*>.*</add-launcher>||' "${appImage}/app/.jpackage.xml"
+
+    if [[ -z "${AZURE_KEY_VAULT_URI}" ]] || ! command -v AzureSignTool > /dev/null; then
+        echo "Warning: AZURE_KEY_VAULT_URI or AzureSignTool not available, skipping code signing of executables"
+    else
+        # Already signed files (e.g. from the JDK vendor) keep their original signature
+        find "${appImage}" -type f \( -iname "*.exe" -o -iname "*.dll" \) > "${output}/files-to-sign.txt"
+
+        AzureSignTool sign --description "${properties_name}" \
+            -kvu "${AZURE_KEY_VAULT_URI}" -kvi "${AZURE_CLIENT_ID}" -kvt "${AZURE_TENANT_ID}" \
+            -kvs "${AZURE_CLIENT_SECRET}" -kvc "${AZURE_CERT_NAME}" \
+            -tr http://timestamp.digicert.com --skip-signed -v \
+            --input-file-list "${output}/files-to-sign.txt"
+        checkExitCode $?
+    fi
+
+    $jpackage "${arguments[@]}" "${installerArguments[@]}" "--app-image" "${appImage}"
     checkExitCode $?
 fi
 
 if [[ "$platform" == "linux" ]]; then
+    arguments+=("${appImageArguments[@]}" "${installerArguments[@]}")
+
     cp "./autogram.template.desktop" "./autogram.desktop"
     sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./autogram.desktop"
 
@@ -157,6 +200,8 @@ if [[ "${platform}" == "mac" ]]; then
     # interrupted prior build and clean this build's temporary files on any exit.
     rm -rf ./DTempFiles
     trap 'rm -rf ./DTempFiles' EXIT
+
+    arguments+=("${appImageArguments[@]}" "${installerArguments[@]}")
 
     cp "./Info.plist.template" "./Info.plist"
     sed -i.bak "s/PROTOCOL_NAME/${properties_protocol}/g" "./Info.plist" && rm "./Info.plist.bak"
