@@ -41,6 +41,7 @@ final class Pkcs11TokenSlots {
     private static final Map<String, Integer> moduleGenerations = new ConcurrentHashMap<>();
     /** Modules being initialized, by the thread initializing them */
     private static final Map<Thread, String> modulesInitializing = new ConcurrentHashMap<>();
+    private static final Set<String> modulesInitialized = ConcurrentHashMap.newKeySet();
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(Pkcs11TokenSlots::finalizeModules, "pkcs11-finalizer"));
@@ -124,6 +125,7 @@ final class Pkcs11TokenSlots {
         initialize.setAccessible(true);
         var initArgs = initArgsClass.getConstructor().newInstance();
         initArgsClass.getField("flags").setLong(initArgs, CKF_OS_LOCKING_OK);
+        modulesInitializing.put(Thread.currentThread(), pkcs11Path);
         try {
             invoke(initialize, p11, initArgs);
         } catch (Exception e) {
@@ -131,6 +133,8 @@ final class Pkcs11TokenSlots {
                 throw e;
 
             invoke(initialize, p11, (Object) null);
+        } finally {
+            modulesInitializing.remove(Thread.currentThread());
         }
 
         moduleGenerations.merge(pkcs11Path, 1, Integer::sum);
@@ -144,6 +148,10 @@ final class Pkcs11TokenSlots {
         return moduleGenerations.getOrDefault(pkcs11Path, 0);
     }
 
+    static boolean isModuleInitialized(String pkcs11Path) {
+        return modulesInitialized.contains(pkcs11Path);
+    }
+
     static List<TokenSlot> listSlotsWithToken(String pkcs11Path) throws Exception {
         var pkcs11Class = Class.forName(PKCS11_CLASS_NAME);
         Object p11;
@@ -154,6 +162,7 @@ final class Pkcs11TokenSlots {
             modulesInitializing.remove(Thread.currentThread());
         }
         finalizeOnExit(pkcs11Path);
+        modulesInitialized.add(pkcs11Path);
 
         var slotsWithToken = (long[]) invoke(pkcs11Class, p11, "C_GetSlotList", new Class<?>[]{boolean.class}, true);
         var tokens = new ArrayList<Object[]>();
