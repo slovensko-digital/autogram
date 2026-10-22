@@ -103,7 +103,7 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
+        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
             callback.accept(keys.get(0));
         }
 

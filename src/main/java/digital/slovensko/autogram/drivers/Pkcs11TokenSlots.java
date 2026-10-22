@@ -214,6 +214,7 @@ final class Pkcs11TokenSlots {
 
         var initArgs = initArgsClass.getConstructor().newInstance();
         initArgsClass.getField("flags").setLong(initArgs, CKF_OS_LOCKING_OK);
+        Pkcs11Library.load(pkcs11Path);
 
         try {
             return invoke(getInstance, null, pkcs11Path, PKCS11_FUNCTION_LIST, initArgs, false);

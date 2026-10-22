@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core.errors;
 
+import digital.slovensko.autogram.drivers.Pkcs11LibraryException;
 import digital.slovensko.autogram.ui.gui.HasI18n;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
@@ -94,7 +95,7 @@ public class AutogramException extends RuntimeException {
                     return new TsaServerMisconfiguredException(REFUSED, cause);
                 } else if (cause instanceof NullPointerException && cause.getMessage().contains("Host name")) {
                     return new TsaServerMisconfiguredException(MISSING_HOST_NAME, cause);
-                } else if (cause instanceof IOException && (cause.getMessage().contains("The specified module could not be found") || cause.getMessage().contains("Zadaný modul sa nepodarilo"))) {
+                } else if (cause instanceof Pkcs11LibraryException || cause instanceof IOException && (cause.getMessage().contains("The specified module could not be found") || cause.getMessage().contains("Zadaný modul sa nepodarilo"))) {
                     return new PkcsEidWindowsDllException(e);
                 }
             }

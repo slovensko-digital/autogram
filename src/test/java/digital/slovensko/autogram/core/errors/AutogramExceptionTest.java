@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core.errors;
 
+import digital.slovensko.autogram.drivers.Pkcs11LibraryException;
 import eu.europa.esig.dss.model.DSSException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,13 @@ class AutogramExceptionTest {
         var e = new DSSException("Unable to sign : Token has been removed", new ProviderException("Token has been removed"));
 
         Assertions.assertSame(TokenRemovedException.class, AutogramException.createFromDSSException(e).getClass());
+    }
+
+    @Test
+    void createFromDSSExceptionPkcs11LibraryNotLoadedTest() {
+        var e = new DSSException("Unable to load", new Pkcs11LibraryException("C:\\eID_klient\\pkcs11_x64.dll"));
+
+        Assertions.assertSame(PkcsEidWindowsDllException.class, AutogramException.createFromDSSException(e).getClass());
     }
 
     @Test

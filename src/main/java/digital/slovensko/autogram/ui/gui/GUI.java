@@ -173,8 +173,9 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
         if (keys.isEmpty()) {
+            onCancel.run();
             showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
             refreshKeyOnAllJobs();
             enableSigningOnAllJobs();
@@ -192,6 +193,7 @@ public class GUI implements UI {
 
         keys = keysStream.toList();
         if (keys.isEmpty()) {
+            onCancel.run();
             showError(new NoValidKeysDetectedException());
             refreshKeyOnAllJobs();
             enableSigningOnAllJobs();
@@ -206,6 +208,7 @@ public class GUI implements UI {
         stage.setTitle(controller.i18n("pickKey.title"));
         stage.setScene(new Scene(root));
         stage.setOnCloseRequest(e -> {
+            onCancel.run();
             refreshKeyOnAllJobs();
             enableSigningOnAllJobs();
         });

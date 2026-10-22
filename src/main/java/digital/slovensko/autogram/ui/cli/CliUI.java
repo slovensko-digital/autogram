@@ -161,8 +161,9 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
         if (keys.isEmpty()) {
+            onCancel.run();
             showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
             return;
         }

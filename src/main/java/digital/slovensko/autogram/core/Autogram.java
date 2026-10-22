@@ -704,7 +704,7 @@ public class Autogram {
                 // A cached PIN belongs to the previous key, possibly another card.
                 passwordManager.reset();
                 callback.accept(new SigningKey(token, privateKey));
-            }));
+            }, () -> ui.onWorkThreadDo(token::close)));
         } catch (DSSException e) {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         } catch (AutogramException e) {

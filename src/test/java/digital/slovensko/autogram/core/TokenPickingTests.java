@@ -353,6 +353,22 @@ class TokenPickingTests {
     }
 
     @Test
+    void testConnectionIsClosedWhenNoKeyIsPicked() {
+        var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP)));
+        var ui = new PickingUI((options) -> options.found().get(0));
+        var autogram = new Autogram(ui, new FakeSettings(eid));
+        var signingKeys = new ArrayList<SigningKey>();
+
+        // logged in to the card, but the user closed the certificate picker
+        ui.pickKeys = false;
+        ui.cancelKeys = true;
+        autogram.pickSigningKeyAndThen(signingKeys::add);
+
+        assertTrue(signingKeys.isEmpty());
+        assertEquals(1, eid.closedConnections);
+    }
+
+    @Test
     void testDriverWithoutTokensIsNotUsed() {
         for (var cardReaders : List.of(CardReaders.State.NO_CARD, CardReaders.State.UNKNOWN)) {
             var eid = cardDriver("eid", Optional.of(List.of()));
@@ -562,6 +578,7 @@ class TokenPickingTests {
         Supplier<TokenOptions> searchAgain;
         int pickTokenCalls = 0;
         boolean pickKeys = true;
+        boolean cancelKeys = false;
 
         /**
          * @param pick picks one of the options, or returns null to leave the dialog open
@@ -581,9 +598,11 @@ class TokenPickingTests {
         }
 
         @Override
-        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
+        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
             if (pickKeys)
-                super.pickKeyAndThen(keys, driver, callback);
+                super.pickKeyAndThen(keys, driver, callback, onCancel);
+            else if (cancelKeys)
+                onCancel.run();
         }
     }
 
@@ -603,6 +622,7 @@ class TokenPickingTests {
         /** number of connections that fail to read keys, before the working ones */
         int failingConnections = 0;
         int closedFailingConnections = 0;
+        int closedConnections = 0;
         boolean recoverable = false;
         int recoveries = 0;
 
@@ -670,7 +690,13 @@ class TokenPickingTests {
                 };
             }
 
-            return signer.token();
+            return new KeyStoreSignatureTokenConnection(signer.keystore(), "JKS", new KeyStore.PasswordProtection(new char[0])) {
+                @Override
+                public void close() {
+                    closedConnections++;
+                    super.close();
+                }
+            };
         }
     }
 
