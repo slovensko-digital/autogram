@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.Main;
+import digital.slovensko.autogram.util.MsixPackage;
 import digital.slovensko.autogram.util.Version;
 
 import java.io.IOException;
@@ -17,10 +18,16 @@ import com.google.gson.JsonObject;
 public class Updater {
     public static final String LATEST_RELEASE_URL = "https://sluzby.slovensko.digital/autogram/?utm_source=autogram&utm_medium=application&utm_campaign=autogramupdate#download";
     public static final String LATEST_RELEASE_API_URL = "https://api.github.com/repos/slovensko-digital/autogram/releases/latest";
+    public static final String MICROSOFT_STORE_URL = "ms-windows-store://pdp/?productid="
+            + Configuration.getBuildProperty("win.msix.storeProductId");
 
     public static boolean newVersionAvailable() {
         Version vCurrent = Main.getVersion();
         if (vCurrent.isDev()) {
+            return false;
+        }
+
+        if (MsixPackage.isCurrent()) {
             return false;
         }
 

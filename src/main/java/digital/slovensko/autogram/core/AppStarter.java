@@ -44,6 +44,8 @@ public class AppStarter {
                 if (!SingleInstanceManager.start(cmd.getArgList()))
                     return;
                 Application.launch(GUIApp.class, args);
+                // Background threads would otherwise keep the application files locked during an update
+                System.exit(0);
             }
         } catch (ParseException e) {
             System.err.println("Unable to parse program args");

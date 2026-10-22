@@ -6,14 +6,17 @@ import digital.slovensko.autogram.ui.SupportedLanguage;
 import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.HostServices;
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +24,7 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class GUIUtils {
@@ -93,6 +97,19 @@ public class GUIUtils {
 
     public static void closeWindow(Node node) {
         ((Stage) node.getScene().getWindow()).close();
+    }
+
+    public static void setAppIconOnAllStages() {
+        if (OperatingSystem.current() != OperatingSystem.WINDOWS)
+            return;
+
+        var icon = new Image(Objects.requireNonNull(GUIUtils.class.getResourceAsStream("Autogram.png")));
+        Window.getWindows().addListener((ListChangeListener<Window>) change -> {
+            while (change.next())
+                for (var window : change.getAddedSubList())
+                    if (window instanceof Stage stage && stage.getIcons().isEmpty())
+                        stage.getIcons().add(icon);
+        });
     }
 
     public static void startIconified(Stage stage) {

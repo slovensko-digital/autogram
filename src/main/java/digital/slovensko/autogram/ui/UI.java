@@ -39,7 +39,7 @@ public interface UI {
      */
     void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel);
 
-    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback);
+    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel);
 
     void onPickSigningKeyFailed(AutogramException e);
 
@@ -60,6 +60,8 @@ public interface UI {
     void onUIThreadDo(Runnable callback);
 
     void onUpdateAvailable();
+
+    void onLegacyInstallationFound(List<LegacyInstallation> installations);
 
     void onAboutInfo();
 

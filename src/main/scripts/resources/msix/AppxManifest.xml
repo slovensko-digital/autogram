@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+         xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+         IgnorableNamespaces="uap uap3 desktop rescap">
+
+  <Identity Name="IDENTITY_NAME" Publisher="IDENTITY_PUBLISHER" Version="IDENTITY_VERSION" ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>APP_NAME</DisplayName>
+    <PublisherDisplayName>PUBLISHER_DISPLAY_NAME</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="sk-SK" />
+    <Resource Language="en-US" />
+  </Resources>
+
+  <Applications>
+    <Application Id="Autogram" Executable="APP_NAME.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="APP_NAME" Description="APP_DESCRIPTION" BackgroundColor="transparent"
+                          Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" />
+      <Extensions>
+        <uap3:Extension Category="windows.protocol">
+          <uap3:Protocol Name="PROTOCOL_NAME" Parameters="--url=&quot;%1&quot;">
+            <uap:DisplayName>APP_NAME</uap:DisplayName>
+          </uap3:Protocol>
+        </uap3:Extension>
+        <uap3:Extension Category="windows.fileTypeAssociation">
+          <uap3:FileTypeAssociation Name="pdf" Parameters="&quot;%1&quot;">
+            <uap:DisplayName>PDF Document</uap:DisplayName>
+            <uap:SupportedFileTypes>
+              <uap:FileType ContentType="application/pdf">.pdf</uap:FileType>
+            </uap:SupportedFileTypes>
+          </uap3:FileTypeAssociation>
+        </uap3:Extension>
+        <uap3:Extension Category="windows.fileTypeAssociation">
+          <uap3:FileTypeAssociation Name="asice" Parameters="&quot;%1&quot;">
+            <uap:DisplayName>ASiC-E Container</uap:DisplayName>
+            <uap:SupportedFileTypes>
+              <uap:FileType ContentType="application/vnd.etsi.asic-e+zip">.asice</uap:FileType>
+            </uap:SupportedFileTypes>
+          </uap3:FileTypeAssociation>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+
+    <Application Id="AutogramCli" Executable="autogram-cli.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="APP_NAME CLI" Description="APP_NAME command line interface" AppListEntry="none"
+                          BackgroundColor="transparent"
+                          Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" />
+      <Extensions>
+        <uap3:Extension Category="windows.appExecutionAlias" Executable="autogram-cli.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap3:AppExecutionAlias>
+            <desktop:ExecutionAlias Alias="autogram-cli.exe" />
+          </uap3:AppExecutionAlias>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.cli;
 import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.LegacyInstallation;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningMode;
@@ -160,8 +161,9 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
         if (keys.isEmpty()) {
+            onCancel.run();
             showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
             return;
         }
@@ -233,6 +235,12 @@ public class CliUI implements UI {
         System.out.println(String.format(
                 "Je dostupná nová verzia a odporúčame stiahnuť aktualizáciu. Najnovšiu verziu si možete vždy stiahnuť na %s.",
                 Updater.LATEST_RELEASE_URL));
+    }
+
+    @Override
+    public void onLegacyInstallationFound(List<LegacyInstallation> installations) {
+        System.out.println(
+                "An older version of Autogram is also installed on this computer and will no longer be updated. We recommend uninstalling it in Windows Settings under Apps.");
     }
 
     @Override

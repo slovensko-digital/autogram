@@ -5,6 +5,11 @@
 How card search, certificate picking and PKCS#11 drivers work, what to watch out for and how to test with real cards:
 [docs/cards-and-tokens.md](docs/cards-and-tokens.md) (in Slovak).
 
+# Testing the Microsoft Store (MSIX) version
+
+How to sign a development build of the MSIX package with a test certificate and install it on any computer as if it
+came from Microsoft Store: [docs/windows-store-testing.md](docs/windows-store-testing.md) (in Slovak).
+
 # GUI accessibility tests
 
 The settings accessibility tests require a graphical display and are opt-in.

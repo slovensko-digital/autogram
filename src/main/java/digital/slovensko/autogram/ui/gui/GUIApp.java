@@ -10,6 +10,7 @@ import digital.slovensko.autogram.core.errors.PortIsUsedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
 import digital.slovensko.autogram.server.AutogramServer;
 import digital.slovensko.autogram.ui.SupportedLanguage;
+import digital.slovensko.autogram.util.OperatingSystem;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -25,6 +26,8 @@ public class GUIApp extends Application {
 
     @Override
     public void start(Stage windowStage) throws Exception {
+        GUIUtils.setAppIconOnAllStages();
+
         AutogramServer server = null;
         Autogram autogram = null;
         try {
@@ -38,6 +41,8 @@ public class GUIApp extends Application {
             autogram = new Autogram(new GUI(getHostServices(), userSettings), userSettings);
             var finalAutogram = autogram;
             autogram.checkForUpdate();
+            if (OperatingSystem.current() == OperatingSystem.WINDOWS)
+                autogram.checkForLegacyInstallation();
             autogram.initializeSignatureValidator(scheduledExecutorService, cachedExecutorService, userSettings.getTrustedList());
 
             final var params = LaunchParameters.fromParameters(getParameters());

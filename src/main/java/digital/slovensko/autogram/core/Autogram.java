@@ -704,7 +704,7 @@ public class Autogram {
                 // A cached PIN belongs to the previous key, possibly another card.
                 passwordManager.reset();
                 callback.accept(new SigningKey(token, privateKey));
-            }));
+            }, () -> ui.onWorkThreadDo(token::close)));
         } catch (DSSException e) {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         } catch (AutogramException e) {
@@ -746,6 +746,15 @@ public class Autogram {
             if (!Updater.newVersionAvailable())
                 return;
             ui.onUIThreadDo(ui::onUpdateAvailable);
+        });
+    }
+
+    public void checkForLegacyInstallation() {
+        ui.onWorkThreadDo(() -> {
+            var installations = LegacyInstallation.findWhenRunningFromMsix();
+            if (installations.isEmpty())
+                return;
+            ui.onUIThreadDo(() -> ui.onLegacyInstallationFound(installations));
         });
     }
 

@@ -281,6 +281,19 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
         }
     }
 
+    @Override
+    protected Provider getProvider() {
+        if (getProviderIfCreated() == null) {
+            try {
+                Pkcs11Library.load(getPkcs11Path());
+            } catch (Pkcs11LibraryException e) {
+                throw new DSSException(e.getMessage(), e);
+            }
+        }
+
+        return super.getProvider();
+    }
+
     private Provider getProviderIfCreated() {
         try {
             return (Provider) getProviderField().get(this);

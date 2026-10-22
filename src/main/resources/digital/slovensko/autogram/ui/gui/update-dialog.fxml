@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
@@ -16,12 +17,17 @@
 
         <VBox styleClass="autogram-prose">
             <TextFlow styleClass="autogram-body">
-                <Text styleClass="autogram-body" text="%update.newVersion.text"/>
+                <Text fx:id="text" styleClass="autogram-body" text="%update.newVersion.text"/>
+            </TextFlow>
+            <TextFlow fx:id="moreInfo" styleClass="autogram-body" managed="false" visible="false">
+                <Hyperlink styleClass="autogram-link" text="%update.moreInfo.link" onAction="#downloadAction"/>
             </TextFlow>
         </VBox>
-        <HBox styleClass="autogram-actions">
+        <FlowPane styleClass="autogram-actions--wrapping">
+            <Button fx:id="storeButton" styleClass="autogram-button" text="%update.store.btn" onAction="#storeAction"
+                    managed="false" visible="false"/>
             <Button fx:id="mainButton" styleClass="autogram-button" text="%update.download.btn" onAction="#downloadAction"/>
             <Button fx:id="cancelButton" styleClass="autogram-link" text="%update.cancel.btn" onAction="#onCancelButtonPressed"/>
-        </HBox>
+        </FlowPane>
     </VBox>
 </VBox>

@@ -43,7 +43,12 @@ public class PKCS11TokenDriver extends TokenDriver {
             return Optional.empty();
 
         try {
-            return Optional.of(Pkcs11TokenSlots.listSlotsWithToken(getPath().toString()));
+            var pkcs11Path = getPath().toString();
+            // eID klient reads cards only when initialized, afterwards it reports them even when removed
+            if (getShortname().equals(TokenDriverShortnames.EID) && Pkcs11TokenSlots.isModuleInitialized(pkcs11Path))
+                Pkcs11TokenSlots.reinitializeModule(pkcs11Path);
+
+            return Optional.of(Pkcs11TokenSlots.listSlotsWithToken(pkcs11Path));
         } catch (IOException e) {
             // the library itself can't be loaded, e.g. eID klient on Windows without Visual C++ runtime - unlike no card,
             // using the driver tells the user why
