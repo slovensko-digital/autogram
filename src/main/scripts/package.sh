@@ -107,6 +107,9 @@ if [[ "${platform}" == "win" ]]; then
         )
     fi
 
+    # Packages built from the application image, CI builds each of them in its own job
+    packageTypes=" ${WINDOWS_PACKAGE_TYPES:-msi msix} "
+
     # Build the application image first so that its executables can be signed
     # before they are packed into the MSI
     appImage="${output}/${properties_name}"
@@ -120,25 +123,70 @@ if [[ "${platform}" == "win" ]]; then
     # metadata to be packaged as a plain executable without shortcuts
     sed -i -e 's|<add-launcher name="autogram-cli"[^>]*>.*</add-launcher>||' "${appImage}/app/.jpackage.xml"
 
-    if [[ -z "${AZURE_KEY_VAULT_URI}" ]] || ! command -v AzureSignTool > /dev/null; then
-        echo "Warning: AZURE_KEY_VAULT_URI or AzureSignTool not available, skipping code signing of executables"
-    else
-        # Already signed files (e.g. from the JDK vendor) keep their original signature
-        find "${appImage}" -type f \( -iname "*.exe" -o -iname "*.dll" \) > "${output}/files-to-sign.txt"
+    if [[ "${packageTypes}" == *" msi "* ]]; then
+        if [[ -z "${AZURE_KEY_VAULT_URI}" ]] || ! command -v AzureSignTool > /dev/null; then
+            echo "Warning: AZURE_KEY_VAULT_URI or AzureSignTool not available, skipping code signing of executables"
+        else
+            # Already signed files (e.g. from the JDK vendor) keep their original signature
+            find "${appImage}" -type f \( -iname "*.exe" -o -iname "*.dll" \) > "${output}/files-to-sign.txt"
 
-        # jpackage creates the launchers read-only
-        chmod u+w "${appImage}"/*.exe
+            # jpackage creates the launchers read-only
+            chmod u+w "${appImage}"/*.exe
 
-        AzureSignTool sign --description "${properties_name}" \
-            -kvu "${AZURE_KEY_VAULT_URI}" -kvi "${AZURE_CLIENT_ID}" -kvt "${AZURE_TENANT_ID}" \
-            -kvs "${AZURE_CLIENT_SECRET}" -kvc "${AZURE_CERT_NAME}" \
-            -tr http://timestamp.digicert.com --skip-signed -v \
-            --input-file-list "${output}/files-to-sign.txt"
+            AzureSignTool sign --description "${properties_name}" \
+                -kvu "${AZURE_KEY_VAULT_URI}" -kvi "${AZURE_CLIENT_ID}" -kvt "${AZURE_TENANT_ID}" \
+                -kvs "${AZURE_CLIENT_SECRET}" -kvc "${AZURE_CERT_NAME}" \
+                -tr http://timestamp.digicert.com --skip-signed -v \
+                --input-file-list "${output}/files-to-sign.txt"
+            checkExitCode $?
+        fi
+
+        $jpackage "${arguments[@]}" "${installerArguments[@]}" "--app-image" "${appImage}"
         checkExitCode $?
     fi
 
-    $jpackage "${arguments[@]}" "${installerArguments[@]}" "--app-image" "${appImage}"
-    checkExitCode $?
+    # MSIX package for Microsoft Store. Neither the package nor its executables are signed,
+    # the Store signs the package and all files in it share its signature.
+    if [[ "${packageTypes}" == *" msix "* ]]; then
+        makeappx=$(ls "/c/Program Files (x86)/Windows Kits/10/bin/"10.*/x64/makeappx.exe 2> /dev/null | sort -V | tail -n 1)
+        windowsSdkBin=${WINDOWS_SDK_BIN:-${makeappx%/makeappx.exe}}
+        if [[ ! -x "${windowsSdkBin}/makeappx.exe" ]]; then
+            echo "Warning: Windows SDK not found, skipping MSIX package (WINDOWS_SDK_BIN can point to its bin/<version>/x64 directory)"
+        else
+            # The Store requires four version parts and reserves the last one
+            IFS=. read -r major minor build _ <<< "${properties_version:-$version}"
+            msixVersion="${major}.${minor:-0}.${build:-0}.0"
+            msixLayout="${output}/msix"
+            msixResources="${output}/msix-resources"
+            rm -rf "${msixLayout}" "${msixResources}"
+
+            cp -r "${appImage}" "${msixLayout}"
+            cp -r ./msix/Assets "${msixLayout}/Assets"
+            sed -e "s|IDENTITY_NAME|${properties_win_msix_identityName:-$properties_name}|g" \
+                -e "s|IDENTITY_PUBLISHER|${properties_win_msix_publisher:-CN=$properties_name}|g" \
+                -e "s|IDENTITY_VERSION|${msixVersion}|g" \
+                -e "s|PUBLISHER_DISPLAY_NAME|${properties_win_msix_publisherDisplayName:-$properties_vendor}|g" \
+                -e "s|APP_NAME|${properties_name}|g" \
+                -e "s|APP_DESCRIPTION|${properties_description}|g" \
+                -e "s|PROTOCOL_NAME|${properties_protocol}|g" \
+                ./msix/AppxManifest.xml > "${msixLayout}/AppxManifest.xml"
+
+            # Resource index of the logos, so that Windows picks the size for the display scale and
+            # the taskbar icon without a plate. Only the logos are indexed, not the whole application.
+            mkdir -p "${msixResources}"
+            cp -r ./msix/Assets "${msixResources}/Assets"
+            # Windows tools take options starting with a slash, which Git Bash would convert to paths
+            export MSYS_NO_PATHCONV=1
+            "${windowsSdkBin}/makepri.exe" new /pr "$(cygpath -w "${msixResources}")" /cf "$(cygpath -w ./msix/priconfig.xml)" \
+                /mn "$(cygpath -w "${msixLayout}/AppxManifest.xml")" /of "$(cygpath -w "${msixLayout}/resources.pri")" /o
+            checkExitCode $?
+
+            "${windowsSdkBin}/makeappx.exe" pack /d "$(cygpath -w "${msixLayout}")" \
+                /p "$(cygpath -w "${output}/${properties_name}-${msixVersion}.msix")" /o /h SHA256
+            checkExitCode $?
+            unset MSYS_NO_PATHCONV
+        fi
+    fi
 fi
 
 if [[ "$platform" == "linux" ]]; then

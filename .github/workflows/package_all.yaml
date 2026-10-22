@@ -63,3 +63,11 @@ jobs:
       environment: packaging
       version: ${{ needs.extract-version.outputs.version }}
     secrets: inherit
+
+  windows-store:
+    needs: extract-version
+    uses: ./.github/workflows/package_windows_store.yaml
+    with:
+      environment: packaging
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit

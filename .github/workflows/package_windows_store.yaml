@@ -1,0 +1,77 @@
+name: Windows Store Packaging
+
+# MSIX package for Microsoft Store. It needs no code signing certificate, the Store signs it.
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        options:
+          - "dev-build"
+      version:
+        required: true
+        type: choice
+        options:
+          - "1.0.0"
+
+jobs:
+  package:
+    environment: ${{ inputs.environment }}
+    runs-on: windows-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      VERSION: ${{ inputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update version in pom
+        run: ./mvnw versions:set -DnewVersion=${VERSION}
+        shell: bash
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "25.0.4+9"
+          distribution: "liberica"
+          java-package: "jdk+fx"
+
+      - name: Cache local Maven repository and JDK cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            target/jdkCache
+          key: windows-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            windows-maven-
+
+      # makeappx and makepri come from the Windows SDK installed on the runner
+      - name: Package with Maven
+        run: ./mvnw -B -C -V package
+        env:
+          WINDOWS_PACKAGE_TYPES: msix
+
+      - name: Rename artifacts
+        shell: bash
+        run: |
+          mv target/Autogram-*.msix target/autogram-${VERSION}-windows-store.msix
+
+      # Not part of the release, an unsigned package can't be installed outside the Store
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: autogram-${{ inputs.version }}-windows-store.msix
+          path: target/autogram-${{ inputs.version }}-windows-store.msix
+          if-no-files-found: error
