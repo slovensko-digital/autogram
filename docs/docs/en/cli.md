@@ -4,7 +4,7 @@ description: "How to sign with Autogram from the command line and in scripts, th
 
 # Command line (CLI)
 
-Autogram can sign without its graphical interface, which is useful for signing many files at once or in scripts. Use `autogram-cli` on Windows and `autogram` on macOS and Linux.
+Autogram can sign without its graphical interface, which is useful for signing many files at once or in scripts. Use `autogram-cli` on Windows and `autogram` on macOS and Linux. In the Microsoft Store version, `autogram-cli` works in any terminal. When installed from an `.msi` file, you find it in the `C:\Program Files\Autogram` folder.
 
 ```sh
 autogram --cli document.pdf

@@ -88,7 +88,8 @@ Add-AppxPackage -Path autogram-1.0.0-windows-store.msix
 - podpis z webu cez `autogram://` a cez rozšírenie prehliadača,
 - *Otvoriť pomocou* pre `.pdf` a `.asice`,
 - `autogram-cli` v termináli,
-- ak je nainštalovaná aj MSI verzia, Autogram ponúkne jej odinštalovanie,
+- ak je nainštalovaná aj MSI verzia, Autogram ponúkne jej odinštalovanie; ak MSI verzia práve beží, Autogram ju pri
+  spustení ukončí, a pripnutie MSI verzie na paneli úloh a v ponuke Štart sa pri inštalácii presunie na novú,
 - dialóg o novej verzii sa nezobrazuje, aktualizácie zabezpečuje Store.
 
 ## Logy a pády

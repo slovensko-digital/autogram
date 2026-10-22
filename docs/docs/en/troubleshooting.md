@@ -80,6 +80,20 @@ By default, Autogram signs only Slovak government XML forms. You can sign other 
 
 If Autogram reports an error while downloading trusted lists, it has no internet access or the server with the trusted lists is unavailable. Check your connection and open the document again. See [Verifying signatures](verification.md#trusted-lists).
 
+## Installation and updates
+
+### Autogram appears twice in the Start menu
+
+Besides the Microsoft Store version, your computer also has an older version from an `.msi` file. Start Autogram and in the **Older version of Autogram** window click **Uninstall older version**. See [Moving to the Microsoft Store version](installation.md#moving-to-microsoft-store).
+
+### The older version could not be uninstalled
+
+Uninstalling the older version needs administrator rights. If you did not allow the changes in the Windows window, click **Uninstall older version** again and allow them. If you are not an administrator of the computer, ask your administrator to uninstall the older version in Windows Settings under **Apps**.
+
+### Microsoft Store is not available
+
+In companies, the administrator sometimes disables Microsoft Store. Ask them to install Autogram, or use the `.msi` installer from the [download page](https://sluzby.slovensko.digital/autogram/#download).
+
 ## It still does not work {#it-still-does-not-work}
 
 Write to us at [podpora@slovensko.digital](mailto:podpora@slovensko.digital). It helps if you attach a screenshot of the error and the text shown after clicking **Show error details**.

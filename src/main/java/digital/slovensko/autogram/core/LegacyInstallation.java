@@ -6,17 +6,21 @@ import java.io.IOException;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
+import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import digital.slovensko.autogram.util.Logging;
 import digital.slovensko.autogram.util.MsixPackage;
 
-public record LegacyInstallation(String productCode, String version) {
+public record LegacyInstallation(String productCode, String version, String installLocation) {
     private static final List<String> UPGRADE_CODES = Stream.concat(
                     Stream.of(Configuration.getBuildProperty("win.upgradeUUID")),
                     Arrays.stream(Configuration.getBuildProperty("win.previousUpgradeUUIDs").split(",")))
@@ -28,7 +32,8 @@ public record LegacyInstallation(String productCode, String version) {
     private static final int ERROR_UNKNOWN_PRODUCT = 1605;
     private static final int ERROR_SUCCESS_REBOOT_REQUIRED = 3010;
     private static final int PRODUCT_CODE_LENGTH = 39;
-    private static final int VERSION_LENGTH = 64;
+    private static final int INFO_LENGTH = 1024;
+    private static final int STOP_TIMEOUT_SECONDS = 5;
 
     public static List<LegacyInstallation> findWhenRunningFromMsix() {
         if (!MsixPackage.isCurrent())
@@ -54,7 +59,6 @@ public record LegacyInstallation(String productCode, String version) {
                     FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.ADDRESS,
                             ValueLayout.ADDRESS, ValueLayout.ADDRESS));
 
-            var versionAttribute = arena.allocateFrom("VersionString", UTF_16LE);
             for (var upgradeCode : UPGRADE_CODES) {
                 var upgradeCodeString = arena.allocateFrom(upgradeCode, UTF_16LE);
                 for (int i = 0; ; i++) {
@@ -62,14 +66,9 @@ public record LegacyInstallation(String productCode, String version) {
                     if ((int) enumRelatedProducts.invokeExact(upgradeCodeString, 0, i, productCode) != ERROR_SUCCESS)
                         break;
 
-                    var version = arena.allocate(ValueLayout.JAVA_CHAR, VERSION_LENGTH);
-                    var versionLength = arena.allocate(ValueLayout.JAVA_INT);
-                    versionLength.set(ValueLayout.JAVA_INT, 0, VERSION_LENGTH);
-                    var versionFound = (int) getProductInfo.invokeExact(productCode, versionAttribute, version,
-                            versionLength) == ERROR_SUCCESS;
-
                     installations.add(new LegacyInstallation(productCode.getString(0, UTF_16LE),
-                            versionFound ? version.getString(0, UTF_16LE) : ""));
+                            getProductInfo(getProductInfo, arena, productCode, "VersionString"),
+                            getProductInfo(getProductInfo, arena, productCode, "InstallLocation")));
                 }
             }
         }
@@ -78,7 +77,42 @@ public record LegacyInstallation(String productCode, String version) {
         return installations;
     }
 
+    private static String getProductInfo(MethodHandle getProductInfo, Arena arena, MemorySegment productCode,
+            String attribute) throws Throwable {
+        var value = arena.allocate(ValueLayout.JAVA_CHAR, INFO_LENGTH);
+        var valueLength = arena.allocate(ValueLayout.JAVA_INT);
+        valueLength.set(ValueLayout.JAVA_INT, 0, INFO_LENGTH);
+        if ((int) getProductInfo.invokeExact(productCode, arena.allocateFrom(attribute, UTF_16LE), value, valueLength) != ERROR_SUCCESS)
+            return "";
+
+        return value.getString(0, UTF_16LE);
+    }
+
+    public static void stopRunningAppsWhenRunningFromMsix() {
+        findWhenRunningFromMsix().forEach(LegacyInstallation::stopRunningApps);
+    }
+
+    // The older version would otherwise take over the launch of this one, or occupy the port of the server
+    void stopRunningApps() {
+        ProcessHandle.allProcesses()
+                .filter(process -> process.info().command().filter(this::contains).isPresent())
+                .forEach(process -> {
+                    Logging.log("Stopping " + process.info().command().orElse("") + " of " + this);
+                    process.destroy();
+                    try {
+                        process.onExit().get(STOP_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                    } catch (Exception e) {
+                        Logging.log("Unable to stop process " + process.pid() + ": " + e);
+                    }
+                });
+    }
+
+    boolean contains(String path) {
+        return !installLocation.isBlank() && Path.of(path).startsWith(Path.of(installLocation));
+    }
+
     public int uninstall() throws IOException, InterruptedException {
+        stopRunningApps();
         // Without MSIX_MIGRATION the MSI package would terminate this app as well
         var process = new ProcessBuilder("msiexec.exe", "/x", productCode, "/passive", "/norestart", "MSIX_MIGRATION=1")
                 .redirectOutput(ProcessBuilder.Redirect.DISCARD)
