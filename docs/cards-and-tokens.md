@@ -39,7 +39,9 @@ Pojmy:
 5. `connectToToken` vytvorí spojenie a načíta kľúče (prihlásenie, PIN). Ak ovládač zlyhá spôsobom, z ktorého sa dá
    zotaviť, pripojí sa raz znova (`TokenDriver.recoverToken`, zatiaľ len eID).
 6. Používateľ vyberie certifikát, vznikne `SigningKey`. GUI ho drží ako aktívny kľúč, kým ho po 5 minútach nečinnosti
-   nezahodí časovač, používateľ nezvolí iný certifikát alebo nenastane chyba, po ktorej sa spojenie nedá použiť.
+   nezahodí časovač, používateľ nezvolí iný certifikát alebo nenastane chyba, po ktorej sa spojenie nedá použiť. Keď
+   výber certifikátu zatvorí bez výberu (alebo karta nemá použiteľný certifikát), spojenie sa zatvorí
+   (`onCancel` v `UI.pickKeyAndThen`) – inak by karta ostala prihlásená až do ukončenia aplikácie.
 
 ### `TokenOptions`
 
@@ -96,6 +98,14 @@ Automatické použitie (`getAutomaticOption`):
   `C_GetSlotInfo`, kým `C_Login` čaká na BOK. Stalo sa to so SunPKCS11 pollerom starého spojenia (pozri nižšie, je
   vypnutý). Do eID knižnice preto nevolať súbežne počas prihlásenia. Neoverené: či padne pri akomkoľvek súbežnom
   volaní, napr. ak web vypýta certifikáty, kým používateľ zadáva BOK v inom okne.
+- **Karty číta len pri inicializácii** (`C_Initialize`). Potom hlási stále tie isté sloty a tokeny: vytiahnutú kartu
+  ďalej, novo vloženú nenájde (overené na Windows samostatným procesom bez Autogramu aj bez prihlásenia, čítačka
+  presmerovaná cez vzdialenú plochu; s lokálnou čítačkou neoverené). `PKCS11TokenDriver.getSlotsWithToken` preto modul
+  eID pred každým hľadaním inicializuje znova, ak už bol inicializovaný (0,5–1 s). Karta potom má iné ID slotov. Karty sa
+  hľadajú len bez aktívneho kľúča, takže to rozbehnutý podpis nepokazí; čítanie certifikátov pre web odhlási aktívny kľúč
+  aj tak (pozri PKCS#11 nižšie).
+- Na Windows `pkcs11_x64.dll` závisí od `botan_x64.dll` vo svojom priečinku, ktorú Windows nájde len cez PATH (eID klient
+  si tam pridá svoj priečinok). Vo verzii z Microsoft Store to nestačí, pozri *Windows: načítanie knižnice* nižšie.
 - `CKR_FUNCTION_FAILED` sa mapuje na „Nesprávny PIN“ (`PINIncorrectException`) – pri eID to nemusí byť pravda.
 - Hromadné podpisovanie (`bulkEnabled`): Autogram si podpisový PIN vypýta sám, zapamätá si ho a pred každým podpisom sa
   prihlási `CKU_CONTEXT_SPECIFIC`. Nastavenie sa uplatní hneď po kliknutí (aj bez uloženia) a už otvorené spojenie si ho
@@ -133,8 +143,8 @@ Automatické použitie (`getAutomaticOption`):
 ### Ostatné
 
 - **Gemalto IDPrime 940** – kvalifikovaný certifikát býva v inom slote karty (pomocný text pri chybe).
-- **Windows, eID klient bez Visual C++ 2015 runtime** – knižnica sa nedá načítať (`IOException` pri
-  `PKCS11.getInstance`). `PKCS11TokenDriver.getSlotsWithToken` vtedy hodí výnimku, ovládač je v `otherDrivers` a po jeho
+- **Windows, eID klient bez Visual C++ 2015 runtime** – knižnica sa nedá načítať (`Pkcs11LibraryException` z
+  `Pkcs11Library.load`). `PKCS11TokenDriver.getSlotsWithToken` vtedy hodí výnimku, ovládač je v `otherDrivers` a po jeho
   výbere sa zobrazí dialóg `PkcsEidWindowsDllException`. Ostatné chyby pri čítaní slotov znamenajú „žiadna karta“ (napr.
   Windows bez čítačky, keď nebeží služba Smart Card).
 - **Súbor s certifikátom** – heslo sa pýta pred vytvorením spojenia, ponúka sa vždy.
@@ -161,6 +171,23 @@ Automatické použitie (`getAutomaticOption`):
   `CKR_USER_NOT_LOGGED_IN` (overené s I.CA, aj na `main`). Stáva sa to pri `GET /certificates`, preto ho počas batchu
   Autogram odmieta (`503 BATCH_IN_PROGRESS`); mimo batchu kľúč v cache zatiaľ takto zlyhá.
 - Prázdny PIN z callbacku znamená `C_Login(NULL)`, na čo niektoré ovládače reagujú vlastným oknom (MONET).
+
+### Windows: načítanie knižnice
+
+- SunPKCS11 (`j2pkcs11.dll`) načíta knižnicu cez `LoadLibrary` s plnou cestou. Jej závislosti sa hľadajú v priečinku
+  aplikácie, v systémových priečinkoch a v PATH, nie v priečinku knižnice. Aplikácie z Microsoft Store (MSIX) PATH pri
+  hľadaní DLL nepoužívajú, hoci ho v prostredí majú – eID klient sa tam bez pomoci nenačíta nikdy (chyba 126).
+- `Pkcs11Library.load` preto knižnicu pred SunPKCS11 načíta cez `LoadLibraryExW(LOAD_WITH_ALTERED_SEARCH_PATH)`, ktorý
+  hľadá závislosti v priečinku knižnice, a SunPKCS11 potom dostane už načítaný modul. Robí sa to raz za proces a ovládač,
+  len na Windows (aj v MSI verzii). Volá sa pred `PKCS11.getInstance` v `Pkcs11TokenSlots` a pred vytvorením providera v
+  `NativePkcs11SignatureToken.getProvider`.
+- Týka sa to ovládačov, ktoré majú závislosti mimo System32 (eID klient, vlastný PKCS#11). SecureStore a ProID+Q ich majú
+  v System32, ktorý sa prehľadáva aj v MSIX.
+- **Chyba v JDK 25** (`p11_md.c`, neopravená ani v `master`): keď sa knižnicu nepodarí načítať, `PKCS11.connect` uvoľní
+  neinicializovaný ukazovateľ `getFunctionListStr`. Býva v ňom zvyšok z predchádzajúceho volania – napr. reťazec
+  uvoľnený pri načítaní SecureStore tesne pred eID – takže sa uvoľní druhýkrát a proces padne na poškodenej halde
+  (`0xc0000374` v `ntdll.dll`, bez `hs_err` logu) namiesto výnimky. Zlyhanie preto hlási už `Pkcs11Library`
+  (`Pkcs11LibraryException`) a SunPKCS11 sa vôbec nezavolá.
 - Prístup k `sun.security.pkcs11.wrapper` vyžaduje `--add-exports` a `--add-opens` (sú v `.vscode/launch.json` a
   `src/main/scripts/package.sh`). Testy ich nemajú, preto v testoch reflexia na wrapper zlyhá skôr, než sa knižnica načíta.
 
@@ -170,6 +197,8 @@ Automatické použitie (`getAutomaticOption`):
 - `Token has been removed` → `TokenRemovedException` (od 11/2023 to pre `ProviderException` nefungovalo).
 - Hlášky o slot indexe v `ProviderException` → `InitializationFailedException` / `SlotIndexOutOfRangeException`.
 - `TokenNotRecognizedException` nesie pôvodnú chybu, je vidno v detaile chyby.
+- `Pkcs11LibraryException` alebo `IOException` s „The specified module could not be found“ (hláška Windows) →
+  `PkcsEidWindowsDllException`.
 - GUI po chybe podpisu zahodí kľúč pri `TokenRemovedException` a `TokenNotRecognizedException`; po chybe pri načítaní
   kľúčov vždy.
 - Server pri vytiahnutej karte v dávke vráti `SIGNING_FAILED` (predtým `UNRECOGNIZED_DSS_ERROR`), HTTP 502.
