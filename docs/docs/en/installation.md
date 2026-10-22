@@ -1,5 +1,5 @@
 ---
-description: "How to install Autogram on Windows, macOS and Linux together with the card software and the browser extension, and how to update it."
+description: "How to install Autogram on Windows from Microsoft Store, on macOS and Linux together with the card software and the browser extension, how to update it and how to move from the .msi installer to Microsoft Store."
 ---
 
 # Installation
@@ -10,9 +10,16 @@ Autogram is free for Windows, macOS and Linux.
 
 ## Windows
 
-1. Download the `.msi` file and run it.
-2. Follow the installation wizard.
-3. You will then find Autogram in the **Start** menu.
+On Windows, install Autogram from Microsoft Store. Microsoft Store then installs new versions automatically.
+
+::: button "Autogram in Microsoft Store" url:"https://apps.microsoft.com/detail/9N4XBDWNF438"
+
+1. Open Autogram in Microsoft Store and click **Get**.
+2. When it is installed, click **Open**. You will then find Autogram in the **Start** menu.
+
+If Microsoft Store is not available on your computer, for example because your company's administrator disabled it, the [download page](https://sluzby.slovensko.digital/autogram/#download) also has an `.msi` installer. Download it, run it and follow the installation wizard. Autogram installed this way is not updated automatically.
+
+If you already have Autogram installed from an `.msi` file, see [Moving to the Microsoft Store version](#moving-to-microsoft-store).
 
 ## macOS
 
@@ -48,9 +55,45 @@ Websites can also start Autogram by themselves. If only the main window appears 
 
 ## Updates
 
-When it starts, Autogram checks whether a new version is available. If so, it shows the **Update available** window:
+Autogram from Microsoft Store is updated by Microsoft Store automatically, you do not have to do anything.
+
+On macOS, on Linux and when installed from an `.msi` file, Autogram checks whether a new version is available when it starts. If so, it shows the **Update available** window:
 
 - **Download new version** opens the download page in your browser,
 - **Later** closes the window and you can keep using Autogram.
 
+<!-- SCREENSHOT en/update-available.png "Update available" -->
+
 Install the new version the same way as the first one. Your settings are kept.
+
+On Windows, from version 2.8 the window offers **Install from Microsoft Store** instead of the download. The **Find out more** link opens the download page. The next steps are in [Moving to the Microsoft Store version](#moving-to-microsoft-store).
+
+<!-- SCREENSHOT en/update-store.png "Update available with installation from Microsoft Store" -->
+
+## Moving to the Microsoft Store version {#moving-to-microsoft-store}
+
+Up to version 2.7, Autogram for Windows was installed from an `.msi` file and you had to download and install every new version yourself. From version 2.8, Autogram is in Microsoft Store, which updates it automatically. If you have Autogram from an `.msi` file, we recommend moving to the Microsoft Store version. It takes a few minutes.
+
+1. When it starts, the older version of Autogram shows the **Update available** window. Click **Download new version** and continue to Microsoft Store from the page that opens in your browser. You can also open Autogram in Microsoft Store directly with [this link](https://apps.microsoft.com/detail/9N4XBDWNF438).
+2. In Microsoft Store, click **Get** and, when it is installed, **Open**. You do not have to close the older version, the new one closes it when it starts.
+3. The new version finds the older one on your computer and shows the **Older version of Autogram** window. Click **Uninstall older version**.
+
+   <!-- SCREENSHOT en/legacy-installation.png "Older version of Autogram" -->
+
+4. Windows asks whether you allow Windows Installer to make changes to your device. Click **Yes**. If you are not an administrator of the computer, Windows asks for an administrator's password.
+5. When the older version is uninstalled, the window closes. From now on you use the Microsoft Store version.
+
+### What changes {#what-changes}
+
+- **Your settings are kept.** The new version takes over the settings of the older one, such as the language, the signature type or the timestamp server.
+- **Signing on websites keeps working.** Websites and the browser extension start the new version, there is nothing to set up.
+- **Updates are automatic.** The **Update available** window no longer appears, Microsoft Store installs new versions.
+- **Pins move over.** If you had Autogram pinned to the taskbar or to the **Start** menu, the new version is there after the installation.
+- **The desktop icon disappears.** The older version removes it when it is uninstalled and the Microsoft Store version does not create one. If you want it, drag Autogram from the **Start** menu to the desktop.
+- **The `autogram-cli` command** works in any terminal, see [Command line (CLI)](cli.md).
+
+### If you do not uninstall the older version right away
+
+- After you click **Later**, the **Older version of Autogram** window appears every time Autogram starts, until you uninstall the older version. Until then, you see Autogram twice in the **Start** menu.
+- You can also uninstall the older version yourself: in Windows Settings under **Apps**, select Autogram with version 2.7 or lower and choose **Uninstall**.
+- If you do not open the new version after installing it, websites keep using the older one until you close it or restart the computer. After that they start the new version, which offers to uninstall the older one.

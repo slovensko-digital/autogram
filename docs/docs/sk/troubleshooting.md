@@ -80,6 +80,20 @@ Autogram predvolene podpisuje iba XML formuláre slovenskej verejnej správy. In
 
 Ak Autogram hlási chybu pri sťahovaní dôveryhodných zoznamov, nemá prístup na internet alebo je server s dôveryhodnými zoznamami nedostupný. Skontrolujte pripojenie a dokument otvorte znova. Viac je na stránke [Overenie podpisov](verification.md#doveryhodne-zoznamy).
 
+## Inštalácia a aktualizácie
+
+### V ponuke Štart je Autogram dvakrát
+
+V počítači máte okrem verzie z Microsoft Store aj staršiu verziu zo súboru `.msi`. Spustite Autogram a v okne **Staršia verzia Autogramu** kliknite na **Odinštalovať staršiu verziu**. Pozrite si [Prechod na verziu z Microsoft Store](installation.md#prechod-na-microsoft-store).
+
+### Staršiu verziu sa nepodarilo odinštalovať
+
+Na odinštalovanie staršej verzie sú potrebné práva správcu počítača. Ak ste v okne Windows nepovolili zmeny, kliknite na **Odinštalovať staršiu verziu** znova a zmeny povoľte. Ak nie ste správcom počítača, požiadajte správcu, aby staršiu verziu odinštaloval v nastaveniach Windows v časti **Aplikácie**.
+
+### Microsoft Store nie je dostupný
+
+Vo firmách správca niekedy Microsoft Store zakáže. Požiadajte ho o inštaláciu Autogramu alebo použite inštalátor `.msi` zo [stránky na stiahnutie](https://sluzby.slovensko.digital/autogram/#download).
+
 ## Stále to nefunguje {#stale-to-nefunguje}
 
 Napíšte nám na [podpora@slovensko.digital](mailto:podpora@slovensko.digital). Pomôže, ak priložíte snímku obrazovky s chybou a text, ktorý sa zobrazí po kliknutí na **Zobraziť detail chyby**.
