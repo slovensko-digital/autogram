@@ -239,7 +239,7 @@ public class CliUI implements UI {
     @Override
     public void onLegacyInstallationFound(List<LegacyInstallation> installations) {
         System.out.println(
-                "Na tomto počítači je nainštalovaná aj staršia verzia Autogramu, ktorá sa už nebude aktualizovať. Odporúčame ju odinštalovať v nastaveniach Windows v časti Aplikácie.");
+                "An older version of Autogram is also installed on this computer and will no longer be updated. We recommend uninstalling it in Windows Settings under Apps.");
     }
 
     @Override

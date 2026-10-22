@@ -9,15 +9,15 @@ class LegacyInstallationTests {
     @Test
     void successAndAlreadyRemovedProductCountAsUninstalled() {
         assertTrue(LegacyInstallation.isUninstalled(0));
-        assertTrue(LegacyInstallation.isUninstalled(3010)); // reboot required
-        assertTrue(LegacyInstallation.isUninstalled(1605)); // product no longer installed
+        assertTrue(LegacyInstallation.isUninstalled(3010));
+        assertTrue(LegacyInstallation.isUninstalled(1605));
     }
 
     @Test
     void canceledOrFailedUninstallIsReported() {
-        assertFalse(LegacyInstallation.isUninstalled(1602)); // canceled by user
-        assertFalse(LegacyInstallation.isUninstalled(1603)); // fatal error
-        assertFalse(LegacyInstallation.isUninstalled(1618)); // another installation in progress
+        assertFalse(LegacyInstallation.isUninstalled(1602));
+        assertFalse(LegacyInstallation.isUninstalled(1603));
+        assertFalse(LegacyInstallation.isUninstalled(1618));
     }
 
     @Test

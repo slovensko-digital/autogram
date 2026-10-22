@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Manifest of the MSIX package for Microsoft Store, the placeholders are replaced in package.sh.
-  The application (Autogram.exe) handles the same protocol and file types as the MSI package.
--->
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
          xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
          xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
@@ -56,7 +52,6 @@
       </Extensions>
     </Application>
 
-    <!-- Not in the Start menu, only available as autogram-cli in a terminal -->
     <Application Id="AutogramCli" Executable="autogram-cli.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements DisplayName="APP_NAME CLI" Description="APP_NAME command line interface" AppListEntry="none"
                           BackgroundColor="transparent"

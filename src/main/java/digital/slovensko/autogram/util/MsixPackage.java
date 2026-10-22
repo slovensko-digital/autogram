@@ -7,9 +7,6 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 
-/**
- * Tells whether the app runs from an MSIX package, i.e. it was installed from Microsoft Store, which also updates it.
- */
 public final class MsixPackage {
     private static final int ERROR_INSUFFICIENT_BUFFER = 122;
     private static Boolean current;
@@ -24,7 +21,6 @@ public final class MsixPackage {
         return current;
     }
 
-    // GetCurrentPackageFullName asks for a bigger buffer only when the process has a package identity
     private static boolean hasPackageIdentity() {
         try (var arena = Arena.ofConfined()) {
             var linker = Linker.nativeLinker();

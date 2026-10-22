@@ -102,19 +102,14 @@
     </Feature>
 
     <!--
-      A running application locks its files. Removing the previous version then only schedules
-      their deletion for the next reboot, the new version skips the identical files already
-      present, and after the reboot they are gone. Terminate the application before
-      RemoveExistingProducts. It can't be closed gracefully: WM_CLOSE sent to all its windows
-      (util:CloseApplication) also destroys the hidden JavaFX toolkit window and it hangs.
-      Not when the version from Microsoft Store (MSIX) uninstalls this one, taskkill would end it as well.
+      Files locked by a running application would be deleted only after a reboot, after the new version was installed.
+      util:CloseApplication can't be used, it destroys the hidden JavaFX toolkit window and the application hangs.
     -->
     <Property Id="MSIX_MIGRATION" Secure="yes" />
     <SetProperty Id="WixQuietExec64CmdLine" Before="JpTerminateApp" Sequence="execute"
                  Value="&quot;[System64Folder]taskkill.exe&quot; /F /T /IM &quot;$(var.JpAppName).exe&quot; /IM &quot;autogram-cli.exe&quot;" />
     <CustomAction Id="JpTerminateApp" BinaryKey="WixCA" DllEntry="WixQuietExec64" Execute="immediate" Return="ignore" />
 
-    <!-- Silent installs (e.g. from Microsoft Store) must not restart the computer on their own, the caller decides -->
     <SetProperty Id="REBOOT" Value="ReallySuppress" Before="RemoveExistingProducts" Sequence="execute">UILevel &lt; 4</SetProperty>
 
     <CustomAction Id="JpSetARPINSTALLLOCATION" Property="ARPINSTALLLOCATION" Value="[INSTALLDIR]" />

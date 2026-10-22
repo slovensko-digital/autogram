@@ -1,7 +1,5 @@
 name: Windows Store Packaging
 
-# MSIX package for Microsoft Store. It needs no code signing certificate, the Store signs it.
-
 on:
   workflow_call:
     inputs:
@@ -57,7 +55,6 @@ jobs:
           restore-keys: |
             windows-maven-
 
-      # makeappx and makepri come from the Windows SDK installed on the runner
       - name: Package with Maven
         run: ./mvnw -B -C -V package
         env:
@@ -68,7 +65,6 @@ jobs:
         run: |
           mv target/Autogram-*.msix target/autogram-${VERSION}-windows-store.msix
 
-      # Not part of the release, an unsigned package can't be installed outside the Store
       - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:

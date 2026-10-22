@@ -44,8 +44,7 @@ public class AppStarter {
                 if (!SingleInstanceManager.start(cmd.getArgList()))
                     return;
                 Application.launch(GUIApp.class, args);
-                // Background work (e.g. trusted list download) must not keep the process running
-                // after the window is closed, it would still lock the application files
+                // Background threads would otherwise keep the application files locked during an update
                 System.exit(0);
             }
         } catch (ParseException e) {

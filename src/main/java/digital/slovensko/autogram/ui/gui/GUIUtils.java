@@ -99,10 +99,6 @@ public class GUIUtils {
         ((Stage) node.getScene().getWindow()).close();
     }
 
-    /**
-     * Windows shows no icon in the title bar of a stage without its own icons, it doesn't fall back to the icon of the
-     * executable. Sets the app icon on every shown stage, including dialogs and alerts.
-     */
     public static void setAppIconOnAllStages() {
         if (OperatingSystem.current() != OperatingSystem.WINDOWS)
             return;

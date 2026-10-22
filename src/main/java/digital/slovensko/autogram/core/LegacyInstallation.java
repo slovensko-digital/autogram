@@ -9,29 +9,27 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import digital.slovensko.autogram.util.Logging;
 import digital.slovensko.autogram.util.MsixPackage;
 
-/**
- * Autogram installed from an MSI package, found next to the app installed from Microsoft Store (MSIX). It is no longer
- * updated, but it still registers the same protocol, file types and local server port.
- */
 public record LegacyInstallation(String productCode, String version) {
-    // UpgradeCode of MSI packages since 1.99.11, and of 1.99.0 - 1.99.10, both derived by jpackage from vendor and name
-    private static final List<String> UPGRADE_CODES = List.of(
-            "{235F41FF-E95D-38F7-9E86-1CE640B31BFB}",
-            "{AD26DFA2-82D7-3FBA-A849-7484C48D9603}");
+    private static final List<String> UPGRADE_CODES = Stream.concat(
+                    Stream.of(Configuration.getBuildProperty("win.upgradeUUID")),
+                    Arrays.stream(Configuration.getBuildProperty("win.previousUpgradeUUIDs").split(",")))
+            .map(String::strip)
+            .filter(uuid -> !uuid.isEmpty())
+            .map(uuid -> "{" + uuid + "}")
+            .toList();
     private static final int ERROR_SUCCESS = 0;
     private static final int ERROR_UNKNOWN_PRODUCT = 1605;
     private static final int ERROR_SUCCESS_REBOOT_REQUIRED = 3010;
-    private static final int PRODUCT_CODE_LENGTH = 39; // GUID in braces with the terminating null
+    private static final int PRODUCT_CODE_LENGTH = 39;
     private static final int VERSION_LENGTH = 64;
 
-    /**
-     * Finds MSI installations of Autogram, only when the app itself runs from an MSIX package.
-     */
     public static List<LegacyInstallation> findWhenRunningFromMsix() {
         if (!MsixPackage.isCurrent())
             return List.of();
@@ -80,13 +78,8 @@ public record LegacyInstallation(String productCode, String version) {
         return installations;
     }
 
-    /**
-     * Uninstalls it showing only progress, Windows asks for administrator permission first.
-     *
-     * @return msiexec exit code, see {@link #isUninstalled(int)}
-     */
     public int uninstall() throws IOException, InterruptedException {
-        // MSIX_MIGRATION keeps newer MSI packages from terminating every Autogram.exe, this app included
+        // Without MSIX_MIGRATION the MSI package would terminate this app as well
         var process = new ProcessBuilder("msiexec.exe", "/x", productCode, "/passive", "/norestart", "MSIX_MIGRATION=1")
                 .redirectOutput(ProcessBuilder.Redirect.DISCARD)
                 .redirectError(ProcessBuilder.Redirect.DISCARD)

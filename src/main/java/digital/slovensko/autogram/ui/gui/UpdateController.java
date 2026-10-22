@@ -35,8 +35,6 @@ public class UpdateController extends BaseController implements SuppressedFocusC
     public void initialize() {
         highlight("Autogram").in(title);
 
-        // The version from Microsoft Store keeps itself up to date. The download page explains the change and
-        // still offers the installer for computers without the Store.
         if (OperatingSystem.current() == OperatingSystem.WINDOWS) {
             text.setText(i18n("update.newVersion.store.text"));
             moreInfo.setManaged(true);

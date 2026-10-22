@@ -107,7 +107,6 @@ if [[ "${platform}" == "win" ]]; then
         )
     fi
 
-    # Packages built from the application image, CI builds each of them in its own job
     packageTypes=" ${WINDOWS_PACKAGE_TYPES:-msi msix} "
 
     # Build the application image first so that its executables can be signed
@@ -145,15 +144,12 @@ if [[ "${platform}" == "win" ]]; then
         checkExitCode $?
     fi
 
-    # MSIX package for Microsoft Store. Neither the package nor its executables are signed,
-    # the Store signs the package and all files in it share its signature.
     if [[ "${packageTypes}" == *" msix "* ]]; then
         makeappx=$(ls "/c/Program Files (x86)/Windows Kits/10/bin/"10.*/x64/makeappx.exe 2> /dev/null | sort -V | tail -n 1)
         windowsSdkBin=${WINDOWS_SDK_BIN:-${makeappx%/makeappx.exe}}
         if [[ ! -x "${windowsSdkBin}/makeappx.exe" ]]; then
             echo "Warning: Windows SDK not found, skipping MSIX package (WINDOWS_SDK_BIN can point to its bin/<version>/x64 directory)"
         else
-            # The Store requires four version parts and reserves the last one
             IFS=. read -r major minor build _ <<< "${properties_version:-$version}"
             msixVersion="${major}.${minor:-0}.${build:-0}.0"
             msixLayout="${output}/msix"
@@ -171,8 +167,6 @@ if [[ "${platform}" == "win" ]]; then
                 -e "s|PROTOCOL_NAME|${properties_protocol}|g" \
                 ./msix/AppxManifest.xml > "${msixLayout}/AppxManifest.xml"
 
-            # Resource index of the logos, so that Windows picks the size for the display scale and
-            # the taskbar icon without a plate. Only the logos are indexed, not the whole application.
             mkdir -p "${msixResources}"
             cp -r ./msix/Assets "${msixResources}/Assets"
             # Windows tools take options starting with a slash, which Git Bash would convert to paths

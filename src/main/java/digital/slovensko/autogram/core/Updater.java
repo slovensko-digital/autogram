@@ -18,8 +18,8 @@ import com.google.gson.JsonObject;
 public class Updater {
     public static final String LATEST_RELEASE_URL = "https://sluzby.slovensko.digital/autogram/?utm_source=autogram&utm_medium=application&utm_campaign=autogramupdate#download";
     public static final String LATEST_RELEASE_API_URL = "https://api.github.com/repos/slovensko-digital/autogram/releases/latest";
-    // Installed from Microsoft Store, Autogram is updated automatically
-    public static final String MICROSOFT_STORE_URL = "ms-windows-store://pdp/?productid=9N4XBDWNF438";
+    public static final String MICROSOFT_STORE_URL = "ms-windows-store://pdp/?productid="
+            + Configuration.getBuildProperty("win.msix.storeProductId");
 
     public static boolean newVersionAvailable() {
         Version vCurrent = Main.getVersion();
@@ -27,7 +27,6 @@ public class Updater {
             return false;
         }
 
-        // Microsoft Store updates it, a downloaded MSI would be installed next to it
         if (MsixPackage.isCurrent()) {
             return false;
         }
