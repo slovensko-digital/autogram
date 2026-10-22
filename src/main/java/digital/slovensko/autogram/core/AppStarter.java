@@ -41,6 +41,7 @@ public class AppStarter {
             } else if (cmd.hasOption("c")) {
                 CliApp.start(cmd);
             } else {
+                LegacyInstallation.stopRunningAppsWhenRunningFromMsix();
                 if (!SingleInstanceManager.start(cmd.getArgList()))
                     return;
                 Application.launch(GUIApp.class, args);

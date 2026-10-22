@@ -154,6 +154,8 @@ if [[ "${platform}" == "win" ]]; then
             msixVersion="${major}.${minor:-0}.${build:-0}.0"
             msixLayout="${output}/msix"
             msixResources="${output}/msix-resources"
+            # Windows drops trailing dots from folder names, also from the Start menu folder created by the MSI
+            menuGroup=$(sed -e 's/[. ]*$//' <<< "${properties_win_menuGroup:-$properties_vendor}")
             rm -rf "${msixLayout}" "${msixResources}"
 
             cp -r "${appImage}" "${msixLayout}"
@@ -165,6 +167,7 @@ if [[ "${platform}" == "win" ]]; then
                 -e "s|APP_NAME|${properties_name}|g" \
                 -e "s|APP_DESCRIPTION|${properties_description}|g" \
                 -e "s|PROTOCOL_NAME|${properties_protocol}|g" \
+                -e "s|MENU_GROUP|${menuGroup}|g" \
                 ./msix/AppxManifest.xml > "${msixLayout}/AppxManifest.xml"
 
             mkdir -p "${msixResources}"
