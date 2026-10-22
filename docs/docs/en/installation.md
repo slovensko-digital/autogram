@@ -62,13 +62,13 @@ On macOS, on Linux and when installed from an `.msi` file, Autogram checks wheth
 - **Download new version** opens the download page in your browser,
 - **Later** closes the window and you can keep using Autogram.
 
-<!-- SCREENSHOT en/update-available.png "Update available" -->
+![Update available](/assets/images/screenshots/en/update-available.png)
 
 Install the new version the same way as the first one. Your settings are kept.
 
 On Windows, from version 2.8 the window offers **Install from Microsoft Store** instead of the download. The **Find out more** link opens the download page. The next steps are in [Moving to the Microsoft Store version](#moving-to-microsoft-store).
 
-<!-- SCREENSHOT en/update-store.png "Update available with installation from Microsoft Store" -->
+![Update available with installation from Microsoft Store](/assets/images/screenshots/en/update-store.png)
 
 ## Moving to the Microsoft Store version {#moving-to-microsoft-store}
 
@@ -78,7 +78,7 @@ Up to version 2.7, Autogram for Windows was installed from an `.msi` file and yo
 2. In Microsoft Store, click **Get** and, when it is installed, **Open**. You do not have to close the older version, the new one closes it when it starts.
 3. The new version finds the older one on your computer and shows the **Older version of Autogram** window. Click **Uninstall older version**.
 
-   <!-- SCREENSHOT en/legacy-installation.png "Older version of Autogram" -->
+   ![Older version of Autogram](/assets/images/screenshots/en/legacy-installation.png)
 
 4. Windows asks whether you allow Windows Installer to make changes to your device. Click **Yes**. If you are not an administrator of the computer, Windows asks for an administrator's password.
 5. When the older version is uninstalled, the window closes. From now on you use the Microsoft Store version.

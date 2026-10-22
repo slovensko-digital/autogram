@@ -62,13 +62,13 @@ Na macOS, na Linuxe a pri inštalácii zo súboru `.msi` Autogram pri spustení 
 - **Stiahnuť novú verziu** otvorí v prehliadači stránku na stiahnutie,
 - **Teraz nie** okno zavrie a Autogram môžete používať ďalej.
 
-<!-- SCREENSHOT sk/update-available.png "Dostupná aktualizácia" -->
+![Dostupná aktualizácia](/assets/images/screenshots/sk/update-available.png)
 
 Novú verziu nainštalujete rovnako ako prvú. Nastavenia ostanú zachované.
 
 Na Windows ponúkne okno od verzie 2.8 namiesto sťahovania tlačidlo **Inštalovať z Microsoft Store**. Odkaz **Zistiť viac informácií** otvorí stránku na stiahnutie. Ďalší postup je v časti [Prechod na verziu z Microsoft Store](#prechod-na-microsoft-store).
 
-<!-- SCREENSHOT sk/update-store.png "Dostupná aktualizácia s inštaláciou z Microsoft Store" -->
+![Dostupná aktualizácia s inštaláciou z Microsoft Store](/assets/images/screenshots/sk/update-store.png)
 
 ## Prechod na verziu z Microsoft Store {#prechod-na-microsoft-store}
 
@@ -78,7 +78,7 @@ Do verzie 2.7 sa Autogram pre Windows inštaloval zo súboru `.msi` a každú no
 2. V Microsoft Store kliknite na **Získať** a po inštalácii na **Otvoriť**. Staršiu verziu nemusíte zatvárať, nová ju pri spustení ukončí sama.
 3. Nová verzia zistí, že v počítači je aj staršia, a zobrazí okno **Staršia verzia Autogramu**. Kliknite na **Odinštalovať staršiu verziu**.
 
-   <!-- SCREENSHOT sk/legacy-installation.png "Staršia verzia Autogramu" -->
+   ![Staršia verzia Autogramu](/assets/images/screenshots/sk/legacy-installation.png)
 
 4. Windows sa opýta, či povolíte Inštalátoru systému Windows vykonať zmeny v zariadení. Kliknite na **Áno**. Ak nie ste správcom počítača, Windows si vypýta heslo správcu.
 5. Keď sa staršia verzia odinštaluje, okno sa zavrie. Odteraz používate verziu z Microsoft Store.
