@@ -90,7 +90,22 @@ Add-AppxPackage -Path autogram-1.0.0-windows-store.msix
 - `autogram-cli` v termináli,
 - ak je nainštalovaná aj MSI verzia, Autogram ponúkne jej odinštalovanie; ak MSI verzia práve beží, Autogram ju pri
   spustení ukončí, a pripnutie MSI verzie na paneli úloh a v ponuke Štart sa pri inštalácii presunie na novú,
-- dialóg o novej verzii sa nezobrazuje, aktualizácie zabezpečuje Store.
+- dialóg o novej verzii sa nezobrazuje, aktualizácie zabezpečuje Store,
+- druhé spustenie (napr. *Otvoriť pomocou*, keď už Autogram beží) sa odovzdá bežiacemu Autogramu.
+
+Testujte na počítači, ktorý sa čo najviac podobá bežnému používateľovi, ideálne vo Windows Sandbox:
+
+- **Bez JDK v PATH.** JavaFX hľadá svoje DLL najprv v PATH, takže s nainštalovaným JDK (napr. Liberica) sa načítajú
+  z neho a nie z balíka.
+- **Používateľ s menom dlhším ako 8 znakov.** Windows mu nastaví `TEMP` ako 8.3 skrátenú cestu
+  (`C:\Users\ADMINI~1\...`). V balíku sa cez ňu nedá pripojiť na AF_UNIX socket, na ktorom stoja NIO selektory
+  (server pre weby, `HttpClient`). Autogram preto v MSIX používa skutočnú cestu dočasného priečinka
+  (`MsixPackage.socketDirectory`), inak sa nespustí. Bez dlhého mena sa to dá napodobniť spustením s `TEMP` a `TMP`
+  nastavenými na 8.3 cestu existujúceho priečinka (`dir /x`).
+- **Bez stôp po MSI verzii.** Nové priečinky v AppData sa v balíku presmerujú do
+  `%LOCALAPPDATA%\Packages\<balík>\LocalCache`, kde sa na AF_UNIX socket tiež nedá pripojiť, preto má Autogram
+  v MSIX aj socket na odovzdanie spustenia v dočasnom priečinku. Na počítači, kde bežala MSI verzia,
+  `%LOCALAPPDATA%\Autogram` existuje a takéto chyby sa neprejavia.
 
 ## Logy a pády
 

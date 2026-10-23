@@ -1,11 +1,13 @@
 package digital.slovensko.autogram.util;
 
+import java.io.IOException;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
+import java.nio.file.Path;
 
 public final class MsixPackage {
     private static final int ERROR_INSUFFICIENT_BUFFER = 122;
@@ -19,6 +21,21 @@ public final class MsixPackage {
             current = OperatingSystem.current() == OperatingSystem.WINDOWS && hasPackageIdentity();
 
         return current;
+    }
+
+    // In a package, AF_UNIX sockets can't be connected to via the 8.3 short path Windows gives TEMP for long user names,
+    // nor in new directories in AppData, which are redirected to the package
+    public static Path socketDirectory() throws IOException {
+        return Path.of(System.getProperty("java.io.tmpdir")).toRealPath();
+    }
+
+    // NIO selectors connect to an AF_UNIX socket in this directory, the app couldn't start otherwise
+    public static void useSocketDirectoryForNio() {
+        try {
+            System.setProperty("jdk.net.unixdomain.tmpdir", socketDirectory().toString());
+        } catch (IOException e) {
+            Logging.log("Unable to resolve socket directory: " + e);
+        }
     }
 
     private static boolean hasPackageIdentity() {
