@@ -34,3 +34,10 @@ secret
 /cache
 
 packaging/output/
+
+# Cached official legal texts for the register export (scripts/export-legal-register-xlsx.py)
+.cache/legal-texts/
+
+# Python bytecode
+__pycache__/
+*.pyc
