@@ -1,0 +1,4 @@
+# Windows disk and test results, see docs/windows-store-testing.md
+storage/
+storage.clean/
+shared/

@@ -6,6 +6,7 @@ import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.ValueLayout;
+import java.nio.file.Path;
 
 public final class MsixPackage {
     private static final int ERROR_INSUFFICIENT_BUFFER = 122;
@@ -19,6 +20,18 @@ public final class MsixPackage {
             current = OperatingSystem.current() == OperatingSystem.WINDOWS && hasPackageIdentity();
 
         return current;
+    }
+
+    // AF_UNIX sockets can't be connected to in AppData, which is redirected to the package, on some systems TEMP too
+    public static Path socketDirectory() {
+        return Path.of(System.getProperty("user.home"), ".autogram");
+    }
+
+    // NIO selectors (the server for websites, HttpClient) connect to an AF_UNIX socket in TEMP, which can fail in
+    // a package; when it can't be created in the given directory, they use a TCP loopback connection instead
+    public static void useTcpForNioPipes() {
+        System.setProperty("jdk.net.unixdomain.tmpdir",
+                Path.of(System.getProperty("java.home"), "no-unix-domain-sockets").toString());
     }
 
     private static boolean hasPackageIdentity() {

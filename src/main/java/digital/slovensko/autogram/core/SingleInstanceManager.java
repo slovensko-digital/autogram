@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.util.MsixPackage;
 import digital.slovensko.autogram.util.OperatingSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,6 +116,8 @@ public class SingleInstanceManager {
         try {
             var dataDir = switch (OperatingSystem.current()) {
                 case WINDOWS -> {
+                    if (MsixPackage.isCurrent())
+                        yield MsixPackage.socketDirectory();
                     var localAppData = System.getenv("LOCALAPPDATA");
                     if (localAppData != null && !localAppData.isBlank())
                         yield Path.of(localAppData, "Autogram");

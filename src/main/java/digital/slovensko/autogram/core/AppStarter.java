@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.ui.cli.CliApp;
 import digital.slovensko.autogram.ui.gui.GUIApp;
+import digital.slovensko.autogram.util.MsixPackage;
 import javafx.application.Application;
 import org.apache.commons.cli.*;
 
@@ -31,6 +32,9 @@ public class AppStarter {
         addOption(null, "pkcs11-driver-path", true, "Absolute path to a file with custom PKCS11 driver.");
 
     public static void start(String[] args) {
+        if (MsixPackage.isCurrent())
+            MsixPackage.useTcpForNioPipes();
+
         try {
             CommandLine cmd = new DefaultParser().parse(options, args);
 
