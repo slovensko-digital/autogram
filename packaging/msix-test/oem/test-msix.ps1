@@ -13,7 +13,7 @@ Keep this file ASCII only, Windows PowerShell 5.1 reads scripts without BOM in t
 #>
 param(
     [string]$SharedDir = '\\host.lan\Data',
-    [int]$StartupTimeoutSeconds = 180,
+    [int]$StartupTimeoutSeconds = 90,
     [string]$InfoUrl = 'http://localhost:37200/info',
     # Registers the test to run at every sign-in of the current user (used by install.bat) and runs it now
     [switch]$Register
@@ -82,8 +82,26 @@ function Invoke-Native([string]$file, [string[]]$arguments) {
     return $LASTEXITCODE
 }
 
+Add-Type -Namespace AutogramMsixTest -Name User32 -MemberDefinition @'
+[DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+[DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+'@
+
+# The Start menu is often open after the first sign-in and covers the Autogram window
+function Close-StartMenu {
+    $processId = [uint32]0
+    [AutogramMsixTest.User32]::GetWindowThreadProcessId([AutogramMsixTest.User32]::GetForegroundWindow(), [ref]$processId) | Out-Null
+    $foreground = Get-Process -Id $processId -ErrorAction SilentlyContinue
+    if ($foreground -and $foreground.Name -in 'StartMenuExperienceHost', 'SearchHost') {
+        Add-Type -AssemblyName System.Windows.Forms
+        [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
+        Start-Sleep -Seconds 1
+    }
+}
+
 function Save-Screenshot([string]$path) {
     try {
+        Close-StartMenu
         Add-Type -AssemblyName System.Windows.Forms, System.Drawing
         $bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
         $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
@@ -103,7 +121,7 @@ function Wait-ForInfo([int]$timeoutSeconds) {
         try {
             return Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 -Uri $InfoUrl
         } catch {
-            Start-Sleep -Seconds 3
+            Start-Sleep -Seconds 1
         }
     }
     return $null
@@ -171,7 +189,10 @@ try {
 
     Write-Step 'Environment'
     $os = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
-    $details['windows'] = "$($os.ProductName) $($os.DisplayVersion) build $($os.CurrentBuild).$($os.UBR)"
+    # ProductName says Windows 10 also on Windows 11, which starts at build 22000
+    $productName = $os.ProductName
+    if ([int]$os.CurrentBuild -ge 22000) { $productName = $productName -replace 'Windows 10', 'Windows 11' }
+    $details['windows'] = "$productName $($os.DisplayVersion) build $($os.CurrentBuild).$($os.UBR)"
     $details['user'] = "$env:USERDOMAIN\$env:USERNAME"
     $details['TEMP'] = $env:TEMP
     $java = Get-Command java.exe -ErrorAction SilentlyContinue
@@ -283,7 +304,7 @@ try {
             Invoke-CommandInDesktopPackage -PackageFamilyName $package.PackageFamilyName -AppId $appId `
                 -Command 'cmd.exe' -PreventBreakaway `
                 -Args "/c `"set `"JAVA_TOOL_OPTIONS=$options`" && `"$($package.InstallLocation)\Autogram.exe`" > `"$log`" 2>&1`""
-            Wait-ForInfo 60 | Out-Null
+            Wait-ForInfo 30 | Out-Null
             Save-Screenshot (Join-Path $work 'screenshot-debug.png')
             Get-PackageProcesses $package.InstallLocation | Stop-Process -Force -ErrorAction SilentlyContinue
         } catch {

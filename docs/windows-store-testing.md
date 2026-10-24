@@ -140,7 +140,19 @@ Obrazovku Windows uvidíte v prehliadači na porte 8006, ten je dostupný len zo
 
 Ďalší build: nakopírujte nový `.msix` do `shared/` (testuje sa najnovší podľa času zmeny) a spustite
 `docker compose restart`. Test beží pri každom prihlásení a predchádzajúcu testovaciu inštaláciu najprv odinštaluje.
-Súbory v `shared/results` môžu patriť používateľovi root.
+Súbory v `shared/results` môžu patriť používateľovi root. Nainštalovaný Windows aj stiahnuté ISO zostávajú v
+`storage/`, ďalšie spustenie preto trvá asi minútu.
+
+Podpis bez karty vyskúšate s testovacím úložiskom kľúčov:
+
+```sh
+keytool -genkeypair -storetype PKCS12 -keystore shared/autogram-test.p12 -storepass autogram -alias autogram-test \
+    -keyalg RSA -keysize 2048 -validity 365 -dname "CN=Autogram MSIX Test" -ext KeyUsage=digitalSignature,nonRepudiation
+```
+
+V Autograme ho nastavte v *Nastavenia* → *Iné* → *Cesta k vlastnému úložisku kľúčov* na
+`\\host.lan\Data\autogram-test.p12` a pri podpise zadajte heslo `autogram`. Pri overení sa podpis zobrazí ako neznámy,
+certifikát je vlastnoručne podpísaný. Nastavenie sa pri ďalšom teste stratí, test balík odinštaluje.
 
 Ak má každý test začínať z úplne čistého Windows, odložte si disk hneď po inštalácii. Prvýkrát spustite s prázdnym
 `shared/` (test skončí `SKIPPED`) a potom:
@@ -153,6 +165,9 @@ docker compose down && sudo rm -rf storage && sudo cp -a --sparse=always storage
 ```
 
 - Zmeny v `oem/` sa prejavia až pri novej inštalácii Windows (zmažte `storage/`), skript sa kopíruje do `C:\OEM`.
+  Upravený `test-msix.ps1` môžete do `C:\OEM` v bežiacom Windows skopírovať aj ručne cez `\\host.lan\Data`. Bez
+  reštartu Windows nevidí súbory, ktoré na serveri pribudli alebo sa zmenili v `shared/` (Samba o nich klienta
+  neupovedomí), pomôže `docker exec autogram-msix-test smbcontrol smbd close-share Data`.
 - Iná verzia Windows: `WINDOWS_VERSION=10 docker compose up -d` pri prvej inštalácii. Konkrétnu zostavu, napr. Insider
   Preview 29691, pripojte ako ISO cez `/custom.iso` v `compose.yaml` (ISO z *Windows Insider Preview Downloads* alebo
   vytvorené cez [UUP dump](https://uupdump.net)).
