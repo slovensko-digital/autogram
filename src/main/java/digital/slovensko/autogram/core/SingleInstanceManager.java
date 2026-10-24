@@ -117,7 +117,7 @@ public class SingleInstanceManager {
             var dataDir = switch (OperatingSystem.current()) {
                 case WINDOWS -> {
                     if (MsixPackage.isCurrent())
-                        yield MsixPackage.socketDirectory().resolve("Autogram");
+                        yield MsixPackage.socketDirectory();
                     var localAppData = System.getenv("LOCALAPPDATA");
                     if (localAppData != null && !localAppData.isBlank())
                         yield Path.of(localAppData, "Autogram");

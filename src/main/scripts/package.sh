@@ -114,7 +114,7 @@ if [[ "${platform}" == "win" ]]; then
     appImage="${output}/${properties_name}"
     rm -rf "${appImage}"
 
-    $jpackage "${arguments[@]}" "${appImageArguments[@]}" "--type" "app-image"
+    "$jpackage" "${arguments[@]}" "${appImageArguments[@]}" "--type" "app-image"
     checkExitCode $?
 
     # When packaging an app image, jpackage gives every additional launcher the same
@@ -140,7 +140,7 @@ if [[ "${platform}" == "win" ]]; then
             checkExitCode $?
         fi
 
-        $jpackage "${arguments[@]}" "${installerArguments[@]}" "--app-image" "${appImage}"
+        "$jpackage" "${arguments[@]}" "${installerArguments[@]}" "--app-image" "${appImage}"
         checkExitCode $?
     fi
 
@@ -239,7 +239,7 @@ if [[ "$platform" == "linux" ]]; then
         fi
     fi
 
-    $jpackage "${arguments[@]}"
+    "$jpackage" "${arguments[@]}"
     checkExitCode $?
 fi
 
@@ -294,7 +294,7 @@ if [[ "${platform}" == "mac" ]]; then
     fi
 
     # cwd je ./src/main/scripts/resources
-    $jpackage "${arguments[@]}"
+    "$jpackage" "${arguments[@]}"
     exitValue=$?
 
     checkExitCode $exitValue

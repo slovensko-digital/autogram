@@ -1,0 +1,34 @@
+# Clean Windows VM for testing the Microsoft Store MSIX package, see docs/windows-store-testing.md
+# Requires a Linux host with KVM: docker compose up -d, then open http://localhost:8006 (through an SSH tunnel)
+name: autogram-msix-test
+
+services:
+  windows:
+    image: dockurr/windows
+    container_name: autogram-msix-test
+    environment:
+      # 11 = Windows 11 Pro, 10 = Windows 10 Pro, see https://github.com/dockur/windows for other values
+      VERSION: ${WINDOWS_VERSION:-11}
+      # Longer than 8 characters, so TEMP usually contains an 8.3 short name (C:\Users\AUTOGR~1\...)
+      USERNAME: AutogramTester
+      PASSWORD: autogram
+      RAM_SIZE: ${RAM_SIZE:-8G}
+      CPU_CORES: ${CPU_CORES:-4}
+      DISK_SIZE: 64G
+      # LANGUAGE: Slovak
+    devices:
+      - /dev/kvm
+      - /dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - 127.0.0.1:8006:8006 # web viewer
+      - 127.0.0.1:3389:3389/tcp # RDP
+      - 127.0.0.1:3389:3389/udp
+    volumes:
+      - ./storage:/storage # Windows disk, delete to install Windows again
+      - ./shared:/shared # \\host.lan\Data in Windows, put the .msix here, results go to shared/results
+      - ./oem:/oem # copied to C:\OEM during the Windows installation, install.bat runs at the first sign-in
+      # Custom Windows image, e.g. an Insider Preview build, replaces VERSION
+      # - ./windows.iso:/custom.iso
+    stop_grace_period: 2m

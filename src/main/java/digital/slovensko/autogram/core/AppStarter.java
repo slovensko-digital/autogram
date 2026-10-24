@@ -33,7 +33,7 @@ public class AppStarter {
 
     public static void start(String[] args) {
         if (MsixPackage.isCurrent())
-            MsixPackage.useSocketDirectoryForNio();
+            MsixPackage.useTcpForNioPipes();
 
         try {
             CommandLine cmd = new DefaultParser().parse(options, args);

@@ -17,7 +17,7 @@ kontajner, Windows nehľadá DLL cez PATH a pod.), len sa sama neaktualizuje.
 - **Lokálny build** (Windows s Git Bash):
 
   ```sh
-  WINDOWS_PACKAGE_TYPES=msix ./mvnw package -DskipTests
+  WINDOWS_PACKAGE_TYPES=msix ./mvnw package -DskipTests -Psystem-jdk
   ```
 
   Vznikne `target/Autogram-<verzia>.0.msix`. Bez nainštalovaného Windows SDK nastavte `WINDOWS_SDK_BIN` na priečinok
@@ -97,15 +97,83 @@ Testujte na počítači, ktorý sa čo najviac podobá bežnému používateľov
 
 - **Bez JDK v PATH.** JavaFX hľadá svoje DLL najprv v PATH, takže s nainštalovaným JDK (napr. Liberica) sa načítajú
   z neho a nie z balíka.
-- **Používateľ s menom dlhším ako 8 znakov.** Windows mu nastaví `TEMP` ako 8.3 skrátenú cestu
-  (`C:\Users\ADMINI~1\...`). V balíku sa cez ňu nedá pripojiť na AF_UNIX socket, na ktorom stoja NIO selektory
-  (server pre weby, `HttpClient`). Autogram preto v MSIX používa skutočnú cestu dočasného priečinka
-  (`MsixPackage.socketDirectory`), inak sa nespustí. Bez dlhého mena sa to dá napodobniť spustením s `TEMP` a `TMP`
-  nastavenými na 8.3 cestu existujúceho priečinka (`dir /x`).
-- **Bez stôp po MSI verzii.** Nové priečinky v AppData sa v balíku presmerujú do
-  `%LOCALAPPDATA%\Packages\<balík>\LocalCache`, kde sa na AF_UNIX socket tiež nedá pripojiť, preto má Autogram
-  v MSIX aj socket na odovzdanie spustenia v dočasnom priečinku. Na počítači, kde bežala MSI verzia,
-  `%LOCALAPPDATA%\Autogram` existuje a takéto chyby sa neprejavia.
+- **Bez stôp po MSI verzii.** Ak existuje `%LOCALAPPDATA%\Autogram` z MSI verzie, niektoré chyby balíka sa
+  neprejavia.
+
+V balíku sa často nedá pripojiť na AF_UNIX socket: v AppData, ktorý sa presmeruje do
+`%LOCALAPPDATA%\Packages\<balík>\LocalCache` (na niektorých systémoch aj `TEMP`), ani cez 8.3 skrátenú cestu, ktorú
+Windows dáva do `TEMP` používateľom s menom dlhším ako 8 znakov (`C:\Users\ADMINI~1\...`). Preto v MSIX:
+
+- NIO selektory (server pre weby, `HttpClient`) namiesto AF_UNIX socketu v `TEMP` používajú TCP loopback
+  (`MsixPackage.useTcpForNioPipes`). Inak Autogram pri spustení zobrazí *Neočakávaná chyba* s
+  `error.serverNotCreated`, ako pri certifikácii v Store.
+- Socket na odovzdanie spustenia bežiacemu Autogramu je v `%USERPROFILE%\.autogram` (`MsixPackage.socketDirectory`).
+
+Overíte to spustením balíka s logom (pozri nižšie) s `TEMP` a `TMP` nastavenými na 8.3 cestu existujúceho priečinka
+(`dir /x`) alebo na priečinok, ktorý v `%LOCALAPPDATA%` vytvoril samotný balík.
+
+## 7. Automatický test v čistom Windows
+
+Skript `packaging/msix-test/oem/test-msix.ps1` urobí v čerstvo nainštalovanom Windows kroky 2 – 5 a overí spustenie:
+najnovší `.msix` zo zdieľaného priečinka podpíše testovacím certifikátom s vydavateľom z manifestu (podpísanému balíku
+len dôveruje), nainštaluje ho, spustí Autogram z ponuky Štart ako bežný používateľ a počká, kým server pre weby odpovie
+na `http://localhost:37200/info`. Výsledok je v `shared/results/latest.txt` (prvý riadok `PASS`, `FAIL: <dôvod>` alebo
+`SKIPPED: <dôvod>`). V `shared/results/<čas>/` je log testu, snímka obrazovky, varovania a chyby zo *Zobrazovača
+udalostí* a pri chybe aj podrobný log Autogramu (`autogram-debug.log`).
+
+### Linux server s KVM (Docker)
+
+Windows beží ako virtuálny počítač v kontajneri [dockurr/windows](https://github.com/dockur/windows)
+(`packaging/msix-test/compose.yaml`). Server musí mať KVM (`sudo kvm-ok`; ak je sám virtuálny, potrebuje vnorenú
+virtualizáciu), aspoň 8 GB voľnej RAM a 40 GB na disku.
+
+```sh
+cd packaging/msix-test
+mkdir -p shared && cp ~/autogram-1.0.0-windows-store.msix shared/
+docker compose up -d
+```
+
+Prvé spustenie stiahne Windows 11 od Microsoftu a nainštaluje ho (20 – 40 minút), test sa spustí po prvom prihlásení.
+Obrazovku Windows uvidíte v prehliadači na porte 8006, ten je dostupný len zo servera: `ssh -L 8006:localhost:8006
+<server>` a `http://localhost:8006`. Používateľ je `AutogramTester`, heslo `autogram`. Meno je dlhšie ako 8 znakov, aby
+`TEMP` obsahoval 8.3 skrátenú cestu.
+
+Ďalší build: nakopírujte nový `.msix` do `shared/` (testuje sa najnovší podľa času zmeny) a spustite
+`docker compose restart`. Test beží pri každom prihlásení a predchádzajúcu testovaciu inštaláciu najprv odinštaluje.
+Súbory v `shared/results` môžu patriť používateľovi root.
+
+Ak má každý test začínať z úplne čistého Windows, odložte si disk hneď po inštalácii. Prvýkrát spustite s prázdnym
+`shared/` (test skončí `SKIPPED`) a potom:
+
+```sh
+docker compose down
+sudo cp -a --sparse=always storage storage.clean
+# pred každým testom
+docker compose down && sudo rm -rf storage && sudo cp -a --sparse=always storage.clean storage && docker compose up -d
+```
+
+- Zmeny v `oem/` sa prejavia až pri novej inštalácii Windows (zmažte `storage/`), skript sa kopíruje do `C:\OEM`.
+- Iná verzia Windows: `WINDOWS_VERSION=10 docker compose up -d` pri prvej inštalácii. Konkrétnu zostavu, napr. Insider
+  Preview 29691, pripojte ako ISO cez `/custom.iso` v `compose.yaml` (ISO z *Windows Insider Preview Downloads* alebo
+  vytvorené cez [UUP dump](https://uupdump.net)).
+
+### Windows Sandbox na vlastnom počítači
+
+Windows Sandbox je čistá kópia Windows nainštalovaného na počítači, ktorá sa po zatvorení zahodí. Potrebuje Windows
+10/11 Pro alebo Enterprise a raz zapnúť (PowerShell ako správca, potom reštart):
+
+```powershell
+Enable-WindowsOptionalFeature -Online -FeatureName Containers-DisposableClientVM -All
+```
+
+Test spustíte z koreňa repozitára, výsledok bude v `packaging\msix-test\shared\results`:
+
+```powershell
+.\packaging\msix-test\sandbox.ps1 -Msix target\Autogram-1.0.0.0.msix
+```
+
+V inom čistom virtuálnom počítači spustite ako správca
+`powershell -ExecutionPolicy Bypass -File test-msix.ps1 -SharedDir <priečinok s .msix>`.
 
 ## Logy a pády
 

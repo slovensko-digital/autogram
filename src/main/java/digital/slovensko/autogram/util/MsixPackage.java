@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.util;
 
-import java.io.IOException;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
@@ -23,19 +22,16 @@ public final class MsixPackage {
         return current;
     }
 
-    // In a package, AF_UNIX sockets can't be connected to via the 8.3 short path Windows gives TEMP for long user names,
-    // nor in new directories in AppData, which are redirected to the package
-    public static Path socketDirectory() throws IOException {
-        return Path.of(System.getProperty("java.io.tmpdir")).toRealPath();
+    // AF_UNIX sockets can't be connected to in AppData, which is redirected to the package, on some systems TEMP too
+    public static Path socketDirectory() {
+        return Path.of(System.getProperty("user.home"), ".autogram");
     }
 
-    // NIO selectors connect to an AF_UNIX socket in this directory, the app couldn't start otherwise
-    public static void useSocketDirectoryForNio() {
-        try {
-            System.setProperty("jdk.net.unixdomain.tmpdir", socketDirectory().toString());
-        } catch (IOException e) {
-            Logging.log("Unable to resolve socket directory: " + e);
-        }
+    // NIO selectors (the server for websites, HttpClient) connect to an AF_UNIX socket in TEMP, which can fail in
+    // a package; when it can't be created in the given directory, they use a TCP loopback connection instead
+    public static void useTcpForNioPipes() {
+        System.setProperty("jdk.net.unixdomain.tmpdir",
+                Path.of(System.getProperty("java.home"), "no-unix-domain-sockets").toString());
     }
 
     private static boolean hasPackageIdentity() {
