@@ -41,7 +41,7 @@ Some cards store certificates in several parts called slots. Such a card appears
 
 On a Gemalto IDPrime 940 card, the qualified certificate is often in a different slot than the other certificates. If you do not see your qualified certificate after choosing a slot, or signing fails, click **Sign with another certificate** and choose the other slot.
 
-Besides the qualified certificate, the Slovak ID card also holds a second one that is not used for qualified signing. Autogram does not offer it by default. If you turn on **Show EP certificate of the ID card** in [Settings](settings.md#other), the ID card appears in the list twice. For ordinary signing, choose **qualified**.
+Besides the qualified certificate, the Slovak ID card also holds a second one that is not used for qualified signing. Autogram does not offer it by default. If you turn on **Show EP certificate of the ID card** in [Settings](settings.md#other), the ID card appears in the list twice. For ordinary signing, choose **qualified**. The second certificate is not qualified, so signing with it also needs **Allow signing with non-qualified certificates**.
 
 ![Slovak ID card with a qualified and a non-qualified certificate](/assets/images/screenshots/en/token-picker-eid.png)
 
@@ -73,6 +73,31 @@ This window does not appear for the Slovak ID card. Its code (BOK) is asked for 
 Autogram shows the certificates on the chosen card. Choose the one you want to sign with and click **Sign**.
 
 ![Choosing a certificate](/assets/images/screenshots/en/certificate-picker.png)
+
+While Autogram checks the certificates, the **Sign** button is inactive and reads **Checking certificate validity…**.
+
+![Checking the certificates](/assets/images/screenshots/en/certificate-picker-checking.png)
+
+Autogram checks:
+
+- **whether the certificate was revoked**, for example after the card was lost. It asks the certification authority that issued the certificate, so it needs an internet connection.
+- **whether the certificate is qualified** according to the trusted lists of the countries turned on in [Settings](settings.md#signature-validation). Only a qualified certificate makes a qualified electronic signature.
+
+The check usually takes a fraction of a second. Shortly after Autogram starts, it also waits until the trusted lists are loaded, and the button then reads **Loading trusted lists…**. A valid qualified certificate shows nothing. Otherwise the certificate has a label:
+
+![Certificates with labels after the check](/assets/images/screenshots/en/certificate-picker-checks.png)
+
+| Label | What it means | Can you sign with it? |
+| --- | --- | --- |
+| **Revoked certificate** | The certification authority revoked the certificate. | No |
+| **Non-qualified certificate** | The certificate is not qualified according to the trusted lists. | Only if **Allow signing with non-qualified certificates** is turned on in [Settings](settings.md#security) |
+| **Validity could not be verified** | Autogram could not find out whether the certificate was revoked, for example without an internet connection. | Yes |
+| **Qualification could not be verified** | The trusted lists could not be loaded, for example when Autogram first starts without an internet connection. | Yes |
+| **Expired certificate** | The certificate has expired. Such certificates are shown only if **Allow signing with expired certificates** is turned on in Settings. | Yes |
+
+If none of the certificates is qualified, Autogram shows a hint below them with an **Open settings** link. The most common reason is that the certificate was issued by a certification authority from a country whose trusted list is turned off. Autogram then names that country in the hint. When you close the settings, the certificate selection appears again.
+
+![Hint when none of the certificates is qualified](/assets/images/screenshots/en/certificate-picker-hint.png)
 
 ## Signing PIN {#signing-pin}
 

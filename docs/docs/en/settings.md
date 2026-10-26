@@ -31,6 +31,8 @@ For a timestamp to be recognised during validation, its provider must be qualifi
 
 The list of EU countries whose trusted lists Autogram uses to validate signatures. By default, Slovakia, Czechia, Austria, Poland, Hungary, Belgium, the Netherlands and Spain are on. If you receive documents signed with a certificate from another country, turn it on. More countries slow down validation.
 
+Autogram also uses these lists to find out whether the certificate you sign with is qualified. If your certificate is from another country, turn that country on too, otherwise Autogram marks the certificate as non-qualified in the [certificate selection](card-and-pin.md#choosing-the-certificate).
+
 ## Security {#security}
 
 ![Settings – Security](/assets/images/screenshots/en/settings-security.png)
@@ -40,6 +42,7 @@ The list of EU countries whose trusted lists Autogram uses to validate signature
 | **Signature validity check** | Before signing, warns about invalid signatures the document already has. See [Warnings before signing](warnings.md#untrusted-signatures). | Yes |
 | **PDF/A compliance check** | Before signing, warns if the PDF is not in PDF/A format. See [Warnings before signing](warnings.md#pdfa). | Yes |
 | **Allow signing with expired certificates** | Expired certificates are also shown in the certificate list. Authorities may not accept a signature made with one. | No |
+| **Allow signing with non-qualified certificates** | A certificate that is not qualified according to the trusted lists can also be chosen in the certificate selection. A signature made with it is not a qualified electronic signature and authorities may not accept it. See [Choosing the certificate](card-and-pin.md#choosing-the-certificate). | No |
 | **Display detailed errors** | If a file cannot be opened, shows a detailed description of the error. | Yes |
 
 ## Other {#other}
@@ -51,7 +54,7 @@ The list of EU countries whose trusted lists Autogram uses to validate signature
 | **Language** | Autogram's language: Slovak, English or the system language. | system language |
 | **Enable Autogram API** | Lets websites and other applications send documents to Autogram for signing. Without it, [signing on websites](websites.md) does not work. The change takes effect after restarting Autogram. | Yes |
 | **PDF preview resolution** | Sharpness of the PDF preview. A higher resolution is sharper, but large documents are displayed more slowly. | 100 dpi |
-| **Show EP certificate of the ID card** | Also offers the second, non-qualified certificate of the Slovak ID card. See [Several certificates on one card](card-and-pin.md#several-certificates-on-one-card). | No |
+| **Show EP certificate of the ID card** | Also offers the second, non-qualified certificate of the Slovak ID card. Signing with it also needs **Allow signing with non-qualified certificates**. See [Several certificates on one card](card-and-pin.md#several-certificates-on-one-card). | No |
 | **Path to custom keystore** | A file with a certificate and key (JKS) for the **From file** option. | empty |
 | **Path to custom driver for PKCS11 token** | The driver of a card Autogram does not know. | empty |
 | **HTTP proxy** | A proxy server in the form `http://host:port` that Autogram uses for all internet communication: downloading trusted lists, checking certificate revocation (CRL, OCSP), timestamps, form resources and update checks. Autogram also trusts certificates trusted by the operating system, so it works with proxies that inspect HTTPS traffic too. Proxy authentication is not supported. The change takes effect after restarting Autogram. | empty (no proxy) |
