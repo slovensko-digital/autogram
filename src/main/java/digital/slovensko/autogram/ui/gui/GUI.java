@@ -2,8 +2,10 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.CertificateStatusChecker;
 import digital.slovensko.autogram.core.LegacyInstallation;
 import digital.slovensko.autogram.core.NoBatch;
+import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningMode;
@@ -37,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +62,9 @@ public class GUI implements UI {
     /** The latest batch; documents outside it cannot be signed until it ends. */
     private Batch activeBatch = new NoBatch();
     private static final boolean DEBUG = false;
+    private static final Duration CERTIFICATE_STATUS_TIMEOUT = Duration.ofSeconds(10);
+    /** Only so that the certificate selection never waits forever, the trusted lists load in seconds. */
+    private static final Duration TRUSTED_LISTS_TIMEOUT = Duration.ofMinutes(2);
     private int nWindows = 0;
 
     public GUI(HostServices hostServices, UserSettings userSettings) {
@@ -97,6 +103,7 @@ public class GUI implements UI {
 
     @Override
     public void startBatch(Batch batch, Autogram autogram) {
+        this.autogram = autogram;
         batchController = new BatchDialogController(batch, autogram, this);
         var root = GUIUtils.loadFXML(batchController, "batch-dialog.fxml");
 
@@ -183,6 +190,7 @@ public class GUI implements UI {
             return;
         }
 
+        var allKeys = keys;
         var keysStream = keys.stream();
 //        TODO: NFC eID returns false for qualified certificate #367
 //        var keysStream = keys.stream().filter(k -> k.getCertificate().checkKeyUsage(KeyUsageBit.DIGITAL_SIGNATURE));
@@ -201,8 +209,22 @@ public class GUI implements UI {
             return;
         }
 
-        var controller = new PickKeyDialogController(keys, callback, userSettings.isExpiredCertsEnabled());
+        var checker = CertificateStatusChecker.online();
+        var trustedLists = SignatureValidator.getInstance().whenLoaded();
+        Runnable openSettings = autogram == null ? null : () -> {
+            SettingsDialogController.showAndWait(autogram, userSettings, SettingsDialogController.TRUSTED_COUNTRIES_TAB);
+            pickKeyAndThen(allKeys, driver, callback, onCancel);
+        };
+        var controller = new PickKeyDialogController(keys, callback, userSettings,
+                // DSS waits up to a minute for each unreachable server, the user should not
+                (key, onChecked) -> checker.checkAsync(key, CERTIFICATE_STATUS_TIMEOUT, TRUSTED_LISTS_TIMEOUT)
+                        .thenAccept(result -> onUIThreadDo(() -> onChecked.accept(result))),
+                openSettings);
         var root = GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
+        if (!trustedLists.isDone()) {
+            controller.setTrustedListsLoading(true);
+            trustedLists.whenComplete((verifier, e) -> onUIThreadDo(() -> controller.setTrustedListsLoading(false)));
+        }
 
         var stage = new Stage();
         stage.setTitle(controller.i18n("pickKey.title"));

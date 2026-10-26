@@ -16,6 +16,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
@@ -34,13 +35,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import static javafx.collections.FXCollections.observableArrayList;
 
 public class SettingsDialogController extends BaseController implements SuppressedFocusController {
+    public static final int SIGNING_TAB = 0;
+    public static final int TRUSTED_COUNTRIES_TAB = 1;
+
     @FXML
     private VBox mainBox;
+    @FXML
+    private TabPane tabPane;
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
     @FXML
@@ -69,6 +74,8 @@ public class SettingsDialogController extends BaseController implements Suppress
     private HBox checkPDFAComplianceRadios;
     @FXML
     private HBox expiredCertsRadios;
+    @FXML
+    private HBox nonQualifiedCertsRadios;
     @FXML
     private HBox localServerEnabledRadios;
     @FXML
@@ -104,6 +111,20 @@ public class SettingsDialogController extends BaseController implements Suppress
         this.autogram = autogram;
     }
 
+    public static void showAndWait(Autogram autogram, UserSettings userSettings, int tab) {
+        var controller = new SettingsDialogController(autogram, userSettings);
+        var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
+        controller.tabPane.getSelectionModel().select(tab);
+
+        var stage = new Stage();
+        stage.setTitle(controller.i18n("general.settings"));
+        stage.setScene(new Scene(root));
+        stage.setResizable(false);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        GUIUtils.suppressDefaultFocus(stage, controller);
+        stage.showAndWait();
+    }
+
     @Override
     public void initialize() {
         initializeSignatureLevelChoiceBox();
@@ -117,6 +138,8 @@ public class SettingsDialogController extends BaseController implements Suppress
         initializeSignatureValidationCheckBox();
         initializeCheckPDFAComplianceCheckBox();
         initializeExpiredCertsEnabledCheckBox();
+        initializeBooleanRadios(nonQualifiedCertsRadios, userSettings::setNonQualifiedCertsEnabled,
+                userSettings.isNonQualifiedCertsEnabled());
         initializeLocalServerEnabledCheckBox();
         initializeBooleanRadios(eidEpSlotsRadios, userSettings::setEidEpSlotsEnabled, userSettings.isEidEpSlotsEnabled());
         initializeTrustedCountriesList();
@@ -239,34 +262,7 @@ public class SettingsDialogController extends BaseController implements Suppress
 
     private void initializeTrustedCountriesList() {
         var locale = resources.getLocale();
-        var europeanCountries = Stream.of(
-                new Country("BE"),
-                new Country("BG"),
-                new Country("CZ"),
-                new Country("HR"),
-                new Country("CY"),
-                new Country("DK"),
-                new Country("EE"),
-                new Country("FI"),
-                new Country("FR"),
-                new Country("EL", "GR"),
-                new Country("NL"),
-                new Country("IE"),
-                new Country("LT"),
-                new Country("LV"),
-                new Country("LU"),
-                new Country("HU"),
-                new Country("MT"),
-                new Country("DE"),
-                new Country("PL"),
-                new Country("PT"),
-                new Country("AT"),
-                new Country("RO"),
-                new Country("SK"),
-                new Country("SI"),
-                new Country("ES"),
-                new Country("SE"),
-                new Country("IT"))
+        var europeanCountries = Country.TRUSTED_LIST_COUNTRIES.stream()
                 .sorted(Comparator.comparing(country -> country.getName(locale), Collator.getInstance(locale)))
                 .toList();
 
