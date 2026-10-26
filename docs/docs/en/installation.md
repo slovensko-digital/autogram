@@ -1,5 +1,5 @@
 ---
-description: "How to install Autogram on Windows from Microsoft Store, on macOS and Linux together with the card software and the browser extension, how to update it and how to move from the .msi installer to Microsoft Store."
+description: "How to install Autogram on Windows from Microsoft Store, on macOS and Linux together with the card software and the browser extension, how to deploy it in a company, how to update it and how to move from the .msi installer to Microsoft Store."
 ---
 
 # Installation
@@ -17,9 +17,43 @@ On Windows, install Autogram from Microsoft Store. Microsoft Store then installs
 1. Open Autogram in Microsoft Store and click **Get**.
 2. When it is installed, click **Open**. You will then find Autogram in the **Start** menu.
 
+You can also install Autogram from Microsoft Store on the command line with `winget`, which comes with Windows 10 and 11:
+
+```powershell
+winget install --id 9N4XBDWNF438 --source msstore
+```
+
+The first time you use the `msstore` source, `winget` asks you to accept the Microsoft Store terms. Autogram installed this way is the same as from the Microsoft Store app and is updated automatically.
+
 If Microsoft Store is not available on your computer, for example because your company's administrator disabled it, the [download page](https://sluzby.slovensko.digital/autogram/#download) also has an `.msi` installer. Download it, run it and follow the installation wizard. Autogram installed this way is not updated automatically.
 
 If you already have Autogram installed from an `.msi` file, see [Moving to the Microsoft Store version](#moving-to-microsoft-store).
+
+### For administrators: installing in a company {#for-administrators}
+
+If you manage several computers, we recommend deploying the Microsoft Store version, which Microsoft Store then updates automatically. It requires Windows 10 version 1809 or later.
+
+- **Microsoft Intune:** add an app of the **Microsoft Store app (new)** type and search for Autogram or enter the ID `9N4XBDWNF438`. If Autogram should be available to all users of the computer, set **Install behavior** to **System**.
+- **Scripts and other device management tools:** install Autogram without prompts with:
+
+  ```powershell
+  winget install --id 9N4XBDWNF438 --source msstore --accept-package-agreements --accept-source-agreements
+  ```
+
+Use the `.msi` installer when you cannot deploy the Microsoft Store version, for example when:
+
+- you install software with Group Policy in Active Directory, which supports only `.msi` packages,
+- the computers run Windows LTSC, which includes neither Microsoft Store nor `winget`,
+- the `msstore` source in `winget` is disabled by a policy,
+- the computers cannot reach the Microsoft Store servers, for example on a network without internet access.
+
+The `autogram-…-windows.msi` installer is on the [download page](https://sluzby.slovensko.digital/autogram/#download). Install it without prompts with:
+
+```powershell
+msiexec /i autogram-…-windows.msi /qn
+```
+
+Autogram installed from an `.msi` file is not updated automatically, deploy new versions the same way.
 
 ## macOS
 

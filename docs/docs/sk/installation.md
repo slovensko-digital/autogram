@@ -1,5 +1,5 @@
 ---
-description: "Ako nainštalovať Autogram na Windows z Microsoft Store, na macOS a Linux spolu so softvérom ku karte a rozšírením do prehliadača, ako ho aktualizovať a ako prejsť z inštalátora .msi na Microsoft Store."
+description: "Ako nainštalovať Autogram na Windows z Microsoft Store, na macOS a Linux spolu so softvérom ku karte a rozšírením do prehliadača, ako ho nasadiť vo firme, ako ho aktualizovať a ako prejsť z inštalátora .msi na Microsoft Store."
 ---
 
 # Inštalácia
@@ -17,9 +17,43 @@ Na Windows inštalujte Autogram z Microsoft Store. Nové verzie potom Microsoft 
 1. Otvorte Autogram v Microsoft Store a kliknite na **Získať**.
 2. Po inštalácii kliknite na **Otvoriť**. Autogram potom nájdete v ponuke **Štart**.
 
+Autogram z Microsoft Store nainštalujete aj z príkazového riadka nástrojom `winget`, ktorý je súčasťou Windows 10 a 11:
+
+```powershell
+winget install --id 9N4XBDWNF438 --source msstore
+```
+
+Pri prvom použití zdroja `msstore` sa `winget` opýta na súhlas s podmienkami Microsoft Store. Takto nainštalovaný Autogram je rovnaký ako z aplikácie Microsoft Store a aktualizuje sa automaticky.
+
 Ak Microsoft Store v počítači nemáte, napríklad ho vo firme zakázal správca, na [stránke na stiahnutie](https://sluzby.slovensko.digital/autogram/#download) je aj inštalátor `.msi`. Stiahnite ho, spustite a prejdite sprievodcom inštaláciou. Takto nainštalovaný Autogram sa automaticky neaktualizuje.
 
 Ak už máte Autogram nainštalovaný zo súboru `.msi`, pozrite si [Prechod na verziu z Microsoft Store](#prechod-na-microsoft-store).
+
+### Pre správcov: inštalácia vo firme {#pre-spravcov}
+
+Ak spravujete viac počítačov, odporúčame nasadiť verziu z Microsoft Store, ktorú potom Microsoft Store aktualizuje automaticky. Vyžaduje Windows 10 verzie 1809 alebo novší.
+
+- **Microsoft Intune:** pridajte aplikáciu typu **Microsoft Store app (new)** a vyhľadajte Autogram alebo zadajte ID `9N4XBDWNF438`. Ak má byť Autogram dostupný pre všetkých používateľov počítača, v nastavení **Install behavior** zvoľte **System**.
+- **Skripty a iné nástroje na správu počítačov:** Autogram nainštalujete bez otázok príkazom:
+
+  ```powershell
+  winget install --id 9N4XBDWNF438 --source msstore --accept-package-agreements --accept-source-agreements
+  ```
+
+Inštalátor `.msi` použite, ak verziu z Microsoft Store nasadiť nemôžete, napríklad keď:
+
+- softvér inštalujete skupinovou politikou (Group Policy) v Active Directory, ktorá podporuje iba balíky `.msi`,
+- počítače majú Windows LTSC, ktorý neobsahuje Microsoft Store ani `winget`,
+- zdroj `msstore` v nástroji `winget` je vypnutý politikou,
+- počítače sa nedostanú na servery Microsoft Store, napríklad v sieti bez prístupu na internet.
+
+Inštalátor `autogram-…-windows.msi` je na [stránke na stiahnutie](https://sluzby.slovensko.digital/autogram/#download). Bez otázok ho nainštalujete príkazom:
+
+```powershell
+msiexec /i autogram-…-windows.msi /qn
+```
+
+Autogram nainštalovaný zo súboru `.msi` sa automaticky neaktualizuje, nové verzie treba nasadiť rovnakým spôsobom.
 
 ## macOS
 
