@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,6 +54,10 @@ public class SignatureValidator {
     private CertificateVerifier customVerifier;
     private TLValidationJob validationJob;
     private ExecutorService executorService;
+    private final Object loadLock = new Object();
+    private CompletableFuture<CertificateVerifier> loaded = new CompletableFuture<>();
+    /** The load the running {@link #initialize} completes, a reload announced meanwhile needs a new one. */
+    private CompletableFuture<CertificateVerifier> loading;
     private static Logger logger = LoggerFactory.getLogger(SignatureValidator.class);
 
     // Singleton
@@ -84,6 +89,37 @@ public class SignatureValidator {
         customVerifier = verifier;
         this.verifier = verifier;
         validationJob = null;
+        if (verifier == null)
+            reloadStarting();
+        else
+            startLoading().complete(verifier);
+    }
+
+    /**
+     * Completes with the verifier once the trusted lists are loaded. After {@link #reloadStarting} it is a new one,
+     * completed by the next {@link #initialize} or {@link #updateLotl}.
+     */
+    public CompletableFuture<CertificateVerifier> whenLoaded() {
+        synchronized (loadLock) {
+            return loaded;
+        }
+    }
+
+    /** Call before the lists are reloaded on another thread, so that checks started in the meantime wait for them. */
+    public void reloadStarting() {
+        synchronized (loadLock) {
+            if (loaded.isDone() || loaded == loading)
+                loaded = new CompletableFuture<>();
+        }
+    }
+
+    private CompletableFuture<CertificateVerifier> startLoading() {
+        synchronized (loadLock) {
+            if (loaded.isDone())
+                loaded = new CompletableFuture<>();
+            loading = loaded;
+            return loading;
+        }
     }
 
     public synchronized void updateLotl(List<String> tlCountries) {
@@ -98,6 +134,15 @@ public class SignatureValidator {
     }
 
     public synchronized void initialize(ExecutorService executorService, List<String> tlCountries) {
+        var load = startLoading();
+        try {
+            loadTrustedLists(executorService, tlCountries);
+        } finally {
+            load.complete(verifier);
+        }
+    }
+
+    private void loadTrustedLists(ExecutorService executorService, List<String> tlCountries) {
         this.executorService = executorService;
         if (customVerifier != null) {
             verifier = customVerifier;
