@@ -2,15 +2,21 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.core.errors.SignatureRequirementsNotMetException;
 import eu.europa.esig.dss.enumerations.CertificateQualification;
+import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.spi.DSSUtils;
+import eu.europa.esig.dss.spi.signature.AdvancedSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Base64;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static digital.slovensko.autogram.util.DSSUtils.createDocumentValidator;
 
@@ -29,24 +35,42 @@ public record SignatureRequirements(SignatureQualification qualification, boolea
         return new SignatureRequirements(expected, timestampRequested);
     }
 
-    public static Set<String> signatureIds(DSSDocument document) {
+    public static Set<String> signatureFingerprints(DSSDocument document) {
         var validator = createDocumentValidator(document);
         if (validator == null)
             return Set.of();
-        // ASiC analyzers also require a verifier when only reading signature identifiers. No validation/network I/O.
+        // Reading signatures in ASiC also requires a verifier, but does not validate or access the network.
         validator.setCertificateVerifier(NetworkClients.certificateVerifier());
         return validator.getSignatures().stream()
-                .map(signature -> signature.getId()).collect(Collectors.toSet());
+                .flatMap(SignatureRequirements::withCounterSignatures)
+                .map(signature -> fingerprint(signature.getSignatureValue()))
+                .filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
-    public void verify(DSSDocument document, Set<String> originalSignatureIds) {
+    private static Stream<AdvancedSignature> withCounterSignatures(AdvancedSignature signature) {
+        return Stream.concat(Stream.of(signature), signature.getCounterSignatures().stream()
+                .flatMap(SignatureRequirements::withCounterSignatures));
+    }
+
+    private static String fingerprint(byte[] signatureValue) {
+        return signatureValue == null ? null
+                : Base64.getEncoder().encodeToString(DSSUtils.digest(DigestAlgorithm.SHA256, signatureValue));
+    }
+
+    public void verify(DSSDocument document, Set<String> originalSignatureFingerprints) {
         try {
             var validator = createDocumentValidator(document);
             if (validator == null)
                 throw new SignatureRequirementsNotMetException("The signed document cannot be validated");
             var reports = SignatureValidator.getInstance().validate(validator);
             var simple = reports.getSimpleReport();
-            var added = simple.getSignatureIdList().stream().filter(id -> !originalSignatureIds.contains(id)).toList();
+            var diagnostic = reports.getDiagnosticData();
+            // DSS IDs can change when CAdES SignerInfos are reordered. Match the unchanged cryptographic values,
+            // then use the new document's own IDs for validation (including existing countersignatures).
+            var added = simple.getSignatureIdList().stream().filter(id -> {
+                var value = fingerprint(diagnostic.getSignatureById(id).getSignatureValue());
+                return value != null && !originalSignatureFingerprints.contains(value);
+            }).toList();
             if (added.size() != 1)
                 throw new SignatureRequirementsNotMetException("Expected one new signature, found " + added.size());
 

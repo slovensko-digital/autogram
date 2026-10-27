@@ -128,8 +128,8 @@ public class SigningJob {
 
         var signatureParameters = DssSigningParametersFactory.createSignatureParameters(input, key);
         var signatureService = createSignatureService(selectedTimestampSource != null ? selectedTimestampSource : tspSource);
-        var originalSignatureIds = signatureRequirements == null ? Set.<String>of() : getDssDocuments().stream()
-                .flatMap(document -> SignatureRequirements.signatureIds(document).stream()).collect(Collectors.toSet());
+        var originalSignatureFingerprints = signatureRequirements == null ? Set.<String>of() : getDssDocuments().stream()
+                .flatMap(document -> SignatureRequirements.signatureFingerprints(document).stream()).collect(Collectors.toSet());
         DSSDocument signedDocument;
 
         if (signatureService instanceof AbstractASiCSignatureService castedService) {
@@ -147,7 +147,7 @@ public class SigningJob {
             signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
         }
         if (signatureRequirements != null)
-            signatureRequirements.verify(signedDocument, originalSignatureIds);
+            signatureRequirements.verify(signedDocument, originalSignatureFingerprints);
         return new SignedDocument(signedDocument, key.getCertificate());
     }
 

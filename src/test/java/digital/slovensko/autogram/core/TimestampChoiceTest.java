@@ -14,6 +14,11 @@ import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.cades.signature.CAdESCounterSignatureParameters;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
@@ -186,6 +191,67 @@ class TimestampChoiceTest {
         assertThrows(IllegalStateException.class, () -> job.setSignatureRequirements(
                 SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESIG_QSCD, true)));
         assertEquals(profile, job.getParameters().getSignatureProfile());
+    }
+
+    @Test
+    void standaloneCadesCosigningUsesSignatureValuesInsteadOfChangingDssIds() {
+        var parameters = standaloneCadesParameters();
+        var originalInput = SigningInput.fromDocument(AutogramDocument.build(
+                new InMemoryDocument("test".getBytes(), "test.txt", MimeTypeEnum.TEXT), null), parameters);
+        var original = SigningJob.fromInput(originalInput, null).signWithKey(pki.signer(TestPki.SEAL).signingKey(), null).getDocument();
+        var fingerprints = SignatureRequirements.signatureFingerprints(original);
+        var input = SigningInput.fromFile(AutogramDocument.build(original, null), parameters);
+        var job = SigningJob.fromLocalInput(input, null);
+        job.setSignatureRequirements(SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESIG_QSCD, false));
+
+        var signed = job.signWithKey(pki.signer(TestPki.JANA).signingKey(), null).getDocument();
+        var simple = validate(signed);
+        assertEquals(2, simple.getSignatureIdList().size());
+        assertTrue(simple.getSignatureIdList().stream().allMatch(simple::isValid));
+        assertTrue(SignatureRequirements.signatureFingerprints(signed).containsAll(fingerprints));
+
+        // The old seal must not satisfy the goal of the newly added natural-person signature.
+        job.setSignatureRequirements(SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESEAL_QSCD, false));
+        assertThrows(SignatureRequirementsNotMetException.class,
+                () -> job.signWithKey(pki.signer(TestPki.JANA).signingKey(), null));
+    }
+
+    @Test
+    void existingCounterSignaturesAreNotMistakenForNewSignatures() {
+        var parameters = standaloneCadesParameters();
+        var originalInput = SigningInput.fromDocument(AutogramDocument.build(
+                new InMemoryDocument("test".getBytes(), "test.txt", MimeTypeEnum.TEXT), null), parameters);
+        var original = SigningJob.fromInput(originalInput, null).signWithKey(pki.signer(TestPki.JANA).signingKey(), null).getDocument();
+        var counterParameters = new CAdESCounterSignatureParameters();
+        counterParameters.setSignatureIdToCounterSign(validate(original).getFirstSignatureId());
+        counterParameters.setSignatureLevel(SignatureLevel.CAdES_BASELINE_B);
+        counterParameters.setDigestAlgorithm(DigestAlgorithm.SHA256);
+        var counterKey = pki.signer(TestPki.PETER).signingKey();
+        counterParameters.setSigningCertificate(counterKey.getCertificate());
+        counterParameters.setCertificateChain(counterKey.getCertificateChain());
+        var service = new CAdESService(NetworkClients.certificateVerifier());
+        var data = service.getDataToBeCounterSigned(original, counterParameters);
+        var countersigned = service.counterSignSignature(original, counterParameters, counterKey.sign(data, DigestAlgorithm.SHA256));
+        var fingerprints = SignatureRequirements.signatureFingerprints(countersigned);
+        assertEquals(2, fingerprints.size());
+        var input = SigningInput.fromFile(AutogramDocument.build(countersigned, null), parameters);
+        var job = SigningJob.fromLocalInput(input, null);
+        job.setSignatureRequirements(SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESEAL_QSCD, false));
+
+        var signed = job.signWithKey(pki.signer(TestPki.SEAL).signingKey(), null).getDocument();
+        var simple = validate(signed);
+        assertEquals(3, simple.getSignatureIdList().size());
+        assertTrue(simple.getSignatureIdList().stream().allMatch(simple::isValid));
+        assertTrue(SignatureRequirements.signatureFingerprints(signed).containsAll(fingerprints));
+    }
+
+    private static SimpleReport validate(DSSDocument document) {
+        return SignatureValidator.getInstance().validate(SignedDocumentValidator.fromDocument(document)).getSimpleReport();
+    }
+
+    private static SigningParameters standaloneCadesParameters() {
+        return SigningParametersResolver.buildRequested(SignatureProfile.BASELINE_B, SignatureForm.CAdES, DigestAlgorithm.SHA256,
+                null, SignaturePackaging.ENVELOPING, true, null, null, null, false, 640, true);
     }
 
     private static SigningInput input(SignatureProfile profile, SignatureForm form) throws IOException {
