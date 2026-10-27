@@ -351,9 +351,15 @@ public class SigningDialogController extends BaseController implements Suppresse
                 });
             });
         } else {
-            gui.disableSigning();
-            getNodeForLoosingFocus().requestFocus();
-            autogram.sign(job, signingKey);
+            Runnable onPicked = () -> {
+                gui.disableSigning();
+                getNodeForLoosingFocus().requestFocus();
+                autogram.sign(job, signingKey);
+            };
+            if (job.canSelectTimestamp())
+                gui.pickSignatureAndThen(signingKey, job, onPicked);
+            else
+                onPicked.run();
         }
     }
 

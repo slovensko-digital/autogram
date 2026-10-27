@@ -64,6 +64,8 @@ class SettingsDialogAccessibilityTest {
                     assertEquals(box.isSelected(), box.queryAccessibleAttribute(AccessibleAttribute.SELECTED));
                 }
 
+                assertNull(dialog.scene().lookup("#tsaEnabledRadios"), "timestamping is chosen per signature, not in settings");
+
                 var names = dialog.boxes().stream().map(CheckBox::getAccessibleText).toList();
                 assertEquals(names.stream().sorted(Collator.getInstance(language.getLocale())).toList(), names);
 

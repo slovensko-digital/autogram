@@ -2,6 +2,8 @@ package digital.slovensko.autogram.core;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import digital.slovensko.autogram.core.dto.AutogramDocument;
@@ -32,6 +34,7 @@ public class SigningJob {
     private SigningInput input;
     private final boolean timestampSelectionAllowed;
     private TSPSource selectedTimestampSource;
+    private SignatureRequirements signatureRequirements;
     private final List<AutogramDocument> documentsToVisualize;
     private final AtomicBoolean resultDelivered = new AtomicBoolean();
     private List<Visualization> visualizations;
@@ -85,6 +88,12 @@ public class SigningJob {
         selectedTimestampSource = enabled ? source : null;
     }
 
+    public void setSignatureRequirements(SignatureRequirements requirements) {
+        if (!canSelectTimestamp())
+            throw new IllegalStateException("The signature profile was specified by the submitting application");
+        signatureRequirements = requirements;
+    }
+
     public int getVisualizationWidth() {
         return getParameters().getVisualizationWidth();
     }
@@ -119,23 +128,27 @@ public class SigningJob {
 
         var signatureParameters = DssSigningParametersFactory.createSignatureParameters(input, key);
         var signatureService = createSignatureService(selectedTimestampSource != null ? selectedTimestampSource : tspSource);
+        var originalSignatureIds = signatureRequirements == null ? Set.<String>of() : getDssDocuments().stream()
+                .flatMap(document -> SignatureRequirements.signatureIds(document).stream()).collect(Collectors.toSet());
+        DSSDocument signedDocument;
 
         if (signatureService instanceof AbstractASiCSignatureService castedService) {
             var documents = getDssDocuments();
 
             var dataToSign = castedService.getDataToSign(documents, signatureParameters);
             var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
-            var signedDocument = castedService.signDocument(documents, signatureParameters, signatureValue);
-            return new SignedDocument(signedDocument, key.getCertificate());
+            signedDocument = castedService.signDocument(documents, signatureParameters, signatureValue);
 
         } else {
             var document = getDssDocument();
 
             var dataToSign = signatureService.getDataToSign(document, signatureParameters);
             var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
-            var signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
-            return new SignedDocument(signedDocument, key.getCertificate());
+            signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
         }
+        if (signatureRequirements != null)
+            signatureRequirements.verify(signedDocument, originalSignatureIds);
+        return new SignedDocument(signedDocument, key.getCertificate());
     }
 
     /**

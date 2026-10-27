@@ -2,24 +2,25 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.CertificateStatusChecker;
 import digital.slovensko.autogram.core.SigningJob;
-import digital.slovensko.autogram.core.TimestampSourceChecker;
+import digital.slovensko.autogram.core.SignatureRequirements;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
+import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
-import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -33,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static digital.slovensko.autogram.util.DSSUtils.buildTooltipLabel;
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
@@ -46,13 +48,10 @@ public class PickKeyDialogController extends BaseController {
     private final TimestampOptions timestampOptions;
     private final Set<DSSPrivateKeyEntry> checkPending = new HashSet<>();
     private final Map<DSSPrivateKeyEntry, CertificateStatusChecker.Result> results = new LinkedHashMap<>();
-    private final Map<DSSPrivateKeyEntry, HBox> badgesByKey = new LinkedHashMap<>();
-    private TimestampSourceChecker.Result timestampResult;
-    private boolean timestampCheckStarted;
-    private boolean timestampChecking;
 
-    public record TimestampOptions(SigningJob job, TSPSource source,
-            Consumer<Consumer<TimestampSourceChecker.Result>> checkSource) { }
+    public record TimestampOptions(SigningJob job, TSPSource source) { }
+
+    private record Choice(DSSPrivateKeyEntry key, boolean timestampRequested, HBox badges, Text description) { }
 
     @FXML
     VBox formGroup;
@@ -70,12 +69,6 @@ public class PickKeyDialogController extends BaseController {
     Hyperlink settingsLink;
     @FXML
     Button mainButton;
-    @FXML
-    VBox timestampControls;
-    @FXML
-    CheckBox addTimestamp;
-    @FXML
-    Text timestampHint;
     @FXML
     Text timestampStatus;
     private ToggleGroup toggleGroup;
@@ -106,106 +99,108 @@ public class PickKeyDialogController extends BaseController {
     public void initialize() {
         toggleGroup = new ToggleGroup();
         mainButtonText = mainButton.getText();
+        var timestampRequested = canSelectTimestamp() || timestampOptions != null
+                && timestampOptions.job().getParameters().getSignatureProfile() != SignatureProfile.BASELINE_B;
         for (var key : keys) {
-            Node badge = new HBox();
             var expired = !key.getCertificate().isValidOn(new java.util.Date());
             if (expired) {
-                badge = SignatureBadgeFactory.createInfoBadge("Exspirovaný certifikát");
-
                 if (!userSettings.isExpiredCertsEnabled())
                     continue;
             } else {
-                badge = SignatureBadgeFactory.createInProgressBadge(i18n("pickKey.certificateStatus.checking"));
                 checkPending.add(key);
             }
 
-            var radioButton = new RadioButton(parseCN(key.getCertificate().getSubject().getRFC2253()));
-            radioButton.setToggleGroup(toggleGroup);
-            radioButton.setUserData(key);
-            var badges = new HBox(badge);
-            badgesByKey.put(key, badges);
-            badges.getStyleClass().add("autogram-pick-key-badges");
-            radios.getChildren().add(new HBox(radioButton, badges));
-
-            var tooltip = new Tooltip(buildTooltipLabel(key));
-            tooltip.setShowDuration(Duration.seconds(10));
-            tooltip.setWrapText(true);
-            tooltip.setPrefWidth(400);
-            radioButton.setTooltip(tooltip);
-
+            if (canSelectTimestamp()) {
+                addChoice(key, true, expired);
+                addChoice(key, false, expired);
+            } else {
+                addChoice(key, timestampRequested, expired);
+            }
             if (!expired)
-                checkCertificate.accept(key, result -> showResult(key, radioButton, badges, result));
+                checkCertificate.accept(key, result -> showResult(key, result));
         }
 
-        if (keys.size() == 1)
-            toggleGroup.getToggles().get(0).setSelected(true);
+        if (keys.size() == 1 && !toggleGroup.getToggles().isEmpty())
+            toggleGroup.getToggles().stream()
+                    .filter(toggle -> ((Choice) toggle.getUserData()).timestampRequested() == timestampRequested)
+                    .filter(toggle -> !((RadioButton) toggle).isDisabled())
+                    .findFirst().ifPresent(toggle -> toggle.setSelected(true));
 
         settingsLink.setVisible(openSettings != null);
         settingsLink.setManaged(openSettings != null);
-        initializeTimestamp();
+        toggleGroup.selectedToggleProperty().addListener((observable, oldValue, newValue) -> {
+            updateMainButton();
+            resizeToContent();
+        });
         updateMainButton();
     }
 
-    private void initializeTimestamp() {
-        timestampControls.setVisible(timestampOptions != null);
-        timestampControls.setManaged(timestampOptions != null);
-        if (timestampOptions == null)
-            return;
-
-        addTimestamp.setSelected(timestampOptions.job().getParameters().getSignatureProfile() == SignatureProfile.BASELINE_T);
-        addTimestamp.setDisable(!timestampOptions.job().canSelectTimestamp());
-        timestampHint.setText(i18n(timestampOptions.job().canSelectTimestamp() ? "pickKey.timestamp.hint" : "pickKey.timestamp.fixed"));
-        addTimestamp.selectedProperty().addListener((observable, oldValue, newValue) -> updateTimestamp());
-        updateTimestamp();
+    private boolean canSelectTimestamp() {
+        return timestampOptions != null && timestampOptions.job().canSelectTimestamp();
     }
 
-    private void updateTimestamp() {
-        if (addTimestamp.isSelected() && !timestampCheckStarted && timestampOptions.source() != null) {
-            timestampCheckStarted = true;
-            timestampChecking = true;
-            timestampOptions.checkSource().accept(result -> {
-                timestampChecking = false;
-                timestampResult = result;
-                updateTimestamp();
-            });
-        }
+    private void addChoice(DSSPrivateKeyEntry key, boolean timestampRequested, boolean expired) {
+        var radio = new RadioButton();
+        radio.getStyleClass().add("autogram-pick-key-choice");
+        radio.setToggleGroup(toggleGroup);
+        var name = new Text(parseCN(key.getCertificate().getSubject().getRFC2253()));
+        name.getStyleClass().add("autogram-body");
+        var badges = new HBox(expired ? SignatureBadgeFactory.createInfoBadge(i18n("pickKey.certificateStatus.expired"))
+                : SignatureBadgeFactory.createInProgressBadge(i18n("pickKey.certificateStatus.checking")));
+        badges.getStyleClass().add("autogram-pick-key-badges");
+        var identity = new HBox(name, badges);
+        identity.setMinWidth(Region.USE_PREF_SIZE);
+        var description = new Text(i18n(timestampRequested ? "pickKey.timestamp.with" : "pickKey.timestamp.without"));
+        description.getStyleClass().addAll("autogram-body-s", "autogram-pick-key-description");
+        var choice = new Choice(key, timestampRequested, badges, description);
+        radio.setUserData(choice);
+        var content = new VBox(identity, description);
+        content.getStyleClass().add("autogram-pick-key-option");
+        radio.setGraphic(content);
+        radio.setMaxWidth(Double.MAX_VALUE);
+        radios.getChildren().add(radio);
+        updateDescription(choice, null);
+        radio.setAccessibleText(accessibleText(content));
 
-        var qualification = timestampResult == null ? null : timestampResult.qualification();
-        addTimestamp.setText(i18n(qualification == TimestampQualification.QTSA ? "pickKey.timestamp.addQualified" : "pickKey.timestamp.add"));
-        var statusKey = timestampStatusKey();
-        timestampStatus.setText(statusKey == null ? "" : i18n(statusKey));
-        timestampStatus.getParent().setManaged(statusKey != null);
-        timestampStatus.getParent().setVisible(statusKey != null);
-        results.forEach((key, result) -> badgesByKey.get(key).getChildren().setAll(badgesFor(result)));
-        updateMainButton();
-        resizeToContent();
+        var tooltip = new Tooltip(buildTooltipLabel(key));
+        tooltip.setShowDuration(Duration.seconds(10));
+        tooltip.setWrapText(true);
+        tooltip.setPrefWidth(400);
+        radio.setTooltip(tooltip);
     }
 
-    private String timestampStatusKey() {
-        if (!addTimestamp.isSelected())
-            return null;
-        if (timestampOptions.source() == null)
-            return "pickKey.timestamp.missingSource";
-        if (timestampChecking)
-            return "pickKey.timestamp.checking";
-        if (timestampResult == null || timestampResult.qualification() == null)
-            return "pickKey.timestamp.unknown";
-        return switch (timestampResult.qualification()) {
-            case QTSA -> "pickKey.timestamp.qualified";
-            case TSA -> "pickKey.timestamp.notQualified";
-            default -> "pickKey.timestamp.unknown";
-        };
+    private void updateDescription(Choice choice, CertificateQualification qualification) {
+        var visible = timestampOptions != null && qualification != CertificateQualification.QCERT_FOR_ESIG_QSCD;
+        choice.description().setVisible(visible);
+        choice.description().setManaged(visible);
     }
 
-    private void showResult(DSSPrivateKeyEntry key, RadioButton radioButton, HBox badges, CertificateStatusChecker.Result result) {
+    private static String accessibleText(Node node) {
+        if (!node.isVisible())
+            return "";
+        if (node instanceof Text text)
+            return text.getText();
+        if (node instanceof Parent parent)
+            return parent.getChildrenUnmodifiable().stream().map(PickKeyDialogController::accessibleText)
+                    .filter(text -> !text.isEmpty()).collect(Collectors.joining(", "));
+        return "";
+    }
+
+    private void showResult(DSSPrivateKeyEntry key, CertificateStatusChecker.Result result) {
         checkPending.remove(key);
         results.put(key, result);
-        badges.getChildren().setAll(badgesFor(result));
-
-        if (!isAllowed(result)) {
-            radioButton.setSelected(false);
-            radioButton.setDisable(true);
-        }
+        toggleGroup.getToggles().forEach(toggle -> {
+            var choice = (Choice) toggle.getUserData();
+            if (choice.key() != key)
+                return;
+            choice.badges().getChildren().setAll(badgesFor(result, choice.timestampRequested()));
+            updateDescription(choice, result.qualification());
+            ((RadioButton) toggle).setAccessibleText(accessibleText(((RadioButton) toggle).getGraphic()));
+            if (!isAllowed(result)) {
+                toggle.setSelected(false);
+                ((RadioButton) toggle).setDisable(true);
+            }
+        });
 
         if (checkPending.isEmpty())
             showHintIfNothingQualified();
@@ -214,15 +209,16 @@ public class PickKeyDialogController extends BaseController {
         resizeToContent();
     }
 
-    private List<Node> badgesFor(CertificateStatusChecker.Result result) {
+    private List<Node> badgesFor(CertificateStatusChecker.Result result, boolean timestampRequested) {
         var badges = new ArrayList<Node>();
         if (result.status() == CertificateStatus.REVOKED)
             badges.add(SignatureBadgeFactory.createInvalidBadge(i18n("pickKey.certificateStatus.revoked")));
         else if (result.status() != CertificateStatus.GOOD)
             badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.certificateStatus.unknown")));
 
-        var qualificationBadge = SignatureBadgeFactory.createBadgeFromCertificateQualification(result.qualification(),
-                timestampOptions != null && addTimestamp.isSelected(), timestampResult == null ? null : timestampResult.qualification(), resources);
+        var qualificationBadge = canSelectTimestamp()
+                ? SignatureBadgeFactory.createRequestedBadgeFromCertificateQualification(result.qualification(), timestampRequested, resources)
+                : SignatureBadgeFactory.createBadgeFromCertificateQualification(result.qualification(), timestampRequested, null, resources);
         Tooltip.install(qualificationBadge, new Tooltip(i18n("pickKey.qualification.expectedLevel")));
         badges.add(qualificationBadge);
 
@@ -268,13 +264,15 @@ public class PickKeyDialogController extends BaseController {
 
     private void updateMainButton() {
         var checking = !checkPending.isEmpty();
-        var checkingTimestamp = timestampOptions != null && addTimestamp.isSelected() && timestampChecking;
         var nothingToPick = toggleGroup.getToggles().stream().allMatch(toggle -> ((RadioButton) toggle).isDisabled());
-        var missingTimestampSource = timestampOptions != null && addTimestamp.isSelected() && timestampOptions.source() == null;
-        mainButton.setDisable(checking || checkingTimestamp || nothingToPick || missingTimestampSource);
-        if (!checking && checkingTimestamp)
-            mainButton.setText(i18n("pickKey.timestamp.checking"));
-        else if (!checking)
+        var selected = toggleGroup.getSelectedToggle();
+        var missingTimestampSource = timestampOptions != null && timestampOptions.source() == null
+                && selected != null && ((Choice) selected.getUserData()).timestampRequested();
+        timestampStatus.setText(missingTimestampSource ? i18n("pickKey.timestamp.missingSource") : "");
+        timestampStatus.getParent().setVisible(missingTimestampSource);
+        timestampStatus.getParent().setManaged(missingTimestampSource);
+        mainButton.setDisable(checking || nothingToPick || missingTimestampSource);
+        if (!checking)
             mainButton.setText(mainButtonText);
         else if (trustedListsLoading)
             mainButton.setText(i18n("pickKey.trustedListsLoading.btn"));
@@ -301,12 +299,15 @@ public class PickKeyDialogController extends BaseController {
             formGroup.getStyleClass().add("autogram-form-group--error");
             formGroup.getScene().getWindow().sizeToScene();
         } else {
-            if (timestampOptions != null && timestampOptions.job().canSelectTimestamp())
-                timestampOptions.job().setTimestampEnabled(addTimestamp.isSelected(),
-                        timestampResult == null ? timestampOptions.source() : timestampResult.source());
+            var choice = (Choice) toggleGroup.getSelectedToggle().getUserData();
+            if (canSelectTimestamp()) {
+                timestampOptions.job().setTimestampEnabled(choice.timestampRequested(), timestampOptions.source());
+                var result = results.get(choice.key());
+                timestampOptions.job().setSignatureRequirements(SignatureRequirements.fromCertificate(
+                        result == null ? null : result.qualification(), choice.timestampRequested()));
+            }
             GUIUtils.closeWindow(mainBox);
-            var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
-            callback.accept(key);
+            callback.accept(choice.key());
         }
     }
 }

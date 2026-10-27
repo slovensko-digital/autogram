@@ -118,6 +118,19 @@
   -fx-alignment: center-left;
 }
 
+.autogram-pick-key-description {
+  -fx-fill: -autogram-secondary-text-colour;
+}
+
+.autogram-pick-key-option {
+  -fx-padding: 0 0 0 0.75em;
+}
+
+.autogram-pick-key-choice {
+  -fx-alignment: top-left;
+  -fx-graphic-text-gap: 0;
+}
+
 /* like govuk-inset-text */
 .autogram-pick-key-hint {
   -fx-border-color: -autogram-border-colour;

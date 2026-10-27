@@ -1,10 +1,11 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.TestPki;
+import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.CertificateStatusChecker.Result;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningParametersResolver;
-import digital.slovensko.autogram.core.TimestampSourceChecker;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
@@ -17,7 +18,6 @@ import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
-import eu.europa.esig.dss.enumerations.TimestampQualification;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
@@ -27,13 +27,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.RadioButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.mockito.ArgumentCaptor;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,12 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 /**
  * Certificate selection with the results of the status and qualification checks, given by the test instead of OCSP,
@@ -246,70 +253,60 @@ class PickKeyDialogControllerTest {
     }
 
     @Test
-    void testQualifiedTimestampSwitchesHandwrittenToNotarizedWithoutChangingTheJobYet() throws Exception {
+    void testQualifiedCertificateHasTwoGoalsWithoutRequestingAnyTrialTimestamp() throws Exception {
         onFxThread(() -> {
             var job = job(false, true);
             var source = mock(TSPSource.class);
-            var checks = new ArrayList<Consumer<TimestampSourceChecker.Result>>();
-            var dialog = open(List.of(jana), settings(false, "SK"), new PickKeyDialogController.TimestampOptions(job, source, checks::add));
+            var dialog = open(List.of(jana), settings(false, "SK"), new PickKeyDialogController.TimestampOptions(job, source));
             dialog.answer(jana, QUALIFIED);
 
-            assertTrue(checks.isEmpty());
-            assertFalse(dialog.controller().addTimestamp.isSelected());
-            assertEquals(List.of("Vlastnoručný podpis"), texts(dialog.badges(jana)));
-
-            dialog.controller().addTimestamp.setSelected(true);
-            assertEquals(1, checks.size());
-            assertTrue(dialog.controller().mainButton.isDisabled());
-            checks.getFirst().accept(new TimestampSourceChecker.Result(TimestampQualification.QTSA, source));
-
-            assertEquals(List.of("Osvedčený podpis"), texts(dialog.badges(jana)));
-            assertEquals(dialog.i18n("pickKey.timestamp.addQualified"), dialog.controller().addTimestamp.getText());
+            assertEquals(2, dialog.controller().radios.getChildren().size());
+            assertEquals(List.of("Osvedčený podpis"), texts(dialog.badges(jana, true)));
+            assertEquals(List.of("Vlastnoručný podpis"), texts(dialog.badges(jana, false)));
+            assertTrue(dialog.description(jana, true).isEmpty());
+            assertTrue(dialog.description(jana, false).isEmpty());
+            assertTrue(dialog.radio(jana, true).getAccessibleText().contains("Osvedčený podpis"));
+            assertTrue(dialog.radio(jana, false).getAccessibleText().contains("Vlastnoručný podpis"));
+            assertTrue(dialog.radio(jana, true).isSelected());
+            dialog.radio(jana, false).setSelected(true);
             assertFalse(dialog.controller().mainButton.isDisabled());
             assertEquals(SignatureProfile.BASELINE_B, job.getParameters().getSignatureProfile());
-
-            dialog.controller().addTimestamp.setSelected(false);
-            assertEquals(List.of("Vlastnoručný podpis"), texts(dialog.badges(jana)));
-            dialog.controller().addTimestamp.setSelected(true);
-            assertEquals(1, checks.size(), "toggling the choice does not request another probe");
-            assertEquals(List.of("Osvedčený podpis"), texts(dialog.badges(jana)));
+            verifyNoInteractions(source);
         });
     }
 
     @Test
-    void testTurningTimestampOffDoesNotWaitForTheProbeOrUpgradeOnALateReply() throws Exception {
+    void testRecognizedAuthorizationUsesTheSameBadgeForBothTimestampOptions() throws Exception {
         onFxThread(() -> {
-            var checks = new ArrayList<Consumer<TimestampSourceChecker.Result>>();
             var source = mock(TSPSource.class);
-            var dialog = open(List.of(jana), settings(false, "SK"),
-                    new PickKeyDialogController.TimestampOptions(job(false, true), source, checks::add));
-            dialog.answer(jana, QUALIFIED);
-            dialog.controller().addTimestamp.setSelected(true);
-            dialog.controller().addTimestamp.setSelected(false);
+            var dialog = open(List.of(recognized), settings(false, "SK"),
+                    new PickKeyDialogController.TimestampOptions(job(false, true), source));
+            dialog.answer(recognized, RECOGNIZED);
 
+            assertEquals(List.of("Uznaný spôsob autorizácie"), texts(dialog.badges(recognized, true)));
+            assertEquals(List.of("Uznaný spôsob autorizácie"), texts(dialog.badges(recognized, false)));
+            assertEquals("S časovou pečiatkou", dialog.description(recognized, true));
+            assertEquals("Bez časovej pečiatky", dialog.description(recognized, false));
+            assertTrue(dialog.radio(recognized, true).getAccessibleText().contains("S časovou pečiatkou"));
             assertFalse(dialog.controller().mainButton.isDisabled());
-            checks.getFirst().accept(new TimestampSourceChecker.Result(TimestampQualification.QTSA, source));
-            assertEquals(List.of("Vlastnoručný podpis"), texts(dialog.badges(jana)));
-            assertFalse(dialog.controller().mainButton.isDisabled());
+            verifyNoInteractions(source);
         });
     }
 
     @Test
-    void testNonQualifiedAndUnknownSourcesDoNotPredictANotarizedSignature() throws Exception {
+    void testEachCertificateIsCheckedOnceAndRevocationDisablesBothChoices() throws Exception {
         onFxThread(() -> {
-            for (var qualification : new TimestampQualification[]{TimestampQualification.TSA, null}) {
-                var source = mock(TSPSource.class);
-                var dialog = open(List.of(jana), settings(false, "SK"),
-                        new PickKeyDialogController.TimestampOptions(job(true, true), source,
-                                answer -> answer.accept(new TimestampSourceChecker.Result(qualification, source))));
-                dialog.answer(jana, QUALIFIED);
-
-                assertEquals(List.of("QESig", "Neznáma ČP"), texts(dialog.badges(jana)));
-                assertEquals(dialog.i18n("pickKey.timestamp.add"), dialog.controller().addTimestamp.getText());
-                assertFalse(dialog.controller().mainButton.isDisabled());
-                assertEquals(dialog.i18n(qualification == null ? "pickKey.timestamp.unknown" : "pickKey.timestamp.notQualified"),
-                        dialog.controller().timestampStatus.getText());
-            }
+            var dialog = open(List.of(jana, peter), settings(false, "SK"),
+                    new PickKeyDialogController.TimestampOptions(job(true, true), mock(TSPSource.class)));
+            assertEquals(2, dialog.answers().size());
+            assertEquals(4, dialog.controller().radios.getChildren().size());
+            dialog.answer(jana, QUALIFIED);
+            assertTrue(dialog.controller().mainButton.isDisabled());
+            dialog.answer(peter, new Result(CertificateStatus.REVOKED, CertificateQualification.QCERT_FOR_ESIG_QSCD));
+            assertTrue(dialog.radio(peter, true).isDisabled());
+            assertTrue(dialog.radio(peter, false).isDisabled());
+            assertFalse(dialog.radio(jana, true).isDisabled());
+            assertFalse(dialog.controller().mainButton.isDisabled());
         });
     }
 
@@ -318,19 +315,17 @@ class PickKeyDialogControllerTest {
         onFxThread(() -> {
             var job = job(false, true);
             var settings = settings(false, "SK");
-            settings.setTsaEnabled(false);
             var source = mock(TSPSource.class);
             var dialog = open(List.of(jana), settings,
-                    new PickKeyDialogController.TimestampOptions(job, source,
-                            answer -> answer.accept(new TimestampSourceChecker.Result(TimestampQualification.QTSA, source))));
+                    new PickKeyDialogController.TimestampOptions(job, source));
             dialog.answer(jana, QUALIFIED);
-            dialog.controller().addTimestamp.setSelected(true);
+            dialog.radio(jana, true).setSelected(true);
             var stage = new Stage();
             stage.setScene(new Scene(dialog.root()));
             dialog.controller().onPickCertificateButtonAction(null);
 
             assertEquals(SignatureProfile.BASELINE_T, job.getParameters().getSignatureProfile());
-            assertFalse(settings.getTsaEnabled());
+            assertEquals(SignatureProfile.BASELINE_B, settings.getDefaultSigningParameters().getSignatureProfile());
         });
     }
 
@@ -340,10 +335,9 @@ class PickKeyDialogControllerTest {
             var job = job(false, true);
             var source = mock(TSPSource.class);
             var dialog = open(List.of(jana), settings(false, "SK"),
-                    new PickKeyDialogController.TimestampOptions(job, source,
-                            answer -> answer.accept(new TimestampSourceChecker.Result(TimestampQualification.QTSA, source))));
+                    new PickKeyDialogController.TimestampOptions(job, source));
             dialog.answer(jana, QUALIFIED);
-            dialog.controller().addTimestamp.setSelected(true);
+            dialog.radio(jana, true).setSelected(true);
             var stage = new Stage();
             stage.setScene(new Scene(dialog.root()));
             stage.close();
@@ -353,35 +347,111 @@ class PickKeyDialogControllerTest {
     }
 
     @Test
-    void testMissingSourceCanBeResolvedByTurningTimestampOff() throws Exception {
+    void testLocalDefaultDoesNotDependOnThePreparedTimestampProfile() throws Exception {
         onFxThread(() -> {
-            var dialog = open(List.of(jana), settings(false, "SK"),
-                    new PickKeyDialogController.TimestampOptions(job(true, true), null,
-                            answer -> fail("a missing source must not be probed")));
-            dialog.answer(jana, QUALIFIED);
-
-            assertTrue(dialog.controller().mainButton.isDisabled());
-            assertEquals(dialog.i18n("pickKey.timestamp.missingSource"), dialog.controller().timestampStatus.getText());
-            dialog.controller().addTimestamp.setSelected(false);
-            assertFalse(dialog.controller().mainButton.isDisabled());
+            for (var timestamp : new boolean[]{false, true}) {
+                var dialog = open(List.of(jana), settings(false, "SK"),
+                        new PickKeyDialogController.TimestampOptions(job(timestamp, true), mock(TSPSource.class)));
+                dialog.answer(jana, QUALIFIED);
+                assertTrue(dialog.radio(jana, true).isSelected());
+                assertFalse(dialog.radio(jana, false).isSelected());
+            }
         });
     }
 
     @Test
-    void testTimestampRequiredByAWebsiteIsShownButCannotBeTurnedOff() throws Exception {
+    void testMissingSourceCanBeResolvedByChoosingHandwrittenSignature() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana), settings(false, "SK"),
+                    new PickKeyDialogController.TimestampOptions(job(true, true), null));
+            dialog.answer(jana, QUALIFIED);
+
+            assertTrue(dialog.controller().mainButton.isDisabled());
+            assertEquals(dialog.i18n("pickKey.timestamp.missingSource"), dialog.controller().timestampStatus.getText());
+            dialog.radio(jana, false).setSelected(true);
+            assertFalse(dialog.controller().mainButton.isDisabled());
+            assertFalse(dialog.controller().timestampStatus.getParent().isVisible());
+        });
+    }
+
+    @Test
+    void testWebsiteHasOneFixedChoiceAndDoesNotPromiseTimestampQualification() throws Exception {
         onFxThread(() -> {
             var job = job(true, false);
             var source = mock(TSPSource.class);
             var dialog = open(List.of(jana), settings(false, "SK"),
-                    new PickKeyDialogController.TimestampOptions(job, source,
-                            answer -> answer.accept(new TimestampSourceChecker.Result(TimestampQualification.QTSA, source))));
+                    new PickKeyDialogController.TimestampOptions(job, source));
             dialog.answer(jana, QUALIFIED);
 
-            assertTrue(dialog.controller().addTimestamp.isSelected());
-            assertTrue(dialog.controller().addTimestamp.isDisabled());
-            assertEquals(dialog.i18n("pickKey.timestamp.fixed"), dialog.controller().timestampHint.getText());
-            assertEquals(List.of("Osvedčený podpis"), texts(dialog.badges(jana)));
+            assertEquals(1, dialog.controller().radios.getChildren().size());
+            assertTrue(dialog.radio(jana, true).isSelected());
+            assertEquals(List.of("QESig", "Neznáma ČP"), texts(dialog.badges(jana)));
             assertEquals(SignatureProfile.BASELINE_T, job.getParameters().getSignatureProfile());
+        });
+    }
+
+    @Test
+    void testRememberedCertificateStillRequiresChoosingTheGoalBeforeEveryLocalSignature() throws Exception {
+        onFxThread(() -> {
+            var gui = mock(GUI.class);
+            var autogram = mock(Autogram.class);
+            var key = mock(SigningKey.class);
+            var job = job(false, true);
+            when(gui.getActiveSigningKey()).thenReturn(key);
+            var controller = new SigningDialogController(job, autogram, gui, "Test", settings(false, "SK"));
+            controller.mainBox = new VBox();
+
+            controller.sign();
+
+            var callback = ArgumentCaptor.forClass(Runnable.class);
+            verify(gui).pickSignatureAndThen(eq(key), eq(job), callback.capture());
+            verifyNoInteractions(autogram);
+            callback.getValue().run();
+            verify(autogram).sign(job, key);
+        });
+    }
+
+    @Test
+    void testRememberedCertificateKeepsTheExistingWebsiteSigningFlow() throws Exception {
+        onFxThread(() -> {
+            var gui = mock(GUI.class);
+            var autogram = mock(Autogram.class);
+            var key = mock(SigningKey.class);
+            var job = job(true, false);
+            when(gui.getActiveSigningKey()).thenReturn(key);
+            var controller = new SigningDialogController(job, autogram, gui, "Test", settings(false, "SK"));
+            controller.mainBox = new VBox();
+
+            controller.sign();
+
+            verify(autogram).sign(job, key);
+            verify(gui, never()).pickSignatureAndThen(any(), any(), any());
+        });
+    }
+
+    @Test
+    void testBothApprovedLayoutsStayCompactWithTheRealStylesheet() throws Exception {
+        onFxThread(() -> {
+            for (var result : List.of(QUALIFIED, RECOGNIZED)) {
+                var dialog = open(List.of(peter), settings(false, "SK"),
+                        new PickKeyDialogController.TimestampOptions(job(true, true), mock(TSPSource.class)));
+                dialog.answer(peter, result);
+                var stage = new Stage();
+                var scene = new Scene(dialog.root());
+                scene.getStylesheets().add(GUI.class.getResource("idsk.css").toExternalForm());
+                stage.setScene(scene);
+                try {
+                    stage.show();
+                    dialog.root().applyCss();
+                    dialog.root().layout();
+                    stage.sizeToScene();
+                    assertTrue(dialog.root().getLayoutBounds().getHeight() < 500, "the two choices must not expand vertically");
+                    assertTrue(dialog.radio(peter, true).getHeight() < 90);
+                    assertTrue(dialog.radio(peter, false).getHeight() < 90);
+                } finally {
+                    stage.close();
+                }
+            }
         });
     }
 
@@ -444,18 +514,38 @@ class PickKeyDialogControllerTest {
         }
 
         RadioButton radio(DSSPrivateKeyEntry key) {
-            return row(key).getChildren().stream().map(RadioButton.class::cast).findFirst().orElseThrow();
+            return radios(key).getFirst();
+        }
+
+        RadioButton radio(DSSPrivateKeyEntry key, boolean timestamp) {
+            return radios(key).get(timestamp ? 0 : 1);
         }
 
         HBox badges(DSSPrivateKeyEntry key) {
-            return (HBox) row(key).getChildren().get(1);
+            return badges(radio(key));
         }
 
-        private HBox row(DSSPrivateKeyEntry key) {
+        HBox badges(DSSPrivateKeyEntry key, boolean timestamp) {
+            return badges(radio(key, timestamp));
+        }
+
+        private HBox badges(RadioButton radio) {
+            var content = (javafx.scene.layout.VBox) radio.getGraphic();
+            return (HBox) ((HBox) content.getChildren().getFirst()).getChildren().get(1);
+        }
+
+        String description(DSSPrivateKeyEntry key, boolean timestamp) {
+            var content = (javafx.scene.layout.VBox) radio(key, timestamp).getGraphic();
+            var description = content.getChildren().get(1);
+            return description.isVisible() ? String.join("", texts(description)) : "";
+        }
+
+        private List<RadioButton> radios(DSSPrivateKeyEntry key) {
             return controller.radios.getChildren().stream()
-                    .map(HBox.class::cast)
-                    .filter(row -> row.getChildren().getFirst().getUserData() == key)
-                    .findFirst().orElseThrow();
+                    .map(RadioButton.class::cast)
+                    .filter(radio -> texts(radio.getGraphic()).contains(digital.slovensko.autogram.util.DSSUtils
+                            .parseCN(key.getCertificate().getSubject().getRFC2253())))
+                    .toList();
         }
     }
 }

@@ -4,7 +4,8 @@ import digital.slovensko.autogram.TestMethodSources;
 import digital.slovensko.autogram.TestPki;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
-import digital.slovensko.autogram.core.errors.TsaServerMisconfiguredException;
+import digital.slovensko.autogram.core.errors.SignatureRequirementsNotMetException;
+import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
@@ -47,9 +48,15 @@ class TimestampChoiceTest {
     @EnumSource(value = SignatureForm.class, names = {"PAdES", "XAdES", "CAdES"})
     void enablingTimestampChangesTheActualSignatureNotOnlyThePreview(SignatureForm form) throws IOException {
         var job = SigningJob.fromLocalInput(input(SignatureProfile.BASELINE_B, form), null);
-        var checkedSource = new TimestampSourceChecker(() -> null).check(pki.tspSource(), pki.verifier());
-        job.setTimestampEnabled(true, checkedSource.source());
+        var requests = new AtomicInteger();
+        TSPSource source = (algorithm, digest) -> {
+            requests.incrementAndGet();
+            return pki.tspSource().getTimeStampResponse(algorithm, digest);
+        };
+        job.setTimestampEnabled(true, source);
+        job.setSignatureRequirements(SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESIG_QSCD, true));
 
+        assertEquals(0, requests.get(), "selecting a goal must not request a trial timestamp");
         assertEquals(SignatureProfile.BASELINE_T, job.getParameters().getSignatureProfile());
         var signed = job.signWithKey(pki.signer(TestPki.JANA).signingKey(), null).getDocument();
         var reports = SignatureValidator.getInstance().validate(SignedDocumentValidator.fromDocument(signed));
@@ -59,6 +66,7 @@ class TimestampChoiceTest {
         assertEquals(SignatureQualification.QESIG, reports.getDetailedReport().getSignatureQualification(id));
         assertEquals(1, simple.getSignatureTimestamps(id).size());
         assertEquals(TimestampQualification.QTSA, simple.getTimestampQualification(simple.getSignatureTimestamps(id).getFirst().getId()));
+        assertEquals(1, requests.get(), "only the real signature requests a timestamp");
     }
 
     @ParameterizedTest
@@ -66,6 +74,7 @@ class TimestampChoiceTest {
     void disablingTimestampOverridesThePreparedLocalProfile(SignatureForm form) throws IOException {
         var job = SigningJob.fromLocalInput(input(SignatureProfile.BASELINE_T, form), null);
         job.setTimestampEnabled(false, null);
+        job.setSignatureRequirements(SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESIG_QSCD, false));
 
         var signed = job.signWithKey(pki.signer(TestPki.JANA).signingKey(), pki.tspSource()).getDocument();
         var simple = SignatureValidator.getInstance().validate(SignedDocumentValidator.fromDocument(signed)).getSimpleReport();
@@ -93,20 +102,77 @@ class TimestampChoiceTest {
         assertEquals(input.getDocuments(), job.getDocuments());
     }
 
-    @Test
-    void aNonQualifiedFallbackCannotBeSavedAsTheAdvertisedQualifiedTimestamp() throws IOException {
-        var requests = new AtomicInteger();
-        TSPSource source = (algorithm, digest) -> (requests.getAndIncrement() == 0 ? pki.tspSource() : pki.nonQualifiedTspSource())
-                .getTimeStampResponse(algorithm, digest);
-        var checked = new TimestampSourceChecker(() -> null).check(source, pki.verifier());
-        assertEquals(TimestampQualification.QTSA, checked.qualification());
+    @ParameterizedTest
+    @EnumSource(value = SignatureForm.class, names = {"PAdES", "XAdES", "CAdES"})
+    void aNonQualifiedTimestampCannotBeSavedAsTheRequestedNotarizedSignature(SignatureForm form) throws IOException {
         var responder = mock(Responder.class);
-        var job = SigningJob.fromLocalInput(input(SignatureProfile.BASELINE_B, SignatureForm.XAdES), responder);
-        job.setTimestampEnabled(true, checked.source());
+        var job = SigningJob.fromLocalInput(input(SignatureProfile.BASELINE_B, form), responder);
+        job.setTimestampEnabled(true, pki.nonQualifiedTspSource());
+        job.setSignatureRequirements(SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESIG_QSCD, true));
 
-        assertThrows(TsaServerMisconfiguredException.class,
+        assertThrows(SignatureRequirementsNotMetException.class,
                 () -> job.signWithKeyAndRespond(pki.signer(TestPki.JANA).signingKey(), null));
         verifyNoInteractions(responder);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SignatureForm.class, names = {"PAdES", "XAdES", "CAdES"})
+    void recognizedAuthorizationAndSealsMeetTheirSelectedGoals(SignatureForm form) throws IOException {
+        for (var kind : new TestPki.Kind[]{TestPki.Kind.ADESIG_QC, TestPki.Kind.QESEAL}) {
+            var signer = pki.issue("Selected " + kind, kind);
+            var qualification = kind == TestPki.Kind.ADESIG_QC
+                    ? CertificateQualification.QCERT_FOR_ESIG : CertificateQualification.QCERT_FOR_ESEAL_QSCD;
+            for (var timestamp : new boolean[]{false, true}) {
+                var job = SigningJob.fromLocalInput(input(SignatureProfile.BASELINE_B, form), null);
+                job.setTimestampEnabled(timestamp, pki.tspSource());
+                job.setSignatureRequirements(SignatureRequirements.fromCertificate(qualification, timestamp));
+
+                assertNotNull(job.signWithKey(signer.signingKey(), null));
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = SignatureForm.class, names = {"PAdES", "XAdES", "CAdES"})
+    void existingSignaturesDoNotSatisfyTheGoalForTheNewSignature(SignatureForm form) throws IOException {
+        var original = input(SignatureProfile.BASELINE_T, form);
+        var firstJob = SigningJob.fromLocalInput(original, null);
+        var first = firstJob.signWithKey(pki.signer(TestPki.JANA).signingKey(), pki.tspSource());
+        var document = AutogramDocument.build(first.getDocument(), null);
+        var responder = mock(Responder.class);
+        var job = SigningJob.fromLocalInput(SigningInput.fromDocument(document, original.getParameters()), responder);
+        job.setTimestampEnabled(true, pki.tspSource());
+        job.setSignatureRequirements(SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESIG_QSCD, true));
+        var weaker = pki.issue("No QSCD " + form, TestPki.Kind.ADESIG_QC);
+
+        assertThrows(SignatureRequirementsNotMetException.class, () -> job.signWithKeyAndRespond(weaker.signingKey(), null));
+        verifyNoInteractions(responder);
+
+        // The same container can still be signed successfully with the right certificate after a failed attempt.
+        assertNotNull(job.signWithKey(pki.signer(TestPki.JANA).signingKey(), null));
+    }
+
+    @Test
+    void recognizedAuthorizationWithANonQualifiedTimestampDoesNotMeetTheSelectedGoal() throws IOException {
+        var signer = pki.issue("Recognized with wrong timestamp", TestPki.Kind.ADESIG_QC);
+        var job = SigningJob.fromLocalInput(input(SignatureProfile.BASELINE_B, SignatureForm.XAdES), null);
+        job.setTimestampEnabled(true, pki.nonQualifiedTspSource());
+        job.setSignatureRequirements(SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESIG, true));
+
+        assertThrows(SignatureRequirementsNotMetException.class, () -> job.signWithKey(signer.signingKey(), null));
+    }
+
+    @Test
+    void anUnavailableQualificationCannotSatisfyAKnownSelectedGoal() throws IOException {
+        var job = SigningJob.fromLocalInput(input(SignatureProfile.BASELINE_B, SignatureForm.XAdES), null);
+        job.setSignatureRequirements(SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESIG_QSCD, false));
+        SignatureValidator.getInstance().useCustomVerifier(NetworkClients.certificateVerifier());
+        try {
+            assertThrows(SignatureRequirementsNotMetException.class,
+                    () -> job.signWithKey(pki.signer(TestPki.JANA).signingKey(), null));
+        } finally {
+            SignatureValidator.getInstance().useCustomVerifier(pki.verifier());
+        }
     }
 
     @ParameterizedTest
@@ -117,6 +183,8 @@ class TimestampChoiceTest {
         assertFalse(job.canSelectTimestamp());
         assertThrows(IllegalStateException.class, () -> job.setTimestampEnabled(true, pki.tspSource()));
         assertThrows(IllegalStateException.class, () -> job.setTimestampEnabled(false, null));
+        assertThrows(IllegalStateException.class, () -> job.setSignatureRequirements(
+                SignatureRequirements.fromCertificate(CertificateQualification.QCERT_FOR_ESIG_QSCD, true)));
         assertEquals(profile, job.getParameters().getSignatureProfile());
     }
 

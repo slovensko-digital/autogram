@@ -45,23 +45,6 @@
                                 <HBox styleClass="autogram-settings-row">
                                     <VBox styleClass="left">
                                         <TextFlow>
-                                            <Text styleClass="autogram-heading-s" text="%settings.signing.tsaEnabled.label"/>
-                                        </TextFlow>
-                                        <TextFlow>
-                                            <Text styleClass="autogram-description" text="%settings.signing.tsaEnabled.text"/>
-                                        </TextFlow>
-                                        <TextFlow>
-                                            <Text styleClass="autogram-description" text="%settings.signing.tsaEnabled.notarized.text"/>
-                                        </TextFlow>
-                                    </VBox>
-                                    <VBox styleClass="autogram-checkbox-container">
-                                        <HBox fx:id="tsaEnabledRadios"
-                                            styleClass="autogram-smaller-radio-buttons" />
-                                    </VBox>
-                                </HBox>
-                                <HBox styleClass="autogram-settings-row">
-                                    <VBox styleClass="left">
-                                        <TextFlow>
                                             <Text styleClass="autogram-heading-s" text="%settings.signing.tsaServer.label"/>
                                         </TextFlow>
                                         <TextFlow>

@@ -32,7 +32,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private static final String DEFAULT_SIGNATURE_LEVEL = SignatureLevelStringConverter.PADES;
     private static final String DEFAULT_DRIVER = "";
     /** Preferences of removed settings - default driver and custom slot indexes, removed on save */
-    private static final List<String> OBSOLETE_PREFERENCES = List.of("DRIVER", "DRIVER_SLOT_INDEX_MAP", "SLOT_INDEX");
+    private static final List<String> OBSOLETE_PREFERENCES = List.of("DRIVER", "DRIVER_SLOT_INDEX_MAP", "SLOT_INDEX", "TSA_ENABLE");
     private static final boolean DEFAULT_EN319132 = false;
     private static final boolean DEFAULT_BULK_ENABLED = false;
     private static final boolean DEFAULT_PLAIN_XML_ENABLED = false;
@@ -47,7 +47,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private static final String DEFAULT_TRUSTED_LIST = "SK,CZ,AT,PL,HU,BE,NL,ES";
     private static final String DEFAULT_CUSTOM_KEYSTORE_PATH = "";
     private static final String DEFAULT_CUSTOM_TSA_SERVER = "";
-    private static final boolean DEFAULT_TSA_ENABLE = false;
     private static final int DEFAULT_PDF_DPI = 100;
     private static final long DEFAULT_TOKEN_SESSION_TIMEOUT = 5L;
     private static final String DEFAULT_CUSTOM_PKCS11_DRIVER_PATH = "";
@@ -80,7 +79,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     /** Servers used for timestamps, null after an empty value was set (tsaServer keeps the last non-empty one) */
     private String tspSourceServers;
     private String proxyUrl = "";
-    private boolean tsaEnabled;
     private String customTsaServer;
     private boolean bulkEnabled;
     private int pdfDpi;
@@ -112,7 +110,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setTrustedList(prefs.get("TRUSTED_LIST", DEFAULT_TRUSTED_LIST));
         settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", DEFAULT_CUSTOM_KEYSTORE_PATH));
         settings.setCustomTsaServer(prefs.get("CUSTOM_TSA_SERVER", DEFAULT_CUSTOM_TSA_SERVER));
-        settings.setTsaEnabled(prefs.getBoolean("TSA_ENABLE", DEFAULT_TSA_ENABLE));
         settings.setPdfDpi(prefs.getInt("PDF_DPI", DEFAULT_PDF_DPI));
         settings.setTokenSessionTimeout(prefs.getLong("TOKEN_SESSION_TIMEOUT", DEFAULT_TOKEN_SESSION_TIMEOUT));
         settings.setCustomPKCS11DriverPath(prefs.get("CUSTOM_PKCS11_DRIVER_PATH", DEFAULT_CUSTOM_PKCS11_DRIVER_PATH));
@@ -152,7 +149,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.put("CUSTOM_KEYSTORE_PATH", customKeystorePath);
         prefs.put("TSA_SERVER", tsaServer);
         prefs.put("CUSTOM_TSA_SERVER", customTsaServer);
-        prefs.putBoolean("TSA_ENABLE", tsaEnabled);
         prefs.putInt("PDF_DPI", pdfDpi);
         prefs.putLong("TOKEN_SESSION_TIMEOUT", tokenSessionTimeout);
         prefs.put("CUSTOM_PKCS11_DRIVER_PATH", customPKCS11DriverPath);
@@ -185,7 +181,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         setCustomKeystorePath(DEFAULT_CUSTOM_KEYSTORE_PATH);
         setTsaServer(DEFAULT_TSA_SERVER);
         setCustomTsaServer(DEFAULT_CUSTOM_TSA_SERVER);
-        setTsaEnabled(DEFAULT_TSA_ENABLE);
         setPdfDpi(DEFAULT_PDF_DPI);
         setTokenSessionTimeout(DEFAULT_TOKEN_SESSION_TIMEOUT);
         setCustomPKCS11DriverPath(DEFAULT_CUSTOM_PKCS11_DRIVER_PATH);
@@ -230,7 +225,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public SigningParameters getDefaultSigningParameters() {
         return SigningParametersResolver.buildRequested(
-                getTsaEnabled() ? SignatureProfile.BASELINE_T : SignatureProfile.BASELINE_B,
+                SignatureProfile.BASELINE_B,
                 getSignatureLevel().getSignatureForm(),
                 DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E,
@@ -447,14 +442,6 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public void setProxyUrl(String value) {
         proxyUrl = value;
-    }
-
-    public boolean getTsaEnabled() {
-        return tsaEnabled;
-    }
-
-    public void setTsaEnabled(boolean value) {
-        tsaEnabled = value;
     }
 
     public void setBulkEnabled(boolean value) {

@@ -72,6 +72,12 @@ public abstract class SignatureBadgeFactory {
         return createBadgeFromCertificateQualification(qualification, false, null, resources);
     }
 
+    /** A requested goal, not a claim that the configured TSA will return a qualified timestamp. */
+    public static Node createRequestedBadgeFromCertificateQualification(CertificateQualification qualification,
+            boolean timestampRequested, ResourceBundle resources) {
+        return createBadgeFromCertificateQualification(qualification, timestampRequested, TimestampQualification.QTSA, resources);
+    }
+
     public static Node createBadgeFromCertificateQualification(CertificateQualification qualification, boolean timestampRequested,
             TimestampQualification timestampQualification, ResourceBundle resources) {
         if (qualification == null)
@@ -165,7 +171,7 @@ public abstract class SignatureBadgeFactory {
         }
     }
 
-    /** Shared names for the picker's prediction and the validated signature. */
+    /** Shared names for the picker's goal and the validated signature. */
     private static Node createShortQualificationBadge(ResourceBundle resources, SignatureQualification qualification,
             boolean hasTimestamps, boolean timestampsQualified) {
         var key = switch (qualification) {

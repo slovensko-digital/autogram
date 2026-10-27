@@ -6,7 +6,7 @@ public class TsaServerMisconfiguredException extends AutogramException {
     }
 
     public enum Error {
-        REFUSED, MISSING_HOST_NAME, NOT_QUALIFIED;
+        REFUSED, MISSING_HOST_NAME;
 
         private String toErrorCode() {
             return "TsaServerMisconfiguredException." + this.name();

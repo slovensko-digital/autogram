@@ -9,7 +9,6 @@ import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningMode;
-import digital.slovensko.autogram.core.TimestampSourceChecker;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -197,6 +196,11 @@ public class GUI implements UI {
             return;
         }
 
+        showKeyPicker(keys, callback, onCancel, job);
+    }
+
+    private void showKeyPicker(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback,
+            Runnable onCancel, SigningJob job) {
         var allKeys = keys;
         var keysStream = keys.stream();
 //        TODO: NFC eID returns false for qualified certificate #367
@@ -220,15 +224,12 @@ public class GUI implements UI {
         var trustedLists = SignatureValidator.getInstance().whenLoaded();
         Runnable openSettings = autogram == null ? null : () -> {
             SettingsDialogController.showAndWait(autogram, userSettings, SettingsDialogController.TRUSTED_COUNTRIES_TAB);
-            pickKeyAndThen(allKeys, driver, callback, onCancel, job);
+            showKeyPicker(allKeys, callback, onCancel, job);
         };
         PickKeyDialogController.TimestampOptions timestampOptions = null;
         if (job != null) {
             var source = userSettings.getTspSource();
-            var timestampChecker = new TimestampSourceChecker(SignatureValidator.getInstance()::whenLoaded);
-            timestampOptions = new PickKeyDialogController.TimestampOptions(job, source,
-                    onChecked -> timestampChecker.checkAsync(source, CERTIFICATE_STATUS_TIMEOUT, TRUSTED_LISTS_TIMEOUT)
-                            .thenAccept(result -> onUIThreadDo(() -> onChecked.accept(result))));
+            timestampOptions = new PickKeyDialogController.TimestampOptions(job, source);
         }
         var controller = new PickKeyDialogController(keys, callback, userSettings,
                 // DSS waits up to a minute for each unreachable server, the user should not
@@ -260,6 +261,10 @@ public class GUI implements UI {
         if (batchController != null) {
             batchController.refreshSigningKey();
         }
+    }
+
+    public void pickSignatureAndThen(SigningKey key, SigningJob job, Runnable onPicked) {
+        showKeyPicker(List.of(key.getPrivateKey()), ignored -> onPicked.run(), () -> { }, job);
     }
 
     @Override

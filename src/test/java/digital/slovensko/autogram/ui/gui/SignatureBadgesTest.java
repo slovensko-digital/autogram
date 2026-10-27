@@ -4,7 +4,6 @@ import digital.slovensko.autogram.TestPki;
 import digital.slovensko.autogram.core.CertificateStatusChecker;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.TestSignedDocuments;
-import digital.slovensko.autogram.core.TimestampSourceChecker;
 import digital.slovensko.autogram.core.ValidationReports;
 import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
@@ -84,8 +83,11 @@ class SignatureBadgesTest {
             case "non-qualified" -> pki.nonQualifiedTspSource();
             default -> null;
         };
-        var timestampChecker = new TimestampSourceChecker(() -> null);
-        var timestampQualification = source == null ? null : timestampChecker.check(source, pki.verifier()).qualification();
+        var timestampQualification = switch (timestampKind) {
+            case "qualified" -> eu.europa.esig.dss.enumerations.TimestampQualification.QTSA;
+            case "non-qualified" -> eu.europa.esig.dss.enumerations.TimestampQualification.TSA;
+            default -> null;
+        };
         var prediction = SignatureBadgeFactory.createBadgeFromCertificateQualification(qualification,
                 source != null, timestampQualification, SK);
         var report = validate(sign(signer, source));
