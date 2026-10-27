@@ -51,9 +51,9 @@ public class StartupProxyTest {
                     var verifier = NetworkClients.certificateVerifier();
                     assertEquals(1, verifier.getAIASource().getCertificatesByAIA(token).size());
                     // Intentionally malformed responses: routing must not imply successful validation.
-                    var crl = new eu.europa.esig.dss.service.crl.OnlineCRLSource(NetworkClients.dataLoader());
+                    var crl = NetworkClients.crlSource();
                     assertThrows(DSSExternalResourceException.class, () -> crl.getRevocationToken(token, token));
-                    var ocsp = new eu.europa.esig.dss.service.ocsp.OnlineOCSPSource(NetworkClients.ocspDataLoader());
+                    var ocsp = NetworkClients.ocspSource();
                     assertThrows(DSSExternalResourceException.class, () -> ocsp.getRevocationToken(token, token));
                     var settings = UserSettings.load();
                     settings.setTsaServer(fixture.httpUrl("/timestamp"));

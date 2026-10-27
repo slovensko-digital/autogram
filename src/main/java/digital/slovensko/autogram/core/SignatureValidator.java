@@ -32,8 +32,6 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
-import eu.europa.esig.dss.service.crl.OnlineCRLSource;
-import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
@@ -180,8 +178,8 @@ public class SignatureValidator {
 
         verifier = NetworkClients.certificateVerifier();
         verifier.setTrustedCertSources(trustedListCertificateSource);
-        verifier.setCrlSource(new OnlineCRLSource(NetworkClients.dataLoader()));
-        verifier.setOcspSource(new OnlineOCSPSource(NetworkClients.ocspDataLoader()));
+        verifier.setCrlSource(NetworkClients.crlSource());
+        verifier.setOcspSource(NetworkClients.ocspSource());
 
         logger.debug("Signature validator initialized at {}", formatter.format(new Date()));
     }

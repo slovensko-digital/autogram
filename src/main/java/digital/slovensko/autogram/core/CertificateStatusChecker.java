@@ -3,16 +3,14 @@ package digital.slovensko.autogram.core;
 import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
 import eu.europa.esig.dss.model.x509.CertificateToken;
-import eu.europa.esig.dss.service.crl.OnlineCRLSource;
-import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
+import eu.europa.esig.dss.model.x509.revocation.crl.CRL;
+import eu.europa.esig.dss.model.x509.revocation.ocsp.OCSP;
 import eu.europa.esig.dss.spi.validation.CertificateVerifier;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.CommonCertificateSource;
 import eu.europa.esig.dss.spi.x509.aia.AIASource;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.spi.x509.revocation.RevocationSource;
-import eu.europa.esig.dss.spi.x509.revocation.crl.CRLSource;
-import eu.europa.esig.dss.spi.x509.revocation.ocsp.OCSPSource;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.CertificateValidator;
 import eu.europa.esig.dss.validation.process.qualification.certificate.FinalCertificateQualificationCalculator;
@@ -47,13 +45,13 @@ public class CertificateStatusChecker {
         }
     }
 
-    private final OCSPSource ocspSource;
-    private final CRLSource crlSource;
+    private final RevocationSource<OCSP> ocspSource;
+    private final RevocationSource<CRL> crlSource;
     private final AIASource aiaSource;
     private final Supplier<CompletableFuture<CertificateVerifier>> trustedLists;
 
     /** @param trustedLists the verifier with the trusted lists once they are loaded */
-    public CertificateStatusChecker(OCSPSource ocspSource, CRLSource crlSource, AIASource aiaSource,
+    public CertificateStatusChecker(RevocationSource<OCSP> ocspSource, RevocationSource<CRL> crlSource, AIASource aiaSource,
             Supplier<CompletableFuture<CertificateVerifier>> trustedLists) {
         this.ocspSource = ocspSource;
         this.crlSource = crlSource;
@@ -62,8 +60,8 @@ public class CertificateStatusChecker {
     }
 
     public static CertificateStatusChecker online() {
-        return new CertificateStatusChecker(new OnlineOCSPSource(NetworkClients.ocspDataLoader()),
-                new OnlineCRLSource(NetworkClients.dataLoader()), new DefaultAIASource(NetworkClients.dataLoader()),
+        return new CertificateStatusChecker(NetworkClients.ocspSource(),
+                NetworkClients.crlSource(), new DefaultAIASource(NetworkClients.aiaDataLoader()),
                 SignatureValidator.getInstance()::whenLoaded);
     }
 

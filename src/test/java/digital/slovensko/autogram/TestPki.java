@@ -261,6 +261,26 @@ public class TestPki {
         return ca;
     }
 
+    /** Signed OCSP evidence, including absent/expired nextUpdate for cache regression tests. */
+    public eu.europa.esig.dss.spi.x509.revocation.ocsp.OCSPToken ocspToken(CertificateToken certificate,
+            Date thisUpdate, Date nextUpdate) {
+        try {
+            var digest = new JcaDigestCalculatorProviderBuilder().build()
+                    .get(org.bouncycastle.cert.ocsp.CertificateID.HASH_SHA1);
+            var id = new org.bouncycastle.cert.ocsp.CertificateID(digest,
+                    new JcaX509CertificateHolder(ca), certificate.getSerialNumber());
+            var builder = new org.bouncycastle.cert.ocsp.jcajce.JcaBasicOCSPRespBuilder(caKeys.getPublic(), digest);
+            org.bouncycastle.cert.ocsp.CertificateStatus status = revoked.contains(certificate.getSerialNumber())
+                    ? new org.bouncycastle.cert.ocsp.RevokedStatus(thisUpdate, CRLReason.keyCompromise) : null;
+            builder.addResponse(id, status, thisUpdate, nextUpdate, null);
+            var response = builder.build(new JcaContentSignerBuilder("SHA256withRSA").build(caKeys.getPrivate()),
+                    new org.bouncycastle.cert.X509CertificateHolder[]{new JcaX509CertificateHolder(ca)}, thisUpdate);
+            return new eu.europa.esig.dss.spi.x509.revocation.ocsp.OCSPToken(response, response.getResponses()[0], certificate, caToken);
+        } catch (Exception e) {
+            throw new IllegalStateException("cannot build test OCSP response", e);
+        }
+    }
+
     /** Offline verifier that trusts only this PKI, for SignatureValidator.useCustomVerifier. */
     public CertificateVerifier verifier() {
         var verifier = new CommonCertificateVerifier();
