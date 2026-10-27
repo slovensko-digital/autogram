@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningJob;
+import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.visualization.Visualization;
@@ -341,9 +342,15 @@ public class SigningDialogController extends BaseController implements Suppresse
     }
 
     public void sign() {
-        var signingKey = gui.getActiveSigningKey();
+        var signingKey = activeSigningKeyAllowedHere();
         if (signingKey == null) {
-            autogram.pickSigningKeyAndThen(key -> {
+            // the remembered key is of a type this document does not accept, the right one may be on another card
+            if (gui.getActiveSigningKey() != null) {
+                gui.resetSigningKey();
+                autogram.requestAnotherToken();
+            }
+
+            autogram.pickSigningKeyAndThen(job.getParameters().getSigningCertificateTypes(), key -> {
                 gui.setActiveSigningKeyAndThen(key, k -> {
                     gui.disableSigning();
                     getNodeForLoosingFocus().requestFocus();
@@ -451,7 +458,7 @@ public class SigningDialogController extends BaseController implements Suppresse
             return;
         }
 
-        var key = gui.getActiveSigningKey();
+        var key = activeSigningKeyAllowedHere();
         if (key == null) {
             mainButton.setText(i18n(job.isMultiDocument() ? "general.sign.btn.multi" : "general.sign.btn.single"));
             changeKeyButton.setVisible(false);
@@ -459,6 +466,11 @@ public class SigningDialogController extends BaseController implements Suppresse
             mainButton.setText(i18n(job.isMultiDocument() ? "signing.signAs.btn.multi" : "signing.signAs.btn.single", DSSUtils.parseCN(key.getCertificate().getSubject().getRFC2253())));
             changeKeyButton.setVisible(true);
         }
+    }
+
+    private SigningKey activeSigningKeyAllowedHere() {
+        var key = gui.getActiveSigningKey();
+        return key != null && job.getParameters().isSigningCertificateAllowed(key.getSigningCertificateType()) ? key : null;
     }
 
     public void enableSigning() {

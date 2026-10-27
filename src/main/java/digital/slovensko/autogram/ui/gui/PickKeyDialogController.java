@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.CertificateStatusChecker;
 import digital.slovensko.autogram.core.CertificateStatusChecker.Qualification;
+import digital.slovensko.autogram.core.SigningCertificateType;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
@@ -33,8 +34,9 @@ import static digital.slovensko.autogram.util.DSSUtils.buildTooltipLabel;
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
 public class PickKeyDialogController extends BaseController {
-    private final Consumer<DSSPrivateKeyEntry> callback;
+    private final BiConsumer<DSSPrivateKeyEntry, SigningCertificateType> callback;
     private final List<DSSPrivateKeyEntry> keys;
+    private final Set<SigningCertificateType> allowedTypes;
     private final UserSettings userSettings;
     private final BiConsumer<DSSPrivateKeyEntry, Consumer<CertificateStatusChecker.Result>> checkCertificate;
     private final Runnable openSettings;
@@ -63,11 +65,15 @@ public class PickKeyDialogController extends BaseController {
 
 
     /**
+     * @param allowedTypes types of certificates the user can pick, empty for any
+     * @param callback gets the picked key and its certificate's type, null when unknown
      * @param openSettings opens the settings after this dialog closed itself, null when the settings are not available
      */
-    public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback, UserSettings userSettings,
+    public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, Set<SigningCertificateType> allowedTypes,
+            BiConsumer<DSSPrivateKeyEntry, SigningCertificateType> callback, UserSettings userSettings,
             BiConsumer<DSSPrivateKeyEntry, Consumer<CertificateStatusChecker.Result>> checkCertificate, Runnable openSettings) {
         this.keys = keys;
+        this.allowedTypes = allowedTypes;
         this.callback = callback;
         this.userSettings = userSettings;
         this.checkCertificate = checkCertificate;
@@ -94,6 +100,8 @@ public class PickKeyDialogController extends BaseController {
             var radioButton = new RadioButton(parseCN(key.getCertificate().getSubject().getRFC2253()));
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(key);
+            // an expired certificate is not checked, so its type stays unknown
+            radioButton.setDisable(expired && !allowedTypes.isEmpty());
             radios.getChildren().add(new HBox(radioButton, badges));
 
             var tooltip = new Tooltip(buildTooltipLabel(key));
@@ -125,7 +133,7 @@ public class PickKeyDialogController extends BaseController {
         }
 
         if (checkPending.isEmpty())
-            showHintIfNothingQualified();
+            showHintIfNothingFits();
 
         updateMainButton();
         if (mainBox.getScene() != null && mainBox.getScene().getWindow() != null)
@@ -139,7 +147,9 @@ public class PickKeyDialogController extends BaseController {
         else if (result.status() != CertificateStatus.GOOD)
             badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.certificateStatus.unknown")));
 
-        if (result.qualification() == Qualification.NOT_QUALIFIED)
+        if (result.qualification() != Qualification.UNKNOWN && !isTypeAllowed(result.type()))
+            badges.add(SignatureBadgeFactory.createInvalidBadge(i18n("pickKey.type.notAllowed")));
+        else if (result.qualification() == Qualification.NOT_QUALIFIED)
             badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.qualification.notQualified")));
         else if (result.qualification() == Qualification.UNKNOWN)
             badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.qualification.unknown")));
@@ -147,17 +157,55 @@ public class PickKeyDialogController extends BaseController {
         return badges;
     }
 
+    /** Required types replace the setting for non-qualified certificates, the website or application asked for them. */
     private boolean isAllowed(CertificateStatusChecker.Result result) {
-        return result.status() != CertificateStatus.REVOKED
-                && (result.qualification() != Qualification.NOT_QUALIFIED || userSettings.isNonQualifiedCertsEnabled());
+        if (result.status() == CertificateStatus.REVOKED)
+            return false;
+
+        if (!allowedTypes.isEmpty())
+            return isTypeAllowed(result.type());
+
+        return result.qualification() != Qualification.NOT_QUALIFIED || userSettings.isNonQualifiedCertsEnabled();
     }
 
-    private void showHintIfNothingQualified() {
-        if (results.isEmpty() || !results.values().stream().allMatch(r -> r.qualification() == Qualification.NOT_QUALIFIED))
+    private boolean isTypeAllowed(SigningCertificateType type) {
+        return allowedTypes.isEmpty() || type != null && allowedTypes.contains(type);
+    }
+
+    private void showHintIfNothingFits() {
+        if (results.isEmpty())
             return;
 
+        String text;
+        if (!allowedTypes.isEmpty()) {
+            if (results.values().stream().anyMatch(r -> isTypeAllowed(r.type())))
+                return;
+
+            var types = allowedTypes.stream().sorted().map(type -> i18n("signingCertificateType." + type.name())).toList();
+            text = i18n("pickKey.hint.typeRequired", String.join(", ", types));
+            var countries = countriesTurnedOff();
+            if (!countries.isEmpty())
+                text += " " + i18n("pickKey.hint.countryTurnedOff", String.join(", ", countries));
+        } else {
+            if (!results.values().stream().allMatch(r -> r.qualification() == Qualification.NOT_QUALIFIED))
+                return;
+
+            var countries = countriesTurnedOff();
+            text = countries.isEmpty()
+                    ? i18n("pickKey.hint.notQualified")
+                    : i18n("pickKey.hint.countryTurnedOff", String.join(", ", countries));
+            if (!userSettings.isNonQualifiedCertsEnabled())
+                text += " " + i18n("pickKey.hint.allowNotQualified");
+        }
+
+        hintText.setText(text);
+        hint.setVisible(true);
+        hint.setManaged(true);
+    }
+
+    private List<String> countriesTurnedOff() {
         var locale = resources.getLocale();
-        var countriesTurnedOff = results.keySet().stream()
+        return results.keySet().stream()
                 .map(key -> CertificateStatusChecker.issuerCountry(key.getCertificate()))
                 .flatMap(Optional::stream)
                 .map(Country::withTrustedList)
@@ -166,16 +214,6 @@ public class PickKeyDialogController extends BaseController {
                 .map(country -> country.getName(locale))
                 .distinct()
                 .toList();
-
-        var text = countriesTurnedOff.isEmpty()
-                ? i18n("pickKey.hint.notQualified")
-                : i18n("pickKey.hint.countryTurnedOff", String.join(", ", countriesTurnedOff));
-        if (!userSettings.isNonQualifiedCertsEnabled())
-            text += " " + i18n("pickKey.hint.allowNotQualified");
-
-        hintText.setText(text);
-        hint.setVisible(true);
-        hint.setManaged(true);
     }
 
     /** Tells the user why the checks take longer, e.g. right after Autogram started. */
@@ -209,7 +247,8 @@ public class PickKeyDialogController extends BaseController {
         } else {
             GUIUtils.closeWindow(mainBox);
             var key = (DSSPrivateKeyEntry) toggleGroup.getSelectedToggle().getUserData();
-            callback.accept(key);
+            var result = results.get(key);
+            callback.accept(key, result != null ? result.type() : null);
         }
     }
 }

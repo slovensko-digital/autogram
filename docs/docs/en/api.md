@@ -33,11 +33,12 @@ Autogram runs a local server on the user's computer at `http://localhost:37200`.
 - A Financial Administration form: the form identifier in `xdcParameters.fsFormIdentifier`, see [Financial Administration forms](#financial-administration-forms).
 - Several separate documents: the batch API `/api/v1/batch`; the user chooses whether to sign them one by one or in bulk.
 - Request a timestamp with the `BASELINE_T` level (in `/api/v1/sign` with the `profile` parameter). Autogram gets it from the [timestamp sources](timestamps.md) in the user's settings, by default from free qualified providers.
+- Only a certain type of certificate, for example a qualified electronic signature or a mandate certificate: the `signingCertificateTypes` parameter, see [Signing certificate type](#signing-certificate-type).
 - List of certificates: `GET /api/v1/certificates`. Autogram asks for the [user's consent](websites.md#consent-to-reading-certificates) before sending the certificates.
 
 ## Several documents in one container {#several-documents-in-one-container}
 
-Create a new container from several documents through the HTTP API `POST /api/v1/sign` with a `documents` array (at most 5 documents, format `XAdES` or `CAdES`, container `ASiC_E`). An ASiC-E document cannot be part of such a request. See the [API documentation](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml) for details and examples.
+Create a new container from several documents through the HTTP API `POST /api/v1/sign` with a `documents` array (format `XAdES` or `CAdES`, container `ASiC_E`). An ASiC-E document cannot be part of such a request. See the [API documentation](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml) for details and examples.
 
 ```json
 {
@@ -48,6 +49,33 @@ Create a new container from several documents through the HTTP API `POST /api/v1
   ]
 }
 ```
+
+## Signing certificate type {#signing-certificate-type}
+
+With the `signingCertificateTypes` parameter in the `parameters` of `POST /api/v1/sign` you set which certificates the document may be signed with. The types are named as in the central electronic registry (CEP) of slovensko.sk:
+
+| Type | Certificate |
+| --- | --- |
+| `QESig` | qualified electronic signature, except a mandate certificate |
+| `QESig-MQC` | mandate certificate (mandátny certifikát) |
+| `QESeal` | qualified electronic seal |
+| `AdESig-QC` | recognised method of authorisation (uznaný spôsob autorizácie), for example a Slovak ID card issued before 21 June 2021 |
+| `AdESeal-QC` | seal with a qualified certificate that is not on a qualified device |
+| `AdESig`, `AdESeal` | non-qualified signature or seal |
+
+```json
+{
+  "parameters": { "form": "XAdES", "container": "ASiC_E", "signingCertificateTypes": ["QESig", "QESig-MQC"] },
+  "document": { "filename": "submission.txt", "mimeType": "text/plain", "content": "Submission" }
+}
+```
+
+- Certificates of other types are disabled when [choosing the certificate](card-and-pin.md#choosing-the-certificate), with the label **Document requires another type**. The user's setting **Allow signing with non-qualified certificates** does not apply then.
+- Autogram determines the type from the certificate and the trusted lists. A certificate whose type it cannot determine, for example when the trusted lists did not load, cannot be used.
+- Autogram recognises a mandate certificate by the certificate policy `1.3.158.36061701.1.1.<mandate number>`, by a subject field starting with `MANDANT ` or by `OPRÁVNENIE <number>` in the certificate's name.
+- If a document in batch signing requires another type than the batch's certificate has, Autogram does not sign it and returns error 422 (`SIGNING_CERTIFICATE_NOT_ALLOWED`).
+- Autogram knows the parameter from version 2.9.0, older versions ignore it. Get the version from `GET /api/v1/info`.
+- The registry validates the signature anyway. The parameter only prevents the user from signing with a certificate the registry would not accept.
 
 ## Financial Administration forms {#financial-administration-forms}
 

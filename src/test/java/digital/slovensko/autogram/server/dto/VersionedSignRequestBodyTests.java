@@ -11,11 +11,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 
+import digital.slovensko.autogram.core.SigningCertificateType;
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.errors.EFormException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
@@ -671,5 +673,37 @@ public class VersionedSignRequestBodyTests {
         assertNotNull(request.getDocuments().get(0).getEFormAttributes().schema());
         assertEquals(new String(Base64.getDecoder().decode(schema)), request.getDocuments().get(0).getEFormAttributes().schema());
         assertEquals(new String(Base64.getDecoder().decode(transformation)), request.getDocuments().get(0).getEFormAttributes().transformation());
+    }
+
+    @Test
+    void passesRequiredSigningCertificateTypes() {
+        var request = signRequestWithCertificateTypes("[\"QESig\", \"QESig-MQC\"]").getSigningInput(true);
+
+        assertEquals(Set.of(SigningCertificateType.QESIG, SigningCertificateType.QESIG_MANDATE),
+                request.getParameters().getSigningCertificateTypes());
+    }
+
+    @Test
+    void anyCertificateWithoutRequiredTypes() {
+        var request = signRequestWithCertificateTypes(null).getSigningInput(true);
+
+        assertTrue(request.getParameters().getSigningCertificateTypes().isEmpty());
+    }
+
+    @Test
+    void rejectsUnknownOrNoSigningCertificateTypes() {
+        assertThrows(RequestValidationException.class,
+                () -> signRequestWithCertificateTypes("[\"QESig\", \"QES\"]").getSigningInput(true));
+        assertThrows(RequestValidationException.class,
+                () -> signRequestWithCertificateTypes("[]").getSigningInput(true));
+    }
+
+    private VersionedSignRequestBody signRequestWithCertificateTypes(String types) {
+        return gson.fromJson("""
+                {
+                  "documents": [{"filename": "first.txt", "content": "Zmlyc3Q=", "mimeType": "text/plain;base64"}],
+                  "parameters": {"form": "XAdES", "container": "ASiC_E"%s}
+                }
+                """.formatted(types == null ? "" : ", \"signingCertificateTypes\": " + types), VersionedSignRequestBody.class);
     }
 }

@@ -16,6 +16,7 @@ import digital.slovensko.autogram.core.errors.PdfPasswordProtectedException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
 import digital.slovensko.autogram.core.errors.PDFAComplianceException;
+import digital.slovensko.autogram.core.errors.SigningCertificateNotAllowedException;
 import digital.slovensko.autogram.core.errors.UnknownEformException;
 import digital.slovensko.autogram.core.visualization.UnsupportedVisualization;
 import digital.slovensko.autogram.drivers.TokenDriver;
@@ -349,6 +350,48 @@ class AutogramTests {
         autogram.pickSigningKeyAndThen(key -> autogram.sign(SigningJob.fromInput(input, responder), key));
 
         verify(responder).onDocumentSigned(any());
+    }
+
+    @Test
+    void testKeyOfAnotherTypeThanDocumentRequiresDoesNotSign() {
+        var failures = new ArrayList<AutogramException>();
+        var autogram = TestAutogramFactory.create(new TestAutogramFactory.FakeUI() {
+            @Override
+            public void onSigningFailed(AutogramException e) {
+                failures.add(e);
+            }
+        });
+        var responder = mock(Responder.class);
+
+        autogram.sign(SigningJob.fromInput(textRequiringMandate(), responder), signingKeyOfType(SigningCertificateType.QESIG));
+
+        Assertions.assertEquals(1, failures.size());
+        Assertions.assertInstanceOf(SigningCertificateNotAllowedException.class, failures.getFirst());
+        verify(responder, never()).onDocumentSigned(any());
+    }
+
+    @Test
+    void testKeyOfRequiredTypeSigns() {
+        var autogram = TestAutogramFactory.create();
+        var responder = mock(Responder.class);
+
+        autogram.sign(SigningJob.fromInput(textRequiringMandate(), responder), signingKeyOfType(SigningCertificateType.QESIG_MANDATE));
+
+        verify(responder).onDocumentSigned(any());
+    }
+
+    private static SigningInput textRequiringMandate() {
+        var document = AutogramDocument.build(new InMemoryDocument("text".getBytes(), "text.txt",
+                AutogramMimeType.fromMimeTypeString("text/plain")), null);
+        var parameters = SigningParametersResolver.withSigningCertificateTypes(SigningParameters.buildParameters(
+                SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256, ASiCContainerType.ASiC_E,
+                SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, true), List.of(SigningCertificateType.QESIG_MANDATE));
+        return SigningInput.prepareForASiCWithXAdES(document, parameters);
+    }
+
+    private static SigningKey signingKeyOfType(SigningCertificateType type) {
+        var token = TestPki.shared().signer(TestPki.JANA).token();
+        return new SigningKey(token, token.getKeys().getFirst(), type);
     }
 
     @Test

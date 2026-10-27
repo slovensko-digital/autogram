@@ -14,6 +14,7 @@ import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PdfPasswordProtectedException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.core.errors.SigningCanceledByUserException;
+import digital.slovensko.autogram.core.errors.SigningCertificateNotAllowedException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
@@ -245,6 +246,9 @@ public class Autogram {
         // The batch may have ended while this document waited, e.g. for another one's PIN.
         if (job.isPartOfBatch() && job.getBatch().isEnded())
             throw new BatchEndedException(ALREADY_ENDED);
+
+        if (!job.getParameters().isSigningCertificateAllowed(signingKey.getSigningCertificateType()))
+            throw new SigningCertificateNotAllowedException();
 
         var previousBatch = passwordManager.setBatchContext(job.getBatch());
         passwordManager.startSigningAttempt();
@@ -553,8 +557,13 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
+        pickSigningKeyAndThen(Set.of(), callback);
+    }
+
+    /** @param allowedTypes types of certificates the user can pick, empty for any */
+    public void pickSigningKeyAndThen(Set<SigningCertificateType> allowedTypes, Consumer<SigningKey> callback) {
         var drivers = settings.getDriverDetector().getAvailableDrivers();
-        pickTokenAndThen(drivers, (option) -> fetchKeysAndThen(option, (key) -> {
+        pickTokenAndThen(drivers, (option) -> fetchKeysAndThen(option, allowedTypes, (key) -> {
             onTokenUsed(option);
             callback.accept(key);
         }), null);
@@ -693,7 +702,7 @@ public class Autogram {
                 && slot.label().equalsIgnoreCase(EID_EP_SLOT_LABEL);
     }
 
-    private void fetchKeysAndThen(TokenOption option, Consumer<SigningKey> callback) {
+    private void fetchKeysAndThen(TokenOption option, Set<SigningCertificateType> allowedTypes, Consumer<SigningKey> callback) {
         var driver = option.driver();
         try {
             var connected = connectToToken(option);
@@ -701,10 +710,10 @@ public class Autogram {
             var keys = connected.keys();
             resetTokenSessionTimer();
 
-            ui.onUIThreadDo(() -> ui.pickKeyAndThen(keys, driver, (privateKey) -> {
+            ui.onUIThreadDo(() -> ui.pickKeyAndThen(keys, driver, allowedTypes, (privateKey, type) -> {
                 // A cached PIN belongs to the previous key, possibly another card.
                 passwordManager.reset();
-                callback.accept(new SigningKey(token, privateKey));
+                callback.accept(new SigningKey(token, privateKey, type));
             }, () -> ui.onWorkThreadDo(token::close)));
         } catch (DSSException e) {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));

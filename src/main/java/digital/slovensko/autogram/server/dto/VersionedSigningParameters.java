@@ -13,6 +13,7 @@ import eu.europa.esig.dss.enumerations.SignatureProfile;
 import java.util.List;
 
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.CONTAINER_UNSUPPORTED;
+import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.INVALID_SIGNING_CERTIFICATE_TYPES;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MIME_TYPE_MISMATCH;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_CONTAINER_UNSUPPORTED;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_FORMAT_UNSUPPORTED;
@@ -20,6 +21,7 @@ import static digital.slovensko.autogram.server.errors.RequestValidationExceptio
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SIGNED_DOCUMENT_FORM_MISMATCH;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.SIGNED_DOCUMENT_PACKAGING_MISMATCH;
 
+import digital.slovensko.autogram.core.SigningCertificateType;
 import digital.slovensko.autogram.core.SigningParameters;
 import digital.slovensko.autogram.core.SigningParametersResolver;
 
@@ -56,6 +58,7 @@ public class VersionedSigningParameters {
     private LocalCanonicalizationMethod propertiesCanonicalization;
     private LocalCanonicalizationMethod keyInfoCanonicalization;
     private Boolean checkPDFACompliance;
+    private List<SigningCertificateType> signingCertificateTypes;
 
     public VersionedSigningParameters() {
     }
@@ -78,7 +81,11 @@ public class VersionedSigningParameters {
     }
 
     public SigningParameters toSigningParameters(PresentationParameters presentation, boolean plainXmlEnabled) {
-        return SigningParametersResolver.buildRequested(
+        // Gson reads an unknown name as null
+        if (signingCertificateTypes != null && (signingCertificateTypes.isEmpty() || signingCertificateTypes.contains(null)))
+            throw new RequestValidationException(INVALID_SIGNING_CERTIFICATE_TYPES);
+
+        var requested = SigningParametersResolver.buildRequested(
                 profile,
                 form,
                 digestAlgorithm,
@@ -92,6 +99,8 @@ public class VersionedSigningParameters {
                 presentation != null ? presentation.getVisualizationWidth() : 0,
                 plainXmlEnabled
         );
+        return signingCertificateTypes == null ? requested
+                : SigningParametersResolver.withSigningCertificateTypes(requested, signingCertificateTypes);
     }
 
     SignatureForm getForm() {

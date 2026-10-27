@@ -2,10 +2,12 @@ package digital.slovensko.autogram;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.CertificateStatusChecker;
 import digital.slovensko.autogram.core.DriverDetector;
 import digital.slovensko.autogram.core.LegacyInstallation;
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
+import digital.slovensko.autogram.core.SigningCertificateType;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.UserSettings;
@@ -24,6 +26,8 @@ import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -103,8 +107,10 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
-            callback.accept(keys.get(0));
+        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Set<SigningCertificateType> allowedTypes,
+                BiConsumer<DSSPrivateKeyEntry, SigningCertificateType> callback, Runnable onCancel) {
+            var key = keys.get(0);
+            callback.accept(key, new CertificateStatusChecker(null, null, null, null).checkType(key, TestPki.shared().verifier()));
         }
 
         @Override
