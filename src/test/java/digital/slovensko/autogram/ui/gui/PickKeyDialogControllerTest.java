@@ -10,6 +10,7 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.settings.Country;
+import digital.slovensko.autogram.ui.SupportedLanguage;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
@@ -22,6 +23,7 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -459,6 +461,20 @@ class PickKeyDialogControllerTest {
         });
     }
 
+    @Test
+    void testPickerAssertionsUseSlovakEvenWhenTheUserSelectedEnglish() throws Exception {
+        onFxThread(() -> {
+            var settings = settings(false, "SK");
+            settings.setLanguage(SupportedLanguage.ENGLISH);
+            var dialog = open(List.of(jana), settings,
+                    new PickKeyDialogController.TimestampOptions(job(false, true), mock(TSPSource.class)));
+            dialog.answer(jana, QUALIFIED);
+
+            assertEquals("sk", dialog.controller().getResources().getLocale().getLanguage());
+            assertEquals(List.of("Osvedčený podpis"), texts(dialog.badges(jana, true)));
+        });
+    }
+
     private static SigningJob job(boolean timestamp, boolean local) {
         var document = AutogramDocument.build(new InMemoryDocument("test".getBytes(), "test.txt", MimeTypeEnum.TEXT), null);
         var parameters = SigningParametersResolver.buildRequested(timestamp ? SignatureProfile.BASELINE_T : SignatureProfile.BASELINE_B,
@@ -484,14 +500,17 @@ class PickKeyDialogControllerTest {
         return List.of();
     }
 
-    private static Dialog open(List<DSSPrivateKeyEntry> keys, UserSettings settings) {
+    private static Dialog open(List<DSSPrivateKeyEntry> keys, UserSettings settings) throws Exception {
         return open(keys, settings, null);
     }
 
-    private static Dialog open(List<DSSPrivateKeyEntry> keys, UserSettings settings, PickKeyDialogController.TimestampOptions timestampOptions) {
+    private static Dialog open(List<DSSPrivateKeyEntry> keys, UserSettings settings, PickKeyDialogController.TimestampOptions timestampOptions) throws Exception {
         var answers = new HashMap<DSSPrivateKeyEntry, Consumer<Result>>();
         var controller = new PickKeyDialogController(keys, key -> { }, settings, answers::put, () -> { }, timestampOptions);
-        var root = (Parent) GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
+        var loader = new FXMLLoader(PickKeyDialogController.class.getResource("pick-key-dialog.fxml"),
+                SupportedLanguage.SLOVAK.loadResources());
+        loader.setController(controller);
+        Parent root = loader.load();
         return new Dialog(controller, root, answers);
     }
 
