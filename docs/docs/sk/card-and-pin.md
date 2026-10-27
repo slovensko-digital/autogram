@@ -41,7 +41,7 @@ Niektoré karty majú certifikáty uložené vo viacerých častiach, ktoré sa 
 
 Na karte Gemalto IDPrime 940 býva kvalifikovaný certifikát v inom slote ako ostatné certifikáty. Ak po výbere slotu neuvidíte svoj kvalifikovaný certifikát alebo podpis zlyhá, kliknite na **Podpísať iným certifikátom** a vyberte druhý slot.
 
-Občiansky preukaz má okrem kvalifikovaného certifikátu aj druhý, ktorý sa na kvalifikované podpisovanie nepoužíva. Autogram ho predvolene neponúka. Ak v [Nastaveniach](settings.md#ine) zapnete **Zobraziť EP certifikát občianskeho preukazu**, preukaz bude v zozname dvakrát. Na bežné podpisovanie vyberte **kvalifikovaný**.
+Občiansky preukaz má okrem kvalifikovaného certifikátu aj druhý, ktorý sa na kvalifikované podpisovanie nepoužíva. Autogram ho predvolene neponúka. Ak v [Nastaveniach](settings.md#ine) zapnete **Zobraziť EP certifikát občianskeho preukazu**, preukaz bude v zozname dvakrát. Na bežné podpisovanie vyberte **kvalifikovaný**. Druhý certifikát je nekvalifikovaný, takže na podpis ním treba zapnúť aj **Povoliť podpisovanie nekvalifikovanými certifikátmi**.
 
 ![Občiansky preukaz s kvalifikovaným a nekvalifikovaným certifikátom](/assets/images/screenshots/sk/token-picker-eid.png)
 
@@ -72,7 +72,34 @@ Pri občianskom preukaze sa toto okno nezobrazí. Kód k nemu (BOK) si vypýta e
 
 Autogram zobrazí certifikáty z vybranej karty. Vyberte ten, ktorým chcete podpisovať, a kliknite na **Podpísať**.
 
+Ponúka iba certifikáty určené na podpisovanie. Ostatné certifikáty na karte, napríklad šifrovací, v zozname nie sú.
+
 ![Výber certifikátu](/assets/images/screenshots/sk/certificate-picker.png)
+
+Kým Autogram overuje certifikáty, tlačidlo **Podpísať** je neaktívne a píše **Overuje sa platnosť certifikátov…**.
+
+![Overovanie certifikátov](/assets/images/screenshots/sk/certificate-picker-checking.png)
+
+Autogram zisťuje:
+
+- **či certifikát nebol zrušený**, napríklad po strate karty. Pýta sa na to certifikačnej autority, ktorá ho vydala, preto potrebuje pripojenie na internet.
+- **či je certifikát kvalifikovaný** podľa dôveryhodných zoznamov krajín zapnutých v [Nastaveniach](settings.md#overovanie-podpisov). Kvalifikovaný elektronický podpis vytvoríte iba kvalifikovaným certifikátom.
+
+Overovanie zvyčajne trvá zlomok sekundy. Krátko po spustení Autogramu ešte počká, kým sa načítajú dôveryhodné zoznamy, a tlačidlo vtedy píše **Načítavajú sa dôveryhodné zoznamy…**. Pri platnom kvalifikovanom certifikáte sa nič nezobrazí. Inak je pri certifikáte štítok:
+
+![Certifikáty so štítkami po overení](/assets/images/screenshots/sk/certificate-picker-checks.png)
+
+| Štítok | Čo znamená | Dá sa ním podpísať? |
+| --- | --- | --- |
+| **Zrušený certifikát** | Certifikačná autorita certifikát zrušila. | Nie |
+| **Nekvalifikovaný certifikát** | Certifikát nie je kvalifikovaný podľa dôveryhodných zoznamov. | Iba ak je v [Nastaveniach](settings.md#bezpecnost) zapnuté **Povoliť podpisovanie nekvalifikovanými certifikátmi** |
+| **Platnosť sa nepodarilo overiť** | Autogram nezistil, či certifikát nebol zrušený, napríklad bez pripojenia na internet. | Áno |
+| **Kvalifikáciu sa nepodarilo overiť** | Dôveryhodné zoznamy sa nepodarilo načítať, napríklad pri prvom spustení Autogramu bez pripojenia na internet. | Áno |
+| **Exspirovaný certifikát** | Platnosť certifikátu uplynula. Takéto certifikáty sa zobrazia, iba ak je v Nastaveniach zapnuté **Povoliť podpisovanie exspirovanými certifikátmi**. | Áno |
+
+Ak nie je kvalifikovaný žiadny certifikát, Autogram pod nimi zobrazí radu s odkazom **Otvoriť nastavenia**. Najčastejšie je príčinou to, že certifikát vydala certifikačná autorita z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý. Autogram vtedy túto krajinu v rade uvedie. Keď nastavenia zatvoríte, výber certifikátu sa zobrazí znova.
+
+![Rada, keď nie je kvalifikovaný žiadny certifikát](/assets/images/screenshots/sk/certificate-picker-hint.png)
 
 ## Podpisový PIN {#podpisovy-pin}
 

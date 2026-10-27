@@ -31,6 +31,8 @@ Aby bola časová pečiatka pri overovaní uznaná, jej poskytovateľ musí byť
 
 Zoznam krajín EÚ, podľa ktorých dôveryhodných zoznamov Autogram overuje podpisy. Predvolene sú zapnuté Slovensko, Česko, Rakúsko, Poľsko, Maďarsko, Belgicko, Holandsko a Španielsko. Ak dostávate dokumenty podpísané certifikátom z inej krajiny, zapnite ju. Viac krajín overovanie spomalí.
 
+Podľa týchto zoznamov Autogram zisťuje aj to, či je kvalifikovaný certifikát, ktorým podpisujete. Ak máte certifikát z inej krajiny, zapnite aj ju, inak ho Autogram vo [výbere certifikátu](card-and-pin.md#vyber-certifikatu) označí ako nekvalifikovaný.
+
 ## Bezpečnosť {#bezpecnost}
 
 ![Nastavenia – Bezpečnosť](/assets/images/screenshots/sk/settings-security.png)
@@ -40,6 +42,7 @@ Zoznam krajín EÚ, podľa ktorých dôveryhodných zoznamov Autogram overuje po
 | **Kontrola platnosti podpisov** | Pred podpisom upozorní na neplatné podpisy, ktoré už dokument obsahuje. Pozrite si [Upozornenia pred podpisom](warnings.md#nedoveryhodne-podpisy). | Áno |
 | **Kontrola súladu s PDF/A formátom** | Pred podpisom upozorní, ak PDF nie je vo formáte PDF/A. Pozrite si [Upozornenia pred podpisom](warnings.md#pdfa). | Áno |
 | **Povoliť podpisovanie exspirovanými certifikátmi** | Vo výbere certifikátu sa zobrazia aj certifikáty s uplynutou platnosťou. Podpis takým certifikátom úrady nemusia prijať. | Nie |
+| **Povoliť podpisovanie nekvalifikovanými certifikátmi** | Vo výbere certifikátu sa dá vybrať aj certifikát, ktorý podľa dôveryhodných zoznamov nie je kvalifikovaný. Podpis takým certifikátom nie je kvalifikovaný elektronický podpis a úrady ho nemusia prijať. Pozrite si [Výber certifikátu](card-and-pin.md#vyber-certifikatu). | Nie |
 | **Zobrazovať detailné chyby** | Ak sa súbor nepodarí otvoriť, zobrazí sa podrobný popis chyby. | Áno |
 
 ## Iné {#ine}
@@ -51,7 +54,7 @@ Zoznam krajín EÚ, podľa ktorých dôveryhodných zoznamov Autogram overuje po
 | **Jazyk** | Jazyk Autogramu: slovenčina, angličtina alebo jazyk systému. | jazyk systému |
 | **Zapnúť Autogram API** | Umožní webovým stránkam a iným aplikáciám posielať Autogramu dokumenty na podpis. Bez neho [podpisovanie na webových stránkach](websites.md) nefunguje. Zmena sa prejaví po reštarte Autogramu. | Áno |
 | **Rozlíšenie náhľadu PDF** | Ostrosť náhľadu PDF. Vyššie rozlíšenie je ostrejšie, no veľké dokumenty sa zobrazujú pomalšie. | 100 dpi |
-| **Zobraziť EP certifikát občianskeho preukazu** | Vo výbere karty ponúkne aj druhý, nekvalifikovaný certifikát občianskeho preukazu. Pozrite si [Viac certifikátov na jednej karte](card-and-pin.md#viac-certifikatov-na-jednej-karte). | Nie |
+| **Zobraziť EP certifikát občianskeho preukazu** | Vo výbere karty ponúkne aj druhý, nekvalifikovaný certifikát občianskeho preukazu. Na podpis ním treba zapnúť aj **Povoliť podpisovanie nekvalifikovanými certifikátmi**. Pozrite si [Viac certifikátov na jednej karte](card-and-pin.md#viac-certifikatov-na-jednej-karte). | Nie |
 | **Cesta k vlastnému úložisku kľúčov** | Súbor s certifikátom a kľúčom (JKS) pre voľbu **Zo súboru**. | prázdne |
 | **Cesta k vlastnému ovládaču pre PKCS11 token** | Ovládač karty, ktorú Autogram nepozná. | prázdne |
 | **HTTP proxy** | Proxy server vo formáte `http://host:port`, cez ktorý Autogram posiela všetku komunikáciu do internetu: sťahovanie dôveryhodných zoznamov, overovanie platnosti certifikátov (CRL, OCSP), časové pečiatky, formuláre a kontrolu aktualizácií. Autogram dôveruje aj certifikátom, ktorým dôveruje operačný systém, takže funguje aj s proxy, ktorá kontroluje HTTPS komunikáciu. Prihlasovanie do proxy nie je podporované. Zmena sa prejaví po reštarte Autogramu. | prázdne (bez proxy) |
