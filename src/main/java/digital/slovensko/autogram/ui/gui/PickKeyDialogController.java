@@ -79,23 +79,21 @@ public class PickKeyDialogController extends BaseController {
         toggleGroup = new ToggleGroup();
         mainButtonText = mainButton.getText();
         for (var key : keys) {
-            Node badge = new HBox();
+            var badges = new HBox();
+            badges.getStyleClass().add("autogram-pick-key-badges");
             var expired = !key.getCertificate().isValidOn(new java.util.Date());
             if (expired) {
-                badge = SignatureBadgeFactory.createInfoBadge("Exspirovaný certifikát");
+                badges.getChildren().add(SignatureBadgeFactory.createInfoBadge("Exspirovaný certifikát"));
 
                 if (!userSettings.isExpiredCertsEnabled())
                     continue;
             } else {
-                badge = SignatureBadgeFactory.createInProgressBadge(i18n("pickKey.certificateStatus.checking"));
                 checkPending.add(key);
             }
 
             var radioButton = new RadioButton(parseCN(key.getCertificate().getSubject().getRFC2253()));
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(key);
-            var badges = new HBox(badge);
-            badges.getStyleClass().add("autogram-pick-key-badges");
             radios.getChildren().add(new HBox(radioButton, badges));
 
             var tooltip = new Tooltip(buildTooltipLabel(key));

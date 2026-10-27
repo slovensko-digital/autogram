@@ -64,6 +64,7 @@ class PickKeyDialogControllerTest {
 
             assertTrue(dialog.controller().mainButton.isDisabled());
             assertEquals(dialog.i18n("pickKey.certificateStatus.checking.btn"), dialog.controller().mainButton.getText());
+            assertTrue(dialog.badges(jana).getChildren().isEmpty());
 
             dialog.answer(jana, QUALIFIED);
             assertTrue(dialog.controller().mainButton.isDisabled());
