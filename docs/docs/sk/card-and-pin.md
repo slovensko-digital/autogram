@@ -72,7 +72,7 @@ Pri občianskom preukaze sa toto okno nezobrazí. Kód k nemu (BOK) si vypýta e
 
 Autogram zobrazí možnosti podpisu pre certifikáty z vybranej karty. Pri súbore z počítača sa opýta **Aký podpis potrebujete?** Vyberte požadovaný výsledok a kliknite na **Podpísať**.
 
-![Výber certifikátu](/assets/images/screenshots/sk/certificate-picker.png)
+![Výber osvedčeného alebo vlastnoručného podpisu](/assets/images/screenshots/sk/signature-goal-kep.png)
 
 Kým Autogram overuje certifikáty, tlačidlo **Podpísať** je neaktívne a píše **Overuje sa platnosť certifikátov…**.
 
@@ -86,7 +86,7 @@ Autogram zisťuje:
 
 Overovanie zvyčajne trvá zlomok sekundy. Krátko po spustení Autogramu ešte počká, kým sa načítajú dôveryhodné zoznamy, a tlačidlo vtedy píše **Načítavajú sa dôveryhodné zoznamy…**. Pri certifikáte sa zobrazia dostupné požadované úrovne podpisu a prípadné upozornenia. Nejde ešte o overenie hotového podpisu; ten sa overuje až po podpísaní.
 
-![Certifikáty so štítkami po overení](/assets/images/screenshots/sk/certificate-picker-checks.png)
+![Uznaný spôsob autorizácie s časovou pečiatkou alebo bez nej](/assets/images/screenshots/sk/signature-goal-recognized.png)
 
 | Štítok | Čo znamená | Dá sa ním podpísať? |
 | --- | --- | --- |
