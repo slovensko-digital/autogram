@@ -10,22 +10,21 @@ Autogram môže k vášmu podpisu pridať kvalifikovanú časovú pečiatku. Pe�
 Ak dokument podpíšete kvalifikovaným elektronickým podpisom s kvalifikovanou časovou pečiatkou, podľa [§ 40 ods. 5 Občianskeho zákonníka](https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/1964/40/#paragraf-40.odsek-5) sa nevyžaduje osvedčenie pravosti vášho podpisu, napríklad u notára alebo na matrike. Platí to iba pre podpis s časovou pečiatkou, pozrite si [Čo hovorí zákon](#co-hovori-zakon). Autogram na to používa voľne dostupné kvalifikované časové pečiatky od poskytovateľov z Belgicka a Španielska. Nič za ne neplatíte a nemusíte si nič objednávať.
 :::
 
-## Zapnutie časových pečiatok
+## Výber podpisu s časovou pečiatkou
 
 ::: steps
-1. V hlavnom okne Autogramu kliknite na **Nastavenia**.
-2. V záložke **Podpisovanie** zvoľte pri **Pridávanie časových pečiatok** možnosť **Áno**.
-3. V poli **Zdroje časových pečiatok** nechajte predvolených poskytovateľov.
-4. Kliknite na **Uložiť nastavenia**.
+1. Otvorte dokument v Autograme a kliknite na **Podpísať**.
+2. V okne **Aký podpis potrebujete?** vyberte **Osvedčený podpis**. Pri uznanom spôsobe autorizácie vyberte možnosť **S časovou pečiatkou**.
+3. Kliknite na **Podpísať** a zadajte podpisový PIN.
 :::
 
-![Zapnuté časové pečiatky v nastaveniach](/assets/images/screenshots/sk/settings-timestamps.png)
+Voľba platí iba pre aktuálny podpis. Globálny prepínač pridávania časových pečiatok už v nastaveniach nie je. V časti **Podpisovanie** sa naďalej nastavujú ich zdroje; predvolených bezplatných poskytovateľov nemusíte meniť. Na pridanie pečiatky treba pripojenie na internet.
 
-Odteraz Autogram pridá časovú pečiatku ku každému podpisu súboru z počítača, aj pri podpisovaní [viacerých dokumentov naraz](batch.md). Na pridanie pečiatky treba pripojenie na internet.
+Vo [výbere požadovaného podpisu](card-and-pin.md#peciatka-pre-tento-podpis) vyberáte **Vlastnoručný podpis** bez pečiatky alebo **Osvedčený podpis** s kvalifikovanou pečiatkou. Pri kvalifikovanom certifikáte bez QSCD sú obe možnosti označené **Uznaný spôsob autorizácie**, s textom **S časovou pečiatkou** alebo **Bez časovej pečiatky**. Autogram nežiada skúšobnú pečiatku; dosiahnutie zvoleného výsledku overí až na skutočnom podpise a pri nesúlade ho neuloží.
 
 ## Podpisovanie na webových stránkach
 
-Pri podpisovaní na webovej stránke o časovej pečiatke rozhoduje stránka. Ak ju stránka vyžaduje, Autogram ju pridá z rovnakých zdrojov, aké máte v nastaveniach, aj keď máte pridávanie časových pečiatok vypnuté.
+Pri podpisovaní na webovej stránke o časovej pečiatke rozhoduje stránka. Ak ju stránka vyžaduje, Autogram ju pridá zo zdrojov, ktoré máte v nastaveniach.
 
 ## Ako spoznáte podpis s časovou pečiatkou
 

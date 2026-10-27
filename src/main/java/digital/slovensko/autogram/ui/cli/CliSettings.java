@@ -15,6 +15,7 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 
 import org.apache.commons.cli.CommandLine;
 
@@ -25,6 +26,7 @@ public class CliSettings extends UserSettings {
     private File source;
     private boolean isForce;
     private boolean shouldMakeParentDirectories;
+    private boolean timestampEnabled;
 
     public static CliSettings fromCmd(CommandLine cmd) {
         var settings = new CliSettings();
@@ -41,7 +43,7 @@ public class CliSettings extends UserSettings {
         settings.setSignatureLevel(getValidSignatureLevel(cmd.getOptionValue("pdf-level", SignatureLevel.PAdES_BASELINE_B.name())));
         settings.setEn319132(cmd.hasOption("en319132"));
         settings.setTsaServer(cmd.getOptionValue("tsa-server"));
-        settings.setTsaEnabled(settings.getTsaServer() != null);
+        settings.timestampEnabled = cmd.hasOption("tsa-server");
         settings.setBulkEnabled(true);
         settings.setPlainXmlEnabled(cmd.hasOption("plain-xml"));
         settings.setTokenSessionTimeout(5);
@@ -51,7 +53,7 @@ public class CliSettings extends UserSettings {
 
     public SigningParameters getSigningParameters() {
         return SigningParametersResolver.buildRequested(
-                getSignatureLevel().getSignatureProfile(),
+                timestampEnabled ? SignatureProfile.BASELINE_T : getSignatureLevel().getSignatureProfile(),
                 getSignatureLevel().getSignatureForm(),
                 DigestAlgorithm.SHA256,
                 ASiCContainerType.ASiC_E,

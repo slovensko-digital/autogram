@@ -22,5 +22,7 @@
                    onAction="#onOpenSettingsAction"/>
     </VBox>
 
+    <TextFlow managed="false" visible="false"><Text fx:id="timestampStatus" styleClass="autogram-body"/></TextFlow>
+
     <Button styleClass="autogram-button" fx:id="mainButton" text="%general.sign.btn.single" onAction="#onPickCertificateButtonAction" />
 </VBox>

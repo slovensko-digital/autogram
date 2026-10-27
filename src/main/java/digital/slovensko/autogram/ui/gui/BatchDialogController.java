@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.util.DSSUtils;
 import digital.slovensko.autogram.util.Logging;
 import javafx.application.Platform;
@@ -14,6 +15,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+
+import java.util.function.Consumer;
 
 public class BatchDialogController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
@@ -60,47 +63,34 @@ public class BatchDialogController extends BaseController implements SuppressedF
     public void onMainButtonPressed(ActionEvent event) {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
-            autogram.pickSigningKeyAndThen(key -> {
-                gui.setActiveSigningKeyAndThen(key, k -> {
-                    hideVisualization();
-                    showProgress();
-                    showCancelButton();
-                    getNodeForLoosingFocus().requestFocus();
-                    gui.disableSigning();
-                    gui.onWorkThreadDo(() -> {
-                        autogram.signBatchWithKey(batch, k);
-                    });
-                });
-            });
+            Consumer<SigningKey> onPicked = key -> gui.setActiveSigningKeyAndThen(key, this::signWithKey);
+            if (batch.canSelectSignatureGoal())
+                autogram.pickSigningKeyForBatchAndThen(batch, onPicked);
+            else
+                autogram.pickSigningKeyAndThen(onPicked);
+        } else if (batch.canSelectSignatureGoal()) {
+            gui.pickBatchSignatureAndThen(signingKey, batch, () -> signWithKey(signingKey));
         } else {
-            hideVisualization();
-            showProgress();
-            showCancelButton();
-            getNodeForLoosingFocus().requestFocus();
-            gui.disableSigning();
-            gui.onWorkThreadDo(() -> {
-                autogram.signBatchWithKey(batch, signingKey);
-            });
+            signWithKey(signingKey);
         }
     }
 
+    private void signWithKey(SigningKey key) {
+        if (batch.isEnded())
+            return;
+        hideVisualization();
+        showProgress();
+        showCancelButton();
+        getNodeForLoosingFocus().requestFocus();
+        gui.disableSigning();
+        gui.onWorkThreadDo(() -> autogram.signBatchWithKey(batch, key));
+    }
 
     public void onChangeKeyButtonPressed(ActionEvent event) {
         if (batch.isKeyChangeAllowed()) {
             gui.resetSigningKey();
             autogram.requestAnotherToken();
-            autogram.pickSigningKeyAndThen(key -> {
-                gui.setActiveSigningKeyAndThen(key, k -> {
-                    hideVisualization();
-                    showProgress();
-                    showCancelButton();
-                    getNodeForLoosingFocus().requestFocus();
-                    gui.disableSigning();
-                    gui.onWorkThreadDo(() -> {
-                        autogram.signBatchWithKey(batch, k);
-                    });
-                });
-            });
+            onMainButtonPressed(event);
         }
     }
 

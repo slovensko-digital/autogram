@@ -343,7 +343,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     public void sign() {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
-            autogram.pickSigningKeyAndThen(key -> {
+            autogram.pickSigningKeyAndThen(job, key -> {
                 gui.setActiveSigningKeyAndThen(key, k -> {
                     gui.disableSigning();
                     getNodeForLoosingFocus().requestFocus();
@@ -351,9 +351,15 @@ public class SigningDialogController extends BaseController implements Suppresse
                 });
             });
         } else {
-            gui.disableSigning();
-            getNodeForLoosingFocus().requestFocus();
-            autogram.sign(job, signingKey);
+            Runnable onPicked = () -> {
+                gui.disableSigning();
+                getNodeForLoosingFocus().requestFocus();
+                autogram.sign(job, signingKey);
+            };
+            if (job.canSelectTimestamp())
+                gui.pickSignatureAndThen(signingKey, job, onPicked);
+            else
+                onPicked.run();
         }
     }
 

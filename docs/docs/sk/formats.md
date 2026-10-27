@@ -52,7 +52,7 @@ XML súbor, ktorý nie je takýmto formulárom, Autogram predvolene nepodpíše.
 
 Časová pečiatka od dôveryhodného poskytovateľa potvrdzuje, že podpis existoval v určitom čase. Podpis s ňou ostane overiteľný aj po skončení platnosti certifikátu. Pri kvalifikovanom elektronickom podpise s kvalifikovanou časovou pečiatkou sa na Slovensku nevyžaduje osvedčenie pravosti podpisu.
 
-Podpis s časovou pečiatkou má úroveň BASELINE_T (napríklad PAdES-BASELINE-T), podpis bez nej BASELINE_B. Autogram časové pečiatky predvolene nepridáva. Ako ich zapnúť a odkiaľ ich Autogram berie, je na stránke [Podpis s časovou pečiatkou](timestamps.md).
+Podpis s časovou pečiatkou má úroveň BASELINE_T (napríklad PAdES-BASELINE-T), podpis bez nej BASELINE_B. O pridaní pečiatky rozhodujete pri každom podpise. Podrobnosti o výbere a zdrojoch sú na stránke [Podpis s časovou pečiatkou](timestamps.md).
 
 ## PDF/A
 

@@ -106,6 +106,32 @@ class TokenPickingTests {
     }
 
     @Test
+    void localBulkKeySelectionPassesTheBatchToThePickerAndKeepsCancellationWorking() {
+        var driver = new FakeDriver("keystore", Optional.empty());
+        var batch = new SigningBatch(2, java.time.Clock.systemUTC(), true);
+        var offeredBatches = new ArrayList<Batch>();
+        var ui = new PickingUI(options -> options.found().getFirst()) {
+            @Override
+            public void pickBatchKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver selectedDriver,
+                    Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel, Batch selectedBatch) {
+                assertFalse(keys.isEmpty());
+                offeredBatches.add(selectedBatch);
+                onCancel.run();
+            }
+        };
+        var autogram = new Autogram(ui, new FakeSettings(driver));
+        try {
+            autogram.pickSigningKeyForBatchAndThen(batch, key -> {
+                throw new AssertionError("The picker was canceled");
+            });
+            assertEquals(List.of(batch), offeredBatches);
+            assertEquals(1, driver.closedConnections);
+        } finally {
+            autogram.shutdown();
+        }
+    }
+
+    @Test
     void testDialogIsShownAfterUnfinishedAutomaticPick() {
         var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP, EID_EP)));
         var gemalto = new FakeDriver("gemalto", Optional.of(List.of()));

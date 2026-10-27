@@ -1,9 +1,11 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.TestPki;
+import digital.slovensko.autogram.core.CertificateStatusChecker;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.TestSignedDocuments;
 import digital.slovensko.autogram.core.ValidationReports;
+import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
 import javafx.scene.Node;
@@ -12,6 +14,8 @@ import javafx.scene.text.Text;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,6 +44,88 @@ class SignatureBadgesTest {
     @AfterAll
     static void useTrustedLists() {
         SignatureValidator.getInstance().useCustomVerifier(null);
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', textBlock = """
+            QCERT_FOR_ESIG_QSCD    | valid: Vlastnoručný podpis
+            QCERT_FOR_ESIG         | valid: Uznaný spôsob autorizácie
+            QCERT_FOR_ESEAL_QSCD   | valid: Elektronická pečať
+            QCERT_FOR_ESEAL        | custom-valid: AdESeal-QC
+            QCERT_FOR_UNKNOWN_QSCD | warning: Kvalifikovaný certifikát neznámeho typu
+            QCERT_FOR_UNKNOWN      | warning: Kvalifikovaný certifikát neznámeho typu
+            QCERT_FOR_WSA          | warning: Nekvalifikovaný certifikát
+            CERT_FOR_ESIG          | warning: Nekvalifikovaný certifikát
+            CERT_FOR_ESEAL         | warning: Nekvalifikovaný certifikát
+            CERT_FOR_WSA           | warning: Nekvalifikovaný certifikát
+            CERT_FOR_UNKNOWN       | warning: Nekvalifikovaný certifikát
+            NA                     | warning: Nekvalifikovaný certifikát
+            """)
+    void certificateBadgeShowsExpectedSignatureLevel(CertificateQualification qualification, String expected) {
+        var badge = SignatureBadgeFactory.createBadgeFromCertificateQualification(qualification, SK);
+
+        assertEquals(List.of("[" + expected + "]"), flatten(badge));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "QESIG, none", "QESIG, qualified", "QESIG, non-qualified",
+            "ADESIG_QC, none", "ADESIG_QC, qualified", "ADESIG_QC, non-qualified",
+            "QESEAL, none", "QESEAL, qualified", "QESEAL, non-qualified"
+    })
+    void predictedCombinationsHaveTheSameBadgesAsTheActualSignature(TestPki.Kind kind, String timestampKind) {
+        var signer = pki.issue("Predpokladaný Podpis", kind);
+        var key = signer.token().getKeys().getFirst();
+        var certificateChecker = new CertificateStatusChecker((certificate, issuer) -> null, pki.crlSource(null), null, () -> null);
+        var qualification = certificateChecker.checkQualification(key, pki.verifier());
+        var source = switch (timestampKind) {
+            case "qualified" -> pki.tspSource();
+            case "non-qualified" -> pki.nonQualifiedTspSource();
+            default -> null;
+        };
+        var timestampQualification = switch (timestampKind) {
+            case "qualified" -> eu.europa.esig.dss.enumerations.TimestampQualification.QTSA;
+            case "non-qualified" -> eu.europa.esig.dss.enumerations.TimestampQualification.TSA;
+            default -> null;
+        };
+        var prediction = SignatureBadgeFactory.createBadgeFromCertificateQualification(qualification,
+                source != null, timestampQualification, SK);
+        var report = validate(sign(signer, source));
+        var id = signatureId(report);
+        var actual = SignatureBadgeFactory.createCombinedBadgeFromQualification(SK,
+                report.reports().getDetailedReport().getSignatureQualification(id), report.reports(), id, 0);
+
+        assertEquals(flatten(actual), flatten(prediction));
+    }
+
+    @Test
+    void unknownTimestampSourceCannotProduceANotarizedPrediction() {
+        var badge = SignatureBadgeFactory.createBadgeFromCertificateQualification(CertificateQualification.QCERT_FOR_ESIG_QSCD,
+                true, null, SK);
+
+        assertEquals(List.of("[valid: QESig]", "[unknown: Neznáma ČP]"), flatten(badge));
+    }
+
+    @Test
+    void unavailableCertificateQualificationIsNotShownAsNotQualified() {
+        var badge = SignatureBadgeFactory.createBadgeFromCertificateQualification(null, SK);
+
+        assertEquals(List.of("[warning: Kvalifikáciu sa nepodarilo overiť]"), flatten(badge));
+    }
+
+    @Test
+    void recognizedAuthorizationCertificateBadgeIsTranslated() {
+        var badge = SignatureBadgeFactory.createBadgeFromCertificateQualification(CertificateQualification.QCERT_FOR_ESIG, bundle("en"));
+
+        assertEquals(List.of("[valid: Advanced Electronic Signature]"), flatten(badge));
+    }
+
+    @Test
+    void qualifiedCertificateWithoutQscdGivesRecognizedAuthorizationAfterSigning() {
+        var signer = pki.issue("Uznaný Podpisovateľ", TestPki.Kind.ADESIG_QC);
+        var report = validate(sign(signer, null));
+
+        assertEquals(List.of("valid: Uznaný spôsob autorizácie"), badge(report, SK));
     }
 
     @Test

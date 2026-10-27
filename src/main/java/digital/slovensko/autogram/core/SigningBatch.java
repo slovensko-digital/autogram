@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -41,6 +42,8 @@ public class SigningBatch implements Batch {
     private final String batchId = generateNewBatchId();
     private final int totalNumberOfDocuments;
     private final Clock clock;
+    private final boolean local;
+    private SignatureChoice signatureChoice;
 
     private BatchState state = BatchState.INITIALIZED;
     /** Ended because it expired, so the client keeps getting BATCH_EXPIRED. */
@@ -61,13 +64,37 @@ public class SigningBatch implements Batch {
     }
 
     SigningBatch(int totalNumberOfDocuments, Clock clock) {
+        this(totalNumberOfDocuments, clock, false);
+    }
+
+    SigningBatch(int totalNumberOfDocuments, Clock clock, boolean local) {
         this.totalNumberOfDocuments = totalNumberOfDocuments;
         this.clock = clock;
+        this.local = local;
+    }
+
+    @Override
+    public synchronized boolean canSelectSignatureGoal() {
+        return local && !isInteractive();
+    }
+
+    @Override
+    public synchronized void setSignatureChoice(SignatureChoice choice) {
+        if (!canSelectSignatureGoal() || state != BatchState.INITIALIZED)
+            throw new IllegalStateException("The signature goal must be selected before a local bulk operation starts");
+        signatureChoice = Objects.requireNonNull(choice);
+    }
+
+    @Override
+    public synchronized SignatureChoice getSignatureChoice() {
+        return signatureChoice;
     }
 
     public synchronized void start(SigningKey key) {
         if (state != BatchState.INITIALIZED)
             throw new BatchEndedException(CANNOT_RESTART);
+        if (canSelectSignatureGoal() && signatureChoice == null)
+            throw new IllegalStateException("Select a signature goal before starting a local bulk operation");
         state = BatchState.STARTED;
         signingKey = key;
         lastActivity = clock.instant();

@@ -33,6 +33,10 @@ public class SigningKey {
         return privateKey.getCertificate();
     }
 
+    public DSSPrivateKeyEntry getPrivateKey() {
+        return privateKey;
+    }
+
     public String prettyPrintCertificateDetails() throws InvalidNameException {
         var map = new HashMap<String, String>();
         var ldapn = new LdapName(privateKey.getCertificate().getSubject().getRFC2253());

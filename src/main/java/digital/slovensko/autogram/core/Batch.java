@@ -54,5 +54,17 @@ public interface Batch {
 
     SigningKey getSigningKey();
 
+    default boolean canSelectSignatureGoal() {
+        return false;
+    }
+
+    default void setSignatureChoice(SignatureChoice choice) {
+        throw new IllegalStateException("Only a local bulk operation can select a signature goal");
+    }
+
+    default SignatureChoice getSignatureChoice() {
+        return null;
+    }
+
     void log();
 }

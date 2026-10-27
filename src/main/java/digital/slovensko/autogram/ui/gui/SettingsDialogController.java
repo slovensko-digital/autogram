@@ -49,8 +49,6 @@ public class SettingsDialogController extends BaseController implements Suppress
     @FXML
     private ChoiceBox<SignatureLevel> signatureLevelChoiceBoxBox;
     @FXML
-    private HBox tsaEnabledRadios;
-    @FXML
     private ChoiceBox<String> tsaChoiceBox;
     @FXML
     private TextField customTsaServerTextField;
@@ -128,7 +126,6 @@ public class SettingsDialogController extends BaseController implements Suppress
     @Override
     public void initialize() {
         initializeSignatureLevelChoiceBox();
-        initializeTsaEnabled();
         initializeTsaServer();
         initializeBulkEnabledCheckbox();
         initializeEn319132CheckBox();
@@ -161,10 +158,6 @@ public class SettingsDialogController extends BaseController implements Suppress
                 .addListener((observable, oldValue, newValue) -> {
                     userSettings.setSignatureLevel(newValue);
                 });
-    }
-
-    private void initializeTsaEnabled() {
-        initializeBooleanRadios(tsaEnabledRadios, userSettings::setTsaEnabled, userSettings.getTsaEnabled());
     }
 
     private void initializeTsaServer() {

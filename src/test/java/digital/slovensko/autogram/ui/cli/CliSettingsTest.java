@@ -2,6 +2,7 @@ package digital.slovensko.autogram.ui.cli;
 
 import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
 import digital.slovensko.autogram.core.errors.MultipleSourcesException;
+import eu.europa.esig.dss.enumerations.SignatureProfile;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
@@ -14,7 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CliSettingsTest {
     private static final Options OPTIONS = new Options().addOption("s", "source", true, "")
-            .addOption(null, "proxy", true, "");
+            .addOption(null, "proxy", true, "")
+            .addOption(null, "tsa-server", true, "");
 
     @Test
     void proxyOptionIsValidatedBeforeSourceProcessing() throws ParseException {
@@ -53,6 +55,13 @@ public class CliSettingsTest {
     void resolveSourcePathRejectsMultiplePositionals() throws ParseException {
         var cmd = parse("a.pdf", "b.pdf");
         assertThrows(MultipleSourcesException.class, () -> CliSettings.resolveSourcePath(cmd));
+    }
+
+    @Test
+    void timestampsInCliAreControlledOnlyByTheExplicitCommandLineOption() throws ParseException {
+        assertEquals(SignatureProfile.BASELINE_B, CliSettings.fromCmd(parse()).getSigningParameters().getSignatureProfile());
+        assertEquals(SignatureProfile.BASELINE_T,
+                CliSettings.fromCmd(parse("--tsa-server", "http://tsa.example.test")).getSigningParameters().getSignatureProfile());
     }
 
     private static CommandLine parse(String... args) throws ParseException {

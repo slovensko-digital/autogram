@@ -15,7 +15,6 @@ Predvolené nastavenia vyhovujú väčšine používateľov. Meňte ich, iba ak 
 | Nastavenie | Čo robí | Predvolene |
 | --- | --- | --- |
 | **Typ podpisu pre PDF** | Ako sa podpíše PDF: PAdES (podpis vo vnútri PDF), XAdES alebo CAdES (kontajner ASiC-E). Pri už podpísanom dokumente sa použije rovnaký typ, ako má existujúci podpis. Pozrite si [Formáty a typy podpisov](formats.md). | PAdES |
-| **Pridávanie časových pečiatok** | K podpisu sa pridá kvalifikovaná časová pečiatka, ktorá potvrdzuje čas podpisu. Pri kvalifikovanom podpise s kvalifikovanou časovou pečiatkou sa nevyžaduje osvedčenie pravosti podpisu. Vyžaduje pripojenie na internet. Pozrite si [Podpis s časovou pečiatkou](timestamps.md). | Nie |
 | **Zdroje časových pečiatok** | Odkiaľ sa časové pečiatky získavajú. Predvolene sú to bezplatní kvalifikovaní poskytovatelia z Belgicka a Španielska. Môžete zadať aj vlastné adresy. | bezplatní poskytovatelia |
 | **Vlastné adresy TSP serverov** | Adresy vlastných poskytovateľov časových pečiatok, viac adries oddeľte čiarkou bez medzier. | prázdne |
 | **Vždy podpisovať hromadne** | Pri výbere viacerých dokumentov sa Autogram nepýta na spôsob podpisovania a dokumenty podpíše hromadne, bez zobrazenia. | Nie |
@@ -23,7 +22,7 @@ Predvolené nastavenia vyhovujú väčšine používateľov. Meňte ich, iba ak 
 | **Podpisovanie neznámych XML** | Umožní podpísať XML súbory, ktoré nie sú formulárom slovenskej verejnej správy. | Nie |
 | **Použitie nového štandardu** | Podpisovanie podľa noriem ETSI EN 319 132 a ETSI EN 319 122. Systémy verejnej správy ho väčšinou nepodporujú. | Nie |
 
-Aby bola časová pečiatka pri overovaní uznaná, jej poskytovateľ musí byť kvalifikovaný a jeho krajina musí byť zapnutá v záložke **Overovanie podpisov**.
+Pridanie časovej pečiatky vyberáte pri každom podpise v okne **Aký podpis potrebujete?**, nie v nastaveniach. Aby bola pečiatka pri overovaní uznaná, jej poskytovateľ musí byť kvalifikovaný a jeho krajina musí byť zapnutá v záložke **Overovanie podpisov**.
 
 ## Overovanie podpisov {#overovanie-podpisov}
 

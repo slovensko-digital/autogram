@@ -1,21 +1,29 @@
 package digital.slovensko.autogram.core;
 
+import eu.europa.esig.dss.model.x509.revocation.crl.CRL;
+import eu.europa.esig.dss.model.x509.revocation.ocsp.OCSP;
+import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
-import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
+import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
 import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.http.proxy.ProxyProperties;
+import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.spi.client.http.DataLoader;
 import eu.europa.esig.dss.spi.policy.SignaturePolicyProvider;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
+import eu.europa.esig.dss.spi.x509.revocation.RevocationSource;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import org.apache.hc.client5.http.impl.DefaultHttpRequestRetryStrategy;
+import org.apache.hc.core5.util.TimeValue;
 
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
 import java.net.http.HttpClient;
+import java.time.Clock;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -48,6 +56,41 @@ public final class NetworkClients {
         return configure(trustingSystem(new OCSPDataLoader()), configuration());
     }
 
+    /** Only revocation/AIA requests use these limits; TSA and trusted-list downloads are unchanged. */
+    static CommonsDataLoader withValidationTimeouts(CommonsDataLoader loader) {
+        loader.setTimeoutConnection(5_000);
+        loader.setTimeoutConnectionRequest(5_000);
+        loader.setTimeoutResponse(10_000);
+        loader.setTimeoutSocket(10_000);
+        loader.setRetryStrategy(new DefaultHttpRequestRetryStrategy(0, TimeValue.ZERO_MILLISECONDS));
+        return loader;
+    }
+
+    private static DataLoader validationDataLoader(CommonsDataLoader loader) {
+        return configure(withValidationTimeouts(trustingSystem(loader)), configuration());
+    }
+
+    public static DataLoader aiaDataLoader() {
+        return validationDataLoader(new CommonsDataLoader());
+    }
+
+    // Initialized only after startup proxy configuration. The same evidence serves the picker and
+    // subsequent documents, but no qualification or signature-validation result is cached.
+    private static class RevocationSources {
+        static final RevocationSource<CRL> CRLS = CachedRevocationSource.crl(
+                new OnlineCRLSource(validationDataLoader(new CommonsDataLoader())), Clock.systemUTC());
+        static final RevocationSource<OCSP> OCSPS = CachedRevocationSource.ocsp(
+                new OnlineOCSPSource(validationDataLoader(new OCSPDataLoader())), Clock.systemUTC());
+    }
+
+    public static RevocationSource<CRL> crlSource() {
+        return RevocationSources.CRLS;
+    }
+
+    public static RevocationSource<OCSP> ocspSource() {
+        return RevocationSources.OCSPS;
+    }
+
     private static CommonsDataLoader trustingSystem(CommonsDataLoader loader) {
         loader.setTrustStrategy(SystemTrust.trustStrategy());
         return loader;
@@ -78,7 +121,7 @@ public final class NetworkClients {
     public static CommonCertificateVerifier certificateVerifier() {
         var verifier = new CommonCertificateVerifier();
         // DSS's default AIA loader is NativeHTTPDataLoader, not CommonsDataLoader.
-        verifier.setAIASource(new DefaultAIASource(dataLoader()));
+        verifier.setAIASource(new DefaultAIASource(aiaDataLoader()));
         return verifier;
     }
 

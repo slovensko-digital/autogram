@@ -1,7 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.TestPki;
-import digital.slovensko.autogram.core.CertificateStatusChecker.Qualification;
+import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
@@ -12,6 +12,8 @@ import eu.europa.esig.dss.spi.x509.revocation.ocsp.OCSPSource;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -22,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -102,8 +106,16 @@ class CertificateStatusCheckerTest {
     void testCertificateFromQualifiedServiceIsQualified() {
         var checker = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null);
 
-        assertEquals(Qualification.QUALIFIED, checker.checkQualification(keyOf(pki.signer(TestPki.JANA)), pki.verifier()));
-        assertEquals(Qualification.QUALIFIED, checker.checkQualification(keyOf(pki.signer(TestPki.SEAL)), pki.verifier()));
+        assertEquals(CertificateQualification.QCERT_FOR_ESIG_QSCD, checker.checkQualification(keyOf(pki.signer(TestPki.JANA)), pki.verifier()));
+        assertEquals(CertificateQualification.QCERT_FOR_ESEAL_QSCD, checker.checkQualification(keyOf(pki.signer(TestPki.SEAL)), pki.verifier()));
+    }
+
+    @Test
+    void testQualifiedCertificateWithoutQscdKeepsItsSignatureLevel() {
+        var signer = pki.issue("Uznaný Podpisovateľ", TestPki.Kind.ADESIG_QC);
+        var checker = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null);
+
+        assertEquals(CertificateQualification.QCERT_FOR_ESIG, checker.checkQualification(keyOf(signer), pki.verifier()));
     }
 
     @Test
@@ -111,7 +123,7 @@ class CertificateStatusCheckerTest {
         var signer = pki.issue("Bežný Používateľ", TestPki.Kind.NOT_QUALIFIED);
         var checker = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null);
 
-        assertEquals(Qualification.NOT_QUALIFIED, checker.checkQualification(keyOf(signer), pki.verifier()));
+        assertEquals(CertificateQualification.CERT_FOR_UNKNOWN, checker.checkQualification(keyOf(signer), pki.verifier()));
     }
 
     @Test
@@ -119,7 +131,9 @@ class CertificateStatusCheckerTest {
         var otherPki = TestPki.create();
         var checker = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null);
 
-        assertEquals(Qualification.NOT_QUALIFIED, checker.checkQualification(keyOf(otherPki.signer(TestPki.JANA)), pki.verifier()));
+        var qualification = checker.checkQualification(keyOf(otherPki.signer(TestPki.JANA)), pki.verifier());
+        assertEquals(CertificateQualification.NA, qualification);
+        assertTrue(new CertificateStatusChecker.Result(CertificateStatus.GOOD, qualification).isNotQualified());
     }
 
     @Test
@@ -127,8 +141,26 @@ class CertificateStatusCheckerTest {
         var key = keyOf(pki.signer(TestPki.JANA));
         var checker = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null);
 
-        assertEquals(Qualification.UNKNOWN, checker.checkQualification(key, null));
-        assertEquals(Qualification.UNKNOWN, checker.checkQualification(key, new CommonCertificateVerifier()));
+        assertNull(checker.checkQualification(key, null));
+        assertNull(checker.checkQualification(key, new CommonCertificateVerifier()));
+        assertFalse(new CertificateStatusChecker.Result(CertificateStatus.GOOD, null).isNotQualified());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CertificateQualification.class, names = {
+            "QCERT_FOR_ESIG_QSCD", "QCERT_FOR_ESIG", "QCERT_FOR_ESEAL_QSCD", "QCERT_FOR_ESEAL",
+            "QCERT_FOR_UNKNOWN_QSCD", "QCERT_FOR_UNKNOWN"
+    })
+    void testQualifiedAndUnknownCertificatesDoNotRequireTheNonQualifiedSetting(CertificateQualification qualification) {
+        assertFalse(new CertificateStatusChecker.Result(CertificateStatus.GOOD, qualification).isNotQualified());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = CertificateQualification.class, names = {
+            "CERT_FOR_ESIG", "CERT_FOR_ESEAL", "CERT_FOR_UNKNOWN", "CERT_FOR_WSA", "QCERT_FOR_WSA", "NA"
+    })
+    void testUnqualifiedAndWebCertificatesRequireTheNonQualifiedSetting(CertificateQualification qualification) {
+        assertTrue(new CertificateStatusChecker.Result(CertificateStatus.GOOD, qualification).isNotQualified());
     }
 
     @Test
@@ -139,7 +171,7 @@ class CertificateStatusCheckerTest {
         var result = checker.checkAsync(keyOf(pki.signer(TestPki.JANA)), Duration.ofMillis(100), Duration.ofSeconds(10));
         CompletableFuture.delayedExecutor(500, TimeUnit.MILLISECONDS).execute(() -> trustedLists.complete(pki.verifier()));
 
-        assertEquals(new CertificateStatusChecker.Result(CertificateStatus.GOOD, Qualification.QUALIFIED), result.get(10, TimeUnit.SECONDS));
+        assertEquals(new CertificateStatusChecker.Result(CertificateStatus.GOOD, CertificateQualification.QCERT_FOR_ESIG_QSCD), result.get(10, TimeUnit.SECONDS));
     }
 
     @Test
@@ -149,7 +181,7 @@ class CertificateStatusCheckerTest {
 
         var result = checker.checkAsync(keyOf(pki.signer(TestPki.JANA)), Duration.ofSeconds(10), Duration.ofMillis(200));
 
-        assertEquals(new CertificateStatusChecker.Result(CertificateStatus.GOOD, Qualification.UNKNOWN), result.get(10, TimeUnit.SECONDS));
+        assertEquals(new CertificateStatusChecker.Result(CertificateStatus.GOOD, null), result.get(10, TimeUnit.SECONDS));
         assertFalse(trustedLists.isDone());
     }
 
@@ -178,7 +210,7 @@ class CertificateStatusCheckerTest {
             var result = checker.checkAsync(keyOf(pki.signer(TestPki.JANA)), Duration.ofMillis(500), Duration.ofSeconds(10))
                     .get(10, TimeUnit.SECONDS);
 
-            assertEquals(new CertificateStatusChecker.Result(CertificateStatus.UNKNOWN, Qualification.QUALIFIED), result);
+            assertEquals(new CertificateStatusChecker.Result(CertificateStatus.UNKNOWN, CertificateQualification.QCERT_FOR_ESIG_QSCD), result);
         } finally {
             release.countDown();
         }
