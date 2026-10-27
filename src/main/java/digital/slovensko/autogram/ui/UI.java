@@ -47,6 +47,11 @@ public interface UI {
         pickKeyAndThen(keys, driver, callback, onCancel);
     }
 
+    default void pickBatchKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback,
+            Runnable onCancel, Batch batch) {
+        pickKeyAndThen(keys, driver, callback, onCancel);
+    }
+
     void onPickSigningKeyFailed(AutogramException e);
 
     void onSigningSuccess(SigningJob job);

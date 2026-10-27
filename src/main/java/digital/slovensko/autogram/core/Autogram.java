@@ -332,7 +332,15 @@ public class Autogram {
      * @param responder              - callback for http response
      */
     public void startBatchSigning(int totalNumberOfDocuments, BatchResponder responder) {
-        var selectedBatch = new SigningBatch(totalNumberOfDocuments, clock);
+        startBatchSigning(totalNumberOfDocuments, responder, false);
+    }
+
+    public void startLocalBatchSigning(int totalNumberOfDocuments, BatchResponder responder) {
+        startBatchSigning(totalNumberOfDocuments, responder, true);
+    }
+
+    private void startBatchSigning(int totalNumberOfDocuments, BatchResponder responder, boolean local) {
+        var selectedBatch = new SigningBatch(totalNumberOfDocuments, clock, local);
         expireBatchIfNeeded();
         synchronized (this) {
             batch.ensureCanStartNewBatch();
@@ -509,6 +517,8 @@ public class Autogram {
             finishBatch(currentBatch, e);
             throw e;
         }
+        if (currentBatch.canSelectSignatureGoal() && job.canSelectTimestamp())
+            currentBatch.getSignatureChoice().applyTo(job);
         if (job.getBatch().isInteractive()) {
             startSigning(job);
             return;
@@ -556,11 +566,19 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(SigningJob job, Consumer<SigningKey> callback) {
+        pickSigningKeyAndThen(job, null, callback);
+    }
+
+    public void pickSigningKeyForBatchAndThen(Batch batch, Consumer<SigningKey> callback) {
+        pickSigningKeyAndThen(null, batch, callback);
+    }
+
+    private void pickSigningKeyAndThen(SigningJob job, Batch batch, Consumer<SigningKey> callback) {
         var drivers = settings.getDriverDetector().getAvailableDrivers();
         pickTokenAndThen(drivers, (option) -> fetchKeysAndThen(option, (key) -> {
             onTokenUsed(option);
             callback.accept(key);
-        }, job), null);
+        }, job, batch), null);
     }
 
     /**
@@ -696,7 +714,7 @@ public class Autogram {
                 && slot.label().equalsIgnoreCase(EID_EP_SLOT_LABEL);
     }
 
-    private void fetchKeysAndThen(TokenOption option, Consumer<SigningKey> callback, SigningJob job) {
+    private void fetchKeysAndThen(TokenOption option, Consumer<SigningKey> callback, SigningJob job, Batch batch) {
         var driver = option.driver();
         try {
             var connected = connectToToken(option);
@@ -711,7 +729,9 @@ public class Autogram {
             };
             Runnable onCancel = () -> ui.onWorkThreadDo(token::close);
             ui.onUIThreadDo(() -> {
-                if (job == null)
+                if (batch != null)
+                    ui.pickBatchKeyAndThen(keys, driver, onPicked, onCancel, batch);
+                else if (job == null)
                     ui.pickKeyAndThen(keys, driver, onPicked, onCancel);
                 else
                     ui.pickKeyAndThen(keys, driver, onPicked, onCancel, job);

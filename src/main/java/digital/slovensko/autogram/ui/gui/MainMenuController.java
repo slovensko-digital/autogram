@@ -119,7 +119,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
                     new SaveFileResponder(file, autogram, userSettings.shouldSignPDFAsPades()));
             autogram.startSigning(job);
         } else {
-            autogram.startBatchSigning(filesList.size(),
+            autogram.startLocalBatchSigning(filesList.size(),
                     new BatchGuiFileResponder(autogram, filesList, filesList.get(0).toPath().getParent().resolve("signed"),
                         defaultSigningParameters, defaultEFormAttributes, userSettings.shouldSignPDFAsPades()));
         }

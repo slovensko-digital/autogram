@@ -196,11 +196,21 @@ public class GUI implements UI {
             return;
         }
 
-        showKeyPicker(keys, callback, onCancel, job);
+        showKeyPicker(keys, callback, onCancel, job, null);
+    }
+
+    @Override
+    public void pickBatchKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback,
+            Runnable onCancel, Batch batch) {
+        if (keys.isEmpty()) {
+            pickKeyAndThen(keys, driver, callback, onCancel);
+            return;
+        }
+        showKeyPicker(keys, callback, onCancel, null, batch);
     }
 
     private void showKeyPicker(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback,
-            Runnable onCancel, SigningJob job) {
+            Runnable onCancel, SigningJob job, Batch batch) {
         var allKeys = keys;
         var keysStream = keys.stream();
 //        TODO: NFC eID returns false for qualified certificate #367
@@ -224,12 +234,14 @@ public class GUI implements UI {
         var trustedLists = SignatureValidator.getInstance().whenLoaded();
         Runnable openSettings = autogram == null ? null : () -> {
             SettingsDialogController.showAndWait(autogram, userSettings, SettingsDialogController.TRUSTED_COUNTRIES_TAB);
-            showKeyPicker(allKeys, callback, onCancel, job);
+            showKeyPicker(allKeys, callback, onCancel, job, batch);
         };
         PickKeyDialogController.TimestampOptions timestampOptions = null;
         if (job != null) {
             var source = userSettings.getTspSource();
             timestampOptions = new PickKeyDialogController.TimestampOptions(job, source);
+        } else if (batch != null && batch.canSelectSignatureGoal()) {
+            timestampOptions = new PickKeyDialogController.TimestampOptions(batch, userSettings.getTspSource());
         }
         var controller = new PickKeyDialogController(keys, callback, userSettings,
                 // DSS waits up to a minute for each unreachable server, the user should not
@@ -264,7 +276,11 @@ public class GUI implements UI {
     }
 
     public void pickSignatureAndThen(SigningKey key, SigningJob job, Runnable onPicked) {
-        showKeyPicker(List.of(key.getPrivateKey()), ignored -> onPicked.run(), () -> { }, job);
+        showKeyPicker(List.of(key.getPrivateKey()), ignored -> onPicked.run(), () -> { }, job, null);
+    }
+
+    public void pickBatchSignatureAndThen(SigningKey key, Batch batch, Runnable onPicked) {
+        showKeyPicker(List.of(key.getPrivateKey()), ignored -> onPicked.run(), () -> { }, null, batch);
     }
 
     @Override

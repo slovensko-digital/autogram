@@ -1,6 +1,8 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.CertificateStatusChecker;
+import digital.slovensko.autogram.core.Batch;
+import digital.slovensko.autogram.core.SignatureChoice;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SignatureRequirements;
 import digital.slovensko.autogram.core.UserSettings;
@@ -49,7 +51,18 @@ public class PickKeyDialogController extends BaseController {
     private final Set<DSSPrivateKeyEntry> checkPending = new HashSet<>();
     private final Map<DSSPrivateKeyEntry, CertificateStatusChecker.Result> results = new LinkedHashMap<>();
 
-    public record TimestampOptions(SigningJob job, TSPSource source) { }
+    public record TimestampOptions(boolean selectable, boolean timestampRequested, TSPSource source,
+            Consumer<SignatureRequirements> onPicked) {
+        public TimestampOptions(SigningJob job, TSPSource source) {
+            this(job.canSelectTimestamp(), job.getParameters().getSignatureProfile() != SignatureProfile.BASELINE_B,
+                    source, requirements -> new SignatureChoice(requirements, source).applyTo(job));
+        }
+
+        public TimestampOptions(Batch batch, TSPSource source) {
+            this(batch.canSelectSignatureGoal(), true, source,
+                    requirements -> batch.setSignatureChoice(new SignatureChoice(requirements, source)));
+        }
+    }
 
     private record Choice(DSSPrivateKeyEntry key, boolean timestampRequested, HBox badges, Text description) { }
 
@@ -100,7 +113,7 @@ public class PickKeyDialogController extends BaseController {
         toggleGroup = new ToggleGroup();
         mainButtonText = mainButton.getText();
         var timestampRequested = canSelectTimestamp() || timestampOptions != null
-                && timestampOptions.job().getParameters().getSignatureProfile() != SignatureProfile.BASELINE_B;
+                && timestampOptions.timestampRequested();
         for (var key : keys) {
             var expired = !key.getCertificate().isValidOn(new java.util.Date());
             if (expired) {
@@ -136,7 +149,7 @@ public class PickKeyDialogController extends BaseController {
     }
 
     private boolean canSelectTimestamp() {
-        return timestampOptions != null && timestampOptions.job().canSelectTimestamp();
+        return timestampOptions != null && timestampOptions.selectable();
     }
 
     private void addChoice(DSSPrivateKeyEntry key, boolean timestampRequested, boolean expired) {
@@ -302,9 +315,8 @@ public class PickKeyDialogController extends BaseController {
         } else {
             var choice = (Choice) toggleGroup.getSelectedToggle().getUserData();
             if (canSelectTimestamp()) {
-                timestampOptions.job().setTimestampEnabled(choice.timestampRequested(), timestampOptions.source());
                 var result = results.get(choice.key());
-                timestampOptions.job().setSignatureRequirements(SignatureRequirements.fromCertificate(
+                timestampOptions.onPicked().accept(SignatureRequirements.fromCertificate(
                         result == null ? null : result.qualification(), choice.timestampRequested()));
             }
             GUIUtils.closeWindow(mainBox);
