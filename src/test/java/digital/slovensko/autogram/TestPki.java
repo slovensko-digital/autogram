@@ -206,13 +206,16 @@ public class TestPki {
         return issue(name, kind, notBefore, notAfter, new KeyUsage(KeyUsage.nonRepudiation));
     }
 
-    /** Issues a new certificate from the test CA with the given key usage (e.g. only for encryption), none when null. */
-    public Signer issue(String name, Kind kind, KeyUsage keyUsage) {
+    /**
+     * Issues a new certificate from the test CA with the given key usage (e.g. only for encryption), none when null, and
+     * extended key usage, none when empty.
+     */
+    public Signer issue(String name, Kind kind, KeyUsage keyUsage, KeyPurposeId... extendedKeyUsage) {
         var now = System.currentTimeMillis();
-        return issue(name, kind, new Date(now - 7 * DAY), new Date(now + 1825 * DAY), keyUsage);
+        return issue(name, kind, new Date(now - 7 * DAY), new Date(now + 1825 * DAY), keyUsage, extendedKeyUsage);
     }
 
-    private Signer issue(String name, Kind kind, Date notBefore, Date notAfter, KeyUsage keyUsage) {
+    private Signer issue(String name, Kind kind, Date notBefore, Date notAfter, KeyUsage keyUsage, KeyPurposeId... extendedKeyUsage) {
         try {
             var keys = rsa();
             var id = ++serial;
@@ -236,6 +239,8 @@ public class TestPki {
                     .addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(new DistributionPoint[]{crl}));
             if (keyUsage != null)
                 builder.addExtension(Extension.keyUsage, true, keyUsage);
+            if (extendedKeyUsage.length > 0)
+                builder.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(extendedKeyUsage));
             if (kind != Kind.NOT_QUALIFIED) {
                 var qc = new ASN1EncodableVector();
                 qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance));
