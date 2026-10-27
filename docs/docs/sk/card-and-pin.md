@@ -72,6 +72,8 @@ Pri občianskom preukaze sa toto okno nezobrazí. Kód k nemu (BOK) si vypýta e
 
 Autogram zobrazí certifikáty z vybranej karty. Vyberte ten, ktorým chcete podpisovať, a kliknite na **Podpísať**.
 
+Ponúka iba certifikáty určené na podpisovanie. Ostatné certifikáty na karte, napríklad šifrovací, v zozname nie sú.
+
 ![Výber certifikátu](/assets/images/screenshots/sk/certificate-picker.png)
 
 Kým Autogram overuje certifikáty, tlačidlo **Podpísať** je neaktívne a píše **Overuje sa platnosť certifikátov…**.

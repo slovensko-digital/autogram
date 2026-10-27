@@ -25,6 +25,7 @@ import digital.slovensko.autogram.drivers.TokenSlot;
 import digital.slovensko.autogram.server.CertificatesResponder;
 import digital.slovensko.autogram.ui.BatchUiResult;
 import digital.slovensko.autogram.ui.UI;
+import digital.slovensko.autogram.util.DSSUtils;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pdfa.PDFAStructureValidator;
@@ -728,7 +729,7 @@ public class Autogram {
         var driver = option.driver();
         var token = driver.createToken(passwordManager, settings, option.slot());
         try {
-            return new ConnectedToken(token, token.getKeys());
+            return new ConnectedToken(token, signingKeys(token));
         } catch (DSSException e) {
             // before recovering, the driver may not handle the connection afterwards
             token.close();
@@ -737,8 +738,15 @@ public class Autogram {
                 throw e;
 
             Logging.log("Connecting again to " + driver.getName() + " after: " + e);
-            return new ConnectedToken(recovered.get(), recovered.get().getKeys());
+            return new ConnectedToken(recovered.get(), signingKeys(recovered.get()));
         }
+    }
+
+    // e.g. eID klient asked to sign with the encryption key signs with another one, the signature is then invalid (#367)
+    private static List<DSSPrivateKeyEntry> signingKeys(AbstractKeyStoreTokenConnection token) {
+        return token.getKeys().stream()
+                .filter(key -> DSSUtils.isSigningCertificate(key.getCertificate()))
+                .toList();
     }
 
     public void checkForUpdate() {

@@ -72,6 +72,8 @@ This window does not appear for the Slovak ID card. Its code (BOK) is asked for 
 
 Autogram shows the certificates on the chosen card. Choose the one you want to sign with and click **Sign**.
 
+It offers only certificates meant for signing. Other certificates on the card, for example one for encryption, are not in the list.
+
 ![Choosing a certificate](/assets/images/screenshots/en/certificate-picker.png)
 
 While Autogram checks the certificates, the **Sign** button is inactive and reads **Checking certificate validity…**.

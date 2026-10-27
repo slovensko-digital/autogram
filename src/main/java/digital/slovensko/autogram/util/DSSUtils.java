@@ -4,7 +4,9 @@ import digital.slovensko.autogram.core.NetworkClients;
 import eu.europa.esig.dss.asic.cades.validation.ASiCContainerWithCAdESValidatorFactory;
 import eu.europa.esig.dss.asic.xades.validation.ASiCContainerWithXAdESValidatorFactory;
 import eu.europa.esig.dss.cades.validation.CMSDocumentValidatorFactory;
+import eu.europa.esig.dss.enumerations.KeyUsageBit;
 import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.validation.PDFDocumentValidatorFactory;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
@@ -27,6 +29,17 @@ public class DSSUtils {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    /**
+     * Whether the certificate may make signatures, not only e.g. decrypt. Qualified certificates often have only
+     * nonRepudiation, without digitalSignature. A certificate without key usage may be used for anything.
+     */
+    public static boolean isSigningCertificate(CertificateToken certificate) {
+        var keyUsage = certificate.getKeyUsageBits();
+        return keyUsage.isEmpty()
+                || keyUsage.contains(KeyUsageBit.DIGITAL_SIGNATURE)
+                || keyUsage.contains(KeyUsageBit.NON_REPUDIATION);
     }
 
     public static String buildTooltipLabel(DSSPrivateKeyEntry key) {
