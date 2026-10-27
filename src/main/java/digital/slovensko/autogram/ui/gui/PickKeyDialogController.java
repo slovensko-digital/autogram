@@ -145,8 +145,9 @@ public class PickKeyDialogController extends BaseController {
         radio.setToggleGroup(toggleGroup);
         var name = new Text(parseCN(key.getCertificate().getSubject().getRFC2253()));
         name.getStyleClass().add("autogram-body");
-        var badges = new HBox(expired ? SignatureBadgeFactory.createInfoBadge(i18n("pickKey.certificateStatus.expired"))
-                : SignatureBadgeFactory.createInProgressBadge(i18n("pickKey.certificateStatus.checking")));
+        var badges = new HBox();
+        if (expired)
+            badges.getChildren().add(SignatureBadgeFactory.createInfoBadge(i18n("pickKey.certificateStatus.expired")));
         badges.getStyleClass().add("autogram-pick-key-badges");
         var identity = new HBox(name, badges);
         identity.setMinWidth(Region.USE_PREF_SIZE);

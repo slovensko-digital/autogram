@@ -94,6 +94,7 @@ class PickKeyDialogControllerTest {
 
             assertTrue(dialog.controller().mainButton.isDisabled());
             assertEquals(dialog.i18n("pickKey.certificateStatus.checking.btn"), dialog.controller().mainButton.getText());
+            assertTrue(dialog.badges(jana).getChildren().isEmpty());
 
             dialog.answer(jana, QUALIFIED);
             assertTrue(dialog.controller().mainButton.isDisabled());
@@ -258,6 +259,9 @@ class PickKeyDialogControllerTest {
             var job = job(false, true);
             var source = mock(TSPSource.class);
             var dialog = open(List.of(jana), settings(false, "SK"), new PickKeyDialogController.TimestampOptions(job, source));
+            assertTrue(dialog.badges(jana, true).getChildren().isEmpty());
+            assertTrue(dialog.badges(jana, false).getChildren().isEmpty());
+            assertTrue(dialog.controller().mainButton.isDisabled());
             dialog.answer(jana, QUALIFIED);
 
             assertEquals(2, dialog.controller().radios.getChildren().size());
