@@ -1,5 +1,15 @@
 import { defineConfig } from "@docmd/core";
 
+// Set by the deploy workflow after scripts/prepare-latest.sh extracts the latest release; local builds show only main.
+const latestRelease = process.env.DOCS_LATEST_RELEASE;
+
+const EDGE_BANNER = [
+  '<span class="phase-banner" lang="sk"><strong class="idsk-tag">Vývojová verzia</strong><span class="phase-banner__text">',
+  'Táto dokumentácia popisuje verziu, ktorá ešte nebola vydaná. <a href="/">Dokumentácia k aktuálnej verzii</a></span></span>',
+  '<span class="phase-banner" lang="en"><strong class="idsk-tag">Development version</strong><span class="phase-banner__text">',
+  'This documentation describes a version that has not been released yet. <a href="/en/">Documentation of the current version</a></span></span>',
+].join('');
+
 export default defineConfig({
   title: 'Autogram', // appended to page titles in <title> and og:title, so it has to fit both languages
   url: process.env.DOCMD_SITE_URL || 'http://localhost:3000',
@@ -23,6 +33,14 @@ export default defineConfig({
     '/sk/multi-document/': '/multi-document/',
     '/sk/cli/': '/cli/',
   },
+
+  versions: latestRelease ? {
+    current: 'latest',
+    all: [
+      { id: 'latest', dir: 'latest', label: latestRelease },
+      { id: 'edge', dir: 'docs', label: 'edge', banner: { html: EDGE_BANNER, dismissible: false } },
+    ],
+  } : undefined,
 
   i18n: {
     default: 'sk',
@@ -62,6 +80,9 @@ export default defineConfig({
           focusMode: 'Režim sústredenia',
           exitFocusMode: 'Ukončiť režim sústredenia',
           footerProductPage: 'Produktová stránka',
+          selectVersion: 'Vybrať verziu',
+          version: 'Verzia',
+          latest: 'Aktuálna',
         },
       },
       {
@@ -128,7 +149,7 @@ export default defineConfig({
   copyCode: true,         
   pageNavigation: true,   
   
-  customJs: ['/assets/js/nav-sections.js', '/assets/js/toc-active.js', '/assets/js/logo-link.js'],
+  customJs: ['/assets/js/nav-sections.js', '/assets/js/toc-active.js', '/assets/js/logo-link.js', '/assets/js/top-banner.js'],
 
   // --- Plugins ---
   plugins: {
@@ -145,6 +166,7 @@ export default defineConfig({
     okf: false,
     './plugins/font-preload.js': {},
     './plugins/open-graph.js': {}, // og:site_name, og:locale and the share image per language
+    './plugins/edge-noindex.js': {},
   },
   
   // --- Edit Link ---

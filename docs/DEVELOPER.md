@@ -32,11 +32,44 @@ use `DOCMD_SITE_URL` (`http://localhost:3000` when unset):
 DOCMD_SITE_URL=https://docs.autogram.slovensko.digital npm run build
 ```
 
+## Versions
+
+The published site has two versions with a switcher at the top of the sidebar:
+
+- the latest release (labelled with its tag, e.g. `v2.8.3`) at `/` and `/en/`, which is what
+  users of the released application read,
+- `edge`, the guides from `main`, at `/edge/` and `/en/edge/`, with a banner saying the version
+  has not been released yet. `plugins/edge-noindex.js` marks its pages `noindex` and removes
+  them from `sitemap.xml`, so search engines show only the release.
+
+The banner is an ID-SK phase banner (`govuk-phase-banner` with a `govuk-tag`) across the top of
+the window, on the light grey of the ID-SK header's top bar. The version switcher looks like the
+language menu of the ID-SK header: a text button with an arrow and a plain list with the chosen
+version bold and underlined. Both are styled in `branding.css`.
+
+The release's guides are not kept in the repository. `scripts/prepare-latest.sh <tag>` extracts
+`docs/` of the tag into `latest/` and its `assets/images/` into `assets/latest/images/`, and points
+the image paths in the extracted guides there. The release therefore keeps its own screenshots
+when `main` replaces or deletes them. Configuration, styles, scripts and plugins come from `main`
+for both versions. The versions are turned on only when `DOCS_LATEST_RELEASE` is set, so
+`npm run dev` shows just the guides from `main`. To build the whole site locally:
+
+```console
+bash scripts/prepare-latest.sh v2.8.3
+DOCS_LATEST_RELEASE=v2.8.3 npm run build
+npm run check-images
+```
+
+`npm run check-images` fails when a page of the built site shows an image that is not in it.
+A fix to the guides on `main` reaches the release's version only with the next release.
+
 ## Deployment
 
 `.github/workflows/deploy_docs.yaml` builds, validates and publishes the site to GitHub Pages
-at <https://docs.autogram.slovensko.digital> on every push to `main` that changes `docs/`.
-It can also be run manually from the Actions tab. `DOCMD_SITE_URL` comes from the repository's
+at <https://docs.autogram.slovensko.digital> on every push to `main` that changes `docs/`, and
+when a release is published (or a pre-release becomes a release), so that `/` switches to the
+new release's guides. It takes the latest release from the GitHub API. It can also be run
+manually from the Actions tab. `DOCMD_SITE_URL` comes from the repository's
 Pages settings (the custom domain), so the domain is not repeated in the workflow.
 
 ## Moving to another project
@@ -103,6 +136,10 @@ Custom JavaScript (`customJs` in `docmd.config.js`):
 - `assets/js/logo-link.js`: docmd links the logo with a path relative to the current page and
   does not update it on SPA navigation, so after moving from the home page to a subpage the
   logo pointed to that subpage. The script turns the link into an absolute path on load.
+- `assets/js/top-banner.js`: docmd renders the top banner (the `edge` version's notice) in the
+  content column, while the sidebar is fixed to the top of the window. `branding.css` places the
+  banner across the whole window, like docmd's top menubar, and moves the sidebar, the sticky
+  header and the page down by its height, which the script keeps up to date.
 
 `plugins/font-preload.js` is a local docmd plugin (listed in `plugins`) that adds
 `<link rel="preload">` for both webfonts. Together with `font-display: fallback` in
