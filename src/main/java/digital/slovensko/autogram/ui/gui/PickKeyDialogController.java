@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.CertificateStatusChecker;
-import digital.slovensko.autogram.core.CertificateStatusChecker.Qualification;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
@@ -141,21 +140,20 @@ public class PickKeyDialogController extends BaseController {
         else if (result.status() != CertificateStatus.GOOD)
             badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.certificateStatus.unknown")));
 
-        if (result.qualification() == Qualification.NOT_QUALIFIED)
-            badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.qualification.notQualified")));
-        else if (result.qualification() == Qualification.UNKNOWN)
-            badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.qualification.unknown")));
+        var qualificationBadge = SignatureBadgeFactory.createBadgeFromCertificateQualification(result.qualification(), resources);
+        Tooltip.install(qualificationBadge, new Tooltip(i18n("pickKey.qualification.expectedLevel")));
+        badges.add(qualificationBadge);
 
         return badges;
     }
 
     private boolean isAllowed(CertificateStatusChecker.Result result) {
         return result.status() != CertificateStatus.REVOKED
-                && (result.qualification() != Qualification.NOT_QUALIFIED || userSettings.isNonQualifiedCertsEnabled());
+                && (!result.isNotQualified() || userSettings.isNonQualifiedCertsEnabled());
     }
 
     private void showHintIfNothingQualified() {
-        if (results.isEmpty() || !results.values().stream().allMatch(r -> r.qualification() == Qualification.NOT_QUALIFIED))
+        if (results.isEmpty() || !results.values().stream().allMatch(CertificateStatusChecker.Result::isNotQualified))
             return;
 
         var locale = resources.getLocale();

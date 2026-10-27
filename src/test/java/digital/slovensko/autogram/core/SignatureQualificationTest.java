@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.TestPki;
+import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
@@ -37,6 +38,22 @@ class SignatureQualificationTest {
         assertEquals(Indication.TOTAL_PASSED, reports.getSimpleReport().getIndication(id));
         assertEquals(SignatureQualification.QESIG, reports.getDetailedReport().getSignatureQualification(id));
         assertTrue(reports.getSimpleReport().getSignatureTimestamps(id).isEmpty());
+    }
+
+    @Test
+    void qualifiedCertificateWithoutQscdGivesAdesigQc() {
+        var signer = pki.issue("Uznaný Podpisovateľ", TestPki.Kind.ADESIG_QC);
+        var key = signer.token().getKeys().getFirst();
+        var checker = new CertificateStatusChecker((certificate, issuer) -> null, pki.crlSource(null), null, () -> null);
+
+        assertEquals(CertificateQualification.QCERT_FOR_ESIG,
+                checker.checkQualification(key, pki.verifier()));
+
+        var reports = validate(sign(signer, SignatureProfile.BASELINE_B, null));
+        var id = signatureId(reports);
+
+        assertEquals(Indication.TOTAL_PASSED, reports.getSimpleReport().getIndication(id));
+        assertEquals(SignatureQualification.ADESIG_QC, reports.getDetailedReport().getSignatureQualification(id));
     }
 
     @Test

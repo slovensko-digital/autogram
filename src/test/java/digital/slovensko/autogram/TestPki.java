@@ -82,6 +82,8 @@ public class TestPki {
     public enum Kind {
         /** natural person, QcType esign */
         QESIG,
+        /** natural person with a qualified certificate, but no QSCD */
+        ADESIG_QC,
         /** legal person, QcType eseal */
         QESEAL,
         /** natural person without any QC statements */
@@ -228,12 +230,15 @@ public class TestPki {
             if (kind != Kind.NOT_QUALIFIED) {
                 var qc = new ASN1EncodableVector();
                 qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance));
-                qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD));
+                if (kind != Kind.ADESIG_QC)
+                    qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD));
                 qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcType, new DERSequence(
                         kind == Kind.QESEAL ? ETSIQCObjectIdentifiers.id_etsi_qct_eseal : ETSIQCObjectIdentifiers.id_etsi_qct_esign)));
-                // QCP-l-qscd for seals, QCP-n-qscd for signatures
+                // QCP-n without QSCD, otherwise QCP-l-qscd for seals and QCP-n-qscd for signatures.
+                var policy = kind == Kind.ADESIG_QC ? "0.4.0.194112.1.0"
+                        : kind == Kind.QESEAL ? "0.4.0.194112.1.3" : "0.4.0.194112.1.2";
                 builder.addExtension(Extension.certificatePolicies, false, new CertificatePolicies(new PolicyInformation(
-                                new ASN1ObjectIdentifier(kind == Kind.QESEAL ? "0.4.0.194112.1.3" : "0.4.0.194112.1.2"))))
+                                new ASN1ObjectIdentifier(policy))))
                         .addExtension(Extension.qCStatements, false, new DERSequence(qc));
             }
             var cert = sign(builder, caKeys.getPrivate());

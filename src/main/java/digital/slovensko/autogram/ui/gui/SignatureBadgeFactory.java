@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
@@ -63,6 +64,21 @@ public abstract class SignatureBadgeFactory {
 
     public static Node createInfoBadge(String label) {
         return createBadge(label, "autogram-tag-info");
+    }
+
+    /** Expected signature level before signing, not a validation result for an already created signature. */
+    public static Node createBadgeFromCertificateQualification(CertificateQualification qualification, ResourceBundle resources) {
+        if (qualification == null)
+            return createWarningBadge(translate(resources, "pickKey.qualification.unknown"));
+
+        return switch (qualification) {
+            case QCERT_FOR_ESIG_QSCD -> createValidQualifiedBadge(translate(resources, "signature.qualification.QESIG.label"));
+            case QCERT_FOR_ESIG -> createValidQualifiedBadge(translate(resources, "signature.qualification.ADESIG_QC.shortLabel"));
+            case QCERT_FOR_ESEAL_QSCD -> createValidQualifiedBadge(translate(resources, "signature.qualification.QESEAL.label"));
+            case QCERT_FOR_ESEAL -> createCustomValidQualifiedBadge(translate(resources, "pickKey.qualification.advancedSeal"));
+            case QCERT_FOR_UNKNOWN, QCERT_FOR_UNKNOWN_QSCD -> createWarningBadge(translate(resources, "pickKey.qualification.unknownType"));
+            default -> createWarningBadge(translate(resources, "pickKey.qualification.notQualified"));
+        };
     }
 
     public static Node createBadgeFromQualification(SignatureQualification qualification, SignatureForm signatureForm, ResourceBundle resources) {

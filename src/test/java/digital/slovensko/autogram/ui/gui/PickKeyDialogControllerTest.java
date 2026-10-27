@@ -1,16 +1,18 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.TestPki;
-import digital.slovensko.autogram.core.CertificateStatusChecker.Qualification;
 import digital.slovensko.autogram.core.CertificateStatusChecker.Result;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
+import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.RadioButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Text;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -31,12 +33,14 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @EnabledIfSystemProperty(named = "autogram.guiTests", matches = "true")
 class PickKeyDialogControllerTest {
-    private static final Result QUALIFIED = new Result(CertificateStatus.GOOD, Qualification.QUALIFIED);
-    private static final Result NOT_QUALIFIED = new Result(CertificateStatus.GOOD, Qualification.NOT_QUALIFIED);
+    private static final Result QUALIFIED = new Result(CertificateStatus.GOOD, CertificateQualification.QCERT_FOR_ESIG_QSCD);
+    private static final Result RECOGNIZED = new Result(CertificateStatus.GOOD, CertificateQualification.QCERT_FOR_ESIG);
+    private static final Result NOT_QUALIFIED = new Result(CertificateStatus.GOOD, CertificateQualification.CERT_FOR_UNKNOWN);
 
     private static DSSPrivateKeyEntry jana;
     private static DSSPrivateKeyEntry peter;
     private static DSSPrivateKeyEntry seal;
+    private static DSSPrivateKeyEntry recognized;
 
     @BeforeAll
     static void startJavaFx() throws Exception {
@@ -44,6 +48,7 @@ class PickKeyDialogControllerTest {
         jana = pki.signer(TestPki.JANA).token().getKeys().getFirst();
         peter = pki.signer(TestPki.PETER).token().getKeys().getFirst();
         seal = pki.signer(TestPki.SEAL).token().getKeys().getFirst();
+        recognized = pki.issue("Uznaný Podpisovateľ", TestPki.Kind.ADESIG_QC).token().getKeys().getFirst();
 
         var ready = new FutureTask<Void>(() -> {
             Platform.setImplicitExit(false);
@@ -71,8 +76,62 @@ class PickKeyDialogControllerTest {
             dialog.answer(peter, QUALIFIED);
             assertFalse(dialog.controller().mainButton.isDisabled());
             assertEquals(dialog.i18n("general.sign.btn.single"), dialog.controller().mainButton.getText());
-            assertTrue(dialog.badges(jana).getChildren().isEmpty());
+            assertEquals(List.of("Kvalifikovaný elektronický podpis"), texts(dialog.badges(jana)));
             assertFalse(dialog.controller().hint.isVisible());
+        });
+    }
+
+    @Test
+    void testExpectedSignatureLevelDistinguishesRecognizedAuthorizationAndQualifiedSignatures() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana, recognized, seal), settings(false, "SK"));
+            dialog.answer(jana, QUALIFIED);
+            dialog.answer(recognized, RECOGNIZED);
+            dialog.answer(seal, new Result(CertificateStatus.GOOD, CertificateQualification.QCERT_FOR_ESEAL_QSCD));
+
+            assertEquals(List.of("Kvalifikovaný elektronický podpis"), texts(dialog.badges(jana)));
+            assertEquals(List.of("Uznaný spôsob autorizácie"), texts(dialog.badges(recognized)));
+            assertEquals(List.of("Kvalifikovaná elektronická pečať"), texts(dialog.badges(seal)));
+            assertFalse(dialog.radio(recognized).isDisabled());
+            assertFalse(dialog.controller().mainButton.isDisabled());
+            assertFalse(dialog.controller().hint.isVisible());
+        });
+    }
+
+    @Test
+    void testRecognizedAuthorizationIsAllowedWithoutEnablingNonQualifiedCertificates() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(recognized), settings(false, "SK"));
+            dialog.answer(recognized, RECOGNIZED);
+
+            assertFalse(dialog.radio(recognized).isDisabled());
+            assertTrue(dialog.radio(recognized).isSelected());
+            assertFalse(dialog.controller().mainButton.isDisabled());
+            assertFalse(dialog.controller().hint.isVisible());
+        });
+    }
+
+    @Test
+    void testRevokedRecognizedAuthorizationCannotBePickedEvenWhenNonQualifiedCertificatesAreAllowed() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(recognized), settings(true, "SK"));
+            dialog.answer(recognized, new Result(CertificateStatus.REVOKED, CertificateQualification.QCERT_FOR_ESIG));
+
+            assertTrue(dialog.radio(recognized).isDisabled());
+            assertFalse(dialog.radio(recognized).isSelected());
+            assertTrue(dialog.controller().mainButton.isDisabled());
+            assertTrue(texts(dialog.badges(recognized)).contains("Zrušený certifikát"));
+        });
+    }
+
+    @Test
+    void testUnknownRevocationStatusDoesNotHideTheExpectedSignatureLevel() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(recognized), settings(false, "SK"));
+            dialog.answer(recognized, new Result(CertificateStatus.UNKNOWN, CertificateQualification.QCERT_FOR_ESIG));
+
+            assertEquals(List.of("Platnosť sa nepodarilo overiť", "Uznaný spôsob autorizácie"), texts(dialog.badges(recognized)));
+            assertFalse(dialog.controller().mainButton.isDisabled());
         });
     }
 
@@ -95,7 +154,7 @@ class PickKeyDialogControllerTest {
         onFxThread(() -> {
             var dialog = open(List.of(jana, peter, seal), settings(false, "SK"));
             dialog.answer(jana, QUALIFIED);
-            dialog.answer(peter, new Result(CertificateStatus.REVOKED, Qualification.QUALIFIED));
+            dialog.answer(peter, new Result(CertificateStatus.REVOKED, CertificateQualification.QCERT_FOR_ESIG_QSCD));
             dialog.answer(seal, NOT_QUALIFIED);
 
             assertFalse(dialog.radio(jana).isDisabled());
@@ -121,11 +180,24 @@ class PickKeyDialogControllerTest {
     void testUnknownStatusAndQualificationDoNotBlockSigning() throws Exception {
         onFxThread(() -> {
             var dialog = open(List.of(jana), settings(false, "SK"));
-            dialog.answer(jana, new Result(CertificateStatus.UNKNOWN, Qualification.UNKNOWN));
+            dialog.answer(jana, new Result(CertificateStatus.UNKNOWN, null));
 
             assertFalse(dialog.radio(jana).isDisabled());
             assertEquals(2, dialog.badges(jana).getChildren().size());
             assertFalse(dialog.controller().hint.isVisible());
+        });
+    }
+
+    @Test
+    void testUntrustedCertificateIsNotConfusedWithUnavailableQualification() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana), settings(false, "SK"));
+            dialog.answer(jana, new Result(CertificateStatus.GOOD, CertificateQualification.NA));
+
+            assertEquals(List.of("Nekvalifikovaný certifikát"), texts(dialog.badges(jana)));
+            assertTrue(dialog.radio(jana).isDisabled());
+            assertTrue(dialog.controller().mainButton.isDisabled());
+            assertTrue(dialog.controller().hint.isVisible());
         });
     }
 
@@ -161,6 +233,14 @@ class PickKeyDialogControllerTest {
         settings.getTrustedList().clear();
         settings.addToTrustedList(trustedCountry);
         return settings;
+    }
+
+    private static List<String> texts(Node node) {
+        if (node instanceof Text text)
+            return List.of(text.getText());
+        if (node instanceof Parent parent)
+            return parent.getChildrenUnmodifiable().stream().flatMap(child -> texts(child).stream()).toList();
+        return List.of();
     }
 
     private static Dialog open(List<DSSPrivateKeyEntry> keys, UserSettings settings) {

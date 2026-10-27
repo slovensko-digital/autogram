@@ -4,6 +4,7 @@ import digital.slovensko.autogram.TestPki;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.TestSignedDocuments;
 import digital.slovensko.autogram.core.ValidationReports;
+import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
 import javafx.scene.Node;
@@ -12,6 +13,8 @@ import javafx.scene.text.Text;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,6 +43,49 @@ class SignatureBadgesTest {
     @AfterAll
     static void useTrustedLists() {
         SignatureValidator.getInstance().useCustomVerifier(null);
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', textBlock = """
+            QCERT_FOR_ESIG_QSCD    | valid: Kvalifikovaný elektronický podpis
+            QCERT_FOR_ESIG         | valid: Uznaný spôsob autorizácie
+            QCERT_FOR_ESEAL_QSCD   | valid: Kvalifikovaná elektronická pečať
+            QCERT_FOR_ESEAL        | custom-valid: Zdokonalená elektronická pečať
+            QCERT_FOR_UNKNOWN_QSCD | warning: Kvalifikovaný certifikát neznámeho typu
+            QCERT_FOR_UNKNOWN      | warning: Kvalifikovaný certifikát neznámeho typu
+            QCERT_FOR_WSA          | warning: Nekvalifikovaný certifikát
+            CERT_FOR_ESIG          | warning: Nekvalifikovaný certifikát
+            CERT_FOR_ESEAL         | warning: Nekvalifikovaný certifikát
+            CERT_FOR_WSA           | warning: Nekvalifikovaný certifikát
+            CERT_FOR_UNKNOWN       | warning: Nekvalifikovaný certifikát
+            NA                     | warning: Nekvalifikovaný certifikát
+            """)
+    void certificateBadgeShowsExpectedSignatureLevel(CertificateQualification qualification, String expected) {
+        var badge = SignatureBadgeFactory.createBadgeFromCertificateQualification(qualification, SK);
+
+        assertEquals(List.of("[" + expected + "]"), flatten(badge));
+    }
+
+    @Test
+    void unavailableCertificateQualificationIsNotShownAsNotQualified() {
+        var badge = SignatureBadgeFactory.createBadgeFromCertificateQualification(null, SK);
+
+        assertEquals(List.of("[warning: Kvalifikáciu sa nepodarilo overiť]"), flatten(badge));
+    }
+
+    @Test
+    void recognizedAuthorizationCertificateBadgeIsTranslated() {
+        var badge = SignatureBadgeFactory.createBadgeFromCertificateQualification(CertificateQualification.QCERT_FOR_ESIG, bundle("en"));
+
+        assertEquals(List.of("[valid: Advanced Electronic Signature]"), flatten(badge));
+    }
+
+    @Test
+    void qualifiedCertificateWithoutQscdGivesRecognizedAuthorizationAfterSigning() {
+        var signer = pki.issue("Uznaný Podpisovateľ", TestPki.Kind.ADESIG_QC);
+        var report = validate(sign(signer, null));
+
+        assertEquals(List.of("valid: Uznaný spôsob autorizácie"), badge(report, SK));
     }
 
     @Test

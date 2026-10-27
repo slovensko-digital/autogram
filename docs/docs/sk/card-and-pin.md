@@ -82,13 +82,19 @@ Autogram zisťuje:
 
 - **či certifikát nebol zrušený**, napríklad po strate karty. Pýta sa na to certifikačnej autority, ktorá ho vydala, preto potrebuje pripojenie na internet.
 - **či je certifikát kvalifikovaný** podľa dôveryhodných zoznamov krajín zapnutých v [Nastaveniach](settings.md#overovanie-podpisov). Kvalifikovaný elektronický podpis vytvoríte iba kvalifikovaným certifikátom.
+- **akú úroveň podpisu môžete certifikátom vytvoriť**. Kvalifikovaný certifikát s kľúčom v kvalifikovanom zariadení (QSCD) umožňuje kvalifikovaný elektronický podpis. Pri kvalifikovanom certifikáte bez QSCD sa zobrazí **Uznaný spôsob autorizácie**. Údaj o QSCD Autogram overuje podľa certifikátu aj dôveryhodných zoznamov.
 
-Overovanie zvyčajne trvá zlomok sekundy. Krátko po spustení Autogramu ešte počká, kým sa načítajú dôveryhodné zoznamy, a tlačidlo vtedy píše **Načítavajú sa dôveryhodné zoznamy…**. Pri platnom kvalifikovanom certifikáte sa nič nezobrazí. Inak je pri certifikáte štítok:
+Overovanie zvyčajne trvá zlomok sekundy. Krátko po spustení Autogramu ešte počká, kým sa načítajú dôveryhodné zoznamy, a tlačidlo vtedy píše **Načítavajú sa dôveryhodné zoznamy…**. Pri certifikáte sa zobrazí štítok s predpokladanou úrovňou podpisu a prípadné upozornenia. Nejde ešte o overenie hotového podpisu; ten sa overuje až po podpísaní.
 
 ![Certifikáty so štítkami po overení](/assets/images/screenshots/sk/certificate-picker-checks.png)
 
 | Štítok | Čo znamená | Dá sa ním podpísať? |
 | --- | --- | --- |
+| **Kvalifikovaný elektronický podpis** | Kvalifikovaný certifikát pre elektronický podpis s kľúčom v QSCD. | Áno, ak certifikát nebol zrušený |
+| **Uznaný spôsob autorizácie** | Kvalifikovaný certifikát pre elektronický podpis bez QSCD, ktorým možno vytvoriť zdokonalený podpis založený na kvalifikovanom certifikáte. | Áno, ak certifikát nebol zrušený; povolenie nekvalifikovaných certifikátov netreba |
+| **Kvalifikovaná elektronická pečať** | Kvalifikovaný certifikát pre elektronickú pečať s kľúčom v QSCD. | Áno, ak certifikát nebol zrušený |
+| **Zdokonalená elektronická pečať** | Kvalifikovaný certifikát pre elektronickú pečať bez QSCD. | Áno, ak certifikát nebol zrušený |
+| **Kvalifikovaný certifikát neznámeho typu** | Certifikát je kvalifikovaný, ale Autogram nevie rozlíšiť podpis od pečate. | Áno, ak certifikát nebol zrušený |
 | **Zrušený certifikát** | Certifikačná autorita certifikát zrušila. | Nie |
 | **Nekvalifikovaný certifikát** | Certifikát nie je kvalifikovaný podľa dôveryhodných zoznamov. | Iba ak je v [Nastaveniach](settings.md#bezpecnost) zapnuté **Povoliť podpisovanie nekvalifikovanými certifikátmi** |
 | **Platnosť sa nepodarilo overiť** | Autogram nezistil, či certifikát nebol zrušený, napríklad bez pripojenia na internet. | Áno |

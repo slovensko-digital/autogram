@@ -15,6 +15,7 @@ import eu.europa.esig.dss.spi.x509.revocation.crl.CRLSource;
 import eu.europa.esig.dss.spi.x509.revocation.ocsp.OCSPSource;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.CertificateValidator;
+import eu.europa.esig.dss.validation.process.qualification.certificate.FinalCertificateQualificationCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,14 @@ import java.util.function.Supplier;
 public class CertificateStatusChecker {
     private static final Logger LOGGER = LoggerFactory.getLogger(CertificateStatusChecker.class);
 
-    public enum Qualification { QUALIFIED, NOT_QUALIFIED, UNKNOWN }
-
-    public record Result(CertificateStatus status, Qualification qualification) { }
+    /** @param qualification null when the qualification check could not be completed */
+    public record Result(CertificateStatus status, CertificateQualification qualification) {
+        /** Whether the certificate is known not to be qualified for signing, rather than its status being unknown. */
+        public boolean isNotQualified() {
+            return qualification != null
+                    && (!qualification.isQc() || qualification == CertificateQualification.QCERT_FOR_WSA);
+        }
+    }
 
     private final OCSPSource ocspSource;
     private final CRLSource crlSource;
@@ -68,7 +74,7 @@ public class CertificateStatusChecker {
     public CompletableFuture<Result> checkAsync(DSSPrivateKeyEntry key, Duration statusTimeout, Duration trustedListsTimeout) {
         var status = withTimeout(CompletableFuture.supplyAsync(() -> checkStatus(key)), CertificateStatus.UNKNOWN, statusTimeout);
         var qualification = withTimeout(trustedLists.get().thenApplyAsync(verifier -> checkQualification(key, verifier)),
-                Qualification.UNKNOWN, trustedListsTimeout);
+                null, trustedListsTimeout);
         return status.thenCombine(qualification, Result::new);
     }
 
@@ -92,10 +98,10 @@ public class CertificateStatusChecker {
         return CertificateStatus.UNKNOWN;
     }
 
-    /** UNKNOWN when the trusted lists could not be loaded. */
-    public Qualification checkQualification(DSSPrivateKeyEntry key, CertificateVerifier verifier) {
+    /** Keeps the certificate type and QSCD status; null when the trusted lists could not be loaded. */
+    public CertificateQualification checkQualification(DSSPrivateKeyEntry key, CertificateVerifier verifier) {
         if (verifier == null || verifier.getTrustedCertSources().getNumberOfCertificates() == 0)
-            return Qualification.UNKNOWN;
+            return null;
 
         // revocation is checked on its own, the trusted lists and the chain are enough for the qualification
         var chainOnlyVerifier = new CommonCertificateVerifier();
@@ -108,12 +114,13 @@ public class CertificateStatusChecker {
         try {
             var validator = CertificateValidator.fromCertificate(key.getCertificate());
             validator.setCertificateVerifier(chainOnlyVerifier);
-            var qualification = validator.validate().getSimpleReport().getQualificationAtValidationTime();
-            return qualification != null && qualification.isQc() && qualification != CertificateQualification.QCERT_FOR_WSA
-                    ? Qualification.QUALIFIED : Qualification.NOT_QUALIFIED;
+            var report = validator.validate().getSimpleReport();
+            // The same combination used for signatures, with now as the prospective signing time.
+            return new FinalCertificateQualificationCalculator(report.getQualificationAtCertificateIssuance(),
+                    report.getQualificationAtValidationTime()).getFinalQualification();
         } catch (RuntimeException e) {
             LOGGER.debug("Qualification check of {} failed", key.getCertificate().getDSSIdAsString(), e);
-            return Qualification.UNKNOWN;
+            return null;
         }
     }
 
