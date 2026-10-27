@@ -552,11 +552,15 @@ public class Autogram {
     }
 
     public void pickSigningKeyAndThen(Consumer<SigningKey> callback) {
+        pickSigningKeyAndThen(null, callback);
+    }
+
+    public void pickSigningKeyAndThen(SigningJob job, Consumer<SigningKey> callback) {
         var drivers = settings.getDriverDetector().getAvailableDrivers();
         pickTokenAndThen(drivers, (option) -> fetchKeysAndThen(option, (key) -> {
             onTokenUsed(option);
             callback.accept(key);
-        }), null);
+        }, job), null);
     }
 
     /**
@@ -692,7 +696,7 @@ public class Autogram {
                 && slot.label().equalsIgnoreCase(EID_EP_SLOT_LABEL);
     }
 
-    private void fetchKeysAndThen(TokenOption option, Consumer<SigningKey> callback) {
+    private void fetchKeysAndThen(TokenOption option, Consumer<SigningKey> callback, SigningJob job) {
         var driver = option.driver();
         try {
             var connected = connectToToken(option);
@@ -700,11 +704,18 @@ public class Autogram {
             var keys = connected.keys();
             resetTokenSessionTimer();
 
-            ui.onUIThreadDo(() -> ui.pickKeyAndThen(keys, driver, (privateKey) -> {
+            Consumer<DSSPrivateKeyEntry> onPicked = privateKey -> {
                 // A cached PIN belongs to the previous key, possibly another card.
                 passwordManager.reset();
                 callback.accept(new SigningKey(token, privateKey));
-            }, () -> ui.onWorkThreadDo(token::close)));
+            };
+            Runnable onCancel = () -> ui.onWorkThreadDo(token::close);
+            ui.onUIThreadDo(() -> {
+                if (job == null)
+                    ui.pickKeyAndThen(keys, driver, onPicked, onCancel);
+                else
+                    ui.pickKeyAndThen(keys, driver, onPicked, onCancel, job);
+            });
         } catch (DSSException e) {
             ui.onUIThreadDo(() -> ui.onPickSigningKeyFailed(AutogramException.createFromDSSException(e)));
         } catch (AutogramException e) {

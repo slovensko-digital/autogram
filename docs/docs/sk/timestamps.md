@@ -23,6 +23,8 @@ Ak dokument podpíšete kvalifikovaným elektronickým podpisom s kvalifikovanou
 
 Odteraz Autogram pridá časovú pečiatku ku každému podpisu súboru z počítača, aj pri podpisovaní [viacerých dokumentov naraz](batch.md). Na pridanie pečiatky treba pripojenie na internet.
 
+Pre jeden práve podpisovaný dokument môžete voľbu zmeniť aj priamo vo [výbere certifikátu](card-and-pin.md#peciatka-pre-tento-podpis), bez zmeny uložených nastavení. Po overení kvalifikácie zdroja uvidíte rovnaký názov predpokladaného podpisu ako pri overovaní hotového podpisu: **Vlastnoručný podpis** bez pečiatky, **Osvedčený podpis** s kvalifikovanou pečiatkou. Podpis vytvorený kvalifikovaným certifikátom bez QSCD sa ani po pridaní pečiatky nemení na kvalifikovaný elektronický podpis.
+
 ## Podpisovanie na webových stránkach
 
 Pri podpisovaní na webovej stránke o časovej pečiatke rozhoduje stránka. Ak ju stránka vyžaduje, Autogram ju pridá z rovnakých zdrojov, aké máte v nastaveniach, aj keď máte pridávanie časových pečiatok vypnuté.

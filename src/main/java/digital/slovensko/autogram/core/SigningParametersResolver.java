@@ -103,6 +103,14 @@ public class SigningParametersResolver {
         return copyWith(requested, form, container, requested.getSignaturePackaging());
     }
 
+    /** Changes only the timestamp profile chosen for a local signing operation. */
+    public static SigningParameters withSignatureProfile(SigningParameters base, SignatureProfile profile) {
+        return SigningParameters.buildParameters(profile, base.getSignatureForm(), base.getDigestAlgorithm(),
+                base.getContainer(), base.getSignaturePackaging(), base.isEn319132(),
+                base.getInfoCanonicalization(), base.getPropertiesCanonicalization(), base.getKeyInfoCanonicalization(),
+                base.getCheckPDFACompliance(), base.getVisualizationWidth(), base.isPlainXmlEnabled());
+    }
+
     private static void rejectPasswordProtectedPdf(List<AutogramDocument> documents) {
         if (documents.stream().anyMatch(AutogramDocument::isPDFAndPasswordProtected))
             throw new PdfPasswordProtectedException();

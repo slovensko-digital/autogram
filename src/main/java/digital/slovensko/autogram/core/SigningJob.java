@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.core;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import digital.slovensko.autogram.core.dto.AutogramDocument;
@@ -28,16 +29,20 @@ import eu.europa.esig.dss.xades.signature.XAdESService;
 public class SigningJob {
     private final Responder responder;
     private final Batch batch;
-    private final SigningInput input;
+    private SigningInput input;
+    private final boolean timestampSelectionAllowed;
+    private TSPSource selectedTimestampSource;
     private final List<AutogramDocument> documentsToVisualize;
     private final AtomicBoolean resultDelivered = new AtomicBoolean();
     private List<Visualization> visualizations;
 
-    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Responder responder, Batch batch) {
+    private SigningJob(SigningInput input, List<AutogramDocument> documentsToVisualize, Responder responder, Batch batch,
+            boolean timestampSelectionAllowed) {
         this.input = input;
         this.documentsToVisualize = documentsToVisualize;
         this.responder = responder;
         this.batch = batch;
+        this.timestampSelectionAllowed = timestampSelectionAllowed;
     }
 
     public AutogramDocument getDocument() {
@@ -62,6 +67,22 @@ public class SigningJob {
 
     public SigningParameters getParameters() {
         return input.getParameters();
+    }
+
+    public boolean canSelectTimestamp() {
+        return timestampSelectionAllowed;
+    }
+
+    /** Applies the picker's choice to this job only; a website's requested profile must not be changed. */
+    public void setTimestampEnabled(boolean enabled, TSPSource source) {
+        if (!canSelectTimestamp())
+            throw new IllegalStateException("The timestamp profile was specified by the submitting application");
+
+        if (enabled)
+            Objects.requireNonNull(source, "timestamp source");
+        var profile = enabled ? SignatureProfile.BASELINE_T : SignatureProfile.BASELINE_B;
+        input = SigningInput.of(input.getDocuments(), SigningParametersResolver.withSignatureProfile(getParameters(), profile));
+        selectedTimestampSource = enabled ? source : null;
     }
 
     public int getVisualizationWidth() {
@@ -97,7 +118,7 @@ public class SigningJob {
             + (isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
 
         var signatureParameters = DssSigningParametersFactory.createSignatureParameters(input, key);
-        var signatureService = createSignatureService(tspSource);
+        var signatureService = createSignatureService(selectedTimestampSource != null ? selectedTimestampSource : tspSource);
 
         if (signatureService instanceof AbstractASiCSignatureService castedService) {
             var documents = getDssDocuments();
@@ -164,6 +185,18 @@ public class SigningJob {
     }
 
     public static SigningJob fromInput(SigningInput input, Responder responder, Batch batch) {
+        return fromInput(input, responder, batch, false);
+    }
+
+    public static SigningJob fromLocalInput(SigningInput input, Responder responder) {
+        return fromLocalInput(input, responder, new NoBatch());
+    }
+
+    public static SigningJob fromLocalInput(SigningInput input, Responder responder, Batch batch) {
+        return fromInput(input, responder, batch, true);
+    }
+
+    private static SigningJob fromInput(SigningInput input, Responder responder, Batch batch, boolean timestampSelectionAllowed) {
         List<AutogramDocument> documentsToVisualize;
         if (input.getDocuments().size() == 1 && input.getFirstDocument().isAsice()) {
             documentsToVisualize = AsicContainerUtils.getOriginalDocuments(input.getFirstDocument()).stream().toList();
@@ -171,7 +204,7 @@ public class SigningJob {
             documentsToVisualize = input.getDocuments();
         }
 
-        return new SigningJob(input, documentsToVisualize, responder, batch);
+        return new SigningJob(input, documentsToVisualize, responder, batch, timestampSelectionAllowed);
     }
 
     public boolean shouldCheckPDFCompliance() {

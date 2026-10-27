@@ -110,7 +110,7 @@ public class BatchGuiFileResponder extends BatchResponder {
                     target -> onFileResult(file, target, null, afterResult),
                     error -> onFileResult(file, null, error, afterResult));
             var input = SigningInput.fromFile(AutogramDocument.buildFromFile(new FileDocument(file), eFormAttributes), signingParameters);
-            job = SigningJob.fromInput(input, responder, batch);
+            job = SigningJob.fromLocalInput(input, responder, batch);
         } catch (Exception e) {
             // e.g. a password protected PDF or a broken container
             var error = toAutogramException(e);

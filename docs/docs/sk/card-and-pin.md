@@ -82,7 +82,7 @@ Autogram zisťuje:
 
 - **či certifikát nebol zrušený**, napríklad po strate karty. Pýta sa na to certifikačnej autority, ktorá ho vydala, preto potrebuje pripojenie na internet.
 - **či je certifikát kvalifikovaný** podľa dôveryhodných zoznamov krajín zapnutých v [Nastaveniach](settings.md#overovanie-podpisov). Kvalifikovaný elektronický podpis vytvoríte iba kvalifikovaným certifikátom.
-- **akú úroveň podpisu môžete certifikátom vytvoriť**. Kvalifikovaný certifikát s kľúčom v kvalifikovanom zariadení (QSCD) umožňuje kvalifikovaný elektronický podpis. Pri kvalifikovanom certifikáte bez QSCD sa zobrazí **Uznaný spôsob autorizácie**. Údaj o QSCD Autogram overuje podľa certifikátu aj dôveryhodných zoznamov.
+- **akú úroveň podpisu môžete certifikátom vytvoriť**. Kvalifikovaný certifikát s kľúčom v kvalifikovanom zariadení (QSCD) umožňuje kvalifikovaný elektronický podpis, ktorý Autogram označuje ako **Vlastnoručný podpis**. S kvalifikovanou časovou pečiatkou je to **Osvedčený podpis**. Pri kvalifikovanom certifikáte bez QSCD sa zobrazí **Uznaný spôsob autorizácie**. Názvy sú rovnaké ako pri [overení hotového podpisu](verification.md#vysledky).
 
 Overovanie zvyčajne trvá zlomok sekundy. Krátko po spustení Autogramu ešte počká, kým sa načítajú dôveryhodné zoznamy, a tlačidlo vtedy píše **Načítavajú sa dôveryhodné zoznamy…**. Pri certifikáte sa zobrazí štítok s predpokladanou úrovňou podpisu a prípadné upozornenia. Nejde ešte o overenie hotového podpisu; ten sa overuje až po podpísaní.
 
@@ -90,10 +90,11 @@ Overovanie zvyčajne trvá zlomok sekundy. Krátko po spustení Autogramu ešte 
 
 | Štítok | Čo znamená | Dá sa ním podpísať? |
 | --- | --- | --- |
-| **Kvalifikovaný elektronický podpis** | Kvalifikovaný certifikát pre elektronický podpis s kľúčom v QSCD. | Áno, ak certifikát nebol zrušený |
+| **Vlastnoručný podpis** | Kvalifikovaný certifikát pre elektronický podpis s kľúčom v QSCD, bez časovej pečiatky. | Áno, ak certifikát nebol zrušený |
+| **Osvedčený podpis** | Kvalifikovaný certifikát pre elektronický podpis s kľúčom v QSCD a overený kvalifikovaný zdroj časovej pečiatky. | Áno, ak certifikát nebol zrušený |
 | **Uznaný spôsob autorizácie** | Kvalifikovaný certifikát pre elektronický podpis bez QSCD, ktorým možno vytvoriť zdokonalený podpis založený na kvalifikovanom certifikáte. | Áno, ak certifikát nebol zrušený; povolenie nekvalifikovaných certifikátov netreba |
-| **Kvalifikovaná elektronická pečať** | Kvalifikovaný certifikát pre elektronickú pečať s kľúčom v QSCD. | Áno, ak certifikát nebol zrušený |
-| **Zdokonalená elektronická pečať** | Kvalifikovaný certifikát pre elektronickú pečať bez QSCD. | Áno, ak certifikát nebol zrušený |
+| **Elektronická pečať** | Kvalifikovaný certifikát pre elektronickú pečať s kľúčom v QSCD. | Áno, ak certifikát nebol zrušený |
+| **AdESeal-QC** | Kvalifikovaný certifikát pre elektronickú pečať bez QSCD. | Áno, ak certifikát nebol zrušený |
 | **Kvalifikovaný certifikát neznámeho typu** | Certifikát je kvalifikovaný, ale Autogram nevie rozlíšiť podpis od pečate. | Áno, ak certifikát nebol zrušený |
 | **Zrušený certifikát** | Certifikačná autorita certifikát zrušila. | Nie |
 | **Nekvalifikovaný certifikát** | Certifikát nie je kvalifikovaný podľa dôveryhodných zoznamov. | Iba ak je v [Nastaveniach](settings.md#bezpecnost) zapnuté **Povoliť podpisovanie nekvalifikovanými certifikátmi** |
@@ -104,6 +105,18 @@ Overovanie zvyčajne trvá zlomok sekundy. Krátko po spustení Autogramu ešte 
 Ak nie je kvalifikovaný žiadny certifikát, Autogram pod nimi zobrazí radu s odkazom **Otvoriť nastavenia**. Najčastejšie je príčinou to, že certifikát vydala certifikačná autorita z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý. Autogram vtedy túto krajinu v rade uvedie. Keď nastavenia zatvoríte, výber certifikátu sa zobrazí znova.
 
 ![Rada, keď nie je kvalifikovaný žiadny certifikát](/assets/images/screenshots/sk/certificate-picker-hint.png)
+
+### Časová pečiatka len pre tento podpis {#peciatka-pre-tento-podpis}
+
+Pri dokumente otvorenom z počítača môžete priamo vo výbere certifikátu zapnúť alebo vypnúť **Pridať časovú pečiatku**. Voľba je predvyplnená podľa nastavení, ale zmena platí iba pre tento podpis. Ostatné dokumenty ani uložené nastavenia sa nemenia. Zatvorením výberu bez podpisu sa voľba nepotvrdí.
+
+Po zapnutí Autogram vyžiada zo zdroja nastaveného v časti **Podpisovanie** jednu skúšobnú časovú pečiatku. Odosiela iba náhodný odtlačok, nie dokument ani jeho obsah. DSS overí odpoveď aj kvalifikáciu poskytovateľa podľa dôveryhodných zoznamov. Prepínanie voľby v tom istom okne nevyžaduje ďalšie skúšobné pečiatky. Pri vlastnom platenom poskytovateľovi môže byť aj skúšobná pečiatka spoplatnená.
+
+Keď sa kvalifikácia zdroja potvrdí, voľba sa premenuje na **Pridať kvalifikovanú časovú pečiatku** a pri kvalifikovanom podpise sa náhľad zmení z **Vlastnoručný podpis** na **Osvedčený podpis**. Podpis bez QSCD zostáva **Uznaný spôsob autorizácie**, časová pečiatka z neho neurobí kvalifikovaný podpis.
+
+Ak zdroj nie je kvalifikovaný alebo sa jeho kvalifikáciu nepodarí overiť, náhľad ukáže podpis a pečiatku oddelene, rovnako ako pri overovaní hotového podpisu. Nezobrazí **Osvedčený podpis**. Ak bol zdroj overený ako kvalifikovaný, kontroluje sa aj pečiatka skutočne pridaná pri podpisovaní; pri nekvalifikovanej náhradnej odpovedi sa podpis neuloží.
+
+Pri podpisovaní z webovej stránky určuje pridanie časovej pečiatky stránka. Voľba je zobrazená, ale nedá sa zmeniť. Podrobnosti o zdrojoch nájdete v [Podpis s časovou pečiatkou](timestamps.md).
 
 ## Podpisový PIN {#podpisovy-pin}
 

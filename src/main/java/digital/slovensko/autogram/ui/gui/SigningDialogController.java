@@ -343,7 +343,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     public void sign() {
         var signingKey = gui.getActiveSigningKey();
         if (signingKey == null) {
-            autogram.pickSigningKeyAndThen(key -> {
+            autogram.pickSigningKeyAndThen(job, key -> {
                 gui.setActiveSigningKeyAndThen(key, k -> {
                     gui.disableSigning();
                     getNodeForLoosingFocus().requestFocus();

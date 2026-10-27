@@ -5,6 +5,7 @@ import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureQualification;
 import eu.europa.esig.dss.enumerations.TimestampQualification;
+import eu.europa.esig.dss.validation.process.qualification.signature.SigQualificationMatrix;
 import eu.europa.esig.dss.validation.reports.Reports;
 import javafx.scene.Node;
 import javafx.scene.layout.FlowPane;
@@ -68,14 +69,29 @@ public abstract class SignatureBadgeFactory {
 
     /** Expected signature level before signing, not a validation result for an already created signature. */
     public static Node createBadgeFromCertificateQualification(CertificateQualification qualification, ResourceBundle resources) {
+        return createBadgeFromCertificateQualification(qualification, false, null, resources);
+    }
+
+    public static Node createBadgeFromCertificateQualification(CertificateQualification qualification, boolean timestampRequested,
+            TimestampQualification timestampQualification, ResourceBundle resources) {
         if (qualification == null)
             return createWarningBadge(translate(resources, "pickKey.qualification.unknown"));
 
         return switch (qualification) {
-            case QCERT_FOR_ESIG_QSCD -> createValidQualifiedBadge(translate(resources, "signature.qualification.QESIG.label"));
-            case QCERT_FOR_ESIG -> createValidQualifiedBadge(translate(resources, "signature.qualification.ADESIG_QC.shortLabel"));
-            case QCERT_FOR_ESEAL_QSCD -> createValidQualifiedBadge(translate(resources, "signature.qualification.QESEAL.label"));
-            case QCERT_FOR_ESEAL -> createCustomValidQualifiedBadge(translate(resources, "pickKey.qualification.advancedSeal"));
+            case QCERT_FOR_ESIG_QSCD, QCERT_FOR_ESIG, QCERT_FOR_ESEAL_QSCD, QCERT_FOR_ESEAL -> {
+                var signatureQualification = SigQualificationMatrix.getSignatureQualification(Indication.PASSED, qualification);
+                var shortBadge = createShortQualificationBadge(resources, signatureQualification, timestampRequested,
+                        !timestampRequested || timestampQualification == TimestampQualification.QTSA);
+                if (shortBadge != null)
+                    yield shortBadge;
+
+                var badges = new FlowPane(createReadableBadgeFromQualification(signatureQualification, resources));
+                if (timestampRequested)
+                    badges.getChildren().add(timestampQualification == TimestampQualification.QTSA
+                            ? createValidQualifiedBadge(timestampQualification.getReadable())
+                            : createUnknownBadge(translate(resources, "signature.timestamp.unknown.shortLabel")));
+                yield wrapMultipleBadges(badges, 0);
+            }
             case QCERT_FOR_UNKNOWN, QCERT_FOR_UNKNOWN_QSCD -> createWarningBadge(translate(resources, "pickKey.qualification.unknownType"));
             default -> createWarningBadge(translate(resources, "pickKey.qualification.notQualified"));
         };
@@ -136,45 +152,35 @@ public abstract class SignatureBadgeFactory {
         if (areTimestampsFailed(reports, signatureId))
             return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength, resources);
 
+        var shortBadge = createShortQualificationBadge(resources, signatureQualification,
+                !reports.getSimpleReport().getSignatureTimestamps(signatureId).isEmpty(), areTimestampsQualified(reports, signatureId));
+        if (shortBadge != null)
+            return shortBadge;
+
         switch (signatureQualification) {
-            case QESIG: {
-                if (reports.getSimpleReport().getSignatureTimestamps(signatureId).isEmpty())
-                    return createValidQualifiedBadge(translate(resources, "signature.qualification.QESIG.shortLabel"));
-
-                if (areTimestampsQualified(reports, signatureId))
-                    return createValidQualifiedBadge(translate(resources, "signature.qualification.QESIG.QTSA.shortLabel"));
-
-                return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength, resources);
-            }
-            case QESEAL: {
-                if (areTimestampsQualified(reports, signatureId))
-                    return createValidQualifiedBadge(translate(resources, "signature.qualification.QESEAL.shortLabel"));
-                return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength, resources);
-            }
-            case ADESIG_QC: {
-                if (areTimestampsQualified(reports, signatureId))
-                    return createValidQualifiedBadge(translate(resources, "signature.qualification.ADESIG_QC.shortLabel"));
-                return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength, resources);
-            }
-            case ADESEAL, ADESEAL_QC, ADESIG:
+            case QESIG, QESEAL, ADESIG_QC, ADESEAL, ADESEAL_QC, ADESIG:
                 return createMultipleBadges(signatureQualification, reports, signatureId, prefWrapLength, resources);
             default:
                 return createBadgeFromQualification(signatureQualification, signatureForm, resources);
         }
     }
 
+    /** Shared names for the picker's prediction and the validated signature. */
+    private static Node createShortQualificationBadge(ResourceBundle resources, SignatureQualification qualification,
+            boolean hasTimestamps, boolean timestampsQualified) {
+        var key = switch (qualification) {
+            case QESIG -> !hasTimestamps ? "signature.qualification.QESIG.shortLabel"
+                    : timestampsQualified ? "signature.qualification.QESIG.QTSA.shortLabel" : null;
+            case QESEAL -> timestampsQualified ? "signature.qualification.QESEAL.shortLabel" : null;
+            case ADESIG_QC -> timestampsQualified ? "signature.qualification.ADESIG_QC.shortLabel" : null;
+            default -> null;
+        };
+        return key == null ? null : createValidQualifiedBadge(translate(resources, key));
+    }
+
     private static HBox createMultipleBadges(SignatureQualification signatureQualification, Reports reports,
                                              String signatureId, double prefWrapLength, ResourceBundle resources) {
         var flowPane = new FlowPane(createReadableBadgeFromQualification(signatureQualification, resources));
-        flowPane.getStyleClass().add("autogram-tag-multiple-box");
-        flowPane.setMaxHeight(Region.USE_PREF_SIZE);
-        if (prefWrapLength > 1) {
-            flowPane.setPrefWrapLength(prefWrapLength);
-            flowPane.setMaxWidth(prefWrapLength);
-        } else {
-            flowPane.setMaxWidth(Region.USE_PREF_SIZE);
-        }
-
         var simple = reports.getSimpleReport();
         for (var timestamp : simple.getSignatureTimestamps(signatureId)) {
             var isQualified = simple.getTimestampQualification(timestamp.getId()) == TimestampQualification.QTSA;
@@ -195,6 +201,18 @@ public abstract class SignatureBadgeFactory {
                 flowPane.getChildren().add(createUnknownBadge(translate(resources, "signature.timestamp.unknown.shortLabel")));
         }
 
+        return wrapMultipleBadges(flowPane, prefWrapLength);
+    }
+
+    private static HBox wrapMultipleBadges(FlowPane flowPane, double prefWrapLength) {
+        flowPane.getStyleClass().add("autogram-tag-multiple-box");
+        flowPane.setMaxHeight(Region.USE_PREF_SIZE);
+        if (prefWrapLength > 1) {
+            flowPane.setPrefWrapLength(prefWrapLength);
+            flowPane.setMaxWidth(prefWrapLength);
+        } else {
+            flowPane.setMaxWidth(Region.USE_PREF_SIZE);
+        }
         var wrapper = new HBox(flowPane);
         wrapper.setMaxWidth(Region.USE_PREF_SIZE);
         wrapper.setMaxHeight(Region.USE_PREF_SIZE);
@@ -222,7 +240,7 @@ public abstract class SignatureBadgeFactory {
     private static boolean areTimestampsQualified(Reports reports, String signatureId) {
         var simple = reports.getSimpleReport();
         for (var timestamp : simple.getSignatureTimestamps(signatureId))
-            if (!simple.getTimestampQualification(timestamp.getId()).equals(TimestampQualification.QTSA))
+            if (simple.getTimestampQualification(timestamp.getId()) != TimestampQualification.QTSA)
                 return false;
 
         return true;
@@ -230,8 +248,8 @@ public abstract class SignatureBadgeFactory {
 
     private static boolean areTimestampsFailed(Reports reports, String signatureId) {
         for (var timestamp : reports.getSimpleReport().getSignatureTimestamps(signatureId))
-            if (timestamp.getIndication().equals(Indication.TOTAL_FAILED)
-                    || timestamp.getIndication().equals(Indication.FAILED))
+            if (timestamp.getIndication() == Indication.TOTAL_FAILED
+                    || timestamp.getIndication() == Indication.FAILED)
                 return true;
 
         return false;

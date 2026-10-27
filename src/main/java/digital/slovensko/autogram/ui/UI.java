@@ -41,6 +41,12 @@ public interface UI {
 
     void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel);
 
+    /** The job supplies the effective timestamp profile; non-GUI clients keep their existing key selection. */
+    default void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback,
+            Runnable onCancel, SigningJob job) {
+        pickKeyAndThen(keys, driver, callback, onCancel);
+    }
+
     void onPickSigningKeyFailed(AutogramException e);
 
     void onSigningSuccess(SigningJob job);
