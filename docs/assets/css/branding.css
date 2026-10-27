@@ -45,6 +45,7 @@
     --idsk-visited: #4c2c92;
     --idsk-focus: #ffdf0f;
     --idsk-footer-bg: #dee0e2;
+    --idsk-light-grey: #f3f2f1;
     --idsk-code-keyword: #4c2c92;
     --idsk-code-string: #00703c;
 }
@@ -69,6 +70,7 @@
     --image-border-color: #6f777b;
     --idsk-visited: #d2b4f0;
     --idsk-footer-bg: #171b1e;
+    --idsk-light-grey: #20272b;
     --idsk-code-keyword: #d2b4f0;
     --idsk-code-string: #9dd99b;
 }
@@ -383,6 +385,189 @@ h4 {
     font-weight: 700;
     line-height: 1.8125rem;
     text-align: center;
+}
+
+/* The edge version's banner holds both languages, because docmd has one banner per version, not per locale. */
+html[lang="sk"] .docmd-banner [lang="en"],
+html[lang="en"] .docmd-banner [lang="sk"] {
+    display: none;
+}
+
+/* docmd renders the top banner in the content column, next to the sidebar fixed to the top of the window. Like docmd's
+   top menubar, it spans the whole window instead and the rest moves down by its height (assets/js/top-banner.js). */
+body:has(.docmd-banner--pos-top) {
+    padding-top: var(--top-banner-h, 2.75rem);
+}
+
+.docmd-banner--pos-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: auto;
+    z-index: 1200;
+    border-bottom: 0;
+    color: var(--text-color);
+    background-color: var(--idsk-light-grey);
+    font-size: 1rem;
+    line-height: 1.25;
+}
+
+@media (min-width: 769px) {
+    body:has(.docmd-banner--pos-top) {
+        --fixed-top-offset: var(--top-banner-h, 2.75rem);
+        --header-top-offset: var(--top-banner-h, 2.75rem);
+        --sticky-top-offset: calc(var(--top-banner-h, 2.75rem) + var(--header-h));
+    }
+
+    .docmd-banner--pos-top {
+        position: fixed;
+    }
+}
+
+.docmd-banner--pos-top .docmd-banner__inner {
+    max-width: none;
+    padding: 0.625rem 1.5rem;
+}
+
+/* ID-SK phase banner and tag (govuk-phase-banner, govuk-tag), on the light grey of the ID-SK header's top bar. */
+.phase-banner {
+    display: table;
+}
+
+.phase-banner__text {
+    display: table-cell;
+    vertical-align: baseline;
+}
+
+.idsk-tag {
+    display: inline-block;
+    padding: 0.3125rem 0.5rem 0.25rem;
+    color: #ffffff;
+    background-color: #0065b3;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.phase-banner .idsk-tag {
+    margin-right: 0.625rem;
+}
+
+.phase-banner a {
+    color: var(--link-color);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+}
+
+.phase-banner a:hover {
+    color: var(--link-color-hover);
+    text-decoration-thickness: 3px;
+}
+
+/* The version switcher like the language menu of the ID-SK header: a text button with an arrow and a plain list,
+   where the chosen item is bold and underlined. The visible label is not translated by docmd, hence the prefix. */
+.sidebar-top-group {
+    justify-content: flex-start;
+    padding: 1.25rem 1.25rem 0 2.25rem;
+}
+
+.version-dropdown-toggle {
+    height: auto;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    border: 0;
+    border-radius: 0;
+    color: var(--text-color);
+    background: none;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.25;
+    transition: none;
+}
+
+.version-dropdown-toggle:hover {
+    text-decoration: underline;
+}
+
+html[lang="sk"] .version-label::before {
+    content: "Verzia ";
+}
+
+html[lang="en"] .version-label::before {
+    content: "Version ";
+}
+
+.version-label {
+    font-weight: 700;
+}
+
+.version-label::before {
+    font-weight: 400;
+}
+
+.version-icon,
+.version-check {
+    display: none;
+}
+
+.version-chevron {
+    width: 1rem;
+    height: 1rem;
+}
+
+.version-dropdown-menu {
+    top: 100%;
+    min-width: 12rem;
+    padding: 0.625rem 0;
+    border: 0;
+    border-radius: 0;
+    background-color: var(--bg-color);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+}
+
+:root[data-theme="dark"] .version-dropdown-menu {
+    border: 1px solid var(--border-color);
+}
+
+.version-dropdown-item {
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.625rem;
+    border-radius: 0;
+    color: var(--text-color);
+    font-size: 1rem;
+    line-height: 1.25;
+}
+
+.version-dropdown-item:hover {
+    color: var(--text-color);
+    background: none;
+    text-decoration: underline;
+}
+
+.version-dropdown-item.active {
+    color: var(--text-color);
+    background: none;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.version-latest-badge {
+    margin-left: 0;
+    padding: 0.3125rem 0.5rem 0.25rem;
+    border-radius: 0;
+    color: #ffffff;
+    background-color: #0065b3;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 1px;
 }
 
 .sidebar-toggle-button {
@@ -752,6 +937,15 @@ pre {
 
     .main-content .docmd-button {
         width: 100%;
+    }
+
+    .docmd-banner--pos-top,
+    .idsk-tag {
+        font-size: 0.875rem;
+    }
+
+    .docmd-banner--pos-top .docmd-banner__inner {
+        padding: 0.625rem 1.25rem;
     }
 
     h1 {
