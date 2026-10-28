@@ -85,17 +85,20 @@ Autogram checks:
 - **whether the certificate was revoked**, for example after the card was lost. It asks the certification authority that issued the certificate, so it needs an internet connection.
 - **whether the certificate is qualified** according to the trusted lists of the countries turned on in [Settings](settings.md#signature-validation). Only a qualified certificate makes a qualified electronic signature.
 
-The check usually takes a fraction of a second. Shortly after Autogram starts, it also waits until the trusted lists are loaded, and the button then reads **Loading trusted lists…**. A valid qualified certificate shows nothing. Otherwise the certificate has a label:
+The check usually takes a fraction of a second. Shortly after Autogram starts, it also waits until the trusted lists are loaded, and the button then reads **Loading trusted lists…**. A valid qualified certificate shows nothing. Otherwise the certificate has a label. If Autogram finds out several things about a certificate, the label shows the most important one.
 
 ![Certificates with labels after the check](/assets/images/screenshots/en/certificate-picker-checks.png)
 
 | Label | What it means | Can you sign with it? |
 | --- | --- | --- |
-| **Revoked certificate** | The certification authority revoked the certificate. | No |
+| **Revoked certificate** | The certification authority revoked the certificate. A signature made with it is not valid. | Only if **Allow signing with expired and revoked certificates** is turned on in [Settings](settings.md#security) |
 | **Non-qualified certificate** | The certificate is not qualified according to the trusted lists. | Only if **Allow signing with non-qualified certificates** is turned on in [Settings](settings.md#security) |
-| **Validity could not be verified** | Autogram could not find out whether the certificate was revoked, for example without an internet connection. | Yes |
-| **Qualification could not be verified** | The trusted lists could not be loaded, for example when Autogram first starts without an internet connection. | Yes |
-| **Expired certificate** | The certificate has expired. Such certificates are shown only if **Allow signing with expired certificates** is turned on in Settings. | Yes |
+| **Validity could not be verified** | Autogram could not find out whether the certificate was revoked or whether it is qualified. For example, there is no internet connection, or the trusted list of the country that issued the certificate could not be downloaded. | Yes |
+| **Expired certificate** | The certificate has expired. Such certificates are shown only if **Allow signing with expired and revoked certificates** is turned on in Settings. | Yes |
+
+If a certificate could not be verified, Autogram shows a warning below the list. You can still sign with it, for example when you are offline at the moment. It is not certain, though, that the signature will be valid.
+
+![Certificates that could not be verified](/assets/images/screenshots/en/certificate-picker-offline.png)
 
 If none of the certificates is qualified, Autogram shows a hint below them with an **Open settings** link. The most common reason is that the certificate was issued by a certification authority from a country whose trusted list is turned off. Autogram then names that country in the hint. When you close the settings, the certificate selection appears again.
 

@@ -41,7 +41,7 @@ Autogram also uses these lists to find out whether the certificate you sign with
 | --- | --- | --- |
 | **Signature validity check** | Before signing, warns about invalid signatures the document already has. See [Warnings before signing](warnings.md#untrusted-signatures). | Yes |
 | **PDF/A compliance check** | Before signing, warns if the PDF is not in PDF/A format. See [Warnings before signing](warnings.md#pdfa). | Yes |
-| **Allow signing with expired certificates** | Expired certificates are also shown in the certificate list. Authorities may not accept a signature made with one. | No |
+| **Allow signing with expired and revoked certificates** | Expired certificates are also shown in the certificate selection, and a certificate that the certification authority revoked can be chosen too. A signature made with such a certificate is not valid. See [Choosing the certificate](card-and-pin.md#choosing-the-certificate). | No |
 | **Allow signing with non-qualified certificates** | A certificate that is not qualified according to the trusted lists can also be chosen in the certificate selection. A signature made with it is not a qualified electronic signature and authorities may not accept it. See [Choosing the certificate](card-and-pin.md#choosing-the-certificate). | No |
 | **Display detailed errors** | If a file cannot be opened, shows a detailed description of the error. | Yes |
 

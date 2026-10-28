@@ -41,7 +41,7 @@ Podľa týchto zoznamov Autogram zisťuje aj to, či je kvalifikovaný certifik�
 | --- | --- | --- |
 | **Kontrola platnosti podpisov** | Pred podpisom upozorní na neplatné podpisy, ktoré už dokument obsahuje. Pozrite si [Upozornenia pred podpisom](warnings.md#nedoveryhodne-podpisy). | Áno |
 | **Kontrola súladu s PDF/A formátom** | Pred podpisom upozorní, ak PDF nie je vo formáte PDF/A. Pozrite si [Upozornenia pred podpisom](warnings.md#pdfa). | Áno |
-| **Povoliť podpisovanie exspirovanými certifikátmi** | Vo výbere certifikátu sa zobrazia aj certifikáty s uplynutou platnosťou. Podpis takým certifikátom úrady nemusia prijať. | Nie |
+| **Povoliť podpisovanie exspirovanými a zrušenými certifikátmi** | Vo výbere certifikátu sa zobrazia aj certifikáty s uplynutou platnosťou a dá sa vybrať aj certifikát, ktorý certifikačná autorita zrušila. Podpis takým certifikátom nie je platný. Pozrite si [Výber certifikátu](card-and-pin.md#vyber-certifikatu). | Nie |
 | **Povoliť podpisovanie nekvalifikovanými certifikátmi** | Vo výbere certifikátu sa dá vybrať aj certifikát, ktorý podľa dôveryhodných zoznamov nie je kvalifikovaný. Podpis takým certifikátom nie je kvalifikovaný elektronický podpis a úrady ho nemusia prijať. Pozrite si [Výber certifikátu](card-and-pin.md#vyber-certifikatu). | Nie |
 | **Zobrazovať detailné chyby** | Ak sa súbor nepodarí otvoriť, zobrazí sa podrobný popis chyby. | Áno |
 

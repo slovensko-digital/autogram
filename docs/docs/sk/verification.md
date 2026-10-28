@@ -53,3 +53,7 @@ Tlačidlom **Zobraziť technické detaily** otvoríte úplnú správu o overení
 Autogram overuje podpisy podľa dôveryhodných zoznamov Európskej únie, ktoré sťahuje z internetu. Predvolene overuje podpisy z certifikátov poskytovateľov zo Slovenska, Česka, Rakúska, Poľska, Maďarska, Belgicka, Holandska a Španielska. Ďalšie krajiny zapnete v [Nastaveniach](settings.md#overovanie-podpisov). Každá ďalšia krajina overovanie spomalí.
 
 Ak sa dôveryhodné zoznamy nepodarí stiahnuť, Autogram zobrazí upozornenie, že podpisy nie je možné úplne overiť. Skontrolujte pripojenie na internet a dokument otvorte znova.
+
+Niekedy sa nepodarí stiahnuť iba zoznam niektorej krajiny, napríklad keď jej server práve neodpovedá. Autogram potom overuje podľa ostatných zoznamov. Ak má dokument podpis, ktorý sa pre chýbajúci zoznam nedá overiť, Autogram nad podpismi upozorní, koľko zoznamov sa nepodarilo stiahnuť. Pri ďalšom spustení Autogramu sa ich pokúsi stiahnuť znova.
+
+![Upozornenie, že sa nepodarilo stiahnuť niektoré dôveryhodné zoznamy](/assets/images/screenshots/sk/signed-document-trusted-lists.png)
