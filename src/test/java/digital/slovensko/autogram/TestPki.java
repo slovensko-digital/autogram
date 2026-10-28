@@ -85,8 +85,14 @@ public class TestPki {
         /** legal person, QcType eseal */
         QESEAL,
         /** natural person without any QC statements */
-        NOT_QUALIFIED
+        NOT_QUALIFIED,
+        /** natural person, QcType esign without QcSSCD - uznaný spôsob autorizácie */
+        QESIG_WITHOUT_QSCD,
+        /** mandátny certifikát of a natural person acting for a public authority, as in SNCA's profile */
+        QESIG_MANDATE
     }
+
+    public static final String MANDATE_POLICY = "1.3.158.36061701.1.1.1042";
 
     public record Signer(String name, X509Certificate certificate, byte[] keystore) {
         /** Token with this signer's key, like the one Autogram opens from a keystore file (e.g. for a fake TokenDriver). */
@@ -227,7 +233,10 @@ public class TestPki {
                 subject.addRDN(BCStyle.GIVENNAME, parts[0]).addRDN(BCStyle.SURNAME, parts.length > 1 ? parts[1] : parts[0])
                         .addRDN(BCStyle.SERIALNUMBER, "PNOSK-TEST" + String.format("%06d", id));
             }
-            subject.addRDN(BCStyle.CN, name);
+            if (kind == Kind.QESIG_MANDATE)
+                subject.addRDN(BCStyle.T, "Advokát").addRDN(BCStyle.O, "MANDANT " + SEAL)
+                        .addRDN(BCStyle.ORGANIZATION_IDENTIFIER, "MANDANT NTRSK-" + String.format("%08d", id));
+            subject.addRDN(BCStyle.CN, kind == Kind.QESIG_MANDATE ? name + " OPRÁVNENIE 1042 Advokát" : name);
 
             var ext = new JcaX509ExtensionUtils();
             var crl = new DistributionPoint(new DistributionPointName(new GeneralNames(
@@ -244,12 +253,20 @@ public class TestPki {
             if (kind != Kind.NOT_QUALIFIED) {
                 var qc = new ASN1EncodableVector();
                 qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance));
-                qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD));
+                if (kind != Kind.QESIG_WITHOUT_QSCD)
+                    qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD));
                 qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcType, new DERSequence(
                         kind == Kind.QESEAL ? ETSIQCObjectIdentifiers.id_etsi_qct_eseal : ETSIQCObjectIdentifiers.id_etsi_qct_esign)));
-                // QCP-l-qscd for seals, QCP-n-qscd for signatures
-                builder.addExtension(Extension.certificatePolicies, false, new CertificatePolicies(new PolicyInformation(
-                                new ASN1ObjectIdentifier(kind == Kind.QESEAL ? "0.4.0.194112.1.3" : "0.4.0.194112.1.2"))))
+                // QCP-l-qscd for seals, QCP-n for signatures without QSCD, QCP-n-qscd for the others
+                var policies = new ArrayList<PolicyInformation>();
+                policies.add(new PolicyInformation(new ASN1ObjectIdentifier(switch (kind) {
+                    case QESEAL -> "0.4.0.194112.1.3";
+                    case QESIG_WITHOUT_QSCD -> "0.4.0.194112.1.0";
+                    default -> "0.4.0.194112.1.2";
+                })));
+                if (kind == Kind.QESIG_MANDATE)
+                    policies.add(new PolicyInformation(new ASN1ObjectIdentifier(MANDATE_POLICY)));
+                builder.addExtension(Extension.certificatePolicies, false, new CertificatePolicies(policies.toArray(PolicyInformation[]::new)))
                         .addExtension(Extension.qCStatements, false, new DERSequence(qc));
             }
             var cert = sign(builder, caKeys.getPrivate());

@@ -11,7 +11,9 @@ import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.INVALID_PACKAGING;
 
@@ -103,6 +105,12 @@ public class SigningParametersResolver {
         return copyWith(requested, form, container, requested.getSignaturePackaging());
     }
 
+    /** Restricts the signing certificate to these types, none means any certificate. */
+    public static SigningParameters withSigningCertificateTypes(SigningParameters requested, Collection<SigningCertificateType> types) {
+        return copyWith(requested, requested.getSignatureForm(), requested.getContainer(), requested.getSignaturePackaging(),
+                Set.copyOf(types));
+    }
+
     private static void rejectPasswordProtectedPdf(List<AutogramDocument> documents) {
         if (documents.stream().anyMatch(AutogramDocument::isPDFAndPasswordProtected))
             throw new PdfPasswordProtectedException();
@@ -129,11 +137,16 @@ public class SigningParametersResolver {
     }
 
     private static SigningParameters copyWith(SigningParameters base, SignatureForm form, ASiCContainerType container, SignaturePackaging packaging) {
+        return copyWith(base, form, container, packaging, base.getSigningCertificateTypes());
+    }
+
+    private static SigningParameters copyWith(SigningParameters base, SignatureForm form, ASiCContainerType container,
+            SignaturePackaging packaging, Set<SigningCertificateType> signingCertificateTypes) {
         return SigningParameters.buildParameters(
                 base.getSignatureProfile(), form, base.getDigestAlgorithm(),
                 container, packaging, base.isEn319132(),
                 base.getInfoCanonicalization(), base.getPropertiesCanonicalization(),
                 base.getKeyInfoCanonicalization(), base.getCheckPDFACompliance(),
-                base.getVisualizationWidth(), base.isPlainXmlEnabled());
+                base.getVisualizationWidth(), base.isPlainXmlEnabled(), signingCertificateTypes);
     }
 }

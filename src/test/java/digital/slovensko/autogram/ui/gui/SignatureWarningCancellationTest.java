@@ -84,7 +84,7 @@ class SignatureWarningCancellationTest {
                 assertEquals(204, response.statusCode());
                 assertEquals("", response.body());
                 verify(request.responder, times(1)).onDocumentSignFailed(isA(SigningCanceledByUserException.class));
-                verify(dialog.autogram, never()).pickSigningKeyAndThen(any());
+                verify(dialog.autogram, never()).pickSigningKeyAndThen(any(), any());
             } finally {
                 onFxThread(() -> { dialog.close(); return null; });
             }
@@ -103,7 +103,7 @@ class SignatureWarningCancellationTest {
                     assertTrue(dialog.signingStage.isShowing());
                     return null;
                 });
-                verify(dialog.autogram).pickSigningKeyAndThen(any());
+                verify(dialog.autogram).pickSigningKeyAndThen(any(), any());
                 verifyNoInteractions(request.responder);
                 assertFalse(request.response.isDone());
             } finally {
@@ -126,7 +126,7 @@ class SignatureWarningCancellationTest {
                     assertFalse(dialog.controller.mainButton.isDisabled());
                     return null;
                 });
-                verify(dialog.autogram, never()).pickSigningKeyAndThen(any());
+                verify(dialog.autogram, never()).pickSigningKeyAndThen(any(), any());
                 verifyNoInteractions(request.responder);
                 assertFalse(request.response.isDone());
             } finally {

@@ -96,10 +96,13 @@ Overovanie zvyčajne trvá zlomok sekundy. Krátko po spustení Autogramu ešte 
 | **Platnosť sa nepodarilo overiť** | Autogram nezistil, či certifikát nebol zrušený, napríklad bez pripojenia na internet. | Áno |
 | **Kvalifikáciu sa nepodarilo overiť** | Dôveryhodné zoznamy sa nepodarilo načítať, napríklad pri prvom spustení Autogramu bez pripojenia na internet. | Áno |
 | **Exspirovaný certifikát** | Platnosť certifikátu uplynula. Takéto certifikáty sa zobrazia, iba ak je v Nastaveniach zapnuté **Povoliť podpisovanie exspirovanými certifikátmi**. | Áno |
+| **Dokument vyžaduje iný typ** | Stránka alebo aplikácia, z ktorej dokument prišiel, prijíma iba určité typy certifikátov, napríklad iba kvalifikovaný elektronický podpis alebo mandátny certifikát. | Nie |
 
 Ak nie je kvalifikovaný žiadny certifikát, Autogram pod nimi zobrazí radu s odkazom **Otvoriť nastavenia**. Najčastejšie je príčinou to, že certifikát vydala certifikačná autorita z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý. Autogram vtedy túto krajinu v rade uvedie. Keď nastavenia zatvoríte, výber certifikátu sa zobrazí znova.
 
 ![Rada, keď nie je kvalifikovaný žiadny certifikát](/assets/images/screenshots/sk/certificate-picker-hint.png)
+
+Keď dokument vyžaduje určité typy certifikátov, podpísať sa dá iba certifikátom, ktorého typ Autogram overil, teda ani certifikátom so štítkom **Kvalifikáciu sa nepodarilo overiť** alebo **Exspirovaný certifikát**. Nastavenie pre nekvalifikované certifikáty sa vtedy neuplatní. Ak žiadny z certifikátov nemá požadovaný typ, rada vymenuje typy, ktoré dokument vyžaduje.
 
 ## Podpisový PIN {#podpisovy-pin}
 

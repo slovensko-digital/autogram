@@ -23,6 +23,8 @@ import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -645,12 +647,13 @@ class TokenPickingTests {
         }
 
         @Override
-        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
+        public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Set<SigningCertificateType> allowedTypes,
+                BiConsumer<DSSPrivateKeyEntry, SigningCertificateType> callback, Runnable onCancel) {
             offeredKeys = keys;
             if (keys.isEmpty())
                 onCancel.run();
             else if (pickKeys)
-                super.pickKeyAndThen(keys, driver, callback, onCancel);
+                super.pickKeyAndThen(keys, driver, allowedTypes, callback, onCancel);
             else if (cancelKeys)
                 onCancel.run();
         }

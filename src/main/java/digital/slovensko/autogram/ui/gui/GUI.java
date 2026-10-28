@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.CertificateStatusChecker;
 import digital.slovensko.autogram.core.LegacyInstallation;
 import digital.slovensko.autogram.core.NoBatch;
 import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.SigningCertificateType;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningMode;
@@ -43,9 +44,11 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -180,7 +183,8 @@ public class GUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Set<SigningCertificateType> allowedTypes,
+            BiConsumer<DSSPrivateKeyEntry, SigningCertificateType> callback, Runnable onCancel) {
         if (keys.isEmpty()) {
             onCancel.run();
             showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
@@ -211,9 +215,9 @@ public class GUI implements UI {
         var trustedLists = SignatureValidator.getInstance().whenLoaded();
         Runnable openSettings = autogram == null ? null : () -> {
             SettingsDialogController.showAndWait(autogram, userSettings, SettingsDialogController.TRUSTED_COUNTRIES_TAB);
-            pickKeyAndThen(allKeys, driver, callback, onCancel);
+            pickKeyAndThen(allKeys, driver, allowedTypes, callback, onCancel);
         };
-        var controller = new PickKeyDialogController(keys, callback, userSettings,
+        var controller = new PickKeyDialogController(keys, allowedTypes, callback, userSettings,
                 // DSS waits up to a minute for each unreachable server, the user should not
                 (key, onChecked) -> checker.checkAsync(key, CERTIFICATE_STATUS_TIMEOUT, TRUSTED_LISTS_TIMEOUT)
                         .thenAccept(result -> onUIThreadDo(() -> onChecked.accept(result))),
