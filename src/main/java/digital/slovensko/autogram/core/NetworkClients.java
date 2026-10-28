@@ -2,11 +2,13 @@ package digital.slovensko.autogram.core;
 
 import eu.europa.esig.dss.model.http.ResponseEnvelope;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
+import eu.europa.esig.dss.service.http.commons.CommonsHttpClientResponseHandler;
 import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.http.proxy.ProxyProperties;
+import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.spi.client.http.DataLoader;
 import eu.europa.esig.dss.spi.policy.SignaturePolicyProvider;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
@@ -15,8 +17,11 @@ import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpEntity;
 
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
 import java.net.http.HttpClient;
@@ -24,8 +29,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Autogram-only factories; never change JVM-wide networking settings. */
 public final class NetworkClients {
@@ -64,10 +70,10 @@ public final class NetworkClients {
         return fileCacheDataLoader(expirationTime, dataLoader());
     }
 
-    /** Each download that takes longer than the time limit fails. */
-    public static FileCacheDataLoader fileCacheDataLoader(long expirationTime, Duration timeLimit) {
+    /** Each download fails that does not start within the grace period or is slower than the minimum after it. */
+    public static FileCacheDataLoader fileCacheDataLoader(long expirationTime, Duration grace, long minBytesPerSecond) {
         return fileCacheDataLoader(expirationTime,
-                configure(trustingSystem(new TimeLimitedDataLoader(timeLimit)), configuration()));
+                configure(trustingSystem(new SlowDownloadAbortingDataLoader(grace, minBytesPerSecond)), configuration()));
     }
 
     private static FileCacheDataLoader fileCacheDataLoader(long expirationTime, DataLoader loader) {
@@ -119,33 +125,95 @@ public final class NetworkClients {
     }
 
     /**
-     * Aborts each HTTP request that takes longer than the time limit. DSS's timeouts only limit the connection and each
-     * read, so a server that sends a few bytes at a time can take minutes.
+     * Aborts each HTTP request whose server does not start answering within the grace period, or which downloads
+     * slower than the minimum average speed after it. DSS's timeouts only limit the connection and each read, so a
+     * server that sends a few bytes at a time can take minutes, while a big file over a slow connection is fine.
      */
-    static class TimeLimitedDataLoader extends CommonsDataLoader {
-        private final Duration timeLimit;
+    static class SlowDownloadAbortingDataLoader extends CommonsDataLoader {
+        private static final Duration CHECK_INTERVAL = Duration.ofSeconds(1);
+        /** Its own thread, aborting closes sockets. */
+        private static final ScheduledThreadPoolExecutor CHECKS = new ScheduledThreadPoolExecutor(1,
+                Thread.ofPlatform().name("slow-download-checks").daemon().factory());
 
-        TimeLimitedDataLoader(Duration timeLimit) {
-            this.timeLimit = Objects.requireNonNull(timeLimit);
+        static {
+            CHECKS.setRemoveOnCancelPolicy(true);
+        }
+
+        private final Duration grace;
+        private final long minBytesPerSecond;
+        /** Body bytes received by the request on this thread so far, -1 until the server answers. */
+        private final ThreadLocal<AtomicLong> received = new ThreadLocal<>();
+
+        SlowDownloadAbortingDataLoader(Duration grace, long minBytesPerSecond) {
+            this.grace = Objects.requireNonNull(grace);
+            this.minBytesPerSecond = minBytesPerSecond;
+            setHttpClientResponseHandler(new CommonsHttpClientResponseHandler() {
+                @Override
+                protected byte[] getContent(HttpEntity responseEntity) throws IOException {
+                    var counter = received.get();
+                    if (counter == null)
+                        return super.getContent(responseEntity);
+
+                    counter.set(0);
+                    try (var content = new CountingInputStream(responseEntity.getContent(), counter)) {
+                        return DSSUtils.toByteArray(content);
+                    }
+                }
+            });
         }
 
         @Override
         protected ResponseEnvelope executeHttpRequest(CloseableHttpClient client, HttpUriRequest httpRequest,
                 boolean includeResponseDetails, boolean includeResponseBody) throws IOException {
-            // Runs on the delay scheduler itself, the common pool can be busy with blocking checks. Cancelling it
-            // before the time limit keeps the request from being aborted.
-            var abort = CompletableFuture.runAsync(httpRequest::abort,
-                    CompletableFuture.delayedExecutor(timeLimit.toMillis(), TimeUnit.MILLISECONDS, Runnable::run));
+            var counter = new AtomicLong(-1);
+            var started = System.nanoTime();
+            received.set(counter);
+            var check = CHECKS.scheduleWithFixedDelay(() -> {
+                if (isTooSlow(counter.get(), Duration.ofNanos(System.nanoTime() - started)))
+                    httpRequest.abort();
+            }, grace.toMillis(), CHECK_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
             try {
                 return super.executeHttpRequest(client, httpRequest, includeResponseDetails, includeResponseBody);
             } catch (IOException | RuntimeException e) {
                 // DSS wraps failures while reading the body in DSSException
                 if (httpRequest.isAborted())
-                    throw new IOException("Aborted after the time limit of " + timeLimit.toMillis() + " ms", e);
+                    throw new IOException("Aborted, no answer within " + grace.toSeconds() + " s or slower than "
+                            + minBytesPerSecond + " B/s", e);
                 throw e;
             } finally {
-                abort.cancel(false);
+                check.cancel(false);
+                received.remove();
             }
+        }
+
+        private boolean isTooSlow(long receivedBytes, Duration elapsed) {
+            return elapsed.compareTo(grace) >= 0
+                    && (receivedBytes < 0 || receivedBytes < minBytesPerSecond * elapsed.toMillis() / 1000);
+        }
+    }
+
+    private static class CountingInputStream extends FilterInputStream {
+        private final AtomicLong count;
+
+        CountingInputStream(InputStream in, AtomicLong count) {
+            super(in);
+            this.count = count;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = super.read();
+            if (b >= 0)
+                count.incrementAndGet();
+            return b;
+        }
+
+        @Override
+        public int read(byte[] buffer, int offset, int length) throws IOException {
+            int n = super.read(buffer, offset, length);
+            if (n > 0)
+                count.addAndGet(n);
+            return n;
         }
     }
 

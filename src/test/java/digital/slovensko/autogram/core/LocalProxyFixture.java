@@ -68,6 +68,17 @@ class LocalProxyFixture implements AutoCloseable {
                 sleep(Duration.ofSeconds(30));
                 exchange.close();
             });
+            // A slow but steady connection: 2500 bytes in 1.5 s.
+            server.createContext("/steady", exchange -> {
+                exchange.sendResponseHeaders(200, 0);
+                try (var body = exchange.getResponseBody()) {
+                    for (int i = 0; i < 25; i++) {
+                        body.write(new byte[100]);
+                        body.flush();
+                        sleep(Duration.ofMillis(60));
+                    }
+                }
+            });
             server.createContext("/slow", exchange -> {
                 exchange.sendResponseHeaders(200, 0);
                 try (var body = exchange.getResponseBody()) {
