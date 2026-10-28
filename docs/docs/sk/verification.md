@@ -54,6 +54,8 @@ Autogram overuje podpisy podľa dôveryhodných zoznamov Európskej únie, ktor�
 
 Ak podpis vydal poskytovateľ z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý, Autogram ho nevie úplne overiť a nad podpismi na to upozorní aj s odkazom **Otvoriť nastavenia**. Keď krajinu zapnete a nastavenia uložíte, otvorené dokumenty sa overia znova.
 
+![Upozornenie, že dôveryhodný zoznam krajiny nemáte zapnutý](/assets/images/screenshots/sk/signed-document-country-off.png)
+
 Ak sa dôveryhodné zoznamy nepodarí stiahnuť, Autogram zobrazí upozornenie, že podpisy nie je možné úplne overiť. Skontrolujte pripojenie na internet a dokument otvorte znova.
 
 Niekedy sa nepodarí stiahnuť iba zoznam niektorej krajiny, napríklad keď jej server práve neodpovedá. Autogram potom overuje podľa ostatných zoznamov. Ak má dokument podpis alebo časovú pečiatku, ktoré sa pre chýbajúci zoznam nedajú overiť, Autogram nad podpismi upozorní, koľko zoznamov sa nepodarilo stiahnuť. Pri ďalšom spustení Autogramu sa ich pokúsi stiahnuť znova.
