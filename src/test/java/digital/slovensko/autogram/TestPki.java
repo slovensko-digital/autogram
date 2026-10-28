@@ -110,6 +110,7 @@ public class TestPki {
         return shared;
     }
 
+    private final String country;
     private final KeyPair caKeys;
     private final X509Certificate ca;
     private final CertificateToken caToken;
@@ -122,7 +123,8 @@ public class TestPki {
     private KeyPair otherTsaKeys;
     private X509Certificate otherTsa;
 
-    private TestPki(KeyPair caKeys, X509Certificate ca, KeyPair tsaKeys, X509Certificate tsa) {
+    private TestPki(String country, KeyPair caKeys, X509Certificate ca, KeyPair tsaKeys, X509Certificate tsa) {
+        this.country = country;
         this.caKeys = caKeys;
         this.ca = ca;
         this.caToken = new CertificateToken(ca);
@@ -133,10 +135,15 @@ public class TestPki {
 
     /** New in-memory PKI with the signers Jana Vzorová, Peter Ukážka (QESig) and Vzorový úrad (QESeal). */
     public static TestPki create() {
+        return create("SK");
+    }
+
+    /** Like {@link #create()}, with the CA and its certificates from the given country, e.g. DE. */
+    public static TestPki create(String country) {
         try {
             var now = System.currentTimeMillis();
             var caKeys = rsa();
-            var caName = new X500Name("CN=Autogram Test Qualified CA, O=Autogram test PKI, C=SK");
+            var caName = new X500Name("CN=Autogram Test Qualified CA, O=Autogram test PKI, C=" + country);
             var ext = new JcaX509ExtensionUtils();
             var ca = sign(new JcaX509v3CertificateBuilder(caName, BigInteger.ONE, new Date(now - 30 * DAY), new Date(now + 3650 * DAY), caName, caKeys.getPublic())
                     .addExtension(Extension.basicConstraints, true, new BasicConstraints(true))
@@ -144,9 +151,9 @@ public class TestPki {
                     .addExtension(Extension.subjectKeyIdentifier, false, ext.createSubjectKeyIdentifier(caKeys.getPublic())), caKeys.getPrivate());
 
             var tsaKeys = rsa();
-            var tsa = tsaCertificate("Autogram Test Qualified TSA", BigInteger.TWO, tsaKeys, ca, caKeys.getPrivate());
+            var tsa = tsaCertificate("Autogram Test Qualified TSA", country, BigInteger.TWO, tsaKeys, ca, caKeys.getPrivate());
 
-            var pki = new TestPki(caKeys, ca, tsaKeys, tsa);
+            var pki = new TestPki(country, caKeys, ca, tsaKeys, tsa);
             pki.issue(JANA, Kind.QESIG);
             pki.issue(PETER, Kind.QESIG);
             pki.issue(SEAL, Kind.QESEAL);
@@ -175,7 +182,7 @@ public class TestPki {
         var tsaStore = load(Files.readAllBytes(dir.resolve("tsa.p12")), "PKCS12", PKI_PASSWORD);
         var ca = (X509Certificate) caStore.getCertificate("ca");
         var tsa = (X509Certificate) tsaStore.getCertificate("tsa");
-        var pki = new TestPki(new KeyPair(ca.getPublicKey(), (PrivateKey) caStore.getKey("ca", PKI_PASSWORD)), ca,
+        var pki = new TestPki("SK", new KeyPair(ca.getPublicKey(), (PrivateKey) caStore.getKey("ca", PKI_PASSWORD)), ca,
                 new KeyPair(tsa.getPublicKey(), (PrivateKey) tsaStore.getKey("tsa", PKI_PASSWORD)), tsa);
         for (var e : standardFiles().entrySet()) {
             var bytes = Files.readAllBytes(dir.resolve(e.getValue()));
@@ -219,13 +226,13 @@ public class TestPki {
         try {
             var keys = rsa();
             var id = ++serial;
-            var subject = new X500NameBuilder(BCStyle.INSTANCE).addRDN(BCStyle.C, "SK");
+            var subject = new X500NameBuilder(BCStyle.INSTANCE).addRDN(BCStyle.C, country);
             if (kind == Kind.QESEAL) {
-                subject.addRDN(BCStyle.O, name).addRDN(BCStyle.ORGANIZATION_IDENTIFIER, "NTRSK-" + String.format("%08d", id));
+                subject.addRDN(BCStyle.O, name).addRDN(BCStyle.ORGANIZATION_IDENTIFIER, "NTR" + country + "-" + String.format("%08d", id));
             } else {
                 var parts = name.split(" ", 2);
                 subject.addRDN(BCStyle.GIVENNAME, parts[0]).addRDN(BCStyle.SURNAME, parts.length > 1 ? parts[1] : parts[0])
-                        .addRDN(BCStyle.SERIALNUMBER, "PNOSK-TEST" + String.format("%06d", id));
+                        .addRDN(BCStyle.SERIALNUMBER, "PNO" + country + "-TEST" + String.format("%06d", id));
             }
             subject.addRDN(BCStyle.CN, name);
 
@@ -336,7 +343,7 @@ public class TestPki {
         if (otherTsa == null) {
             try {
                 otherTsaKeys = rsa();
-                otherTsa = tsaCertificate("Autogram Test TSA", BigInteger.valueOf(3), otherTsaKeys, ca, caKeys.getPrivate());
+                otherTsa = tsaCertificate("Autogram Test TSA", country, BigInteger.valueOf(3), otherTsaKeys, ca, caKeys.getPrivate());
             } catch (Exception e) {
                 throw new IllegalStateException("cannot create the non-qualified test TSA", e);
             }
@@ -373,12 +380,12 @@ public class TestPki {
                 .generate(request, BigInteger.valueOf(System.nanoTime()), new Date()).getEncoded();
     }
 
-    private static X509Certificate tsaCertificate(String name, BigInteger serialNumber, KeyPair keys, X509Certificate ca,
-            PrivateKey caKey) throws Exception {
+    private static X509Certificate tsaCertificate(String name, String country, BigInteger serialNumber, KeyPair keys,
+            X509Certificate ca, PrivateKey caKey) throws Exception {
         var now = System.currentTimeMillis();
         var ext = new JcaX509ExtensionUtils();
         return sign(new JcaX509v3CertificateBuilder(ca, serialNumber, new Date(now - 30 * DAY), new Date(now + 3650 * DAY),
-                new X500Name("CN=" + name + ", O=Autogram test PKI, C=SK"), keys.getPublic())
+                new X500Name("CN=" + name + ", O=Autogram test PKI, C=" + country), keys.getPublic())
                 .addExtension(Extension.basicConstraints, true, new BasicConstraints(false))
                 .addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.nonRepudiation))
                 .addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping))
