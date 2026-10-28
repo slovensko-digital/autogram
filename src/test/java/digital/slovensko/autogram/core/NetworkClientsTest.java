@@ -17,6 +17,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NetworkClientsTest {
+    /** Far from both /slow (10 B/s) and /steady (about 1600 B/s), sleeps on CI machines can take much longer. */
+    private static final long MIN_SPEED = 200;
+
     @TempDir Path directory;
 
     @Test
@@ -94,7 +97,7 @@ class NetworkClientsTest {
     @Test
     void downloadsThatDoNotStartOrAreTooSlowAreAborted() throws Exception {
         try (var fixture = new LocalProxyFixture(directory)) {
-            var loader = fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), 1000));
+            var loader = fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), MIN_SPEED));
             for (var url : List.of(fixture.httpUrl("/silent"), fixture.httpsUrl("/silent"),
                     fixture.httpUrl("/slow"), fixture.httpsUrl("/slow")))
                 assertAbortedWithinSeconds(5, () -> loader.get(url), url);
@@ -105,7 +108,7 @@ class NetworkClientsTest {
     @Test
     void slowButSteadyDownloadsFinishAfterTheGracePeriod() throws Exception {
         try (var fixture = new LocalProxyFixture(directory)) {
-            var loader = fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), 1000));
+            var loader = fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), MIN_SPEED));
             for (var url : List.of(fixture.httpUrl("/steady"), fixture.httpsUrl("/steady")))
                 assertEquals(2500, loader.get(url).length, url);
         }
@@ -115,7 +118,7 @@ class NetworkClientsTest {
     void slowDownloadsAreAbortedThroughTheProxyToo() throws Exception {
         try (var fixture = new LocalProxyFixture(directory)) {
             var loader = NetworkClients.configure(
-                    fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), 1000)),
+                    fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), MIN_SPEED)),
                     ProxyConfiguration.parse(fixture.proxyUrl()));
             assertAbortedWithinSeconds(5, () -> loader.get(fixture.httpUrl("/slow")), "http");
             assertAbortedWithinSeconds(5, () -> loader.get(fixture.httpsUrl("/silent")), "https");
