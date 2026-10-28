@@ -3,6 +3,7 @@ package digital.slovensko.autogram.core;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.net.URI;
@@ -16,6 +17,9 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NetworkClientsTest {
+    /** Far from both /slow (10 B/s) and /steady (about 1600 B/s), sleeps on CI machines can take much longer. */
+    private static final long MIN_SPEED = 200;
+
     @TempDir Path directory;
 
     @Test
@@ -88,6 +92,44 @@ class NetworkClientsTest {
             }
             assertEquals(0, fixture.destinationRequests.get());
         }
+    }
+
+    @Test
+    void downloadsThatDoNotStartOrAreTooSlowAreAborted() throws Exception {
+        try (var fixture = new LocalProxyFixture(directory)) {
+            var loader = fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), MIN_SPEED));
+            for (var url : List.of(fixture.httpUrl("/silent"), fixture.httpsUrl("/silent"),
+                    fixture.httpUrl("/slow"), fixture.httpsUrl("/slow")))
+                assertAbortedWithinSeconds(5, () -> loader.get(url), url);
+            assertEquals("fixture-resource", new String(loader.get(fixture.httpsUrl("/trusted-list"))));
+        }
+    }
+
+    @Test
+    void slowButSteadyDownloadsFinishAfterTheGracePeriod() throws Exception {
+        try (var fixture = new LocalProxyFixture(directory)) {
+            var loader = fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), MIN_SPEED));
+            for (var url : List.of(fixture.httpUrl("/steady"), fixture.httpsUrl("/steady")))
+                assertEquals(2500, loader.get(url).length, url);
+        }
+    }
+
+    @Test
+    void slowDownloadsAreAbortedThroughTheProxyToo() throws Exception {
+        try (var fixture = new LocalProxyFixture(directory)) {
+            var loader = NetworkClients.configure(
+                    fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), MIN_SPEED)),
+                    ProxyConfiguration.parse(fixture.proxyUrl()));
+            assertAbortedWithinSeconds(5, () -> loader.get(fixture.httpUrl("/slow")), "http");
+            assertAbortedWithinSeconds(5, () -> loader.get(fixture.httpsUrl("/silent")), "https");
+            assertEquals(2500, loader.get(fixture.httpUrl("/steady")).length);
+        }
+    }
+
+    private static void assertAbortedWithinSeconds(int seconds, Executable download, String message) {
+        var started = System.nanoTime();
+        assertThrows(DSSExternalResourceException.class, download, message);
+        assertTrue(Duration.ofNanos(System.nanoTime() - started).compareTo(Duration.ofSeconds(seconds)) < 0, message);
     }
 
     @Test

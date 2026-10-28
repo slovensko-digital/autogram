@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.ui.gui;
 
-import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.ValidationReports;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -27,9 +26,7 @@ public class SignaturesInvalidDialogController extends BaseController implements
     }
 
     public void initialize() {
-        if (!SignatureValidator.getInstance().areTLsLoaded())
-            signaturesTable.getChildren().add(
-                GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));
+        GUIValidationUtils.addTrustedListsWarning(resources, signaturesTable.getChildren(), reports.getSignatures());
         signaturesTable.getChildren().add(GUIValidationUtils.createSignatureTableRows(resources, reports, true,
             ignored -> onShowSignaturesButtonAction(), 6));
     }

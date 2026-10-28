@@ -15,11 +15,12 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,6 +50,10 @@ public class PickKeyDialogController extends BaseController {
     VBox mainBox;
     @FXML
     VBox radios;
+    @FXML
+    TextFlow notVerifiedHint;
+    @FXML
+    Text notVerifiedText;
     @FXML
     VBox hint;
     @FXML
@@ -83,7 +88,7 @@ public class PickKeyDialogController extends BaseController {
             badges.getStyleClass().add("autogram-pick-key-badges");
             var expired = !key.getCertificate().isValidOn(new java.util.Date());
             if (expired) {
-                badges.getChildren().add(SignatureBadgeFactory.createInfoBadge("Exspirovaný certifikát"));
+                badges.getChildren().add(SignatureBadgeFactory.createInfoBadge(i18n("pickKey.certificateStatus.expired")));
 
                 if (!userSettings.isExpiredCertsEnabled())
                     continue;
@@ -94,6 +99,10 @@ public class PickKeyDialogController extends BaseController {
             var radioButton = new RadioButton(parseCN(key.getCertificate().getSubject().getRFC2253()));
             radioButton.setToggleGroup(toggleGroup);
             radioButton.setUserData(key);
+            // a long name wraps rather than being cut off or squeezing the badge
+            radioButton.setWrapText(true);
+            radioButton.setMinHeight(Region.USE_PREF_SIZE);
+            badges.setMinWidth(Region.USE_PREF_SIZE);
             radios.getChildren().add(new HBox(radioButton, badges));
 
             var tooltip = new Tooltip(buildTooltipLabel(key));
@@ -117,39 +126,56 @@ public class PickKeyDialogController extends BaseController {
     private void showResult(DSSPrivateKeyEntry key, RadioButton radioButton, HBox badges, CertificateStatusChecker.Result result) {
         checkPending.remove(key);
         results.put(key, result);
-        badges.getChildren().setAll(badgesFor(result));
+        badges.getChildren().setAll(badgeFor(result).stream().toList());
 
         if (!isAllowed(result)) {
             radioButton.setSelected(false);
             radioButton.setDisable(true);
         }
 
-        if (checkPending.isEmpty())
+        if (checkPending.isEmpty()) {
+            showHintIfNotVerified();
             showHintIfNothingQualified();
+        }
 
         updateMainButton();
         if (mainBox.getScene() != null && mainBox.getScene().getWindow() != null)
             mainBox.getScene().getWindow().sizeToScene();
     }
 
-    private List<Node> badgesFor(CertificateStatusChecker.Result result) {
-        var badges = new ArrayList<Node>();
+    /** One badge at most, for the most important finding. */
+    private Optional<Node> badgeFor(CertificateStatusChecker.Result result) {
         if (result.status() == CertificateStatus.REVOKED)
-            badges.add(SignatureBadgeFactory.createInvalidBadge(i18n("pickKey.certificateStatus.revoked")));
-        else if (result.status() != CertificateStatus.GOOD)
-            badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.certificateStatus.unknown")));
+            return Optional.of(SignatureBadgeFactory.createInvalidBadge(i18n("pickKey.certificateStatus.revoked")));
 
         if (result.qualification() == Qualification.NOT_QUALIFIED)
-            badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.qualification.notQualified")));
-        else if (result.qualification() == Qualification.UNKNOWN)
-            badges.add(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.qualification.unknown")));
+            return Optional.of(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.qualification.notQualified")));
 
-        return badges;
+        if (isNotVerified(result))
+            return Optional.of(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.certificateStatus.unknown")));
+
+        return Optional.empty();
     }
 
+    /** What the checks could not find out does not block signing, e.g. offline. */
     private boolean isAllowed(CertificateStatusChecker.Result result) {
-        return result.status() != CertificateStatus.REVOKED
+        return (result.status() != CertificateStatus.REVOKED || userSettings.isExpiredCertsEnabled())
                 && (result.qualification() != Qualification.NOT_QUALIFIED || userSettings.isNonQualifiedCertsEnabled());
+    }
+
+    /** Neither revoked nor not qualified, but a check could not be done, e.g. offline. Never blocks signing. */
+    private static boolean isNotVerified(CertificateStatusChecker.Result result) {
+        return result.status() != CertificateStatus.REVOKED && result.qualification() != Qualification.NOT_QUALIFIED
+                && (result.status() != CertificateStatus.GOOD || result.qualification() == Qualification.UNKNOWN);
+    }
+
+    private void showHintIfNotVerified() {
+        if (results.values().stream().noneMatch(PickKeyDialogController::isNotVerified))
+            return;
+
+        notVerifiedText.setText(i18n("pickKey.hint.notVerified"));
+        notVerifiedHint.setVisible(true);
+        notVerifiedHint.setManaged(true);
     }
 
     private void showHintIfNothingQualified() {

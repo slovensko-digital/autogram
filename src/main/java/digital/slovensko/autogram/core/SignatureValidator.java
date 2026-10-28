@@ -5,9 +5,13 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -32,6 +36,8 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.model.tsl.OtherTSLPointer;
+import eu.europa.esig.dss.model.tsl.TLInfo;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
@@ -50,6 +56,12 @@ import static digital.slovensko.autogram.util.DSSUtils.*;
 public class SignatureValidator {
     private static final String LOTL_URL = "https://ec.europa.eu/tools/lotl/eu-lotl.xml";
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
+    /**
+     * Loading waits for every list, a list that downloads for minutes (e.g. Belgium's in 10/2026) is left out. Slow but
+     * steady connections still get the big ones, e.g. Spain's has 3 MB.
+     */
+    private static final Duration TRUSTED_LIST_ANSWER_LIMIT = Duration.ofSeconds(20);
+    private static final long TRUSTED_LIST_MIN_BYTES_PER_SECOND = 20 * 1024;
     private CertificateVerifier verifier;
     private CertificateVerifier customVerifier;
     private TLValidationJob validationJob;
@@ -60,7 +72,17 @@ public class SignatureValidator {
     private CompletableFuture<CertificateVerifier> loading;
     /** Read without the lock, which loading and validation hold while they wait for slow servers. */
     private volatile boolean tlsLoaded;
+    /** Read without the lock like {@link #tlsLoaded}. */
+    private volatile FailedTLs failedTLs = FailedTLs.NONE;
     private static Logger logger = LoggerFactory.getLogger(SignatureValidator.class);
+
+    /**
+     * Trusted lists of the selected countries that are not used: not downloaded in time, broken or expired.
+     * @param countries their territories as in the trusted lists, e.g. EL for Greece
+     */
+    public record FailedTLs(int failed, int total, Set<String> countries) {
+        static final FailedTLs NONE = new FailedTLs(0, 0, Set.of());
+    }
 
     // Singleton
     private static SignatureValidator instance;
@@ -92,6 +114,7 @@ public class SignatureValidator {
         this.verifier = verifier;
         validationJob = null;
         tlsLoaded = verifier != null;
+        failedTLs = FailedTLs.NONE;
         if (verifier == null)
             reloadStarting();
         else
@@ -165,10 +188,12 @@ public class SignatureValidator {
         lotlSource.setPivotSupport(true);
         lotlSource.setTlPredicate(TLPredicateFactory.createEUTLCountryCodePredicate(tlCountries.toArray(new String[0])));
 
-        var offlineFileLoader = NetworkClients.fileCacheDataLoader(21600000);
+        var offlineFileLoader = NetworkClients.fileCacheDataLoader(21600000, TRUSTED_LIST_ANSWER_LIMIT,
+                TRUSTED_LIST_MIN_BYTES_PER_SECOND);
         validationJob.setOfflineDataLoader(offlineFileLoader);
 
-        var onlineFileLoader = NetworkClients.fileCacheDataLoader(0);
+        var onlineFileLoader = NetworkClients.fileCacheDataLoader(0, TRUSTED_LIST_ANSWER_LIMIT,
+                TRUSTED_LIST_MIN_BYTES_PER_SECOND);
         validationJob.setOnlineDataLoader(onlineFileLoader);
 
         var trustedListCertificateSource = new TrustedListsCertificateSource();
@@ -331,12 +356,41 @@ public class SignatureValidator {
 
     private void offlineRefresh() {
         validationJob.offlineRefresh();
-        tlsLoaded = validationJob.getSummary().getNumberOfProcessedTLs() > 0;
+        // the same check that decides which lists the job puts into the trusted certificate source
+        var strategy = new CustomSynchronizationStrategy();
+        int total = 0, failed = 0;
+        var countries = new HashSet<String>();
+        for (var lotl : validationJob.getSummary().getLOTLInfos()) {
+            // the job skips all lists of a LOTL it cannot use, e.g. with an unknown signing key
+            var lotlUsed = strategy.canBeSynchronized(lotl);
+            for (var list : lotl.getTLInfos()) {
+                total++;
+                if (!lotlUsed || !strategy.canBeSynchronized(list)) {
+                    failed++;
+                    countries.add(territoryOf(list));
+                }
+            }
+        }
+        failedTLs = new FailedTLs(failed, total, Set.copyOf(countries));
+        tlsLoaded = failed < total;
     }
 
+    /** A list that was not downloaded has no territory of its own, the LOTL's pointer to it has. */
+    private static String territoryOf(TLInfo list) {
+        return Optional.ofNullable(list.getOtherTSLPointer())
+                .map(OtherTSLPointer::getSchemeTerritory)
+                .or(() -> Optional.ofNullable(list.getParsingCacheInfo().getTerritory()))
+                .orElse(list.getUrl());
+    }
+
+    /** At least one trusted list is used. */
     public boolean areTLsLoaded() {
         // TODO: consider validation turned off as well
         return tlsLoaded;
+    }
+
+    public FailedTLs getFailedTLs() {
+        return failedTLs;
     }
 
     private static boolean hasSignatures(Reports reports) {
