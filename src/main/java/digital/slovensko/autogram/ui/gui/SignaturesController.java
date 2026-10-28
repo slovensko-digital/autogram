@@ -55,8 +55,11 @@ public class SignaturesController extends BaseController implements SuppressedFo
         renderSignatures();
 
         gui.onWorkThreadDo(() -> {
-            signatureValidationReportsHTML = buildSignatureValidationReportsHTML(signatureValidationReports);
-            signatureDetailsButton.setVisible(true);
+            var html = buildSignatureValidationReportsHTML(reports);
+            gui.onUIThreadDo(() -> {
+                signatureValidationReportsHTML = html;
+                signatureDetailsButton.setVisible(true);
+            });
         });
     }
 
