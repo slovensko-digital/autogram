@@ -19,11 +19,13 @@ public class SignaturesNotValidatedDialogController implements SuppressedFocusCo
         this.signigDialogController = signigDialogController;
     }
 
+    /** Also called once the signatures are checked, after Continue signing must stay disabled while a key is picked. */
     public void close() {
         var window = mainBox.getScene().getRoot().getScene().getWindow();
-        if (window instanceof Stage)
-            ((Stage) window).close();
+        if (!(window instanceof Stage stage) || !stage.isShowing())
+            return;
 
+        stage.close();
         signigDialogController.enableSigningOnAllJobs();
     }
 

@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -50,6 +51,8 @@ import static digital.slovensko.autogram.util.DSSUtils.*;
 public class SignatureValidator {
     private static final String LOTL_URL = "https://ec.europa.eu/tools/lotl/eu-lotl.xml";
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
+    /** Loading waits for every list, a list that downloads for minutes (e.g. Belgium's in 10/2026) is left out. */
+    private static final Duration TRUSTED_LIST_DOWNLOAD_LIMIT = Duration.ofSeconds(15);
     private CertificateVerifier verifier;
     private CertificateVerifier customVerifier;
     private TLValidationJob validationJob;
@@ -165,10 +168,10 @@ public class SignatureValidator {
         lotlSource.setPivotSupport(true);
         lotlSource.setTlPredicate(TLPredicateFactory.createEUTLCountryCodePredicate(tlCountries.toArray(new String[0])));
 
-        var offlineFileLoader = NetworkClients.fileCacheDataLoader(21600000);
+        var offlineFileLoader = NetworkClients.fileCacheDataLoader(21600000, TRUSTED_LIST_DOWNLOAD_LIMIT);
         validationJob.setOfflineDataLoader(offlineFileLoader);
 
-        var onlineFileLoader = NetworkClients.fileCacheDataLoader(0);
+        var onlineFileLoader = NetworkClients.fileCacheDataLoader(0, TRUSTED_LIST_DOWNLOAD_LIMIT);
         validationJob.setOnlineDataLoader(onlineFileLoader);
 
         var trustedListCertificateSource = new TrustedListsCertificateSource();
