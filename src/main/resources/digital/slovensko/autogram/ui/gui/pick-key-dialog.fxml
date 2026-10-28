@@ -16,6 +16,10 @@
         <VBox fx:id="radios" styleClass="autogram-radios"/>
     </VBox>
 
+    <TextFlow fx:id="notVerifiedHint" styleClass="autogram-warning-textflow" managed="false" visible="false">
+        <Text fx:id="notVerifiedText" styleClass="autogram-heading-s"/>
+    </TextFlow>
+
     <VBox fx:id="hint" styleClass="autogram-pick-key-hint" managed="false" visible="false">
         <TextFlow><Text fx:id="hintText" styleClass="autogram-body"/></TextFlow>
         <Hyperlink fx:id="settingsLink" styleClass="autogram-body,autogram-link" text="%pickKey.hint.settings.btn"

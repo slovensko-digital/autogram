@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.core.settings.Country;
 import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
 import eu.europa.esig.dss.model.x509.CertificateToken;
@@ -26,6 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -45,20 +47,29 @@ public class CertificateStatusChecker {
     private final CRLSource crlSource;
     private final AIASource aiaSource;
     private final Supplier<CompletableFuture<CertificateVerifier>> trustedLists;
+    private final Supplier<Set<String>> countriesNotLoaded;
 
     /** @param trustedLists the verifier with the trusted lists once they are loaded */
     public CertificateStatusChecker(OCSPSource ocspSource, CRLSource crlSource, AIASource aiaSource,
             Supplier<CompletableFuture<CertificateVerifier>> trustedLists) {
+        this(ocspSource, crlSource, aiaSource, trustedLists, Set::of);
+    }
+
+    /** @param countriesNotLoaded countries whose trusted lists were not loaded, as in {@link SignatureValidator.FailedTLs} */
+    public CertificateStatusChecker(OCSPSource ocspSource, CRLSource crlSource, AIASource aiaSource,
+            Supplier<CompletableFuture<CertificateVerifier>> trustedLists, Supplier<Set<String>> countriesNotLoaded) {
         this.ocspSource = ocspSource;
         this.crlSource = crlSource;
         this.aiaSource = aiaSource;
         this.trustedLists = trustedLists;
+        this.countriesNotLoaded = countriesNotLoaded;
     }
 
     public static CertificateStatusChecker online() {
+        var validator = SignatureValidator.getInstance();
         return new CertificateStatusChecker(new OnlineOCSPSource(NetworkClients.ocspDataLoader()),
                 new OnlineCRLSource(NetworkClients.dataLoader()), new DefaultAIASource(NetworkClients.dataLoader()),
-                SignatureValidator.getInstance()::whenLoaded);
+                validator::whenLoaded, () -> validator.getFailedTLs().countries());
     }
 
     /**
@@ -92,7 +103,7 @@ public class CertificateStatusChecker {
         return CertificateStatus.UNKNOWN;
     }
 
-    /** UNKNOWN when the trusted lists could not be loaded. */
+    /** UNKNOWN when the trusted lists, or just the one of the issuer's country, could not be loaded. */
     public Qualification checkQualification(DSSPrivateKeyEntry key, CertificateVerifier verifier) {
         if (verifier == null || verifier.getTrustedCertSources().getNumberOfCertificates() == 0)
             return Qualification.UNKNOWN;
@@ -109,12 +120,23 @@ public class CertificateStatusChecker {
             var validator = CertificateValidator.fromCertificate(key.getCertificate());
             validator.setCertificateVerifier(chainOnlyVerifier);
             var qualification = validator.validate().getSimpleReport().getQualificationAtValidationTime();
-            return qualification != null && qualification.isQc() && qualification != CertificateQualification.QCERT_FOR_WSA
-                    ? Qualification.QUALIFIED : Qualification.NOT_QUALIFIED;
+            if (qualification != null && qualification.isQc() && qualification != CertificateQualification.QCERT_FOR_WSA)
+                return Qualification.QUALIFIED;
+
+            // the list that could make it qualified is missing, e.g. its server did not answer in time
+            return isIssuerCountryNotLoaded(key.getCertificate()) ? Qualification.UNKNOWN : Qualification.NOT_QUALIFIED;
         } catch (RuntimeException e) {
             LOGGER.debug("Qualification check of {} failed", key.getCertificate().getDSSIdAsString(), e);
             return Qualification.UNKNOWN;
         }
+    }
+
+    private boolean isIssuerCountryNotLoaded(CertificateToken certificate) {
+        var notLoaded = countriesNotLoaded.get();
+        return issuerCountry(certificate)
+                .flatMap(Country::withTrustedList)
+                .map(country -> notLoaded.contains(country.getShortname()))
+                .orElse(false);
     }
 
     /** ISO code of the issuer's country, the country whose trusted list makes the certificate qualified. */
