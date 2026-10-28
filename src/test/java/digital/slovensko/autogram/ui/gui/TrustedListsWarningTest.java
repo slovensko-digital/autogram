@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SignatureValidator.FailedTLs;
 import digital.slovensko.autogram.core.TestSignedDocuments;
 import digital.slovensko.autogram.core.ValidationReports;
+import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
 import org.junit.jupiter.api.Test;
@@ -27,36 +28,45 @@ class TrustedListsWarningTest {
     @Test
     void noneLoaded() {
         assertEquals(SK.getString("signing.tlsLoading.error"),
-                GUIValidationUtils.trustedListsWarning(SK, false, new FailedTLs(0, 0, Set.of()), false));
+                GUIValidationUtils.trustedListsWarning(SK, false, new FailedTLs(0, 0, Set.of()), () -> false));
         assertEquals(SK.getString("signing.tlsLoading.error"),
-                GUIValidationUtils.trustedListsWarning(SK, false, new FailedTLs(8, 8, Set.of("BE", "CZ", "SK")), true));
+                GUIValidationUtils.trustedListsWarning(SK, false, new FailedTLs(8, 8, Set.of("BE", "CZ", "SK")), () -> true));
     }
 
     @Test
     void someNotLoadedAreCountedNotListed() {
         assertEquals("Nepodarilo sa stiahnuť 1 z 8 dôveryhodných zoznamov a niektoré podpisy nie je možné úplne overiť.",
-                GUIValidationUtils.trustedListsWarning(SK, true, new FailedTLs(1, 8, Set.of("BE")), true));
+                GUIValidationUtils.trustedListsWarning(SK, true, new FailedTLs(1, 8, Set.of("BE")), () -> true));
         assertEquals("1 of 8 trusted lists could not be downloaded and some signatures cannot be fully validated.",
-                GUIValidationUtils.trustedListsWarning(EN, true, new FailedTLs(1, 8, Set.of("BE")), true));
+                GUIValidationUtils.trustedListsWarning(EN, true, new FailedTLs(1, 8, Set.of("BE")), () -> true));
     }
 
     @Test
     void someNotLoadedButAllSignaturesVerified() {
-        assertNull(GUIValidationUtils.trustedListsWarning(SK, true, new FailedTLs(1, 8, Set.of("BE")), false));
+        assertNull(GUIValidationUtils.trustedListsWarning(SK, true, new FailedTLs(1, 8, Set.of("BE")), () -> false));
     }
 
     @Test
-    void onlySignaturesThatCouldNotBeVerifiedCount() {
+    void onlySignaturesNotVerifiedBecauseOfMissingListsCount() {
         var pki = TestPki.create();
         SignatureValidator.getInstance().useCustomVerifier(pki.verifier());
         try {
             var valid = TestSignedDocuments.sign(pki.signer(TestPki.JANA), SignatureProfile.BASELINE_B, null);
+            // the test CAs are Slovak
             var unknownCa = TestSignedDocuments.sign(TestPki.create().signer(TestPki.JANA), SignatureProfile.BASELINE_B, null);
+            var unknownTsa = TestSignedDocuments.sign(pki.signer(TestPki.JANA), SignatureProfile.BASELINE_T,
+                    TestPki.create().tspSource());
 
-            assertFalse(GUIValidationUtils.hasNotVerifiedSignatures(signatures(valid)));
-            assertTrue(GUIValidationUtils.hasNotVerifiedSignatures(signatures(unknownCa)));
+            assertFalse(GUIValidationUtils.hasNotVerifiedSignatures(signatures(valid), Set.of("SK")));
+            assertTrue(GUIValidationUtils.hasNotVerifiedSignatures(signatures(unknownCa), Set.of("SK")));
+            assertFalse(GUIValidationUtils.hasNotVerifiedSignatures(signatures(unknownCa), Set.of("BE")));
+            var signedWithUnknownTsa = signatures(unknownTsa).getFirst();
+            assertEquals(Indication.TOTAL_PASSED, signedWithUnknownTsa.documentReport().reports().getSimpleReport()
+                    .getIndication(signedWithUnknownTsa.signatureId()), "only the timestamp is not verified");
+            assertTrue(GUIValidationUtils.hasNotVerifiedSignatures(signatures(unknownTsa), Set.of("SK")));
+            assertFalse(GUIValidationUtils.hasNotVerifiedSignatures(signatures(unknownTsa), Set.of("BE")));
             // invalid for sure, the trusted lists would not change that
-            assertFalse(GUIValidationUtils.hasNotVerifiedSignatures(signatures(TestSignedDocuments.tamper(valid))));
+            assertFalse(GUIValidationUtils.hasNotVerifiedSignatures(signatures(TestSignedDocuments.tamper(valid)), Set.of("SK")));
         } finally {
             SignatureValidator.getInstance().useCustomVerifier(null);
         }
@@ -64,7 +74,7 @@ class TrustedListsWarningTest {
 
     @Test
     void allLoaded() {
-        assertNull(GUIValidationUtils.trustedListsWarning(SK, true, new FailedTLs(0, 8, Set.of()), true));
+        assertNull(GUIValidationUtils.trustedListsWarning(SK, true, new FailedTLs(0, 8, Set.of()), () -> true));
     }
 
     private static List<ValidationReports.SignatureEntry> signatures(DSSDocument signed) {
