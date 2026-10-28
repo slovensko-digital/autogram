@@ -409,6 +409,12 @@ public class GUI implements UI {
             controller.onSignatureCheckCompleted(reports);
     }
 
+    @Override
+    public void onTrustedListsReloading() {
+        var loaded = SignatureValidator.getInstance().whenLoaded();
+        jobControllers.values().forEach(controller -> controller.revalidateSignaturesWhen(loaded));
+    }
+
     public void showSigningJob(SigningJob job, Autogram autogram) {
         var resources = SupportedLanguage.loadResources(userSettings);
         var title = job.isMultiDocument() ?

@@ -137,10 +137,14 @@ public class CertificateStatusChecker {
 
     /** Whether the issuer is from one of the countries, given as in the trusted lists, e.g. EL for Greece. */
     public static boolean isIssuedIn(String issuerName, Set<String> countries) {
-        return countryOf(issuerName)
-                .flatMap(Country::withTrustedList)
+        return trustedListCountry(issuerName)
                 .map(country -> countries.contains(country.getShortname()))
                 .orElse(false);
+    }
+
+    /** The issuer's country, if it has a trusted list. */
+    public static Optional<Country> trustedListCountry(String issuerName) {
+        return countryOf(issuerName).flatMap(Country::withTrustedList);
     }
 
     /** ISO code of the issuer's country, the country whose trusted list makes the certificate qualified. */

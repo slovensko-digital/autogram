@@ -51,6 +51,8 @@ Click **Show signature details**. For each signature you see:
 
 Autogram validates signatures against the European Union trusted lists, which it downloads from the internet. By default it validates signatures with certificates from providers in Slovakia, Czechia, Austria, Poland, Hungary, Belgium, the Netherlands and Spain. You can turn on more countries in [Settings](settings.md#signature-validation). Each additional country slows down validation.
 
+If a signature was issued by a provider from a country whose trusted list is turned off, Autogram cannot fully validate it and says so above the signatures, with an **Open settings** link. When you turn the country on and save the settings, open documents are validated again.
+
 If the trusted lists cannot be downloaded, Autogram shows a warning that the signatures cannot be fully validated. Check your internet connection and open the document again.
 
 Sometimes only the list of one country cannot be downloaded, for example when its server does not respond at the moment. Autogram then validates against the other lists. If the document has a signature or a timestamp that cannot be validated because of the missing list, Autogram shows above the signatures how many lists could not be downloaded. It tries to download them again the next time it starts.
