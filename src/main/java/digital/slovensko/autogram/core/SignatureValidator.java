@@ -58,6 +58,8 @@ public class SignatureValidator {
     private CompletableFuture<CertificateVerifier> loaded = new CompletableFuture<>();
     /** The load the running {@link #initialize} completes, a reload announced meanwhile needs a new one. */
     private CompletableFuture<CertificateVerifier> loading;
+    /** Read without the lock, which loading and validation hold while they wait for slow servers. */
+    private volatile boolean tlsLoaded;
     private static Logger logger = LoggerFactory.getLogger(SignatureValidator.class);
 
     // Singleton
@@ -89,6 +91,7 @@ public class SignatureValidator {
         customVerifier = verifier;
         this.verifier = verifier;
         validationJob = null;
+        tlsLoaded = verifier != null;
         if (verifier == null)
             reloadStarting();
         else
@@ -130,7 +133,7 @@ public class SignatureValidator {
         if (customVerifier != null)
             return;
 
-        validationJob.offlineRefresh();
+        offlineRefresh();
     }
 
     public synchronized void initialize(ExecutorService executorService, List<String> tlCountries) {
@@ -176,7 +179,7 @@ public class SignatureValidator {
         validationJob.setDebug(false);
 
         logger.debug("Starting signature validator offline refresh");
-        validationJob.offlineRefresh();
+        offlineRefresh();
 
         verifier = NetworkClients.certificateVerifier();
         verifier.setTrustedCertSources(trustedListCertificateSource);
@@ -326,15 +329,14 @@ public class SignatureValidator {
         }
     }
 
-    public synchronized boolean areTLsLoaded() {
-        if (customVerifier != null)
-            return true;
+    private void offlineRefresh() {
+        validationJob.offlineRefresh();
+        tlsLoaded = validationJob.getSummary().getNumberOfProcessedTLs() > 0;
+    }
 
-        if (validationJob == null)
-            return false;
-
+    public boolean areTLsLoaded() {
         // TODO: consider validation turned off as well
-        return validationJob.getSummary().getNumberOfProcessedTLs() > 0;
+        return tlsLoaded;
     }
 
     private static boolean hasSignatures(Reports reports) {
