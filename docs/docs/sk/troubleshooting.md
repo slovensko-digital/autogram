@@ -78,7 +78,7 @@ Autogram predvolene podpisuje iba XML formuláre slovenskej verejnej správy. In
 
 ### Podpisy sa nedajú overiť
 
-Ak Autogram hlási chybu pri sťahovaní dôveryhodných zoznamov, nemá prístup na internet alebo je server s dôveryhodnými zoznamami nedostupný. Skontrolujte pripojenie a dokument otvorte znova. Ak hlási, že sa nepodarilo stiahnuť iba niektoré zoznamy, je nedostupný server niektorej krajiny. Skúste to neskôr. Viac je na stránke [Overenie podpisov](verification.md#doveryhodne-zoznamy).
+Ak Autogram hlási chybu pri sťahovaní dôveryhodných zoznamov, nemá prístup na internet alebo je server s dôveryhodnými zoznamami nedostupný. Skontrolujte pripojenie a dokument otvorte znova. Ak hlási, že sa nepodarilo stiahnuť iba niektoré zoznamy, je nedostupný server niektorej krajiny alebo je pripojenie na internet veľmi pomalé. Skúste to neskôr. Viac je na stránke [Overenie podpisov](verification.md#doveryhodne-zoznamy).
 
 ## Inštalácia a aktualizácie
 
