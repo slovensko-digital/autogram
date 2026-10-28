@@ -78,7 +78,7 @@ By default, Autogram signs only Slovak government XML forms. You can sign other 
 
 ### Signatures cannot be validated
 
-If Autogram reports an error while downloading trusted lists, it has no internet access or the server with the trusted lists is unavailable. Check your connection and open the document again. If it reports that only some lists could not be downloaded, the server of a country is unavailable or the internet connection is very slow. Try again later. See [Verifying signatures](verification.md#trusted-lists).
+If Autogram reports an error while downloading trusted lists, it has no internet access or the server with the trusted lists is unavailable. Check your connection and open the document again. If it reports that only some lists could not be downloaded, the server of a country is unavailable or the internet connection is very slow. Try again later. If Autogram says that the trusted list of a country is turned off, click **Open settings** and turn the country on. See [Verifying signatures](verification.md#trusted-lists).
 
 ## Installation and updates
 
