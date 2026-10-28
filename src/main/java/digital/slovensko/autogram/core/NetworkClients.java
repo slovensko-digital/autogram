@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import eu.europa.esig.dss.model.http.ResponseEnvelope;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
@@ -12,13 +13,19 @@ import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
 import java.net.http.HttpClient;
+import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /** Autogram-only factories; never change JVM-wide networking settings. */
 public final class NetworkClients {
@@ -54,9 +61,19 @@ public final class NetworkClients {
     }
 
     public static FileCacheDataLoader fileCacheDataLoader(long expirationTime) {
+        return fileCacheDataLoader(expirationTime, dataLoader());
+    }
+
+    /** Each download that takes longer than the time limit fails. */
+    public static FileCacheDataLoader fileCacheDataLoader(long expirationTime, Duration timeLimit) {
+        return fileCacheDataLoader(expirationTime,
+                configure(trustingSystem(new TimeLimitedDataLoader(timeLimit)), configuration()));
+    }
+
+    private static FileCacheDataLoader fileCacheDataLoader(long expirationTime, DataLoader loader) {
         var cache = new FileCacheDataLoader();
         cache.setCacheExpirationTime(expirationTime);
-        cache.setDataLoader(dataLoader());
+        cache.setDataLoader(loader);
         return cache;
     }
 
@@ -99,6 +116,37 @@ public final class NetworkClients {
         if (configuration.isConfigured())
             builder.proxy(ProxySelector.of(new InetSocketAddress(configuration.host(), configuration.port())));
         return builder;
+    }
+
+    /**
+     * Aborts each HTTP request that takes longer than the time limit. DSS's timeouts only limit the connection and each
+     * read, so a server that sends a few bytes at a time can take minutes.
+     */
+    static class TimeLimitedDataLoader extends CommonsDataLoader {
+        private final Duration timeLimit;
+
+        TimeLimitedDataLoader(Duration timeLimit) {
+            this.timeLimit = Objects.requireNonNull(timeLimit);
+        }
+
+        @Override
+        protected ResponseEnvelope executeHttpRequest(CloseableHttpClient client, HttpUriRequest httpRequest,
+                boolean includeResponseDetails, boolean includeResponseBody) throws IOException {
+            // Runs on the delay scheduler itself, the common pool can be busy with blocking checks. Cancelling it
+            // before the time limit keeps the request from being aborted.
+            var abort = CompletableFuture.runAsync(httpRequest::abort,
+                    CompletableFuture.delayedExecutor(timeLimit.toMillis(), TimeUnit.MILLISECONDS, Runnable::run));
+            try {
+                return super.executeHttpRequest(client, httpRequest, includeResponseDetails, includeResponseBody);
+            } catch (IOException | RuntimeException e) {
+                // DSS wraps failures while reading the body in DSSException
+                if (httpRequest.isAborted())
+                    throw new IOException("Aborted after the time limit of " + timeLimit.toMillis() + " ms", e);
+                throw e;
+            } finally {
+                abort.cancel(false);
+            }
+        }
     }
 
     /** Only HTTP(S) goes through the proxy, other schemes (e.g. LDAP) would connect directly. */

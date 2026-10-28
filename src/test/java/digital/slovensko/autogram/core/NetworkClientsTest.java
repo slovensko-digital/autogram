@@ -91,6 +91,20 @@ class NetworkClientsTest {
     }
 
     @Test
+    void downloadsSlowerThanTheTimeLimitAreCutOff() throws Exception {
+        try (var fixture = new LocalProxyFixture(directory)) {
+            var loader = fixture.trusting(new NetworkClients.TimeLimitedDataLoader(Duration.ofSeconds(1)));
+            for (var url : List.of(fixture.httpUrl("/silent"), fixture.httpsUrl("/silent"),
+                    fixture.httpUrl("/slow"), fixture.httpsUrl("/slow"))) {
+                var started = System.nanoTime();
+                assertThrows(DSSExternalResourceException.class, () -> loader.get(url), url);
+                assertTrue(Duration.ofNanos(System.nanoTime() - started).compareTo(Duration.ofSeconds(5)) < 0, url);
+            }
+            assertEquals("fixture-resource", new String(loader.get(fixture.httpsUrl("/trusted-list"))));
+        }
+    }
+
+    @Test
     void withoutProxyDssLoaderIsUntouched() {
         var loader = new CommonsDataLoader();
         assertSame(loader, NetworkClients.configure(loader, ProxyConfiguration.NONE));
