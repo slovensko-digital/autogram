@@ -58,8 +58,12 @@ import static digital.slovensko.autogram.util.DSSUtils.*;
 public class SignatureValidator {
     private static final String LOTL_URL = "https://ec.europa.eu/tools/lotl/eu-lotl.xml";
     private static final String OJ_URL = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG";
-    /** Loading waits for every list, a list that downloads for minutes (e.g. Belgium's in 10/2026) is left out. */
-    private static final Duration TRUSTED_LIST_DOWNLOAD_LIMIT = Duration.ofSeconds(15);
+    /**
+     * Loading waits for every list, a list that downloads for minutes (e.g. Belgium's in 10/2026) is left out. Slow but
+     * steady connections still get the big ones, e.g. Spain's has 3 MB.
+     */
+    private static final Duration TRUSTED_LIST_ANSWER_LIMIT = Duration.ofSeconds(20);
+    private static final long TRUSTED_LIST_MIN_BYTES_PER_SECOND = 20 * 1024;
     private CertificateVerifier verifier;
     private CertificateVerifier customVerifier;
     private TLValidationJob validationJob;
@@ -186,10 +190,12 @@ public class SignatureValidator {
         lotlSource.setPivotSupport(true);
         lotlSource.setTlPredicate(TLPredicateFactory.createEUTLCountryCodePredicate(tlCountries.toArray(new String[0])));
 
-        var offlineFileLoader = NetworkClients.fileCacheDataLoader(21600000, TRUSTED_LIST_DOWNLOAD_LIMIT);
+        var offlineFileLoader = NetworkClients.fileCacheDataLoader(21600000, TRUSTED_LIST_ANSWER_LIMIT,
+                TRUSTED_LIST_MIN_BYTES_PER_SECOND);
         validationJob.setOfflineDataLoader(offlineFileLoader);
 
-        var onlineFileLoader = NetworkClients.fileCacheDataLoader(0, TRUSTED_LIST_DOWNLOAD_LIMIT);
+        var onlineFileLoader = NetworkClients.fileCacheDataLoader(0, TRUSTED_LIST_ANSWER_LIMIT,
+                TRUSTED_LIST_MIN_BYTES_PER_SECOND);
         validationJob.setOnlineDataLoader(onlineFileLoader);
 
         var trustedListCertificateSource = new TrustedListsCertificateSource();
