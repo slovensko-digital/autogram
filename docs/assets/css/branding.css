@@ -120,6 +120,19 @@ h4 {
     overflow-wrap: anywhere;
 }
 
+/* "anywhere" would let a table squeeze a column below its longest word and cut it, e.g. "Exspirovan-ý certifikát" */
+.main-content :is(th, td) {
+    overflow-wrap: break-word;
+}
+
+/* Phones keep it so that tables fit the screen, but hyphenate at syllables where the browser can. */
+@media (max-width: 540px) {
+    .main-content :is(th, td) {
+        overflow-wrap: anywhere;
+        hyphens: auto;
+    }
+}
+
 .main-content > h1 + p {
     font-size: 1.5rem;
     line-height: 1.4;
