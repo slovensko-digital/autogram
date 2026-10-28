@@ -8,7 +8,11 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -33,6 +37,9 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.model.tsl.LOTLInfo;
+import eu.europa.esig.dss.model.tsl.OtherTSLPointer;
+import eu.europa.esig.dss.model.tsl.TLInfo;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
@@ -63,7 +70,17 @@ public class SignatureValidator {
     private CompletableFuture<CertificateVerifier> loading;
     /** Read without the lock, which loading and validation hold while they wait for slow servers. */
     private volatile boolean tlsLoaded;
+    /** Read without the lock like {@link #tlsLoaded}. */
+    private volatile FailedTLs failedTLs = FailedTLs.NONE;
     private static Logger logger = LoggerFactory.getLogger(SignatureValidator.class);
+
+    /**
+     * Trusted lists of the selected countries that are not used: not downloaded in time, broken or expired.
+     * @param countries their territories as in the trusted lists, e.g. EL for Greece
+     */
+    public record FailedTLs(int failed, int total, Set<String> countries) {
+        static final FailedTLs NONE = new FailedTLs(0, 0, Set.of());
+    }
 
     // Singleton
     private static SignatureValidator instance;
@@ -95,6 +112,7 @@ public class SignatureValidator {
         this.verifier = verifier;
         validationJob = null;
         tlsLoaded = verifier != null;
+        failedTLs = FailedTLs.NONE;
         if (verifier == null)
             reloadStarting();
         else
@@ -334,12 +352,43 @@ public class SignatureValidator {
 
     private void offlineRefresh() {
         validationJob.offlineRefresh();
-        tlsLoaded = validationJob.getSummary().getNumberOfProcessedTLs() > 0;
+        // the same check that decides which lists the job puts into the trusted certificate source
+        var strategy = new CustomSynchronizationStrategy();
+        int total = 0, failed = 0;
+        var countries = new HashSet<String>();
+        for (var lotl : validationJob.getSummary().getLOTLInfos()) {
+            for (var list : lotl.getTLInfos()) {
+                total++;
+                if (!strategy.canBeSynchronized(list)) {
+                    failed++;
+                    countries.add(territoryOf(list, lotl));
+                }
+            }
+        }
+        failedTLs = new FailedTLs(failed, total, Set.copyOf(countries));
+        tlsLoaded = failed < total;
     }
 
+    /** A list that was not downloaded has no territory of its own, the LOTL's pointer to it has. */
+    private static String territoryOf(TLInfo list, LOTLInfo lotl) {
+        var pointers = lotl.getParsingCacheInfo().getTlOtherPointers();
+        return Optional.ofNullable(pointers).orElse(List.of()).stream()
+                .filter(pointer -> list.getUrl().equals(pointer.getTSLLocation()))
+                .map(OtherTSLPointer::getSchemeTerritory)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .or(() -> Optional.ofNullable(list.getParsingCacheInfo().getTerritory()))
+                .orElse(list.getUrl());
+    }
+
+    /** At least one trusted list is used. */
     public boolean areTLsLoaded() {
         // TODO: consider validation turned off as well
         return tlsLoaded;
+    }
+
+    public FailedTLs getFailedTLs() {
+        return failedTLs;
     }
 
     private static boolean hasSignatures(Reports reports) {
