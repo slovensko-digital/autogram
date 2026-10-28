@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.CertificateStatusChecker;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SignatureValidator.FailedTLs;
 import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.settings.Country;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureForm;
@@ -12,6 +13,7 @@ import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.simplereport.jaxb.XmlTimestamp;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -24,11 +26,18 @@ import javafx.scene.text.TextFlow;
 
 import javax.security.auth.x500.X500Principal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static digital.slovensko.autogram.ui.gui.HasI18n.translate;
 import static eu.europa.esig.dss.enumerations.SignatureForm.CAdES;
@@ -43,18 +52,32 @@ public class GUIValidationUtils {
         return styled(new TextFlow(text), "autogram-warning-textflow");
     }
 
+    public static Node createWarningText(String message, String linkText, Runnable onLink) {
+        var link = styled(new Hyperlink(linkText), "autogram-heading-s", "autogram-link");
+        link.setOnAction(event -> onLink.run());
+        var text = styled(new Text(message + " "), "autogram-heading-s");
+        return styled(new TextFlow(text, link), "autogram-warning-textflow");
+    }
+
     /**
-     * Above validated signatures, when no trusted lists could be loaded, or only some of them and a signature could
-     * not be verified, maybe because of them.
+     * Above validated signatures, when no trusted lists could be loaded, or a signature could not be verified because
+     * the trusted list of its country did not load or is turned off in the settings.
      */
-    public static void addTrustedListsWarning(ResourceBundle resources, List<Node> children,
-            List<ValidationReports.SignatureEntry> signatures) {
+    public static void addTrustedListsWarnings(ResourceBundle resources, List<Node> children,
+            List<ValidationReports.SignatureEntry> signatures, Collection<String> trustedList, Runnable openSettings) {
         var validator = SignatureValidator.getInstance();
         var failedTLs = validator.getFailedTLs();
         var warning = trustedListsWarning(resources, validator.areTLsLoaded(), failedTLs,
                 () -> hasNotVerifiedSignatures(signatures, failedTLs.countries()));
         if (warning != null)
             children.add(createWarningText(warning));
+        if (!validator.areTLsLoaded())
+            return;
+
+        var countries = countriesTurnedOff(signatures, trustedList);
+        if (!countries.isEmpty())
+            children.add(createWarningText(countriesTurnedOffWarning(resources, countries),
+                    translate(resources, "signature.countryTurnedOff.settings.btn"), openSettings));
     }
 
     /** Only the number of lists, the countries could fill the window. */
@@ -75,24 +98,46 @@ public class GUIValidationUtils {
      */
     static boolean hasNotVerifiedSignatures(List<ValidationReports.SignatureEntry> signatures,
             Set<String> countriesNotLoaded) {
-        return signatures.stream().anyMatch(signature -> {
+        return notVerifiedIssuers(signatures)
+                .anyMatch(issuer -> CertificateStatusChecker.isIssuedIn(issuer, countriesNotLoaded));
+    }
+
+    /**
+     * Countries with a trusted list that is turned off in the settings, whose providers issued the certificates of
+     * signatures or timestamps that could not be verified.
+     */
+    static List<Country> countriesTurnedOff(List<ValidationReports.SignatureEntry> signatures,
+            Collection<String> trustedList) {
+        return notVerifiedIssuers(signatures)
+                .map(CertificateStatusChecker::trustedListCountry)
+                .flatMap(Optional::stream)
+                .filter(country -> !trustedList.contains(country.getShortname()))
+                .collect(Collectors.toMap(Country::getShortname, country -> country, (a, b) -> a, LinkedHashMap::new))
+                .values().stream().toList();
+    }
+
+    static String countriesTurnedOffWarning(ResourceBundle resources, List<Country> countries) {
+        var names = countries.stream().map(country -> country.getName(resources.getLocale()))
+                .collect(Collectors.joining(", "));
+        return translate(resources, "signature.countryTurnedOff.warning", names, countries.size());
+    }
+
+    /** Issuers of the certificates of signatures and timestamps that are neither valid nor invalid. */
+    private static Stream<String> notVerifiedIssuers(List<ValidationReports.SignatureEntry> signatures) {
+        return signatures.stream().flatMap(signature -> {
             var reports = signature.documentReport().reports();
             var simple = reports.getSimpleReport();
             var diagnostic = reports.getDiagnosticData();
             var id = signature.signatureId();
-            if (simple.getIndication(id) == Indication.INDETERMINATE
-                    && isIssuedIn(diagnostic, diagnostic.getSigningCertificateId(id), countriesNotLoaded))
-                return true;
+            var certificates = new ArrayList<String>();
+            if (simple.getIndication(id) == Indication.INDETERMINATE)
+                certificates.add(diagnostic.getSigningCertificateId(id));
+            for (var timestamp : simple.getSignatureTimestamps(id))
+                if (timestamp.getIndication() == Indication.INDETERMINATE)
+                    certificates.add(diagnostic.getTimestampSigningCertificateId(timestamp.getId()));
 
-            return simple.getSignatureTimestamps(id).stream().anyMatch(timestamp ->
-                    timestamp.getIndication() == Indication.INDETERMINATE && isIssuedIn(diagnostic,
-                            diagnostic.getTimestampSigningCertificateId(timestamp.getId()), countriesNotLoaded));
+            return certificates.stream().filter(Objects::nonNull).map(diagnostic::getCertificateIssuerDN);
         });
-    }
-
-    private static boolean isIssuedIn(DiagnosticData diagnostic, String certificateId, Set<String> countries) {
-        return certificateId != null
-                && CertificateStatusChecker.isIssuedIn(diagnostic.getCertificateIssuerDN(certificateId), countries);
     }
 
     public static GridPane createSignatureTableRows(ResourceBundle resources, ValidationReports validationReports, boolean isValidated, Consumer<String> callback, int maxRows) {

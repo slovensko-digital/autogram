@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SignatureValidator.FailedTLs;
 import digital.slovensko.autogram.core.TestSignedDocuments;
 import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.settings.Country;
 import eu.europa.esig.dss.enumerations.Indication;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -73,6 +74,40 @@ class TrustedListsWarningTest {
     }
 
     @Test
+    void countriesOfNotVerifiedSignaturesWhoseListsAreTurnedOff() {
+        var pki = TestPki.create();
+        SignatureValidator.getInstance().useCustomVerifier(pki.verifier());
+        try {
+            var valid = TestSignedDocuments.sign(pki.signer(TestPki.JANA), SignatureProfile.BASELINE_B, null);
+            var german = TestSignedDocuments.sign(TestPki.create("DE").issue("Erika Mustermann", TestPki.Kind.QESIG),
+                    SignatureProfile.BASELINE_B, null);
+            var germanTsa = TestSignedDocuments.sign(pki.signer(TestPki.JANA), SignatureProfile.BASELINE_T,
+                    TestPki.create("DE").tspSource());
+
+            assertEquals(List.of("DE"), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(german), List.of("SK", "CZ"))));
+            assertEquals(List.of(), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(german), List.of("SK", "DE"))));
+            assertEquals(List.of("DE"), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(germanTsa), List.of("SK"))));
+            assertEquals(List.of(), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(valid), List.of("CZ"))));
+        } finally {
+            SignatureValidator.getInstance().useCustomVerifier(null);
+        }
+    }
+
+    @Test
+    void countriesTurnedOffAreNamed() {
+        var belgium = Country.withTrustedList("BE").orElseThrow();
+        var czechia = Country.withTrustedList("CZ").orElseThrow();
+        assertEquals("Autogram nevie úplne overiť podpisy od poskytovateľov z krajiny Belgicko, lebo jej dôveryhodný zoznam nemáte zapnutý.",
+                GUIValidationUtils.countriesTurnedOffWarning(SK, List.of(belgium)));
+        assertEquals("Autogram nevie úplne overiť podpisy od poskytovateľov z krajín Belgicko, Česko, lebo ich dôveryhodné zoznamy nemáte zapnuté.",
+                GUIValidationUtils.countriesTurnedOffWarning(SK, List.of(belgium, czechia)));
+        assertEquals("Autogram cannot fully validate signatures from providers in Belgium, because its trusted list is turned off.",
+                GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium)));
+        assertEquals("Autogram cannot fully validate signatures from providers in Belgium, Czechia, because their trusted lists are turned off.",
+                GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium, czechia)));
+    }
+
+    @Test
     void allLoaded() {
         assertNull(GUIValidationUtils.trustedListsWarning(SK, true, new FailedTLs(0, 8, Set.of()), () -> true));
     }
@@ -82,6 +117,10 @@ class TrustedListsWarningTest {
         return report.reports().getSimpleReport().getSignatureIdList().stream()
                 .map(id -> new ValidationReports.SignatureEntry(report, id))
                 .toList();
+    }
+
+    private static List<String> shortnames(List<Country> countries) {
+        return countries.stream().map(Country::getShortname).toList();
     }
 
     private static ResourceBundle bundle(String language) {

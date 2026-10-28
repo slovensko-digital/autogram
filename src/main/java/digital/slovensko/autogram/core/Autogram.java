@@ -798,6 +798,7 @@ public class Autogram {
     public void updateSignatureValidatorLotl(List<String> tlCountries) {
         SignatureValidator.getInstance().reloadStarting();
         ui.onWorkThreadDo(() -> SignatureValidator.getInstance().updateLotl(tlCountries));
+        ui.onUIThreadDo(ui::onTrustedListsReloading);
     }
 
     public List<TokenDriver> getAvailableDrivers() {

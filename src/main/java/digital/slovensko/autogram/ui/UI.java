@@ -71,6 +71,9 @@ public interface UI {
 
     void onSignatureCheckCompleted(ValidationReports reports);
 
+    /** The trusted lists started reloading, e.g. a country was turned on in the settings. */
+    default void onTrustedListsReloading() { }
+
     void showIgnorableExceptionDialog(IgnorableException exception);
 
     void showError(AutogramException exception);

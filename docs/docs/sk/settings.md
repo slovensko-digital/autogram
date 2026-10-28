@@ -29,7 +29,7 @@ Aby bola časová pečiatka pri overovaní uznaná, jej poskytovateľ musí byť
 
 ![Nastavenia – Overovanie podpisov](/assets/images/screenshots/sk/settings-validation.png)
 
-Zoznam krajín EÚ, podľa ktorých dôveryhodných zoznamov Autogram overuje podpisy. Predvolene sú zapnuté Slovensko, Česko, Rakúsko, Poľsko, Maďarsko, Belgicko, Holandsko a Španielsko. Ak dostávate dokumenty podpísané certifikátom z inej krajiny, zapnite ju. Viac krajín overovanie spomalí.
+Zoznam krajín EÚ, podľa ktorých dôveryhodných zoznamov Autogram overuje podpisy. Predvolene sú zapnuté Slovensko, Česko, Rakúsko, Poľsko, Maďarsko, Belgicko, Holandsko a Španielsko. Ak dostávate dokumenty podpísané certifikátom z inej krajiny, zapnite ju. Autogram vás na to upozorní pri podpise, ktorý preto nevie overiť. Viac krajín overovanie spomalí.
 
 Podľa týchto zoznamov Autogram zisťuje aj to, či je kvalifikovaný certifikát, ktorým podpisujete. Ak máte certifikát z inej krajiny, zapnite aj ju, inak ho Autogram vo [výbere certifikátu](card-and-pin.md#vyber-certifikatu) označí ako nekvalifikovaný.
 
