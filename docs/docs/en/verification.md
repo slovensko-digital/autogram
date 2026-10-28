@@ -53,6 +53,6 @@ Autogram validates signatures against the European Union trusted lists, which it
 
 If the trusted lists cannot be downloaded, Autogram shows a warning that the signatures cannot be fully validated. Check your internet connection and open the document again.
 
-Sometimes only the list of one country cannot be downloaded, for example when its server does not respond at the moment. Autogram then validates against the other lists. If the document has a signature that cannot be validated because of the missing list, Autogram shows above the signatures how many lists could not be downloaded. It tries to download them again the next time it starts.
+Sometimes only the list of one country cannot be downloaded, for example when its server does not respond at the moment. Autogram then validates against the other lists. If the document has a signature or a timestamp that cannot be validated because of the missing list, Autogram shows above the signatures how many lists could not be downloaded. It tries to download them again the next time it starts.
 
 ![Warning that some trusted lists could not be downloaded](/assets/images/screenshots/en/signed-document-trusted-lists.png)

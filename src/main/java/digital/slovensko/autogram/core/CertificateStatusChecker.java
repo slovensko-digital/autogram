@@ -132,17 +132,28 @@ public class CertificateStatusChecker {
     }
 
     private boolean isIssuerCountryNotLoaded(CertificateToken certificate) {
-        var notLoaded = countriesNotLoaded.get();
-        return issuerCountry(certificate)
+        return isIssuedIn(certificate.getIssuerX500Principal().getName(X500Principal.RFC2253), countriesNotLoaded.get());
+    }
+
+    /** Whether the issuer is from one of the countries, given as in the trusted lists, e.g. EL for Greece. */
+    public static boolean isIssuedIn(String issuerName, Set<String> countries) {
+        return countryOf(issuerName)
                 .flatMap(Country::withTrustedList)
-                .map(country -> notLoaded.contains(country.getShortname()))
+                .map(country -> countries.contains(country.getShortname()))
                 .orElse(false);
     }
 
     /** ISO code of the issuer's country, the country whose trusted list makes the certificate qualified. */
     public static Optional<String> issuerCountry(CertificateToken certificate) {
+        return countryOf(certificate.getIssuerX500Principal().getName(X500Principal.RFC2253));
+    }
+
+    private static Optional<String> countryOf(String name) {
+        if (name == null)
+            return Optional.empty();
+
         try {
-            return new LdapName(certificate.getIssuerX500Principal().getName(X500Principal.RFC2253)).getRdns().stream()
+            return new LdapName(name).getRdns().stream()
                     .filter(rdn -> rdn.getType().equalsIgnoreCase("C"))
                     .map(rdn -> rdn.getValue().toString().toUpperCase(Locale.ROOT))
                     .findFirst();

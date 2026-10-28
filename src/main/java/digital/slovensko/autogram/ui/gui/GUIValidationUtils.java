@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.CertificateStatusChecker;
 import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SignatureValidator.FailedTLs;
 import digital.slovensko.autogram.core.ValidationReports;
@@ -25,6 +26,8 @@ import javax.security.auth.x500.X500Principal;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import static digital.slovensko.autogram.ui.gui.HasI18n.translate;
@@ -47,28 +50,49 @@ public class GUIValidationUtils {
     public static void addTrustedListsWarning(ResourceBundle resources, List<Node> children,
             List<ValidationReports.SignatureEntry> signatures) {
         var validator = SignatureValidator.getInstance();
-        var warning = trustedListsWarning(resources, validator.areTLsLoaded(), validator.getFailedTLs(),
-                hasNotVerifiedSignatures(signatures));
+        var failedTLs = validator.getFailedTLs();
+        var warning = trustedListsWarning(resources, validator.areTLsLoaded(), failedTLs,
+                () -> hasNotVerifiedSignatures(signatures, failedTLs.countries()));
         if (warning != null)
             children.add(createWarningText(warning));
     }
 
     /** Only the number of lists, the countries could fill the window. */
     static String trustedListsWarning(ResourceBundle resources, boolean areTLsLoaded, FailedTLs failedTLs,
-            boolean hasNotVerifiedSignatures) {
+            BooleanSupplier hasNotVerifiedSignatures) {
         if (!areTLsLoaded)
             return translate(resources, "signing.tlsLoading.error");
 
-        if (failedTLs.failed() > 0 && hasNotVerifiedSignatures)
+        if (failedTLs.failed() > 0 && hasNotVerifiedSignatures.getAsBoolean())
             return translate(resources, "signing.tlsLoading.partialError", failedTLs.failed(), failedTLs.total());
 
         return null;
     }
 
-    /** Neither valid nor invalid, e.g. the certificate is not in the loaded trusted lists. */
-    static boolean hasNotVerifiedSignatures(List<ValidationReports.SignatureEntry> signatures) {
-        return signatures.stream().anyMatch(signature -> signature.documentReport().reports().getSimpleReport()
-                .getIndication(signature.signatureId()) == Indication.INDETERMINATE);
+    /**
+     * Neither valid nor invalid, the signature or one of its timestamps, with a certificate from one of the countries
+     * whose trusted lists did not load.
+     */
+    static boolean hasNotVerifiedSignatures(List<ValidationReports.SignatureEntry> signatures,
+            Set<String> countriesNotLoaded) {
+        return signatures.stream().anyMatch(signature -> {
+            var reports = signature.documentReport().reports();
+            var simple = reports.getSimpleReport();
+            var diagnostic = reports.getDiagnosticData();
+            var id = signature.signatureId();
+            if (simple.getIndication(id) == Indication.INDETERMINATE
+                    && isIssuedIn(diagnostic, diagnostic.getSigningCertificateId(id), countriesNotLoaded))
+                return true;
+
+            return simple.getSignatureTimestamps(id).stream().anyMatch(timestamp ->
+                    timestamp.getIndication() == Indication.INDETERMINATE && isIssuedIn(diagnostic,
+                            diagnostic.getTimestampSigningCertificateId(timestamp.getId()), countriesNotLoaded));
+        });
+    }
+
+    private static boolean isIssuedIn(DiagnosticData diagnostic, String certificateId, Set<String> countries) {
+        return certificateId != null
+                && CertificateStatusChecker.isIssuedIn(diagnostic.getCertificateIssuerDN(certificateId), countries);
     }
 
     public static GridPane createSignatureTableRows(ResourceBundle resources, ValidationReports validationReports, boolean isValidated, Consumer<String> callback, int maxRows) {

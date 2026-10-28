@@ -149,13 +149,10 @@ class SignatureWarningCancellationTest {
 
                     var reports = mock(ValidationReports.class);
                     when(reports.getSigningJob()).thenReturn(dialog.job);
-                    try (var validator = mockStatic(SignatureValidator.class)) {
-                        validator.when(SignatureValidator::getInstance).thenReturn(mock(SignatureValidator.class));
-                        dialog.gui.onSignatureCheckCompleted(reports);
-                        assertTrue(dialog.controller.mainButton.isDisabled(), "after the signature check");
-                        dialog.gui.onSignatureValidationCompleted(reports);
-                        assertTrue(dialog.controller.mainButton.isDisabled(), "after the signature validation");
-                    }
+                    dialog.gui.onSignatureCheckCompleted(reports);
+                    assertTrue(dialog.controller.mainButton.isDisabled(), "after the signature check");
+                    dialog.gui.onSignatureValidationCompleted(reports);
+                    assertTrue(dialog.controller.mainButton.isDisabled(), "after the signature validation");
                     return null;
                 });
             } finally {

@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -37,7 +36,6 @@ import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
-import eu.europa.esig.dss.model.tsl.LOTLInfo;
 import eu.europa.esig.dss.model.tsl.OtherTSLPointer;
 import eu.europa.esig.dss.model.tsl.TLInfo;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
@@ -363,11 +361,13 @@ public class SignatureValidator {
         int total = 0, failed = 0;
         var countries = new HashSet<String>();
         for (var lotl : validationJob.getSummary().getLOTLInfos()) {
+            // the job skips all lists of a LOTL it cannot use, e.g. with an unknown signing key
+            var lotlUsed = strategy.canBeSynchronized(lotl);
             for (var list : lotl.getTLInfos()) {
                 total++;
-                if (!strategy.canBeSynchronized(list)) {
+                if (!lotlUsed || !strategy.canBeSynchronized(list)) {
                     failed++;
-                    countries.add(territoryOf(list, lotl));
+                    countries.add(territoryOf(list));
                 }
             }
         }
@@ -376,13 +376,9 @@ public class SignatureValidator {
     }
 
     /** A list that was not downloaded has no territory of its own, the LOTL's pointer to it has. */
-    private static String territoryOf(TLInfo list, LOTLInfo lotl) {
-        var pointers = lotl.getParsingCacheInfo().getTlOtherPointers();
-        return Optional.ofNullable(pointers).orElse(List.of()).stream()
-                .filter(pointer -> list.getUrl().equals(pointer.getTSLLocation()))
+    private static String territoryOf(TLInfo list) {
+        return Optional.ofNullable(list.getOtherTSLPointer())
                 .map(OtherTSLPointer::getSchemeTerritory)
-                .filter(Objects::nonNull)
-                .findFirst()
                 .or(() -> Optional.ofNullable(list.getParsingCacheInfo().getTerritory()))
                 .orElse(list.getUrl());
     }
