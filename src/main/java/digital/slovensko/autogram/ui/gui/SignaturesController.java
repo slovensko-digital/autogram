@@ -91,9 +91,8 @@ public class SignaturesController extends BaseController implements SuppressedFo
     public void renderSignatures(ValidationReports reports, boolean isValidated) {
         signaturesContainer.getChildren().clear();
         var areTLsLoaded = SignatureValidator.getInstance().areTLsLoaded();
-        if (isValidated && !areTLsLoaded)
-            signaturesContainer.getChildren().add(
-                    GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));
+        if (isValidated)
+            GUIValidationUtils.addTrustedListsWarning(resources, signaturesContainer.getChildren(), reports.getSignatures());
 
         for (var signature : reports.getSignatures())
             signaturesContainer.getChildren().add(GUIValidationUtils.createSignatureBox(resources,

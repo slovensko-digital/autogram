@@ -1,5 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
+import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.SignatureValidator.FailedTLs;
 import digital.slovensko.autogram.core.ValidationReports;
 import eu.europa.esig.dss.diagnostic.DiagnosticData;
 import eu.europa.esig.dss.enumerations.Indication;
@@ -36,6 +38,37 @@ public class GUIValidationUtils {
     public static Node createWarningText(String message) {
         var text = styled(new Text(message), "autogram-heading-s");
         return styled(new TextFlow(text), "autogram-warning-textflow");
+    }
+
+    /**
+     * Above validated signatures, when no trusted lists could be loaded, or only some of them and a signature could
+     * not be verified, maybe because of them.
+     */
+    public static void addTrustedListsWarning(ResourceBundle resources, List<Node> children,
+            List<ValidationReports.SignatureEntry> signatures) {
+        var validator = SignatureValidator.getInstance();
+        var warning = trustedListsWarning(resources, validator.areTLsLoaded(), validator.getFailedTLs(),
+                hasNotVerifiedSignatures(signatures));
+        if (warning != null)
+            children.add(createWarningText(warning));
+    }
+
+    /** Only the number of lists, the countries could fill the window. */
+    static String trustedListsWarning(ResourceBundle resources, boolean areTLsLoaded, FailedTLs failedTLs,
+            boolean hasNotVerifiedSignatures) {
+        if (!areTLsLoaded)
+            return translate(resources, "signing.tlsLoading.error");
+
+        if (failedTLs.failed() > 0 && hasNotVerifiedSignatures)
+            return translate(resources, "signing.tlsLoading.partialError", failedTLs.failed(), failedTLs.total());
+
+        return null;
+    }
+
+    /** Neither valid nor invalid, e.g. the certificate is not in the loaded trusted lists. */
+    static boolean hasNotVerifiedSignatures(List<ValidationReports.SignatureEntry> signatures) {
+        return signatures.stream().anyMatch(signature -> signature.documentReport().reports().getSimpleReport()
+                .getIndication(signature.signatureId()) == Indication.INDETERMINATE);
     }
 
     public static GridPane createSignatureTableRows(ResourceBundle resources, ValidationReports validationReports, boolean isValidated, Consumer<String> callback, int maxRows) {
