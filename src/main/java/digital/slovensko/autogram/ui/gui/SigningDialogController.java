@@ -39,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class SigningDialogController extends BaseController implements SuppressedFocusController, Visualizer {
     private static final double DEFAULT_TAB_HEADER_HEIGHT = 36;
@@ -364,7 +365,8 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     public void onShowSignaturesButtonPressed(ActionEvent event) {
         if (signaturesController == null)
-            signaturesController = new SignaturesController(signatureCheckReports, gui);
+            signaturesController = new SignaturesController(signatureCheckReports, gui, userSettings,
+                    this::openTrustedCountriesSettings);
 
         var root = GUIUtils.loadFXML(signaturesController, "present-signatures-dialog.fxml");
 
@@ -402,6 +404,27 @@ public class SigningDialogController extends BaseController implements Suppresse
             signaturesNotValidatedDialogController.close();
     }
 
+    /** Saving the settings validates the signatures again, if the countries changed. */
+    public void openTrustedCountriesSettings() {
+        SettingsDialogController.showAndWait(autogram, userSettings, SettingsDialogController.TRUSTED_COUNTRIES_TAB);
+    }
+
+    public List<String> getTrustedList() {
+        return userSettings.getTrustedList();
+    }
+
+    /** The trusted lists are reloading, e.g. a country was turned on, the signatures are validated again with them. */
+    public void revalidateSignaturesWhen(CompletableFuture<?> trustedListsLoaded) {
+        if (signatureCheckCompleted && (signatureCheckReports == null || !signatureCheckReports.haveSignatures()))
+            return;
+
+        signatureValidationCompleted = false;
+        signatureValidationReports = null;
+        if (signatureCheckReports != null)
+            renderSignatures(signatureCheckReports, false);
+        trustedListsLoaded.whenComplete((verifier, e) -> gui.onWorkThreadDo(() -> autogram.checkAndValidateSignatures(job)));
+    }
+
     public void renderSignatures(ValidationReports reports, boolean isValidated) {
         if (reports == null || !reports.haveSignatures())
             return;
@@ -411,7 +434,8 @@ public class SigningDialogController extends BaseController implements Suppresse
             var summary = new VBox(8);
             var signatures = reports.getSignaturesForPreviewDocument(job.getVisualizations().get(index).getName(), index);
             if (isValidated)
-                GUIValidationUtils.addTrustedListsWarning(resources, summary.getChildren(), signatures);
+                GUIValidationUtils.addTrustedListsWarnings(resources, summary.getChildren(), signatures,
+                        userSettings.getTrustedList(), this::openTrustedCountriesSettings);
             if (reports.hasIncompleteContainerCoverage())
                 summary.getChildren().add(GUIValidationUtils.createWarningText(
                         i18n("signature.table.incompleteCoverage.warning")));

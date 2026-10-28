@@ -161,6 +161,26 @@ class SignatureWarningCancellationTest {
         }
     }
 
+    @Test
+    void signaturesAreValidatedAgainOnceTheReloadedTrustedListsLoad() throws Exception {
+        try (var request = new PendingRequest()) {
+            // validated already, with invalid signatures
+            var dialog = onFxThread(() -> openDialog(Warning.INVALID, request.responder));
+            try {
+                verify(dialog.autogram, timeout(2000)).checkAndValidateSignatures(dialog.job);
+                clearInvocations(dialog.autogram);
+                var loaded = new CompletableFuture<Void>();
+                onFxThread(() -> { dialog.controller.revalidateSignaturesWhen(loaded); return null; });
+
+                verify(dialog.autogram, after(300).never()).checkAndValidateSignatures(any());
+                loaded.complete(null);
+                verify(dialog.autogram, timeout(2000)).checkAndValidateSignatures(dialog.job);
+            } finally {
+                onFxThread(() -> { dialog.close(); return null; });
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private static Dialog openDialog(Warning warning, ServerResponder responder) throws Exception {
         var settings = new UserSettings();

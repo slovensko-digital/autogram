@@ -26,7 +26,11 @@ public class SignaturesInvalidDialogController extends BaseController implements
     }
 
     public void initialize() {
-        GUIValidationUtils.addTrustedListsWarning(resources, signaturesTable.getChildren(), reports.getSignatures());
+        GUIValidationUtils.addTrustedListsWarnings(resources, signaturesTable.getChildren(), reports.getSignatures(),
+                signingDialogController.getTrustedList(), () -> {
+                    close();
+                    signingDialogController.openTrustedCountriesSettings();
+                });
         signaturesTable.getChildren().add(GUIValidationUtils.createSignatureTableRows(resources, reports, true,
             ignored -> onShowSignaturesButtonAction(), 6));
     }

@@ -29,7 +29,7 @@ For a timestamp to be recognised during validation, its provider must be qualifi
 
 ![Settings – Signature Validation](/assets/images/screenshots/en/settings-validation.png)
 
-The list of EU countries whose trusted lists Autogram uses to validate signatures. By default, Slovakia, Czechia, Austria, Poland, Hungary, Belgium, the Netherlands and Spain are on. If you receive documents signed with a certificate from another country, turn it on. More countries slow down validation.
+The list of EU countries whose trusted lists Autogram uses to validate signatures. By default, Slovakia, Czechia, Austria, Poland, Hungary, Belgium, the Netherlands and Spain are on. If you receive documents signed with a certificate from another country, turn it on. Autogram tells you when it cannot validate a signature because of that. More countries slow down validation.
 
 Autogram also uses these lists to find out whether the certificate you sign with is qualified. If your certificate is from another country, turn that country on too, otherwise Autogram marks the certificate as non-qualified in the [certificate selection](card-and-pin.md#choosing-the-certificate).
 

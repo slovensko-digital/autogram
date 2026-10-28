@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -14,6 +15,8 @@ import javafx.stage.Stage;
 
 public class SignaturesController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
+    private final UserSettings userSettings;
+    private final Runnable openSettings;
     private ValidationReports signatureCheckReports;
     private ValidationReports signatureValidationReports;
     private String signatureValidationReportsHTML;
@@ -31,9 +34,13 @@ public class SignaturesController extends BaseController implements SuppressedFo
     @FXML
     Button closeButton;
 
-    public SignaturesController(ValidationReports signatureCheckReports, GUI gui) {
+    /** @param openSettings opens the trusted countries settings, after this dialog closed itself */
+    public SignaturesController(ValidationReports signatureCheckReports, GUI gui, UserSettings userSettings,
+            Runnable openSettings) {
         this.signatureCheckReports = signatureCheckReports;
         this.gui = gui;
+        this.userSettings = userSettings;
+        this.openSettings = openSettings;
     }
 
     @Override
@@ -92,7 +99,11 @@ public class SignaturesController extends BaseController implements SuppressedFo
         signaturesContainer.getChildren().clear();
         var areTLsLoaded = SignatureValidator.getInstance().areTLsLoaded();
         if (isValidated)
-            GUIValidationUtils.addTrustedListsWarning(resources, signaturesContainer.getChildren(), reports.getSignatures());
+            GUIValidationUtils.addTrustedListsWarnings(resources, signaturesContainer.getChildren(),
+                    reports.getSignatures(), userSettings.getTrustedList(), () -> {
+                        onCloseButtonAction();
+                        openSettings.run();
+                    });
 
         for (var signature : reports.getSignatures())
             signaturesContainer.getChildren().add(GUIValidationUtils.createSignatureBox(resources,
