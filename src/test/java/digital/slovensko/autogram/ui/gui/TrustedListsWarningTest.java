@@ -79,14 +79,14 @@ class TrustedListsWarningTest {
         SignatureValidator.getInstance().useCustomVerifier(pki.verifier());
         try {
             var valid = TestSignedDocuments.sign(pki.signer(TestPki.JANA), SignatureProfile.BASELINE_B, null);
-            // the test CAs are Slovak
-            var unknownCa = TestSignedDocuments.sign(TestPki.create().signer(TestPki.JANA), SignatureProfile.BASELINE_B, null);
-            var unknownTsa = TestSignedDocuments.sign(pki.signer(TestPki.JANA), SignatureProfile.BASELINE_T,
-                    TestPki.create().tspSource());
+            var german = TestSignedDocuments.sign(TestPki.create("DE").issue("Erika Mustermann", TestPki.Kind.QESIG),
+                    SignatureProfile.BASELINE_B, null);
+            var germanTsa = TestSignedDocuments.sign(pki.signer(TestPki.JANA), SignatureProfile.BASELINE_T,
+                    TestPki.create("DE").tspSource());
 
-            assertEquals(List.of("SK"), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(unknownCa), List.of("CZ"))));
-            assertEquals(List.of(), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(unknownCa), List.of("SK"))));
-            assertEquals(List.of("SK"), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(unknownTsa), List.of("CZ"))));
+            assertEquals(List.of("DE"), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(german), List.of("SK", "CZ"))));
+            assertEquals(List.of(), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(german), List.of("SK", "DE"))));
+            assertEquals(List.of("DE"), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(germanTsa), List.of("SK"))));
             assertEquals(List.of(), shortnames(GUIValidationUtils.countriesTurnedOff(signatures(valid), List.of("CZ"))));
         } finally {
             SignatureValidator.getInstance().useCustomVerifier(null);
