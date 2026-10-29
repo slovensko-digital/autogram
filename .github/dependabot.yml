@@ -10,3 +10,7 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    # a dependency fix worth a release gets the fix(deps) title by hand
+    commit-message:
+      prefix: "chore"
+      include: "scope"
