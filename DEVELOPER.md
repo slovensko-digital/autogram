@@ -21,6 +21,14 @@ raises the major version. Dependabot titles its pull requests `chore(deps): …`
 the update is worth a release, for example a security fix. How a release is made is described in
 [RELEASE.md](RELEASE.md).
 
+# Tests in pull requests
+
+The tests run on Linux, macOS and Windows when a pull request changes the app. They are skipped when it changes only
+the docs (`docs`, `assets`, Markdown files in the root), `packaging`, IDE settings or the listed files in `.github`
+(packaging, release, docs and PR title workflows, issue templates, Dependabot), see
+[.github/workflows/test.yaml](.github/workflows/test.yaml). Any other file, also a new workflow, runs the tests.
+Merging requires the `test-result` check, which passes when the tests passed or were skipped.
+
 # Cards, drivers and tokens
 
 How card search, certificate picking and PKCS#11 drivers work, what to watch out for and how to test with real cards:

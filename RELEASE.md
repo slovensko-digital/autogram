@@ -56,5 +56,7 @@ Pri zavedení release-please:
   na release PR *Tests* a *PR title* cez `workflow_dispatch`.
 - Voliteľne v ochrane vetvy `main` vyžadovať kontrolu **conventional-commit** z workflowu *PR title*. Ponúkne sa až
   potom, ako raz prebehne na niektorom PR.
+- Ochrana vetvy `main` vyžaduje z workflowu *Tests* kontrolu **test-result**, nie jednotlivé `test (…)`. Tie sa pri PR,
+  ktorý nemení aplikáciu, preskočia a nenahlásia sa.
 - Prostredie `packaging` vyžaduje schválenie tímom Autogram Release Team a nedovolí schváliť vlastné spustenie.
   Balíčky sa nespúšťajú pushom tagu, ale z workflowu **Release** alebo ručne cez **Package All**.
