@@ -6,9 +6,9 @@ out
 dist
 *.tgz
 
-# latest release, extracted by scripts/prepare-latest.sh
-/latest/
-/assets/latest/
+# releases, extracted by scripts/prepare-releases.sh
+/releases/
+/assets/releases/
 
 # code coverage
 coverage

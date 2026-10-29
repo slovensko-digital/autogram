@@ -37,18 +37,31 @@ jobs:
           # a release run would check out the tag, but the edge version is always main
           ref: ${{ github.event_name == 'release' && 'main' || github.ref }}
 
-      - name: Extract the latest release
+      - name: Set up Pages
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Extract the releases
+        # the published site lists the releases that have been the latest, a release deleted on GitHub is left out
         run: |
-          tag=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
-          git fetch --depth=1 origin "refs/tags/$tag:refs/tags/$tag"
-          if ! git cat-file -e "$tag:./docs" 2>/dev/null; then
-            echo "::notice::$tag has no docmd guides, building only main"
-            exit 0
-          fi
-          bash scripts/prepare-latest.sh "$tag"
-          echo "DOCS_LATEST_RELEASE=$tag" >> "$GITHUB_ENV"
+          latest=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          existing=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --limit 1000 --json tagName --jq '.[].tagName')
+          status=$(curl -sSL -o "$RUNNER_TEMP/releases.json" -w '%{http_code}' "$SITE_URL/releases.json?$(date +%s)")
+          case "$status" in
+            200) published=$(jq -r '.[]' "$RUNNER_TEMP/releases.json") ;;
+            404) published= ;;
+            *) echo "::error::$SITE_URL/releases.json returned HTTP $status"; exit 1 ;;
+          esac
+          older=$(comm -12 <(sort <<<"$published") <(sort <<<"$existing") | grep -vxF "$latest" | sort -rV || true)
+          releases=$(printf '%s\n' "$latest" $older | paste -sd, -)
+          for tag in ${releases//,/ }; do
+            git fetch --depth=1 origin "refs/tags/$tag:refs/tags/$tag"
+          done
+          bash scripts/prepare-releases.sh ${releases//,/ }
+          echo "DOCS_RELEASES=$releases" >> "$GITHUB_ENV"
         env:
           GH_TOKEN: ${{ github.token }}
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -56,10 +69,6 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: docs/package-lock.json
-
-      - name: Set up Pages
-        id: pages
-        uses: actions/configure-pages@v6
 
       - name: Install dependencies
         run: npm ci
@@ -74,6 +83,9 @@ jobs:
 
       - name: Check images
         run: npm run check-images
+
+      - name: Record the releases
+        run: jq -n --arg releases "$DOCS_RELEASES" '$releases | split(",")' > dist/releases.json
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5

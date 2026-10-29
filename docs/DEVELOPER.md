@@ -34,34 +34,39 @@ DOCMD_SITE_URL=https://docs.autogram.slovensko.digital npm run build
 
 ## Versions
 
-The published site has two versions with a switcher at the top of the sidebar:
+The published site has these versions with a switcher at the top of the sidebar:
 
-- the latest release (labelled with its tag, e.g. `v2.8.3`) at `/` and `/en/`, which is what
+- the latest release (labelled with its tag, e.g. `v2.8.5`) at `/` and `/en/`, which is what
   users of the released application read,
+- the releases that were the latest before it, since v2.8.3, at `/<tag>/` and `/en/<tag>/`
+  (e.g. `/v2.8.3/`), with a banner saying the version is no longer the current one,
 - `edge`, the guides from `main`, at `/edge/` and `/en/edge/`, with a banner saying the version
-  has not been released yet. `plugins/edge-noindex.js` marks its pages `noindex` and removes
-  them from `sitemap.xml`, so search engines show only the release.
+  has not been released yet.
 
-The banner is an ID-SK phase banner (`govuk-phase-banner` with a `govuk-tag`) across the top of
+`plugins/versions-noindex.js` marks the pages of all versions but the latest release `noindex`
+and removes them from `sitemap.xml`, so search engines show only the latest release.
+
+A banner is an ID-SK phase banner (`govuk-phase-banner` with a `govuk-tag`) across the top of
 the window, on the light grey of the ID-SK header's top bar. The version switcher looks like the
 language menu of the ID-SK header: a text button with an arrow and a plain list with the chosen
 version bold and underlined. Both are styled in `branding.css`.
 
-The release's guides are not kept in the repository. `scripts/prepare-latest.sh <tag>` extracts
-`docs/` of the tag into `latest/` and its `assets/images/` into `assets/latest/images/`, and points
-the image paths in the extracted guides there. The release therefore keeps its own screenshots
-when `main` replaces or deletes them. Configuration, styles, scripts and plugins come from `main`
-for both versions. The versions are turned on only when `DOCS_LATEST_RELEASE` is set, so
-`npm run dev` shows just the guides from `main`. To build the whole site locally:
+The releases' guides are not kept in the repository. `scripts/prepare-releases.sh <tag>...`
+extracts `docs/` of each tag into `releases/<tag>/` and its `assets/images/` into
+`assets/releases/<tag>/images/`, and points the image paths in the extracted guides there. A
+release therefore keeps its own screenshots when `main` replaces or deletes them. Configuration,
+styles, scripts and plugins come from `main` for all versions. The versions are turned on only
+when `DOCS_RELEASES` (the tags, the latest first, separated by commas) is set, so `npm run dev`
+shows just the guides from `main`. To build the whole site locally:
 
 ```console
-bash scripts/prepare-latest.sh v2.8.3
-DOCS_LATEST_RELEASE=v2.8.3 npm run build
+bash scripts/prepare-releases.sh v2.8.5 v2.8.3
+DOCS_RELEASES=v2.8.5,v2.8.3 npm run build
 npm run check-images
 ```
 
 `npm run check-images` fails when a page of the built site shows an image that is not in it.
-A fix to the guides on `main` reaches the release's version only with the next release.
+A fix to the guides on `main` reaches a release's version only with the next release.
 
 ## Deployment
 
@@ -69,9 +74,13 @@ A fix to the guides on `main` reaches the release's version only with the next r
 at <https://docs.autogram.slovensko.digital> on every push to `main` that changes `docs/`, and
 when a release is published or edited (or a pre-release becomes a release), so that `/` switches
 to the guides of the release marked as the latest. Marking a published release as the latest is
-an edit. It takes the latest release from the GitHub API. When that release has no
-guides in `docs/docs/` yet (releases before the docmd guides), the site is built from `main` only,
-without versions. A release event runs the workflow file from the released tag, so a release
+an edit. It takes the latest release from the GitHub API and the releases that were the latest
+before it from `releases.json`, which it publishes in the root of the site. GitHub does not keep
+which releases were the latest, so the published site is the only record of it: a release that
+was published but never marked as the latest is not a version of the docs, and a release deleted
+on GitHub is left out. When `releases.json` is not published yet, the site starts with the latest
+release only. When it cannot be read, the workflow fails rather than publish the site without the
+older releases. A release event runs the workflow file from the released tag, so a release
 tagged before its event was added to the triggers does not start it. Its ref is the tag, so the
 `github-pages` environment allows deployments from tags `v*` besides `main` (Settings →
 Environments → github-pages). It can also be run manually from the Actions tab.
@@ -142,10 +151,10 @@ Custom JavaScript (`customJs` in `docmd.config.js`):
 - `assets/js/logo-link.js`: docmd links the logo with a path relative to the current page and
   does not update it on SPA navigation, so after moving from the home page to a subpage the
   logo pointed to that subpage. The script turns the link into an absolute path on load.
-- `assets/js/top-banner.js`: docmd renders the top banner (the `edge` version's notice) in the
-  content column, while the sidebar is fixed to the top of the window. `branding.css` places the
-  banner across the whole window, like docmd's top menubar, and moves the sidebar, the sticky
-  header and the page down by its height, which the script keeps up to date.
+- `assets/js/top-banner.js`: docmd renders the top banner (the notice of `edge` and of older
+  releases) in the content column, while the sidebar is fixed to the top of the window.
+  `branding.css` places the banner across the whole window, like docmd's top menubar, and moves
+  the sidebar, the sticky header and the page down by its height, which the script keeps up to date.
 
 `plugins/font-preload.js` is a local docmd plugin (listed in `plugins`) that adds
 `<link rel="preload">` for both webfonts. Together with `font-display: fallback` in
