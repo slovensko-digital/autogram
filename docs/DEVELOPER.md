@@ -67,13 +67,16 @@ A fix to the guides on `main` reaches the release's version only with the next r
 
 `.github/workflows/deploy_docs.yaml` builds, validates and publishes the site to GitHub Pages
 at <https://docs.autogram.slovensko.digital> on every push to `main` that changes `docs/`, and
-when a release is published (or a pre-release becomes a release), so that `/` switches to the
-new release's guides. It takes the latest release from the GitHub API. When that release has no
+when a release is published or edited (or a pre-release becomes a release), so that `/` switches
+to the guides of the release marked as the latest. Marking a published release as the latest is
+an edit. It takes the latest release from the GitHub API. When that release has no
 guides in `docs/docs/` yet (releases before the docmd guides), the site is built from `main` only,
 without versions. A release event runs the workflow file from the released tag, so a release
-tagged before the release trigger was added does not start it. It can also be run
-manually from the Actions tab. `DOCMD_SITE_URL` comes from the repository's
-Pages settings (the custom domain), so the domain is not repeated in the workflow.
+tagged before its event was added to the triggers does not start it. Its ref is the tag, so the
+`github-pages` environment allows deployments from tags `v*` besides `main` (Settings →
+Environments → github-pages). It can also be run manually from the Actions tab.
+`DOCMD_SITE_URL` comes from the repository's Pages settings (the custom domain), so the domain
+is not repeated in the workflow.
 
 ## Moving to another project
 
