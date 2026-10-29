@@ -1,14 +1,28 @@
 import { defineConfig } from "@docmd/core";
 
-// Set by the deploy workflow after scripts/prepare-latest.sh extracts the latest release; local builds show only main.
-const latestRelease = process.env.DOCS_LATEST_RELEASE;
+// Set by the deploy workflow after scripts/prepare-releases.sh extracts the releases, the latest first; local builds
+// show only main.
+const [latestRelease, ...olderReleases] = (process.env.DOCS_RELEASES || '').split(',').filter(Boolean);
 
-const EDGE_BANNER = [
-  '<span class="phase-banner" lang="sk"><strong class="idsk-tag">Vývojová verzia</strong><span class="phase-banner__text">',
-  'Táto dokumentácia popisuje verziu, ktorá ešte nebola vydaná. <a href="/">Dokumentácia k aktuálnej verzii</a></span></span>',
-  '<span class="phase-banner" lang="en"><strong class="idsk-tag">Development version</strong><span class="phase-banner__text">',
-  'This documentation describes a version that has not been released yet. <a href="/en/">Documentation of the current version</a></span></span>',
-].join('');
+const phaseBanner = (sk, en) => ({
+  html: [
+    `<span class="phase-banner" lang="sk"><strong class="idsk-tag">${sk.tag}</strong><span class="phase-banner__text">`,
+    `${sk.text} <a href="/">Dokumentácia k aktuálnej verzii</a></span></span>`,
+    `<span class="phase-banner" lang="en"><strong class="idsk-tag">${en.tag}</strong><span class="phase-banner__text">`,
+    `${en.text} <a href="/en/">Documentation of the current version</a></span></span>`,
+  ].join(''),
+  dismissible: false,
+});
+
+const EDGE_BANNER = phaseBanner(
+  { tag: 'Vývojová verzia', text: 'Táto dokumentácia popisuje verziu, ktorá ešte nebola vydaná.' },
+  { tag: 'Development version', text: 'This documentation describes a version that has not been released yet.' },
+);
+
+const olderReleaseBanner = (tag) => phaseBanner(
+  { tag: 'Staršia verzia', text: `Táto dokumentácia popisuje verziu ${tag}, ktorá už nie je aktuálna.` },
+  { tag: 'Older version', text: `This documentation describes version ${tag}, which is no longer the current one.` },
+);
 
 export default defineConfig({
   title: 'Autogram', // appended to page titles in <title> and og:title, so it has to fit both languages
@@ -35,10 +49,11 @@ export default defineConfig({
   },
 
   versions: latestRelease ? {
-    current: 'latest',
+    current: latestRelease,
     all: [
-      { id: 'latest', dir: 'latest', label: latestRelease },
-      { id: 'edge', dir: 'docs', label: 'edge', banner: { html: EDGE_BANNER, dismissible: false } },
+      { id: latestRelease, dir: `releases/${latestRelease}`, label: latestRelease },
+      ...olderReleases.map((tag) => ({ id: tag, dir: `releases/${tag}`, label: tag, banner: olderReleaseBanner(tag) })),
+      { id: 'edge', dir: 'docs', label: 'edge', banner: EDGE_BANNER },
     ],
   } : undefined,
 
@@ -166,7 +181,7 @@ export default defineConfig({
     okf: false,
     './plugins/font-preload.js': {},
     './plugins/open-graph.js': {}, // og:site_name, og:locale and the share image per language
-    './plugins/edge-noindex.js': {},
+    './plugins/versions-noindex.js': {},
   },
   
   // --- Edit Link ---
