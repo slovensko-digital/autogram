@@ -164,6 +164,7 @@ export default defineConfig({
     llms: {},
     ai: false,
     okf: false,
+    './plugins/browser-language.js': {},
     './plugins/font-preload.js': {},
     './plugins/open-graph.js': {}, // og:site_name, og:locale and the share image per language
     './plugins/edge-noindex.js': {},
