@@ -15,6 +15,7 @@ jobs:
       group: release-please
       cancel-in-progress: false
     permissions:
+      actions: write
       contents: write
       issues: write
       pull-requests: write
@@ -25,10 +26,19 @@ jobs:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
         with:
-          # the tests required for merging do not run on a release PR opened with GITHUB_TOKEN
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      # a release PR pushed with GITHUB_TOKEN starts no workflows, only a dispatch runs its required checks
+      - name: Check the release PR
+        if: ${{ steps.release.outputs.prs_created == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          BRANCH: ${{ fromJSON(steps.release.outputs.pr).headBranchName }}
+        run: |
+          gh workflow run test.yaml --ref "$BRANCH"
+          gh workflow run pr_title.yaml --ref "$BRANCH"
 
   package:
     needs: release-please

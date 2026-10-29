@@ -21,8 +21,7 @@ neupravujte, pri ďalšom merge do `main` ho release-please prepíše.
 
 ## 2. Balíčky
 
-- [ ] Mergnúť release PR. Ak na ňom nebežali testy, lebo ho release-please otvoril bez `RELEASE_PLEASE_TOKEN`, PR
-  zatvoriť a znova otvoriť.
+- [ ] Mergnúť release PR, keď na ňom prejdú testy. Workflow **Release** ich spúšťa sám po každej zmene release PR.
 - [ ] release-please vytvorí tag `vX.Y.Z` a draft release s poznámkami z `CHANGELOG.md`. Workflow **Release** spustí
   **Package All**, ktorý čaká na schválenie prostredia `packaging`.
 - [ ] Schváliť nasadenie (*Review deployments*). Schváliť môže len iný člen Autogram Release Team, než ten, kto
@@ -53,8 +52,9 @@ Pri zavedení release-please:
   alebo **Pull request title and description**.
 - Settings → Actions → General → Workflow permissions: zapnúť **Allow GitHub Actions to create and approve pull
   requests**, inak release-please s `GITHUB_TOKEN` nevytvorí release PR.
-- Voliteľne secret `RELEASE_PLEASE_TOKEN`: fine-grained token alebo GitHub App s právami *Contents* a *Pull requests*
-  (read and write). Release PR otvorený týmto tokenom spustí testy, ktoré vyžaduje ochrana vetvy `main`.
-- Voliteľne v ochrane vetvy `main` vyžadovať kontrolu **conventional-commit** z workflowu *PR title*.
+- release-please používa `GITHUB_TOKEN`. Udalosti z neho nespúšťajú iné workflowy, preto workflow **Release** spúšťa
+  na release PR *Tests* a *PR title* cez `workflow_dispatch`.
+- Voliteľne v ochrane vetvy `main` vyžadovať kontrolu **conventional-commit** z workflowu *PR title*. Ponúkne sa až
+  potom, ako raz prebehne na niektorom PR.
 - Prostredie `packaging` vyžaduje schválenie tímom Autogram Release Team a nedovolí schváliť vlastné spustenie.
   Balíčky sa nespúšťajú pushom tagu, ale z workflowu **Release** alebo ručne cez **Package All**.
