@@ -1,5 +1,26 @@
 # Info for developers
 
+# Pull request titles and versions
+
+Pull requests are squash merged, so the title of a pull request becomes the commit in `main`. Write it as a
+[Conventional Commit](https://www.conventionalcommits.org/), `type: what the change does`, for example
+`fix: open the signature details while signatures are validated`. The *PR title* check fails otherwise; anyone who
+can edit the pull request can fix the title.
+
+The types decide the next version, which [release-please](https://github.com/googleapis/release-please) proposes in a
+release pull request together with the new part of `CHANGELOG.md`:
+
+| Type | For | Next version |
+|---|---|---|
+| `feat` | a new feature for users or integrators | minor, e.g. 2.9.0 → 2.10.0 |
+| `fix`, `perf` | a bug fix, a speed-up | patch, e.g. 2.9.0 → 2.9.1 |
+| `docs`, `refactor`, `test`, `build`, `ci`, `chore`, `style` | a change users do not notice | none |
+
+Add `!` after the type (`feat!: …`) only for a change that breaks the HTTP API, the CLI or another integration. It
+raises the major version. Dependabot titles its pull requests `chore(deps): …`; retitle one to `fix(deps): …` when
+the update is worth a release, for example a security fix. How a release is made is described in
+[RELEASE.md](RELEASE.md).
+
 # Cards, drivers and tokens
 
 How card search, certificate picking and PKCS#11 drivers work, what to watch out for and how to test with real cards:

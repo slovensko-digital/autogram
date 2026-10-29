@@ -9,6 +9,10 @@ on:
       version:
         required: true
         type: string
+      tag:
+        required: false
+        type: string
+        default: ""
 
   workflow_dispatch:
     inputs:
@@ -42,6 +46,8 @@ jobs:
           apt-get -q install -y binutils fakeroot
 
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
 
       - name: Build artifact
         run: |
@@ -66,10 +72,11 @@ jobs:
           path: target/autogram-${{ inputs.version }}-ubuntu.deb
           if-no-files-found: ignore
 
-      - name: Create release if tag pushed
-        if: ${{ inputs.environment == 'packaging' && startsWith(github.ref, 'refs/tags/') }}
+      - name: Upload to the release draft
+        if: ${{ inputs.environment == 'packaging' && inputs.tag != '' }}
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         with:
+          tag_name: ${{ inputs.tag }}
           draft: true
           prerelease: true
           files: |

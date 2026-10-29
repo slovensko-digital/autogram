@@ -1,0 +1,33 @@
+name: PR title
+
+# Squash merges use the PR title as the commit message, which release-please reads to pick the next version.
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+  # the Release workflow runs it for the release PR
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
+
+jobs:
+  conventional-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - if: ${{ github.event_name == 'pull_request_target' }}
+        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >-
+          gh pr list --head "$GITHUB_REF_NAME" --state open --json title --jq '.[].title'
+          | grep -E '^chore: release [0-9]+\.[0-9]+\.[0-9]+$'
