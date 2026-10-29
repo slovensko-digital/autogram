@@ -41,6 +41,13 @@ jobs:
         id: pages
         uses: actions/configure-pages@v6
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
       - name: Extract the releases
         # the published site lists the releases that have been the latest, a release deleted on GitHub is left out
         run: |
@@ -62,13 +69,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           SITE_URL: ${{ steps.pages.outputs.base_url }}
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: docs/package-lock.json
 
       - name: Install dependencies
         run: npm ci
