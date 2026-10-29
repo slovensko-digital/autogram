@@ -87,7 +87,9 @@ When Autogram starts, its main window appears. From there you open a file to sig
 
 Websites can also start Autogram by themselves. If only the main window appears after a website started Autogram, do not open anything in it and wait a moment until the website sends the document. See [When Autogram is not running yet](websites.md#when-autogram-is-not-running-yet).
 
-## Updates
+## Updates {#updates}
+
+What each version brings is described in [What's new](changelog.md).
 
 Autogram from Microsoft Store is updated by Microsoft Store automatically, you do not have to do anything.
 
