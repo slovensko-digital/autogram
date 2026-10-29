@@ -89,6 +89,10 @@ destination directory, run `npm ci` followed by `npm run dev` or `npm run build`
   redirect to the corresponding default-locale pages.
 - The language switcher is in the header next to search and the theme toggle.
   Switching languages preserves the current topic.
+- A visitor who comes from another site to a Slovak page is sent to the English one, unless
+  the browser prefers Slovak or Czech or the visitor has chosen a language in the switcher
+  (`plugins/browser-language.js`). Links within the site and crawlers are not redirected.
+  To see it again, remove `docmd-locale` from the site's local storage.
 - `assets/images/screenshots/<locale>/` contains the guide screenshots. Reference
   them as `/assets/images/screenshots/<locale>/<filename>.png` in Markdown.
   Docmd copies these assets automatically; no local plugin is needed.
