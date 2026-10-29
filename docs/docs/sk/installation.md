@@ -87,7 +87,9 @@ Po spustení sa zobrazí hlavné okno Autogramu. Odtiaľ otvoríte súbor na pod
 
 Webové stránky môžu Autogram spustiť aj samy. Ak sa po spustení zo stránky zobrazí iba hlavné okno, nič v ňom neotvárajte a chvíľu počkajte, kým stránka pošle dokument. Pozrite si [Keď Autogram ešte nebeží](websites.md#ked-autogram-este-nebezi).
 
-## Aktualizácie
+## Aktualizácie {#aktualizacie}
+
+Čo prinášajú jednotlivé verzie, sa dočítate v časti [Čo je nové](changelog.md).
 
 Autogram z Microsoft Store aktualizuje Microsoft Store automaticky, nemusíte nič robiť.
 

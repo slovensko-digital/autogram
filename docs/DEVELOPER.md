@@ -55,7 +55,7 @@ The releases' guides are not kept in the repository. `scripts/prepare-releases.s
 extracts `docs/` of each tag into `releases/<tag>/` and its `assets/images/` into
 `assets/releases/<tag>/images/`, and points the image paths in the extracted guides there. A
 release therefore keeps its own screenshots when `main` replaces or deletes them. Configuration,
-styles, scripts and plugins come from `main` for all versions. The versions are turned on only
+styles, scripts, plugins and the [changelog](#changelog) come from `main` for all versions. The versions are turned on only
 when `DOCS_RELEASES` (the tags, the latest first, separated by commas) is set, so `npm run dev`
 shows just the guides from `main`. To build the whole site locally:
 
@@ -112,6 +112,44 @@ destination directory, run `npm ci` followed by `npm run dev` or `npm run build`
   navigation lists and both locale directories.
 - Explicit heading IDs (`{#for-integrators}` and `{#pre-integratorov}`) keep the
   CLI links to the API sections stable despite docmd's generated heading IDs.
+
+## Changelog
+
+`docs/sk/changelog.md` (Čo je nové) and `docs/en/changelog.md` (What's new) list the changes
+users notice, newest first, in plain words and with links to the guides. The technical list
+of changes stays in the GitHub releases. Each version is an entry of docmd's `::: changelog`
+container:
+
+```markdown
+== 2.8.3
+
+## 2.8.3 {#v2-8-3}
+
+<p class="release-meta">26. októbra 2026 <strong class="idsk-tag idsk-tag--red">Bezpečnostná aktualizácia</strong></p>
+
+**Nové**
+
+- ...
+```
+
+The `==` label is hidden. It is the version number, or any other text for the changes coming
+next. The version is a heading, so that the table of contents lists the versions. The groups
+(Nové, Vylepšené, Opravené, Pre vývojárov / New, Improved, Fixed, For developers) are bold
+labels rather than headings, which keeps them out of the table of contents. A security release
+gets the red tag.
+
+Unlike the guides, the changelog of every version comes from `main`.
+`scripts/prepare-releases.sh` runs `scripts/add-changelog.js`, which copies it into each
+release with the entries up to the latest release only: the coming changes and versions not
+released yet are left out by their labels. The links in the copy point to the latest release's
+guides (`/batch/`, `/en/batch/`), because an older release may not have the page, and the page
+is added to the menu of releases tagged before it existed. `edge` shows the changelog as it is.
+
+A pull request with a change users notice adds it to the first entry, Pripravuje sa / Coming
+next, in both languages. When the release is prepared, that entry gets the version as its
+label, a heading with an ID like `{#v2-9-0}` and the date. The released versions of the docs
+show it once the release is the latest, and a later fix of the changelog reaches all versions
+with the next deployment. Leave the coming entry out while nothing is waiting for a release.
 
 ## Branding
 

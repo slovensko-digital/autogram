@@ -144,7 +144,8 @@ h4 {
     text-underline-offset: 0.15em;
 }
 
-.main-content > :is(p, ul, ol) a:visited {
+.main-content > :is(p, ul, ol) a:visited,
+.changelog-body > :is(p, ul) a:visited {
     color: var(--idsk-visited);
 }
 
@@ -467,6 +468,68 @@ body:has(.docmd-banner--pos-top) {
 .phase-banner a:hover {
     color: var(--link-color-hover);
     text-decoration-thickness: 3px;
+}
+
+.idsk-tag--red {
+    color: #942514;
+    background-color: #f6d7d2;
+}
+
+/* The changelog (docmd's changelog container): versions on a timeline with a marker at each version's heading. The
+   entry labels are hidden, the version is a heading in the entry so that it is in the table of contents. */
+.docmd-container.changelog-timeline {
+    margin: 2.5rem 0 0;
+    padding: 0 0 0 2.25rem;
+}
+
+.docmd-container.changelog-timeline::before {
+    display: block !important;
+    top: 0.75rem;
+    bottom: 0;
+    left: 0.375rem;
+    width: 3px;
+    background: var(--border-color);
+}
+
+.changelog-timeline .changelog-entry {
+    padding-left: 0;
+    margin-bottom: 3rem;
+}
+
+.changelog-timeline .changelog-entry::after,
+.changelog-timeline .changelog-entry:hover::after {
+    display: block !important;
+    top: 0.6rem;
+    left: -2.25rem;
+    box-sizing: border-box;
+    width: 15px;
+    height: 15px;
+    border: 3px solid var(--link-color);
+    background-color: var(--bg-color);
+    box-shadow: none;
+    transform: none;
+}
+
+.changelog-timeline .changelog-meta {
+    display: none;
+}
+
+.changelog-body > h2 {
+    margin-top: 0;
+    font-size: 1.875rem;
+}
+
+.changelog-body > :is(p, ul) {
+    max-width: 75ch;
+}
+
+.release-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+    margin-top: 0.25rem;
+    color: var(--text-muted);
 }
 
 /* The version switcher like the language menu of the ID-SK header: a text button with an arrow and a plain list,
@@ -946,6 +1009,20 @@ pre {
 
     .docmd-banner--pos-top .docmd-banner__inner {
         padding: 0.625rem 1.25rem;
+    }
+
+    .docmd-container.changelog-timeline {
+        padding-left: 1.75rem;
+    }
+
+    .changelog-body > h2 {
+        font-size: 1.5rem;
+    }
+
+    .changelog-timeline .changelog-entry::after,
+    .changelog-timeline .changelog-entry:hover::after {
+        top: 0.45rem;
+        left: -1.75rem;
     }
 
     h1 {
