@@ -218,7 +218,8 @@ public class SigningJob {
 
     private static PAdESService createPAdESService(CertificateVerifier certificateVerifier, SigningResources resources) {
         var service = new PAdESService(certificateVerifier);
-        service.setPdfObjFactory(resources.pdfObjFactory());
+        if (SigningResources.isEnabled())
+            service.setPdfObjFactory(resources.pdfObjFactory());
         return service;
     }
 }

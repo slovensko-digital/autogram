@@ -6,8 +6,6 @@ import digital.slovensko.autogram.core.dto.AutogramDocument;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.AutogramException;
-import eu.europa.esig.dss.asic.common.SecureContainerHandlerBuilder;
-import eu.europa.esig.dss.asic.common.ZipUtils;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeType;
@@ -19,6 +17,7 @@ import eu.europa.esig.dss.model.FileDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
 /**
- * Signing through temporary files instead of the heap: which signatures end up in a temporary file, and that no
+ * Signing through temporary files instead of the heap, turned on by the --temp-files option: which signatures end up in a temporary file, and that no
  * temporary file is left behind after a successful, failed or repeated signing.
  * <p>
  * Documents are signed for real with a {@link TestPki} key. A cancelled PIN entry is simulated by a key that throws
@@ -60,19 +59,47 @@ class SigningResourcesTest {
         pki = TestPki.create();
     }
 
+    @BeforeEach
+    void useTemporaryFiles() {
+        // as with the --temp-files option
+        SigningResources.useTemporaryFiles();
+    }
+
     @AfterEach
     void cleanUp() {
         // the container setting is a global DSS singleton, other tests expect the default in-memory one
-        ZipUtils.getInstance().setZipContainerHandlerBuilder(new SecureContainerHandlerBuilder());
+        SigningResources.useMemory();
         // documents a test signed but did not hand over to a responder
         signedDocuments.forEach(signed -> SigningResources.deleteIfTemporary(signed.getDocument()));
+    }
+
+    /** The --temp-files option turns signing through temporary files on, here together with printing the help. */
+    @Test
+    void optionTurnsTemporaryFilesOn() {
+        SigningResources.useMemory();
+
+        AppStarter.start(new String[] {"--temp-files", "--help"});
+
+        assertTrue(SigningResources.isEnabled());
+    }
+
+    /** Without the option, ASiC-E and PAdES are signed in memory as before and no temporary file is created. */
+    @Test
+    void withoutOptionDocumentsAreSignedInMemory() throws Exception {
+        SigningResources.useMemory();
+        var before = temporaryEntries();
+
+        var container = sign(textJob(SignatureForm.XAdES, ASiCContainerType.ASiC_E, recordingResponder(new AtomicReference<>())));
+        var pdf = sign(pdfJob(recordingResponder(new AtomicReference<>())));
+
+        assertInstanceOf(InMemoryDocument.class, container.getDocument());
+        assertInstanceOf(InMemoryDocument.class, pdf.getDocument());
+        assertEquals(before, temporaryEntries());
     }
 
     /** XAdES in ASiC-E: the ZIP container is written to a temporary file, not to a byte array. */
     @Test
     void asicContainerIsBuiltInTemporaryFile() throws Exception {
-        SigningResources.useTemporaryFilesForContainers();
-
         var signed = sign(textJob(SignatureForm.XAdES, ASiCContainerType.ASiC_E, recordingResponder(new AtomicReference<>())));
 
         assertTemporaryFileStartingWith(signed, "PK");
@@ -81,14 +108,12 @@ class SigningResourcesTest {
     /** CAdES in ASiC-E goes through the same ZIP setting, CAdES without a container (.p7m) still signs in memory. */
     @Test
     void asicWithCadesContainerIsBuiltInTemporaryFile() throws Exception {
-        SigningResources.useTemporaryFilesForContainers();
-
         var signed = sign(textJob(SignatureForm.CAdES, ASiCContainerType.ASiC_E, recordingResponder(new AtomicReference<>())));
 
         assertTemporaryFileStartingWith(signed, "PK");
     }
 
-    /** PAdES needs no global setting, each signing passes its own PDF factory to the service. */
+    /** PAdES needs no DSS singleton, each signing passes its own PDF factory to the service. */
     @Test
     void padesSignatureIsWrittenToTemporaryFile() throws Exception {
         var signed = sign(pdfJob(recordingResponder(new AtomicReference<>())));
@@ -149,7 +174,6 @@ class SigningResourcesTest {
     /** The same for ASiC-E, whose container is built in the shared temporary directory, not in the signing's own. */
     @Test
     void failedAsicSigningLeavesNoTemporaryFiles() throws Exception {
-        SigningResources.useTemporaryFilesForContainers();
         var before = temporaryEntries();
         var job = textJob(SignatureForm.XAdES, ASiCContainerType.ASiC_E, recordingResponder(new AtomicReference<>()));
 

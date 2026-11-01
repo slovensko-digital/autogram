@@ -28,12 +28,28 @@ import java.util.stream.Stream;
 public class SigningResources {
     private static final String TEMP_PREFIX = "autogram-signing-";
 
+    private static volatile boolean enabled;
+
     private Path directory;
 
-    /** ZIP containers (ASiC) are built by a DSS singleton, so this is set once at startup, for all of them. */
-    public static void useTemporaryFilesForContainers() {
+    /**
+     * Turned on at startup by the --temp-files option, without it documents are signed in memory as before.
+     * ZIP containers (ASiC) are built by a DSS singleton, so this is set once, for all of them.
+     */
+    public static void useTemporaryFiles() {
         ZipUtils.getInstance().setZipContainerHandlerBuilder(
                 new SecureContainerHandlerBuilder().setResourcesHandlerBuilder(temporaryFilesIn(null)));
+        enabled = true;
+    }
+
+    /** Back to the default in-memory signing. */
+    static void useMemory() {
+        ZipUtils.getInstance().setZipContainerHandlerBuilder(new SecureContainerHandlerBuilder());
+        enabled = false;
+    }
+
+    static boolean isEnabled() {
+        return enabled;
     }
 
     /** The same PDF implementation DSS picks by default, reading and writing the PDF through temporary files. */

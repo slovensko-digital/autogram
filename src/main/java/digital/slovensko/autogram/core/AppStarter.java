@@ -29,15 +29,17 @@ public class AppStarter {
         addOption(null, "tsa-server", true, "Url of TimeStamp Authority server that should be used for timestamping in signature level BASELINE_T. If provided, BASELINE_T signatures are made.").
         addOption(null, "plain-xml", false, "Enable signing plain (non-slovak-eform) XML files.").
         addOption(null, "proxy", true, "HTTP proxy http://host:port (no authentication).").
+        addOption(null, "temp-files", false, "Sign ASiC-E containers and PDF documents through temporary files instead of memory, for very large documents.").
         addOption(null, "pkcs11-driver-path", true, "Absolute path to a file with custom PKCS11 driver.");
 
     public static void start(String[] args) {
         if (MsixPackage.isCurrent())
             MsixPackage.useTcpForNioPipes();
-        SigningResources.useTemporaryFilesForContainers();
 
         try {
             CommandLine cmd = new DefaultParser().parse(options, args);
+            if (cmd.hasOption("temp-files"))
+                SigningResources.useTemporaryFiles();
 
             if (cmd.hasOption("h")) {
                 printHelp();
