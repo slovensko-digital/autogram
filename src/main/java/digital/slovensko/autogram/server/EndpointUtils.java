@@ -7,6 +7,9 @@ import digital.slovensko.autogram.server.dto.ErrorResponse;
 import digital.slovensko.autogram.server.errors.EmptyBodyException;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PushbackInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class EndpointUtils {
@@ -35,11 +38,18 @@ public class EndpointUtils {
         }
     }
 
+    /**
+     * Parses the body while it is being read, a copy of the whole body as bytes and another one as a string would
+     * need more than twice the size of the documents in it.
+     */
     public static <T> T loadFromJsonExchange(HttpExchange exchange, Class<T> classOfT) throws IOException {
-        var content = new String(exchange.getRequestBody().readAllBytes());
-        if (content == null || content.isEmpty())
+        var body = new PushbackInputStream(exchange.getRequestBody());
+        var first = body.read();
+        if (first == -1)
             throw new EmptyBodyException();
-        var ret = gson.fromJson(content, classOfT);
+        body.unread(first);
+
+        var ret = gson.fromJson(new InputStreamReader(body, StandardCharsets.UTF_8), classOfT);
         if (ret == null)
             throw new IOException("Failed to parse JSON body");
         return ret;
