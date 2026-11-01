@@ -7,6 +7,8 @@ on:
     paths:
       - 'docs/**'
       - '.github/workflows/deploy_docs.yaml'
+  release:
+    types: [released]
   workflow_dispatch:
 
 permissions:
@@ -30,6 +32,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # a release run would check out the tag, but the edge version is always main
+          ref: ${{ github.event_name == 'release' && 'main' || github.ref }}
+
+      - name: Extract the latest release
+        run: |
+          tag=$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)
+          git fetch --depth=1 origin "refs/tags/$tag:refs/tags/$tag"
+          if ! git cat-file -e "$tag:./docs" 2>/dev/null; then
+            echo "::notice::$tag has no docmd guides, building only main"
+            exit 0
+          fi
+          bash scripts/prepare-latest.sh "$tag"
+          echo "DOCS_LATEST_RELEASE=$tag" >> "$GITHUB_ENV"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -52,6 +70,9 @@ jobs:
 
       - name: Validate docs
         run: npm run validate
+
+      - name: Check images
+        run: npm run check-images
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5

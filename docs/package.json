@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "docmd dev",
     "build": "docmd build",
-    "validate": "docmd validate"
+    "validate": "docmd validate",
+    "check-images": "node scripts/check-images.js"
   },
   "devDependencies": {
     "@docmd/core": "^0.9.8"

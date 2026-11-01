@@ -15,6 +15,7 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.KeyStoreSignatureTokenConnection;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -478,6 +479,44 @@ class TokenPickingTests {
     }
 
     @Test
+    void testOnlySigningCertificatesAreOffered() {
+        var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP)));
+        eid.moreKeys = List.of(encryptionKey());
+        var ui = new PickingUI((options) -> null);
+        var autogram = new Autogram(ui, new FakeSettings(eid));
+
+        autogram.pickSigningKeyAndThen(key -> {});
+
+        assertEquals(List.of(TestPki.shared().signer(TestPki.JANA).certificate()),
+                ui.offeredKeys.stream().map(key -> key.getCertificate().getCertificate()).toList());
+    }
+
+    @Test
+    void testNoKeysAreOfferedWithOnlyEncryptionCertificate() {
+        var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP)));
+        eid.onlyMoreKeys = true;
+        eid.moreKeys = List.of(encryptionKey());
+        var ui = new PickingUI((options) -> null);
+        var autogram = new Autogram(ui, new FakeSettings(eid));
+
+        autogram.pickSigningKeyAndThen(key -> {});
+
+        assertEquals(List.of(), ui.offeredKeys);
+    }
+
+    @Test
+    void testGetCertificatesReturnsOnlySigningCertificates() {
+        var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP)));
+        eid.moreKeys = List.of(encryptionKey());
+        var autogram = new Autogram(new NoPickingUI(), new FakeSettings(eid));
+        var responder = mock(CertificatesResponder.class);
+
+        autogram.getCertificates(responder, List.of(eid), () -> {});
+
+        verify(responder).onSuccess(List.of(TestPki.shared().signer(TestPki.JANA).certificate()));
+    }
+
+    @Test
     void testGetCertificatesCanceledInPicker() {
         var eid = new FakeDriver("eid", Optional.of(List.of(EID_ZEP, EID2_ZEP)));
         var ui = new TestAutogramFactory.FakeUI() {
@@ -566,6 +605,13 @@ class TokenPickingTests {
         assertEquals(Optional.of(List.of()), driver.getSlotsWithToken(settings));
     }
 
+    // eID klient signs with another key when asked to sign with the encryption one (#367)
+    private static DSSPrivateKeyEntry encryptionKey() {
+        var signer = TestPki.shared().issue("Jana Šifrovacia", TestPki.Kind.NOT_QUALIFIED,
+                new KeyUsage(KeyUsage.keyEncipherment | KeyUsage.dataEncipherment));
+        return signer.token().getKeys().getFirst();
+    }
+
     private static FakeDriver cardDriver(String shortname, Optional<List<TokenSlot>> slots) {
         var driver = new FakeDriver(shortname, slots);
         driver.needsCard = true;
@@ -575,6 +621,7 @@ class TokenPickingTests {
     private static class PickingUI extends TestAutogramFactory.FakeUI {
         private final Function<TokenOptions, TokenOption> pick;
         TokenOptions offered;
+        List<DSSPrivateKeyEntry> offeredKeys;
         Supplier<TokenOptions> searchAgain;
         int pickTokenCalls = 0;
         boolean pickKeys = true;
@@ -599,7 +646,10 @@ class TokenPickingTests {
 
         @Override
         public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
-            if (pickKeys)
+            offeredKeys = keys;
+            if (keys.isEmpty())
+                onCancel.run();
+            else if (pickKeys)
                 super.pickKeyAndThen(keys, driver, callback, onCancel);
             else if (cancelKeys)
                 onCancel.run();
@@ -625,6 +675,9 @@ class TokenPickingTests {
         int closedConnections = 0;
         boolean recoverable = false;
         int recoveries = 0;
+        /** keys on the card besides the signer's */
+        List<DSSPrivateKeyEntry> moreKeys = List.of();
+        boolean onlyMoreKeys = false;
 
         /**
          * @param slots tokens found by the driver, null to fail when searching for them
@@ -691,6 +744,13 @@ class TokenPickingTests {
             }
 
             return new KeyStoreSignatureTokenConnection(signer.keystore(), "JKS", new KeyStore.PasswordProtection(new char[0])) {
+                @Override
+                public List<DSSPrivateKeyEntry> getKeys() {
+                    var keys = new ArrayList<>(onlyMoreKeys ? List.of() : super.getKeys());
+                    keys.addAll(moreKeys);
+                    return keys;
+                }
+
                 @Override
                 public void close() {
                     closedConnections++;

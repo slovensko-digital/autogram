@@ -6,6 +6,10 @@ out
 dist
 *.tgz
 
+# latest release, extracted by scripts/prepare-latest.sh
+/latest/
+/assets/latest/
+
 # code coverage
 coverage
 *.lcov

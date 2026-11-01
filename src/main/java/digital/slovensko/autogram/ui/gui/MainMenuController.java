@@ -15,11 +15,9 @@ import eu.europa.esig.dss.model.FileDocument;
 import javafx.application.HostServices;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -153,16 +151,7 @@ public class MainMenuController extends BaseController implements SuppressedFocu
     }
 
     public void onSettingButtonAction() {
-        var controller = new SettingsDialogController(autogram, userSettings);
-        var root = GUIUtils.loadFXML(controller, "settings-dialog.fxml");
-
-        var stage = new Stage();
-        stage.setTitle(i18n("general.settings"));
-        stage.setScene(new Scene(root));
-        stage.setResizable(false);
-        stage.initModality(Modality.APPLICATION_MODAL);
-        GUIUtils.suppressDefaultFocus(stage, controller);
-        stage.showAndWait();
+        SettingsDialogController.showAndWait(autogram, userSettings, SettingsDialogController.SIGNING_TAB);
 
         if (!userSettings.getLanguageLocale().getLanguage().equals(resources.getLocale().getLanguage())) {
             reloadView();

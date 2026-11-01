@@ -42,6 +42,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private static final boolean DEFAULT_PDFA_COMPLIANCE = true;
     private static final boolean DEFAULT_SERVER_ENABLED = true;
     private static final boolean DEFAULT_EXPIRED_CERTS_ENABLED = false;
+    private static final boolean DEFAULT_NON_QUALIFIED_CERTS_ENABLED = false;
     private static final boolean DEFAULT_EID_EP_SLOTS_ENABLED = false;
     private static final String DEFAULT_TRUSTED_LIST = "SK,CZ,AT,PL,HU,BE,NL,ES";
     private static final String DEFAULT_CUSTOM_KEYSTORE_PATH = "";
@@ -71,6 +72,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private boolean pdfaCompliance;
     private boolean serverEnabled;
     private boolean expiredCertsEnabled;
+    private boolean nonQualifiedCertsEnabled;
     private boolean eidEpSlotsEnabled;
     private List<String> trustedList;
     private String customKeystorePath;
@@ -105,6 +107,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         settings.setPdfaCompliance(prefs.getBoolean("PDFA_COMPLIANCE", DEFAULT_PDFA_COMPLIANCE));
         settings.setServerEnabled(prefs.getBoolean("SERVER_ENABLED", DEFAULT_SERVER_ENABLED));
         settings.setExpiredCertsEnabled(prefs.getBoolean("EXPIRED_CERTS_ENABLED", DEFAULT_EXPIRED_CERTS_ENABLED));
+        settings.setNonQualifiedCertsEnabled(prefs.getBoolean("NON_QUALIFIED_CERTS_ENABLED", DEFAULT_NON_QUALIFIED_CERTS_ENABLED));
         settings.setEidEpSlotsEnabled(prefs.getBoolean("EID_EP_SLOTS_ENABLED", DEFAULT_EID_EP_SLOTS_ENABLED));
         settings.setTrustedList(prefs.get("TRUSTED_LIST", DEFAULT_TRUSTED_LIST));
         settings.setCustomKeystorePath(prefs.get("CUSTOM_KEYSTORE_PATH", DEFAULT_CUSTOM_KEYSTORE_PATH));
@@ -143,6 +146,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         prefs.putBoolean("PDFA_COMPLIANCE", pdfaCompliance);
         prefs.putBoolean("SERVER_ENABLED", serverEnabled);
         prefs.putBoolean("EXPIRED_CERTS_ENABLED", expiredCertsEnabled);
+        prefs.putBoolean("NON_QUALIFIED_CERTS_ENABLED", nonQualifiedCertsEnabled);
         prefs.putBoolean("EID_EP_SLOTS_ENABLED", eidEpSlotsEnabled);
         prefs.put("TRUSTED_LIST", String.join(",", trustedList));
         prefs.put("CUSTOM_KEYSTORE_PATH", customKeystorePath);
@@ -175,6 +179,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
         setPdfaCompliance(DEFAULT_PDFA_COMPLIANCE);
         setServerEnabled(DEFAULT_SERVER_ENABLED);
         setExpiredCertsEnabled(DEFAULT_EXPIRED_CERTS_ENABLED);
+        setNonQualifiedCertsEnabled(DEFAULT_NON_QUALIFIED_CERTS_ENABLED);
         setEidEpSlotsEnabled(DEFAULT_EID_EP_SLOTS_ENABLED);
         setTrustedList(DEFAULT_TRUSTED_LIST);
         setCustomKeystorePath(DEFAULT_CUSTOM_KEYSTORE_PATH);
@@ -361,6 +366,14 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public void setExpiredCertsEnabled(boolean expiredCertsEnabled) {
         this.expiredCertsEnabled = expiredCertsEnabled;
+    }
+
+    public boolean isNonQualifiedCertsEnabled() {
+        return nonQualifiedCertsEnabled;
+    }
+
+    public void setNonQualifiedCertsEnabled(boolean nonQualifiedCertsEnabled) {
+        this.nonQualifiedCertsEnabled = nonQualifiedCertsEnabled;
     }
 
     public boolean tlCountriesChanged() {

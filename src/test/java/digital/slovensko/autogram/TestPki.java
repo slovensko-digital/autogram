@@ -203,6 +203,19 @@ public class TestPki {
 
     /** Issues a new certificate from the test CA valid between the given dates, e.g. an expired one. */
     public Signer issue(String name, Kind kind, Date notBefore, Date notAfter) {
+        return issue(name, kind, notBefore, notAfter, new KeyUsage(KeyUsage.nonRepudiation));
+    }
+
+    /**
+     * Issues a new certificate from the test CA with the given key usage (e.g. only for encryption), none when null, and
+     * extended key usage, none when empty.
+     */
+    public Signer issue(String name, Kind kind, KeyUsage keyUsage, KeyPurposeId... extendedKeyUsage) {
+        var now = System.currentTimeMillis();
+        return issue(name, kind, new Date(now - 7 * DAY), new Date(now + 1825 * DAY), keyUsage, extendedKeyUsage);
+    }
+
+    private Signer issue(String name, Kind kind, Date notBefore, Date notAfter, KeyUsage keyUsage, KeyPurposeId... extendedKeyUsage) {
         try {
             var keys = rsa();
             var id = ++serial;
@@ -221,10 +234,13 @@ public class TestPki {
                     new GeneralName(GeneralName.uniformResourceIdentifier, CRL_URL))), null, null);
             var builder = new JcaX509v3CertificateBuilder(ca, BigInteger.valueOf(id), notBefore, notAfter, subject.build(), keys.getPublic())
                     .addExtension(Extension.basicConstraints, true, new BasicConstraints(false))
-                    .addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.nonRepudiation))
                     .addExtension(Extension.subjectKeyIdentifier, false, ext.createSubjectKeyIdentifier(keys.getPublic()))
                     .addExtension(Extension.authorityKeyIdentifier, false, ext.createAuthorityKeyIdentifier(ca))
                     .addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(new DistributionPoint[]{crl}));
+            if (keyUsage != null)
+                builder.addExtension(Extension.keyUsage, true, keyUsage);
+            if (extendedKeyUsage.length > 0)
+                builder.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(extendedKeyUsage));
             if (kind != Kind.NOT_QUALIFIED) {
                 var qc = new ASN1EncodableVector();
                 qc.add(new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance));
