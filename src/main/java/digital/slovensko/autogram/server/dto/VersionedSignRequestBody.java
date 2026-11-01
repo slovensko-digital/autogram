@@ -8,6 +8,7 @@ import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MISSING_FIELD;
 import static digital.slovensko.autogram.server.errors.RequestValidationException.Error.MULTI_DOCUMENT_BATCH_UNSUPPORTED;
@@ -27,8 +28,10 @@ public record VersionedSignRequestBody (Document document, List<Document> docume
 
         submittedDocuments.forEach(doc -> validateDocument(doc, submittedDocuments.indexOf(doc), isMultiDocument));
 
-        submittedDocuments.stream()
-            .map(Document::getDSSDocument)
+        // decoded once, the same document is checked for an existing signature and then signed
+        var dssDocuments = submittedDocuments.stream().map(Document::getDSSDocument).toList();
+
+        dssDocuments.stream()
             .map(SignatureValidator::getSignedDocumentSignature)
             .filter(java.util.Objects::nonNull)
             .forEach(parameters::applySignedDocumentSignature);
@@ -37,8 +40,9 @@ public record VersionedSignRequestBody (Document document, List<Document> docume
         parameters.validatePadesCompatibility(submittedDocuments.stream().map(Document::getMimeType).toList());
         var signingParameters = parameters.toSigningParameters(presentation, plainXmlEnabled);
 
-        var autogramDocuments = submittedDocuments.stream()
-                .map((doc) -> doc.toAutogramDocument(signingParameters.getPropertiesCanonicalization(), signingParameters.getDigestAlgorithm()))
+        var autogramDocuments = IntStream.range(0, submittedDocuments.size())
+                .mapToObj(i -> submittedDocuments.get(i).toAutogramDocument(dssDocuments.get(i),
+                        signingParameters.getPropertiesCanonicalization(), signingParameters.getDigestAlgorithm()))
                 .toList();
 
 
