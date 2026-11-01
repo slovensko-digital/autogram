@@ -4,6 +4,7 @@ import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import digital.slovensko.autogram.core.Autogram;
+import digital.slovensko.autogram.core.errors.NotEnoughMemoryException;
 import digital.slovensko.autogram.server.dto.BatchEndRequestBody;
 import digital.slovensko.autogram.server.dto.BatchEndResponseBody;
 import digital.slovensko.autogram.server.dto.BatchStartRequestBody;
@@ -45,6 +46,8 @@ public class BatchEndpoint implements HttpHandler {
             EndpointUtils.respondWithError(response, exchange);
         } catch (Exception e) {
             EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(e), exchange);
+        } catch (OutOfMemoryError e) {
+            EndpointUtils.respondWithError(ErrorResponseBuilder.buildFromException(new NotEnoughMemoryException(e)), exchange);
         }
     }
 }

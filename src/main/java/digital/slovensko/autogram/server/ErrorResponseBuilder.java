@@ -60,6 +60,7 @@ public class ErrorResponseBuilder {
             case InvalidUrlParamException ex -> new ErrorResponse(400, instance.buildResponseWithTranslations("INVALID_URL_PARAM", ex));
             case CertificatesReadingConsentRejectedException ex ->
                     new ErrorResponse(403, instance.buildResponseWithTranslations("CERTIFICATES_READING_CONSENT_REJECTED", ex));
+            case NotEnoughMemoryException ex -> new ErrorResponse(500, instance.buildResponseWithTranslations("INTERNAL_ERROR", ex));
             case AutogramException ex -> new ErrorResponse(502, instance.buildResponseWithTranslations("SIGNING_FAILED", ex));
             default ->
                     new ErrorResponse(500, "INTERNAL_ERROR", "Unexpected exception signing document", e.getMessage());
