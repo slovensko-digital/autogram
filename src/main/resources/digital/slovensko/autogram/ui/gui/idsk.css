@@ -1403,11 +1403,9 @@ TextFlow.autogram-body-s {
   -fx-max-height: 1.75em;
 }
 
-/* A link's em is relative to the strip's font size, the text's to the root one: 1.1875em / 1.125em, as big as the text */
-.autogram-warning-textflow .autogram-link {
-  -fx-font-size: 1.0556em;
-  -fx-padding: 0;
-  -fx-text-fill: -autogram-text-colour;
+.autogram-countries-turned-off {
+  -fx-spacing: 12px;
+  -fx-padding: 0 0 12px 0;
 }
 
 .autogram-label {

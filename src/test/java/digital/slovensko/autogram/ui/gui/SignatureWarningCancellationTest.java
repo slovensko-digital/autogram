@@ -27,7 +27,6 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
@@ -189,7 +188,7 @@ class SignatureWarningCancellationTest {
     }
 
     @Test
-    void linkInTheWarningTurnsOnTheTrustedListsOfAllTheCountries() throws Exception {
+    void buttonInTheWarningTurnsOnTheTrustedListsOfAllTheCountries() throws Exception {
         List<ValidationReports.SignatureEntry> signatures;
         SignatureValidator.getInstance().useCustomVerifier(TestPki.create().verifier());
         try {
@@ -208,10 +207,8 @@ class SignatureWarningCancellationTest {
             var dialog = onFxThread(() -> openDialog(Warning.INVALID, request.responder, signatures));
             try {
                 onFxThread(() -> {
-                    var link = dialog.warningStage.getScene().getRoot().lookupAll(".autogram-link").stream()
-                            .filter(Hyperlink.class::isInstance).map(Hyperlink.class::cast)
-                            .findFirst().orElseThrow();
-                    link.fire();
+                    ((Button) dialog.warningStage.getScene().lookup(".autogram-countries-turned-off .autogram-button"))
+                            .fire();
                     assertFalse(dialog.warningStage.isShowing());
                     assertTrue(dialog.signingStage.isShowing());
                     return null;
