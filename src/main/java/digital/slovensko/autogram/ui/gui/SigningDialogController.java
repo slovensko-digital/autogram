@@ -407,6 +407,7 @@ public class SigningDialogController extends BaseController implements Suppresse
 
     /** The signatures of all open documents are validated again once the trusted lists of the countries load. */
     public void turnOnTrustedLists(List<Country> countries) {
+        getNodeForLoosingFocus().requestFocus(); // the button disappears and its focus would move to the next link
         if (userSettings.turnOnTrustedLists(countries.stream().map(Country::getShortname).toList()))
             autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
     }

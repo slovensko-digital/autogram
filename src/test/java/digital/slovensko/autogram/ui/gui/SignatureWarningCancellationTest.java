@@ -189,20 +189,7 @@ class SignatureWarningCancellationTest {
 
     @Test
     void buttonInTheWarningTurnsOnTheTrustedListsOfAllTheCountries() throws Exception {
-        List<ValidationReports.SignatureEntry> signatures;
-        SignatureValidator.getInstance().useCustomVerifier(TestPki.create().verifier());
-        try {
-            signatures = Stream.of("DE", "FR", "DE")
-                    .map(country -> TestSignedDocuments.validate(TestSignedDocuments.sign(
-                            TestPki.create(country).issue("Erika Mustermann", TestPki.Kind.QESIG),
-                            SignatureProfile.BASELINE_B, null)))
-                    .flatMap(report -> report.reports().getSimpleReport().getSignatureIdList().stream()
-                            .map(id -> new ValidationReports.SignatureEntry(report, id)))
-                    .toList();
-        } finally {
-            SignatureValidator.getInstance().useCustomVerifier(null);
-        }
-
+        var signatures = signaturesFrom("DE", "FR", "DE");
         try (var request = new PendingRequest()) {
             var dialog = onFxThread(() -> openDialog(Warning.INVALID, request.responder, signatures));
             try {
@@ -220,6 +207,46 @@ class SignatureWarningCancellationTest {
             } finally {
                 onFxThread(() -> { dialog.close(); return null; });
             }
+        }
+    }
+
+    @Test
+    void focusStaysOnTheSigningWindowWhenTheButtonDisappears() throws Exception {
+        var signatures = signaturesFrom("DE");
+        try (var request = new PendingRequest()) {
+            var dialog = onFxThread(() -> openDialog(Warning.INVALID, request.responder, signatures));
+            try {
+                onFxThread(() -> {
+                    dialog.warningStage.close();
+                    var scene = dialog.signingStage.getScene();
+                    var button = (Button) scene.lookup(".autogram-countries-turned-off .autogram-button");
+                    button.requestFocus(); // as the mouse click does
+                    button.fire();
+                    // what the reloading trusted lists do
+                    dialog.controller.revalidateSignaturesWhen(new CompletableFuture<>());
+                    assertNull(scene.lookup(".autogram-countries-turned-off"));
+                    assertSame(dialog.controller.getNodeForLoosingFocus(), scene.getFocusOwner());
+                    return null;
+                });
+            } finally {
+                onFxThread(() -> { dialog.close(); return null; });
+            }
+        }
+    }
+
+    /** Signatures validated with the trusted lists of the test PKI, which issued none of them. */
+    private static List<ValidationReports.SignatureEntry> signaturesFrom(String... countries) {
+        SignatureValidator.getInstance().useCustomVerifier(TestPki.create().verifier());
+        try {
+            return Stream.of(countries)
+                    .map(country -> TestSignedDocuments.validate(TestSignedDocuments.sign(
+                            TestPki.create(country).issue("Erika Mustermann", TestPki.Kind.QESIG),
+                            SignatureProfile.BASELINE_B, null)))
+                    .flatMap(report -> report.reports().getSimpleReport().getSignatureIdList().stream()
+                            .map(id -> new ValidationReports.SignatureEntry(report, id)))
+                    .toList();
+        } finally {
+            SignatureValidator.getInstance().useCustomVerifier(null);
         }
     }
 
@@ -262,6 +289,7 @@ class SignatureWarningCancellationTest {
                 when(reports.haveSignatures()).thenReturn(true);
                 when(reports.haveInvalidSignatures()).thenReturn(true);
                 when(reports.getSignatures()).thenReturn(signatures);
+                when(reports.getSignaturesForPreviewDocument(any(), anyInt())).thenReturn(signatures);
                 gui.onSignatureCheckCompleted(reports);
                 gui.onSignatureValidationCompleted(reports);
             }
