@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The yellow warning above validated signatures, see {@link GUIValidationUtils#addTrustedListsWarning}. */
+/** The yellow warning above validated signatures, see {@link GUIValidationUtils#addTrustedListsWarnings}. */
 class TrustedListsWarningTest {
     private static final ResourceBundle SK = bundle("sk");
     private static final ResourceBundle EN = bundle("en");
@@ -105,6 +105,14 @@ class TrustedListsWarningTest {
                 GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium)));
         assertEquals("Autogram cannot fully validate signatures from providers in Belgium, Czechia, because their trusted lists are turned off.",
                 GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium, czechia)));
+    }
+
+    @Test
+    void linkTurnsTheListsOn() {
+        assertEquals("Pridať tento dôveryhodný zoznam", HasI18n.translate(SK, "signature.countryTurnedOff.turnOn.btn", 1));
+        assertEquals("Pridať tieto dôveryhodné zoznamy", HasI18n.translate(SK, "signature.countryTurnedOff.turnOn.btn", 2));
+        assertEquals("Add this trusted list", HasI18n.translate(EN, "signature.countryTurnedOff.turnOn.btn", 1));
+        assertEquals("Add these trusted lists", HasI18n.translate(EN, "signature.countryTurnedOff.turnOn.btn", 2));
     }
 
     @Test

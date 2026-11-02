@@ -74,7 +74,7 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
     private boolean expiredCertsEnabled;
     private boolean nonQualifiedCertsEnabled;
     private boolean eidEpSlotsEnabled;
-    private List<String> trustedList;
+    private List<String> trustedList = new ArrayList<>();
     private String customKeystorePath;
     private String tsaServer;
     /** Servers used for timestamps, null after an empty value was set (tsaServer keeps the last non-empty one) */
@@ -390,6 +390,19 @@ public class UserSettings implements PasswordManagerSettings, SignatureTokenSett
 
     public void addToTrustedList(String country) {
         trustedList.add(country);
+    }
+
+    /** Adds the countries to the trusted list, written to preferences right away. Whether any of them was not there. */
+    public boolean turnOnTrustedLists(List<String> countries) {
+        var added = countries.stream().filter(not(trustedList::contains)).distinct().toList();
+        if (added.isEmpty())
+            return false;
+
+        trustedList.addAll(added);
+        if (persistent)
+            Preferences.userNodeForPackage(UserSettings.class).put("TRUSTED_LIST", String.join(",", trustedList));
+
+        return true;
     }
 
     public void removeFromTrustedList(String country) {

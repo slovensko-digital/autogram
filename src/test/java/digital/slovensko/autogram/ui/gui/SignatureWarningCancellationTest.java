@@ -2,10 +2,13 @@ package digital.slovensko.autogram.ui.gui;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import digital.slovensko.autogram.TestPki;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.SignatureValidator.FailedTLs;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningParametersResolver;
+import digital.slovensko.autogram.core.TestSignedDocuments;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.dto.AutogramDocument;
@@ -24,6 +27,7 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
@@ -39,11 +43,14 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -181,8 +188,52 @@ class SignatureWarningCancellationTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @Test
+    void linkInTheWarningTurnsOnTheTrustedListsOfAllTheCountries() throws Exception {
+        List<ValidationReports.SignatureEntry> signatures;
+        SignatureValidator.getInstance().useCustomVerifier(TestPki.create().verifier());
+        try {
+            signatures = Stream.of("DE", "FR", "DE")
+                    .map(country -> TestSignedDocuments.validate(TestSignedDocuments.sign(
+                            TestPki.create(country).issue("Erika Mustermann", TestPki.Kind.QESIG),
+                            SignatureProfile.BASELINE_B, null)))
+                    .flatMap(report -> report.reports().getSimpleReport().getSignatureIdList().stream()
+                            .map(id -> new ValidationReports.SignatureEntry(report, id)))
+                    .toList();
+        } finally {
+            SignatureValidator.getInstance().useCustomVerifier(null);
+        }
+
+        try (var request = new PendingRequest()) {
+            var dialog = onFxThread(() -> openDialog(Warning.INVALID, request.responder, signatures));
+            try {
+                onFxThread(() -> {
+                    var link = dialog.warningStage.getScene().getRoot().lookupAll(".autogram-link").stream()
+                            .filter(Hyperlink.class::isInstance).map(Hyperlink.class::cast)
+                            .findFirst().orElseThrow();
+                    link.fire();
+                    assertFalse(dialog.warningStage.isShowing());
+                    assertTrue(dialog.signingStage.isShowing());
+                    return null;
+                });
+                assertEquals(List.of("DE", "FR"), dialog.settings.getTrustedList());
+                verify(dialog.autogram).updateSignatureValidatorLotl(List.of("DE", "FR"));
+                verify(dialog.autogram, never()).pickSigningKeyAndThen(any());
+                verifyNoInteractions(request.responder);
+            } finally {
+                onFxThread(() -> { dialog.close(); return null; });
+            }
+        }
+    }
+
     private static Dialog openDialog(Warning warning, ServerResponder responder) throws Exception {
+        return openDialog(warning, responder, List.of());
+    }
+
+    /** @param signatures of the document with invalid signatures, validated with all the trusted lists loaded */
+    @SuppressWarnings("unchecked")
+    private static Dialog openDialog(Warning warning, ServerResponder responder,
+            List<ValidationReports.SignatureEntry> signatures) throws Exception {
         var settings = new UserSettings();
         settings.setSignaturesValidity(true);
         var gui = new GUI(null, settings);
@@ -204,12 +255,16 @@ class SignatureWarningCancellationTest {
 
         // Inject deterministic validation results; no trust-list downloads, certificates or card reader.
         try (var validator = mockStatic(SignatureValidator.class)) {
-            validator.when(SignatureValidator::getInstance).thenReturn(mock(SignatureValidator.class));
+            var validatorInstance = mock(SignatureValidator.class);
+            when(validatorInstance.areTLsLoaded()).thenReturn(true);
+            when(validatorInstance.getFailedTLs()).thenReturn(new FailedTLs(0, 8, Set.of()));
+            validator.when(SignatureValidator::getInstance).thenReturn(validatorInstance);
             if (warning == Warning.INVALID) {
                 var reports = mock(ValidationReports.class);
                 when(reports.getSigningJob()).thenReturn(job);
                 when(reports.haveSignatures()).thenReturn(true);
                 when(reports.haveInvalidSignatures()).thenReturn(true);
+                when(reports.getSignatures()).thenReturn(signatures);
                 gui.onSignatureCheckCompleted(reports);
                 gui.onSignatureValidationCompleted(reports);
             }
@@ -218,7 +273,7 @@ class SignatureWarningCancellationTest {
         var warningStage = Window.getWindows().stream()
                 .filter(window -> window instanceof Stage stage && stage.getOwner() == signingStage)
                 .map(Stage.class::cast).findFirst().orElseThrow();
-        return new Dialog(signingStage, warningStage, controller, autogram, gui, job);
+        return new Dialog(signingStage, warningStage, controller, autogram, gui, job, settings);
     }
 
     private static <T> T onFxThread(Callable<T> action) throws Exception {
@@ -228,7 +283,7 @@ class SignatureWarningCancellationTest {
     }
 
     private record Dialog(Stage signingStage, Stage warningStage, SigningDialogController controller,
-                          Autogram autogram, GUI gui, SigningJob job) {
+                          Autogram autogram, GUI gui, SigningJob job, UserSettings settings) {
         Button button(String id) {
             return (Button) warningStage.getScene().lookup("#" + id);
         }

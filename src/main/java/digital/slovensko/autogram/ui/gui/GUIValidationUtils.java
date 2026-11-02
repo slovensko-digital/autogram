@@ -64,7 +64,8 @@ public class GUIValidationUtils {
      * the trusted list of its country did not load or is turned off in the settings.
      */
     public static void addTrustedListsWarnings(ResourceBundle resources, List<Node> children,
-            List<ValidationReports.SignatureEntry> signatures, Collection<String> trustedList, Runnable openSettings) {
+            List<ValidationReports.SignatureEntry> signatures, Collection<String> trustedList,
+            Consumer<List<Country>> turnOnTrustedLists) {
         var validator = SignatureValidator.getInstance();
         var failedTLs = validator.getFailedTLs();
         var warning = trustedListsWarning(resources, validator.areTLsLoaded(), failedTLs,
@@ -77,7 +78,8 @@ public class GUIValidationUtils {
         var countries = countriesTurnedOff(signatures, trustedList);
         if (!countries.isEmpty())
             children.add(createWarningText(countriesTurnedOffWarning(resources, countries),
-                    translate(resources, "signature.countryTurnedOff.settings.btn"), openSettings));
+                    translate(resources, "signature.countryTurnedOff.turnOn.btn", countries.size()),
+                    () -> turnOnTrustedLists.accept(countries)));
     }
 
     /** Only the number of lists, the countries could fill the window. */
