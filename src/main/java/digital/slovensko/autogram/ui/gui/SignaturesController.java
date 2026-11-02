@@ -113,7 +113,10 @@ public class SignaturesController extends BaseController implements SuppressedFo
         var areTLsLoaded = SignatureValidator.getInstance().areTLsLoaded();
         if (isValidated)
             GUIValidationUtils.addTrustedListsWarnings(resources, signaturesContainer.getChildren(),
-                    reports.getSignatures(), userSettings.getTrustedList(), turnOnTrustedLists);
+                    reports.getSignatures(), userSettings.getTrustedList(), countries -> {
+                        getNodeForLoosingFocus().requestFocus();
+                        turnOnTrustedLists.accept(countries);
+                    });
 
         for (var signature : reports.getSignatures())
             signaturesContainer.getChildren().add(GUIValidationUtils.createSignatureBox(resources,
