@@ -1,11 +1,13 @@
 package digital.slovensko.autogram.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -80,6 +82,17 @@ public class UserSettingsTest {
         settings.setLastUsedDirectory(tempDir.toString());
 
         assertEquals(tempDir.toString(), settings.getLastUsedDirectory().orElseThrow());
+    }
+
+    @Test
+    public void testTurnOnTrustedListsAddsOnlyCountriesThatAreOff() {
+        var settings = new UserSettings();
+        settings.addToTrustedList("SK");
+
+        assertTrue(settings.turnOnTrustedLists(List.of("DE", "SK", "DE")));
+        assertEquals(List.of("SK", "DE"), settings.getTrustedList());
+        assertFalse(settings.turnOnTrustedLists(List.of("DE")));
+        assertEquals(List.of("SK", "DE"), settings.getTrustedList());
     }
 
     @Test

@@ -4,6 +4,7 @@ import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.settings.Country;
 import digital.slovensko.autogram.core.visualization.Visualization;
 import digital.slovensko.autogram.ui.Visualizer;
 import digital.slovensko.autogram.util.DSSUtils;
@@ -366,7 +367,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     public void onShowSignaturesButtonPressed(ActionEvent event) {
         if (signaturesController == null)
             signaturesController = new SignaturesController(signatureCheckReports, gui, userSettings,
-                    this::openTrustedCountriesSettings);
+                    this::turnOnTrustedLists);
 
         var root = GUIUtils.loadFXML(signaturesController, "present-signatures-dialog.fxml");
 
@@ -404,9 +405,10 @@ public class SigningDialogController extends BaseController implements Suppresse
             signaturesNotValidatedDialogController.close();
     }
 
-    /** Saving the settings validates the signatures again, if the countries changed. */
-    public void openTrustedCountriesSettings() {
-        SettingsDialogController.showAndWait(autogram, userSettings, SettingsDialogController.TRUSTED_COUNTRIES_TAB);
+    /** The signatures of all open documents are validated again once the trusted lists of the countries load. */
+    public void turnOnTrustedLists(List<Country> countries) {
+        if (userSettings.turnOnTrustedLists(countries.stream().map(Country::getShortname).toList()))
+            autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
     }
 
     public List<String> getTrustedList() {
@@ -422,6 +424,8 @@ public class SigningDialogController extends BaseController implements Suppresse
         signatureValidationReports = null;
         if (signatureCheckReports != null)
             renderSignatures(signatureCheckReports, false);
+        if (signaturesController != null)
+            signaturesController.onSignatureValidationStarted();
         trustedListsLoaded.whenComplete((verifier, e) -> gui.onWorkThreadDo(() -> autogram.checkAndValidateSignatures(job)));
     }
 
@@ -435,7 +439,7 @@ public class SigningDialogController extends BaseController implements Suppresse
             var signatures = reports.getSignaturesForPreviewDocument(job.getVisualizations().get(index).getName(), index);
             if (isValidated)
                 GUIValidationUtils.addTrustedListsWarnings(resources, summary.getChildren(), signatures,
-                        userSettings.getTrustedList(), this::openTrustedCountriesSettings);
+                        userSettings.getTrustedList(), this::turnOnTrustedLists);
             if (reports.hasIncompleteContainerCoverage())
                 summary.getChildren().add(GUIValidationUtils.createWarningText(
                         i18n("signature.table.incompleteCoverage.warning")));
