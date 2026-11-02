@@ -97,22 +97,24 @@ class TrustedListsWarningTest {
     void countriesTurnedOffAreNamed() {
         var belgium = Country.withTrustedList("BE").orElseThrow();
         var czechia = Country.withTrustedList("CZ").orElseThrow();
-        assertEquals("Autogram nevie úplne overiť podpisy od poskytovateľov z krajiny Belgicko, lebo jej dôveryhodný zoznam nemáte zapnutý.",
+        assertEquals("Autogram nevie úplne overiť podpisy s certifikátmi z krajiny Belgicko, lebo túto krajinu nemáte pridanú v nastaveniach.",
                 GUIValidationUtils.countriesTurnedOffWarning(SK, List.of(belgium)));
-        assertEquals("Autogram nevie úplne overiť podpisy od poskytovateľov z krajín Belgicko, Česko, lebo ich dôveryhodné zoznamy nemáte zapnuté.",
+        assertEquals("Autogram nevie úplne overiť podpisy s certifikátmi z krajín Belgicko, Česko, lebo tieto krajiny nemáte pridané v nastaveniach.",
                 GUIValidationUtils.countriesTurnedOffWarning(SK, List.of(belgium, czechia)));
-        assertEquals("Autogram cannot fully validate signatures from providers in Belgium, because its trusted list is turned off.",
+        assertEquals("Autogram cannot fully validate signatures with certificates from Belgium, because Belgium is not in your settings.",
                 GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium)));
-        assertEquals("Autogram cannot fully validate signatures from providers in Belgium, Czechia, because their trusted lists are turned off.",
+        assertEquals("Autogram cannot fully validate signatures with certificates from Belgium, Czechia, because these countries are not in your settings.",
                 GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium, czechia)));
     }
 
     @Test
-    void linkTurnsTheListsOn() {
-        assertEquals("Pridať tento dôveryhodný zoznam", HasI18n.translate(SK, "signature.countryTurnedOff.turnOn.btn", 1));
-        assertEquals("Pridať tieto dôveryhodné zoznamy", HasI18n.translate(SK, "signature.countryTurnedOff.turnOn.btn", 2));
-        assertEquals("Add this trusted list", HasI18n.translate(EN, "signature.countryTurnedOff.turnOn.btn", 1));
-        assertEquals("Add these trusted lists", HasI18n.translate(EN, "signature.countryTurnedOff.turnOn.btn", 2));
+    void buttonAddsTheCountries() {
+        var belgium = Country.withTrustedList("BE").orElseThrow();
+        var czechia = Country.withTrustedList("CZ").orElseThrow();
+        assertEquals("Pridať krajinu Belgicko", GUIValidationUtils.addCountriesButton(SK, List.of(belgium)));
+        assertEquals("Pridať tieto krajiny", GUIValidationUtils.addCountriesButton(SK, List.of(belgium, czechia)));
+        assertEquals("Add Belgium", GUIValidationUtils.addCountriesButton(EN, List.of(belgium)));
+        assertEquals("Add these countries", GUIValidationUtils.addCountriesButton(EN, List.of(belgium, czechia)));
     }
 
     @Test

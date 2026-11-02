@@ -13,7 +13,6 @@ import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.simplereport.jaxb.XmlTimestamp;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -52,13 +51,6 @@ public class GUIValidationUtils {
         return styled(new TextFlow(text), "autogram-warning-textflow");
     }
 
-    public static Node createWarningText(String message, String linkText, Runnable onLink) {
-        var link = styled(new Hyperlink(linkText), "autogram-heading-s", "autogram-link");
-        link.setOnAction(event -> onLink.run());
-        var text = styled(new Text(message + " "), "autogram-heading-s");
-        return styled(new TextFlow(text, link), "autogram-warning-textflow");
-    }
-
     /**
      * Above validated signatures, when no trusted lists could be loaded, or a signature could not be verified because
      * the trusted list of its country did not load or is turned off in the settings.
@@ -77,9 +69,17 @@ public class GUIValidationUtils {
 
         var countries = countriesTurnedOff(signatures, trustedList);
         if (!countries.isEmpty())
-            children.add(createWarningText(countriesTurnedOffWarning(resources, countries),
-                    translate(resources, "signature.countryTurnedOff.turnOn.btn", countries.size()),
-                    () -> turnOnTrustedLists.accept(countries)));
+            children.add(createCountriesTurnedOffWarning(resources, countries, turnOnTrustedLists));
+    }
+
+    /** The warning with a button under it, which adds the countries in the settings. */
+    private static Node createCountriesTurnedOffWarning(ResourceBundle resources, List<Country> countries,
+            Consumer<List<Country>> turnOnTrustedLists) {
+        var button = styled(new Button(addCountriesButton(resources, countries)), "autogram-button",
+                "autogram-button--secondary");
+        button.setOnAction(event -> turnOnTrustedLists.accept(countries));
+        return styled(new VBox(createWarningText(countriesTurnedOffWarning(resources, countries)), button),
+                "autogram-countries-turned-off");
     }
 
     /** Only the number of lists, the countries could fill the window. */
@@ -119,9 +119,17 @@ public class GUIValidationUtils {
     }
 
     static String countriesTurnedOffWarning(ResourceBundle resources, List<Country> countries) {
+        return translateWithCountries(resources, "signature.countryTurnedOff.warning", countries);
+    }
+
+    static String addCountriesButton(ResourceBundle resources, List<Country> countries) {
+        return translateWithCountries(resources, "signature.countryTurnedOff.add.btn", countries);
+    }
+
+    private static String translateWithCountries(ResourceBundle resources, String key, List<Country> countries) {
         var names = countries.stream().map(country -> country.getName(resources.getLocale()))
                 .collect(Collectors.joining(", "));
-        return translate(resources, "signature.countryTurnedOff.warning", names, countries.size());
+        return translate(resources, key, names, countries.size());
     }
 
     /** Issuers of the certificates of signatures and timestamps that are neither valid nor invalid. */
