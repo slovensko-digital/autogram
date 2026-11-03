@@ -101,9 +101,9 @@ class TrustedListsWarningTest {
                 GUIValidationUtils.countriesTurnedOffWarning(SK, List.of(belgium)));
         assertEquals("Autogram nevie úplne overiť podpisy s certifikátmi z krajín Belgicko, Česko, lebo tieto krajiny nemáte pridané v nastaveniach.",
                 GUIValidationUtils.countriesTurnedOffWarning(SK, List.of(belgium, czechia)));
-        assertEquals("Autogram cannot fully validate signatures with certificates from Belgium, because Belgium is not in your settings.",
+        assertEquals("Autogram cannot fully validate signatures with certificates from Belgium, because the country is not in your settings.",
                 GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium)));
-        assertEquals("Autogram cannot fully validate signatures with certificates from Belgium, Czechia, because these countries are not in your settings.",
+        assertEquals("Autogram cannot fully validate signatures with certificates from Belgium, Czechia, because the countries are not in your settings.",
                 GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium, czechia)));
     }
 
