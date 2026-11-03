@@ -53,7 +53,7 @@ Autogram validates signatures against the European Union trusted lists, which it
 
 If a signature was issued by a provider from a country whose trusted list is turned off, Autogram cannot fully validate it and says so above the signatures. Click the button in the warning, for example **Add Germany** (**Add these countries** for more countries): Autogram adds the country in the settings and validates open documents again.
 
-![Warning that a country is not in the settings, with a button that adds it](/assets/images/screenshots/en/signed-document-country-off.png)
+![Warning that Autogram is not set up to check certificates from a country, with a button that adds it](/assets/images/screenshots/en/signed-document-country-off.png)
 
 If the trusted lists cannot be downloaded, Autogram shows a warning that the signatures cannot be fully validated. Check your internet connection and open the document again.
 
