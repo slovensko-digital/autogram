@@ -97,13 +97,13 @@ class TrustedListsWarningTest {
     void countriesTurnedOffAreNamed() {
         var belgium = Country.withTrustedList("BE").orElseThrow();
         var czechia = Country.withTrustedList("CZ").orElseThrow();
-        assertEquals("Autogram nevie úplne overiť podpisy s certifikátmi z krajiny Belgicko, lebo túto krajinu nemáte pridanú v nastaveniach.",
+        assertEquals("Autogram nemá nastavené overovanie certifikátov z krajiny Belgicko.",
                 GUIValidationUtils.countriesTurnedOffWarning(SK, List.of(belgium)));
-        assertEquals("Autogram nevie úplne overiť podpisy s certifikátmi z krajín Belgicko, Česko, lebo tieto krajiny nemáte pridané v nastaveniach.",
+        assertEquals("Autogram nemá nastavené overovanie certifikátov z krajín Belgicko, Česko.",
                 GUIValidationUtils.countriesTurnedOffWarning(SK, List.of(belgium, czechia)));
-        assertEquals("Autogram cannot fully validate signatures with certificates from Belgium, because the country is not in your settings.",
+        assertEquals("Autogram is not set up to check certificates from Belgium.",
                 GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium)));
-        assertEquals("Autogram cannot fully validate signatures with certificates from Belgium, Czechia, because the countries are not in your settings.",
+        assertEquals("Autogram is not set up to check certificates from Belgium, Czechia.",
                 GUIValidationUtils.countriesTurnedOffWarning(EN, List.of(belgium, czechia)));
     }
 
