@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * by configuration properties.
  * <ul>
  *     <li>fn:transform() accepts a saxon:configuration vendor option, which replaces the whole configuration of the
- *     nested transformation and with it all restrictions set in {@link XMLUtils#getSecureTransformerFactory()}.</li>
+ *     nested transformation and with it all restrictions set in {@link SecureTransformerFactory}.</li>
  *     <li>Vendor functions in the saxon: namespace (saxon:doc() reads documents bypassing the resource resolver and
  *     allowed protocols).</li>
  * </ul>
