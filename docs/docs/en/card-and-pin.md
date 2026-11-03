@@ -93,14 +93,19 @@ The check usually takes a fraction of a second. Shortly after Autogram starts, i
 | --- | --- | --- |
 | **Revoked certificate** | The certification authority revoked the certificate. A signature made with it is not valid. | Only if **Allow signing with expired and revoked certificates** is turned on in [Settings](settings.md#security) |
 | **Non-qualified certificate** | The certificate is not qualified according to the trusted lists. | Only if **Allow signing with non-qualified certificates** is turned on in [Settings](settings.md#security) |
-| **Validity could not be verified** | Autogram could not find out whether the certificate was revoked or whether it is qualified. For example, there is no internet connection, or the trusted list of the country that issued the certificate could not be downloaded. | Yes |
+| **Validity could not be verified** | Autogram could not find out whether the certificate was revoked. For example, there is no internet connection. | Yes |
+| **Qualification could not be verified** | Autogram could not find out whether the certificate is qualified. For example, the trusted list of the country that issued the certificate could not be downloaded, or the country is not added in [Settings](settings.md#signature-validation). | Yes |
 | **Expired certificate** | The certificate has expired. Such certificates are shown only if **Allow signing with expired and revoked certificates** is turned on in Settings. | Yes |
 
 If a certificate could not be verified, Autogram shows a warning below the list. You can still sign with it, for example when you are offline at the moment. It is not certain, though, that the signature will be valid.
 
 ![Certificates that could not be verified](/assets/images/screenshots/en/certificate-picker-offline.png)
 
-If none of the certificates is qualified, Autogram shows a hint below them with an **Open settings** link. The most common reason is that the certificate was issued by a certification authority from a country whose trusted list is turned off. Autogram then names that country in the hint. When you close the settings, the certificate selection appears again.
+If the certificate was issued by a certification authority from a country that is not added in [Settings](settings.md#signature-validation), Autogram cannot verify whether it is qualified and says so below the certificates. Click the button in the warning, for example **Add Germany**: Autogram adds the country in the settings and checks the certificates again. You can also sign without it.
+
+![Warning that Autogram is not set up to check certificates from a country, with a button that adds it](/assets/images/screenshots/en/certificate-picker-country-off.png)
+
+If none of the certificates is qualified, Autogram shows a hint below them with an **Open settings** link. You can allow signing with non-qualified certificates under [Security](settings.md#security). When you close the settings, the certificate selection appears again.
 
 ![Hint when none of the certificates is qualified](/assets/images/screenshots/en/certificate-picker-hint.png)
 
