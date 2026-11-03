@@ -25,7 +25,7 @@ Ak dokument už obsahuje podpis, ktorý je neplatný alebo ho nie je možné ove
 - **Zrušiť podpisovanie:** dokument nepodpíšete,
 - **Podpísať:** dokument napriek tomu podpíšete.
 
-Ak podpis vydal poskytovateľ z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý, upozornenie to uvedie. Kliknite na tlačidlo pod ním, napríklad **Pridať krajinu Nemecko**: Autogram krajinu pridá v nastaveniach a podpisy overí znova. Potom kliknite na **Podpísať** ešte raz.
+Ak podpis vydal poskytovateľ z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý, upozornenie to uvedie. Kliknite na tlačidlo v ňom, napríklad **Pridať krajinu Nemecko**: Autogram krajinu pridá v nastaveniach a podpisy overí znova. Potom kliknite na **Podpísať** ešte raz.
 
 ![Upozornenie s tlačidlom, ktoré pridá krajinu](/assets/images/screenshots/sk/warning-invalid-signatures-country-off.png)
 

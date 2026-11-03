@@ -1405,7 +1405,16 @@ TextFlow.autogram-body-s {
 
 .autogram-countries-turned-off {
   -fx-spacing: 12px;
-  -fx-padding: 0 0 12px 0;
+  -fx-padding: 12px 15px 27px 15px;
+  -fx-background-color: -autogram-warning-color;
+  -fx-background-insets: 0 0 12px 0;
+}
+
+/* the usual yellow focus would not show on the yellow background */
+.autogram-countries-turned-off .autogram-button:focused {
+  -fx-border-color: -autogram-text-colour;
+  -fx-border-width: 3px;
+  -fx-padding: 4px 7px 6px 7px;
 }
 
 .autogram-label {

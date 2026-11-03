@@ -72,14 +72,15 @@ public class GUIValidationUtils {
             children.add(createCountriesTurnedOffWarning(resources, countries, turnOnTrustedLists));
     }
 
-    /** The warning with a button under it, which adds the countries in the settings. */
+    /** The warning with a button in it, which adds the countries in the settings. */
     private static Node createCountriesTurnedOffWarning(ResourceBundle resources, List<Country> countries,
             Consumer<List<Country>> turnOnTrustedLists) {
+        var message = new TextFlow(styled(new Text(countriesTurnedOffWarning(resources, countries)),
+                "autogram-heading-s"));
         var button = styled(new Button(addCountriesButton(resources, countries)), "autogram-button",
                 "autogram-button--secondary");
         button.setOnAction(event -> turnOnTrustedLists.accept(countries));
-        return styled(new VBox(createWarningText(countriesTurnedOffWarning(resources, countries)), button),
-                "autogram-countries-turned-off");
+        return styled(new VBox(message, button), "autogram-countries-turned-off");
     }
 
     /** Only the number of lists, the countries could fill the window. */
