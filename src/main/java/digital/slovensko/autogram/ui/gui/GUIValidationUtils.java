@@ -69,18 +69,18 @@ public class GUIValidationUtils {
 
         var countries = countriesTurnedOff(signatures, trustedList);
         if (!countries.isEmpty())
-            children.add(createCountriesTurnedOffWarning(resources, countries, turnOnTrustedLists));
+            children.add(createCountriesTurnedOffWarning(resources, countriesTurnedOffWarning(resources, countries),
+                    countries, turnOnTrustedLists));
     }
 
     /** The warning with a button in it, which adds the countries in the settings. */
-    private static Node createCountriesTurnedOffWarning(ResourceBundle resources, List<Country> countries,
+    static Node createCountriesTurnedOffWarning(ResourceBundle resources, String message, List<Country> countries,
             Consumer<List<Country>> turnOnTrustedLists) {
-        var message = new TextFlow(styled(new Text(countriesTurnedOffWarning(resources, countries)),
-                "autogram-heading-s"));
+        var text = new TextFlow(styled(new Text(message), "autogram-heading-s"));
         var button = styled(new Button(addCountriesButton(resources, countries)), "autogram-button",
                 "autogram-button--secondary");
         button.setOnAction(event -> turnOnTrustedLists.accept(countries));
-        return styled(new VBox(message, button), "autogram-countries-turned-off");
+        return styled(new VBox(text, button), "autogram-countries-turned-off");
     }
 
     /** Only the number of lists, the countries could fill the window. */
@@ -128,9 +128,12 @@ public class GUIValidationUtils {
     }
 
     private static String translateWithCountries(ResourceBundle resources, String key, List<Country> countries) {
-        var names = countries.stream().map(country -> country.getName(resources.getLocale()))
+        return translate(resources, key, countryNames(resources, countries), countries.size());
+    }
+
+    static String countryNames(ResourceBundle resources, List<Country> countries) {
+        return countries.stream().map(country -> country.getName(resources.getLocale()))
                 .collect(Collectors.joining(", "));
-        return translate(resources, key, names, countries.size());
     }
 
     /** Issuers of the certificates of signatures and timestamps that are neither valid nor invalid. */

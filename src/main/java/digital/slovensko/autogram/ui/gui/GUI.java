@@ -19,6 +19,7 @@ import digital.slovensko.autogram.core.errors.PkcsEidWindowsDllException;
 import digital.slovensko.autogram.core.errors.TokenNotRecognizedException;
 import digital.slovensko.autogram.core.errors.TokenRemovedException;
 import digital.slovensko.autogram.core.errors.UnrecognizedException;
+import digital.slovensko.autogram.core.settings.Country;
 import digital.slovensko.autogram.drivers.TokenDriver;
 import digital.slovensko.autogram.drivers.TokenOption;
 import digital.slovensko.autogram.drivers.TokenOptions;
@@ -44,6 +45,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.function.Consumer;
@@ -213,16 +215,18 @@ public class GUI implements UI {
             SettingsDialogController.showAndWait(autogram, userSettings, SettingsDialogController.TRUSTED_COUNTRIES_TAB);
             pickKeyAndThen(allKeys, driver, callback, onCancel);
         };
+        Function<List<Country>, CompletableFuture<?>> turnOnTrustedLists = autogram == null ? null : countries -> {
+            if (userSettings.turnOnTrustedLists(countries.stream().map(Country::getShortname).toList()))
+                autogram.updateSignatureValidatorLotl(userSettings.getTrustedList());
+            return SignatureValidator.getInstance().whenLoaded();
+        };
         var controller = new PickKeyDialogController(keys, callback, userSettings,
                 // DSS waits up to a minute for each unreachable server, the user should not
                 (key, onChecked) -> checker.checkAsync(key, CERTIFICATE_STATUS_TIMEOUT, TRUSTED_LISTS_TIMEOUT)
                         .thenAccept(result -> onUIThreadDo(() -> onChecked.accept(result))),
-                openSettings);
+                openSettings, turnOnTrustedLists);
         var root = GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
-        if (!trustedLists.isDone()) {
-            controller.setTrustedListsLoading(true);
-            trustedLists.whenComplete((verifier, e) -> onUIThreadDo(() -> controller.setTrustedListsLoading(false)));
-        }
+        controller.waitForTrustedLists(trustedLists);
 
         var stage = new Stage();
         stage.setTitle(controller.i18n("pickKey.title"));
