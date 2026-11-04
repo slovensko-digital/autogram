@@ -33,11 +33,12 @@ Autogram spúšťa v počítači používateľa lokálny server na adrese `http:
 - Formulár Finančnej správy: identifikátor formulára v `xdcParameters.fsFormIdentifier`, pozrite si [Formuláre Finančnej správy](#formulare-financnej-spravy).
 - Viac samostatných dokumentov: batch API `/api/v1/batch`, používateľ si vyberie, či ich podpíše po jednom alebo hromadne.
 - Časovú pečiatku si vyžiadate úrovňou `BASELINE_T` (v `/api/v1/sign` parametrom `profile`). Autogram ju získa zo [zdrojov časových pečiatok](timestamps.md) v nastaveniach používateľa, predvolene od bezplatných kvalifikovaných poskytovateľov.
+- Iba určitý typ certifikátu, napríklad kvalifikovaný elektronický podpis alebo mandátny certifikát: parameter `signingCertificateTypes`, pozrite si [Typ podpisového certifikátu](#typ-podpisoveho-certifikatu).
 - Zoznam certifikátov: `GET /api/v1/certificates`. Autogram si pred odoslaním certifikátov vypýta [súhlas používateľa](websites.md#suhlas-s-precitanim-certifikatov).
 
 ## Viac dokumentov v jednom kontajneri {#viac-dokumentov-v-jednom-kontajneri}
 
-Nový kontajner z viacerých dokumentov vytvoríte cez HTTP API `POST /api/v1/sign` s poľom `documents` (najviac 5 dokumentov, formát `XAdES` alebo `CAdES`, kontajner `ASiC_E`). Dokument typu ASiC-E nemôže byť súčasťou takejto požiadavky. Podrobnosti a príklady sú v [dokumentácii API](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml).
+Nový kontajner z viacerých dokumentov vytvoríte cez HTTP API `POST /api/v1/sign` s poľom `documents` (formát `XAdES` alebo `CAdES`, kontajner `ASiC_E`). Dokument typu ASiC-E nemôže byť súčasťou takejto požiadavky. Podrobnosti a príklady sú v [dokumentácii API](https://generator3.swagger.io/index.html?url=https://raw.githubusercontent.com/slovensko-digital/autogram/main/src/main/resources/digital/slovensko/autogram/server/server.yml).
 
 ```json
 {
@@ -48,6 +49,33 @@ Nový kontajner z viacerých dokumentov vytvoríte cez HTTP API `POST /api/v1/si
   ]
 }
 ```
+
+## Typ podpisového certifikátu {#typ-podpisoveho-certifikatu}
+
+Parametrom `signingCertificateTypes` v `parameters` požiadavky `POST /api/v1/sign` určíte, akými certifikátmi sa dokument smie podpísať. Typy sa volajú rovnako ako v centrálnej elektronickej podateľni (CEP) slovensko.sk:
+
+| Typ | Certifikát |
+| --- | --- |
+| `QESig` | kvalifikovaný elektronický podpis, okrem mandátneho certifikátu |
+| `QESig-MQC` | mandátny certifikát |
+| `QESeal` | kvalifikovaná elektronická pečať |
+| `AdESig-QC` | uznaný spôsob autorizácie, napríklad občiansky preukaz vydaný do 20. 6. 2021 |
+| `AdESeal-QC` | pečať s kvalifikovaným certifikátom, ktorý nie je na kvalifikovanom zariadení |
+| `AdESig`, `AdESeal` | nekvalifikovaný podpis alebo pečať |
+
+```json
+{
+  "parameters": { "form": "XAdES", "container": "ASiC_E", "signingCertificateTypes": ["QESig", "QESig-MQC"] },
+  "document": { "filename": "podanie.txt", "mimeType": "text/plain", "content": "Podanie" }
+}
+```
+
+- Certifikáty iných typov sú pri [výbere certifikátu](card-and-pin.md#vyber-certifikatu) neaktívne so štítkom **Dokument vyžaduje iný typ**. Nastavenie používateľa **Povoliť podpisovanie nekvalifikovanými certifikátmi** sa vtedy neuplatní.
+- Typ Autogram určí z certifikátu a z dôveryhodných zoznamov. Certifikátom, ktorého typ nezistí, napríklad keď sa dôveryhodné zoznamy nenačítali, sa podpísať nedá.
+- Mandátny certifikát Autogram rozpozná podľa certifikačnej politiky `1.3.158.36061701.1.1.<číslo oprávnenia>`, podľa položky subjektu začínajúcej reťazcom `MANDANT ` alebo podľa textu `OPRÁVNENIE <číslo>` v mene certifikátu.
+- Ak pri hromadnom podpisovaní príde dokument, ktorý vyžaduje iný typ, než má certifikát dávky, Autogram ho nepodpíše a vráti chybu 422 (`SIGNING_CERTIFICATE_NOT_ALLOWED`).
+- Parameter poznajú Autogramy od verzie 2.9.0, staršie ho ignorujú. Verziu zistíte z `GET /api/v1/info`.
+- Podateľňa podpis aj tak overuje sama. Parameter iba zabráni, aby používateľ podpísal certifikátom, ktorý podateľňa neprijme.
 
 ## Formuláre Finančnej správy {#formulare-financnej-spravy}
 

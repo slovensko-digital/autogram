@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -123,6 +124,37 @@ class CertificateStatusCheckerTest {
     }
 
     @Test
+    void testTypeComesFromQualificationAndMandate() {
+        var checker = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null);
+
+        assertEquals(SigningCertificateType.QESIG, checker.checkType(keyOf(pki.signer(TestPki.JANA)), pki.verifier()));
+        assertEquals(SigningCertificateType.QESEAL, checker.checkType(keyOf(pki.signer(TestPki.SEAL)), pki.verifier()));
+        assertEquals(SigningCertificateType.QESIG_MANDATE,
+                checker.checkType(keyOf(pki.issue("Mandatár Vzorový", TestPki.Kind.QESIG_MANDATE)), pki.verifier()));
+        assertEquals(SigningCertificateType.ADESIG_QC,
+                checker.checkType(keyOf(pki.issue("Občan Starý", TestPki.Kind.QESIG_WITHOUT_QSCD)), pki.verifier()));
+    }
+
+    @Test
+    void testTypeIsUnknownWithoutTrustedListOfIssuer() {
+        var checker = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null);
+
+        assertNull(checker.checkType(keyOf(TestPki.create().signer(TestPki.JANA)), pki.verifier()));
+        assertNull(checker.checkType(keyOf(pki.signer(TestPki.JANA)), null));
+    }
+
+    @Test
+    void testAsyncCheckGivesType() throws Exception {
+        var checker = new CertificateStatusChecker(NO_OCSP, pki.crlSource(null), null,
+                () -> CompletableFuture.completedFuture(pki.verifier()));
+
+        var result = checker.checkAsync(keyOf(pki.signer(TestPki.SEAL)), Duration.ofSeconds(10), Duration.ofSeconds(10))
+                .get(10, TimeUnit.SECONDS);
+
+        assertEquals(new CertificateStatusChecker.Result(CertificateStatus.GOOD, Qualification.QUALIFIED, SigningCertificateType.QESEAL), result);
+    }
+
+    @Test
     void testQualificationIsUnknownWithoutTrustedLists() {
         var key = keyOf(pki.signer(TestPki.JANA));
         var checker = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null);
@@ -139,7 +171,8 @@ class CertificateStatusCheckerTest {
         var result = checker.checkAsync(keyOf(pki.signer(TestPki.JANA)), Duration.ofMillis(100), Duration.ofSeconds(10));
         CompletableFuture.delayedExecutor(500, TimeUnit.MILLISECONDS).execute(() -> trustedLists.complete(pki.verifier()));
 
-        assertEquals(new CertificateStatusChecker.Result(CertificateStatus.GOOD, Qualification.QUALIFIED), result.get(10, TimeUnit.SECONDS));
+        assertEquals(new CertificateStatusChecker.Result(CertificateStatus.GOOD, Qualification.QUALIFIED, SigningCertificateType.QESIG),
+                result.get(10, TimeUnit.SECONDS));
     }
 
     @Test
@@ -178,7 +211,7 @@ class CertificateStatusCheckerTest {
             var result = checker.checkAsync(keyOf(pki.signer(TestPki.JANA)), Duration.ofMillis(500), Duration.ofSeconds(10))
                     .get(10, TimeUnit.SECONDS);
 
-            assertEquals(new CertificateStatusChecker.Result(CertificateStatus.UNKNOWN, Qualification.QUALIFIED), result);
+            assertEquals(new CertificateStatusChecker.Result(CertificateStatus.UNKNOWN, Qualification.QUALIFIED, SigningCertificateType.QESIG), result);
         } finally {
             release.countDown();
         }

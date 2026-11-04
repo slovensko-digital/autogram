@@ -10,6 +10,8 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -39,7 +41,12 @@ public interface UI {
      */
     void pickTokenAndThen(TokenOptions options, Supplier<TokenOptions> searchAgain, Consumer<TokenOption> callback, Runnable onCancel);
 
-    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel);
+    /**
+     * @param allowedTypes types of certificates the user can pick, empty for any
+     * @param callback gets the picked key and its certificate's type, null when unknown
+     */
+    void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Set<SigningCertificateType> allowedTypes,
+            BiConsumer<DSSPrivateKeyEntry, SigningCertificateType> callback, Runnable onCancel);
 
     void onPickSigningKeyFailed(AutogramException e);
 

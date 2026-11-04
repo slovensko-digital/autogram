@@ -3,6 +3,7 @@ package digital.slovensko.autogram.ui.gui;
 import digital.slovensko.autogram.TestPki;
 import digital.slovensko.autogram.core.CertificateStatusChecker.Qualification;
 import digital.slovensko.autogram.core.CertificateStatusChecker.Result;
+import digital.slovensko.autogram.core.SigningCertificateType;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -156,6 +158,61 @@ class PickKeyDialogControllerTest {
         });
     }
 
+    @Test
+    void testCertificateOfAnotherTypeThanRequiredCannotBePicked() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana, peter), settings(false, "SK"), Set.of(SigningCertificateType.QESIG_MANDATE));
+            dialog.answer(jana, new Result(CertificateStatus.GOOD, Qualification.QUALIFIED, SigningCertificateType.QESIG));
+            dialog.answer(peter, new Result(CertificateStatus.GOOD, Qualification.QUALIFIED, SigningCertificateType.QESIG_MANDATE));
+
+            assertTrue(dialog.radio(jana).isDisabled());
+            assertEquals(1, dialog.badges(jana).getChildren().size());
+            assertFalse(dialog.radio(peter).isDisabled());
+            assertTrue(dialog.badges(peter).getChildren().isEmpty());
+            assertFalse(dialog.controller().hint.isVisible());
+        });
+    }
+
+    @Test
+    void testHintNamesRequiredTypesWhenNoCertificateHasThem() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana, seal), settings(false, "SK"),
+                    Set.of(SigningCertificateType.QESIG_MANDATE, SigningCertificateType.QESIG));
+            dialog.answer(jana, new Result(CertificateStatus.GOOD, Qualification.QUALIFIED, SigningCertificateType.ADESIG_QC));
+            dialog.answer(seal, new Result(CertificateStatus.GOOD, Qualification.QUALIFIED, SigningCertificateType.QESEAL));
+
+            var types = dialog.i18n("signingCertificateType.QESIG") + ", " + dialog.i18n("signingCertificateType.QESIG_MANDATE");
+            assertTrue(dialog.controller().mainButton.isDisabled());
+            assertTrue(dialog.controller().hint.isVisible());
+            assertEquals(dialog.i18n("pickKey.hint.typeRequired", types), dialog.controller().hintText.getText());
+        });
+    }
+
+    @Test
+    void testRequiredTypesDecideInsteadOfNonQualifiedSetting() throws Exception {
+        onFxThread(() -> {
+            var notQualified = new Result(CertificateStatus.GOOD, Qualification.NOT_QUALIFIED, SigningCertificateType.ADESIG);
+            var allowedBySetting = open(List.of(seal), settings(true, "SK"), Set.of(SigningCertificateType.QESIG));
+            allowedBySetting.answer(seal, notQualified);
+            var requested = open(List.of(seal), settings(false, "SK"), Set.of(SigningCertificateType.ADESIG));
+            requested.answer(seal, notQualified);
+
+            assertTrue(allowedBySetting.radio(seal).isDisabled());
+            assertFalse(requested.radio(seal).isDisabled());
+        });
+    }
+
+    @Test
+    void testCertificateOfUnknownTypeCannotBePickedWhenTypesAreRequired() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana), settings(false, "SK"), Set.of(SigningCertificateType.QESIG));
+            dialog.answer(jana, new Result(CertificateStatus.GOOD, Qualification.UNKNOWN));
+
+            assertTrue(dialog.radio(jana).isDisabled());
+            assertEquals(1, dialog.badges(jana).getChildren().size());
+        });
+    }
+
     private static UserSettings settings(boolean nonQualifiedCertsEnabled, String trustedCountry) {
         var settings = UserSettings.load();
         settings.setNonQualifiedCertsEnabled(nonQualifiedCertsEnabled);
@@ -165,8 +222,12 @@ class PickKeyDialogControllerTest {
     }
 
     private static Dialog open(List<DSSPrivateKeyEntry> keys, UserSettings settings) {
+        return open(keys, settings, Set.of());
+    }
+
+    private static Dialog open(List<DSSPrivateKeyEntry> keys, UserSettings settings, Set<SigningCertificateType> allowedTypes) {
         var answers = new HashMap<DSSPrivateKeyEntry, Consumer<Result>>();
-        var controller = new PickKeyDialogController(keys, key -> { }, settings, answers::put, () -> { });
+        var controller = new PickKeyDialogController(keys, allowedTypes, (key, type) -> { }, settings, answers::put, () -> { });
         var root = (Parent) GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
         return new Dialog(controller, root, answers);
     }

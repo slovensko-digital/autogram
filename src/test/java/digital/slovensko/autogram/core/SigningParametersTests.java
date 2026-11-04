@@ -3,7 +3,11 @@ package digital.slovensko.autogram.core;
 import digital.slovensko.autogram.core.errors.SigningParametersException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 
@@ -92,5 +96,27 @@ class SigningParametersTests {
                 null, null, false, null, null, null, false, 1024, false);
 
         assertEquals(1024, parameters.getVisualizationWidth());
+    }
+
+    @Test
+    void anyCertificateIsAllowedWithoutRequiredTypes() {
+        var parameters = SigningParameters.buildParameters(
+                SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+                null, null, false, null, null, null, false, 640, false);
+
+        assertTrue(parameters.isSigningCertificateAllowed(SigningCertificateType.ADESIG));
+        assertTrue(parameters.isSigningCertificateAllowed(null));
+    }
+
+    @Test
+    void onlyRequiredTypesAreAllowed() {
+        var parameters = SigningParametersResolver.withSigningCertificateTypes(SigningParameters.buildParameters(
+                SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+                null, null, false, null, null, null, false, 640, false),
+                List.of(SigningCertificateType.QESIG, SigningCertificateType.QESIG_MANDATE));
+
+        assertTrue(parameters.isSigningCertificateAllowed(SigningCertificateType.QESIG_MANDATE));
+        assertFalse(parameters.isSigningCertificateAllowed(SigningCertificateType.ADESIG_QC));
+        assertFalse(parameters.isSigningCertificateAllowed(null));
     }
 }

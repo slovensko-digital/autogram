@@ -16,10 +16,21 @@ import org.slf4j.LoggerFactory;
 public class SigningKey {
     final AbstractKeyStoreTokenConnection token;
     final DSSPrivateKeyEntry privateKey;
+    private final SigningCertificateType signingCertificateType;
 
     public SigningKey(AbstractKeyStoreTokenConnection token, DSSPrivateKeyEntry privateKey) {
+        this(token, privateKey, null);
+    }
+
+    /** @param signingCertificateType null when unknown, e.g. the trusted lists were not loaded when the key was picked */
+    public SigningKey(AbstractKeyStoreTokenConnection token, DSSPrivateKeyEntry privateKey, SigningCertificateType signingCertificateType) {
         this.token = token;
         this.privateKey = privateKey;
+        this.signingCertificateType = signingCertificateType;
+    }
+
+    public SigningCertificateType getSigningCertificateType() {
+        return signingCertificateType;
     }
 
     public SignatureValue sign(ToBeSigned dataToSign, DigestAlgorithm algo) {

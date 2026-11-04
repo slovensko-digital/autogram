@@ -4,6 +4,7 @@ import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.core.Autogram;
 import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.LegacyInstallation;
+import digital.slovensko.autogram.core.SigningCertificateType;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningMode;
@@ -47,6 +48,8 @@ import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -161,15 +164,17 @@ public class CliUI implements UI {
     }
 
     @Override
-    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Consumer<DSSPrivateKeyEntry> callback, Runnable onCancel) {
+    public void pickKeyAndThen(List<DSSPrivateKeyEntry> keys, TokenDriver driver, Set<SigningCertificateType> allowedTypes,
+            BiConsumer<DSSPrivateKeyEntry, SigningCertificateType> callback, Runnable onCancel) {
         if (keys.isEmpty()) {
             onCancel.run();
             showError(new NoKeysDetectedException(driver.getNoKeysHelperText()));
             return;
         }
 
+        // the command line signs files, nothing requires a certificate type there
         if (keys.size() == 1) {
-            callback.accept(keys.get(0));
+            callback.accept(keys.get(0), null);
             return;
         }
 
@@ -184,7 +189,7 @@ public class CliUI implements UI {
         }
 
         var pickedKey = keys.get(CliUtils.readInteger() - 1);
-        callback.accept(pickedKey);
+        callback.accept(pickedKey, null);
     }
 
     @Override

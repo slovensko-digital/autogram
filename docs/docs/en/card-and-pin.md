@@ -96,10 +96,13 @@ The check usually takes a fraction of a second. Shortly after Autogram starts, i
 | **Validity could not be verified** | Autogram could not find out whether the certificate was revoked, for example without an internet connection. | Yes |
 | **Qualification could not be verified** | The trusted lists could not be loaded, for example when Autogram first starts without an internet connection. | Yes |
 | **Expired certificate** | The certificate has expired. Such certificates are shown only if **Allow signing with expired certificates** is turned on in Settings. | Yes |
+| **Document requires another type** | The website or application the document came from accepts only certain types of certificates, for example only a qualified electronic signature or a mandate certificate. | No |
 
 If none of the certificates is qualified, Autogram shows a hint below them with an **Open settings** link. The most common reason is that the certificate was issued by a certification authority from a country whose trusted list is turned off. Autogram then names that country in the hint. When you close the settings, the certificate selection appears again.
 
 ![Hint when none of the certificates is qualified](/assets/images/screenshots/en/certificate-picker-hint.png)
+
+When the document requires certain types of certificates, you can sign only with a certificate whose type Autogram verified, so not with one labelled **Qualification could not be verified** or **Expired certificate** either. The setting for non-qualified certificates does not apply then. If none of the certificates has a required type, the hint names the types the document requires.
 
 ## Signing PIN {#signing-pin}
 

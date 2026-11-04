@@ -39,7 +39,12 @@ public class CertificateStatusChecker {
 
     public enum Qualification { QUALIFIED, NOT_QUALIFIED, UNKNOWN }
 
-    public record Result(CertificateStatus status, Qualification qualification) { }
+    /** @param type null when the qualification does not tell it */
+    public record Result(CertificateStatus status, Qualification qualification, SigningCertificateType type) {
+        public Result(CertificateStatus status, Qualification qualification) {
+            this(status, qualification, null);
+        }
+    }
 
     private final OCSPSource ocspSource;
     private final CRLSource crlSource;
@@ -67,9 +72,10 @@ public class CertificateStatusChecker {
      */
     public CompletableFuture<Result> checkAsync(DSSPrivateKeyEntry key, Duration statusTimeout, Duration trustedListsTimeout) {
         var status = withTimeout(CompletableFuture.supplyAsync(() -> checkStatus(key)), CertificateStatus.UNKNOWN, statusTimeout);
-        var qualification = withTimeout(trustedLists.get().thenApplyAsync(verifier -> checkQualification(key, verifier)),
-                Qualification.UNKNOWN, trustedListsTimeout);
-        return status.thenCombine(qualification, Result::new);
+        var qualification = withTimeout(trustedLists.get().thenApplyAsync(verifier -> certificateQualification(key, verifier)),
+                null, trustedListsTimeout);
+        return status.thenCombine(qualification, (s, q) ->
+                new Result(s, toQualification(q), SigningCertificateType.of(q, key.getCertificate())));
     }
 
     private static <T> CompletableFuture<T> withTimeout(CompletableFuture<T> future, T fallback, Duration timeout) {
@@ -94,8 +100,26 @@ public class CertificateStatusChecker {
 
     /** UNKNOWN when the trusted lists could not be loaded. */
     public Qualification checkQualification(DSSPrivateKeyEntry key, CertificateVerifier verifier) {
-        if (verifier == null || verifier.getTrustedCertSources().getNumberOfCertificates() == 0)
+        return toQualification(certificateQualification(key, verifier));
+    }
+
+    /** Null when the type is unknown, see {@link SigningCertificateType#of}. */
+    public SigningCertificateType checkType(DSSPrivateKeyEntry key, CertificateVerifier verifier) {
+        return SigningCertificateType.of(certificateQualification(key, verifier), key.getCertificate());
+    }
+
+    private static Qualification toQualification(CertificateQualification qualification) {
+        if (qualification == null)
             return Qualification.UNKNOWN;
+
+        return qualification.isQc() && qualification != CertificateQualification.QCERT_FOR_WSA
+                ? Qualification.QUALIFIED : Qualification.NOT_QUALIFIED;
+    }
+
+    /** Null when the trusted lists could not be loaded. */
+    private CertificateQualification certificateQualification(DSSPrivateKeyEntry key, CertificateVerifier verifier) {
+        if (verifier == null || verifier.getTrustedCertSources().getNumberOfCertificates() == 0)
+            return null;
 
         // revocation is checked on its own, the trusted lists and the chain are enough for the qualification
         var chainOnlyVerifier = new CommonCertificateVerifier();
@@ -109,11 +133,10 @@ public class CertificateStatusChecker {
             var validator = CertificateValidator.fromCertificate(key.getCertificate());
             validator.setCertificateVerifier(chainOnlyVerifier);
             var qualification = validator.validate().getSimpleReport().getQualificationAtValidationTime();
-            return qualification != null && qualification.isQc() && qualification != CertificateQualification.QCERT_FOR_WSA
-                    ? Qualification.QUALIFIED : Qualification.NOT_QUALIFIED;
+            return qualification != null ? qualification : CertificateQualification.NA;
         } catch (RuntimeException e) {
             LOGGER.debug("Qualification check of {} failed", key.getCertificate().getDSSIdAsString(), e);
-            return Qualification.UNKNOWN;
+            return null;
         }
     }
 

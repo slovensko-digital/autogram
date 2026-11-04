@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -384,6 +385,19 @@ public class SigningParametersResolverTests {
         var resolved = SigningParametersResolver.resolveStrict(requested, List.of(autogramDocument));
 
         assertNull(resolved.getContainer());
+    }
+
+    @Test
+    void requiredSigningCertificateTypesSurviveResolution() {
+        var document = AutogramDocument.build(new InMemoryDocument("test".getBytes(), "test.txt", MimeTypeEnum.TEXT), null);
+        var requested = SigningParametersResolver.withSigningCertificateTypes(SigningParametersResolver.buildRequested(
+                SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256, null, null, false, null, null, null,
+                false, 640, false), List.of(SigningCertificateType.QESIG_MANDATE));
+
+        var resolved = SigningParametersResolver.resolveLenient(requested, List.of(document));
+
+        assertEquals(ASiCContainerType.ASiC_E, resolved.getContainer());
+        assertEquals(Set.of(SigningCertificateType.QESIG_MANDATE), resolved.getSigningCertificateTypes());
     }
 
     @Test

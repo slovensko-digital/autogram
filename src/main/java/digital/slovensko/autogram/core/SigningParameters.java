@@ -9,6 +9,7 @@ import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
+import java.util.Set;
 
 import static digital.slovensko.autogram.core.errors.SigningParametersException.Error.NO_LEVEL;
 
@@ -25,11 +26,13 @@ public class SigningParameters {
     private final boolean checkPDFACompliance;
     private final int visualizationWidth;
     private final boolean plainXmlEnabled;
+    private final Set<SigningCertificateType> signingCertificateTypes;
 
     private SigningParameters(
             SignatureProfile signatureProfile, SignatureForm signatureForm, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging signaturePackaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
-            boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled) {
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled,
+            Set<SigningCertificateType> signingCertificateTypes) {
 
         this.signatureProfile = signatureProfile;
         this.signatureForm = signatureForm;
@@ -43,12 +46,23 @@ public class SigningParameters {
         this.checkPDFACompliance = checkPDFACompliance;
         this.visualizationWidth = preferredPreviewWidth;
         this.plainXmlEnabled = plainXmlEnabled;
+        this.signingCertificateTypes = Set.copyOf(signingCertificateTypes);
     }
 
     static SigningParameters buildParameters(
             SignatureProfile profile, SignatureForm form, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
             boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
             boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled) throws SigningParametersException {
+        return buildParameters(profile, form, digestAlgorithm, container, packaging, en319132, infoCanonicalization,
+                propertiesCanonicalization, keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth,
+                plainXmlEnabled, Set.of());
+    }
+
+    static SigningParameters buildParameters(
+            SignatureProfile profile, SignatureForm form, DigestAlgorithm digestAlgorithm, ASiCContainerType container, SignaturePackaging packaging,
+            boolean en319132, String infoCanonicalization, String propertiesCanonicalization, String keyInfoCanonicalization,
+            boolean checkPDFACompliance, int preferredPreviewWidth, boolean plainXmlEnabled,
+            Set<SigningCertificateType> signingCertificateTypes) throws SigningParametersException {
 
         if (profile == null)
             throw new SigningParametersException(NO_LEVEL);
@@ -58,7 +72,7 @@ public class SigningParameters {
 
         var signingParameters = new SigningParameters(
                 profile, form, digestAlgorithm, container, packaging, en319132, infoCanonicalization, propertiesCanonicalization,
-            keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth, plainXmlEnabled);
+            keyInfoCanonicalization, checkPDFACompliance, preferredPreviewWidth, plainXmlEnabled, signingCertificateTypes);
         return signingParameters;
     }
 
@@ -118,5 +132,15 @@ public class SigningParameters {
 
     public boolean isPlainXmlEnabled() {
         return plainXmlEnabled;
+    }
+
+    /** Types the signing certificate must have, empty when any certificate will do. */
+    public Set<SigningCertificateType> getSigningCertificateTypes() {
+        return signingCertificateTypes;
+    }
+
+    /** @param type null when unknown, then only allowed without any required types */
+    public boolean isSigningCertificateAllowed(SigningCertificateType type) {
+        return signingCertificateTypes.isEmpty() || type != null && signingCertificateTypes.contains(type);
     }
 }
