@@ -1,73 +1,109 @@
 name: Package All
 
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag of the release draft, e.g. v2.9.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
-  extract-version:
+  prepare:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.extract-version.outputs.version }}
+      version: ${{ steps.prepare.outputs.version }}
     steps:
-      - name: Extract version from tag
-        id: extract-version
+      - name: Prepare the release draft
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
         run: |
-          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::$TAG is not a release tag like v2.9.0"
+            exit 1
+          fi
+          if ! draft=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>&1); then
+            [[ "$draft" == *"release not found"* ]] || { echo "$draft"; exit 1; }
+            draft=missing
+          fi
+          # a pre-release cannot be published as the latest release, which updates the users, before it is tested
+          case "$draft" in
+            true) gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --prerelease ;;
+            missing) gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --draft --prerelease --title "$TAG" --generate-notes ;;
+            *) echo "::error::Release $TAG is already published, packages are uploaded only to a draft"; exit 1 ;;
+          esac
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
   linux-debian:
-    needs: extract-version
+    needs: prepare
     uses: ./.github/workflows/package_linux_debian.yaml
     with:
       environment: packaging
-      version: ${{ needs.extract-version.outputs.version }}
+      version: ${{ needs.prepare.outputs.version }}
+      tag: ${{ inputs.tag }}
     secrets: inherit
 
   linux-ubuntu:
-    needs: extract-version
+    needs: prepare
     uses: ./.github/workflows/package_linux_ubuntu.yaml
     with:
       environment: packaging
-      version: ${{ needs.extract-version.outputs.version }}
+      version: ${{ needs.prepare.outputs.version }}
+      tag: ${{ inputs.tag }}
     secrets: inherit
 
   linux-fedora:
-    needs: extract-version
+    needs: prepare
     uses: ./.github/workflows/package_linux_fedora.yaml
     with:
       environment: packaging
-      version: ${{ needs.extract-version.outputs.version }}
+      version: ${{ needs.prepare.outputs.version }}
+      tag: ${{ inputs.tag }}
     secrets: inherit
 
   macos-intel:
-    needs: extract-version
+    needs: prepare
     uses: ./.github/workflows/package_macos_intel.yaml
     with:
       environment: packaging
-      version: ${{ needs.extract-version.outputs.version }}
+      version: ${{ needs.prepare.outputs.version }}
+      tag: ${{ inputs.tag }}
     secrets: inherit
 
   macos-arm:
-    needs: extract-version
+    needs: prepare
     uses: ./.github/workflows/package_macos_arm.yaml
     with:
       environment: packaging
-      version: ${{ needs.extract-version.outputs.version }}
+      version: ${{ needs.prepare.outputs.version }}
+      tag: ${{ inputs.tag }}
     secrets: inherit
 
   windows:
-    needs: extract-version
+    needs: prepare
     uses: ./.github/workflows/package_windows.yaml
     with:
       environment: packaging
-      version: ${{ needs.extract-version.outputs.version }}
+      version: ${{ needs.prepare.outputs.version }}
+      tag: ${{ inputs.tag }}
     secrets: inherit
 
   windows-store:
-    needs: extract-version
+    needs: prepare
     uses: ./.github/workflows/package_windows_store.yaml
     with:
       environment: packaging
-      version: ${{ needs.extract-version.outputs.version }}
+      version: ${{ needs.prepare.outputs.version }}
+      tag: ${{ inputs.tag }}
     secrets: inherit
