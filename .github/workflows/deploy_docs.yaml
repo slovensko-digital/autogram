@@ -8,7 +8,8 @@ on:
       - 'docs/**'
       - '.github/workflows/deploy_docs.yaml'
   release:
-    types: [released]
+    # marking a published release as the latest is an edit
+    types: [released, edited]
   workflow_dispatch:
 
 permissions:
