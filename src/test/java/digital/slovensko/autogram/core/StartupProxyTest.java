@@ -64,10 +64,7 @@ public class StartupProxyTest {
                     var cache = NetworkClients.fileCacheDataLoader(21600000);
                     assertEquals("fixture-resource", new String(cache.get(fixture.httpUrl("/trusted-list.xml"))));
                     assertEquals("fixture-resource", new String(cache.get(fixture.httpUrl("/trusted-list.xml"))));
-                    var documentValidator = new RecordingDocumentValidator();
-                    NetworkClients.configureDocumentValidator(documentValidator);
-                    assertNotNull(documentValidator.policyProvider);
-                    try (var policyStream = documentValidator.policyProvider
+                    try (var policyStream = NetworkClients.signaturePolicyProvider()
                             .getSignaturePolicyByUrl(fixture.httpUrl("/policy")).openStream()) {
                         assertEquals("fixture-resource", new String(policyStream.readAllBytes()));
                     }
@@ -126,17 +123,4 @@ public class StartupProxyTest {
         }
     }
 
-    private static class RecordingDocumentValidator extends eu.europa.esig.dss.xades.validation.XMLDocumentValidator {
-        eu.europa.esig.dss.spi.policy.SignaturePolicyProvider policyProvider;
-
-        RecordingDocumentValidator() {
-            super(new eu.europa.esig.dss.model.InMemoryDocument("<document/>".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
-        }
-
-        @Override
-        public void setSignaturePolicyProvider(eu.europa.esig.dss.spi.policy.SignaturePolicyProvider provider) {
-            policyProvider = provider;
-            super.setSignaturePolicyProvider(provider);
-        }
-    }
 }

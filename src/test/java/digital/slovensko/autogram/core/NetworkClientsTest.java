@@ -9,7 +9,6 @@ import org.junit.jupiter.api.io.TempDir;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -44,7 +43,7 @@ class NetworkClientsTest {
     }
 
     @Test
-    void otherSchemesAreBlockedWithoutBreakingHttpAndLocalFiles() throws Exception {
+    void otherSchemesAreBlockedWithoutBreakingHttp() throws Exception {
         try (var fixture = new LocalProxyFixture(directory)) {
             var loader = NetworkClients.configure(new CommonsDataLoader(), ProxyConfiguration.parse(fixture.proxyUrl()));
             for (var scheme : List.of("ldap", "ftp"))
@@ -54,9 +53,6 @@ class NetworkClientsTest {
             assertThrows(DSSExternalResourceException.class, () -> loader.get(List.of(ldapUrl)));
             var result = loader.get(List.of(ldapUrl, fixture.httpUrl("/crl-fallback")));
             assertEquals(fixture.httpUrl("/crl-fallback"), result.getUrlString());
-            var file = directory.resolve("local.xml");
-            Files.writeString(file, "local");
-            assertEquals("local", new String(loader.get(file.toUri().toString())));
             assertEquals(1, fixture.destinationRequests.get());
             assertEquals(0, fixture.forbiddenConnections.get());
         }
@@ -98,8 +94,8 @@ class NetworkClientsTest {
     void downloadsThatDoNotStartOrAreTooSlowAreAborted() throws Exception {
         try (var fixture = new LocalProxyFixture(directory)) {
             var loader = fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), MIN_SPEED));
-            for (var url : List.of(fixture.httpUrl("/silent"), fixture.httpsUrl("/silent"),
-                    fixture.httpUrl("/slow"), fixture.httpsUrl("/slow")))
+            for (var url : List.of(fixture.directHttpUrl("/silent"), fixture.httpsUrl("/silent"),
+                    fixture.directHttpUrl("/slow"), fixture.httpsUrl("/slow")))
                 assertAbortedWithinSeconds(5, () -> loader.get(url), url);
             assertEquals("fixture-resource", new String(loader.get(fixture.httpsUrl("/trusted-list"))));
         }
@@ -109,7 +105,7 @@ class NetworkClientsTest {
     void slowButSteadyDownloadsFinishAfterTheGracePeriod() throws Exception {
         try (var fixture = new LocalProxyFixture(directory)) {
             var loader = fixture.trusting(new NetworkClients.SlowDownloadAbortingDataLoader(Duration.ofSeconds(1), MIN_SPEED));
-            for (var url : List.of(fixture.httpUrl("/steady"), fixture.httpsUrl("/steady")))
+            for (var url : List.of(fixture.directHttpUrl("/steady"), fixture.httpsUrl("/steady")))
                 assertEquals(2500, loader.get(url).length, url);
         }
     }
@@ -130,11 +126,5 @@ class NetworkClientsTest {
         var started = System.nanoTime();
         assertThrows(DSSExternalResourceException.class, download, message);
         assertTrue(Duration.ofNanos(System.nanoTime() - started).compareTo(Duration.ofSeconds(seconds)) < 0, message);
-    }
-
-    @Test
-    void withoutProxyDssLoaderIsUntouched() {
-        var loader = new CommonsDataLoader();
-        assertSame(loader, NetworkClients.configure(loader, ProxyConfiguration.NONE));
     }
 }

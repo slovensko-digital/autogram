@@ -99,6 +99,7 @@ public class SignatureValidator {
 
     public synchronized Reports validate(SignedDocumentValidator docValidator) {
         docValidator.setCertificateVerifier(verifier);
+        docValidator.setSignaturePolicyProvider(NetworkClients.signaturePolicyProvider());
 
         // TODO: do not print stack trace inside DSS
         return docValidator.validateDocument();
@@ -290,7 +291,6 @@ public class SignatureValidator {
             if (validator == null)
                 continue;
 
-            validator.setCertificateVerifier(NetworkClients.certificateVerifier());
             var reports = validator.validateDocument();
             if (hasSignatures(reports))
                 documentReports.add(new ValidationReports.DocumentReport(index, document, reports));
@@ -304,7 +304,6 @@ public class SignatureValidator {
         if (validator == null)
             return null;
 
-        validator.setCertificateVerifier(NetworkClients.certificateVerifier());
         var report = validator.validateDocument().getSimpleReport();
         if (report.getSignatureIdList().size() == 0)
             return null;

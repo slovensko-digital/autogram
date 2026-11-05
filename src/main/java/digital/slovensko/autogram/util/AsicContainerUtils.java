@@ -9,8 +9,6 @@ import eu.europa.esig.dss.asic.xades.extract.ASiCWithXAdESContainerExtractor;
 import eu.europa.esig.dss.enumerations.MimeType;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.model.DSSDocument;
-import digital.slovensko.autogram.core.NetworkClients;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
@@ -25,14 +23,10 @@ import static digital.slovensko.autogram.core.errors.OriginalDocumentNotFoundExc
 
 public class AsicContainerUtils {
     public static List<DSSDocument> getOriginalDocuments(DSSDocument asice) throws OriginalDocumentNotFoundException {
-        SignedDocumentValidator documentValidator;
-        try {
-            documentValidator = NetworkClients.configureDocumentValidator(SignedDocumentValidator.fromDocument(asice));
-        } catch (UnsupportedOperationException e) {
+        var documentValidator = DSSUtils.createDocumentValidator(asice);
+        if (documentValidator == null)
             throw new OriginalDocumentNotFoundException(FILE_NOT_FOUND);
-        }
 
-        documentValidator.setCertificateVerifier(NetworkClients.certificateVerifier());
         var signatures = documentValidator.getSignatures();
         if (signatures.isEmpty())
             throw new OriginalDocumentNotFoundException(NO_SIGNATURE);
@@ -61,14 +55,10 @@ public class AsicContainerUtils {
     public static List<AutogramDocument> getOriginalDocuments(AutogramDocument document) throws OriginalDocumentNotFoundException {
         var asice = document.toDssDocument();
 
-        SignedDocumentValidator documentValidator;
-        try {
-            documentValidator = NetworkClients.configureDocumentValidator(SignedDocumentValidator.fromDocument(asice));
-        } catch (UnsupportedOperationException e) {
+        var documentValidator = DSSUtils.createDocumentValidator(asice);
+        if (documentValidator == null)
             throw new OriginalDocumentNotFoundException(FILE_NOT_FOUND);
-        }
 
-        documentValidator.setCertificateVerifier(NetworkClients.certificateVerifier());
         var signatures = documentValidator.getSignatures();
         if (signatures.isEmpty())
             throw new OriginalDocumentNotFoundException(NO_SIGNATURE);

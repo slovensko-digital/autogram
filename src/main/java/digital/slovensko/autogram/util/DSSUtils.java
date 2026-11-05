@@ -1,6 +1,5 @@
 package digital.slovensko.autogram.util;
 
-import digital.slovensko.autogram.core.NetworkClients;
 import eu.europa.esig.dss.asic.cades.validation.ASiCContainerWithCAdESValidatorFactory;
 import eu.europa.esig.dss.asic.xades.validation.ASiCContainerWithXAdESValidatorFactory;
 import eu.europa.esig.dss.cades.validation.CMSDocumentValidatorFactory;
@@ -9,6 +8,9 @@ import eu.europa.esig.dss.enumerations.KeyUsageBit;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.validation.PDFDocumentValidatorFactory;
+import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
+import eu.europa.esig.dss.spi.policy.SignaturePolicyProvider;
+import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.xades.validation.XMLDocumentValidatorFactory;
@@ -73,21 +75,31 @@ public class DSSUtils {
 
     public static SignedDocumentValidator createDocumentValidator(DSSDocument document) {
         if (new PDFDocumentValidatorFactory().isSupported(document))
-            return NetworkClients.configureDocumentValidator(new PDFDocumentValidatorFactory().create(document));
+            return withoutDownloads(new PDFDocumentValidatorFactory().create(document));
 
         if (new XMLDocumentValidatorFactory().isSupported(document))
-            return NetworkClients.configureDocumentValidator(new XMLDocumentValidatorFactory().create(document));
+            return withoutDownloads(new XMLDocumentValidatorFactory().create(document));
 
         if (new ASiCContainerWithXAdESValidatorFactory().isSupported(document))
-            return NetworkClients.configureDocumentValidator(new ASiCContainerWithXAdESValidatorFactory().create(document));
+            return withoutDownloads(new ASiCContainerWithXAdESValidatorFactory().create(document));
 
         if (new ASiCContainerWithCAdESValidatorFactory().isSupported(document))
-            return NetworkClients.configureDocumentValidator(new ASiCContainerWithCAdESValidatorFactory().create(document));
+            return withoutDownloads(new ASiCContainerWithCAdESValidatorFactory().create(document));
 
         if (new CMSDocumentValidatorFactory().isSupported(document))
-            return NetworkClients.configureDocumentValidator(new CMSDocumentValidatorFactory().create(document));
+            return withoutDownloads(new CMSDocumentValidatorFactory().create(document));
 
         return null;
+    }
+
+    private static SignedDocumentValidator withoutDownloads(SignedDocumentValidator validator) {
+        var verifier = new CommonCertificateVerifier();
+        verifier.setAIASource(null);
+        validator.setCertificateVerifier(verifier);
+        var policyProvider = new SignaturePolicyProvider();
+        policyProvider.setDataLoader(new IgnoreDataLoader());
+        validator.setSignaturePolicyProvider(policyProvider);
+        return validator;
     }
 
     public static String getXdcfFilename(String filename) {

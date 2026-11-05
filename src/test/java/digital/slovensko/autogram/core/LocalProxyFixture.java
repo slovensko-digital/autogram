@@ -22,6 +22,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /** Loopback-only forwarding proxy and destinations, with independently recorded connections. */
 class LocalProxyFixture implements AutoCloseable {
+    /** Known only to the proxy, like a public host behind a company's proxy. */
+    private static final String DESTINATION = "autogram-proxy-fixture.invalid";
+
     private final ExecutorService threads = Executors.newVirtualThreadPerTaskExecutor();
     private final ServerSocket proxy = new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
     private final ServerSocket forbidden = new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
@@ -125,7 +128,8 @@ class LocalProxyFixture implements AutoCloseable {
     }
 
     String proxyUrl() { return "http://127.0.0.1:" + proxy.getLocalPort(); }
-    String httpUrl(String path) { return "http://127.0.0.1:" + http.getAddress().getPort() + path; }
+    String httpUrl(String path) { return "http://" + DESTINATION + ":" + http.getAddress().getPort() + path; }
+    String directHttpUrl(String path) { return "http://127.0.0.1:" + http.getAddress().getPort() + path; }
     String httpsUrl(String path) { return "https://localhost:" + https.getAddress().getPort() + path; }
     String forbiddenUrl(String scheme) { return scheme + "://127.0.0.1:" + forbidden.getLocalPort() + "/resource"; }
 
@@ -178,10 +182,11 @@ class LocalProxyFixture implements AutoCloseable {
             }
             boolean connect = first[0].equals("CONNECT");
             var uri = URI.create(connect ? "http://" + first[1] : first[1]);
+            var host = uri.getHost().equals(DESTINATION) ? "127.0.0.1" : uri.getHost();
             // Never allow the fixture to connect outside loopback.
-            if (!(uri.getHost().equals("localhost") || uri.getHost().equals("127.0.0.1")))
+            if (!(host.equals("localhost") || host.equals("127.0.0.1")))
                 throw new IOException("Non-local fixture destination");
-            try (var destination = new Socket(uri.getHost(), uri.getPort())) {
+            try (var destination = new Socket(host, uri.getPort())) {
                 destination.setSoTimeout(10000);
                 if (connect) {
                     client.getOutputStream().write("HTTP/1.1 200 Connection Established\r\n\r\n"

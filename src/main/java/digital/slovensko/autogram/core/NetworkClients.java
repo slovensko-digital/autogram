@@ -14,24 +14,36 @@ import eu.europa.esig.dss.spi.policy.SignaturePolicyProvider;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpException;
+import org.apache.hc.core5.http.HttpRequest;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.ProtocolException;
+import org.apache.hc.core5.http.protocol.HttpContext;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 /** Autogram-only factories; never change JVM-wide networking settings. */
 public final class NetworkClients {
@@ -50,7 +62,7 @@ public final class NetworkClients {
     }
 
     public static DataLoader dataLoader() {
-        return configure(trustingSystem(new CommonsDataLoader()), configuration());
+        return publicOnly(new CheckedRedirectsDataLoader(url -> isHttp(url) && !leadsToInternalAddress(url)));
     }
 
     public static DataLoader timestampDataLoader() {
@@ -58,12 +70,44 @@ public final class NetworkClients {
     }
 
     public static DataLoader ocspDataLoader() {
-        return configure(trustingSystem(new OCSPDataLoader()), configuration());
+        var loader = new OCSPDataLoader();
+        loader.setRedirectsEnabled(false);
+        return publicOnly(loader);
+    }
+
+    private static DataLoader publicOnly(CommonsDataLoader loader) {
+        return new RestrictedDataLoader(configure(trustingSystem(loader), configuration()),
+                url -> !leadsToInternalAddress(url));
     }
 
     private static CommonsDataLoader trustingSystem(CommonsDataLoader loader) {
         loader.setTrustStrategy(SystemTrust.trustStrategy());
         return loader;
+    }
+
+    // Prefix check only: URLs from certificates (e.g. LDAP DNs with spaces) need not be valid URIs.
+    private static boolean isHttp(String url) {
+        var lowerCaseUrl = url.toLowerCase(Locale.ROOT);
+        return lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://");
+    }
+
+    private static boolean leadsToInternalAddress(String url) {
+        try {
+            var host = new URI(url).getHost();
+            return host == null || Arrays.stream(InetAddress.getAllByName(host)).anyMatch(NetworkClients::isInternal);
+        } catch (URISyntaxException e) {
+            return true;
+        } catch (UnknownHostException e) {
+            return false; // only a proxy may know the host, otherwise connecting fails anyway
+        }
+    }
+
+    private static boolean isInternal(InetAddress address) {
+        var bytes = address.getAddress();
+        var sharedIpv4 = bytes.length == 4 && (bytes[0] & 0xff) == 100 && (bytes[1] & 0xc0) == 64;
+        var uniqueLocalIpv6 = bytes.length == 16 && (bytes[0] & 0xfe) == 0xfc;
+        return address.isAnyLocalAddress() || address.isLoopbackAddress() || address.isLinkLocalAddress()
+                || address.isSiteLocalAddress() || sharedIpv4 || uniqueLocalIpv6;
     }
 
     public static FileCacheDataLoader fileCacheDataLoader(long expirationTime) {
@@ -85,7 +129,7 @@ public final class NetworkClients {
 
     static DataLoader configure(CommonsDataLoader loader, ProxyConfiguration configuration) {
         if (!configuration.isConfigured())
-            return loader;
+            return new RestrictedDataLoader(loader, NetworkClients::isHttp);
 
         var properties = new ProxyProperties();
         properties.setScheme("http");
@@ -95,7 +139,7 @@ public final class NetworkClients {
         proxy.setHttpProperties(properties);
         proxy.setHttpsProperties(properties);
         loader.setProxyConfig(proxy);
-        return new HttpOnlyDataLoader(loader);
+        return new RestrictedDataLoader(loader, NetworkClients::isHttp);
     }
 
     public static CommonCertificateVerifier certificateVerifier() {
@@ -105,12 +149,11 @@ public final class NetworkClients {
         return verifier;
     }
 
-    public static SignedDocumentValidator configureDocumentValidator(SignedDocumentValidator validator) {
+    public static SignaturePolicyProvider signaturePolicyProvider() {
         // DSS's analyzer also lazily creates a native loader for signature policies.
         var provider = new SignaturePolicyProvider();
         provider.setDataLoader(dataLoader());
-        validator.setSignaturePolicyProvider(provider);
-        return validator;
+        return provider;
     }
 
     public static HttpClient.Builder httpClientBuilder() {
@@ -217,18 +260,31 @@ public final class NetworkClients {
         }
     }
 
-    /** Only HTTP(S) goes through the proxy, other schemes (e.g. LDAP) would connect directly. */
-    private record HttpOnlyDataLoader(DataLoader delegate) implements DataLoader {
-        // Prefix check only: URLs from certificates (e.g. LDAP DNs with spaces) need not be valid URIs.
-        private static boolean isAllowed(String url) {
-            var lowerCaseUrl = url.toLowerCase(Locale.ROOT);
-            return lowerCaseUrl.startsWith("http://") || lowerCaseUrl.startsWith("https://")
-                    || lowerCaseUrl.startsWith("file:");
+    private static final class CheckedRedirectsDataLoader extends CommonsDataLoader {
+        private final Predicate<String> isAllowed;
+
+        CheckedRedirectsDataLoader(Predicate<String> isAllowed) {
+            this.isAllowed = isAllowed;
         }
 
-        private static void check(String url) {
-            if (!isAllowed(url))
-                throw new DSSExternalResourceException("Outbound request blocked by proxy configuration: " + url);
+        @Override
+        protected synchronized HttpClientBuilder getHttpClientBuilder(String url) {
+            return super.getHttpClientBuilder(url).setRedirectStrategy(new DefaultRedirectStrategy() {
+                @Override
+                public URI getLocationURI(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException {
+                    var location = super.getLocationURI(request, response, context);
+                    if (!isAllowed.test(location.toString()))
+                        throw new ProtocolException("Redirect blocked: " + location);
+                    return location;
+                }
+            });
+        }
+    }
+
+    private record RestrictedDataLoader(DataLoader delegate, Predicate<String> isAllowed) implements DataLoader {
+        private void check(String url) {
+            if (!isAllowed.test(url))
+                throw new DSSExternalResourceException("Outbound request blocked: " + url);
         }
 
         @Override
@@ -240,9 +296,9 @@ public final class NetworkClients {
         @Override
         public DataAndUrl get(List<String> urls) {
             // Filter before delegating: the delegate's list method calls its own get().
-            var allowed = urls.stream().filter(HttpOnlyDataLoader::isAllowed).toList();
+            var allowed = urls.stream().filter(isAllowed).toList();
             if (allowed.isEmpty())
-                throw new DSSExternalResourceException("Outbound requests blocked by proxy configuration.");
+                throw new DSSExternalResourceException("Outbound requests blocked.");
             return delegate.get(allowed);
         }
 
