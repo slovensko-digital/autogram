@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -41,35 +42,50 @@ public class CertificateStatusChecker {
 
     public enum Qualification { QUALIFIED, NOT_QUALIFIED, UNKNOWN }
 
-    public record Result(CertificateStatus status, Qualification qualification) { }
+    /**
+     * @param countryToTurnOn the issuer's country whose trusted list is turned off in the settings, which is why the
+     *                        qualification is UNKNOWN; null otherwise and for a revoked certificate
+     */
+    public record Result(CertificateStatus status, Qualification qualification, Country countryToTurnOn) {
+        public Result(CertificateStatus status, Qualification qualification) {
+            this(status, qualification, null);
+        }
+    }
 
     private final OCSPSource ocspSource;
     private final CRLSource crlSource;
     private final AIASource aiaSource;
     private final Supplier<CompletableFuture<CertificateVerifier>> trustedLists;
     private final Supplier<Set<String>> countriesNotLoaded;
+    private final Predicate<String> isTurnedOn;
 
     /** @param trustedLists the verifier with the trusted lists once they are loaded */
     public CertificateStatusChecker(OCSPSource ocspSource, CRLSource crlSource, AIASource aiaSource,
             Supplier<CompletableFuture<CertificateVerifier>> trustedLists) {
-        this(ocspSource, crlSource, aiaSource, trustedLists, Set::of);
+        this(ocspSource, crlSource, aiaSource, trustedLists, Set::of, country -> true);
     }
 
-    /** @param countriesNotLoaded countries whose trusted lists were not loaded, as in {@link SignatureValidator.FailedTLs} */
+    /**
+     * @param countriesNotLoaded countries whose trusted lists were not loaded, as in {@link SignatureValidator.FailedTLs}
+     * @param isTurnedOn whether the trusted list of a country, given the same way, is turned on in the settings
+     */
     public CertificateStatusChecker(OCSPSource ocspSource, CRLSource crlSource, AIASource aiaSource,
-            Supplier<CompletableFuture<CertificateVerifier>> trustedLists, Supplier<Set<String>> countriesNotLoaded) {
+            Supplier<CompletableFuture<CertificateVerifier>> trustedLists, Supplier<Set<String>> countriesNotLoaded,
+            Predicate<String> isTurnedOn) {
         this.ocspSource = ocspSource;
         this.crlSource = crlSource;
         this.aiaSource = aiaSource;
         this.trustedLists = trustedLists;
         this.countriesNotLoaded = countriesNotLoaded;
+        this.isTurnedOn = isTurnedOn;
     }
 
-    public static CertificateStatusChecker online() {
+    /** @param isTurnedOn whether the trusted list of a country, e.g. EL for Greece, is turned on in the settings */
+    public static CertificateStatusChecker online(Predicate<String> isTurnedOn) {
         var validator = SignatureValidator.getInstance();
         return new CertificateStatusChecker(new OnlineOCSPSource(NetworkClients.ocspDataLoader()),
                 new OnlineCRLSource(NetworkClients.dataLoader()), new DefaultAIASource(NetworkClients.dataLoader()),
-                validator::whenLoaded, () -> validator.getFailedTLs().countries());
+                validator::whenLoaded, () -> validator.getFailedTLs().countries(), isTurnedOn);
     }
 
     /**
@@ -80,7 +96,15 @@ public class CertificateStatusChecker {
         var status = withTimeout(CompletableFuture.supplyAsync(() -> checkStatus(key)), CertificateStatus.UNKNOWN, statusTimeout);
         var qualification = withTimeout(trustedLists.get().thenApplyAsync(verifier -> checkQualification(key, verifier)),
                 Qualification.UNKNOWN, trustedListsTimeout);
-        return status.thenCombine(qualification, Result::new);
+        return status.thenCombine(qualification, (s, q) -> new Result(s, q, countryToTurnOn(key, s, q)));
+    }
+
+    /** Turning the country on tells the qualification, which a revoked certificate does not need. */
+    private Country countryToTurnOn(DSSPrivateKeyEntry key, CertificateStatus status, Qualification qualification) {
+        if (status == CertificateStatus.REVOKED || qualification != Qualification.UNKNOWN)
+            return null;
+
+        return countryTurnedOff(key.getCertificate()).orElse(null);
     }
 
     private static <T> CompletableFuture<T> withTimeout(CompletableFuture<T> future, T fallback, Duration timeout) {
@@ -103,7 +127,7 @@ public class CertificateStatusChecker {
         return CertificateStatus.UNKNOWN;
     }
 
-    /** UNKNOWN when the trusted lists, or just the one of the issuer's country, could not be loaded. */
+    /** UNKNOWN when the trusted lists, or just the one of the issuer's country, could not be loaded or are turned off. */
     public Qualification checkQualification(DSSPrivateKeyEntry key, CertificateVerifier verifier) {
         if (verifier == null || verifier.getTrustedCertSources().getNumberOfCertificates() == 0)
             return Qualification.UNKNOWN;
@@ -123,8 +147,10 @@ public class CertificateStatusChecker {
             if (qualification != null && qualification.isQc() && qualification != CertificateQualification.QCERT_FOR_WSA)
                 return Qualification.QUALIFIED;
 
-            // the list that could make it qualified is missing, e.g. its server did not answer in time
-            return isIssuerCountryNotLoaded(key.getCertificate()) ? Qualification.UNKNOWN : Qualification.NOT_QUALIFIED;
+            // the list that could make it qualified is missing: turned off, or e.g. its server did not answer in time
+            var certificate = key.getCertificate();
+            return isIssuerCountryNotLoaded(certificate) || countryTurnedOff(certificate).isPresent()
+                    ? Qualification.UNKNOWN : Qualification.NOT_QUALIFIED;
         } catch (RuntimeException e) {
             LOGGER.debug("Qualification check of {} failed", key.getCertificate().getDSSIdAsString(), e);
             return Qualification.UNKNOWN;
@@ -133,6 +159,12 @@ public class CertificateStatusChecker {
 
     private boolean isIssuerCountryNotLoaded(CertificateToken certificate) {
         return isIssuedIn(certificate.getIssuerX500Principal().getName(X500Principal.RFC2253), countriesNotLoaded.get());
+    }
+
+    /** The issuer's country, when it has a trusted list that is turned off in the settings. */
+    private Optional<Country> countryTurnedOff(CertificateToken certificate) {
+        return trustedListCountry(certificate.getIssuerX500Principal().getName(X500Principal.RFC2253))
+                .filter(country -> !isTurnedOn.test(country.getShortname()));
     }
 
     /** Whether the issuer is from one of the countries, given as in the trusted lists, e.g. EL for Greece. */

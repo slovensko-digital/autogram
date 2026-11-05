@@ -209,7 +209,7 @@ public class GUI implements UI {
             return;
         }
 
-        var checker = CertificateStatusChecker.online();
+        var checker = CertificateStatusChecker.online(country -> userSettings.getTrustedList().contains(country));
         var trustedLists = SignatureValidator.getInstance().whenLoaded();
         Runnable openSettings = autogram == null ? null : () -> {
             SettingsDialogController.showAndWait(autogram, userSettings, SettingsDialogController.TRUSTED_COUNTRIES_TAB);

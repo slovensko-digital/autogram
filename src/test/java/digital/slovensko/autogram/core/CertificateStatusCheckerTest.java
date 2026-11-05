@@ -2,6 +2,7 @@ package digital.slovensko.autogram.core;
 
 import digital.slovensko.autogram.TestPki;
 import digital.slovensko.autogram.core.CertificateStatusChecker.Qualification;
+import digital.slovensko.autogram.core.settings.Country;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.exception.DSSExternalResourceException;
@@ -125,11 +126,47 @@ class CertificateStatusCheckerTest {
     @Test
     void testQualificationIsUnknownWhenTrustedListOfIssuerCountryIsNotLoaded() {
         var key = keyOf(TestPki.create().signer(TestPki.JANA));
-        var notLoaded = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null, () -> Set.of("SK"));
-        var otherNotLoaded = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null, () -> Set.of("BE"));
+        var notLoaded = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null, () -> Set.of("SK"), country -> true);
+        var otherNotLoaded = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null, () -> Set.of("BE"), country -> true);
 
         assertEquals(Qualification.UNKNOWN, notLoaded.checkQualification(key, pki.verifier()));
         assertEquals(Qualification.NOT_QUALIFIED, otherNotLoaded.checkQualification(key, pki.verifier()));
+    }
+
+    @Test
+    void testQualificationIsUnknownWhenTrustedListOfIssuerCountryIsTurnedOff() {
+        var key = keyOf(TestPki.create("DE").signer(TestPki.JANA));
+        var turnedOff = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null, Set::of, "SK"::equals);
+        var turnedOn = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null, Set::of, "DE"::equals);
+
+        assertEquals(Qualification.UNKNOWN, turnedOff.checkQualification(key, pki.verifier()));
+        assertEquals(Qualification.NOT_QUALIFIED, turnedOn.checkQualification(key, pki.verifier()));
+    }
+
+    @Test
+    void testResultSaysWhichCountryToTurnOn() throws Exception {
+        var germanPki = TestPki.create("DE");
+        var checker = new CertificateStatusChecker(NO_OCSP, germanPki.crlSource(null), null,
+                () -> CompletableFuture.completedFuture(pki.verifier()), Set::of, "SK"::equals);
+
+        var result = checker.checkAsync(keyOf(germanPki.signer(TestPki.JANA)), Duration.ofSeconds(10), Duration.ofSeconds(10))
+                .get(10, TimeUnit.SECONDS);
+
+        var germany = Country.withTrustedList("DE").orElseThrow();
+        assertEquals(new CertificateStatusChecker.Result(CertificateStatus.GOOD, Qualification.UNKNOWN, germany), result);
+    }
+
+    @Test
+    void testRevokedCertificateHasNoCountryToTurnOn() throws Exception {
+        var germanPki = TestPki.create("DE");
+        var signer = germanPki.issue("Max Mustermann", TestPki.Kind.QESIG);
+        germanPki.revoke(signer);
+        var checker = new CertificateStatusChecker(NO_OCSP, germanPki.crlSource(null), null,
+                () -> CompletableFuture.completedFuture(pki.verifier()), Set::of, "SK"::equals);
+
+        var result = checker.checkAsync(keyOf(signer), Duration.ofSeconds(10), Duration.ofSeconds(10)).get(10, TimeUnit.SECONDS);
+
+        assertEquals(new CertificateStatusChecker.Result(CertificateStatus.REVOKED, Qualification.UNKNOWN), result);
     }
 
     @Test

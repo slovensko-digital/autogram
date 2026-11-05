@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -46,7 +47,6 @@ public class PickKeyDialogController extends BaseController {
     private final Set<DSSPrivateKeyEntry> checkPending = new HashSet<>();
     private final Map<DSSPrivateKeyEntry, CertificateStatusChecker.Result> results = new LinkedHashMap<>();
     private final Map<DSSPrivateKeyEntry, Runnable> checks = new LinkedHashMap<>();
-    private final Map<DSSPrivateKeyEntry, Country> countriesTurnedOff = new LinkedHashMap<>();
 
     @FXML
     VBox formGroup;
@@ -148,15 +148,10 @@ public class PickKeyDialogController extends BaseController {
 
     private void showResult(DSSPrivateKeyEntry key, RadioButton radioButton, HBox badges, CertificateStatusChecker.Result result) {
         checkPending.remove(key);
-        var country = result.status() != CertificateStatus.REVOKED && result.qualification() == Qualification.NOT_QUALIFIED
-                ? countryTurnedOff(key) : Optional.<Country>empty();
-        // without the trusted list of the issuer's country the check cannot tell
-        country.ifPresent(c -> countriesTurnedOff.put(key, c));
-        var checked = country.isPresent() ? new CertificateStatusChecker.Result(result.status(), Qualification.UNKNOWN) : result;
-        results.put(key, checked);
-        badges.getChildren().setAll(badgeFor(checked).stream().toList());
+        results.put(key, result);
+        badges.getChildren().setAll(badgeFor(result).stream().toList());
 
-        if (!isAllowed(checked)) {
+        if (!isAllowed(result)) {
             radioButton.setSelected(false);
             radioButton.setDisable(true);
         }
@@ -174,13 +169,6 @@ public class PickKeyDialogController extends BaseController {
     private void sizeWindowToScene() {
         if (mainBox.getScene() != null && mainBox.getScene().getWindow() != null)
             mainBox.getScene().getWindow().sizeToScene();
-    }
-
-    /** The issuer's country, when its trusted list could make the certificate qualified but is not added. */
-    private Optional<Country> countryTurnedOff(DSSPrivateKeyEntry key) {
-        return CertificateStatusChecker.issuerCountry(key.getCertificate())
-                .flatMap(Country::withTrustedList)
-                .filter(country -> !userSettings.getTrustedList().contains(country.getShortname()));
     }
 
     /** One badge at most, for the most important finding. */
@@ -211,8 +199,7 @@ public class PickKeyDialogController extends BaseController {
     }
 
     private void showHintIfNotVerified() {
-        if (results.entrySet().stream().noneMatch(entry -> isNotVerified(entry.getValue())
-                && !isExplainedByCountryTurnedOff(entry.getKey(), entry.getValue())))
+        if (results.values().stream().noneMatch(result -> isNotVerified(result) && !isExplainedByCountryTurnedOff(result)))
             return;
 
         notVerifiedText.setText(i18n("pickKey.hint.notVerified"));
@@ -220,18 +207,21 @@ public class PickKeyDialogController extends BaseController {
     }
 
     /** Only the qualification is not known, which the warning about the country says. */
-    private boolean isExplainedByCountryTurnedOff(DSSPrivateKeyEntry key, CertificateStatusChecker.Result result) {
-        return turnOnTrustedLists != null && countriesTurnedOff.containsKey(key)
-                && result.status() == CertificateStatus.GOOD;
+    private boolean isExplainedByCountryTurnedOff(CertificateStatusChecker.Result result) {
+        return turnOnTrustedLists != null && result.countryToTurnOn() != null && result.status() == CertificateStatus.GOOD;
     }
 
     private void showCountriesTurnedOff() {
-        if (turnOnTrustedLists == null || countriesTurnedOff.isEmpty())
+        var countryPerCertificate = results.values().stream()
+                .map(CertificateStatusChecker.Result::countryToTurnOn)
+                .filter(Objects::nonNull)
+                .toList();
+        if (turnOnTrustedLists == null || countryPerCertificate.isEmpty())
             return;
 
-        var countries = countriesTurnedOff.values().stream().distinct().toList();
+        var countries = countryPerCertificate.stream().distinct().toList();
         var message = i18n("pickKey.countryTurnedOff.warning", GUIValidationUtils.countryNames(resources, countries),
-                countries.size(), countriesTurnedOff.size());
+                countries.size(), countryPerCertificate.size());
         countriesTurnedOffWarning.getChildren().setAll(GUIValidationUtils.createCountriesTurnedOffWarning(resources,
                 message, countries, this::addCountries));
         setShown(countriesTurnedOffWarning, true);
@@ -242,7 +232,6 @@ public class PickKeyDialogController extends BaseController {
         mainBox.requestFocus(); // the button disappears and its focus would move to the sign button
         waitForTrustedLists(turnOnTrustedLists.apply(countries));
         results.clear();
-        countriesTurnedOff.clear();
         setShown(notVerifiedHint, false);
         setShown(countriesTurnedOffWarning, false);
         setShown(hint, false);
