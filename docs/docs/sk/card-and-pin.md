@@ -93,14 +93,19 @@ Overovanie zvyčajne trvá zlomok sekundy. Krátko po spustení Autogramu ešte 
 | --- | --- | --- |
 | **Zrušený certifikát** | Certifikačná autorita certifikát zrušila. Podpis ním nie je platný. | Iba ak je v [Nastaveniach](settings.md#bezpecnost) zapnuté **Povoliť podpisovanie exspirovanými a zrušenými certifikátmi** |
 | **Nekvalifikovaný certifikát** | Certifikát nie je kvalifikovaný podľa dôveryhodných zoznamov. | Iba ak je v [Nastaveniach](settings.md#bezpecnost) zapnuté **Povoliť podpisovanie nekvalifikovanými certifikátmi** |
-| **Platnosť sa nepodarilo overiť** | Autogram nezistil, či certifikát nebol zrušený alebo či je kvalifikovaný. Napríklad nemá pripojenie na internet alebo sa nepodarilo stiahnuť dôveryhodný zoznam krajiny, v ktorej bol certifikát vydaný. | Áno |
+| **Platnosť sa nepodarilo overiť** | Autogram nezistil, či certifikát nebol zrušený. Napríklad nemá pripojenie na internet. | Áno |
+| **Kvalifikáciu sa nepodarilo overiť** | Autogram nezistil, či je certifikát kvalifikovaný. Napríklad sa nepodarilo stiahnuť dôveryhodný zoznam krajiny, v ktorej bol certifikát vydaný, alebo túto krajinu nemáte pridanú v [Nastaveniach](settings.md#overovanie-podpisov). | Áno |
 | **Exspirovaný certifikát** | Platnosť certifikátu uplynula. Takéto certifikáty sa zobrazia, iba ak je v Nastaveniach zapnuté **Povoliť podpisovanie exspirovanými a zrušenými certifikátmi**. | Áno |
 
 Ak sa niektorý certifikát nepodarilo overiť, Autogram na to pod zoznamom upozorní. Podpísať ním môžete aj tak, napríklad keď práve nemáte pripojenie na internet. Nie je však isté, či bude podpis v poriadku.
 
 ![Certifikáty, ktoré sa nepodarilo overiť](/assets/images/screenshots/sk/certificate-picker-offline.png)
 
-Ak nie je kvalifikovaný žiadny certifikát, Autogram pod nimi zobrazí radu s odkazom **Otvoriť nastavenia**. Najčastejšie je príčinou to, že certifikát vydala certifikačná autorita z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý. Autogram vtedy túto krajinu v rade uvedie. Keď nastavenia zatvoríte, výber certifikátu sa zobrazí znova.
+Ak certifikát vydala certifikačná autorita z krajiny, ktorú nemáte pridanú v [Nastaveniach](settings.md#overovanie-podpisov), Autogram nevie overiť, či je kvalifikovaný, a pod certifikátmi na to upozorní. Kliknite na tlačidlo v upozornení, napríklad **Pridať krajinu Nemecko**: Autogram krajinu pridá v nastaveniach a certifikáty overí znova. Podpísať môžete aj bez toho.
+
+![Upozornenie, že Autogram nemá nastavené overovanie certifikátov z krajiny, s tlačidlom, ktoré ju pridá](/assets/images/screenshots/sk/certificate-picker-country-off.png)
+
+Ak nie je kvalifikovaný žiadny certifikát, Autogram pod nimi zobrazí radu s odkazom **Otvoriť nastavenia**. Podpisovanie nekvalifikovanými certifikátmi môžete povoliť v časti [Bezpečnosť](settings.md#bezpecnost). Keď nastavenia zatvoríte, výber certifikátu sa zobrazí znova.
 
 ![Rada, keď nie je kvalifikovaný žiadny certifikát](/assets/images/screenshots/sk/certificate-picker-hint.png)
 

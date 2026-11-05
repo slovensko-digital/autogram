@@ -9,6 +9,7 @@ import eu.europa.esig.dss.enumerations.CertificateStatus;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import javafx.application.Platform;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.RadioButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
@@ -16,10 +17,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -35,6 +38,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class PickKeyDialogControllerTest {
     private static final Result QUALIFIED = new Result(CertificateStatus.GOOD, Qualification.QUALIFIED);
     private static final Result NOT_QUALIFIED = new Result(CertificateStatus.GOOD, Qualification.NOT_QUALIFIED);
+    private static final Country SLOVAKIA = Country.withTrustedList("SK").orElseThrow();
+    private static final Result SLOVAKIA_TURNED_OFF = new Result(CertificateStatus.GOOD, Qualification.UNKNOWN, SLOVAKIA);
 
     private static DSSPrivateKeyEntry jana;
     private static DSSPrivateKeyEntry peter;
@@ -212,17 +217,71 @@ class PickKeyDialogControllerTest {
     }
 
     @Test
-    void testHintNamesIssuerCountryWhoseTrustedListIsTurnedOff() throws Exception {
+    void testCertificatesFromCountryNotAddedCanBePickedAndTheWarningOffersToAddIt() throws Exception {
         onFxThread(() -> {
             var dialog = open(List.of(jana, seal), settings(false, "CZ"));
-            dialog.answer(jana, NOT_QUALIFIED);
-            dialog.answer(seal, NOT_QUALIFIED);
+            dialog.answer(jana, SLOVAKIA_TURNED_OFF);
+            dialog.answer(seal, SLOVAKIA_TURNED_OFF);
 
-            var slovakia = Country.withTrustedList("SK").orElseThrow().getName(dialog.controller().getResources().getLocale());
+            assertFalse(dialog.radio(jana).isDisabled());
+            assertFalse(dialog.radio(seal).isDisabled());
+            assertFalse(dialog.controller().mainButton.isDisabled());
+            assertEquals(List.of(dialog.i18n("pickKey.qualification.unknown")), dialog.badgeTexts(jana));
+            assertTrue(dialog.controller().countriesTurnedOffWarning.isVisible());
+            assertEquals(dialog.i18n("pickKey.countryTurnedOff.warning",
+                            SLOVAKIA.getName(dialog.controller().getResources().getLocale()), 1, 2),
+                    dialog.warningText());
+            assertEquals(GUIValidationUtils.addCountriesButton(dialog.controller().getResources(), List.of(SLOVAKIA)),
+                    dialog.addCountriesButton().getText());
+            assertFalse(dialog.controller().notVerifiedHint.isVisible(), "the warning about the country says it");
+            assertFalse(dialog.controller().hint.isVisible());
+        });
+    }
+
+    @Test
+    void testAddingTheCountryChecksTheCertificatesAgain() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana), settings(false, "CZ"));
+            dialog.answer(jana, SLOVAKIA_TURNED_OFF);
+
+            dialog.addCountriesButton().fire();
+
+            assertEquals(List.of(List.of("SK")), dialog.added().stream()
+                    .map(countries -> countries.stream().map(Country::getShortname).toList()).toList());
+            assertFalse(dialog.controller().countriesTurnedOffWarning.isVisible());
+            assertTrue(dialog.badges(jana).getChildren().isEmpty());
             assertTrue(dialog.controller().mainButton.isDisabled());
-            assertTrue(dialog.controller().hint.isVisible());
-            assertEquals(dialog.i18n("pickKey.hint.countryTurnedOff", slovakia) + " " + dialog.i18n("pickKey.hint.allowNotQualified"),
-                    dialog.controller().hintText.getText());
+            assertEquals(dialog.i18n("pickKey.trustedListsLoading.btn"), dialog.controller().mainButton.getText());
+
+            dialog.answer(jana, QUALIFIED);
+            assertTrue(dialog.badges(jana).getChildren().isEmpty());
+            assertTrue(dialog.radio(jana).isSelected());
+            assertFalse(dialog.controller().mainButton.isDisabled());
+        });
+    }
+
+    @Test
+    void testCertificateFromCountryNotAddedThatCouldNotBeCheckedOnlineHasOneBadge() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana), settings(false, "CZ"));
+            dialog.answer(jana, new Result(CertificateStatus.UNKNOWN, Qualification.UNKNOWN, SLOVAKIA));
+
+            assertEquals(List.of(dialog.i18n("pickKey.certificateStatus.unknown")), dialog.badgeTexts(jana));
+            assertTrue(dialog.controller().countriesTurnedOffWarning.isVisible());
+            assertTrue(dialog.controller().notVerifiedHint.isVisible());
+        });
+    }
+
+    @Test
+    void testQualificationThatCouldNotBeVerifiedHasItsOwnBadge() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana), settings(false, "SK"));
+            dialog.answer(jana, new Result(CertificateStatus.GOOD, Qualification.UNKNOWN));
+
+            assertFalse(dialog.radio(jana).isDisabled());
+            assertEquals(List.of(dialog.i18n("pickKey.qualification.unknown")), dialog.badgeTexts(jana));
+            assertTrue(dialog.controller().notVerifiedHint.isVisible());
+            assertFalse(dialog.controller().countriesTurnedOffWarning.isVisible());
         });
     }
 
@@ -248,9 +307,13 @@ class PickKeyDialogControllerTest {
 
     private static Dialog open(List<DSSPrivateKeyEntry> keys, UserSettings settings) {
         var answers = new HashMap<DSSPrivateKeyEntry, Consumer<Result>>();
-        var controller = new PickKeyDialogController(keys, key -> { }, settings, answers::put, () -> { });
+        var added = new ArrayList<List<Country>>();
+        var controller = new PickKeyDialogController(keys, key -> { }, settings, answers::put, () -> { }, countries -> {
+            added.add(countries);
+            return new CompletableFuture<>();
+        });
         var root = (Parent) GUIUtils.loadFXML(controller, "pick-key-dialog.fxml");
-        return new Dialog(controller, root, answers);
+        return new Dialog(controller, root, answers, added);
     }
 
     private static void onFxThread(FxAction action) throws Exception {
@@ -266,9 +329,18 @@ class PickKeyDialogControllerTest {
         void run() throws Exception;
     }
 
-    private record Dialog(PickKeyDialogController controller, Parent root, Map<DSSPrivateKeyEntry, Consumer<Result>> answers) {
+    private record Dialog(PickKeyDialogController controller, Parent root, Map<DSSPrivateKeyEntry, Consumer<Result>> answers,
+            List<List<Country>> added) {
         void answer(DSSPrivateKeyEntry key, Result result) {
             answers.get(key).accept(result);
+        }
+
+        String warningText() {
+            return ((Text) controller.countriesTurnedOffWarning.lookup(".autogram-heading-s")).getText();
+        }
+
+        Button addCountriesButton() {
+            return (Button) controller.countriesTurnedOffWarning.lookup(".autogram-button");
         }
 
         String i18n(String key, Object... args) {

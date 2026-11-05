@@ -6,6 +6,7 @@ import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.settings.Country;
 import eu.europa.esig.dss.enumerations.CertificateStatus;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -25,10 +26,13 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static digital.slovensko.autogram.util.DSSUtils.buildTooltipLabel;
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
@@ -39,8 +43,10 @@ public class PickKeyDialogController extends BaseController {
     private final UserSettings userSettings;
     private final BiConsumer<DSSPrivateKeyEntry, Consumer<CertificateStatusChecker.Result>> checkCertificate;
     private final Runnable openSettings;
+    private final Function<List<Country>, CompletableFuture<?>> turnOnTrustedLists;
     private final Set<DSSPrivateKeyEntry> checkPending = new HashSet<>();
     private final Map<DSSPrivateKeyEntry, CertificateStatusChecker.Result> results = new LinkedHashMap<>();
+    private final Map<DSSPrivateKeyEntry, Runnable> checks = new LinkedHashMap<>();
 
     @FXML
     VBox formGroup;
@@ -54,6 +60,8 @@ public class PickKeyDialogController extends BaseController {
     TextFlow notVerifiedHint;
     @FXML
     Text notVerifiedText;
+    @FXML
+    VBox countriesTurnedOffWarning;
     @FXML
     VBox hint;
     @FXML
@@ -69,14 +77,18 @@ public class PickKeyDialogController extends BaseController {
 
     /**
      * @param openSettings opens the settings after this dialog closed itself, null when the settings are not available
+     * @param turnOnTrustedLists adds the countries in the settings and completes once their trusted lists are loaded,
+     *                           null when the settings are not available
      */
     public PickKeyDialogController(List<DSSPrivateKeyEntry> keys, Consumer<DSSPrivateKeyEntry> callback, UserSettings userSettings,
-            BiConsumer<DSSPrivateKeyEntry, Consumer<CertificateStatusChecker.Result>> checkCertificate, Runnable openSettings) {
+            BiConsumer<DSSPrivateKeyEntry, Consumer<CertificateStatusChecker.Result>> checkCertificate, Runnable openSettings,
+            Function<List<Country>, CompletableFuture<?>> turnOnTrustedLists) {
         this.keys = keys;
         this.callback = callback;
         this.userSettings = userSettings;
         this.checkCertificate = checkCertificate;
         this.openSettings = openSettings;
+        this.turnOnTrustedLists = turnOnTrustedLists;
     }
 
     @Override
@@ -92,8 +104,6 @@ public class PickKeyDialogController extends BaseController {
 
                 if (!userSettings.isExpiredCertsEnabled())
                     continue;
-            } else {
-                checkPending.add(key);
             }
 
             var radioButton = new RadioButton(parseCN(key.getCertificate().getSubject().getRFC2253()));
@@ -112,15 +122,28 @@ public class PickKeyDialogController extends BaseController {
             radioButton.setTooltip(tooltip);
 
             if (!expired)
-                checkCertificate.accept(key, result -> showResult(key, radioButton, badges, result));
+                checks.put(key, () -> {
+                    radioButton.setDisable(false);
+                    badges.getChildren().clear();
+                    checkCertificate.accept(key, result -> showResult(key, radioButton, badges, result));
+                });
         }
 
-        if (keys.size() == 1)
-            toggleGroup.getToggles().get(0).setSelected(true);
-
+        selectTheOnlyCertificate();
         settingsLink.setVisible(openSettings != null);
         settingsLink.setManaged(openSettings != null);
+        checkAll();
         updateMainButton();
+    }
+
+    private void selectTheOnlyCertificate() {
+        if (keys.size() == 1)
+            toggleGroup.getToggles().get(0).setSelected(true);
+    }
+
+    private void checkAll() {
+        checkPending.addAll(checks.keySet());
+        checks.values().forEach(Runnable::run);
     }
 
     private void showResult(DSSPrivateKeyEntry key, RadioButton radioButton, HBox badges, CertificateStatusChecker.Result result) {
@@ -135,10 +158,15 @@ public class PickKeyDialogController extends BaseController {
 
         if (checkPending.isEmpty()) {
             showHintIfNotVerified();
+            showCountriesTurnedOff();
             showHintIfNothingQualified();
         }
 
         updateMainButton();
+        sizeWindowToScene();
+    }
+
+    private void sizeWindowToScene() {
         if (mainBox.getScene() != null && mainBox.getScene().getWindow() != null)
             mainBox.getScene().getWindow().sizeToScene();
     }
@@ -152,7 +180,8 @@ public class PickKeyDialogController extends BaseController {
             return Optional.of(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.qualification.notQualified")));
 
         if (isNotVerified(result))
-            return Optional.of(SignatureBadgeFactory.createWarningBadge(i18n("pickKey.certificateStatus.unknown")));
+            return Optional.of(SignatureBadgeFactory.createWarningBadge(i18n(result.status() == CertificateStatus.GOOD
+                    ? "pickKey.qualification.unknown" : "pickKey.certificateStatus.unknown")));
 
         return Optional.empty();
     }
@@ -170,44 +199,77 @@ public class PickKeyDialogController extends BaseController {
     }
 
     private void showHintIfNotVerified() {
-        if (results.values().stream().noneMatch(PickKeyDialogController::isNotVerified))
+        if (results.values().stream().noneMatch(result -> isNotVerified(result) && !isExplainedByCountryTurnedOff(result)))
             return;
 
         notVerifiedText.setText(i18n("pickKey.hint.notVerified"));
-        notVerifiedHint.setVisible(true);
-        notVerifiedHint.setManaged(true);
+        setShown(notVerifiedHint, true);
+    }
+
+    /** Only the qualification is not known, which the warning about the country says. */
+    private boolean isExplainedByCountryTurnedOff(CertificateStatusChecker.Result result) {
+        return turnOnTrustedLists != null && result.countryToTurnOn() != null && result.status() == CertificateStatus.GOOD;
+    }
+
+    private void showCountriesTurnedOff() {
+        var countryPerCertificate = results.values().stream()
+                .map(CertificateStatusChecker.Result::countryToTurnOn)
+                .filter(Objects::nonNull)
+                .toList();
+        if (turnOnTrustedLists == null || countryPerCertificate.isEmpty())
+            return;
+
+        var countries = countryPerCertificate.stream().distinct().toList();
+        var message = i18n("pickKey.countryTurnedOff.warning", GUIValidationUtils.countryNames(resources, countries),
+                countries.size(), countryPerCertificate.size());
+        countriesTurnedOffWarning.getChildren().setAll(GUIValidationUtils.createCountriesTurnedOffWarning(resources,
+                message, countries, this::addCountries));
+        setShown(countriesTurnedOffWarning, true);
+    }
+
+    /** Checks the certificates again with the trusted lists of the countries. */
+    private void addCountries(List<Country> countries) {
+        mainBox.requestFocus(); // the button disappears and its focus would move to the sign button
+        waitForTrustedLists(turnOnTrustedLists.apply(countries));
+        results.clear();
+        setShown(notVerifiedHint, false);
+        setShown(countriesTurnedOffWarning, false);
+        setShown(hint, false);
+        selectTheOnlyCertificate();
+        checkAll();
+        updateMainButton();
+        sizeWindowToScene();
     }
 
     private void showHintIfNothingQualified() {
         if (results.isEmpty() || !results.values().stream().allMatch(r -> r.qualification() == Qualification.NOT_QUALIFIED))
             return;
 
-        var locale = resources.getLocale();
-        var countriesTurnedOff = results.keySet().stream()
-                .map(key -> CertificateStatusChecker.issuerCountry(key.getCertificate()))
-                .flatMap(Optional::stream)
-                .map(Country::withTrustedList)
-                .flatMap(Optional::stream)
-                .filter(country -> !userSettings.getTrustedList().contains(country.getShortname()))
-                .map(country -> country.getName(locale))
-                .distinct()
-                .toList();
-
-        var text = countriesTurnedOff.isEmpty()
-                ? i18n("pickKey.hint.notQualified")
-                : i18n("pickKey.hint.countryTurnedOff", String.join(", ", countriesTurnedOff));
+        var text = i18n("pickKey.hint.notQualified");
         if (!userSettings.isNonQualifiedCertsEnabled())
             text += " " + i18n("pickKey.hint.allowNotQualified");
 
         hintText.setText(text);
-        hint.setVisible(true);
-        hint.setManaged(true);
+        setShown(hint, true);
+    }
+
+    private static void setShown(Node node, boolean shown) {
+        node.setVisible(shown);
+        node.setManaged(shown);
     }
 
     /** Tells the user why the checks take longer, e.g. right after Autogram started. */
     public void setTrustedListsLoading(boolean trustedListsLoading) {
         this.trustedListsLoading = trustedListsLoading;
         updateMainButton();
+    }
+
+    public void waitForTrustedLists(CompletableFuture<?> trustedLists) {
+        if (trustedLists.isDone())
+            return;
+
+        setTrustedListsLoading(true);
+        trustedLists.whenComplete((verifier, e) -> Platform.runLater(() -> setTrustedListsLoading(false)));
     }
 
     private void updateMainButton() {
