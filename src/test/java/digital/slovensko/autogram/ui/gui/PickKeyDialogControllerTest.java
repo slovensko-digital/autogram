@@ -11,10 +11,12 @@ import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.control.RadioButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Text;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,7 @@ class PickKeyDialogControllerTest {
     private static DSSPrivateKeyEntry jana;
     private static DSSPrivateKeyEntry peter;
     private static DSSPrivateKeyEntry seal;
+    private static DSSPrivateKeyEntry expired;
 
     @BeforeAll
     static void startJavaFx() throws Exception {
@@ -44,6 +47,9 @@ class PickKeyDialogControllerTest {
         jana = pki.signer(TestPki.JANA).token().getKeys().getFirst();
         peter = pki.signer(TestPki.PETER).token().getKeys().getFirst();
         seal = pki.signer(TestPki.SEAL).token().getKeys().getFirst();
+        var yearAgo = new Date(System.currentTimeMillis() - 365L * 24 * 3600 * 1000);
+        expired = pki.issue("Eva Staršia", TestPki.Kind.QESIG, new Date(yearAgo.getTime() - 24 * 3600 * 1000), yearAgo)
+                .token().getKeys().getFirst();
 
         var ready = new FutureTask<Void>(() -> {
             Platform.setImplicitExit(false);
@@ -125,8 +131,83 @@ class PickKeyDialogControllerTest {
             dialog.answer(jana, new Result(CertificateStatus.UNKNOWN, Qualification.UNKNOWN));
 
             assertFalse(dialog.radio(jana).isDisabled());
-            assertEquals(2, dialog.badges(jana).getChildren().size());
+            assertEquals(List.of(dialog.i18n("pickKey.certificateStatus.unknown")), dialog.badgeTexts(jana));
             assertFalse(dialog.controller().hint.isVisible());
+            assertTrue(dialog.controller().notVerifiedHint.isVisible());
+            assertEquals(dialog.i18n("pickKey.hint.notVerified"), dialog.controller().notVerifiedText.getText());
+        });
+    }
+
+    @Test
+    void testOfflineAllCertificatesCanBePickedAndTheDialogSaysTheyWereNotVerified() throws Exception {
+        onFxThread(() -> {
+            // neither OCSP nor CRL answered and the trusted lists did not load
+            var dialog = open(List.of(jana, seal), settings(false, "SK"));
+            dialog.answer(jana, new Result(CertificateStatus.UNKNOWN, Qualification.UNKNOWN));
+            assertFalse(dialog.controller().notVerifiedHint.isVisible(), "only once all checks finished");
+            dialog.answer(seal, new Result(CertificateStatus.UNKNOWN, Qualification.UNKNOWN));
+
+            assertFalse(dialog.radio(jana).isDisabled());
+            assertFalse(dialog.radio(seal).isDisabled());
+            assertFalse(dialog.controller().mainButton.isDisabled());
+            assertTrue(dialog.controller().notVerifiedHint.isVisible());
+            assertEquals(dialog.i18n("pickKey.hint.notVerified"), dialog.controller().notVerifiedText.getText());
+        });
+    }
+
+    @Test
+    void testOnlyTheMostImportantFindingIsShown() throws Exception {
+        onFxThread(() -> {
+            var settings = settings(true, "SK");
+            settings.setExpiredCertsEnabled(true);
+            var dialog = open(List.of(jana, peter, seal), settings);
+            dialog.answer(jana, new Result(CertificateStatus.UNKNOWN, Qualification.QUALIFIED));
+            dialog.answer(peter, new Result(CertificateStatus.REVOKED, Qualification.NOT_QUALIFIED));
+            dialog.answer(seal, new Result(CertificateStatus.UNKNOWN, Qualification.NOT_QUALIFIED));
+
+            assertEquals(List.of(dialog.i18n("pickKey.certificateStatus.unknown")), dialog.badgeTexts(jana));
+            assertEquals(List.of(dialog.i18n("pickKey.certificateStatus.revoked")), dialog.badgeTexts(peter));
+            assertEquals(List.of(dialog.i18n("pickKey.qualification.notQualified")), dialog.badgeTexts(seal));
+            // only Jana's badge says it was not verified
+            assertTrue(dialog.controller().notVerifiedHint.isVisible());
+        });
+    }
+
+    @Test
+    void testVerifiedCertificatesDoNotShowTheNotVerifiedHint() throws Exception {
+        onFxThread(() -> {
+            var dialog = open(List.of(jana, peter), settings(false, "SK"));
+            dialog.answer(jana, QUALIFIED);
+            dialog.answer(peter, new Result(CertificateStatus.REVOKED, Qualification.QUALIFIED));
+
+            assertFalse(dialog.controller().notVerifiedHint.isVisible());
+        });
+    }
+
+    @Test
+    void testRevokedCertificateCanBePickedWhenExpiredAndRevokedAreAllowed() throws Exception {
+        onFxThread(() -> {
+            var settings = settings(false, "SK");
+            settings.setExpiredCertsEnabled(true);
+            var dialog = open(List.of(jana, peter), settings);
+            dialog.answer(jana, QUALIFIED);
+            dialog.answer(peter, new Result(CertificateStatus.REVOKED, Qualification.QUALIFIED));
+
+            assertFalse(dialog.radio(peter).isDisabled());
+            assertEquals(List.of(dialog.i18n("pickKey.certificateStatus.revoked")), dialog.badgeTexts(peter));
+        });
+    }
+
+    @Test
+    void testExpiredCertificateIsMarkedWhenAllowed() throws Exception {
+        onFxThread(() -> {
+            var settings = settings(false, "SK");
+            settings.setExpiredCertsEnabled(true);
+            var dialog = open(List.of(expired), settings);
+
+            assertFalse(dialog.radio(expired).isDisabled());
+            assertFalse(dialog.controller().mainButton.isDisabled());
+            assertEquals(List.of(dialog.i18n("pickKey.certificateStatus.expired")), dialog.badgeTexts(expired));
         });
     }
 
@@ -159,6 +240,7 @@ class PickKeyDialogControllerTest {
     private static UserSettings settings(boolean nonQualifiedCertsEnabled, String trustedCountry) {
         var settings = UserSettings.load();
         settings.setNonQualifiedCertsEnabled(nonQualifiedCertsEnabled);
+        settings.setExpiredCertsEnabled(false);
         settings.getTrustedList().clear();
         settings.addToTrustedList(trustedCountry);
         return settings;
@@ -199,6 +281,13 @@ class PickKeyDialogControllerTest {
 
         HBox badges(DSSPrivateKeyEntry key) {
             return (HBox) row(key).getChildren().get(1);
+        }
+
+        List<String> badgeTexts(DSSPrivateKeyEntry key) {
+            return badges(key).getChildren().stream()
+                    .flatMap(badge -> badge.lookupAll("Text").stream())
+                    .map(text -> ((Text) text).getText())
+                    .toList();
         }
 
         private HBox row(DSSPrivateKeyEntry key) {

@@ -1,7 +1,6 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.Autogram;
-import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
@@ -386,7 +385,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     public void onSignatureCheckCompleted(ValidationReports reports) {
         signatureCheckReports = reports;
         signatureCheckCompleted = true;
-        renderSignatures(reports, false, true);
+        renderSignatures(reports, false);
 
         if (signaturesNotValidatedDialogController != null)
             signaturesNotValidatedDialogController.close();
@@ -395,7 +394,7 @@ public class SigningDialogController extends BaseController implements Suppresse
     public void onSignatureValidationCompleted(ValidationReports reports) {
         signatureValidationCompleted = true;
         signatureValidationReports = reports;
-        renderSignatures(reports, true, SignatureValidator.getInstance().areTLsLoaded());
+        renderSignatures(reports, true);
         if (signaturesController != null)
             signaturesController.onSignatureValidationCompleted(reports);
 
@@ -403,20 +402,20 @@ public class SigningDialogController extends BaseController implements Suppresse
             signaturesNotValidatedDialogController.close();
     }
 
-    public void renderSignatures(ValidationReports reports, boolean isValidated, boolean areTLsLoaded) {
+    public void renderSignatures(ValidationReports reports, boolean isValidated) {
         if (reports == null || !reports.haveSignatures())
             return;
 
         var summaries = new ArrayList<Node>();
         for (int index = 0; index < job.getVisualizations().size(); index++) {
             var summary = new VBox(8);
-            if (!areTLsLoaded)
-                summary.getChildren().add(GUIValidationUtils.createWarningText(i18n("signing.tlsLoading.error")));
+            var signatures = reports.getSignaturesForPreviewDocument(job.getVisualizations().get(index).getName(), index);
+            if (isValidated)
+                GUIValidationUtils.addTrustedListsWarning(resources, summary.getChildren(), signatures);
             if (reports.hasIncompleteContainerCoverage())
                 summary.getChildren().add(GUIValidationUtils.createWarningText(
                         i18n("signature.table.incompleteCoverage.warning")));
 
-            var signatures = reports.getSignaturesForPreviewDocument(job.getVisualizations().get(index).getName(), index);
             var table = new VBox(GUIValidationUtils.createSignatureTableRows(resources, signatures, false,
                     isValidated, ignored -> onShowSignaturesButtonPressed(null), 3));
             table.getStyleClass().add("autogram-signatures-table");

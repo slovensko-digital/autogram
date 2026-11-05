@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
@@ -62,6 +63,32 @@ class LocalProxyFixture implements AutoCloseable {
         https.setHttpsConfigurator(new HttpsConfigurator(tls));
         for (var server : List.of(http, https)) {
             server.setExecutor(threads);
+            // Like a slow trusted list server: answers late, then sends a byte every 100 ms.
+            server.createContext("/silent", exchange -> {
+                sleep(Duration.ofSeconds(30));
+                exchange.close();
+            });
+            // A slow but steady connection: 2500 bytes in 1.5 s.
+            server.createContext("/steady", exchange -> {
+                exchange.sendResponseHeaders(200, 0);
+                try (var body = exchange.getResponseBody()) {
+                    for (int i = 0; i < 25; i++) {
+                        body.write(new byte[100]);
+                        body.flush();
+                        sleep(Duration.ofMillis(60));
+                    }
+                }
+            });
+            server.createContext("/slow", exchange -> {
+                exchange.sendResponseHeaders(200, 0);
+                try (var body = exchange.getResponseBody()) {
+                    for (int i = 0; i < 300; i++) {
+                        body.write('x');
+                        body.flush();
+                        sleep(Duration.ofMillis(100));
+                    }
+                }
+            });
             server.createContext("/", exchange -> {
                 destinationRequests.incrementAndGet();
                 contentTypes.add(String.valueOf(exchange.getRequestHeaders().getFirst("Content-Type")));
@@ -103,11 +130,22 @@ class LocalProxyFixture implements AutoCloseable {
     String forbiddenUrl(String scheme) { return scheme + "://127.0.0.1:" + forbidden.getLocalPort() + "/resource"; }
 
     CommonsDataLoader trustedLoader() {
-        var loader = new CommonsDataLoader();
+        return trusting(new CommonsDataLoader());
+    }
+
+    <T extends CommonsDataLoader> T trusting(T loader) {
         loader.setSslTruststore(new FileDocument(keyStorePath.toFile()));
         loader.setSslTruststorePassword("changeit".toCharArray());
         loader.setSslTruststoreType("PKCS12");
         return loader;
+    }
+
+    private static void sleep(Duration duration) throws InterruptedIOException {
+        try {
+            Thread.sleep(duration);
+        } catch (InterruptedException e) {
+            throw new InterruptedIOException();
+        }
     }
 
     private void forward(Socket client) {

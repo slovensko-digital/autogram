@@ -123,6 +123,16 @@ class CertificateStatusCheckerTest {
     }
 
     @Test
+    void testQualificationIsUnknownWhenTrustedListOfIssuerCountryIsNotLoaded() {
+        var key = keyOf(TestPki.create().signer(TestPki.JANA));
+        var notLoaded = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null, () -> Set.of("SK"));
+        var otherNotLoaded = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null, () -> Set.of("BE"));
+
+        assertEquals(Qualification.UNKNOWN, notLoaded.checkQualification(key, pki.verifier()));
+        assertEquals(Qualification.NOT_QUALIFIED, otherNotLoaded.checkQualification(key, pki.verifier()));
+    }
+
+    @Test
     void testQualificationIsUnknownWithoutTrustedLists() {
         var key = keyOf(pki.signer(TestPki.JANA));
         var checker = new CertificateStatusChecker(NO_OCSP, NO_CRL, null, () -> null);

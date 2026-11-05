@@ -28,6 +28,7 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -135,6 +136,31 @@ class SignatureWarningCancellationTest {
         }
     }
 
+    @Test
+    void checksFinishingDuringKeySelectionAfterContinueKeepSigningDisabled() throws Exception {
+        try (var request = new PendingRequest()) {
+            var dialog = onFxThread(() -> openDialog(Warning.NOT_VALIDATED, request.responder));
+            try {
+                onFxThread(() -> {
+                    dialog.button("continueButton").fire();
+                    // what the mocked Autogram would do once it starts looking for the cards
+                    dialog.gui.onTokenSearchStarted();
+                    assertTrue(dialog.controller.mainButton.isDisabled());
+
+                    var reports = mock(ValidationReports.class);
+                    when(reports.getSigningJob()).thenReturn(dialog.job);
+                    dialog.gui.onSignatureCheckCompleted(reports);
+                    assertTrue(dialog.controller.mainButton.isDisabled(), "after the signature check");
+                    dialog.gui.onSignatureValidationCompleted(reports);
+                    assertTrue(dialog.controller.mainButton.isDisabled(), "after the signature validation");
+                    return null;
+                });
+            } finally {
+                onFxThread(() -> { dialog.close(); return null; });
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private static Dialog openDialog(Warning warning, ServerResponder responder) throws Exception {
         var settings = new UserSettings();
@@ -172,7 +198,7 @@ class SignatureWarningCancellationTest {
         var warningStage = Window.getWindows().stream()
                 .filter(window -> window instanceof Stage stage && stage.getOwner() == signingStage)
                 .map(Stage.class::cast).findFirst().orElseThrow();
-        return new Dialog(signingStage, warningStage, controller, autogram);
+        return new Dialog(signingStage, warningStage, controller, autogram, gui, job);
     }
 
     private static <T> T onFxThread(Callable<T> action) throws Exception {
@@ -182,7 +208,7 @@ class SignatureWarningCancellationTest {
     }
 
     private record Dialog(Stage signingStage, Stage warningStage, SigningDialogController controller,
-                          Autogram autogram) {
+                          Autogram autogram, GUI gui, SigningJob job) {
         Button button(String id) {
             return (Button) warningStage.getScene().lookup("#" + id);
         }
