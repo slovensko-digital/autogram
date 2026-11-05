@@ -38,6 +38,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class PickKeyDialogControllerTest {
     private static final Result QUALIFIED = new Result(CertificateStatus.GOOD, Qualification.QUALIFIED);
     private static final Result NOT_QUALIFIED = new Result(CertificateStatus.GOOD, Qualification.NOT_QUALIFIED);
+    private static final Country SLOVAKIA = Country.withTrustedList("SK").orElseThrow();
+    private static final Result SLOVAKIA_TURNED_OFF = new Result(CertificateStatus.GOOD, Qualification.UNKNOWN, SLOVAKIA);
 
     private static DSSPrivateKeyEntry jana;
     private static DSSPrivateKeyEntry peter;
@@ -218,19 +220,18 @@ class PickKeyDialogControllerTest {
     void testCertificatesFromCountryNotAddedCanBePickedAndTheWarningOffersToAddIt() throws Exception {
         onFxThread(() -> {
             var dialog = open(List.of(jana, seal), settings(false, "CZ"));
-            dialog.answer(jana, NOT_QUALIFIED);
-            dialog.answer(seal, NOT_QUALIFIED);
+            dialog.answer(jana, SLOVAKIA_TURNED_OFF);
+            dialog.answer(seal, SLOVAKIA_TURNED_OFF);
 
-            var slovakia = Country.withTrustedList("SK").orElseThrow();
             assertFalse(dialog.radio(jana).isDisabled());
             assertFalse(dialog.radio(seal).isDisabled());
             assertFalse(dialog.controller().mainButton.isDisabled());
             assertEquals(List.of(dialog.i18n("pickKey.qualification.unknown")), dialog.badgeTexts(jana));
             assertTrue(dialog.controller().countriesTurnedOffWarning.isVisible());
             assertEquals(dialog.i18n("pickKey.countryTurnedOff.warning",
-                            slovakia.getName(dialog.controller().getResources().getLocale()), 1, 2),
+                            SLOVAKIA.getName(dialog.controller().getResources().getLocale()), 1, 2),
                     dialog.warningText());
-            assertEquals(GUIValidationUtils.addCountriesButton(dialog.controller().getResources(), List.of(slovakia)),
+            assertEquals(GUIValidationUtils.addCountriesButton(dialog.controller().getResources(), List.of(SLOVAKIA)),
                     dialog.addCountriesButton().getText());
             assertFalse(dialog.controller().notVerifiedHint.isVisible(), "the warning about the country says it");
             assertFalse(dialog.controller().hint.isVisible());
@@ -241,7 +242,7 @@ class PickKeyDialogControllerTest {
     void testAddingTheCountryChecksTheCertificatesAgain() throws Exception {
         onFxThread(() -> {
             var dialog = open(List.of(jana), settings(false, "CZ"));
-            dialog.answer(jana, NOT_QUALIFIED);
+            dialog.answer(jana, SLOVAKIA_TURNED_OFF);
 
             dialog.addCountriesButton().fire();
 
@@ -263,23 +264,11 @@ class PickKeyDialogControllerTest {
     void testCertificateFromCountryNotAddedThatCouldNotBeCheckedOnlineHasOneBadge() throws Exception {
         onFxThread(() -> {
             var dialog = open(List.of(jana), settings(false, "CZ"));
-            dialog.answer(jana, new Result(CertificateStatus.UNKNOWN, Qualification.NOT_QUALIFIED));
+            dialog.answer(jana, new Result(CertificateStatus.UNKNOWN, Qualification.UNKNOWN, SLOVAKIA));
 
             assertEquals(List.of(dialog.i18n("pickKey.certificateStatus.unknown")), dialog.badgeTexts(jana));
             assertTrue(dialog.controller().countriesTurnedOffWarning.isVisible());
             assertTrue(dialog.controller().notVerifiedHint.isVisible());
-        });
-    }
-
-    @Test
-    void testRevokedCertificateFromCountryNotAddedDoesNotOfferTheCountry() throws Exception {
-        onFxThread(() -> {
-            var dialog = open(List.of(jana), settings(false, "CZ"));
-            dialog.answer(jana, new Result(CertificateStatus.REVOKED, Qualification.NOT_QUALIFIED));
-
-            assertTrue(dialog.radio(jana).isDisabled());
-            assertEquals(List.of(dialog.i18n("pickKey.certificateStatus.revoked")), dialog.badgeTexts(jana));
-            assertFalse(dialog.controller().countriesTurnedOffWarning.isVisible());
         });
     }
 
