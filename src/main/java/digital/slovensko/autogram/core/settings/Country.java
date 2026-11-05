@@ -48,8 +48,11 @@ public class Country {
         this.isoCode = isoCode;
     }
 
-    public static Optional<Country> withTrustedList(String isoCode) {
-        return TRUSTED_LIST_COUNTRIES.stream().filter(country -> country.isoCode.equals(isoCode)).findFirst();
+    /** By the ISO code, or the trusted list one, which some certificates use too, e.g. EL for Greece. */
+    public static Optional<Country> withTrustedList(String code) {
+        return TRUSTED_LIST_COUNTRIES.stream()
+                .filter(country -> country.isoCode.equals(code) || country.shortname.equals(code))
+                .findFirst();
     }
 
     public String getName(Locale inLocale) {

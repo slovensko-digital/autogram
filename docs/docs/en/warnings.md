@@ -25,6 +25,10 @@ Authorities may not accept such a document. **Show signature details** shows the
 - **Cancel signing:** you do not sign the document,
 - **Sign:** you sign the document anyway.
 
+If a signature was issued by a provider from a country whose trusted list is turned off, the warning says so. Click the button in it, for example **Add Germany**: Autogram adds the country in the settings and validates the signatures again. Then click **Sign** once more.
+
+![Warning with a button that adds the country](/assets/images/screenshots/en/warning-invalid-signatures-country-off.png)
+
 What the validation results mean is explained in [Verifying signatures](verification.md#results). You can turn this warning off in [Settings](settings.md#security) with **Signature validity check**.
 
 ## Existing signatures have not been validated yet

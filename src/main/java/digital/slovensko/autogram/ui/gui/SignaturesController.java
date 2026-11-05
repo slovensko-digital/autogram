@@ -1,7 +1,9 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.core.SignatureValidator;
+import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.settings.Country;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -12,8 +14,13 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 public class SignaturesController extends BaseController implements SuppressedFocusController {
     private final GUI gui;
+    private final UserSettings userSettings;
+    private final Consumer<List<Country>> turnOnTrustedLists;
     private ValidationReports signatureCheckReports;
     private ValidationReports signatureValidationReports;
     private String signatureValidationReportsHTML;
@@ -31,9 +38,12 @@ public class SignaturesController extends BaseController implements SuppressedFo
     @FXML
     Button closeButton;
 
-    public SignaturesController(ValidationReports signatureCheckReports, GUI gui) {
+    public SignaturesController(ValidationReports signatureCheckReports, GUI gui, UserSettings userSettings,
+            Consumer<List<Country>> turnOnTrustedLists) {
         this.signatureCheckReports = signatureCheckReports;
         this.gui = gui;
+        this.userSettings = userSettings;
+        this.turnOnTrustedLists = turnOnTrustedLists;
     }
 
     @Override
@@ -61,6 +71,16 @@ public class SignaturesController extends BaseController implements SuppressedFo
                 signatureDetailsButton.setVisible(true);
             });
         });
+    }
+
+    /** The signatures are validated again, e.g. with more trusted lists. */
+    public void onSignatureValidationStarted() {
+        signatureValidationReports = null;
+        signatureValidationReportsHTML = null;
+        signatureDetailsButton.setVisible(false);
+        signatureValidationMessage.setText(i18n("signature.present.text"));
+        signatureValidationMessage.setVisible(true);
+        renderSignatures();
     }
 
     public void onSignatureDetailsButtonAction() {
@@ -92,7 +112,11 @@ public class SignaturesController extends BaseController implements SuppressedFo
         signaturesContainer.getChildren().clear();
         var areTLsLoaded = SignatureValidator.getInstance().areTLsLoaded();
         if (isValidated)
-            GUIValidationUtils.addTrustedListsWarning(resources, signaturesContainer.getChildren(), reports.getSignatures());
+            GUIValidationUtils.addTrustedListsWarnings(resources, signaturesContainer.getChildren(),
+                    reports.getSignatures(), userSettings.getTrustedList(), countries -> {
+                        getNodeForLoosingFocus().requestFocus();
+                        turnOnTrustedLists.accept(countries);
+                    });
 
         for (var signature : reports.getSignatures())
             signaturesContainer.getChildren().add(GUIValidationUtils.createSignatureBox(resources,
