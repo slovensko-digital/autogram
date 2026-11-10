@@ -21,6 +21,11 @@ Changes in each version of Autogram, newest first. To find out which version you
 **Fixed**
 
 - Autogram no longer freezes when you open the signature details while signatures are being validated. It used to wait until the validation finished, which took up to several minutes when the trusted lists downloaded slowly.
+- A PDF signed for example in Adobe Acrobat or with DocuSign (a signature in the PKCS7 format) can be signed again; Autogram adds a PAdES signature to it. Since version 2.8.0 this ended with an error. See [What the results mean](verification.md#results).
+
+**For developers**
+
+- `POST /sign` and `POST /api/v1/sign` no longer answer `SIGNED_DOCUMENT_FORM_MISMATCH` for a PDF with a PKCS7 signature; they sign it with PAdES.
 
 == 2.8.3
 

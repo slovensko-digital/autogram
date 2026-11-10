@@ -21,6 +21,11 @@ Zmeny v jednotlivých verziách Autogramu, od najnovšej. Ktorú verziu máte, z
 **Opravené**
 
 - Autogram už nezamrzne, keď počas overovania podpisov otvoríte detail podpisov. Predtým čakal na koniec overovania, čo pri pomalom sťahovaní dôveryhodných zoznamov trvalo aj niekoľko minút.
+- PDF podpísané napríklad v Adobe Acrobate alebo cez DocuSign (podpis vo formáte PKCS7) sa dá opäť podpísať, Autogram k nemu pridá podpis PAdES. Od verzie 2.8.0 to skončilo chybou. Pozrite si [Čo znamenajú výsledky](verification.md#vysledky).
+
+**Pre vývojárov**
+
+- `POST /sign` a `POST /api/v1/sign` už pri PDF s podpisom PKCS7 nevracajú chybu `SIGNED_DOCUMENT_FORM_MISMATCH`, ale PDF podpíšu podpisom PAdES.
 
 == 2.8.3
 

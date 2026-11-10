@@ -29,6 +29,7 @@ If the document has no signatures, Autogram shows **The document contains no sig
 | **Indeterminate …** | The signature cannot be fully validated yet, for example because information about certificate revocation is not available. You can validate it again later. |
 | **Unknown signature** | Autogram cannot verify who made the signature, for example because the certificate was not issued by a trusted provider from the selected countries. |
 | **Invalid signature** | The signature is invalid, for example because the document was changed after signing. |
+| **Unknown format: PKCS7** | A PDF signature in the PKCS7 format, as made for example by Adobe Acrobat or DocuSign. It is in none of the formats of the European standards (PAdES, XAdES, CAdES), so Autogram does not tell whether it is valid or what type of signature it is. You can sign the document; Autogram adds a PAdES signature to it. |
 
 If a document has an unknown or invalid signature and you want to sign it, Autogram warns you, see [Warnings before signing](warnings.md#untrusted-signatures).
 
@@ -36,7 +37,7 @@ If a document has an unknown or invalid signature and you want to sign it, Autog
 
 Click **Show signature details**. For each signature you see:
 
-- **Validation result:** Valid, Indeterminate, Invalid or Validation failed,
+- **Validation result:** Valid, Indeterminate, Invalid, Validation failed or Unknown signature format,
 - **Certificate:** the signer's details from the certificate,
 - **Issuer:** who issued the certificate,
 - **Non-guaranteed signing time:** the time according to the signer's computer, not confirmed by anything,

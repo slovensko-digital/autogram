@@ -32,7 +32,7 @@ Autogram vytvára podpisy troch typov:
 
 PAdES je všeobecne prijímaný a najjednoduchší: podpísané PDF otvoríte v každom prehliadači PDF. Niektoré úrady však vyžadujú XAdES alebo CAdES. Typ podpisu pre PDF zmeníte v [Nastaveniach](settings.md#podpisovanie) voľbou **Typ podpisu pre PDF**.
 
-Ak už dokument obsahuje podpis, Autogram pridá podpis rovnakého typu a nastavenie ignoruje.
+Ak už dokument obsahuje podpis, Autogram pridá podpis rovnakého typu a nastavenie ignoruje. PDF s podpisom vo formáte PKCS7, aký vytvára napríklad Adobe Acrobat alebo DocuSign, dostane podpis PAdES.
 
 ## Kontajner ASiC-E
 

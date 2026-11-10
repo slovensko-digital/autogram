@@ -30,6 +30,7 @@ Ak dokument nemá žiadne podpisy, Autogram zobrazí **Dokument neobsahuje žiad
 | **Predbežne platný …** | Podpis zatiaľ nie je možné úplne overiť, napríklad preto, že nie je dostupná informácia o zneplatnení certifikátu. Overenie môžete zopakovať neskôr. |
 | **Neznámy podpis** | Autogram nevie overiť, kto podpis vytvoril, napríklad certifikát nevydal dôveryhodný poskytovateľ z vybraných krajín. |
 | **Neplatný podpis** | Podpis je neplatný, napríklad dokument bol po podpísaní zmenený. |
+| **Neznámy formát: PKCS7** | Podpis v PDF vo formáte PKCS7, aký vytvára napríklad Adobe Acrobat alebo DocuSign. Nie je v žiadnom z formátov podľa európskych noriem (PAdES, XAdES, CAdES), preto Autogram neurčí, či je platný, ani o aký typ podpisu ide. Dokument môžete podpísať, Autogram k nemu pridá podpis PAdES. |
 
 Ak dokument obsahuje neznámy alebo neplatný podpis a chcete ho podpísať, Autogram vás upozorní, pozrite si [Upozornenia pred podpisom](warnings.md#nedoveryhodne-podpisy).
 
@@ -37,7 +38,7 @@ Ak dokument obsahuje neznámy alebo neplatný podpis a chcete ho podpísať, Aut
 
 Kliknite na **Zobraziť detail podpisov**. Pri každom podpise uvidíte:
 
-- **Výsledok overenia:** Platný, Predbežne platný, Neplatný alebo Nepodarilo sa overiť,
+- **Výsledok overenia:** Platný, Predbežne platný, Neplatný, Nepodarilo sa overiť alebo Neznámy formát podpisu,
 - **Certifikát:** údaje o podpisujúcom z certifikátu,
 - **Vydavateľ:** kto certifikát vydal,
 - **Negarantovaný čas podpisu:** čas podľa počítača podpisujúceho, ktorý nie je ničím potvrdený,
