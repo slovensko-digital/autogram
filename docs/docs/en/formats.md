@@ -32,7 +32,7 @@ Autogram creates signatures of three types:
 
 PAdES is generally accepted and the easiest: you can open a signed PDF in any PDF viewer. Some authorities, however, require XAdES or CAdES. Change the signature type for PDFs in [Settings](settings.md#signing) with **PDF signature type**.
 
-If a document already has a signature, Autogram adds a signature of the same type and ignores the setting.
+If a document already has a signature, Autogram adds a signature of the same type and ignores the setting. A PDF with a signature in the PKCS7 format, as made for example by Adobe Acrobat or DocuSign, gets a PAdES signature.
 
 ## ASiC-E container
 
