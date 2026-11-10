@@ -6,11 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -671,5 +674,43 @@ public class VersionedSignRequestBodyTests {
         assertNotNull(request.getDocuments().get(0).getEFormAttributes().schema());
         assertEquals(new String(Base64.getDecoder().decode(schema)), request.getDocuments().get(0).getEFormAttributes().schema());
         assertEquals(new String(Base64.getDecoder().decode(transformation)), request.getDocuments().get(0).getEFormAttributes().transformation());
+    }
+
+    @Test
+    void decodesEachDocumentOnlyOnce() throws IOException {
+        var parsed = gson.fromJson("""
+                {
+                  "documents": [
+                    {
+                      "filename": "first.txt",
+                      "content": "Zmlyc3Q=",
+                      "mimeType": "text/plain;base64"
+                    },
+                    {
+                      "filename": "second.txt",
+                      "content": "c2Vjb25k",
+                      "mimeType": "text/plain;base64"
+                    }
+                  ],
+                  "parameters": {
+                    "form": "XAdES",
+                    "container": "ASiC_E"
+                  }
+                }
+                """, VersionedSignRequestBody.class);
+        var first = spy(parsed.documents().get(0));
+        var second = spy(parsed.documents().get(1));
+        var body = new VersionedSignRequestBody(null, List.of(first, second), parsed.parameters(), null, null);
+
+        var request = body.getSigningInput(true);
+
+        verify(first).getDSSDocument();
+        verify(second).getDSSDocument();
+        // each decoded content still goes to its own document
+        try (var firstContent = request.getDocuments().get(0).toDssDocument().openStream();
+                var secondContent = request.getDocuments().get(1).toDssDocument().openStream()) {
+            assertEquals("first", new String(firstContent.readAllBytes()));
+            assertEquals("second", new String(secondContent.readAllBytes()));
+        }
     }
 }

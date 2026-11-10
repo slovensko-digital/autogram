@@ -64,8 +64,9 @@ public record Document (String filename, String content, String mimeType, XDCPar
         return new InMemoryDocument(contentBytes, getFilename(), getMimeType());
     }
 
-    public AutogramDocument toAutogramDocument(String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
-        return AutogramDocument.build(getDSSDocument(), getEformAttributes(canonicalizationMethod, digestAlgorithm));
+    /** @param dssDocument this document's content from {@link #getDSSDocument()}, decoded only once by the caller */
+    public AutogramDocument toAutogramDocument(DSSDocument dssDocument, String canonicalizationMethod, DigestAlgorithm digestAlgorithm) {
+        return AutogramDocument.build(dssDocument, getEformAttributes(canonicalizationMethod, digestAlgorithm));
 
     }
 }
