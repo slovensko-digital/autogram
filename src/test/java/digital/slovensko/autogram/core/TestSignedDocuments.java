@@ -10,10 +10,14 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.pades.PAdESSignatureParameters;
+import eu.europa.esig.dss.pades.signature.PAdESService;
+import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 
 import java.io.ByteArrayOutputStream;
@@ -39,18 +43,49 @@ public class TestSignedDocuments {
         }
     }
 
+    /** The sample PDF signed as Adobe Acrobat and DocuSign do by default, with the adbe.pkcs7.detached sub-filter. */
+    public static DSSDocument pkcs7Pdf(TestPki.Signer signer) {
+        var parameters = new PAdESSignatureParameters();
+        parameters.setSignatureLevel(SignatureLevel.PAdES_BASELINE_B);
+        parameters.setSubFilter("adbe.pkcs7.detached");
+        try (var token = signer.token()) {
+            var pdf = new InMemoryDocument(TestMethodSources.loadContent("sample.pdf"), "zmluva.pdf", MimeTypeEnum.PDF);
+            var key = token.getKeys().get(0);
+            parameters.setSigningCertificate(key.getCertificate());
+            parameters.setCertificateChain(key.getCertificateChain());
+            var service = new PAdESService(new CommonCertificateVerifier());
+            var signature = token.sign(service.getDataToSign(pdf, parameters), parameters.getDigestAlgorithm(), key);
+            return service.signDocument(pdf, parameters, signature);
+        } catch (IOException e) {
+            throw new IllegalStateException("cannot sign the test document", e);
+        }
+    }
+
     /** Report of the single signed document in the container, as the signing window gets it. */
     public static ValidationReports.DocumentReport validate(DSSDocument signed) {
         try {
             var container = new InMemoryDocument(signed.openStream().readAllBytes(), "zmluva.asice", MimeTypeEnum.ASICE);
-            var input = SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(container, null), parameters(SignatureProfile.BASELINE_B));
-            var reports = SignatureValidator.getInstance().getSignatureValidationReport(SigningJob.fromInput(input, responder()));
-            if (reports.getDocumentReports().size() != 1)
-                throw new IllegalStateException("expected one signed document, got " + reports.getDocumentReports().size());
-            return reports.getDocumentReports().get(0);
+            return validate(SigningInput.prepareForASiCWithXAdES(AutogramDocument.build(container, null), parameters(SignatureProfile.BASELINE_B)));
         } catch (IOException | AutogramException e) {
             throw new IllegalStateException("cannot validate the test document", e);
         }
+    }
+
+    /** Report of a signed PDF, as the signing window gets it. */
+    public static ValidationReports.DocumentReport validatePdf(DSSDocument signed) {
+        try {
+            var pdf = new InMemoryDocument(signed.openStream().readAllBytes(), "zmluva.pdf", MimeTypeEnum.PDF);
+            return validate(SigningInput.fromFile(AutogramDocument.build(pdf, null), parameters(SignatureProfile.BASELINE_B)));
+        } catch (IOException | AutogramException e) {
+            throw new IllegalStateException("cannot validate the test document", e);
+        }
+    }
+
+    private static ValidationReports.DocumentReport validate(SigningInput input) {
+        var reports = SignatureValidator.getInstance().getSignatureValidationReport(SigningJob.fromInput(input, responder()));
+        if (reports.getDocumentReports().size() != 1)
+            throw new IllegalStateException("expected one signed document, got " + reports.getDocumentReports().size());
+        return reports.getDocumentReports().get(0);
     }
 
     /** The same container with the signed PDF changed after signing, so its signature fails (hash mismatch). */
