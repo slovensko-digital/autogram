@@ -17,6 +17,7 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.enumerations.MimeTypeEnum;
 import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.SignatureLevel;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.InMemoryDocument;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -183,5 +185,22 @@ public class SigningJobTests {
         assertFalse(thrown instanceof ClassCastException,
                 "A PDF PAdES job carrying an ASiC-E container must not be cast to AbstractASiCSignatureService, "
                         + "but got " + thrown);
+    }
+
+    @Test
+    void pdfSignedInPkcs7FormGetsAPadesSignatureNextToIt() throws Exception {
+        var signer = TestPki.shared().signer(TestPki.JANA);
+        var signed = TestSignedDocuments.pkcs7Pdf(signer);
+        var document = AutogramDocument.build(new InMemoryDocument(signed.openStream().readAllBytes(), "zmluva.pdf", MimeTypeEnum.PDF), null);
+        var defaults = SigningParameters.buildParameters(SignatureProfile.BASELINE_B, SignatureForm.XAdES, DigestAlgorithm.SHA256,
+                ASiCContainerType.ASiC_E, SignaturePackaging.ENVELOPING, false, null, null, null, false, 640, false);
+
+        var result = SigningJob.fromInput(SigningInput.fromFile(document, defaults), mock(Responder.class))
+                .signWithKey(signer.signingKey(), null).getDocument();
+
+        var report = SignatureValidator.getSignedDocumentSimpleReport(result);
+        var levels = report.getSignatureIdList().stream().map(report::getSignatureFormat).toList();
+        assertEquals(2, levels.size());
+        assertTrue(levels.containsAll(List.of(SignatureLevel.PKCS7_B, SignatureLevel.PAdES_BASELINE_B)), levels.toString());
     }
 }

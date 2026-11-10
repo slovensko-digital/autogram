@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 
+import digital.slovensko.autogram.TestPki;
+import digital.slovensko.autogram.core.TestSignedDocuments;
 import digital.slovensko.autogram.core.dto.AutogramMimeType;
 import digital.slovensko.autogram.core.errors.EFormException;
 import digital.slovensko.autogram.server.errors.RequestValidationException;
@@ -147,6 +149,43 @@ public class VersionedSignRequestBodyTests {
         var request = body.getSigningInput(false);
 
         assertEquals(SignatureLevel.PAdES_BASELINE_T, request.getParameters().getLevel());
+    }
+
+    @Test
+    void pdfSignedInPkcs7FormCanBeSignedWithPades() throws IOException {
+        var body = gson.fromJson("""
+                {
+                  "parameters": {
+                    "form": "PAdES"
+                  },
+                  "document": {
+                    "mimeType": "application/pdf; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(pkcs7PdfContent()), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertEquals(SignatureLevel.PAdES_BASELINE_B, request.getParameters().getLevel());
+        assertNull(request.getParameters().getContainer());
+    }
+
+    @Test
+    void pdfSignedInPkcs7FormGetsPadesWhenFormIsOmitted() throws IOException {
+        var body = gson.fromJson("""
+                {
+                  "document": {
+                    "mimeType": "application/pdf; base64",
+                    "content": "%s"
+                  }
+                }
+                """.formatted(pkcs7PdfContent()), VersionedSignRequestBody.class);
+
+        var request = body.getSigningInput(false);
+
+        assertEquals(SignatureLevel.PAdES_BASELINE_B, request.getParameters().getLevel());
+        assertNull(request.getParameters().getContainer());
     }
 
     @Test
@@ -671,5 +710,10 @@ public class VersionedSignRequestBodyTests {
         assertNotNull(request.getDocuments().get(0).getEFormAttributes().schema());
         assertEquals(new String(Base64.getDecoder().decode(schema)), request.getDocuments().get(0).getEFormAttributes().schema());
         assertEquals(new String(Base64.getDecoder().decode(transformation)), request.getDocuments().get(0).getEFormAttributes().transformation());
+    }
+
+    private static String pkcs7PdfContent() throws IOException {
+        var signed = TestSignedDocuments.pkcs7Pdf(TestPki.shared().signer(TestPki.JANA));
+        return Base64.getEncoder().encodeToString(signed.openStream().readAllBytes());
     }
 }

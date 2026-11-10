@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * What the signing window shows for a signature: the short badge next to the signer and the rows of the signature
@@ -122,6 +123,17 @@ class SignatureBadgesTest {
 
         assertEquals("[invalid: Neplatný podpis]", row(details, "Jana Vzorová"));
         assertEquals("Neplatný", row(details, "Výsledok overenia"));
+    }
+
+    @Test
+    void pkcs7SignatureIsNotShownAsValid() {
+        var report = TestSignedDocuments.validatePdf(TestSignedDocuments.pkcs7Pdf(pki.signer(TestPki.JANA)));
+        var details = details(report, true, true);
+
+        assertTrue(report.reports().getSimpleReport().isValid(signatureId(report)), "precondition: DSS finds no fault in it");
+        assertEquals(List.of("warning: Neznámy formát: PKCS7"), badge(report, SK));
+        assertEquals("[warning: Neznámy formát: PKCS7]", row(details, "Jana Vzorová"));
+        assertEquals("Neznámy formát podpisu: PKCS7", row(details, "Výsledok overenia"));
     }
 
     @Test

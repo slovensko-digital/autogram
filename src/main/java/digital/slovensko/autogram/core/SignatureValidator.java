@@ -326,7 +326,9 @@ public class SignatureValidator {
         if (level == null)
             return null;
 
-        return new SignedDocumentSignature(level.getSignatureForm(), report.getContainerType(),
+        // DSS reports PDF signatures with the adbe.pkcs7 sub-filter (Adobe Acrobat, DocuSign) as PKCS7, PAdES signs next to them
+        var form = level.getSignatureForm() == SignatureForm.PKCS7 ? SignatureForm.PAdES : level.getSignatureForm();
+        return new SignedDocumentSignature(form, report.getContainerType(),
                 getSignaturePackaging(document, level, report.getContainerType()));
     }
 
