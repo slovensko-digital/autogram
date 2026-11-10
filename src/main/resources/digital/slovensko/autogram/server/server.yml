@@ -13,7 +13,7 @@ info:
   license:
     name: EUPL
     url: https://github.com/slovensko-digital/autogram/blob/main/LICENSE
-  version: 2.6.0
+  version: 2.8.3
 servers:
   - url: http://localhost:37200
   - url: /
