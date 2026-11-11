@@ -14,6 +14,10 @@ Zmeny v jednotlivých verziách Autogramu, od najnovšej. Ktorú verziu máte, z
 
 <p class="release-meta">Zmeny, ktoré prinesie ďalšia verzia</p>
 
+**Nové**
+
+- **Pridanie krajiny jedným kliknutím.** Ak Autogram nevie overiť podpis alebo časovú pečiatku, lebo ich poskytovateľ je z krajiny, ktorú nemáte zapnutú v nastaveniach, upozorní na to nad podpismi a krajinu pridá jedným kliknutím. Pomôže to napríklad pri dokumentoch z aplikácie Autogram v mobile, ktorá pridáva estónsku časovú pečiatku. Pozrite si [Dôveryhodné zoznamy](verification.md#doveryhodne-zoznamy).
+
 **Vylepšené**
 
 - **Iba podpisové certifikáty.** Pri výbere certifikátu Autogram ponúka iba certifikáty určené na podpisovanie. Certifikáty webových serverov, časových pečiatok a služieb na overovanie platnosti certifikátov (OCSP) už v zozname nie sú. Pozrite si [Výber certifikátu](card-and-pin.md#vyber-certifikatu).

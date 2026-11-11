@@ -35,6 +35,8 @@ Po otvorení podpísaného dokumentu Autogram pri podpise s kvalifikovanou časo
 
 Časové pečiatky uvidíte aj v detaile podpisov. Pozrite si [Overenie podpisov](verification.md#vysledky).
 
+Ak je pri podpise namiesto toho **Neznáma ČP**, Autogram časovú pečiatku nevie overiť, najčastejšie preto, že ju vydal poskytovateľ z krajiny, ktorú nemáte zapnutú v nastaveniach. Autogram vás na to upozorní nad podpismi a krajinu pridá jedným kliknutím. Pozrite si [Dôveryhodné zoznamy](verification.md#doveryhodne-zoznamy).
+
 ## Čo hovorí zákon {#co-hovori-zakon}
 
 Účinky elektronického podpisu upravuje § 40 [Občianskeho zákonníka](https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/1964/40/#paragraf-40):
@@ -48,4 +50,4 @@ Občiansky zákonník používa staršie pojmy „zaručený elektronický podpi
 
 Ak máte zmluvu s iným poskytovateľom časových pečiatok, v poli **Zdroje časových pečiatok** zvoľte **Použiť vlastnú adresu TSA servera** a do poľa **Vlastné adresy TSP serverov** zadajte adresu jeho servera. Viac adries oddeľte čiarkou bez medzier.
 
-Aby bola pečiatka pri overovaní uznaná za kvalifikovanú, poskytovateľ musí byť kvalifikovaný a jeho krajina musí byť zapnutá v záložke **Overovanie podpisov**. Pozrite si [Nastavenia](settings.md#overovanie-podpisov).
+Aby bola pečiatka pri overovaní uznaná za kvalifikovanú, poskytovateľ musí byť kvalifikovaný a jeho krajina musí byť zapnutá v záložke **Overovanie podpisov**. Ak zapnutá nie je, Autogram na to pri overení podpisu upozorní. Pozrite si [Nastavenia](settings.md#overovanie-podpisov).
