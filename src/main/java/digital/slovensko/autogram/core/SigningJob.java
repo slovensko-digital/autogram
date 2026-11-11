@@ -22,6 +22,7 @@ import eu.europa.esig.dss.enumerations.SignatureProfile;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.AbstractSignatureService;
+import eu.europa.esig.dss.spi.validation.CertificateVerifier;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 
@@ -96,38 +97,53 @@ public class SigningJob {
         Logging.log("Signing Job: " + this.hashCode() + " file " + getName()
             + (isMultiDocument() ? " documents=" + input.getDocumentCount() : ""));
 
-        var signatureParameters = DssSigningParametersFactory.createSignatureParameters(input, key);
-        var signatureService = createSignatureService(tspSource);
+        var resources = new SigningResources();
+        try {
+            var signatureParameters = DssSigningParametersFactory.createSignatureParameters(input, key);
+            var signatureService = createSignatureService(tspSource, resources);
 
-        if (signatureService instanceof AbstractASiCSignatureService castedService) {
-            var documents = getDssDocuments();
+            DSSDocument signedDocument;
+            if (signatureService instanceof AbstractASiCSignatureService castedService) {
+                var documents = getDssDocuments();
 
-            var dataToSign = castedService.getDataToSign(documents, signatureParameters);
-            var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
-            var signedDocument = castedService.signDocument(documents, signatureParameters, signatureValue);
+                var dataToSign = castedService.getDataToSign(documents, signatureParameters);
+                var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
+                signedDocument = castedService.signDocument(documents, signatureParameters, signatureValue);
+
+            } else {
+                var document = getDssDocument();
+
+                var dataToSign = signatureService.getDataToSign(document, signatureParameters);
+                var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
+                signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
+            }
+
+            resources.keepOnly(signedDocument);
             return new SignedDocument(signedDocument, key.getCertificate());
-
-        } else {
-            var document = getDssDocument();
-
-            var dataToSign = signatureService.getDataToSign(document, signatureParameters);
-            var signatureValue = key.sign(dataToSign, getParameters().getDigestAlgorithm());
-            var signedDocument = signatureService.signDocument(document, signatureParameters, signatureValue);
-            return new SignedDocument(signedDocument, key.getCertificate());
+        } catch (Throwable e) {
+            // e.g. a wrong PIN or a removed card after DSS prepared the document in temporary files
+            resources.delete();
+            throw e;
         }
     }
 
     /**
      * Each result is delivered at most once, the first one wins. A later result, e.g. a signature finished after
      * the user closed the window, returns false and is neither counted nor sent to the responder.
+     * A signed document kept in a temporary file is deleted afterwards, the responder has saved or sent it by then.
      */
     public boolean onJobSigned(SignedDocument signedDocument) {
-        if (!resultDelivered.compareAndSet(false, true))
-            return false;
-        if (batch.isPresent())
-            batch.success(this);
-        responder.onDocumentSigned(signedDocument);
-        return true;
+        try {
+            if (!resultDelivered.compareAndSet(false, true))
+                return false;
+            if (batch.isPresent())
+                batch.success(this);
+            responder.onDocumentSigned(signedDocument);
+            return true;
+        } finally {
+            if (signedDocument != null)
+                SigningResources.deleteIfTemporary(signedDocument.getDocument());
+        }
     }
 
     public boolean onJobSignFailed(AutogramException error) {
@@ -179,7 +195,7 @@ public class SigningJob {
     }
 
     @SuppressWarnings("rawtypes")
-    private AbstractSignatureService createSignatureService(TSPSource tspSource) {
+    private AbstractSignatureService createSignatureService(TSPSource tspSource, SigningResources resources) {
         var commonCertificateVerifier = NetworkClients.certificateVerifier();
         commonCertificateVerifier.setAlertOnExpiredCertificate(new LogOnStatusAlert()); // expired certificates are filtered on UI level
 
@@ -190,13 +206,20 @@ public class SigningJob {
         var service = switch (input.getParameters().getSignatureForm()) {
             case XAdES -> isContainer ? new ASiCWithXAdESService(commonCertificateVerifier) : new XAdESService(commonCertificateVerifier);
             case CAdES -> isContainer ? new ASiCWithCAdESService(commonCertificateVerifier) : new CAdESService(commonCertificateVerifier);
-            case PAdES -> new PAdESService(commonCertificateVerifier);
+            case PAdES -> createPAdESService(commonCertificateVerifier, resources);
             default -> throw new RuntimeException("Unsupported signature type: " + input.getParameters().getSignatureForm());
         };
 
         if (input.getParameters().getSignatureProfile().equals(SignatureProfile.BASELINE_T) && tspSource != null)
             service.setTspSource(tspSource);
 
+        return service;
+    }
+
+    private static PAdESService createPAdESService(CertificateVerifier certificateVerifier, SigningResources resources) {
+        var service = new PAdESService(certificateVerifier);
+        if (SigningResources.isEnabled())
+            service.setPdfObjFactory(resources.pdfObjFactory());
         return service;
     }
 }
