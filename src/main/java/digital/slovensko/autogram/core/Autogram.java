@@ -8,6 +8,7 @@ import digital.slovensko.autogram.core.errors.BatchExpiredException;
 import digital.slovensko.autogram.core.errors.BatchInProgressException;
 import digital.slovensko.autogram.core.errors.CertificatesReadingConsentRejectedException;
 import digital.slovensko.autogram.core.errors.NoDriversDetectedException;
+import digital.slovensko.autogram.core.errors.NotEnoughMemoryException;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.dto.SigningInput;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
@@ -265,6 +266,8 @@ public class Autogram {
             throw AutogramException.createFromIllegalArgumentException(e);
         } catch (Exception e) {
             throw new UnrecognizedException(e);
+        } catch (OutOfMemoryError e) {
+            throw new NotEnoughMemoryException(e);
         } finally {
             passwordManager.setBatchContext(previousBatch);
         }

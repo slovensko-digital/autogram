@@ -26,9 +26,11 @@ public class EndpointUtils {
 
     public static void respondWith(Object response, HttpExchange exchange) {
         try {
+            // built before the status is sent, so a failure on the way, e.g. no memory left, can still become an error
+            var body = gson.toJson(response).getBytes();
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, 0);
-            exchange.getResponseBody().write(gson.toJson(response).getBytes());
+            exchange.getResponseBody().write(body);
             exchange.getResponseBody().close();
         } catch (IOException e) {
             throw new ResponseNetworkErrorException(e);

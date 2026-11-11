@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import digital.slovensko.autogram.core.Responder;
 import digital.slovensko.autogram.core.dto.SignedDocument;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.NotEnoughMemoryException;
 import digital.slovensko.autogram.core.errors.ResponseNetworkErrorException;
 import digital.slovensko.autogram.server.dto.SignResponse;
 
@@ -31,6 +32,8 @@ public class ServerResponder extends Responder {
             EndpointUtils.respondWith(new SignResponse(b64document, mimeType, filename, signer, issuer), exchange);
         } catch (IOException e) {
             throw new ResponseNetworkErrorException(e);
+        } catch (OutOfMemoryError e) {
+            onDocumentSignFailed(new NotEnoughMemoryException(e));
         }
     }
 
