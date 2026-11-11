@@ -1,5 +1,6 @@
 package digital.slovensko.autogram.core;
 
+import digital.slovensko.autogram.Main;
 import digital.slovensko.autogram.ui.cli.CliApp;
 import digital.slovensko.autogram.ui.gui.GUIApp;
 import digital.slovensko.autogram.util.MsixPackage;
@@ -16,6 +17,7 @@ public class AppStarter {
             addOption(new Option("c", "cli", false, "Run application in CLI mode."))
         ).
         addOption("h", "help", false, "Print this command line help.").
+        addOption("V", "version", false, "Print the application version.").
         addOption("u", "usage", false, "Print usage examples.").
         addOption("s", "source", true, "Source file or directory of files to sign. Can also be given as a single positional argument.").
         addOption("t", "target", true, "Target file or directory for signed files. Type (file/directory) must match the source.").
@@ -43,6 +45,8 @@ public class AppStarter {
 
             if (cmd.hasOption("h")) {
                 printHelp();
+            } else if (cmd.hasOption("V")) {
+                System.out.println(Main.getVersionString());
             } else if (cmd.hasOption("u")) {
                 printUsage();
             } else if (cmd.hasOption("c")) {
