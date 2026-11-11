@@ -28,6 +28,7 @@ If the document has no signatures, Autogram shows **The document contains no sig
 | **Advanced Electronic Signature** | An advanced electronic signature that is not qualified. If it is based on a qualified certificate, Slovak e-government recognises it as a means of authorisation; otherwise authorities may not accept it. |
 | **Indeterminate …** | The signature cannot be fully validated yet, for example because information about certificate revocation is not available. You can validate it again later. |
 | **Unknown signature** | Autogram cannot verify who made the signature, for example because the certificate was not issued by a trusted provider from the selected countries. |
+| **Unknown TS** | A timestamp that Autogram cannot verify, for example because its provider is from a country whose trusted list is turned off. It is shown next to the signature type, for example **QESig** and **Unknown TS** instead of **QES + QTS**. See [Trusted lists](#trusted-lists). |
 | **Invalid signature** | The signature is invalid, for example because the document was changed after signing. |
 | **Unknown format: PKCS7** | A PDF signature in the PKCS7 format, as made for example by Adobe Acrobat or DocuSign. It is in none of the formats of the European standards (PAdES, XAdES, CAdES), so Autogram does not tell whether it is valid or what type of signature it is. You can sign the document; Autogram adds a PAdES signature to it. |
 
@@ -52,9 +53,11 @@ Click **Show signature details**. For each signature you see:
 
 Autogram validates signatures against the European Union trusted lists, which it downloads from the internet. By default it validates signatures with certificates from providers in Slovakia, Czechia, Austria, Poland, Hungary, Belgium, the Netherlands and Spain. You can turn on more countries in [Settings](settings.md#signature-validation). Each additional country slows down validation.
 
-If a signature was issued by a provider from a country whose trusted list is turned off, Autogram cannot fully validate it and says so above the signatures. Click the button in the warning, for example **Add Germany** (**Add these countries** for more countries): Autogram adds the country in the settings and validates open documents again.
+If the certificate of a signature or of a timestamp was issued by a provider from a country whose trusted list is turned off, Autogram cannot fully validate it and says so above the signatures. For a timestamp, it does so even when the signature itself is from a country you have turned on. Click the button in the warning, for example **Add Germany** (**Add these countries** for more countries): Autogram adds the country in the settings and validates open documents again.
 
 ![Warning that Autogram is not set up to check certificates from a country, with a button that adds it](/assets/images/screenshots/en/signed-document-country-off.png)
+
+This happens, for example, with a document signed in the [Autogram v mobile](https://sluzby.slovensko.digital/autogram-v-mobile/) app. The signature with the ID card is Slovak, but the timestamp is added by the Estonian provider SK ID Solutions (the "SK" in its name does not stand for Slovakia). Until Estonia is turned on, Autogram shows **QESig** and **Unknown TS** for the signature and the **Add Estonia** button above the signatures. After you click it, the signature is shown as **QES + QTS**.
 
 If the trusted lists cannot be downloaded, Autogram shows a warning that the signatures cannot be fully validated. Check your internet connection and open the document again.
 

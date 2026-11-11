@@ -35,6 +35,8 @@ When you open a signed document, Autogram shows **QES + QTS** for a qualified si
 
 You can also see the timestamps in the signature details. See [Verifying signatures](verification.md#results).
 
+If the signature shows **Unknown TS** instead, Autogram cannot verify the timestamp, most often because its provider is from a country that is not turned on in the settings. Autogram tells you so above the signatures and adds the country with one click. See [Trusted lists](verification.md#trusted-lists).
+
 ## What the law says {#what-the-law-says}
 
 In Slovakia, the effect of an electronic signature is set by Section 40 of the [Civil Code](https://www.slov-lex.sk/ezbierky/pravne-predpisy/SK/ZZ/1964/40/#paragraf-40) (Občiansky zákonník, Act No. 40/1964 Coll., in Slovak):
@@ -48,4 +50,4 @@ The Civil Code still uses the older terms "guaranteed electronic signature" and 
 
 If you have a contract with another timestamp provider, choose **Use custom TSA server address** in **Timestamp sources** and enter its server address in **Custom TSP server addresses**. Separate several addresses with commas, without spaces.
 
-For the timestamp to be recognised as qualified during validation, the provider must be qualified and its country must be turned on in the **Signature Validation** tab. See [Settings](settings.md#signature-validation).
+For the timestamp to be recognised as qualified during validation, the provider must be qualified and its country must be turned on in the **Signature Validation** tab. If it is not, Autogram tells you so when it validates the signature. See [Settings](settings.md#signature-validation).

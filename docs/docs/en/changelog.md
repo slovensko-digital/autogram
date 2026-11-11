@@ -14,6 +14,10 @@ Changes in each version of Autogram, newest first. To find out which version you
 
 <p class="release-meta">Changes in the next version</p>
 
+**New**
+
+- **Adding a country with one click.** When Autogram cannot validate a signature or a timestamp because its provider is from a country that is not turned on in the settings, it tells you so above the signatures and adds the country with one click. This helps, for example, with documents from the Autogram v mobile app, which adds an Estonian timestamp. See [Trusted lists](verification.md#trusted-lists).
+
 **Improved**
 
 - **Signing certificates only.** When you choose a certificate, Autogram offers only certificates meant for signing. Certificates of web servers, timestamps and certificate status services (OCSP) are no longer in the list. See [Choosing the certificate](card-and-pin.md#choosing-the-certificate).

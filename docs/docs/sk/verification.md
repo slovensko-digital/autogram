@@ -29,6 +29,7 @@ Ak dokument nemá žiadne podpisy, Autogram zobrazí **Dokument neobsahuje žiad
 | **Iný zdokonalený elektronický podpis** | Zdokonalený podpis, ktorý nie je kvalifikovaný. Úrady ho nemusia prijať. |
 | **Predbežne platný …** | Podpis zatiaľ nie je možné úplne overiť, napríklad preto, že nie je dostupná informácia o zneplatnení certifikátu. Overenie môžete zopakovať neskôr. |
 | **Neznámy podpis** | Autogram nevie overiť, kto podpis vytvoril, napríklad certifikát nevydal dôveryhodný poskytovateľ z vybraných krajín. |
+| **Neznáma ČP** | Časová pečiatka, ktorú Autogram nevie overiť, napríklad preto, že ju vydal poskytovateľ z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý. Zobrazí sa vedľa typu podpisu, napríklad **QESig** a **Neznáma ČP** namiesto **Osvedčený podpis**. Pozrite si [Dôveryhodné zoznamy](#doveryhodne-zoznamy). |
 | **Neplatný podpis** | Podpis je neplatný, napríklad dokument bol po podpísaní zmenený. |
 | **Neznámy formát: PKCS7** | Podpis v PDF vo formáte PKCS7, aký vytvára napríklad Adobe Acrobat alebo DocuSign. Nie je v žiadnom z formátov podľa európskych noriem (PAdES, XAdES, CAdES), preto Autogram neurčí, či je platný, ani o aký typ podpisu ide. Dokument môžete podpísať, Autogram k nemu pridá podpis PAdES. |
 
@@ -53,9 +54,11 @@ Tlačidlom **Zobraziť technické detaily** otvoríte úplnú správu o overení
 
 Autogram overuje podpisy podľa dôveryhodných zoznamov Európskej únie, ktoré sťahuje z internetu. Predvolene overuje podpisy z certifikátov poskytovateľov zo Slovenska, Česka, Rakúska, Poľska, Maďarska, Belgicka, Holandska a Španielska. Ďalšie krajiny zapnete v [Nastaveniach](settings.md#overovanie-podpisov). Každá ďalšia krajina overovanie spomalí.
 
-Ak podpis vydal poskytovateľ z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý, Autogram ho nevie úplne overiť a nad podpismi na to upozorní. Kliknite na tlačidlo v upozornení, napríklad **Pridať krajinu Nemecko** (pri viacerých krajinách **Pridať tieto krajiny**): Autogram krajinu pridá v nastaveniach a otvorené dokumenty overí znova.
+Ak certifikát podpisu alebo časovej pečiatky vydal poskytovateľ z krajiny, ktorej dôveryhodný zoznam nemáte zapnutý, Autogram ho nevie úplne overiť a nad podpismi na to upozorní. Pri časovej pečiatke upozorní aj vtedy, keď je samotný podpis z krajiny, ktorú zapnutú máte. Kliknite na tlačidlo v upozornení, napríklad **Pridať krajinu Nemecko** (pri viacerých krajinách **Pridať tieto krajiny**): Autogram krajinu pridá v nastaveniach a otvorené dokumenty overí znova.
 
 ![Upozornenie, že Autogram nemá nastavené overovanie certifikátov z krajiny, s tlačidlom, ktoré ju pridá](/assets/images/screenshots/sk/signed-document-country-off.png)
+
+Stáva sa to napríklad pri dokumente podpísanom v aplikácii [Autogram v mobile](https://sluzby.slovensko.digital/autogram-v-mobile/). Podpis občianskym preukazom je slovenský, ale časovú pečiatku k nemu pridáva estónsky poskytovateľ SK ID Solutions („SK“ v jeho názve neznamená Slovensko). Kým nemáte zapnuté Estónsko, Autogram pri podpise zobrazí **QESig** a **Neznáma ČP** a nad podpismi tlačidlo **Pridať krajinu Estónsko**. Keď naň kliknete, podpis sa zobrazí ako **Osvedčený podpis**.
 
 Ak sa dôveryhodné zoznamy nepodarí stiahnuť, Autogram zobrazí upozornenie, že podpisy nie je možné úplne overiť. Skontrolujte pripojenie na internet a dokument otvorte znova.
 
