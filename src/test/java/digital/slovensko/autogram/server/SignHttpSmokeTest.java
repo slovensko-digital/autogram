@@ -29,16 +29,7 @@ import org.junit.platform.commons.util.ReflectionUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import digital.slovensko.autogram.server.dto.ErrorResponseBody;
-import digital.slovensko.autogram.server.dto.LegacyDocument;
-import digital.slovensko.autogram.server.dto.PresentationParameters;
-import digital.slovensko.autogram.server.dto.ServerSigningParameters;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.SignaturePackaging;
-import digital.slovensko.autogram.server.dto.SignRequestBody;
 import digital.slovensko.autogram.server.dto.SignResponse;
-import digital.slovensko.autogram.server.dto.VersionedSigningParameters;
-import digital.slovensko.autogram.server.dto.XDCParameters;
 
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -109,57 +100,65 @@ public class SignHttpSmokeTest {
         assertEquals(HttpStatus.SC_OK, signResponse.getStatusLine().getStatusCode());
     }
 
-   @ParameterizedTest
-   @ValueSource(strings = {
-           "XAdES-ASiC_E-Base64-HTML", "XAdES-ASiC_E-Base64-TXT", "XAdES-ASiC_E-TXT-HTML_md", "XAdES-ASiC_E-TXT-TXT",
-           "XAdES-ASiC_E-Auto", "XAdES-ASiC_E-SKXDC-Base64-TXT", "XAdES-ASiC_E-SKXDC-TXT-TXT",
-           "Signed-XAdES-ASiC_E-SKXDC-Base64-TXT", "Signed-XAdES-ASiC_E-SKXDC-Base64-HTML",
-           "Signed-XAdES-ASiC_E-SKXDC-Auto", "FS-EForm-Auto", "PAdES-PDF_lg", "XAdES-PDF", "XAdES-ASiC_E-PDF", "CAdES-ASiC_E-PDF",
-           "XAdES-ASiC_E-TXT", "XAdES-ASiC_E-DOCX", "CAdES-ASiC_E-DOCX", "CAdES-PNG_lg", "CAdES-ASiC_E-PNG_md",
-           "Signed-XAdES-ASiC_E-PDF", "Double-Signed-XAdES-ASiC_E-PDF", "Signed-CAdES-ASiC_E-PDF",
-           "Double-Signed-CAdES-ASiC_E-PDF",
-   })
-   public void testPositiveFromYaml(String exampleName)
-           throws ClientProtocolException, IOException, IllegalAccessException,
-           NoSuchFieldException, SecurityException {
-       testFromYaml(exampleName, HttpStatus.SC_OK, SignResponse.class);
-   }
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "XAdES-ASiC_E-Auto", "XAdES-ASiC_E-Base64-HTML", "XAdES-ASiC_E-multi-documents",
+            "Signed-XAdES=ASiC_E-multi-documents", "XAdES-ASiC_E-Base64-TXT", "XAdES-ASiC_E-TXT-HTML",
+            "XAdES-ASiC_E-TXT-TXT", "XAdES-ASiC_E-SKXDC-Base64-TXT", "Signed-XAdES-ASiC_E-SKXDC-Base64-HTML",
+            "Signed-XAdES-ASiC_E-SKXDC-Auto", "FS-EForm-Auto", "PAdES-PDF_lg", "Signed-PAdES", "XAdES-ASiC_E-PDF",
+            "CAdES-ASiC_E-PDF", "Signed-CAdES-ASiC_E-PDF", "Double-Signed-CAdES-ASiC_E-PDF", "XAdES-ASiC_E-TXT",
+            "XAdES-ASiC_E-TXT-Canonicalization", "XAdES-ASiC_E_CADES_T-TXT", "XAdES-ASiC_E_XADES_T-TXT",
+            "XAdES-ASiC_E-DOCX", "CAdES-ASiC_E-PNG_md",
+    })
+    public void testPositiveFromYaml(String exampleName) throws ClientProtocolException, IOException {
+        testFromYaml(exampleName, "/api/v1/sign", HttpStatus.SC_OK, SignResponse.class);
+    }
 
     @ParameterizedTest
     @ValueSource(strings = {
             "XAdES-ASiC_E-SKXDC-Auto-WrongXSLT",
-            "negative-XAdES-XML-Base64-HTML_md", "negative-XAdES-XML-Base64-TXT", "negative-XAdES-XML-TXT-HTML",
-            "negative-XAdES-XML-TXT-TXT_md",
     })
-    public void testNegative422FromYaml(String exampleName)
-            throws ClientProtocolException, IOException, IllegalAccessException,
-            NoSuchFieldException, SecurityException {
-        testFromYaml(exampleName, HttpStatus.SC_UNPROCESSABLE_ENTITY, ErrorResponseBody.class);
+    public void testNegative422FromYaml(String exampleName) throws ClientProtocolException, IOException {
+        testFromYaml(exampleName, "/api/v1/sign", HttpStatus.SC_UNPROCESSABLE_ENTITY, ErrorResponseBody.class);
     }
 
-    public void testFromYaml(String exampleName, int expectedStatus, Class responseClass)
-            throws ClientProtocolException, IOException, IllegalAccessException,
-            NoSuchFieldException, SecurityException {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "legacy-XAdES-ASiC_E-Base64-HTML", "legacy-XAdES-ASiC_E-Base64-TXT", "legacy-XAdES-ASiC_E-TXT-HTML_md",
+            "legacy-XAdES-ASiC_E-TXT-TXT", "legacy-XAdES-ASiC_E-Auto", "legacy-XAdES-ASiC_E-SKXDC-Base64-TXT",
+            "legacy-XAdES-ASiC_E-SKXDC-TXT-TXT", "legacy-Signed-XAdES-ASiC_E-SKXDC-Base64-TXT",
+            "legacy-Signed-XAdES-ASiC_E-SKXDC-Base64-HTML", "legacy-Signed-XAdES-ASiC_E-SKXDC-Auto",
+            "legacy-Signed-XAdES=ASiC_E-multi-documents", "legacy-FS-EForm-Auto", "legacy-PAdES-PDF_lg",
+            "legacy-Signed-PAdES", "legacy-XAdES-PDF", "legacy-XAdES-ASiC_E-PDF", "legacy-CAdES-ASiC_E-PDF",
+            "legacy-XAdES-ASiC_E-TXT", "legacy-XAdES-ASiC_E-TXT-Canonicalization", "legacy-XAdES-ASiC_E_CADES_T-TXT",
+            "legacy-XAdES-ASiC_E_XADES_T-TXT", "legacy-XAdES-ASiC_E-DOCX", "legacy-CAdES-ASiC_E-DOCX",
+            "legacy-CAdES-PNG_lg", "legacy-CAdES-ASiC_E-PNG_md", "legacy-Signed-XAdES-ASiC_E-PDF",
+            "legacy-Double-Signed-XAdES-ASiC_E-PDF", "legacy-Signed-CAdES-ASiC_E-PDF",
+            "legacy-Double-Signed-CAdES-ASiC_E-PDF",
+    })
+    public void testLegacyPositiveFromYaml(String exampleName) throws ClientProtocolException, IOException {
+        testFromYaml(exampleName, "/sign", HttpStatus.SC_OK, SignResponse.class);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "legacy-XAdES-ASiC_E-SKXDC-Auto-WrongXSLT",
+    })
+    public void testLegacyNegative422FromYaml(String exampleName) throws ClientProtocolException, IOException {
+        testFromYaml(exampleName, "/sign", HttpStatus.SC_UNPROCESSABLE_ENTITY, ErrorResponseBody.class);
+    }
+
+    public void testFromYaml(String exampleName, String path, int expectedStatus, Class responseClass)
+            throws ClientProtocolException, IOException {
         System.out.println("Testing example: " + exampleName);
         var example = getNested("components", "examples", exampleName, "value");
-        var document = (Map<String, String>) getNested(example, "document");
-        var parameters = getNested(example, "parameters");
-        var payloadMimeType = getNested(example, "payloadMimeType");
+        assertNotNull(example, "Example not found in server.yml: " + exampleName);
 
-        var rDocument = new LegacyDocument(document.get("filename"), document.get("content"));
-        var rParameters = fromMap((Map<String, Object>) parameters);
-        var rPayloadMimeType = (String) payloadMimeType;
-
-        var body = new SignRequestBody(
-                rDocument,
-                rParameters,
-                rPayloadMimeType);
+        // the examples document the request body of the path, so they are sent as they are
         var gson = new com.google.gson.Gson();
-
-        var signRequest = new HttpPost(baseUri.resolve("/sign"));
+        var signRequest = new HttpPost(baseUri.resolve(path));
         signRequest.setHeader("Content-Type", "application/json");
-        var entity = new StringEntity(gson.toJson(body), "UTF-8");
-        signRequest.setEntity(entity);
+        signRequest.setEntity(new StringEntity(gson.toJson(example), "UTF-8"));
 
         var signResponse = clientBuilder.build().execute(signRequest);
         System.out.println("Sign Response: " + signResponse.getStatusLine());
@@ -181,66 +180,5 @@ public class SignHttpSmokeTest {
                         e1.printStackTrace();
                     }
                 });
-    }
-
-    private static ServerSigningParameters fromMap(Map<String, Object> map) {
-        if (map == null)
-            return null;
-
-        var level = fromMapToEnum(ServerSigningParameters.LocalSignatureLevel.class, map.get("level"));
-        var container = fromMapToEnum(ASiCContainerType.class, map.get("container"));
-        var containerXmlns = (String) map.get("containerXmlns");
-        var packaging = fromMapToEnum(SignaturePackaging.class, map.get("packaging"));
-        var digestAlgorithm = fromMapToEnum(DigestAlgorithm.class, map.get("digestAlgorithm"));
-        var en319132 = (boolean) map.getOrDefault("en319132", false);
-        var infoCanonicalization = fromMapToEnum(VersionedSigningParameters.LocalCanonicalizationMethod.class, map.get("infoCanonicalization"));
-        var propertiesCanonicalization = fromMapToEnum(VersionedSigningParameters.LocalCanonicalizationMethod.class,
-                map.get("propertiesCanonicalization"));
-        var keyInfoCanonicalization = fromMapToEnum(VersionedSigningParameters.LocalCanonicalizationMethod.class,
-                map.get("keyInfoCanonicalization"));
-        var schema = (String) map.get("schema");
-        var transformation = (String) map.get("transformation");
-        var identifier = (String) map.get("identifier");
-        var checkPDFACompliance = (boolean) map.getOrDefault("checkPDFACompliance", false);
-        var visualizationWidth = fromMapToEnum(PresentationParameters.VisualizationWidthEnum.class, map.get("visualizationWidth"));
-        var autoLoadEform = (Boolean) map.get("autoLoadEform");
-        var embedUsedSchemas = (boolean) map.getOrDefault("embedUsedSchemas", false);
-        var schemaIdentifier = (String) map.get("schemaIdentifier");
-        var transformationIdentifier = (String) map.get("transformationIdentifier");
-        var transformationLanguage = (String) map.get("transformationLanguage");
-        var transformationMediaDestinationTypeDescription = fromMapToEnum(XDCParameters.TransformationOutputMimeType.class, map.get("transformationMediaDestinationTypeDescription"));
-        var transformationTargetEnvironment = (String) map.get("transformationTargetEnvironment");
-        var fsFormId = (String) map.get("fsFormId");
-
-        return new ServerSigningParameters(
-                level,
-                container,
-                containerXmlns,
-                packaging,
-                digestAlgorithm,
-                en319132,
-                infoCanonicalization,
-                propertiesCanonicalization,
-                keyInfoCanonicalization,
-                schema,
-                transformation,
-                identifier,
-                checkPDFACompliance,
-                visualizationWidth,
-                autoLoadEform,
-                embedUsedSchemas,
-                schemaIdentifier,
-                transformationIdentifier,
-                transformationLanguage,
-                transformationMediaDestinationTypeDescription,
-                transformationTargetEnvironment,
-                fsFormId);
-    }
-
-    private static <T extends Enum<T>> T fromMapToEnum(Class<T> clazz, Object obj) {
-        var visualizationWidthStr = (String) obj;
-        if (visualizationWidthStr == null)
-            return null;
-        return T.valueOf(clazz, visualizationWidthStr);
     }
 }

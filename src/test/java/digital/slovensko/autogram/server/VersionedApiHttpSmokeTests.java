@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.Gson;
 
+import digital.slovensko.autogram.server.dto.BatchEndResponseBody;
 import digital.slovensko.autogram.server.dto.BatchStartResponseBody;
 
 @Tag("HttpSmokeTest")
@@ -73,6 +75,24 @@ public class VersionedApiHttpSmokeTests {
         var json = EntityUtils.toString(response.getEntity());
 
         assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
-        assertNotNull(new Gson().fromJson(json, BatchStartResponseBody.class).batchId());
+        var batchId = new Gson().fromJson(json, BatchStartResponseBody.class).batchId();
+        assertNotNull(batchId);
+
+        // end the empty batch right away, documents without batchId are rejected while it runs
+        var endRequest = new HttpEntityEnclosingRequestBase() {
+            @Override
+            public String getMethod() {
+                return "DELETE";
+            }
+        };
+        endRequest.setURI(baseUri.resolve("/api/v1/batch"));
+        endRequest.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+        endRequest.setEntity(new StringEntity("{\"batchId\": \"%s\"}".formatted(batchId), "UTF-8"));
+
+        var endResponse = clientBuilder.build().execute(endRequest);
+        var endJson = EntityUtils.toString(endResponse.getEntity());
+
+        assertEquals(HttpStatus.SC_OK, endResponse.getStatusLine().getStatusCode());
+        assertNotNull(new Gson().fromJson(endJson, BatchEndResponseBody.class).status());
     }
 }
