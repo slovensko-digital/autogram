@@ -19,6 +19,8 @@ labels: release
 ## Linux
 - [ ] funguje inštalácia na Linux (Debian-based) cez stiahnutý .deb
 - [ ] funguje inštalácia na Linux cez stiahnutý .rpm
+- [ ] funguje inštalácia na Arch Linux: do `packaging/arch` z tagu skopírovať `autogram-…-arch.tar.gz` z releasu, v `PKGBUILD` nastaviť `pkgver` a spustiť `updpkgsums && makepkg -si`
+- [ ] po zmene pre-releasu na release prebehol workflow „Publish to AUR“ a `yay -S autogram-bin` nainštaluje novú verziu
 - [ ] funguje spustenie v GUI móde
 - [ ] funguje URL handler [autogram://go](autogram://go)
 - [ ] funguje GUI otvoriť jeden súbor, ten sa zobrazí, viem ho podpísať, vytvorí sa podpísaný súbor

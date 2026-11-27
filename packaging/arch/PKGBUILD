@@ -1,0 +1,49 @@
+# Maintainer: Služby Slovensko.Digital, s.r.o. <autogram@slovensko.digital>
+#
+# Autogram for Arch Linux, published to the AUR as https://aur.archlinux.org/packages/autogram-bin.
+# The release workflow (.github/workflows/publish_aur.yaml) sets pkgver and the checksums. To build it from this
+# repository, put autogram-<version>-arch.tar.gz from a release or a build on Arch Linux next to it, set pkgver to
+# that version and run `updpkgsums && makepkg -si`.
+
+pkgname=autogram-bin
+_pkgname=autogram
+pkgver=2.9.0
+pkgrel=1
+pkgdesc='Open-source application for signing digital documents compliant with the eIDAS Regulation'
+arch=('x86_64')
+url='https://github.com/slovensko-digital/autogram'
+license=('EUPL-1.2')
+# Libraries the bundled Java runtime and JavaFX link to, the runtime itself is in the package. Links open with
+# xdg-open, as in the .deb and .rpm packages.
+depends=('alsa-lib' 'at-spi2-core' 'cairo' 'fontconfig' 'freetype2' 'gdk-pixbuf2' 'glib2' 'glibc' 'gtk3'
+         'hicolor-icon-theme' 'libglvnd' 'libx11' 'libxext' 'libxi' 'libxrender' 'libxtst' 'libxxf86vm' 'pango'
+         'xdg-utils' 'zlib')
+optdepends=(
+    'eidklient: Slovak ID card (eID) support'
+    'pcsclite: smart card readers'
+    'ccid: USB smart card readers'
+)
+provides=("${_pkgname}")
+conflicts=("${_pkgname}")
+# The bundled Java runtime is already stripped by jlink
+options=('!strip' '!debug')
+source=("${_pkgname}-${pkgver}-arch.tar.gz::https://github.com/slovensko-digital/autogram/releases/download/v${pkgver}/${_pkgname}-${pkgver}-arch.tar.gz"
+        'autogram.desktop'
+        'autogram.xml')
+sha256sums=('SKIP'
+            'SKIP'
+            'SKIP')
+
+package() {
+    # The launcher of the application image finds the application and the Java runtime next to itself
+    install -d "${pkgdir}/opt"
+    cp -a --no-preserve=ownership "${srcdir}/${_pkgname}" "${pkgdir}/opt/${_pkgname}"
+
+    install -d "${pkgdir}/usr/bin"
+    ln -s "/opt/${_pkgname}/bin/${_pkgname}" "${pkgdir}/usr/bin/${_pkgname}"
+
+    install -Dm644 "${srcdir}/autogram.desktop" "${pkgdir}/usr/share/applications/autogram.desktop"
+    install -Dm644 "${srcdir}/autogram.xml" "${pkgdir}/usr/share/mime/packages/autogram.xml"
+    install -Dm644 "${srcdir}/${_pkgname}/lib/${_pkgname}.png" "${pkgdir}/usr/share/icons/hicolor/512x512/apps/${_pkgname}.png"
+    install -Dm644 "${srcdir}/${_pkgname}/lib/app/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

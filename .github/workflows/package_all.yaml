@@ -40,6 +40,14 @@ jobs:
       version: ${{ needs.extract-version.outputs.version }}
     secrets: inherit
 
+  linux-arch:
+    needs: extract-version
+    uses: ./.github/workflows/package_linux_arch.yaml
+    with:
+      environment: packaging
+      version: ${{ needs.extract-version.outputs.version }}
+    secrets: inherit
+
   macos-intel:
     needs: extract-version
     uses: ./.github/workflows/package_macos_intel.yaml

@@ -3,7 +3,7 @@
 
 Autogram je multi-platformová (Windows, MacOS, Linux) desktopová JavaFX aplikácia, ktorá slúži na podpisovanie a overovanie dokumentov v súlade s európskym nariadením eIDAS. Používateľ ňou môže podpisovať súbory priamo alebo je možné aplikáciu jednoducho zaintegrovať do vlastného (webového) informačného systému pomocou HTTP API. Podpisovanie je možné spúšať aj z príkazového riadku, čo je vhodné pre hromadné podpisovanie veľkého množstva súborov naraz.
 
-**Inštalačné balíky pre Windows, MacOS a Linux sú dostupné v časti [Releases](https://github.com/slovensko-digital/autogram/releases).** Na použitie na existujúcich štátnych weboch bude potrebné doinštalovať aj [rozšírenie do prehliadača](https://github.com/slovensko-digital/autogram-extension#readme).
+**Inštalačné balíky pre Windows, MacOS a Linux sú dostupné v časti [Releases](https://github.com/slovensko-digital/autogram/releases).** Na Arch Linuxe nainštalujte z AUR balík [autogram-bin](https://aur.archlinux.org/packages/autogram-bin). Na použitie na existujúcich štátnych weboch bude potrebné doinštalovať aj [rozšírenie do prehliadača](https://github.com/slovensko-digital/autogram-extension#readme).
 
 ![Screenshot](assets/autogram-screenshot.png?raw=true)
 
@@ -81,7 +81,7 @@ Spustenie `./mvnw package` pripraví všetko do `./target`:
 - `preparedJDK/` - JLink JDK (JRE) pripravené pre bundling s aplikáciou.
 - `autogram-*.jar` - JAR s aplikáciou
 
-Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, a .rpm/.deb).
+Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, .rpm/.deb a na Arch Linuxe obraz aplikácie `autogram-*-arch.tar.gz` pre balík v AUR).
 
 ```sh
 ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
@@ -100,9 +100,17 @@ sudo apt install openjdk-25-jdk maven binutils rpm fakeroot
 sudo dnf install java-25-openjdk maven rpm-build
 ```
 
+#### Arch Linux
+
+```sh
+sudo pacman -S jdk25-openjdk maven base-devel
+```
+
+Balík pre AUR sa zostavuje z `packaging/arch/PKGBUILD` nástrojom `makepkg`, pozri workflow `.github/workflows/package_linux_arch.yaml`.
+
 #### Linux Docker compose
 
-Súbor `docker-compose.yml` definuje 3 služby, ktoré vytvárajú inštalačné balíčky pre 3 veľké Linuxové distribúcie - `Ubuntu 22.04`, `Debian 11` a `Fedora 41`.
+Súbor `docker-compose.yml` definuje 4 služby, ktoré vytvárajú inštalačné balíčky pre 4 veľké Linuxové distribúcie - `Ubuntu 22.04`, `Debian 13`, `Fedora 41` a `Arch Linux`.
 
 ```
 docker compose up --build
