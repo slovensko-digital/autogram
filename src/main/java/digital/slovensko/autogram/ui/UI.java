@@ -78,9 +78,16 @@ public interface UI {
 
     void showError(AutogramException exception);
 
-    char[] getKeystorePassword();
+    /**
+     * Asks for the code to log in to the token: keystore password, or BOK for eID. Never returns a code breaking the
+     * rules, null if the user canceled.
+     */
+    char[] getKeystorePassword(TokenCodes codes);
 
-    char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning);
+    /**
+     * Asks for the signing PIN. Never returns a PIN breaking the rules, null if the user canceled.
+     */
+    char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes);
 
     public void updateBatch();
 

@@ -1,6 +1,7 @@
 package digital.slovensko.autogram.drivers;
 
 import digital.slovensko.autogram.core.PasswordManager;
+import digital.slovensko.autogram.core.TokenCodes;
 import digital.slovensko.autogram.core.errors.AutogramException;
 import digital.slovensko.autogram.core.errors.PINIncorrectException;
 import digital.slovensko.autogram.core.errors.PasswordNotProvidedException;
@@ -10,6 +11,7 @@ import eu.europa.esig.dss.model.SignatureValue;
 import eu.europa.esig.dss.model.ToBeSigned;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
+import eu.europa.esig.dss.token.PasswordInputCallback;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 
 import java.lang.reflect.Array;
@@ -17,6 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.ProviderException;
@@ -26,6 +29,7 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.Objects;
 
 public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
+    private static final long CKU_USER = 1L;
     private static final long CKU_CONTEXT_SPECIFIC = 2L;
     private static final String PKCS11_EXCEPTION_CLASS_NAME = "sun.security.pkcs11.wrapper.PKCS11Exception";
     private static final String PKCS11_CONSTANTS_CLASS_NAME = "sun.security.pkcs11.wrapper.PKCS11Constants";
@@ -39,22 +43,35 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
     static final String NO_TOKEN_POLLING_CONFIG = "insertionCheckInterval = " + Integer.MAX_VALUE;
 
     private final PasswordManager passwordManager;
+    private final TokenCodes codes;
     private final int slotId;
     private final int moduleGeneration;
 
-    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, int driverSlotIndex) {
-        this(pkcsPath, pm, -1, driverSlotIndex);
+    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, int driverSlotIndex, TokenCodes codes) {
+        this(pkcsPath, pm, -1, driverSlotIndex, codes);
     }
 
     /**
      * @param slotId PKCS#11 slot ID to use, ignored if negative
      * @param slotListIndex index into the list of all slots, ignored if negative or if slotId is set
+     * @param codes codes the user enters for the token
      */
-    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, int slotId, int slotListIndex) {
-        super(pkcsPath, pm, slotId, slotId >= 0 ? -1 : slotListIndex, NO_TOKEN_POLLING_CONFIG);
+    public NativePkcs11SignatureToken(String pkcsPath, PasswordManager pm, int slotId, int slotListIndex, TokenCodes codes) {
+        super(pkcsPath, pm == null ? null : (PasswordInputCallback) () -> pm.getPassword(codes), slotId,
+                slotId >= 0 ? -1 : slotListIndex, NO_TOKEN_POLLING_CONFIG);
         this.passwordManager = pm;
+        this.codes = codes;
         this.slotId = slotId;
         this.moduleGeneration = Pkcs11TokenSlots.getModuleGeneration(pkcsPath);
+    }
+
+    @Override
+    protected KeyStore getKeyStore() throws DSSException {
+        // SunPKCS11 logs in only if the token isn't logged in yet
+        if (codes.bok())
+            LoginWithCode.logIn(new SunPkcs11Token(getProvider()), passwordManager, codes);
+
+        return super.getKeyStore();
     }
 
     private byte[] sign(final byte[] bytes, final String javaSignatureAlgorithm, final AlgorithmParameterSpec param, final DSSPrivateKeyEntry keyEntry) throws GeneralSecurityException {
@@ -80,10 +97,9 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             var p11 = getP11(signature);
             var sessionId = getSessionId(signature);
 
-            if (isAlwaysAuthenticate(p11, sessionId, pk)
-                    && (passwordManager.isCachingPIN()
-                    || !isProtectedAuthenticationPath(p11, slotId, getSlotListIndex()))) {
-                var password = passwordManager.getContextSpecificPassword();
+            if (asksForSigningPin(isAlwaysAuthenticate(p11, sessionId, pk), codes, passwordManager.isCachingPIN(),
+                    () -> isProtectedAuthenticationPath(p11, slotId, getSlotListIndex()))) {
+                var password = passwordManager.getContextSpecificPassword(codes);
                 if (password == null) throw new PasswordNotProvidedException();
                 invokeCLogin(p11, sessionId, CKU_CONTEXT_SPECIFIC, password);
             }
@@ -99,6 +115,19 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             }
             throw new GeneralSecurityException(cause);
         }
+    }
+
+    interface ProtectedPathCheck {
+        boolean isProtected() throws Exception;
+    }
+
+    /**
+     * Autogram asks for the signing PIN if the key needs it for each signature, unless the token asks for it itself
+     * (protected authentication path). It asks even then in a batch, to send the PIN for every document, and for eID,
+     * whose own window can't be used from the command line nor in the Mac App Store sandbox.
+     */
+    static boolean asksForSigningPin(boolean alwaysAuthenticate, TokenCodes codes, boolean cachingPin, ProtectedPathCheck protectedPath) throws Exception {
+        return alwaysAuthenticate && (codes.bok() || cachingPin || !protectedPath.isProtected());
     }
 
     private static boolean isAlwaysAuthenticate(Object p11, long sessionId, PrivateKey pk) throws Exception {
@@ -198,6 +227,61 @@ public class NativePkcs11SignatureToken extends Pkcs11SignatureToken {
             return p11Field.get(token);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * The token of a SunPKCS11 provider, logged in through its own session pool, so the login holds for the keystore.
+     */
+    private static class SunPkcs11Token implements LoginWithCode.Token {
+        private final Object token;
+
+        SunPkcs11Token(Provider provider) {
+            try {
+                token = invokeDeclared(provider, "getToken", new Class<?>[0]);
+            } catch (Exception e) {
+                throw new DSSException("Unable to get token of " + provider.getName(), e);
+            }
+        }
+
+        @Override
+        public boolean isLoggedIn() throws LoginWithCode.TokenException {
+            try {
+                return (boolean) invokeDeclared(token, "isLoggedInNow", new Class<?>[]{Class.forName("sun.security.pkcs11.Session")}, (Object) null);
+            } catch (Exception e) {
+                throw new LoginWithCode.TokenException(e);
+            }
+        }
+
+        @Override
+        public void logIn(char[] code) throws LoginWithCode.TokenException {
+            try {
+                var session = invokeDeclared(token, "getOpSession", new Class<?>[0]);
+                try {
+                    var sessionId = (long) invokeDeclared(session, "id", new Class<?>[0]);
+                    var p11Field = token.getClass().getDeclaredField("p11");
+                    p11Field.setAccessible(true);
+                    invokeCLogin(p11Field.get(token), sessionId, CKU_USER, code);
+                } finally {
+                    invokeDeclared(token, "releaseSession", new Class<?>[]{session.getClass()}, session);
+                }
+            } catch (Exception e) {
+                throw new LoginWithCode.TokenException(e);
+            }
+        }
+    }
+
+    private static Object invokeDeclared(Object target, String methodName, Class<?>[] parameterTypes, Object... args) throws Exception {
+        Method method = target.getClass().getDeclaredMethod(methodName, parameterTypes);
+        method.setAccessible(true);
+        try {
+            return method.invoke(target, args);
+        } catch (InvocationTargetException e) {
+            var cause = unwrapInvocationException(e);
+            if (cause instanceof Exception exception) {
+                throw exception;
+            }
+            throw new RuntimeException(cause);
         }
     }
 

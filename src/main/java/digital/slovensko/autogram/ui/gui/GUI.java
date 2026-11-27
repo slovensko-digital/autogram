@@ -9,6 +9,7 @@ import digital.slovensko.autogram.core.SignatureValidator;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningMode;
+import digital.slovensko.autogram.core.TokenCodes;
 import digital.slovensko.autogram.core.UserSettings;
 import digital.slovensko.autogram.core.ValidationReports;
 import digital.slovensko.autogram.core.errors.AutogramException;
@@ -278,13 +279,17 @@ public class GUI implements UI {
         GUIUtils.showInForeground(stage);
     }
 
-    public char[] getKeystorePassword() {
+    public char[] getKeystorePassword(TokenCodes codes) {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("password.keystore.text", "password.keystore.error.text", "password.keystore.subtitle", false, true);
+            var texts = codes.bok()
+                    ? new PasswordController.Texts("password.bok.text", "password.bok.subtitle", "password.bok.error.text", "password.bok.error.digits", "password.bok.error.length")
+                    : new PasswordController.Texts("password.keystore.text", "password.keystore.subtitle", "password.keystore.error.text", "password.keystore.error.digits", "password.keystore.error.length");
+            // some keystores need no password
+            var controller = new PasswordController(texts, false, true, codes);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
 
             var stage = new Stage();
-            stage.setTitle(controller.i18n("password.keystore.title"));
+            stage.setTitle(controller.i18n(codes.bok() ? "password.bok.title" : "password.keystore.title"));
             stage.setScene(new Scene(root));
             stage.setOnCloseRequest(e -> {
                 refreshKeyOnAllJobs();
@@ -307,9 +312,12 @@ public class GUI implements UI {
     }
 
 
-    public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+    public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes) {
         var futurePassword = new FutureTask<>(() -> {
-            var controller = new PasswordController("password.context.text", "password.context.error.text", null, true, false);
+            var texts = codes.bok()
+                    ? new PasswordController.Texts("password.context.eid.text", "password.context.eid.subtitle", "password.context.eid.error.text", "password.context.error.digits", "password.context.error.length")
+                    : new PasswordController.Texts("password.context.text", null, "password.context.error.text", "password.context.error.digits", "password.context.error.length");
+            var controller = new PasswordController(texts, true, false, codes);
             var root = GUIUtils.loadFXML(controller, "password-dialog.fxml");
             if (canReturnToSigning) {
                 controller.cancelButton.setText(controller.i18n("general.close.btn"));

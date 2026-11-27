@@ -25,7 +25,7 @@ A Slovak ID card with a chip can hold a certificate for a qualified electronic s
 1. Install the **eID client** from [slovensko.sk](https://www.slovensko.sk/sk/na-stiahnutie).
 2. If you have not had signing certificates before, issue them in the eID client. With a new ID card, this is often the first thing to do.
 3. Insert the card into the reader and click **Sign** in Autogram.
-4. In the eID client's window, enter the BOK (security personal code) first and, after choosing the certificate, the signing PIN. See [Choosing a card and entering the PIN](card-and-pin.md#slovak-id-card).
+4. Autogram asks for the BOK (security personal code) first and, after you choose the certificate, for the signing PIN. See [Choosing a card and entering the PIN](card-and-pin.md#slovak-id-card).
 
 Besides the qualified certificate, the card also holds a second one that is not used for qualified signing. Autogram does not offer it by default, see [Several certificates on one card](card-and-pin.md#several-certificates-on-one-card).
 

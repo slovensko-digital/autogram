@@ -5,6 +5,7 @@ import digital.slovensko.autogram.core.Batch;
 import digital.slovensko.autogram.core.DriverDetector;
 import digital.slovensko.autogram.core.LegacyInstallation;
 import digital.slovensko.autogram.core.PasswordManager;
+import digital.slovensko.autogram.core.TokenCodes;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
 import digital.slovensko.autogram.core.SigningJob;
 import digital.slovensko.autogram.core.SigningMode;
@@ -181,12 +182,12 @@ public class TestAutogramFactory {
         }
 
         @Override
-        public char[] getKeystorePassword() {
+        public char[] getKeystorePassword(TokenCodes codes) {
             return null;
         }
 
         @Override
-        public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+        public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes) {
             return null;
         }
 

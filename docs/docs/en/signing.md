@@ -34,7 +34,7 @@ Autogram cannot display some files, such as Word documents. It warns you in that
 
    ![Choosing a certificate](/assets/images/screenshots/en/certificate-picker.png)
 
-5. Enter the signing PIN. With a Slovak ID card, you enter it in the eID client's window.
+5. Enter the signing PIN.
 6. Autogram saves the signed file and shows where to find it. Click the path to open the folder.
 
    ![The document was signed successfully](/assets/images/screenshots/en/signing-success.png)

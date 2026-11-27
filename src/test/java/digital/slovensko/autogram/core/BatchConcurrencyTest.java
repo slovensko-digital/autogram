@@ -60,7 +60,7 @@ class BatchConcurrencyTest {
         var prompts = new AtomicInteger();
         var ui = new BulkUI() {
             @Override
-            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes) {
                 return (prompts.incrementAndGet() == 1 ? "0000" : "1234").toCharArray();
             }
         };

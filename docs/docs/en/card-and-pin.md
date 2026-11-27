@@ -66,7 +66,7 @@ With some cards, Autogram asks **What is the keystore password?** after you choo
 - If your card has such a code, enter it and click **Continue**. You received it from the card's issuer together with the other codes.
 - If your card has no such code, leave the field empty and click **Continue**.
 
-This window does not appear for the Slovak ID card. Its code (BOK) is asked for by the eID client, see [Slovak ID card](#slovak-id-card).
+For the Slovak ID card, Autogram asks for the BOK instead, see [Slovak ID card](#slovak-id-card).
 
 ## Choosing the certificate {#choosing-the-certificate}
 
@@ -111,27 +111,27 @@ If none of the certificates is qualified, Autogram shows a hint below them with 
 
 ## Signing PIN {#signing-pin}
 
-Finally, you enter the signing PIN, which some cards call QPIN. With all cards except the Slovak ID card, you enter it in Autogram's window.
+Finally, you enter the signing PIN in Autogram's window. Some cards call it QPIN.
 
 ![Entering the signature PIN](/assets/images/screenshots/en/pin-dialog.png)
 
 ::: callout warning "Mind the number of attempts"
 A card locks after several wrong PINs. If you are not sure about your PIN, rather cancel signing.
+
+Card PINs usually have only digits.
 :::
 
 ## Slovak ID card {#slovak-id-card}
 
-With the Slovak ID card, you enter the codes in the eID client's window, not in Autogram.
+With the Slovak ID card, you enter two codes, both in Autogram's window.
 
-When Autogram connects to the card, the eID client asks for the BOK (security personal code).
+When Autogram connects to the card, it asks for the BOK (security personal code).
 
-![Zadajte BOK (eID client: enter the BOK)](/assets/images/screenshots/en/eid-bok.png)
+![What is the BOK of your ID card?](/assets/images/screenshots/en/eid-bok-dialog.png)
 
-When signing, it asks for the signing PIN.
+When signing, it asks for the signing PIN. When signing [several documents at once](batch.md), you enter it only once for all documents.
 
-![Zadajte Podpisový PIN (eID client: enter the signing PIN)](/assets/images/screenshots/en/eid-pin.png)
-
-Signing [several documents at once](batch.md) is an exception. You then enter the signing PIN in Autogram's window, so that you enter it only once for all documents.
+![What is the signing PIN of your ID card?](/assets/images/screenshots/en/eid-pin-dialog.png)
 
 ## Further signatures {#further-signatures}
 

@@ -9,7 +9,9 @@ import digital.slovensko.autogram.core.SigningKey;
 import digital.slovensko.autogram.core.SigningMode;
 import digital.slovensko.autogram.core.Updater;
 import digital.slovensko.autogram.core.ValidationReports;
+import digital.slovensko.autogram.core.TokenCodes;
 import digital.slovensko.autogram.core.errors.AutogramException;
+import digital.slovensko.autogram.core.errors.BokIncorrectException;
 import digital.slovensko.autogram.core.errors.FunctionCanceledException;
 import digital.slovensko.autogram.core.errors.InitializationFailedException;
 import digital.slovensko.autogram.core.errors.InvalidProxyConfigurationException;
@@ -292,6 +294,8 @@ public class CliUI implements UI {
             return "No signing keys found";
         } else if (e instanceof PDFAComplianceException) {
             return "Document is not PDF/A compliant";
+        } else if (e instanceof BokIncorrectException) {
+            return "Incorrect BOK";
         } else if (e instanceof PINIncorrectException) {
             return "Incorrect security code";
         } else if (e instanceof PINLockedException) {
@@ -344,13 +348,24 @@ public class CliUI implements UI {
     }
 
     @Override
-    public char[] getKeystorePassword() {
-        return System.console().readPassword("Enter keystore password (hidden): ");
+    public char[] getKeystorePassword(TokenCodes codes) {
+        var name = codes.bok() ? "BOK" : "Keystore password";
+        var prompt = "Enter " + (codes.bok() ? "BOK" : "keystore password") + rulesHint(codes) + ": ";
+        return CodeReader.read(() -> System.console().readPassword(prompt), System.err::println, codes, name);
     }
 
-    public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+    public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes) {
         if (incorrectPIN) System.err.println("Incorrect signing PIN. Try again.");
-        return System.console().readPassword("Enter key password (hidden): ");
+        var name = codes.bok() ? "Signing PIN" : "Key password";
+        var prompt = "Enter " + (codes.bok() ? "signing PIN" : "key password") + rulesHint(codes) + ": ";
+        return CodeReader.read(() -> System.console().readPassword(prompt), System.err::println, codes, name);
+    }
+
+    private static String rulesHint(TokenCodes codes) {
+        if (codes.length() > 0)
+            return " (" + codes.length() + " digits, hidden)";
+
+        return codes.digitsOnly() ? " (digits only, hidden)" : " (hidden)";
     }
 
     @Override

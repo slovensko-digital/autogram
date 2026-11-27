@@ -87,12 +87,17 @@ Automatické použitie (`getAutomaticOption`):
 - Popis slotu je meno čítačky z PC/SC a token, napr. `Generic EMV Smartcard Reader 01; Sig_ZEP`. Duálna čítačka má v
   PC/SC dve mená (kontaktná a bezkontaktná časť, napr. `X` a `X 01`), takže tá istá karta môže mať po vložení iné meno
   čítačky.
-- Má protected authentication path: PIN nepýta Autogram, ale eID klient vo vlastnom okne (iný proces) – BOK pri
-  prihlásení (`C_Login`) a podpisový PIN pri podpise. Po zatvorení jeho okna je aktívna iná aplikácia, preto sa okná
-  Autogramu, ktoré prídu potom, zobrazujú cez `GUIUtils.bringToForeground` (pozri macOS nižšie).
+- Má protected authentication path, napriek tomu BOK aj podpisový PIN pýta Autogram (`TokenCodes.EID`, 6 číslic). Bez
+  PIN-u by eID klient otvoril vlastné okno (`VirtualKeyboard`), ktoré nejde použiť z CLI a v sandboxe Mac App Store
+  padá. `C_Login` v `libPkcs11.dylib` PIN od volajúceho prijme: pri `CKU_USER` ho pošle na overenie BOK, pri
+  `CKU_CONTEXT_SPECIFIC` na overenie podpisového PIN-u, okno otvára len bez PIN-u (overené disassembly aj kartou na
+  macOS, Windows a Linux zatiaľ nie). SunPKCS11 pri protected authentication path posiela `C_Login(NULL)`, preto
+  `NativePkcs11SignatureToken.getKeyStore` prihlási token cez `LoginWithCode` vopred (vlastná relácia z poolu SunPKCS11)
+  a SunPKCS11 potom vidí prihlásený token (`Token.isLoggedInNow`) a prihlásenie preskočí. Podpisový PIN sa posiela
+  pred každým podpisom (`asksForSigningPin`).
 - Keď sa po prihlásení na eID inicializuje iný ovládač, ktorý prechádza všetky karty (overené s MONET), každé ďalšie
-  prihlásenie zlyhá s `CKR_FUNCTION_FAILED` ešte pred oknom na PIN. Pomôže len nová inicializácia modulu – robí to `PKCS11TokenDriver.recoverToken` (eID klient si PIN potom
-  vypýta sám, žiadny PIN sa neposiela dvakrát). Nová inicializácia ukončí všetky relácie modulu; odhlásenie zo staršej
+  prihlásenie zlyhá s `CKR_FUNCTION_FAILED` ešte pred oknom na PIN. Pomôže len nová inicializácia modulu – robí to `PKCS11TokenDriver.recoverToken` (nové spojenie
+  si BOK vypýta od používateľa znova, žiadny kód sa neposiela dvakrát bez neho). Nová inicializácia ukončí všetky relácie modulu; odhlásenie zo staršej
   relácie by eID klienta zhodilo, preto ho `NativePkcs11SignatureToken.close` vtedy vynechá (generácia modulu).
 - **eID klient zhodí celý proces** (`std::system_error: unique_lock::lock: already locked`, abort), keď iné vlákno volá
   `C_GetSlotInfo`, kým `C_Login` čaká na BOK. Stalo sa to so SunPKCS11 pollerom starého spojenia (pozri nižšie, je
@@ -107,8 +112,8 @@ Automatické použitie (`getAutomaticOption`):
 - Na Windows `pkcs11_x64.dll` závisí od `botan_x64.dll` vo svojom priečinku, ktorú Windows nájde len cez PATH (eID klient
   si tam pridá svoj priečinok). Vo verzii z Microsoft Store to nestačí, pozri *Windows: načítanie knižnice* nižšie.
 - `CKR_FUNCTION_FAILED` sa mapuje na „Nesprávny PIN“ (`PINIncorrectException`) – pri eID to nemusí byť pravda.
-- Hromadné podpisovanie (`bulkEnabled`): Autogram si podpisový PIN vypýta sám, zapamätá si ho a pred každým podpisom sa
-  prihlási `CKU_CONTEXT_SPECIFIC`. Nastavenie sa uplatní hneď po kliknutí (aj bez uloženia) a už otvorené spojenie si ho
+- Hromadné podpisovanie (`bulkEnabled`): Autogram si podpisový PIN zapamätá a pred každým podpisom sa prihlási
+  `CKU_CONTEXT_SPECIFIC`. Nastavenie sa uplatní hneď po kliknutí (aj bez uloženia) a už otvorené spojenie si ho
   číta pri každom podpise. Raz sa po jeho vypnutí s aktívnym kľúčom objavila chyba „Kartu sa nepodarilo rozpoznať“, ďalej
   sa ju nepodarilo zopakovať. Kľúč sa pri zmene nastavenia zámerne nezahadzuje.
 
@@ -171,6 +176,11 @@ Automatické použitie (`getAutomaticOption`):
   `CKR_USER_NOT_LOGGED_IN` (overené s I.CA, aj na `main`). Stáva sa to pri `GET /certificates`, preto ho počas batchu
   Autogram odmieta (`503 BATCH_IN_PROGRESS`); mimo batchu kľúč v cache zatiaľ takto zlyhá.
 - Prázdny PIN z callbacku znamená `C_Login(NULL)`, na čo niektoré ovládače reagujú vlastným oknom (MONET).
+- Kódy (kód k úložisku, BOK, podpisový PIN) majú pravidlá podľa ovládača, `TokenDriver.getTokenCodes`: eID iba 6 číslic,
+  eObčanka, I.CA a MONET iba číslice, Gemalto, vlastný PKCS#11 a súbor s certifikátom čokoľvek (heslá SafeNet eTokenu
+  či PIN YubiKey môžu mať písmená). Okno na kód iné znaky do poľa nepustí, CLI kód s nimi odmietne a `PasswordManager`
+  taký kód nikdy nepošle ďalej – karta by ho počítala ako nesprávny (písmená horného radu slovenskej klávesnice namiesto
+  číslic).
 
 ### Windows: načítanie knižnice
 
@@ -224,7 +234,8 @@ treba sledovať vedľajšie účinky v zabalenej aplikácii (Dock, menu).
   výberu sú `radio button` v `scroll area 1`. `screencapture` potrebuje povolenie Nahrávanie obrazovky.
 - Bez zásahu do kariet: PC/SC zoznam čítačiek a ATR (zdieľané pripojenie, `disconnect(false)`), PKCS#11 zoznam slotov
   cez wrapper (`--add-exports`), bez prihlásenia.
-- PIN zadáva vždy človek v okne ovládača alebo Autogramu. eID: BOK pri prihlásení, podpisový PIN pri podpise. Zrušenie
+- PIN zadáva vždy človek v okne ovládača alebo Autogramu. eID: BOK pri prihlásení, podpisový PIN pri podpise, oba v
+  okne Autogramu. Zrušenie
   okna na PIN dokazuje, že sa prihlásenie k PIN-u dostalo.
 - Pád JVM: `~/Library/Logs/DiagnosticReports/java-*.ips` ukáže vlákno, ktoré padlo, aj natívne knižnice v ňom.
 - Stav čítačiek (`NO_CARD`, `NOT_RESPONDING`) sa dá vynútiť dočasnou úpravou `Supplier<CardReaders.State>` v konštruktore
