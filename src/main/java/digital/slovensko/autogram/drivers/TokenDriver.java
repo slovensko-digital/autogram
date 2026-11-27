@@ -2,6 +2,7 @@ package digital.slovensko.autogram.drivers;
 
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
+import digital.slovensko.autogram.core.TokenCodes;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 
@@ -69,6 +70,13 @@ public abstract class TokenDriver {
      */
     public boolean needsInsertedCard() {
         return false;
+    }
+
+    /**
+     * Codes the user enters for the driver's tokens and which characters they may have.
+     */
+    public TokenCodes getTokenCodes() {
+        return TokenCodes.ANY;
     }
 
     public String getShortname() {

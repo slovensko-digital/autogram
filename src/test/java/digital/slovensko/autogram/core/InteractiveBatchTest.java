@@ -68,7 +68,7 @@ class InteractiveBatchTest {
         var prompts = new AtomicInteger();
         var ui = new TestAutogramFactory.FakeUI() {
             @Override
-            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes) {
                 prompts.incrementAndGet();
                 return "1234".toCharArray();
             }
@@ -296,7 +296,7 @@ class InteractiveBatchTest {
             }
 
             @Override
-            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes) {
                 prompts.incrementAndGet();
                 errors.add(incorrectPIN);
                 assertEquals(!bulk, canReturnToSigning);
@@ -369,7 +369,7 @@ class InteractiveBatchTest {
         var prompts = new AtomicInteger();
         var ui = new InteractiveUI() {
             @Override
-            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes) {
                 prompts.incrementAndGet();
                 return "1234".toCharArray();
             }
@@ -621,7 +621,7 @@ class InteractiveBatchTest {
         var prompts = new AtomicInteger();
         var ui = new InteractiveUI() {
             @Override
-            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning) {
+            public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes) {
                 prompts.incrementAndGet();
                 return "1234".toCharArray();
             }

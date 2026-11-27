@@ -20,7 +20,11 @@ public class PasswordManager implements PasswordInputCallback {
         this.settings = settings;
     }
 
-    public synchronized char[] getContextSpecificPassword() {
+    public char[] getContextSpecificPassword() {
+        return getContextSpecificPassword(TokenCodes.ANY);
+    }
+
+    public synchronized char[] getContextSpecificPassword(TokenCodes codes) {
         contextSpecificPasswordRequested.set(true);
         var batch = currentBatch.get();
         var canReturnToSigning = !batch.isPresent() || batch.isInteractive();
@@ -30,7 +34,7 @@ public class PasswordManager implements PasswordInputCallback {
                 cachedBatch = batch;
             }
             if (cachedPassword == null)
-                cachedPassword = ui.getContextSpecificPassword(incorrectPIN, canReturnToSigning);
+                cachedPassword = askForSigningPin(canReturnToSigning, codes);
             incorrectPIN = false;
             return cachedPassword;
         }
@@ -41,12 +45,12 @@ public class PasswordManager implements PasswordInputCallback {
         }
         if (settings.getCacheContextSpecificPasswordEnabled()) {
             if (cachedPassword == null) {
-                cachedPassword = ui.getContextSpecificPassword(incorrectPIN, canReturnToSigning);
+                cachedPassword = askForSigningPin(canReturnToSigning, codes);
             }
             incorrectPIN = false;
             return cachedPassword;
         } else {
-            var password = ui.getContextSpecificPassword(incorrectPIN, canReturnToSigning);
+            var password = askForSigningPin(canReturnToSigning, codes);
             incorrectPIN = false;
             return password;
         }
@@ -88,16 +92,43 @@ public class PasswordManager implements PasswordInputCallback {
         cachedPassword = null;
     }
 
+    private char[] askForSigningPin(boolean canReturnToSigning, TokenCodes codes) {
+        var pin = ui.getContextSpecificPassword(incorrectPIN, canReturnToSigning, codes);
+        if (pin != null)
+            requireAllowed(pin, codes);
+
+        return pin;
+    }
+
+    @Override
+    public char[] getPassword() {
+        return getPassword(TokenCodes.ANY);
+    }
+
     /**
+     * Asks for the code to log in to the token: keystore password, or BOK for eID.
+     *
      * @throws PasswordNotProvidedException if the user canceled entering it - PKCS#11 drivers would log in without PIN
      * otherwise, and some ask for it themselves then, e.g. MONET+ ProID+Q
      */
-    @Override
-    public char[] getPassword() {
-        var password = ui.getKeystorePassword();
+    public char[] getPassword(TokenCodes codes) {
+        var password = ui.getKeystorePassword(codes);
         if (password == null)
             throw new PasswordNotProvidedException();
 
+        requireAllowed(password, codes);
         return password;
+    }
+
+    /**
+     * The UI checks the code already, this only makes sure a code breaking the rules never reaches the token, where
+     * it would count as a wrong one.
+     */
+    private static void requireAllowed(char[] code, TokenCodes codes) {
+        if (codes.check(code).isEmpty())
+            return;
+
+        Arrays.fill(code, '\0');
+        throw new PasswordNotProvidedException();
     }
 }

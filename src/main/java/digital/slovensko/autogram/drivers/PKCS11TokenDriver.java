@@ -3,6 +3,7 @@ package digital.slovensko.autogram.drivers;
 import digital.slovensko.autogram.core.DefaultDriverDetector.TokenDriverShortnames;
 import digital.slovensko.autogram.core.PasswordManager;
 import digital.slovensko.autogram.core.SignatureTokenSettings;
+import digital.slovensko.autogram.core.TokenCodes;
 import digital.slovensko.autogram.util.Logging;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
@@ -20,7 +21,7 @@ public class PKCS11TokenDriver extends TokenDriver {
 
     public AbstractKeyStoreTokenConnection createToken(PasswordManager pm, SignatureTokenSettings settings) {
         Pkcs11TokenSlots.finalizeOnExit(getPath().toString());
-        return new NativePkcs11SignatureToken(getPath().toString(), pm, settings.getDriverSlotIndex(getShortname()));
+        return new NativePkcs11SignatureToken(getPath().toString(), pm, settings.getDriverSlotIndex(getShortname()), getTokenCodes());
     }
 
     @Override
@@ -31,9 +32,9 @@ public class PKCS11TokenDriver extends TokenDriver {
         Logging.log("Using " + slot + " of " + getPath());
         Pkcs11TokenSlots.finalizeOnExit(getPath().toString());
         if (slot.slotId() <= Integer.MAX_VALUE)
-            return new NativePkcs11SignatureToken(getPath().toString(), pm, (int) slot.slotId(), -1);
+            return new NativePkcs11SignatureToken(getPath().toString(), pm, (int) slot.slotId(), -1, getTokenCodes());
 
-        return new NativePkcs11SignatureToken(getPath().toString(), pm, -1, slot.slotListIndex());
+        return new NativePkcs11SignatureToken(getPath().toString(), pm, -1, slot.slotListIndex(), getTokenCodes());
     }
 
     @Override
@@ -62,8 +63,8 @@ public class PKCS11TokenDriver extends TokenDriver {
     /**
      * eID klient fails every login with CKR_FUNCTION_FAILED once another driver talked to the card after it, e.g.
      * MONET+ ProID+Q initialized after the user logged in to the eID card. It works again only after the module is
-     * initialized again. The login fails before eID klient asks for the PIN, and when retried, eID klient asks for it
-     * itself, so no PIN is sent twice.
+     * initialized again. The new connection asks the user for BOK again instead of reusing the one sent before, so no
+     * code is sent twice without the user.
      */
     @Override
     public Optional<AbstractKeyStoreTokenConnection> recoverToken(PasswordManager pm, SignatureTokenSettings settings, TokenSlot slot, DSSException error) {
@@ -92,6 +93,16 @@ public class PKCS11TokenDriver extends TokenDriver {
             e = e.getCause();
 
         return e.getMessage();
+    }
+
+    @Override
+    public TokenCodes getTokenCodes() {
+        return switch (getShortname()) {
+            case TokenDriverShortnames.EID -> TokenCodes.EID;
+            case TokenDriverShortnames.CZ_EID, TokenDriverShortnames.SECURE_STORE, TokenDriverShortnames.MONET -> TokenCodes.DIGITS;
+            // SafeNet eToken passwords and e.g. YubiKey PIV PINs may have letters
+            default -> TokenCodes.ANY;
+        };
     }
 
     @Override
