@@ -35,7 +35,7 @@ autogram --cli -s dokument.pdf -d eid --tsa-server http://timestamp.sectigo.com/
 | `--plain-xml` | Povolí podpisovanie XML súborov, ktoré nie sú formulárom verejnej správy. |
 | `--en319132` | Podpisuje podľa noriem ETSI EN 319 132 a EN 319 122. |
 
-PIN k vybranej karte zadávate v príkazovom riadku, pri občianskom preukaze aj BOK.
+PIN k vybranej karte zadávate v príkazovom riadku, pri občianskom preukaze aj BOK. Pri podpisovaní priečinka zadáte podpisový PIN iba raz pre všetky súbory.
 
 ## Kam sa podpísané súbory uložia
 

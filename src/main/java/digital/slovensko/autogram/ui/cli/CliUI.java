@@ -50,18 +50,29 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static digital.slovensko.autogram.util.DSSUtils.parseCN;
 
 public class CliUI implements UI {
     private final CliSettings settings;
+    /** Reads a hidden code (PIN, BOK, password) after the prompt, null at the end of input. */
+    private final Function<String, char[]> readHidden;
     SigningKey activeKey;
     int nJobsSigned = 1;
     int nJobsTotal = 0;
 
     public CliUI(CliSettings settings) {
+        this(settings, prompt -> System.console().readPassword(prompt));
+    }
+
+    /**
+     * @param readHidden reads a hidden code (PIN, BOK, password) after the prompt, null at the end of input
+     */
+    CliUI(CliSettings settings, Function<String, char[]> readHidden) {
         this.settings = settings;
+        this.readHidden = readHidden;
     }
 
     @Override
@@ -78,9 +89,13 @@ public class CliUI implements UI {
     }
 
     private void sign(SigningJob job, Autogram autogram) {
+        announceSigning(job);
+        autogram.sign(job, activeKey);
+    }
+
+    void announceSigning(SigningJob job) {
         System.out.println("Starting signing file \"%s\" [%d/%d]".formatted(job.getName(), nJobsSigned++,
                 nJobsTotal));
-        autogram.sign(job, activeKey);
     }
 
     public void setJobsCount(int nJobsTotal) {
@@ -89,7 +104,15 @@ public class CliUI implements UI {
 
     @Override
     public void startBatch(Batch batch, Autogram autogram) {
-        // TODO Auto-generated method stub
+        if (activeKey != null) {
+            autogram.signBatchWithKey(batch, activeKey);
+            return;
+        }
+
+        autogram.pickSigningKeyAndThen(key -> {
+            activeKey = key;
+            autogram.signBatchWithKey(batch, key);
+        });
     }
 
     @Override
@@ -351,14 +374,14 @@ public class CliUI implements UI {
     public char[] getKeystorePassword(TokenCodes codes) {
         var name = codes.bok() ? "BOK" : "Keystore password";
         var prompt = "Enter " + (codes.bok() ? "BOK" : "keystore password") + rulesHint(codes) + ": ";
-        return CodeReader.read(() -> System.console().readPassword(prompt), System.err::println, codes, name);
+        return CodeReader.read(() -> readHidden.apply(prompt), System.err::println, codes, name);
     }
 
     public char[] getContextSpecificPassword(boolean incorrectPIN, boolean canReturnToSigning, TokenCodes codes) {
         if (incorrectPIN) System.err.println("Incorrect signing PIN. Try again.");
         var name = codes.bok() ? "Signing PIN" : "Key password";
         var prompt = "Enter " + (codes.bok() ? "signing PIN" : "key password") + rulesHint(codes) + ": ";
-        return CodeReader.read(() -> System.console().readPassword(prompt), System.err::println, codes, name);
+        return CodeReader.read(() -> readHidden.apply(prompt), System.err::println, codes, name);
     }
 
     private static String rulesHint(TokenCodes codes) {
