@@ -113,7 +113,11 @@ Automatické použitie (`getAutomaticOption`):
   si tam pridá svoj priečinok). Vo verzii z Microsoft Store to nestačí, pozri *Windows: načítanie knižnice* nižšie.
 - `CKR_FUNCTION_FAILED` sa mapuje na „Nesprávny PIN“ (`PINIncorrectException`) – pri eID to nemusí byť pravda.
 - Hromadné podpisovanie (`bulkEnabled`): Autogram si podpisový PIN zapamätá a pred každým podpisom sa prihlási
-  `CKU_CONTEXT_SPECIFIC`. Nastavenie sa uplatní hneď po kliknutí (aj bez uloženia) a už otvorené spojenie si ho
+  `CKU_CONTEXT_SPECIFIC`. CLI podpisuje priečinok ako jeden bulk batch (`CliApp`), mimo batchu sa PIN po každom
+  podpise zabudne. Overujú to testy so SoftHSM (`CliSoftHsmTests`, token so `CKA_ALWAYS_AUTHENTICATE` zo
+  `SoftHsmToken`). Testy so skutočným PKCS#11 ovládačom majú tag `Pkcs11` a bežia vo vlastnom behu surefire
+  (`pkcs11-tests`) s `--add-opens` ako aplikácia a so `SOFTHSM2_CONF` v `target/softhsm`. V CI sa SoftHSM inštaluje
+  na Linuxe a macOS, kde chýba, testy sa preskočia. Nastavenie sa uplatní hneď po kliknutí (aj bez uloženia) a už otvorené spojenie si ho
   číta pri každom podpise. Raz sa po jeho vypnutí s aktívnym kľúčom objavila chyba „Kartu sa nepodarilo rozpoznať“, ďalej
   sa ju nepodarilo zopakovať. Kľúč sa pri zmene nastavenia zámerne nezahadzuje.
 

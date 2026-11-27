@@ -35,7 +35,7 @@ autogram --cli -s document.pdf -d eid --tsa-server http://timestamp.sectigo.com/
 | `--plain-xml` | Allows signing XML files that are not government forms. |
 | `--en319132` | Signs according to ETSI EN 319 132 and EN 319 122. |
 
-You enter the PIN for the chosen card on the command line, for a Slovak ID card also the BOK.
+You enter the PIN for the chosen card on the command line, for a Slovak ID card also the BOK. When signing a folder, you enter the signing PIN only once for all files.
 
 ## Where the signed files are saved
 
