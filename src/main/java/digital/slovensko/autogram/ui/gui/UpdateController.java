@@ -26,6 +26,8 @@ public class UpdateController extends BaseController implements SuppressedFocusC
     Button storeButton;
     @FXML
     Button mainButton;
+    @FXML
+    Button cancelButton;
 
     public UpdateController(HostServices hostServices) {
         this.hostServices = hostServices;
@@ -35,7 +37,14 @@ public class UpdateController extends BaseController implements SuppressedFocusC
     public void initialize() {
         highlight("Autogram").in(title);
 
-        if (OperatingSystem.current() == OperatingSystem.WINDOWS) {
+        if (Updater.isInstalledFromAur()) {
+            // Nothing to download, the package manager brings the new version, so the window only says how
+            text.setText(i18n("update.newVersion.aur.text"));
+            mainButton.setText(i18n("general.close.btn"));
+            mainButton.setOnAction(this::onCancelButtonPressed);
+            cancelButton.setManaged(false);
+            cancelButton.setVisible(false);
+        } else if (OperatingSystem.current() == OperatingSystem.WINDOWS) {
             text.setText(i18n("update.newVersion.store.text"));
             moreInfo.setManaged(true);
             moreInfo.setVisible(true);
