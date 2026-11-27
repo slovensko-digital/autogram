@@ -17,6 +17,7 @@ Zmeny v jednotlivých verziách Autogramu, od najnovšej. Ktorú verziu máte, z
 **Nové**
 
 - **Pridanie krajiny jedným kliknutím.** Ak Autogram nevie overiť podpis alebo časovú pečiatku, lebo ich poskytovateľ je z krajiny, ktorú nemáte zapnutú v nastaveniach, upozorní na to nad podpismi a krajinu pridá jedným kliknutím. Pomôže to napríklad pri dokumentoch z aplikácie Autogram v mobile, ktorá pridáva estónsku časovú pečiatku. Pozrite si [Dôveryhodné zoznamy](verification.md#doveryhodne-zoznamy).
+- **Arch Linux.** Autogram je v repozitári AUR ako balík `autogram-bin` a aktualizuje sa spolu s ostatnými balíkmi. Pozrite si [Arch Linux](installation.md#arch-linux).
 
 **Vylepšené**
 

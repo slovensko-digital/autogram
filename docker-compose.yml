@@ -30,3 +30,13 @@ services:
     environment:
       - VERSION=1.0.0
       - PREFIX=fedora41
+
+  builder-arch:
+    build:
+      context: .
+      dockerfile: packaging/arch.dockerfile
+    volumes:
+      - ./packaging/output:/data:z
+    environment:
+      - VERSION=1.0.0
+      - PREFIX=arch

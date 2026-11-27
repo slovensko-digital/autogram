@@ -187,60 +187,98 @@ if [[ "${platform}" == "win" ]]; then
 fi
 
 if [[ "$platform" == "linux" ]]; then
-    arguments+=("${appImageArguments[@]}" "${installerArguments[@]}")
-
-    cp "./autogram.template.desktop" "./autogram.desktop"
-    sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./autogram.desktop"
-
-    if [[ -n "${properties_linux_appCategory}" ]]; then
-        arguments+=(
-            "--linux-app-category" "${properties_linux_appCategory}"
-        )
-    fi
-
-    if [[ -n "${properties_linux_packageDeps}" ]]; then
-        arguments+=(
-            "--linux-package-deps" "${properties_linux_packageDeps}"
-        )
-    fi
-
     lowercase_name=$(echo "${properties_name}" | tr '[:upper:]' '[:lower:]')
 
     arguments+=(
         "--name" "${lowercase_name}"
+    )
+
+    # Options of the .deb and .rpm packages
+    linuxPackageArguments=(
+        "${appImageArguments[@]}"
+        "${installerArguments[@]}"
         "--java-options" "${jvmOptions}"
         "--linux-menu-group" "${properties_linux_menuGroup:-Office}"
         "--install-dir" "${properties_linux_installDir}"
     )
 
+    if [[ -n "${properties_linux_appCategory}" ]]; then
+        linuxPackageArguments+=(
+            "--linux-app-category" "${properties_linux_appCategory}"
+        )
+    fi
+
+    if [[ -n "${properties_linux_packageDeps}" ]]; then
+        linuxPackageArguments+=(
+            "--linux-package-deps" "${properties_linux_packageDeps}"
+        )
+    fi
+
     if [[ "${properties_linux_shortcut}" == "1" ]]; then
-        arguments+=(
+        linuxPackageArguments+=(
             "--linux-shortcut"
         )
     fi
 
-    # Load variables of distribution
+    # Builds a .deb or .rpm package installed to /usr, whose launcher asks dpkg or rpm where the application is
+    function buildLinuxPackage() {
+        cp "./autogram.template.desktop" "./autogram.desktop"
+        sed -i -e "s/PROTOCOL_NAME/$properties_protocol/g" "./autogram.desktop"
+
+        "$jpackage" "${arguments[@]}" "${linuxPackageArguments[@]}" "$@"
+        checkExitCode $?
+    }
+
+    # Load variables of distribution, derived ones (e.g. Linux Mint, Manjaro) list their base in ID_LIKE
     . /etc/os-release
 
-    if [ "${ID}" == "fedora" ]; then
-        arguments+=(
-            "--type" "rpm"
-        )
-    fi
+    distribution=""
+    for id in ${ID} ${ID_LIKE:-}; do
+        case "${id}" in
+            debian|ubuntu|fedora|arch)
+                distribution=${id}
+                break
+                ;;
+        esac
+    done
 
-    if [ "${ID}" == "debian" ] || [ "${ID}" == "ubuntu" ]; then
-        arguments+=(
-            "--type" "deb"
-        )
-        if [[ -n "${properties_linux_debMaintainer}" ]]; then
-            arguments+=(
-                "--linux-deb-maintainer" "${properties_linux_debMaintainer}"
-            )
-        fi
-    fi
+    case "${distribution}" in
+        debian|ubuntu)
+            debArguments=("--type" "deb")
+            if [[ -n "${properties_linux_debMaintainer}" ]]; then
+                debArguments+=(
+                    "--linux-deb-maintainer" "${properties_linux_debMaintainer}"
+                )
+            fi
 
-    "$jpackage" "${arguments[@]}"
-    checkExitCode $?
+            buildLinuxPackage "${debArguments[@]}"
+            ;;
+
+        fedora)
+            buildLinuxPackage "--type" "rpm"
+            ;;
+
+        arch)
+            # The application image for packages of repositories like the AUR (packaging/arch/PKGBUILD), which
+            # install it to /opt/autogram. Their package managers aren't dpkg or rpm, which the launcher of a /usr
+            # installation asks where the application is, so it would not start. The launcher of the image finds
+            # the application next to itself instead. Each package sets how Autogram is updated in its launcher.
+            appImage="${output}/${lowercase_name}"
+            rm -rf "${appImage}"
+
+            "$jpackage" "${arguments[@]}" "${appImageArguments[@]}" \
+                "--type" "app-image" \
+                "--java-options" "${jvmOptions}"
+            checkExitCode $?
+
+            tar -C "${output}" -czf "${output}/${lowercase_name}-${properties_version:-$version}-linux-x86_64.tar.gz" "${lowercase_name}"
+            ;;
+
+        *)
+            # jpackage builds the package type the system supports
+            buildLinuxPackage
+            ;;
+    esac
 fi
 
 if [[ "${platform}" == "mac" ]]; then

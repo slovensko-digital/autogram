@@ -21,6 +21,15 @@ public class Updater {
     public static final String MICROSOFT_STORE_URL = "ms-windows-store://pdp/?productid="
             + Configuration.getBuildProperty("win.msix.storeProductId");
 
+    /**
+     * The Arch Linux build is installed from the AUR (Arch User Repository), whose package is updated with each
+     * release, so the user gets new versions the same way as their other packages. The AUR package
+     * (packaging/arch/PKGBUILD) sets the property in its launcher.
+     */
+    public static boolean isInstalledFromAur() {
+        return "aur".equals(System.getProperty("autogram.updateChannel"));
+    }
+
     public static boolean newVersionAvailable() {
         Version vCurrent = Main.getVersion();
         if (vCurrent.isDev()) {

@@ -1,0 +1,112 @@
+name: Publish to AUR
+
+# Updates https://aur.archlinux.org/packages/autogram-bin to a published release, so Arch Linux users get it the same
+# way as their other packages. Pre-releases are left out.
+#
+# One-time setup, see RELEASE.md: an AUR account with the public SSH key, and the private key as the secret
+# AUR_SSH_PRIVATE_KEY of the environment "aur", whose deployment rule allows the v* tags.
+on:
+  release:
+    # published as a release, or a pre-release changed to a release
+    types: [released]
+  # to publish a release again, run it on its tag
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# releases published shortly after each other are pushed in order
+concurrency:
+  group: publish-aur
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    container: "archlinux:latest"
+    environment: aur
+    env:
+      TAG: ${{ github.event.release.tag_name || github.ref_name }}
+      HAS_AUR_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY != '' }}
+    steps:
+      - name: Check the release and the AUR key
+        id: check
+        run: |
+          if [[ ! "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::${TAG} is not a release tag, run the workflow on a tag like v2.9.0"
+            exit 1
+          fi
+
+          if [ "${HAS_AUR_KEY}" != "true" ]; then
+            echo "::warning::AUR_SSH_PRIVATE_KEY is not set in the aur environment, the AUR package is not updated"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup dependencies
+        if: ${{ steps.check.outputs.publish == 'true' }}
+        run: pacman -Syu --noconfirm --needed base-devel git openssh pacman-contrib
+
+      - uses: actions/checkout@v4
+        if: ${{ steps.check.outputs.publish == 'true' }}
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+
+      # makepkg must not run as root
+      - name: Update the PKGBUILD to the release
+        if: ${{ steps.check.outputs.publish == 'true' }}
+        run: |
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
+          mkdir /home/builder/aur
+          cp packaging/arch/* /home/builder/aur/
+          chown -R builder /home/builder/aur
+
+          cd /home/builder/aur
+          sudo -u builder sed -i -e "s/^pkgver=.*/pkgver=${TAG#v}/" -e "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
+          # downloads the released archive
+          sudo -u builder updpkgsums
+          # the package must build and install from the released files before it is offered to users
+          sudo -u builder makepkg --syncdeps --force --noconfirm
+          pacman -U --noconfirm autogram-bin-*.pkg.tar.zst
+          test "$(autogram --version)" = "${TAG#v}"
+          grep -qx "java-options=-Dautogram.updateChannel=aur" /opt/autogram/lib/app/autogram.cfg
+          sudo -u builder makepkg --printsrcinfo | sudo -u builder tee .SRCINFO > /dev/null
+
+      - name: Push to AUR
+        if: ${{ steps.check.outputs.publish == 'true' }}
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          # https://aur.archlinux.org lists the fingerprints of its SSH keys
+          AUR_HOST_KEY_FINGERPRINT: SHA256:RFzBCUItH9LZS0cKB5UE6ceAYhBD5C8GeOBip8Z11+4
+        run: |
+          # ssh takes ~ from the user database, not from HOME that GitHub sets in containers, so the paths are explicit
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "${AUR_SSH_PRIVATE_KEY}" > "$HOME/.ssh/aur"
+          chmod 600 "$HOME/.ssh/aur"
+
+          ssh-keyscan -t ed25519 aur.archlinux.org > aur_host_key
+          if [ "$(ssh-keygen -lf aur_host_key | awk '{print $2}')" != "${AUR_HOST_KEY_FINGERPRINT}" ]; then
+            echo "::error::The SSH key of aur.archlinux.org does not match its published fingerprint"
+            exit 1
+          fi
+          mv aur_host_key "$HOME/.ssh/known_hosts"
+
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/aur -o IdentitiesOnly=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts -o StrictHostKeyChecking=yes"
+          git config --global init.defaultBranch master
+          # the first push creates the package
+          git clone ssh://aur@aur.archlinux.org/autogram-bin.git aur
+          cd /home/builder/aur
+          cp PKGBUILD .SRCINFO autogram.desktop autogram.xml "${GITHUB_WORKSPACE}/aur/"
+
+          cd "${GITHUB_WORKSPACE}/aur"
+          git add PKGBUILD .SRCINFO autogram.desktop autogram.xml
+          if git diff --cached --quiet; then
+            echo "The AUR package is already at ${TAG}"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Update to ${TAG#v}"
+          git push origin master

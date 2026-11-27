@@ -63,13 +63,31 @@ Autogram installed from an `.msi` file is not updated automatically, deploy new 
 
 ## Linux
 
-Install the package with your distribution's package manager, for example:
+On Ubuntu, Debian and Fedora, install the package from the [download page](https://sluzby.slovensko.digital/autogram/#download) with your distribution's package manager:
 
 ```sh
 sudo apt install ./autogram-…-ubuntu.deb    # Ubuntu
 sudo apt install ./autogram-…-debian.deb    # Debian
 sudo dnf install ./autogram-…-fedora.rpm    # Fedora
 ```
+
+### Arch Linux {#arch-linux}
+
+On Arch Linux and distributions based on it, such as Manjaro or EndeavourOS, Autogram is in the AUR as the [autogram-bin](https://aur.archlinux.org/packages/autogram-bin) package. Install it with an AUR helper, such as `yay` or `paru`:
+
+```sh
+yay -S autogram-bin
+```
+
+Without a helper, build and install the package with `makepkg`:
+
+```sh
+git clone https://aur.archlinux.org/autogram-bin.git
+cd autogram-bin
+makepkg -si
+```
+
+With an AUR helper, you then get new versions together with your other packages, for example with `yay -Syu`. If you built the package yourself, install a new version in its directory with `git pull` and `makepkg -si`.
 
 ## Card software
 
@@ -105,6 +123,10 @@ Install the new version the same way as the first one. Your settings are kept.
 On Windows, from version 2.8 the window offers **Install from Microsoft Store** instead of the download. The **Find out more** link opens the download page. The next steps are in [Moving to the Microsoft Store version](#moving-to-microsoft-store).
 
 ![Update available with installation from Microsoft Store](/assets/images/screenshots/en/update-store.png)
+
+On Arch Linux with Autogram from the AUR, the window reminds you instead of the download to update Autogram like your other packages, for example with `yay -Syu` or `paru -Syu`. **Close** closes the window and the **Find out more** link next to it opens the [Arch Linux](#arch-linux) section of this guide.
+
+![Update available when installed from the AUR](/assets/images/screenshots/en/update-aur.png)
 
 ## Moving to the Microsoft Store version {#moving-to-microsoft-store}
 

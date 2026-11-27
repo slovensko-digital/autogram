@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- shared-mime-info knows PDF, but not ASiC-E containers -->
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/vnd.etsi.asic-e+zip">
+    <comment>ASiC-E Container</comment>
+    <sub-class-of type="application/zip"/>
+    <glob pattern="*.asice"/>
+  </mime-type>
+</mime-info>

@@ -3,7 +3,7 @@
 
 Autogram is a multi-platform (Windows, MacOS, Linux) desktop JavaFX application for signing and verifying documents in accordance with the European eIDAS regulation. Users can sign files directly or easily integrate the application into their own (web) information system using HTTP API. Signing can also be initiated from the command line, which is suitable for batch signing large numbers of files at once.
 
-**Installation packages for Windows, MacOS, and Linux are available in the [Releases](https://github.com/slovensko-digital/autogram/releases) section.** If you want to use Autogram on existing Slovak government websites, you will need to install a [browser extension](https://github.com/slovensko-digital/autogram-extension#readme) as well.
+**Installation packages for Windows, MacOS, and Linux are available in the [Releases](https://github.com/slovensko-digital/autogram/releases) section.** On Arch Linux, install the [autogram-bin](https://aur.archlinux.org/packages/autogram-bin) package from the AUR. If you want to use Autogram on existing Slovak government websites, you will need to install a [browser extension](https://github.com/slovensko-digital/autogram-extension#readme) as well.
 
 ![Screenshot](assets/autogram-screenshot-en.png?raw=true)
 
@@ -48,7 +48,7 @@ Running `./mvnw package` prepares everything in `./target`:
 - `preparedJDK/` - JLink JDK (JRE) prepared for bundling with the application.
 - `autogram-*.jar` - JAR with the application
 
-Then using `jpackage`, it creates all executable packages (.msi/.exe, .dmg/.pkg, and .rpm/.deb).
+Then using `jpackage`, it creates all executable packages (.msi/.exe, .dmg/.pkg, .rpm/.deb, and on Arch Linux the application image `autogram-*-linux-x86_64.tar.gz` for the AUR package).
 
 ```sh
 ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')
@@ -67,9 +67,17 @@ sudo apt install openjdk-25-jdk maven binutils rpm fakeroot
 sudo dnf install java-25-openjdk maven rpm-build
 ```
 
+#### Arch Linux
+
+```sh
+sudo pacman -S jdk25-openjdk maven base-devel
+```
+
+The AUR package is built from `packaging/arch/PKGBUILD` with `makepkg`, see the workflow `.github/workflows/package_linux_arch.yaml`.
+
 #### Linux Docker compose
 
-There is a `docker-compose.yml` with 3 services to package 3 Linux distributables - `Ubuntu 22.04`, `Debian 11` and `Fedora 41`. Run:
+There is a `docker-compose.yml` with 4 services to package 4 Linux distributables - `Ubuntu 22.04`, `Debian 13`, `Fedora 41` and `Arch Linux`. Run:
 
 ```
 docker compose up --build

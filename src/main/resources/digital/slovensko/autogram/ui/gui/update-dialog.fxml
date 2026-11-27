@@ -16,7 +16,7 @@
         </TextFlow>
 
         <VBox styleClass="autogram-prose">
-            <TextFlow styleClass="autogram-body">
+            <TextFlow fx:id="textFlow" styleClass="autogram-body">
                 <Text fx:id="text" styleClass="autogram-body" text="%update.newVersion.text"/>
             </TextFlow>
             <TextFlow fx:id="moreInfo" styleClass="autogram-body" managed="false" visible="false">
@@ -27,6 +27,10 @@
             <Button fx:id="storeButton" styleClass="autogram-button" text="%update.store.btn" onAction="#storeAction"
                     managed="false" visible="false"/>
             <Button fx:id="mainButton" styleClass="autogram-button" text="%update.download.btn" onAction="#downloadAction"/>
+            <Button fx:id="closeButton" styleClass="autogram-button,autogram-button--secondary" text="%general.close.btn"
+                    onAction="#onCancelButtonPressed" managed="false" visible="false"/>
+            <Button fx:id="guideButton" styleClass="autogram-link" text="%update.moreInfo.link" onAction="#guideAction"
+                    managed="false" visible="false"/>
             <Button fx:id="cancelButton" styleClass="autogram-link" text="%update.cancel.btn" onAction="#onCancelButtonPressed"/>
         </FlowPane>
     </VBox>
