@@ -63,13 +63,31 @@ Autogram nainštalovaný zo súboru `.msi` sa automaticky neaktualizuje, nové v
 
 ## Linux
 
-Balík nainštalujte správcom balíkov vašej distribúcie, napríklad:
+Na Ubuntu, Debiane a Fedore nainštalujte balík zo [stránky na stiahnutie](https://sluzby.slovensko.digital/autogram/#download) správcom balíkov vašej distribúcie:
 
 ```sh
 sudo apt install ./autogram-…-ubuntu.deb    # Ubuntu
 sudo apt install ./autogram-…-debian.deb    # Debian
 sudo dnf install ./autogram-…-fedora.rpm    # Fedora
 ```
+
+### Arch Linux {#arch-linux}
+
+Na Arch Linuxe a distribúciách z neho odvodených, napríklad Manjaro alebo EndeavourOS, je Autogram v repozitári AUR ako balík [autogram-bin](https://aur.archlinux.org/packages/autogram-bin). Nainštalujete ho pomocníkom pre AUR, napríklad `yay` alebo `paru`:
+
+```sh
+yay -S autogram-bin
+```
+
+Bez pomocníka balík zostavíte a nainštalujete nástrojom `makepkg`:
+
+```sh
+git clone https://aur.archlinux.org/autogram-bin.git
+cd autogram-bin
+makepkg -si
+```
+
+S pomocníkom pre AUR potom dostanete nové verzie spolu s ostatnými balíkmi, napríklad príkazom `yay -Syu`. Ak ste balík zostavili sami, novú verziu nainštalujete v jeho adresári príkazmi `git pull` a `makepkg -si`.
 
 ## Softvér ku karte
 
@@ -105,6 +123,10 @@ Novú verziu nainštalujete rovnako ako prvú. Nastavenia ostanú zachované.
 Na Windows ponúkne okno od verzie 2.8 namiesto sťahovania tlačidlo **Inštalovať z Microsoft Store**. Odkaz **Zistiť viac informácií** otvorí stránku na stiahnutie. Ďalší postup je v časti [Prechod na verziu z Microsoft Store](#prechod-na-microsoft-store).
 
 ![Dostupná aktualizácia s inštaláciou z Microsoft Store](/assets/images/screenshots/sk/update-store.png)
+
+Na Arch Linuxe s Autogramom z AUR okno namiesto sťahovania pripomenie, že Autogram aktualizujete rovnako ako ostatné balíky, napríklad príkazom `yay -Syu` alebo `paru -Syu`. Tlačidlo **Zavrieť** okno zavrie. Pozrite si [Arch Linux](#arch-linux).
+
+![Dostupná aktualizácia pri inštalácii z AUR](/assets/images/screenshots/sk/update-aur.png)
 
 ## Prechod na verziu z Microsoft Store {#prechod-na-microsoft-store}
 

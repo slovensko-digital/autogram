@@ -17,6 +17,7 @@ Changes in each version of Autogram, newest first. To find out which version you
 **New**
 
 - **Adding a country with one click.** When Autogram cannot validate a signature or a timestamp because its provider is from a country that is not turned on in the settings, it tells you so above the signatures and adds the country with one click. This helps, for example, with documents from the Autogram v mobile app, which adds an Estonian timestamp. See [Trusted lists](verification.md#trusted-lists).
+- **Arch Linux.** Autogram is in the AUR as the `autogram-bin` package and is updated together with your other packages. See [Arch Linux](installation.md#arch-linux).
 
 **Improved**
 
