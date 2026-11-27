@@ -124,7 +124,7 @@ On Windows, from version 2.8 the window offers **Install from Microsoft Store** 
 
 ![Update available with installation from Microsoft Store](/assets/images/screenshots/en/update-store.png)
 
-On Arch Linux with Autogram from the AUR, the window reminds you instead of the download to update Autogram like your other packages, for example with `yay -Syu` or `paru -Syu`. **Close** closes the window. See [Arch Linux](#arch-linux).
+On Arch Linux with Autogram from the AUR, the window reminds you instead of the download to update Autogram like your other packages, for example with `yay -Syu` or `paru -Syu`. **Close** closes the window and the **Find out more** link next to it opens the [Arch Linux](#arch-linux) section of this guide.
 
 ![Update available when installed from the AUR](/assets/images/screenshots/en/update-aur.png)
 

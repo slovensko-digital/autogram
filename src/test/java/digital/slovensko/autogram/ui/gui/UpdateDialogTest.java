@@ -1,10 +1,14 @@
 package digital.slovensko.autogram.ui.gui;
 
 import digital.slovensko.autogram.ui.SupportedLanguage;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Labeled;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,13 +18,17 @@ import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Desktop-only tests, intentionally opt-in for builds without a display.
@@ -53,20 +61,40 @@ class UpdateDialogTest {
     void aurInstallationIsToldToUpdateThroughThePackageManager(SupportedLanguage language) throws Exception {
         System.setProperty("autogram.updateChannel", "aur");
 
+        var hostServices = mock(HostServices.class);
+
         onFxThread(() -> {
-            var dialog = openDialog(language);
+            var dialog = openDialog(language, hostServices);
             var controller = dialog.controller();
 
-            assertEquals(dialog.resources().getString("update.newVersion.aur.text"), controller.text.getText());
-            assertTrue(controller.mainButton.isVisible());
-            assertEquals(dialog.resources().getString("general.close.btn"), controller.mainButton.getText());
-            assertFalse(controller.cancelButton.isVisible());
-            assertFalse(controller.cancelButton.isManaged());
-            assertFalse(controller.storeButton.isVisible());
-            assertFalse(controller.moreInfo.isVisible());
+            assertEquals(HasI18n.translate(dialog.resources(), "update.newVersion.aur.text", "yay -Syu", "paru -Syu"),
+                    textOf(controller.textFlow));
+            // shown as code, the same as in the guides
+            var commands = controller.textFlow.getChildren().stream()
+                    .filter(node -> node.getStyleClass().contains("autogram-code"))
+                    .map(node -> ((Labeled) node).getText())
+                    .toList();
+            assertEquals(List.of("yay -Syu", "paru -Syu"), commands);
 
-            controller.mainButton.fire();
-            assertFalse(dialog.stage().isShowing(), "the only button closes the window");
+            // the update happens in the terminal, so there's no primary button, only a grey Close and the guide next to it
+            for (var hidden : List.of(controller.mainButton, controller.storeButton, controller.cancelButton)) {
+                assertFalse(hidden.isVisible(), hidden.getId());
+                assertFalse(hidden.isManaged(), hidden.getId());
+            }
+            assertFalse(controller.moreInfo.isVisible());
+            assertTrue(controller.closeButton.isVisible());
+            assertTrue(controller.closeButton.getStyleClass().contains("autogram-button--secondary"));
+            assertEquals(dialog.resources().getString("general.close.btn"), controller.closeButton.getText());
+            assertTrue(controller.guideButton.isVisible());
+            assertEquals(dialog.resources().getString("update.moreInfo.link"), controller.guideButton.getText());
+            var actions = controller.closeButton.getParent().getChildrenUnmodifiable();
+            assertEquals(actions.indexOf(controller.closeButton) + 1, actions.indexOf(controller.guideButton));
+
+            controller.guideButton.fire();
+            verify(hostServices).showDocument(dialog.resources().getString("docs.url") + "installation/#arch-linux");
+
+            controller.closeButton.fire();
+            assertFalse(dialog.stage().isShowing());
         });
     }
 
@@ -75,7 +103,7 @@ class UpdateDialogTest {
     @EnabledOnOs({OS.LINUX, OS.MAC})
     void otherInstallationsAreOfferedTheDownload(SupportedLanguage language) throws Exception {
         onFxThread(() -> {
-            var dialog = openDialog(language);
+            var dialog = openDialog(language, null);
             var controller = dialog.controller();
 
             assertEquals(dialog.resources().getString("update.newVersion.text"), controller.text.getText());
@@ -85,9 +113,9 @@ class UpdateDialogTest {
         });
     }
 
-    private static Dialog openDialog(SupportedLanguage language) throws Exception {
+    private static Dialog openDialog(SupportedLanguage language, HostServices hostServices) throws Exception {
         var resources = language.loadResources();
-        var controller = new UpdateController(null);
+        var controller = new UpdateController(hostServices);
         var loader = new FXMLLoader(UpdateController.class.getResource("update-dialog.fxml"), resources);
         loader.setController(controller);
         Parent root = loader.load();
@@ -96,6 +124,12 @@ class UpdateDialogTest {
         stage.setScene(new Scene(root));
         stage.show();
         return new Dialog(stage, controller, resources);
+    }
+
+    private static String textOf(TextFlow flow) {
+        return flow.getChildren().stream()
+                .map(node -> node instanceof Text text ? text.getText() : ((Labeled) node).getText())
+                .collect(Collectors.joining());
     }
 
     private static void onFxThread(FxAction action) throws Exception {

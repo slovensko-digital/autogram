@@ -958,6 +958,14 @@ TextFlow.autogram-body-s {
   -fx-background-insets: 0 0 2 0, 0 0 6 0;
 }
 
+/* Code in text, e.g. a command, as in the ID-SK and GOV.UK guides */
+.autogram-code {
+  -fx-font-family: "Monospaced";
+  -fx-font-size: 1em;
+  -fx-background-color: -autogram-secondary-background-colour;
+  -fx-padding: 1px 4px;
+}
+
 .autogram-radios {
   -fx-spacing: 10px;
 }

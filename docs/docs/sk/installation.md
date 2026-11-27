@@ -124,7 +124,7 @@ Na Windows ponúkne okno od verzie 2.8 namiesto sťahovania tlačidlo **Inštalo
 
 ![Dostupná aktualizácia s inštaláciou z Microsoft Store](/assets/images/screenshots/sk/update-store.png)
 
-Na Arch Linuxe s Autogramom z AUR okno namiesto sťahovania pripomenie, že Autogram aktualizujete rovnako ako ostatné balíky, napríklad príkazom `yay -Syu` alebo `paru -Syu`. Tlačidlo **Zavrieť** okno zavrie. Pozrite si [Arch Linux](#arch-linux).
+Na Arch Linuxe s Autogramom z AUR okno namiesto sťahovania pripomenie, že Autogram aktualizujete rovnako ako ostatné balíky, napríklad príkazom `yay -Syu` alebo `paru -Syu`. Tlačidlo **Zavrieť** okno zavrie a odkaz **Zistiť viac informácií** vedľa neho otvorí časť [Arch Linux](#arch-linux) tejto príručky.
 
 ![Dostupná aktualizácia pri inštalácii z AUR](/assets/images/screenshots/sk/update-aur.png)
 

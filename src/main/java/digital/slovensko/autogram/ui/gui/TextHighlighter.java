@@ -13,13 +13,22 @@ import static java.util.Arrays.stream;
 public class TextHighlighter {
 
     private final String textToHighlight;
+    private final String styleClass;
 
-    private TextHighlighter(String textToHighlight) {
+    private TextHighlighter(String textToHighlight, String styleClass) {
         this.textToHighlight = textToHighlight;
+        this.styleClass = styleClass;
     }
 
     public static TextHighlighter highlight(String textToHighlight) {
-        return new TextHighlighter(textToHighlight);
+        return new TextHighlighter(textToHighlight, "autogram-claim");
+    }
+
+    /**
+     * Shows the text as code, e.g. a command, in monospace on a grey background
+     */
+    public static TextHighlighter code(String code) {
+        return new TextHighlighter(code, "autogram-code");
     }
 
     /**
@@ -51,7 +60,7 @@ public class TextHighlighter {
                 .map(textFragment -> {
                     if (textFragment.equals(textToHighlight)) {
                         var highlightedNode = new Label(textToHighlight);
-                        highlightedNode.getStyleClass().add("autogram-claim");
+                        highlightedNode.getStyleClass().add(styleClass);
                         highlightedNode.getStyleClass().addAll(originalNode.getStyleClass());
                         highlightedNode.setStyle(originalNode.getStyle());
                         return highlightedNode;
