@@ -66,7 +66,7 @@ Pri niektorých kartách sa Autogram po výbere karty opýta **Aký je kód k ú
 - Ak vaša karta kód má, zadajte ho a kliknite na **Pokračovať**. Dostali ste ho od vydavateľa karty spolu s ostatnými kódmi.
 - Ak vaša karta kód nemá, nechajte pole prázdne a kliknite na **Pokračovať**.
 
-Pri občianskom preukaze sa toto okno nezobrazí. Kód k nemu (BOK) si vypýta eID klient, pozrite si [Občiansky preukaz](#obciansky-preukaz).
+Pri občianskom preukaze sa namiesto toho Autogram opýta na BOK, pozrite si [Občiansky preukaz](#obciansky-preukaz).
 
 ## Výber certifikátu {#vyber-certifikatu}
 
@@ -111,27 +111,27 @@ Ak nie je kvalifikovaný žiadny certifikát, Autogram pod nimi zobrazí radu s 
 
 ## Podpisový PIN {#podpisovy-pin}
 
-Nakoniec zadáte podpisový PIN, pri niektorých kartách sa volá QPIN. Pri všetkých kartách okrem občianskeho preukazu ho zadávate v okne Autogramu.
+Nakoniec zadáte v okne Autogramu podpisový PIN, pri niektorých kartách sa volá QPIN.
 
 ![Zadanie podpisového PIN-u](/assets/images/screenshots/sk/pin-dialog.png)
 
 ::: callout warning "Pozor na počet pokusov"
 Karta sa po niekoľkých nesprávne zadaných PIN-och zablokuje. Ak si PIN nie ste istí, podpisovanie radšej zrušte.
+
+PIN-y ku kartám sú zvyčajne iba číslice.
 :::
 
 ## Občiansky preukaz {#obciansky-preukaz}
 
-Pri občianskom preukaze zadávate kódy v okne eID klienta, nie v Autograme.
+Pri občianskom preukaze zadávate dva kódy, oba v okne Autogramu.
 
-Keď sa Autogram pripája ku karte, eID klient si vypýta BOK (bezpečnostný osobný kód).
+Keď sa Autogram pripája ku karte, opýta sa na BOK (bezpečnostný osobný kód).
 
-![Okno eID klienta: Zadajte BOK](/assets/images/screenshots/sk/eid-bok.png)
+![Aký je BOK k občianskemu preukazu?](/assets/images/screenshots/sk/eid-bok-dialog.png)
 
-Pri podpise si vypýta podpisový PIN.
+Pri podpise sa opýta na podpisový PIN. Pri podpisovaní [viacerých dokumentov naraz](batch.md) ho zadáte iba raz pre všetky dokumenty.
 
-![Okno eID klienta: Zadajte Podpisový PIN](/assets/images/screenshots/sk/eid-pin.png)
-
-Výnimkou je podpisovanie [viacerých dokumentov naraz](batch.md). Podpisový PIN vtedy zadáte v okne Autogramu, aby ho stačilo zadať raz pre všetky dokumenty.
+![Aký je podpisový PIN k občianskemu preukazu?](/assets/images/screenshots/sk/eid-pin-dialog.png)
 
 ## Ďalšie podpisy {#dalsie-podpisy}
 

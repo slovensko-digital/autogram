@@ -76,9 +76,9 @@ With some cards, Autogram asks **What is the keystore password?**
 
 ![What is the keystore password?](/assets/images/screenshots/en/card-code.png)
 
-With the Slovak ID card, the eID client's window opens instead. Enter your BOK in it.
+With the Slovak ID card, Autogram asks **What is the BOK of your ID card?** instead. Enter your BOK (security personal code) and click **Continue**.
 
-![Zadajte BOK (eID client: enter the BOK)](/assets/images/screenshots/en/eid-bok.png)
+![What is the BOK of your ID card?](/assets/images/screenshots/en/eid-bok-dialog.png)
 
 ## 7. Choose the certificate
 
@@ -92,12 +92,10 @@ Enter the signing PIN, which some cards call QPIN, and click **Sign**.
 
 ![Entering the signature PIN](/assets/images/screenshots/en/pin-dialog.png)
 
-With the Slovak ID card, you enter the signing PIN in the eID client's window.
-
-![Zadajte Podpisový PIN (eID client: enter the signing PIN)](/assets/images/screenshots/en/eid-pin.png)
-
 ::: callout warning "Mind the number of attempts"
 A card locks after several wrong PINs. If you are not sure about your PIN, rather cancel signing.
+
+Card PINs usually have only digits.
 :::
 
 ## 9. Done

@@ -76,9 +76,9 @@ Pri niektorých kartách sa Autogram opýta **Aký je kód k úložisku kľúčo
 
 ![Aký je kód k úložisku kľúčov?](/assets/images/screenshots/sk/card-code.png)
 
-Pri občianskom preukaze sa namiesto toho otvorí okno eID klienta. Zadajte v ňom BOK.
+Pri občianskom preukaze sa namiesto toho opýta **Aký je BOK k občianskemu preukazu?** Zadajte BOK (bezpečnostný osobný kód) a kliknite na **Pokračovať**.
 
-![Okno eID klienta: Zadajte BOK](/assets/images/screenshots/sk/eid-bok.png)
+![Aký je BOK k občianskemu preukazu?](/assets/images/screenshots/sk/eid-bok-dialog.png)
 
 ## 7. Vyberte certifikát
 
@@ -92,12 +92,10 @@ Zadajte podpisový PIN, pri niektorých kartách sa volá QPIN, a kliknite na **
 
 ![Zadanie podpisového PIN-u](/assets/images/screenshots/sk/pin-dialog.png)
 
-Pri občianskom preukaze zadáte podpisový PIN v okne eID klienta.
-
-![Okno eID klienta: Zadajte Podpisový PIN](/assets/images/screenshots/sk/eid-pin.png)
-
 ::: callout warning "Pozor na počet pokusov"
 Karta sa po niekoľkých nesprávne zadaných PIN-och zablokuje. Ak si PIN nie ste istí, podpisovanie radšej zrušte.
+
+PIN-y ku kartám sú zvyčajne iba číslice.
 :::
 
 ## 9. Hotovo

@@ -25,7 +25,7 @@ Slovenský občiansky preukaz s čipom môže obsahovať certifikát na kvalifik
 1. Nainštalujte si **eID klient** zo stránky [slovensko.sk](https://www.slovensko.sk/sk/na-stiahnutie).
 2. Ak ste certifikáty na podpisovanie ešte nemali, vydajte si ich v eID kliente. Pri novom občianskom preukaze to často treba urobiť ako prvé.
 3. Vložte preukaz do čítačky a v Autograme kliknite na **Podpísať**.
-4. V okne eID klienta zadajte najprv BOK (bezpečnostný osobný kód) a po výbere certifikátu podpisový PIN. Pozrite si [Výber karty a zadanie PIN-u](card-and-pin.md#obciansky-preukaz).
+4. Autogram sa opýta najprv na BOK (bezpečnostný osobný kód) a po výbere certifikátu na podpisový PIN. Pozrite si [Výber karty a zadanie PIN-u](card-and-pin.md#obciansky-preukaz).
 
 Okrem kvalifikovaného certifikátu je na preukaze aj druhý, ktorý sa na kvalifikované podpisovanie nepoužíva. Autogram ho predvolene neponúka, pozrite si [Viac certifikátov na jednej karte](card-and-pin.md#viac-certifikatov-na-jednej-karte).
 

@@ -34,7 +34,7 @@ Niektoré súbory, napríklad dokumenty Word, Autogram zobraziť nevie. Vtedy v�
 
    ![Výber certifikátu](/assets/images/screenshots/sk/certificate-picker.png)
 
-5. Zadajte podpisový PIN. Pri občianskom preukaze ho zadávate v okne eID klienta.
+5. Zadajte podpisový PIN.
 6. Autogram uloží podpísaný súbor a ukáže, kde ho nájdete. Kliknutím na cestu otvoríte priečinok.
 
    ![Dokument bol úspešne podpísaný](/assets/images/screenshots/sk/signing-success.png)
