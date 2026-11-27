@@ -81,7 +81,7 @@ Spustenie `./mvnw package` pripraví všetko do `./target`:
 - `preparedJDK/` - JLink JDK (JRE) pripravené pre bundling s aplikáciou.
 - `autogram-*.jar` - JAR s aplikáciou
 
-Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, .rpm/.deb a na Arch Linuxe obraz aplikácie `autogram-*-arch.tar.gz` pre balík v AUR).
+Následne pomocou `jpackage` vytvorí všetky spustiteľné balíčky (.msi/.exe, .dmg/.pkg, .rpm/.deb a na Arch Linuxe obraz aplikácie `autogram-*-linux-x86_64.tar.gz` pre balík v AUR).
 
 ```sh
 ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')

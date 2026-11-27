@@ -61,7 +61,7 @@ jobs:
           useradd -m builder
           echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
           mkdir /home/builder/aur
-          cp packaging/arch/* "target/autogram-${VERSION}-arch.tar.gz" /home/builder/aur/
+          cp packaging/arch/* "target/autogram-${VERSION}-linux-x86_64.tar.gz" /home/builder/aur/
           chown -R builder /home/builder/aur
 
           cd /home/builder/aur
@@ -70,7 +70,7 @@ jobs:
           sudo -u builder makepkg --syncdeps --force --noconfirm
           pacman -U --noconfirm autogram-bin-*.pkg.tar.zst
           test "$(autogram --version)" = "${VERSION}"
-          # the update window tells AUR users to update with their package manager
+          # the PKGBUILD sets that the update window tells AUR users to update with their package manager
           grep -qx "java-options=-Dautogram.updateChannel=aur" /opt/autogram/lib/app/autogram.cfg
 
           cp autogram-bin-*.pkg.tar.zst "${GITHUB_WORKSPACE}/target/"
@@ -81,7 +81,7 @@ jobs:
         with:
           name: autogram-${{ inputs.version }}-arch
           path: |
-            target/autogram-${{ inputs.version }}-arch.tar.gz
+            target/autogram-${{ inputs.version }}-linux-x86_64.tar.gz
             target/autogram-bin-*.pkg.tar.zst
           if-no-files-found: ignore
 
@@ -92,4 +92,4 @@ jobs:
           draft: true
           prerelease: true
           files: |
-            target/autogram-${{ inputs.version }}-arch.tar.gz
+            target/autogram-${{ inputs.version }}-linux-x86_64.tar.gz

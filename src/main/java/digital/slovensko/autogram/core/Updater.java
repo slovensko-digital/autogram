@@ -23,8 +23,8 @@ public class Updater {
 
     /**
      * The Arch Linux build is installed from the AUR (Arch User Repository), whose package is updated with each
-     * release, so the user gets new versions the same way as their other packages. package.sh sets the property in
-     * the launcher of that build.
+     * release, so the user gets new versions the same way as their other packages. The AUR package
+     * (packaging/arch/PKGBUILD) sets the property in its launcher.
      */
     public static boolean isInstalledFromAur() {
         return "aur".equals(System.getProperty("autogram.updateChannel"));

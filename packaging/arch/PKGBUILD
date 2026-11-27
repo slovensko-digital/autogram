@@ -2,8 +2,8 @@
 #
 # Autogram for Arch Linux, published to the AUR as https://aur.archlinux.org/packages/autogram-bin.
 # The release workflow (.github/workflows/publish_aur.yaml) sets pkgver and the checksums. To build it from this
-# repository, put autogram-<version>-arch.tar.gz from a release or a build on Arch Linux next to it, set pkgver to
-# that version and run `updpkgsums && makepkg -si`.
+# repository, put autogram-<version>-linux-x86_64.tar.gz from a release or a build on Arch Linux next to it, set
+# pkgver to that version and run `updpkgsums && makepkg -si`.
 
 pkgname=autogram-bin
 _pkgname=autogram
@@ -27,7 +27,7 @@ provides=("${_pkgname}")
 conflicts=("${_pkgname}")
 # The bundled Java runtime is already stripped by jlink
 options=('!strip' '!debug')
-source=("${_pkgname}-${pkgver}-arch.tar.gz::https://github.com/slovensko-digital/autogram/releases/download/v${pkgver}/${_pkgname}-${pkgver}-arch.tar.gz"
+source=("${_pkgname}-${pkgver}-linux-x86_64.tar.gz::https://github.com/slovensko-digital/autogram/releases/download/v${pkgver}/${_pkgname}-${pkgver}-linux-x86_64.tar.gz"
         'autogram.desktop'
         'autogram.xml')
 sha256sums=('SKIP'
@@ -38,6 +38,8 @@ package() {
     # The launcher of the application image finds the application and the Java runtime next to itself
     install -d "${pkgdir}/opt"
     cp -a --no-preserve=ownership "${srcdir}/${_pkgname}" "${pkgdir}/opt/${_pkgname}"
+    # The update window then tells to update with the other packages
+    sed -i '/^\[JavaOptions\]$/a java-options=-Dautogram.updateChannel=aur' "${pkgdir}/opt/${_pkgname}/lib/app/${_pkgname}.cfg"
 
     install -d "${pkgdir}/usr/bin"
     ln -s "/opt/${_pkgname}/bin/${_pkgname}" "${pkgdir}/usr/bin/${_pkgname}"

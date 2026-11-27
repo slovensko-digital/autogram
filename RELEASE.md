@@ -14,7 +14,7 @@ Je potrebné skontrolovať či nepribudol škodlivý kód, exfiltrácia secrets 
 - [ ] funguje inštalácia na MacOS cez stiahnutý .pkg
 - [ ] funguje inštalácia na Linux (Debian-based) cez stiahnutý .deb
 - [ ] funguje inštalácia na Linux cez stiahnutý .rpm
-- [ ] funguje inštalácia na Arch Linux cez `makepkg -si` z `packaging/arch` s archívom `autogram-…-arch.tar.gz` z releasu
+- [ ] funguje inštalácia na Arch Linux cez `makepkg -si` z `packaging/arch` s archívom `autogram-…-linux-x86_64.tar.gz` z releasu
 - [ ] po zmene pre-releasu na release prebehol workflow „Publish to AUR“ a v AUR je nová verzia [autogram-bin](https://aur.archlinux.org/packages/autogram-bin)
 - [ ] funguje spustenie v GUI móde
 - [ ] funguje spustenie v GUI serverovom móde `autogram --url=autogram://listen?protocol=http&port=37200`

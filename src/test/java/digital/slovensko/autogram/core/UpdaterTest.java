@@ -14,7 +14,7 @@ class UpdaterTest {
 
     @Test
     void installedFromAurWhenTheArchPackageSaysSo() {
-        // set by package.sh in the launcher of the Arch Linux build
+        // set by the AUR package in its launcher
         System.setProperty("autogram.updateChannel", "aur");
 
         assertTrue(Updater.isInstalledFromAur());

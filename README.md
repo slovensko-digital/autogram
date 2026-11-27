@@ -48,7 +48,7 @@ Running `./mvnw package` prepares everything in `./target`:
 - `preparedJDK/` - JLink JDK (JRE) prepared for bundling with the application.
 - `autogram-*.jar` - JAR with the application
 
-Then using `jpackage`, it creates all executable packages (.msi/.exe, .dmg/.pkg, .rpm/.deb, and on Arch Linux the application image `autogram-*-arch.tar.gz` for the AUR package).
+Then using `jpackage`, it creates all executable packages (.msi/.exe, .dmg/.pkg, .rpm/.deb, and on Arch Linux the application image `autogram-*-linux-x86_64.tar.gz` for the AUR package).
 
 ```sh
 ./mvnw versions:set -DnewVersion=$(git describe --tags --abbrev=0 | sed -r 's/^v//g')

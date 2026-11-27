@@ -259,18 +259,19 @@ if [[ "$platform" == "linux" ]]; then
             ;;
 
         arch)
-            # The AUR package (packaging/arch/PKGBUILD) installs this application image to /opt/autogram. pacman
-            # installs it, which dpkg and rpm don't know, so a /usr installation would not start. The launcher of
-            # the image finds the application next to itself instead.
+            # The application image for packages of repositories like the AUR (packaging/arch/PKGBUILD), which
+            # install it to /opt/autogram. Their package managers aren't dpkg or rpm, which the launcher of a /usr
+            # installation asks where the application is, so it would not start. The launcher of the image finds
+            # the application next to itself instead. Each package sets how Autogram is updated in its launcher.
             appImage="${output}/${lowercase_name}"
             rm -rf "${appImage}"
 
             "$jpackage" "${arguments[@]}" "${appImageArguments[@]}" \
                 "--type" "app-image" \
-                "--java-options" "${jvmOptions} -Dautogram.updateChannel=aur"
+                "--java-options" "${jvmOptions}"
             checkExitCode $?
 
-            tar -C "${output}" -czf "${output}/${lowercase_name}-${properties_version:-$version}-arch.tar.gz" "${lowercase_name}"
+            tar -C "${output}" -czf "${output}/${lowercase_name}-${properties_version:-$version}-linux-x86_64.tar.gz" "${lowercase_name}"
             ;;
 
         *)
